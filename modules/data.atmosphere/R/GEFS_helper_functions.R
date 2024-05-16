@@ -533,7 +533,6 @@ process_gridded_noaa_download <- function(lat_list,
 #' @param overwrite, logical stating to overwrite any existing output_file
 #' @param hr time step in hours of temporal downscaling (default = 1)
 #' @importFrom rlang .data 
-#' @import tidyselect
 #' 
 #' @author Quinn Thomas
 #'

@@ -1,88 +1,15 @@
-* using log directory ‘/home/tanishq010/pecan/modules/PEcAn.data.atmosphere.Rcheck’
-* using R version 4.2.1 (2022-06-23)
+* using log directory ‘/tmp/Rtmp56JiPq/PEcAn.data.atmosphere.Rcheck’
+* using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
-* using options ‘--no-tests --no-manual --as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.data.atmosphere/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘PEcAn.data.atmosphere’ version ‘1.7.2’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... WARNING
-Maintainer: ‘David LeBauer <dlebauer@email.arizona.edu>’
-
-New submission
-
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
-Unknown, possibly misspelled, fields in DESCRIPTION:
-  ‘Remotes’
-
-Strong dependencies not in mainstream repositories:
-  nneo, PEcAn.DB, PEcAn.logger, PEcAn.remote, PEcAn.utils
-
-Found the following (possibly) invalid URLs:
-  URL: http://fluxnet.fluxdata.org//sites/site-list-and-pages/ (moved to https://fluxnet.org/sites/site-list-and-pages/)
-    From: man/download.Fluxnet2015.Rd
-    Status: 200
-    Message: OK
-  URL: http://www.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html (moved to https://archive.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html)
-    From: man/qair2rh.Rd
-    Status: 200
-    Message: OK
-  URL: http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx
-    From: man/download.FluxnetLaThuile.Rd
-    Status: Error
-    Message: libcurl error code 28:
-        Connection timed out after 60000 milliseconds
-  URL: http://www.neonscience.org/science-design/field-sites/list (moved to https://www.neonscience.org/science-design/field-sites/list)
-    From: man/download.NEONmet.Rd
-    Status: 404
-    Message: Not Found
-  URL: https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html
-    From: README.md
-    Status: 404
-    Message: Not Found
-
-The Date field is over a month old.
 * checking package namespace information ... OK
-* checking package dependencies ... WARNING
-Imports includes 40 non-default packages.
-Importing from so many packages makes the package vulnerable to any of
-them becoming unavailable.  Move as many as possible to Suggests and
-use conditionally.
-
 * checking package dependencies ... NOTE
-Imports includes 40 non-default packages.
+Imports includes 38 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -115,136 +42,24 @@ Use \uxxxx escapes for other characters.
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
-* checking use of S3 registration ... OK
-* checking dependencies in R code ... WARNING
-'library' or 'require' calls not declared from:
-  ‘MASS’ ‘mgcv’
-'library' or 'require' calls in package code:
-  ‘MASS’ ‘mgcv’
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Package in Depends field not imported from: ‘methods’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-cfmet.downscale.daily: no visible binding for global variable ‘doy’
-cfmet.downscale.daily: no visible binding for global variable ‘I.dir’
-cfmet.downscale.daily: no visible binding for global variable ‘I.diff’
-cfmet.downscale.daily: no visible binding for global variable ‘Itot’
-cfmet.downscale.daily: no visible binding for global variable ‘year’
-cfmet.downscale.daily: no visible binding for global variable
-  ‘surface_downwelling_shortwave_flux_in_air’
-cfmet.downscale.daily: no visible binding for global variable ‘tmin’
-cfmet.downscale.daily: no visible binding for global variable ‘tmax’
-cfmet.downscale.daily: no visible binding for global variable
-  ‘relative_humidity’
-cfmet.downscale.daily: no visible binding for global variable
-  ‘air_pressure’
-cfmet.downscale.daily: no visible binding for global variable
-  ‘air_temperature’
-cfmet.downscale.daily: no visible binding for global variable ‘qmin’
-cfmet.downscale.daily: no visible binding for global variable ‘qmax’
-cfmet.downscale.daily: no visible binding for global variable
-  ‘pressure’
-cfmet.downscale.daily: no visible binding for global variable ‘rhmin’
-cfmet.downscale.daily: no visible binding for global variable ‘rhmax’
-cfmet.downscale.subdaily: no visible binding for global variable ‘year’
-cfmet.downscale.subdaily: no visible binding for global variable
-  ‘month’
-cfmet.downscale.subdaily: no visible binding for global variable ‘day’
-cfmet.downscale.subdaily: no visible binding for global variable ‘hour’
-debias.met.regression: no visible global function definition for ‘sd’
-debias.met.regression: no visible global function definition for
-  ‘aggregate’
-debias.met.regression: no visible global function definition for
-  ‘predict’
-debias.met.regression: no visible global function definition for
-  ‘resid’
-debias.met.regression: no visible global function definition for ‘lm’
-debias.met.regression: no visible global function definition for ‘coef’
-debias.met.regression: no visible global function definition for ‘vcov’
-debias.met.regression: no visible global function definition for
-  ‘terms’
-debias.met.regression: no visible global function definition for
-  ‘model.frame’
-debias.met.regression: no visible global function definition for
-  ‘model.matrix’
-debias.met.regression : <anonymous>: no visible global function
-  definition for ‘sd’
-debias.met.regression: no visible global function definition for
-  ‘rnorm’
-debias.met.regression: no visible global function definition for
-  ‘quantile’
-debias.met.regression: no visible binding for global variable
-  ‘quantile’
-debias.met.regression: no visible binding for global variable ‘Date’
-debias.met.regression: no visible binding for global variable ‘lwr’
-debias.met.regression: no visible binding for global variable ‘upr’
-debias.met.regression: no visible binding for global variable ‘obs’
 debias.met.regression: no visible binding for global variable ‘values’
-debias.met.regression: no visible binding for global variable ‘Year’
-download.US_Wlef: no visible global function definition for
-  ‘read.table’
 extract.local.CMIP5: no visible binding for global variable ‘GCM’
-extract.nc.ERA5 : <anonymous>: no visible global function definition
-  for ‘setNames’
-extract.nc.ERA5: no visible global function definition for ‘setNames’
 extract.nc.ERA5 : <anonymous>: no visible binding for global variable
   ‘.’
-get.cruncep: no visible binding for global variable ‘Lat’
-get.cruncep: no visible binding for global variable ‘lati’
-get.cruncep: no visible global function definition for
-  ‘cruncep_dt2weather’
-get.weather: no visible global function definition for
-  ‘cruncep_dt2weather’
 get_NARR_thredds: no visible binding for global variable ‘latitude’
 get_NARR_thredds: no visible binding for global variable ‘longitude’
-is.land: no visible binding for global variable ‘met.nc’
-lm_ensemble_sims: no visible global function definition for ‘quantile’
-lm_ensemble_sims: no visible binding for global variable ‘mod.save’
-lm_ensemble_sims: no visible global function definition for ‘sd’
-load.cfmet: no visible binding for global variable ‘index’
-met.process: no visible global function definition for ‘get.id’
-met.process: no visible binding for global variable ‘site_id’
-met.process: no visible binding for global variable ‘format_id’
-met.process: no visible binding for global variable ‘machine_id’
 met2CF.FACE: no visible binding for global variable ‘x’
-met_temporal_downscale.Gaussian_ensemble: no visible global function
-  definition for ‘sd’
-met_temporal_downscale.Gaussian_ensemble: no visible global function
-  definition for ‘rnorm’
 met_temporal_downscale.Gaussian_ensemble: no visible binding for global
   variable ‘temp_max’
 met_temporal_downscale.Gaussian_ensemble: no visible binding for global
   variable ‘temp_min’
-metgapfill.NOAA_GEFS: no visible global function definition for
-  ‘na.omit’
-metgapfill.NOAA_GEFS: no visible global function definition for ‘lm’
-metgapfill.NOAA_GEFS: no visible global function definition for
-  ‘predict’
-model.train: no visible global function definition for ‘lm’
-model.train: no visible global function definition for ‘coef’
-model.train: no visible global function definition for ‘vcov’
-model.train: no visible global function definition for ‘resid’
-subdaily_pred: no visible global function definition for ‘model.matrix’
 Undefined global functions or variables:
-  . Date GCM I.diff I.dir Itot Lat Year aggregate air_pressure
-  air_temperature coef cruncep_dt2weather day doy format_id get.id hour
-  index lati latitude lm longitude lwr machine_id met.nc mod.save
-  model.frame model.matrix month na.omit obs predict pressure qmax qmin
-  quantile read.table relative_humidity resid rhmax rhmin rnorm sd
-  setNames site_id surface_downwelling_shortwave_flux_in_air temp_max
-  temp_min terms tmax tmin upr values vcov x year
-Consider adding
-  importFrom("datasets", "pressure")
-  importFrom("stats", "aggregate", "coef", "lm", "model.frame",
-             "model.matrix", "na.omit", "predict", "quantile", "resid",
-             "rnorm", "sd", "setNames", "terms", "vcov")
-  importFrom("utils", "read.table")
-to your NAMESPACE file.
+  . GCM latitude longitude temp_max temp_min values x
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -262,9 +77,6 @@ See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'cfmet.downscale.time'
-  ‘lat’ ‘...’
-
 Undocumented arguments in documentation object 'closest_xy'
   ‘slat’ ‘slon’ ‘infolder’ ‘infile’
 
@@ -292,23 +104,14 @@ Undocumented arguments in documentation object 'download.NARR_site'
 Undocumented arguments in documentation object 'download.NEONmet'
   ‘...’
 
-Undocumented arguments in documentation object 'extract.nc.ERA5'
-  ‘...’
-
 Undocumented arguments in documentation object 'extract.nc'
   ‘...’
-
-Undocumented arguments in documentation object 'get.ncvector'
-  ‘var’ ‘lati’ ‘loni’ ‘run.dates’
 
 Undocumented arguments in documentation object 'lm_ensemble_sims'
   ‘lags.list’
 
 Undocumented arguments in documentation object 'met.process'
   ‘browndog’
-
-Undocumented arguments in documentation object 'met.process.stage'
-  ‘input.id’ ‘raw.id’
 
 Undocumented arguments in documentation object 'met2CF.ALMA'
   ‘verbose’
@@ -319,22 +122,11 @@ Undocumented arguments in documentation object 'met2CF.Ameriflux'
 Undocumented arguments in documentation object 'met2CF.AmerifluxLBL'
   ‘...’
 
-Undocumented arguments in documentation object 'met2CF.FACE'
-  ‘in.path’ ‘in.prefix’ ‘outfolder’ ‘start_date’ ‘end_date’ ‘input.id’
-  ‘site’ ‘format’ ‘...’
-
-Undocumented arguments in documentation object 'met2CF.NARR'
-  ‘in.path’ ‘in.prefix’ ‘outfolder’ ‘...’
-
 Undocumented arguments in documentation object 'met2CF.PalEON'
   ‘lat’ ‘lon’ ‘verbose’ ‘...’
 
 Undocumented arguments in documentation object 'met2CF.PalEONregional'
   ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'met2CF.csv'
-  ‘in.path’ ‘in.prefix’ ‘outfolder’ ‘start_date’ ‘end_date’ ‘lat’ ‘lon’
-  ‘overwrite’ ‘...’
 
 Undocumented arguments in documentation object 'metgapfill.NOAA_GEFS'
   ‘...’
@@ -354,12 +146,6 @@ Undocumented arguments in documentation object 'permute.nc'
 Undocumented arguments in documentation object 'predict_subdaily_met'
   ‘...’
 
-Undocumented arguments in documentation object 'site.lst'
-  ‘site.id’ ‘con’
-
-Undocumented arguments in documentation object 'site_from_tag'
-  ‘sitename’ ‘tag’
-
 Undocumented arguments in documentation object 'temporal.downscale.functions'
   ‘...’
 
@@ -375,9 +161,6 @@ Argument items with no description in Rd object 'gen.subdaily.models':
 Argument items with no description in Rd object 'merge_met_variable':
   ‘start_date’ ‘end_date’ ‘...’
 
-Argument items with no description in Rd object 'met_temporal_downscale.Gaussian_ensemble':
-  ‘in.path’ ‘in.prefix’
-
 Argument items with no description in Rd object 'split_wind':
   ‘start_date’ ‘end_date’
 
@@ -390,7 +173,7 @@ Argument items with no description in Rd object 'split_wind':
         by using R CMD build --resave-data
                              old_size new_size compress
   cruncep_landmask.RData         39Kb      9Kb       xz
-  narr_cruncep_ebifarm.RData    790Kb    595Kb       xz
+  narr_cruncep_ebifarm.RData    790Kb    597Kb       xz
 * checking files in ‘vignettes’ ... WARNING
 Files in the 'vignettes' directory but no files in 'inst/doc':
   ‘ameriflux_demo.Rmd’, ‘cfmet_downscaling.Rmd’,
@@ -398,9 +181,10 @@ Files in the 'vignettes' directory but no files in 'inst/doc':
 Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... SKIPPED
+* checking tests ... OK
+  Running ‘test.NARR.R’
+  Running ‘testthat.R’
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-
-Status: 10 WARNINGs, 2 NOTEs
+Status: 7 WARNINGs, 2 NOTEs
