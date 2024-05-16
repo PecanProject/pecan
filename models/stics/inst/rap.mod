@@ -1,0 +1,15 @@
+1
+1
+2
+1
+rec
+masec(n)
+mafruit
+iflos
+imats
+irecs
+laimax
+cprecip
+cet
+QNplante
+Qles

@@ -2,12 +2,12 @@
 % Please edit documentation in R/temporal.downscaling.R
 \name{cfmet.downscale.subdaily}
 \alias{cfmet.downscale.subdaily}
-\title{subdaily downscaling}
+\title{Subdaily to hourly (or less) downscaling}
 \usage{
 cfmet.downscale.subdaily(subdailymet, output.dt = 1)
 }
 \arguments{
-\item{subdailymet}{data table with climate variables queried from \code{\link{load.cfmet}}}
+\item{subdailymet}{data frame with climate variables queried from \code{\link{load.cfmet}}}
 
 \item{output.dt}{output timestep. default is one hour}
 }
@@ -15,9 +15,6 @@ cfmet.downscale.subdaily(subdailymet, output.dt = 1)
 weather file with subdaily met variables rescaled to output time step
 }
 \description{
-Subdaily to hourly (or less) downscaling
-}
-\details{
 Uses simple spline to interpolate variables with diurnal variability, otherwise uses averaging or repeating
 for variables with no clear diurnal pattern. For all variables except temperature, negative values are set to zero.
 }

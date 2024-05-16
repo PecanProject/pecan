@@ -233,7 +233,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
     get_dfs$data <- foreach::`%dopar%`(
       foreach::foreach(
         url = get_dfs$url, flx = get_dfs$flx,
-        .packages = c("PEcAn.data.atmosphere", "magrittr"),
+        .packages = c("PEcAn.data.atmosphere", "dplyr"),
         .export = c("get_narr_url", "robustly")
       ),
         PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)

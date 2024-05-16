@@ -1,5 +1,4 @@
 ##' @export
-##' @import dplyr
 .extract.nc.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE) {
   PEcAn.logger::logger.info("Site Extraction")
