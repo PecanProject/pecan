@@ -4,7 +4,12 @@
 \alias{MODIS_LC_prep}
 \title{Prepare MODIS land cover data for the SDA workflow.}
 \usage{
-MODIS_LC_prep(site_info, time_points, outdir = NULL, qc.filter = FALSE)
+MODIS_LC_prep(
+  site_info,
+  time_points,
+  outdir = NULL,
+  qc.filter = c("000", "001")
+)
 }
 \arguments{
 \item{site_info}{Bety list of site info including site_id, lon, and lat.}
@@ -13,7 +18,7 @@ MODIS_LC_prep(site_info, time_points, outdir = NULL, qc.filter = FALSE)
 
 \item{outdir}{Where the final CSV file will be stored.}
 
-\item{qc.filter}{decide if we want to filter data by the qc band.}
+\item{qc.filter}{values that will pass the QC check. the check will be skipped if it's NULL.}
 }
 \value{
 A data frame containing MODIS land cover types for each site and each time step.

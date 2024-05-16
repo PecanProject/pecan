@@ -3,7 +3,7 @@
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param time_points A vector contains each time point within the start and end date.
 #' @param outdir Where the final CSV file will be stored.
-#' @param qc.filter decide if we want to filter data by the qc band.
+#' @param qc.filter values that will pass the QC check. the check will be skipped if it's NULL.
 #'
 #' @return A data frame containing MODIS land cover types for each site and each time step.
 #' @export
@@ -11,7 +11,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = FALSE){
+MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = c("000", "001")){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore, workers = 10)
@@ -102,7 +102,7 @@ MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = FAL
           }) %>% dplyr::bind_rows()
       }, .progress = T)
     #extracting QC values.
-    if (qc.filter) {
+    if (!is.null(qc.filter)) {
       PEcAn.logger::logger.info("Extracting Land Cover QC products!")
       qc.list <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 
         furrr::future_map(function(s){
@@ -133,9 +133,9 @@ MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = FAL
         if (is.na(lc.list[[i]]$value[j])) {
           next
         }
-        if (qc.filter) {
+        if (!is.null(qc.filter)) {
           # skip bad pixels based on qc band.
-          if (! qc.list[[i]][j] %in% c("000", "001")) {
+          if (! qc.list[[i]][j] %in% qc.filter) {
             next
           }
         }
