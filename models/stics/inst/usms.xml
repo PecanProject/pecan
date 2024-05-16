@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>                                              
-<usms>                                                                                              
-  <usm nom="@PFT_NAME@">                                                                             
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>      
+<usms version="10.0">
+  <usm nom="@PFT_NAME@"> 
     <datedebut>@DATEBUT@</datedebut>                                                                      
     <datefin>@DATEFIN@</datefin>                                                                          
-    <finit>@FINIT@</finit>                                                                    
+    <finit>@FINIT@</finit>   
     <nomsol>@NOMSOL@</nomsol>                                                                       
     <fstation>@FSTATION@</fstation>                                                           
     <fclim1>@FCLIM1@</fclim1>                                                                  
-    <fclim2>@FCLIM2@</fclim2>                                                                  
+    <fclim2>@FCLIM2@</fclim2>  
     <culturean>@CULTUREAN@</culturean>                                                                        
     <nbplantes>@NBPLANTES@</nbplantes>                                                                        
-    <codesimul>@CODESIMUL@</codesimul>                                                                        
+    <codesimul>@CODESIMUL@</codesimul>  
     <plante dominance="1">                                                                          
       <fplt>@FPLT1@</fplt>                                                          
       <ftec>@FTEC1@</ftec>                                                                    
@@ -20,6 +20,6 @@
       <fplt>@FPLT2@</fplt>                                                                             
       <ftec>@FTEC2@</ftec>                                                                             
       <flai>@FLAI2@</flai>                                                                             
-    </plante>                                                                                       
-  </usm>                                                                                            
+    </plante>  
+  </usm>
 </usms>

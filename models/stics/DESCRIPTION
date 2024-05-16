@@ -10,17 +10,20 @@ Authors@R: c(
 Description: This module provides functions to link the STICS to PEcAn.
 Imports:
     PEcAn.settings,
-    PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
     PEcAn.remote,
+    jsonlite,
     lubridate,
     ncdf4,
-    purrr,
     XML,
     dplyr
 Suggests:
+    SticsRFiles,
     testthat (>= 1.0.2)
+Remotes:
+    github::SticsRPacks/SticsRFiles,
+    github::SticsRPacks/SticsOnR
 SystemRequirements: STICS
 OS_type: unix
 License: BSD_3_clause + file LICENSE

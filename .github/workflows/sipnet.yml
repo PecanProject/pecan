@@ -1,0 +1,69 @@
+name: sipnet
+
+on:
+  workflow_call:
+    inputs:
+      R-version:
+        required: true
+        type: string
+
+env:
+  R_LIBS_USER: /usr/local/lib/R/site-library
+  LC_ALL: en_US.UTF-8
+  NCPUS: 2
+  PGHOST: postgres
+  CI: true
+
+jobs:
+  sipnet:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    services:
+      postgres:
+        image: mdillon/postgis:9.5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    container: 
+      image: pecan/depends:R${{ inputs.R-version }}
+
+    steps:
+    # checkout source code
+    - name: work around https://github.com/actions/checkout/issues/766
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    - uses: actions/checkout@v4
+      with:
+        set-safe-directory: false
+
+    # install additional tools needed
+    - name: install utils
+      run: apt-get update && apt-get install -y postgresql-client qpdf
+    - name: install new dependencies
+      run: Rscript scripts/generate_dependencies.R && cd docker/depends && Rscript pecan.depends.R
+
+    # initialize database
+    - name: db setup
+      uses: docker://pecan/db:ci
+    - name: add models to db
+      run: ./scripts/add.models.sh
+
+    # install sipnet
+    - name: Check out SIPNET
+      uses: actions/checkout@v4
+      with:
+        repository: PecanProject/sipnet
+        path: sipnet
+        set-safe-directory: false
+    - name: install sipnet
+      run: |
+        cd ${GITHUB_WORKSPACE}/sipnet
+        make
+
+    # compile PEcAn code
+    - name: build
+      run: make -j1
+
+    # run SIPNET test
+    - name: integration test
+      run: ./tests/integration.sh ghaction
