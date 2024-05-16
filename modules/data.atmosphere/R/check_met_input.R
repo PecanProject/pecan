@@ -35,13 +35,6 @@ check_met_input_file <- function(metfile,
     "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}",
     "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
   )
-
-  dimensions <- nc[["dim"]]
-  time_regex <- paste0(
-    "^(seconds|minutes|hours|hours|days) since ",
-    "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}",
-    "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
-  )
   test_dims <- list(
     assertthat::validate_that(is.list(dimensions)),
     assertthat::validate_that(length(dimensions) == 3),
