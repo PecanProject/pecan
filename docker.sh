@@ -115,6 +115,9 @@ echo "#"
 echo "# The docker image for dependencies takes a long time to build. You"
 echo "# can use a prebuilt version (default) or force a new version to be"
 echo "# built locally using: DEPEND=build $0"
+echo "#"
+echo "# EXPERIMENTAL: To attempt updating an existing dependency image"
+echo "# instead of building from scratch, use UPDATE_DEPENDS_FROM_TAG=<tag>"
 echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
@@ -123,6 +126,17 @@ if [ "${DEPEND}" == "build" ]; then
         --pull \
         --secret id=github_token,env=GITHUB_PAT \
         --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
+        --tag pecan/depends:${IMAGE_VERSION} \
+        docker/depends
+elif [ "${UPDATE_DEPENDS_FROM_TAG}" != "" ]; then
+    echo "# Attempting to update from existing pecan/depends:${UPDATE_DEPENDS_FROM_TAG}."
+    echo "# This is experimental. if it fails, please instead use"
+    echo "# 'DEPEND=build' to start from a known clean state."
+    ${DEBUG} docker build \
+        --pull \
+        --secret id=github_token,env=GITHUB_PAT \
+        --build-arg FROM_IMAGE="pecan/depends" \
+        --build-arg R_VERSION=${UPDATE_DEPENDS_FROM_TAG} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
 else
