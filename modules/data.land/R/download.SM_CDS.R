@@ -11,38 +11,38 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom dplyr %>%
+#' @details 
+#' Introduction on how to play with the CDS python API
+#' to correctly build the python environment with the cdsapi installed, you need to follow those steps.
+#' 1. Install miniconda.
+#' create a directory to install minicaonda `mkdir -p ~/miniconda3`
+#' 2. Download latest miniconda version.
+#' `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh`
+#' 3. run the install script.
+#' `bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3`
+#' 4. delete the intall script.
+#' `rm -rf ~/miniconda3/miniconda.sh`
+#' 5. add a conda initialize to your bash
+#' `~/miniconda3/bin/conda init bash`
+#' 6. Verify the installaton, you need to restart your session first.
+#' `conda list`
+#' 7. Create Python environment.
+#' `conda update conda`
+#' `conda create -n myenv python=3.9 --yes`
+#' 8. Activate your python env.
+#' `conda activate myenv`
+#' 9. Install the cdsapi package.
+#' `pip install cdsapi`
+#' in the meantime, you might encounter several issues saying XXXX dependency is not available.
+#' to solve this issue, you just need to install those dependencies before hand.
+#' 10. Create CDS account.
+#' go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
+#' create an account.
+#' 11. Create CDS personel token.
+#' run this function.
+#' go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
+#' copy and paste url and key to the prompt window.
 download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.create.key = FALSE) {
-  ###################################Introduction on how to play with the CDS python API##########################################
-  #to correctly build the python environment with the cdsapi installed, you need to follow those steps.
-  #1. Install miniconda.
-  # create a directory to install minicaonda `mkdir -p ~/miniconda3`
-  #2. Download latest miniconda version.
-  # `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh`
-  #3. run the install script.
-  # `bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3`
-  #4. delete the intall script.
-  # `rm -rf ~/miniconda3/miniconda.sh`
-  #5. add a conda initialize to your bash
-  # `~/miniconda3/bin/conda init bash`
-  #6. Verify the installaton, you need to restart your session first.
-  # `conda list`
-  #7. Create Python environment.
-  # `conda update conda`
-  # `conda create -n myenv python=3.9 --yes`
-  #8. Activate your python env.
-  # `conda activate myenv`
-  #9. Install the cdsapi package.
-  # `pip install cdsapi`
-  # in the meantime, you might encounter several issues saying XXXX dependency is not available.
-  # to solve this issue, you just need to install those dependencies before hand.
-  #10. Create CDS account.
-  # go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
-  # create an account.
-  #11. Create CDS personel token.
-  # run this function.
-  # go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
-  # copy and paste url and key to the prompt window.
-  ################################################################################################################################
   #load cdsapi from python environment.
   tryCatch({
     cdsapi <- reticulate::import("cdsapi")
