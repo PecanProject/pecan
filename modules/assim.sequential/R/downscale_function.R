@@ -62,7 +62,7 @@ NA_downscale <- function(data, coords, date, C_pool, covariates){
     rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
                                                  data = ensembles[[i]][[1]],
                                                  ntree = 1000,
-                                                 na.action = na.omit,
+                                                 na.action = stats::na.omit,
                                                  keep.forest = T,
                                                  importance = T)
   }
