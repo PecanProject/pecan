@@ -5,7 +5,7 @@
 #' @param in.path physical paths to where the unziped soil moisture files are downloaded.
 #' @param out.path Where the final CSV file will be stored.
 #' @param allow.download Flag determine if we want to automatic download files if they are not available.
-#' @param search_window search window for locate available soil moisture values.
+#' @param search_window time length (days) for locate available soil moisture values.
 #'
 #' @return A data frame containing soil moisture and sd for each site and each time step.
 #' @export

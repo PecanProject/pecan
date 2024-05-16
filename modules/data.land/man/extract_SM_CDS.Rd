@@ -24,7 +24,7 @@ extract_SM_CDS(
 
 \item{allow.download}{Flag determine if we want to automatic download files if they are not available.}
 
-\item{search_window}{search window for locate available soil moisture values.}
+\item{search_window}{time length (days) for locate available soil moisture values.}
 }
 \value{
 A data frame containing soil moisture and sd for each site and each time step.
