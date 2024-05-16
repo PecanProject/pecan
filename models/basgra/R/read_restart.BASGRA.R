@@ -41,6 +41,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("slow_soil_pool_carbon_content")
   }
   
+  if ("soil_organic_nitrogen_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$soil_nitrogen_content[last]  # kg N m-2
+    names(forecast[[length(forecast)]]) <- c("soil_nitrogen_content")
+  }
+  
   if ("TotSoilCarb" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  # kg C m-2
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
@@ -49,6 +54,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
   if ("NEE" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$NEE[last]  # kg C m-2 s-1
     names(forecast[[length(forecast)]]) <- c("NEE")
+  }
+  
+  if ("NPP" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$NPP[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("NPP")
   }
   
   if ("Qle" %in% var.names) {
@@ -126,6 +136,16 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$phenological_stage[last]  
     names(forecast[[length(forecast)]]) <- c("phenological_stage")
   } 
+  
+  if ("SoilMoistFrac" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  
+    names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
+  } 
+
+  if ("harvest_carbon_flux" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$harvest_carbon_flux[last]  # kg C m-2 s-1
+    names(forecast[[length(forecast)]]) <- c("harvest_carbon_flux")
+  }
   
   PEcAn.logger::logger.info(runid)
   
