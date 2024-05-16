@@ -11,6 +11,8 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
+#' @details This function enables the feature of grabing pre-extracted MODIS LC CSV files such that any site that 
+#' has records will be skipped (See Line 33).
 MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = c("000", "001")){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {

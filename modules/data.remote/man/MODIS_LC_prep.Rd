@@ -26,6 +26,10 @@ A data frame containing MODIS land cover types for each site and each time step.
 \description{
 Prepare MODIS land cover data for the SDA workflow.
 }
+\details{
+This function enables the feature of grabing pre-extracted MODIS LC CSV files such that any site that 
+has records will be skipped (See Line 33).
+}
 \author{
 Dongchen Zhang
 }
