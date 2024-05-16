@@ -12,8 +12,7 @@ contains
     real :: cn_h_min
 
     if (size(pa) < 160) then
-       print *, 'parameter vector too small:', size(pa)
-       error stop
+       call rexit('parameter vector too small')
     end if
 
     ! Initial constants
