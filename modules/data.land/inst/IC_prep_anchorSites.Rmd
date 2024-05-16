@@ -60,8 +60,8 @@ for (i in seq_along(LAI_df$LAI_Output$site_id)) {
 
 ```{r}
 #prepare AGB
-AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_geotiff(site.info = site_info, 
-                                                      paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
+AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_2010_global(site.info = site_info, 
+                                                          paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
                                                                         uncertainty = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010_uncertainty.tif"), 
                                                       ens = 100)
 ```

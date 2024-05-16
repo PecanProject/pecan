@@ -12,7 +12,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-Prep_AGB_IC_from_geotiff <- function(site_info, paths.list, ens) {
+Prep_AGB_IC_from_2010_global <- function(site_info, paths.list, ens) {
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore)
