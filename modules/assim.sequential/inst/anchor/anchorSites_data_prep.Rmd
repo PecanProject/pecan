@@ -6,6 +6,7 @@ output: html_document
 ---
 
 # setup environment.
+## Here we will first load required libraries, enabling the `future` parallel operation, and read the `pecan.xml` settings object and convert it into the `site_info` object containing `site_id`, `latitude`, `longitude`, and `site_name`. Making sure you are using the same column names for `site_id` and `site_name` acorss the entire SDA workflow.
 
 ```{r setup, include=FALSE}
 library(dplyr)
@@ -56,6 +57,7 @@ pre_site_info <- settings %>%
 ```
 
 # Pull new sites (not in Bety) into the current site_info object.
+## Currently the BETY database is down and we can only create new sites through the shared Google Sheets. After reading the table, we will first create unique site ids for those who don't have the id. Then, we will combine `site_info` objects from both settings and Google Sheet.
 
 ```{r}
 #new added site info from google sheet
@@ -81,6 +83,7 @@ for (i in 1:dim(extra_sites)[1]) {
 ```
 
 # Filter the combined sites by NA boundary and land cover types.
+## Here we will use the North America Ecoregion map for filtering any location that is beyond the scope. After that, we will use the MODIS land cover product to filter out any location that is identified as Urban, Permanent Snow and Ice, Barren, or Water body.
 
 ```{r}
 #filter based on NA boundary, land cover.
@@ -89,7 +92,7 @@ site_eco <- PEcAn.data.land::EPA_ecoregion_finder(pre_site_info$lat, pre_site_in
 
 bound.ind.rm <- unique(which(is.na(site_eco$L2)))
 #land cover
-LC <- PEcAn.data.remote::MODIS_LC_prep(site_info = pre_site_info, time_points = settings$state.data.assimilation$start.date, qc.filter = F)
+LC <- PEcAn.data.remote::MODIS_LC_prep(site_info = pre_site_info, time_points = settings$state.data.assimilation$start.date)
 
 #tweak LC to actual pfts
 LC[which(LC[,2] %in% c("Deciduous Broadleaf Forests", 
@@ -124,6 +127,7 @@ site_info <- pre_site_info %>% purrr::map(function(l){
 ```
 
 # Write the new site_info object into a new pecan.xml file.
+## Here we will first need to setup the `template` variable from the `Create_Multi_settings.R` script within the `/pecan/modules/assim.sequential/inst/MultiSite-Exs/SDA` folder. Then we will create a new settings object based on the filtered site ids. Finally we will need to write other columns of the `site_info` into the settings and write the settings into the `pecan.xml` file.
 
 ```{r}
 # you will first need to run the Create_Multi_settings script to get the template for the multi-settings
@@ -143,7 +147,7 @@ PEcAn.settings::write.settings(new.settings, outputfile = "newpecan.xml")
 ```
 
 # Prep the ERA5 data for the sites.
-# Using ~/pecan/modules/data.atmosphere/inst/ERA5/ERA5_NA.download.R script for download.
+## Here we will first download North America ERA5 files using the `/pecan/modules/data.atmosphere/inst/ERA5/ERA5_NA.download.R` script. After that, once we setup the `in.path` and `out.path` for the ERA5 extraction, we can then run the `PEcAn.data.atmosphere::ERA5_met_process` function for preparing the ERA5 data for each site within the settings.
 
 ```{r}
 #read settings
@@ -159,6 +163,7 @@ paths <- PEcAn.data.atmosphere::ERA5_met_process(settings = settings, in.path = 
 ```
 
 # Prep observations for SDA (obs.mean and obs.cov).
+## Here we will be preparing the observations for the SDA workflow. For preparing the SMAP SMP datasets, we will first need to export the `sites.csv` file and then upload it to the Google Earth Engine (GEE) and use the script specified within the `PEcAn.data.land::SMAP_SMP_prep` script. Once the `SMAP_gee.csv` file has been generated from GEE, we can then operate the `PEcAnAssimSequential::SDA_OBS_Assembler` function for the preparation of the rest data streams.
 
 ```{r}
 #prepare sites.csv for SMAP_gee.csv download.

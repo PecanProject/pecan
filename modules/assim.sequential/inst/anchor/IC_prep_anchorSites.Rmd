@@ -6,6 +6,7 @@ output: html_document
 ---
 
 # setup environments.
+## Here we will first read the `pecan.xml` settings object and convert it into the `site_info` object containing `site_id`, `latitude`, `longitude`, and `site_name`. Making sure you are using the same column names for `site_id` and `site_name` acorss the entire SDA workflow. After that, we will setup the ensemble number, time, and the directory for searching and extracting the initial conditions. Finally, the PFT and parameter files are loaded because we need to specify the specific leaf area (`SLA`) to convert from LAI to leaf carbon.
 
 ```{r setup, include=FALSE}
 library(purrr)
@@ -36,6 +37,7 @@ pft <- read.csv("/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
 ```
 
 # Prep LAI initial conditions using the MODIS LAI prep function.
+## Here we will just use the MODIS LAI prep function within the `PEcAn.data.remote` package, which was used for preparing SDA observations. After that, we will be sampling based on normal distribution prescribed by LAI mean and standard error.
 
 ```{r}
 #prepare LAI
@@ -57,6 +59,7 @@ for (i in seq_along(LAI_df$LAI_Output$site_id)) {
 
 # Prep AGB initial condition using GeoTIFF images.
 # DOI: https://doi.org/10.3334/ORNLDAAC/1763
+## Here we are using the product specific function for the extraction, within which we will first extract AGB mean and standard error and sampling based on them.
 
 ```{r}
 #prepare AGB
@@ -68,6 +71,7 @@ AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_2010_global(site.info = site_info,
 
 # Pre soil moisture initial condition through the CDS server.
 # DOI: 10.24381/cds.d7782f18
+## Here we will extract the soil moisture estimations from the Copernicus Climatic Data Server (CDS). Before executing the function, making sure that the `cdsapi` is corrected installed based on the instructions within the `PEcAn.data.land::download.SM_CDS` function. To make sure that we will get the global coverage for the anchor sites, we will need to specify the time window (30 days here) in the function usage.
 
 ```{r}
 #prepare SM
@@ -87,6 +91,7 @@ for (i in seq_along(site_info$site_id)) {
 ```
 
 # Prep SOC initial conditions from the ISCN database.
+## Here we will be preparing the SOC initial conditions for the anchor sites. The basic logic is to sample ISCN SOC estimations (data already prepared on PEcAn, use `PEcAn.data.land::iscn_soc` to load) based on the level 2 ecoregion map (pre-downloaded using the following link: https://www.epa.gov/eco-research/ecoregions).
 
 ```{r}
 #prepare SOC
@@ -95,6 +100,7 @@ SOC_IC <- PEcAn.data.land::IC_ISCN_SOC(site_info = site_info, ens = ens, ecoregi
 ```
 
 # Convert and write IC files into local directory and into settings.
+## Here we will loop over each site and each ensemble member (we will be creating folders for each `site_id` and store the NC files associated with each ensemble member within the folder). Within each loop, we will first do some unit conversions (e.g., AGB, LAI), and then assemble the `poolinfo` object, which is required for writing the NC files through the `PEcAn.SIPNET::veg2model.SIPNET` function. Finally, if we set the `Write_into_settings` as TRUE at the beginning, we will then write those paths into the settings and rewrite the XML file to the `outdir`.
 
 ```{r}
 # write with ensemble number
