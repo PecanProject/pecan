@@ -5,7 +5,7 @@
 #' @param outdir Where the final CSV file will be stored.
 #' @param search_window search window for locate available LAI values.
 #' @param export_csv Decide if we want to export the CSV file.
-#' @param sd_threshold Threshold for filtering out any estimations with unrealistic high standard error, default is NULL.
+#' @param sd_threshold Threshold for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.
 #'
 #' @return A data frame containing LAI and sd for each site and each time step.
 #' @export
@@ -13,7 +13,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = NULL){
+MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = 20){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore, workers = 10)
