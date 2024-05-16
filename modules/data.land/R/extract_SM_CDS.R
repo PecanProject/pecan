@@ -40,7 +40,7 @@ extract_SM_CDS <- function(site_info,
         PEcAn.logger::logger.info("Try download from cds server.")
         ncfile <- c(ncfiles[dates.ind.exist], PEcAn.data.land::download.SM_CDS(in.path, dates[dates.ind.download])) %>% sort()
       } else {
-        PEcAn.logger::logger.severe("The download is not enabled, skip to the next time point.")
+        PEcAn.logger::logger.info("The download is not enabled, skip to the next time point.")
         next
       }
     } else {
