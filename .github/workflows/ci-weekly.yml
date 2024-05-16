@@ -3,8 +3,9 @@ name: Weekly Checks
 on:
   #  every Monday at 4:30 AM
   # (hopefully after the 1:30 AM `depends` build has completed)
-   schedule:
+  schedule:
     - cron: '30 4 * * 1'
+  workflow_dispatch:
 
 jobs:
   test:
