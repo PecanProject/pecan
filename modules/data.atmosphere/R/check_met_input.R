@@ -40,7 +40,7 @@ check_met_input_file <- function(metfile,
     assertthat::validate_that(length(dimensions) == 3),
     assertthat::validate_that("time" %in% names(dimensions)),
     assertthat::validate_that(
-      grepl(time_regex, ncdf4::ncatt_get(nc, "time", "units")[["value"]]),
+      grepl(time_regex, ncdf4::ncatt_get(nc, "time", "units")[["value"]])
     ),
     assertthat::validate_that("latitude" %in% names(dimensions)),
     assertthat::validate_that(
