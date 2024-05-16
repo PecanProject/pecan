@@ -10,7 +10,7 @@ MODIS_LAI_prep(
   outdir = NULL,
   search_window = 30,
   export_csv = FALSE,
-  skip_high_sd = FALSE
+  sd_threshold = NULL
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ MODIS_LAI_prep(
 
 \item{export_csv}{Decide if we want to export the CSV file.}
 
-\item{skip_high_sd}{if we want to skip observations with high standard error.}
+\item{sd_threshold}{Threshold for filtering out any estimations with unrealistic high standard error, default is NULL.}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

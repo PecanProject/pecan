@@ -5,7 +5,7 @@
 #' @param outdir Where the final CSV file will be stored.
 #' @param search_window search window for locate available LAI values.
 #' @param export_csv Decide if we want to export the CSV file.
-#' @param skip_high_sd if we want to skip observations with high standard error.
+#' @param sd_threshold Threshold for filtering out any estimations with unrealistic high standard error, default is NULL.
 #'
 #' @return A data frame containing LAI and sd for each site and each time step.
 #' @export
@@ -13,7 +13,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, skip_high_sd = FALSE){
+MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = NULL){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore, workers = 10)
@@ -38,9 +38,9 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
   if(file.exists(file.path(outdir, "LAI.csv"))){
     PEcAn.logger::logger.info("Extracting previous LAI file!")
     Previous_CSV <- utils::read.csv(file.path(outdir, "LAI.csv"))
-    if (skip_high_sd) {
+    if (!is.null(sd_threshold)) {
       PEcAn.logger::logger.info("filtering out records with high standard errors!")
-      Previous_CSV <- Previous_CSV[-which(Previous_CSV$sd >= 10),]
+      Previous_CSV <- Previous_CSV[-which(Previous_CSV$sd >= sd_threshold),]
     }
     LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
@@ -146,8 +146,8 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
         if (! lai_qc[[i]][j] %in% c("000", "001")) {
           next
         }
-        if (skip_high_sd) {
-          if (lai_std >= 10) {
+        if (!is.null(sd_threshold)) {
+          if (lai_std >= sd_threshold) {
             next
           }
         }
