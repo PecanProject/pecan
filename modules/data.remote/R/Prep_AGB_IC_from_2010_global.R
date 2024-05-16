@@ -1,6 +1,6 @@
 #' Extract ensemble above ground biomass density from pre-existing GeoTIFF files for the SDA workflow.
 #' Note that, this function only works for those products who have both mean and uncertainty GeoTIFF images prepared.
-#' For example, products like: DOI: https://doi.org/10.3334/ORNLDAAC/1763.
+#' And it works under the 2010 Global AGB products: DOI: https://doi.org/10.3334/ORNLDAAC/1763.
 #'
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param paths.list list containing file paths for `mean` and `uncertainty` datasets.
