@@ -14,7 +14,7 @@
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-NA_downscale <- function(data, coords, date, C_pool){
+NA_downscale <- function(data, coords, date, C_pool, covariates){
   
   # Read the input data and site coordinates
   input_data <- readRDS(data)
