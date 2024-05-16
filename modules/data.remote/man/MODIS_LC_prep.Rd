@@ -4,13 +4,7 @@
 \alias{MODIS_LC_prep}
 \title{Prepare MODIS land cover data for the SDA workflow.}
 \usage{
-MODIS_LC_prep(
-  site_info,
-  time_points,
-  outdir = NULL,
-  export_csv = FALSE,
-  qc.filter = FALSE
-)
+MODIS_LC_prep(site_info, time_points, outdir = NULL, qc.filter = FALSE)
 }
 \arguments{
 \item{site_info}{Bety list of site info including site_id, lon, and lat.}
@@ -18,8 +12,6 @@ MODIS_LC_prep(
 \item{time_points}{A vector contains each time point within the start and end date.}
 
 \item{outdir}{Where the final CSV file will be stored.}
-
-\item{export_csv}{Decide if we want to export the CSV file.}
 
 \item{qc.filter}{decide if we want to filter data by the qc band.}
 }

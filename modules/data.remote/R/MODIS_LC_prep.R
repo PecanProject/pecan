@@ -3,7 +3,6 @@
 #' @param site_info Bety list of site info including site_id, lon, and lat.
 #' @param time_points A vector contains each time point within the start and end date.
 #' @param outdir Where the final CSV file will be stored.
-#' @param export_csv Decide if we want to export the CSV file.
 #' @param qc.filter decide if we want to filter data by the qc band.
 #'
 #' @return A data frame containing MODIS land cover types for each site and each time step.
@@ -12,7 +11,7 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, export_csv = FALSE, qc.filter = FALSE){
+MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = FALSE){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore, workers = 10)
@@ -20,7 +19,7 @@ MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, export_csv = FA
     future::plan(future::multisession, workers = 10) #10 is the maximum number of requests permitted for the MODIS server.
   }
   #if we export CSV but didn't provide any path
-  if(as.logical(export_csv) && is.null(outdir)){
+  if(is.null(outdir)){
     PEcAn.logger::logger.info("If you want to export CSV file, please ensure input the outdir!")
     return(0)
   }
@@ -148,7 +147,7 @@ MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, export_csv = FA
       }
     }
     #Compare with existing CSV file. (We name the CSV file as LC.csv)
-    if(as.logical(export_csv)){
+    if(!is.null(outdir)){
       if(exists("Previous_CSV")){#we already read the csv file previously.
         Current_CSV <- rbind(Previous_CSV, LC)
         Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
