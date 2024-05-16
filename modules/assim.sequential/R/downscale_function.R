@@ -6,7 +6,7 @@
 ##' @param coords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
 ##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates Should be loaded in using 'covariates' instructions in inst folder
+##' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
 ##' @description This function uses the randomForest model.
