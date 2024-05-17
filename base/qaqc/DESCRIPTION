@@ -20,27 +20,17 @@ Imports:
     rlang,
     stats
 Suggests:
-    knitr,
+    knitr (>= 1.42),
     mockery,
     mvbutils,
     PEcAn.BIOCRO,
     PEcAn.ED2,
     PEcAn.SIPNET,
     PEcAn.utils,
-    rmarkdown,
+    rmarkdown (>= 2.19),
     testthat (>= 3.0.4),
     vdiffr (>= 1.0.2),
     withr
-X-Comment-Remotes:
-    Installing vdiffr from GitHub because as of 2021-09-23, this is the
-    easiest way to get version >= 1.0.2 onto Docker images that use older
-    Rstudio Package Manager snapshots.
-    Ditto for testthat, because we need >= 3.0.4 for vdiffr compatibility.
-    When building on a system that finds these versions on CRAN,
-    OK to remove these Remotes lines and this comment.
-Remotes:
-    github::r-lib/testthat@v3.1.6,
-    github::r-lib/vdiffr@v1.0.4
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

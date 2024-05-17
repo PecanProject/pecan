@@ -48,11 +48,6 @@ Strong dependencies not in mainstream repositories:
   PEcAn.data.atmosphere, PEcAn.data.land, PEcAn.DB, PEcAn.logger,
     PEcAn.remote, PEcAn.settings, PEcAn.uncertainty, PEcAn.utils
 
-The Title field should be in title case. Current version is:
-‘PEcAn functions used for ecological forecasts and reanalysis’
-In title case that is:
-‘PEcAn Functions Used for Ecological Forecasts and Reanalysis’
-
 The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -93,14 +88,7 @@ Maintainer field differs from that derived from Authors@R
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-run.write.configs: no visible binding for global variable
-  ‘trait.samples’
-run.write.configs: no visible binding for global variable ‘sa.samples’
-run.write.configs: no visible binding for global variable
-  ‘ensemble.samples’
-Undefined global functions or variables:
-  ensemble.samples sa.samples trait.samples
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -119,4 +107,4 @@ Undefined global functions or variables:
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 1 WARNING, 2 NOTEs
+Status: 1 WARNING, 1 NOTEs

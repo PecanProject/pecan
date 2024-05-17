@@ -1,20 +1,12 @@
-ARG R_VERSION="4.0.2"
+ARG R_VERSION="4.1"
+ARG FROM_IMAGE="rocker/tidyverse"
 
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-FROM rocker/tidyverse:${R_VERSION}
+FROM ${FROM_IMAGE}:${R_VERSION}
 MAINTAINER Rob Kooper <kooper@illinois.edu>
 
-# ----------------------------------------------------------------------
-# UPDATE GIT
-# This is needed for stretch and github actions
-# ----------------------------------------------------------------------
-RUN if [ "$(lsb_release -s -c)" = "stretch" ]; then \
-      echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list \
-      && apt-get update \
-      && apt-get -t stretch-backports upgrade -y git \
-    ; fi
 
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES
@@ -40,11 +32,10 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
-COPY pecan.depends.R /
+COPY pecan.depends.R pecan_package_dependencies.csv pecan_deps_from_github.txt /
 RUN  --mount=type=secret,id=github_token \
   export GITHUB_PAT=`cat /run/secrets/github_token` \
-  && Rscript -e "install.packages(c('devtools'))" \
-  && Rscript -e "devtools::install_version('roxygen2', '7.2.3', repos = 'cran.r-project.org')" \
+  && Rscript -e "install.packages(c('desc', 'remotes'))" \
   && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 

@@ -10,6 +10,8 @@ test_remote(host, stderr = TRUE, ...)
 \item{host}{host structure to execute command on}
 
 \item{stderr}{should stderr be returned as well.}
+
+\item{...}{additional arguments.}
 }
 \value{
 \code{TRUE} is remote execution is successful.

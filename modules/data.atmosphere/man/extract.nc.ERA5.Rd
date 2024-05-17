@@ -15,6 +15,7 @@ extract.nc.ERA5(
   newsite,
   vars = NULL,
   overwrite = FALSE,
+  verbose = FALSE,
   ...
 )
 }
@@ -38,6 +39,10 @@ extract.nc.ERA5(
 \item{vars}{variables to be extracted. If NULL all the variables will be returned.}
 
 \item{overwrite}{Logical if files needs to be overwritten.}
+
+\item{verbose}{Decide if we want to stop printing info.}
+
+\item{...}{other inputs.}
 }
 \value{
 a list of xts objects with all the variables for the requested years

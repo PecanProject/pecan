@@ -4,7 +4,13 @@
 \alias{qsub_parallel}
 \title{qsub_parallel}
 \usage{
-qsub_parallel(settings, files = NULL, prefix = "sipnet.out", sleep = 10)
+qsub_parallel(
+  settings,
+  files = NULL,
+  prefix = "sipnet.out",
+  sleep = 10,
+  hybrid = TRUE
+)
 }
 \arguments{
 \item{settings}{pecan settings object}
@@ -14,6 +20,8 @@ qsub_parallel(settings, files = NULL, prefix = "sipnet.out", sleep = 10)
 \item{prefix}{used for detecting if jobs are completed or not.}
 
 \item{sleep}{time (in second) that we wait each time for the jobs to be completed.}
+
+\item{hybrid}{A Boolean argument decide the way of detecting job completion. If it's TRUE then we will detect both the outputted files and job ids on the server. If it's FALSE then we will only detect the job ids on the server.}
 }
 \description{
 qsub_parallel

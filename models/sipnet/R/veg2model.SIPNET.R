@@ -1,7 +1,4 @@
-#' veg2model.SIPNET 
-#' @name veg2model.SIPNET
-#' @title veg2model.SIPNET
-#'
+#' veg2model.SIPNET
 #' 
 #' @param outfolder location to store ncdf files
 #' @param poolinfo object passed from write_ic contains output from cohort2pool function

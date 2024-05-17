@@ -1,7 +1,7 @@
 Package: PEcAn.workflow
 Type: Package
-Title: PEcAn functions used for ecological forecasts and
-    reanalysis
+Title: PEcAn Functions Used for Ecological Forecasts and
+    Reanalysis
 Version: 1.7.2
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
@@ -31,20 +31,21 @@ Description: The Predictive Ecosystem Carbon Analyzer
     that can be used to run the major steps of a PEcAn analysis.
 License: BSD_3_clause + file LICENSE
 Imports:
-  dplyr,
-	PEcAn.data.atmosphere,
-	PEcAn.data.land,
-	PEcAn.DB,
-	PEcAn.logger,
-	PEcAn.remote,
-	PEcAn.settings,
-	PEcAn.uncertainty,
-	PEcAn.utils,
-	purrr (>= 0.2.3),
-	XML
+    dplyr,
+    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.DB,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.settings,
+    PEcAn.uncertainty,
+    PEcAn.utils,
+    purrr (>= 0.2.3),
+    XML
 Suggests:
-	testthat,
-    mockery
+    mockery,
+    testthat,
+    withr
 Copyright: Authors
 Encoding: UTF-8
 RoxygenNote: 7.2.3

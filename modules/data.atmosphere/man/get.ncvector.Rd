@@ -7,15 +7,18 @@
 get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
 }
 \arguments{
+\item{var}{name of variable to extract}
+
+\item{lati, loni}{latitude and longitude to extract}
+
+\item{run.dates}{data frame of dates to read}
+
 \item{met.nc}{netcdf file with CF variable names}
 }
 \value{
 numeric vector
 }
 \description{
-Get time series vector from netCDF file
-}
-\details{
 internal convenience function for
 streamlining extraction of data from netCDF files
 with CF-compliant variable names

@@ -18,14 +18,12 @@ on:
     branches:
       - master
       - develop
-
   pull_request:
-
   merge_group:
-
   issue_comment:
     types:
       - created
+  workflow_dispatch:
 
 # Certain actions will only run when this is the master repo.
 env:
@@ -41,11 +39,11 @@ jobs:
     steps:
       - name: Work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           driver: docker
           buildkitd-flags: --debug
@@ -74,7 +72,20 @@ jobs:
             echo "PECAN_VERSION=develop" >> $GITHUB_ENV
             echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           fi
-
+      # If any dependencies changed in this PR, try to update depends image
+      # Only runs on pull_request -- others it's not clear what base to compare to
+      - name: check for changed dependencies
+        if: github.base_ref != ''
+        uses: dorny/paths-filter@v3
+        id: findchanges
+        with:
+          filters: |
+            deps:
+              - docker/depends/**
+      - if: steps.findchanges.outputs.deps == 'true'
+        run: echo "UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}" >> $GITHUB_ENV
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
       # use shell script to build, there is some complexity in this
       - name: create images
         run: ./docker.sh -i github
@@ -82,6 +93,7 @@ jobs:
           PECAN_GIT_CHECKSUM: ${{ github.sha }}
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
           VERSION: ${{ env.PECAN_VERSION }}
+          UPDATE_DEPENDS_FROM_TAG: ${{ env.UPDATE_DEPENDS_FROM_TAG }}
 
       # push all images to github
       - name: Publish to GitHub
