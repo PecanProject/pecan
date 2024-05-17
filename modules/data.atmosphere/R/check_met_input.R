@@ -35,38 +35,26 @@ check_met_input_file <- function(metfile,
     "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}",
     "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
   )
-
-  try2 <- purrr::partial(try, silent = TRUE)
-
-  dimensions <- nc[["dim"]]
-  time_regex <- paste0(
-    "^(seconds|minutes|hours|hours|days) since ",
-    "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}",
-    "T[[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}Z$"
-  )
   test_dims <- list(
-    try2(testthat::expect_type(dimensions, "list")),
-    try2(testthat::expect_equal(length(dimensions), 3)),
-    try2(testthat::expect_true("time" %in% names(dimensions))),
-    try2(testthat::expect_match(
-      ncdf4::ncatt_get(nc, "time", "units")[["value"]],
-      time_regex
-    )),
-    try2(testthat::expect_true("latitude" %in% names(dimensions))),
-    try2(testthat::expect_equal(
-      ncdf4::ncatt_get(nc, "latitude", "units")[["value"]],
-      "degrees_north"
-    )),
-    try2(testthat::expect_true("longitude" %in% names(dimensions))),
-    try2(testthat::expect_equal(
-      ncdf4::ncatt_get(nc, "longitude", "units")[["value"]],
-      "degrees_east"
-    ))
+    assertthat::validate_that(is.list(dimensions)),
+    assertthat::validate_that(length(dimensions) == 3),
+    assertthat::validate_that("time" %in% names(dimensions)),
+    assertthat::validate_that(
+      grepl(time_regex, ncdf4::ncatt_get(nc, "time", "units")[["value"]])
+    ),
+    assertthat::validate_that("latitude" %in% names(dimensions)),
+    assertthat::validate_that(
+      ncdf4::ncatt_get(nc, "latitude", "units")[["value"]] == "degrees_north"
+    ),
+    assertthat::validate_that("longitude" %in% names(dimensions)),
+    assertthat::validate_that(
+      ncdf4::ncatt_get(nc, "longitude", "units")[["value"]] == "degrees_east"
+    )
   )
 
-  dim_errors_lgl <- purrr::map_lgl(test_dims, inherits, "try-error")
+  # validate_that returns TRUE on success, character on error
+  dim_errors_lgl <- !purrr::map_lgl(test_dims, isTRUE)
   dim_errors <- test_dims[dim_errors_lgl] %>%
-    purrr::map_chr(as.character) %>%
     paste(collapse = "\n\n")
 
   test_dims_summary <- tibble::tibble(
@@ -88,12 +76,17 @@ check_met_input_file <- function(metfile,
     )
   )
 
+  nonstring_to_missing <- function(x) {
+    if (is.character(x)) return(x)
+    NA_character_
+  }
+
   test_var_units <- tibble::tibble(
     test_type = "variable has correct units",
     target_variable = nc_vars,
     test_raw = purrr::map(nc_vars, check_unit, nc = nc, variable_table = variable_table),
-    test_passed = !purrr::map_lgl(.data$test_raw, inherits, "try-error"),
-    test_error_message = purrr::map_chr(.data$test_raw, purrr::possibly(as.character, NA_character_))
+    test_passed = purrr::map_lgl(.data$test_raw, isTRUE),
+    test_error_message = purrr::map_chr(.data$test_raw, nonstring_to_missing)
   ) %>% dplyr::select(-"test_raw")
 
   results_df <- dplyr::bind_rows(test_dims_summary, test_required_vars, test_var_units)
@@ -118,8 +111,7 @@ check_unit <- function(variable, nc, variable_table, warn_unknown = TRUE) {
     dplyr::filter(.data$cf_standard_name == variable) %>%
     dplyr::pull(units)
   ncvar_unit <- ncdf4::ncatt_get(nc, variable, "units")[["value"]]
-  try(testthat::expect_true(
-    PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit),
-    glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
-  ))
+  eq_units <- PEcAn.utils::units_are_equivalent(ncvar_unit, var_correct_unit)
+
+  eq_units || glue::glue("NetCDF unit '{ncvar_unit}' not equivalent to expected unit '{var_correct_unit}'.")
 }

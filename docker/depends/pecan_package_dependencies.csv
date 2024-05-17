@@ -6,6 +6,7 @@
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
+"assertthat","*","modules/data.atmosphere","Imports",FALSE
 "BayesianTools","*","modules/assim.batch","Imports",FALSE
 "BayesianTools","*","modules/rtm","Imports",FALSE
 "BioCro","*","models/biocro","Suggests",FALSE
@@ -32,7 +33,6 @@
 "data.table","*","base/utils","Suggests",FALSE
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
-"data.table","*","models/ldndc","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
@@ -259,6 +259,7 @@
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE
 "PEcAn.data.land","*","models/ed","Imports",TRUE
+"PEcAn.data.land","*","models/ldndc","Imports",TRUE
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
@@ -442,6 +443,7 @@
 "raster","*","modules/data.land","Suggests",FALSE
 "raster","*","modules/data.remote","Suggests",FALSE
 "rcrossref","*","base/db","Suggests",FALSE
+"readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
@@ -595,7 +597,7 @@
 "testthat",">= 2.0.0","base/utils","Suggests",FALSE
 "testthat",">= 2.0.0","models/biocro","Suggests",FALSE
 "testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
-"testthat",">= 2.0.0","modules/data.atmosphere","Imports",FALSE
+"testthat",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
@@ -640,6 +642,7 @@
 "withr","*","base/utils","Suggests",FALSE
 "withr","*","base/visualization","Suggests",FALSE
 "withr","*","base/workflow","Suggests",FALSE
+"withr","*","models/basgra","Suggests",FALSE
 "withr","*","models/ed","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
