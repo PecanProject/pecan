@@ -67,10 +67,11 @@ docker build \
 Example of a Dockerfile, in this case to build the ED2 model.
 
 ```dockerfile
+ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM debian:stretch as model-binary
+FROM pecan/models:${IMAGE_VERSION} as model-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git

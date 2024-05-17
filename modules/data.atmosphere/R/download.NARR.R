@@ -8,7 +8,7 @@
 ##' @param end_date desired end date YYYY-MM-DD
 ##' @param ... other inputs
 ##' example options(download.ftp.method="ncftpget")
-##' @importFrom magrittr %>%
+##' @importFrom dplyr %>%
 ##' 
 ##' @examples
 ##' \dontrun{
