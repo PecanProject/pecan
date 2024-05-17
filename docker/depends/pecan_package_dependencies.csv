@@ -33,7 +33,6 @@
 "data.table","*","base/utils","Suggests",FALSE
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
-"data.table","*","models/ldndc","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
