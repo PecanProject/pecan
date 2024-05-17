@@ -73,6 +73,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   cpruncmd <- cpoutcmd <- rmoutdircmd <- rmrundircmd <- ""
   if (!is.null(settings$host$rabbitmq)) {
     #rsync cmd from remote to local host.
+    settings$host$rabbitmq$cpfcmd <- if(settings$host$rabbitmq$cpfcmd == NULL) "" else settings$host$rabbitmq$cpfcmd 
     cpruncmd <- gsub("@OUTDIR@", settings$host$rundir, settings$host$rabbitmq$cpfcmd)
     cpruncmd <- gsub("@OUTFOLDER@", rundir, cpruncmd)
     
@@ -102,12 +103,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
   
-  if(!identical(cpruncmd, character(0))) {
-    jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
-  }
-  if(!identical(cpoutcmd, character(0))) {     
-    jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
-  }
+  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
   jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
   jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
   
