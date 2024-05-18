@@ -2,6 +2,9 @@ import os
 import re
 import csv
 
+# Define Working Directory, i.e, '/pecan
+main_dir = os.getcwd()
+
 # Define a list of color codes for printing. THis proves to be useful for distinction during debugging
 color_codes = [
     "\033[30m",  # BLACK-0
@@ -30,9 +33,9 @@ ignored_modules = ["data.hydrology", "DART"]
 
 # Function to get the list of modules
 def get_module_list():
-    module_dir = os.path.join(main_dir,"modules")
+    module_dir = os.path.join(main_dir, "modules")
     modules = os.listdir(module_dir)
-    return [module for module in modules if module not in ignored_modules]
+    return [module for module in modules if module not in ignored_modules and not module.startswith('.')]
 
 # List of modules to check for orphaned functions
 module_list = get_module_list()
@@ -42,8 +45,6 @@ module_list = get_module_list()
 # List_2: Functions that are utilized externally
 list_1 = []
 list_2 = []
-
-main_dir = os.getcwd()
 
 
 # Define a function to list all functions in a module
@@ -199,6 +200,7 @@ def main():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     modules_dir = os.path.join(script_dir, "..", "modules")
 
+    print(f"{color_codes[2]}Modules List: {module_list}{ENDC}")
     # Iterate over all modules
     for module_name in module_list:
 
