@@ -33,7 +33,6 @@
 "data.table","*","base/utils","Suggests",FALSE
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
-"data.table","*","models/ldndc","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
@@ -260,6 +259,7 @@
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE
 "PEcAn.data.land","*","models/ed","Imports",TRUE
+"PEcAn.data.land","*","models/ldndc","Imports",TRUE
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
@@ -443,6 +443,7 @@
 "raster","*","modules/data.land","Suggests",FALSE
 "raster","*","modules/data.remote","Suggests",FALSE
 "rcrossref","*","base/db","Suggests",FALSE
+"readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
