@@ -25,25 +25,17 @@ color_codes = [
 # Reset
 ENDC = "\033[0m"
 
-# List of modules to check for orphaned functions
-# Modules Not included : data.hydrology, DART due to differing file structures. Script should be enhanced further to remove this limitation.
-module_list = [
-    "assim.batch",
-    "assim.sequential",
-    "data.remote",
-    "photosynthesis",
-    "uncertainty",
-    "allometry",
-    "benchmark",
-    "data.land",
-    "emulator",
-    "priors",
-    "data.atmosphere",
-    "meta.analysis",
-    "rtm",
-]
-
+# Modules to ignore while checking for orphaned functions
 ignored_modules = ["data.hydrology", "DART"]
+
+# Function to get the list of modules
+def get_module_list():
+    module_dir = os.path.join(main_dir,"modules")
+    modules = os.listdir(module_dir)
+    return [module for module in modules if module not in ignored_modules]
+
+# List of modules to check for orphaned functions
+module_list = get_module_list()
 
 # Initialize two lists to store the orphaned functions
 # List_1: Purely orphaned functions
