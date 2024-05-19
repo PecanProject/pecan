@@ -164,7 +164,7 @@ def is_function_utilized_externally(function_name, module_name):
     return False
 
 
-def print_in_batches(list_to_print, label):
+def print_in_batches(list_to_print):
     # print(label)
     color_index = 0  # Start with the first color
     for i in range(0, len(list_to_print), 5):
