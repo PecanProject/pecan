@@ -83,7 +83,18 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   options(scipen = 12)
 
   PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
-  load(file.path(settings$outdir, "samples.Rdata")) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
+  samples.file <- file.path(settings$outdir, "samples.Rdata")
+  if (file.exists(samples.file)) {
+    samples <- new.env()
+    load(samples.file, envir = samples) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
+    trait.samples <- samples$trait.samples
+    ensemble.samples <- samples$ensemble.samples
+    sa.samples <- samples$sa.samples
+    runs.samples <- samples$runs.samples
+    ## env.samples <- samples$env.samples
+  } else {
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+  }
   
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {

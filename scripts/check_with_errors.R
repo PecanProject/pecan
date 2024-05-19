@@ -7,6 +7,8 @@ log_level <- Sys.getenv("LOGLEVEL", unset = NA)
 die_level <- Sys.getenv("DIELEVEL", unset = NA)
 redocument <- as.logical(Sys.getenv("REBUILD_DOCS", unset = NA))
 runtests <- as.logical(Sys.getenv("RUN_TESTS", unset = TRUE))
+resave <- as.logical(Sys.getenv("RESAVE_CHECKS", unset = FALSE))
+if (resave) die_level <- "never"
 
 old_file <- file.path(pkg, "tests", "Rcheck_reference.log")
 if (file.exists(old_file)) {
@@ -71,7 +73,7 @@ if (log_notes && n_notes > 0) {
 # such that it's not yet practical to break the build on every warning.
 # Cleaning this up is a long-term goal, but will take time.
 # Meanwhile, we compare against a cached historic check output to enforce that
-# no *new* warnings are added. As historic warnings are removed, we will update
+# no *new* warnings are added. As historic warnings are removed, we update
 # the cached results to ensure they stay gone.
 #
 # To compare checks, we take a two-level approach:
@@ -83,25 +85,50 @@ if (log_notes && n_notes > 0) {
 ###
 # To update reference files after fixing an old warning:
 # * Run check_with_errors.R to be sure the check is currently passing
-# * Delete the file you want to update
-# * Uncomment this section
-# * run `DIELEVEL=never Rscript scripts/check_with_errors.R path/to/package`
-# * recomment this section
-# * Commit updated file
-# if (!file.exists(old_file)) {
-#     cat("No reference check file found. Saving current results as the new standard\n")
-#     cat(chk$stdout, file = old_file)
-#     quit("no")
-# }
+# * run `RESAVE_CHECKS=true Rscript scripts/check_with_errors.R path/to/package`
+# * Commit updated <pkgname>/tests/Rcheck_reference.log file
+new_file <- file.path(chk$checkdir, "00check.log")
+if (resave) {
+    cat("Saving current check results as the new standard\n")
+    if (file.exists(old_file)) {
+        cat("**Overwriting** existing saved check output\n")
+    }
+    file.copy(from = new_file, to = old_file, overwrite = TRUE)
+    quit("no")
+}
 ###
 
 # everything beyond this point is comparing to old version
-if (!file.exists(old_file)) {
+if (!file.exists(old_file) || sum(n_errors, n_warns, n_notes) == 0) {
     quit("no")
 }
 
 old <- rcmdcheck::parse_check(old_file)
+
+# "Why reread instead of just using the existing `chk` object?"
+# Because newer versions of rcmdcheck insert timestamps into stdout
+#   (e.g. `checking R code for possible problems ... [41s/17s] NOTE`).
+# It ignores them for its whole-warning checks, but they cause spurious
+#   mismatches in our line-by-line comparison.
+# Rereading the raw R CMD check output from disk should give a more
+#   stable format for comparison.
+chk <- rcmdcheck::parse_check(new_file)
+
 cmp <- rcmdcheck::compare_checks(old, chk)
+
+collapse_title <- function(x) {
+
+    # Remove "[14s/16s]" timestamp from title line, if present
+    # modified from https://github.com/r-lib/rcmdcheck/issues/128
+    x[[1]] <- gsub(
+        "\\[[0-9]+s(/[0-9]+s)?\\] ?", "", x[[1]], useBytes=TRUE)
+
+    if (length(x) > 1) {
+        paste(x[[1]], x[-1], sep = ": ")
+    } else {
+        x
+    }
+}
 
 msg_lines <- function(msg) {
     # leading double-space indicates wrapped line -> rejoin
@@ -112,15 +139,7 @@ msg_lines <- function(msg) {
     msg <- lapply(msg, function(x)x[x != ""])
 
     # prepend message title (e.g. "checking Rd files ... NOTE") to each line
-    unlist(lapply(
-        msg,
-        function(x) {
-            if (length(x) > 1) {
-                paste(x[[1]], x[-1], sep = ": ")
-            } else {
-                x
-            }
-        }))
+    unlist(lapply(msg, collapse_title))
 }
 
 if (cmp$status != "+") {

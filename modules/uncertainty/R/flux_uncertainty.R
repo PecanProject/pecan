@@ -160,7 +160,7 @@ plot_flux_uncertainty <- function(f, ...) {
 
 
 plot.oechel.flux <- function(observations, site) {
-  par(mfrow = c(2, 2))
+  graphics::par(mfrow = c(2, 2))
   # only use data from March 1 through November 1
   observations <- observations[observations$DOY > 60 & observations$DOY < 305, ]
   

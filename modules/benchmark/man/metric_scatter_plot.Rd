@@ -12,7 +12,13 @@ metric_scatter_plot(
 )
 }
 \arguments{
-\item{draw.plot}{}
+\item{metric_dat}{dataframe to plot, with at least columns `model` and `obvs`}
+
+\item{var}{ignored}
+
+\item{filename}{path to save plot, or NA to not save}
+
+\item{draw.plot}{logical: Return the plot object?}
 }
 \description{
 Scatter Plot

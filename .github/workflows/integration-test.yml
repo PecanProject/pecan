@@ -1,0 +1,31 @@
+name : Integration Tests
+on :
+  # allow manual triggering
+  workflow_dispatch:
+
+  schedule:
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'    
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    
+    container: 
+      image: pecan/base:develop
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Run tests
+      run: |
+        for FILE in modules/data.atmosphere/inst/integrationTests/*; do
+          if echo "$FILE" | grep -q "ERA5"; then
+            echo "Skipping file : $FILE"
+          else
+            Rscript "$FILE"
+          fi
+        done

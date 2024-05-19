@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ldndcsetup>
+    <!-- setup id -->
+    <setup id="0" name="site" >
+      <!-- geographical location -->
+      <location elevation='@elevation@' latitude='@latitude@' longitude='@longitude@' />
+      <models>
+        <model id="_MoBiLE" />
+        </models>
+          <mobile>
+            <!-- model selection -->
+            <modulelist>
+		        <module id="microclimate:@microclimate@" timemode='@timemode@' />
+          		<module id="watercycle:@watercycle@" timemode='@timemode@' >
+          		  <options potentialevapotranspiration='@pevapotrans@' />
+			</module>
+			<module id="airchemistry:@airchemistry@" timemode='@timemode@' />
+          		<module id="physiology:@physiology@" timemode='@timemode@' >
+			  <options plantfamilies='@plantfamilies@' />
+			</module>
+          		<module id="soilchemistry:@soilchemistry@" timemode='@timemode@' />
+
+			    <!-- outputs -->
+		        <module id="output:microclimate:daily" />
+		        <module id="output:watercycle:subdaily" />
+		        <module id="output:physiology:subdaily" />
+		        <module id="output:vegstructure:daily" />
+		        <module id="output:soilchemistry:subdaily" />
+		        '@reportarable@'
+          </modulelist>
+        </mobile>
+    </setup>
+</ldndcsetup>

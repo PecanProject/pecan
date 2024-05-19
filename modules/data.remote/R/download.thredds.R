@@ -69,7 +69,7 @@ download.thredds.AGB <- function(outdir = NULL, site_ids, run_parallel = FALSE,
     # option to save output dataset to directory for user.
     if (!(is.null(outdir)))
     {
-      write.csv(output, file = paste0(outdir, "THREDDS_", sub("^([^.]*).*", "\\1",basename(files[1])), "_site_", site, ".csv"), row.names = FALSE)
+      utils::write.csv(output, file = paste0(outdir, "THREDDS_", sub("^([^.]*).*", "\\1",basename(files[1])), "_site_", site, ".csv"), row.names = FALSE)
     }
     
     return(output)
@@ -82,12 +82,12 @@ download.thredds.AGB <- function(outdir = NULL, site_ids, run_parallel = FALSE,
     } else {
       ncores <- parallel::detectCores() -1
     }
-    require(doParallel)
+  
     PEcAn.logger::logger.info(paste0("Running in parallel with: ", ncores))
     cl = parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl)
-    data = foreach(i = seq_along(mylat), .combine = rbind) %dopar% get_data(i)
-    stopCluster(cl)
+    data = foreach::foreach(i = seq_along(mylat), .combine = rbind) %dopar% get_data(i)
+    parallel::stopCluster(cl)
     
   } else {
     # setup sequential run

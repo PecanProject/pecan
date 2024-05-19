@@ -2,11 +2,7 @@
 % Please edit documentation in R/other.helpers.ED2.R
 \name{list.files.nodir}
 \alias{list.files.nodir}
-\title{List only files in a directory
-
-Mostly useful when \code{recursive} and \code{full.names} are both FALSE:
-The current implementation sets \code{full.names} internally, and for recursive
-listings \code{list.files(..., include.dirs = FALSE)} is equivalent and faster.}
+\title{List only files in a directory}
 \usage{
 list.files.nodir(path, ...)
 }
@@ -16,8 +12,6 @@ list.files.nodir(path, ...)
 \item{...}{arguments passed on to base::list.files}
 }
 \description{
-List only files in a directory
-
 Mostly useful when \code{recursive} and \code{full.names} are both FALSE:
 The current implementation sets \code{full.names} internally, and for recursive
 listings \code{list.files(..., include.dirs = FALSE)} is equivalent and faster.

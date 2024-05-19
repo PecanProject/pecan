@@ -1,0 +1,57 @@
+#
+# Add project labels
+#
+
+# Add 'Documentation' label to any changes in the documentation
+
+'Documentation':
+  - book_source/**
+  - documentation/**
+  - CONTRIBUTING.md
+  - DEBUGING.md
+  - DEV-INTRO.md
+  - README.md
+
+# Add 'Dockerfile' label to any changes in the docker directory
+'Dockerfile':
+  - docker/**
+
+
+# Add 'Website' label to any changes in the web directory
+
+'Website':
+  - web/**
+
+# Add 'Base' label to any changes in the base directory
+
+'Base':
+  - base/**
+
+# Add 'Models' label to any changes in the models directory
+
+'Models':
+  - models/**
+
+# Add 'Modules' label to any changes in the modules directory
+
+'Modules':
+  - modules/**
+
+# Add 'GitHub Actions' label to any changes in the .github/workflows directory
+
+'GitHub Actions':
+  - .github/workflows/**
+
+# Add 'Scripts' label to any changes in the scripts directory
+
+'Scripts':
+  - scripts/**
+
+# Add 'Tests' label to any changes in the tests directory
+
+'Tests':
+  - tests/**
+  - '**/tests/**'
+  - '!**/tests/Rcheck_reference.log'
+
+

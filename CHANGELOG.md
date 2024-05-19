@@ -44,6 +44,7 @@ see if you need to change any of these:
 - Added new features of the SDA function including: 1) allow user-defined free-run mode; 
 2) allow user-defined parallel mode for the qsub submission; 3) allow user-defined email option to report the progress.
 - The analysis function now supports the parallelization of multi-chain MCMC sampling with the fully randomized inits function.
+- Added the new feature of the block-based SDA workflow, which supports the parallel computation.
 
 ### Fixed
 
@@ -107,6 +108,7 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - Internal changes to keep up to date with tidyselect v1.2.0
 - The `PEcAn.utils::download.file()` function has now been renamed to `PEcAn.utils::download_file()`
 - The `regrid()` and `grid2netcdf()` function from `PEcAn.utils` have been moved to `PEcAn.data.remote` package.
+- Web is now build using PHP 8 since PHP 7 is EOL.
 
 ### Removed
 

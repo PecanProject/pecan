@@ -10,7 +10,6 @@
 #' @return A data frame containing AGB median and sd for each site and each time step.
 #' @export
 #'
-#' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points, 
@@ -31,12 +30,14 @@ Soilgrids_SoilC_prep <- function(site_info, start_date, end_date, time_points,
     SoilC_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_TotSoilCarb"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, agb, sd, target time point.
     SoilC_Output$site_id <- site_info$site_id
-    
     #loop over time and site
     for (i in seq_along(time_points)) {
       t <- time_points[i]
       for (id in site_info$site_id) {
         site_SoilC <- Previous_CSV[which(Previous_CSV$Site_ID == id),]
+        if (dim(site_SoilC)[1] == 0) {
+          next
+        }
         SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_TotSoilCarb")] <- site_SoilC$Total_soilC_0.200cm
         SoilC_Output[which(SoilC_Output$site_id==id), paste0(t, "_SD")] <- site_SoilC$Std_soilC_0.200cm
       }
