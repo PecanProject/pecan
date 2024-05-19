@@ -91,6 +91,7 @@ def list_functions_in_module(module_path):
     # print(color_codes[13] + "Function names:", function_names, "\n", ENDC)
     # print(color_codes[2] + "Length of function List", len(function_names), "\n", ENDC)
 
+    function_names = [name for name in function_names if "error" not in name.lower()]
     return function_names
 
 
