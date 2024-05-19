@@ -29,7 +29,7 @@ color_codes = [
 ENDC = "\033[0m"
 
 # Modules to ignore while checking for orphaned functions
-MODULES_TO_IGNORE = ["data.hydrology", "DART"]
+MODULES_TO_IGNORE = ["data.hydrology", "DART", "data.mining"]
 
 
 # Function to get the list of modules
@@ -64,7 +64,12 @@ def list_functions_in_module(module_path):
     Returns:
     list: A list of function names defined in the module.
     """
-    function_pattern = re.compile(r"\b([a-zA-Z_]\w*(?:\.\w+)*)\s*<-\s*function")
+
+    if not os.path.exists(module_path):
+        print(f"{color_codes[1]}Error: The directory {module_path} does not exist.{ENDC}")
+        return []
+    
+    function_pattern = re.compile(r"\b([a-zA-Z_]\w*(?:\.\w+)*)\s*(?:<-\s*function|\s*=\s*function)")
     function_names = []
 
     # Get all R files in the module_path
@@ -134,7 +139,6 @@ def is_function_utilized_externally(function_name, module_name):
     Returns:
     bool: True if the function is utilized externally, False otherwise.
     """
-    function_pattern = re.compile(r"\b" + re.escape(function_name) + r"\b")
     func_location_module = os.path.join(main_dir, "modules", module_name)
     search_directories = [
         "modules",
@@ -149,20 +153,14 @@ def is_function_utilized_externally(function_name, module_name):
 
     for directory in search_directories:
         complete_dir_path = os.path.join(main_dir, directory)
-        for root, dirs, files in os.walk(complete_dir_path):
-            if root.__contains__(func_location_module) or root.__contains__("/man"):
-                # print(f"{color_codes[13]} Skipping the module directory {root}{ENDC}")
+        for MODULE_DIRECTORY_PATH, dirs, R_files in os.walk(complete_dir_path):
+            if MODULE_DIRECTORY_PATH.__contains__(func_location_module) or MODULE_DIRECTORY_PATH.__contains__("/man"):
+                # print(f"{color_codes[13]} Skipping the module directory {MODULE_DIRECTORY_PATH}{ENDC}")
                 continue
             else:
-                # print(f"{color_codes[14]} Searching for the function in the directory {root}{ENDC}")
-                for file in files:
-                    if file.endswith(".R"):
-                        file_path = os.path.join(root, file)
-                        with open(file_path, "r") as file:
-                            file_content = file.read()
-                            if function_pattern.search(file_content):
-                                # print(f'{color_codes[12]} Function "{function_name}" is utilized EXTERNALLY in file: {file_path}{ENDC}')
-                                return True
+                if is_function_utilized_within_module(function_name, MODULE_DIRECTORY_PATH):
+                    # print(f'{color_codes[12]} Function "{function_name}" is utilized EXTERNALLY in module: {MODULE_DIRECTORY_PATH}{ENDC}')
+                    return True
     return False
 
 
@@ -191,7 +189,8 @@ def add_to_csv(purely_orphaned_functions, externally_utilized_functions, csv_fil
             writer.writerow(["", module, function])
 
         # Writing the header for externally_utilized_functions
-        writer.writerow(["Externally Utilized Orphaned Functions"])
+        writer.writerow(["","",""]) # Writing an empty row for better readability
+        writer.writerow(["Externally Utilized Orphaned Functions", "module", "function_name"])
 
         # Writing data from externally_utilized_functions
         for func, module in externally_utilized_functions:
@@ -203,7 +202,6 @@ def main():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     modules_dir = os.path.join(script_dir, "..", "modules")
 
-    print(f"{color_codes[2]}Modules List: {MODULES_LIST}{ENDC}")
     # Iterate over all modules
     for module_name in MODULES_LIST:
 
