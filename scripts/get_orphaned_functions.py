@@ -207,21 +207,21 @@ def main():
     for module_name in MODULES_LIST:
 
         # Construct the path to the R directory of the module
-        module_r_code_path = os.path.join(modules_dir, module_name, "R")
+        MODULE_R_DIRECTORY_PATH = os.path.join(modules_dir, module_name, "R")
 
         # Print the module name and path
         # print(color_codes[1] + "Processing module:", module_name, "\n", ENDC)
-        # print(color_codes[6] + "Module path:", module_r_code_path, "\n", ENDC)
+        # print(color_codes[6] + "Module path:", MODULE_R_DIRECTORY_PATH, "\n", ENDC)
 
         # List all functions in the module
-        functions = list_functions_in_module(module_r_code_path)
+        functions = list_functions_in_module(MODULE_R_DIRECTORY_PATH)
 
         # Check if each function is utilized within the module
         for function_name in functions:
 
             # Check if the function is utilized within the module
             if not is_function_utilized_within_module(
-                function_name, module_r_code_path
+                function_name, MODULE_R_DIRECTORY_PATH
             ):
                 # Function is not utilized within the module. Add to purely_orphaned_functions
                 purely_orphaned_functions.append((module_name, function_name))
