@@ -283,6 +283,8 @@ services:
   # PEcAn DB Sync visualization
   dbsync:
     image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
+    volumes:
+      -  /home/hogrady2/shiny-server:/etc/shiny-server
     restart: unless-stopped
     networks:
       - pecan
@@ -324,6 +326,7 @@ services:
 # ----------------------------------------------------------------------
 networks:
   pecan:
+    enable_ipv6: false
 
 # ----------------------------------------------------------------------
 # Volumes used by the PEcAn stack. These volumes are used to make sure
