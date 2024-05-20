@@ -318,7 +318,6 @@
 "PEcAn.logger","*","modules/assim.sequential","Imports",TRUE
 "PEcAn.logger","*","modules/benchmark","Imports",TRUE
 "PEcAn.logger","*","modules/data.atmosphere","Imports",TRUE
-"PEcAn.logger","*","modules/data.hydrology","Imports",TRUE
 "PEcAn.logger","*","modules/data.land","Imports",TRUE
 "PEcAn.logger","*","modules/data.remote","Imports",TRUE
 "PEcAn.logger","*","modules/meta.analysis","Imports",TRUE
@@ -395,7 +394,6 @@
 "PEcAn.utils","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.utils","*","modules/benchmark","Imports",TRUE
 "PEcAn.utils","*","modules/data.atmosphere","Imports",TRUE
-"PEcAn.utils","*","modules/data.hydrology","Imports",TRUE
 "PEcAn.utils","*","modules/data.land","Imports",TRUE
 "PEcAn.utils","*","modules/data.remote","Imports",TRUE
 "PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
@@ -513,7 +511,6 @@
 "roxygen2","== 7.2.3","modules/assim.sequential","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/benchmark","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.atmosphere","Roxygen",FALSE
-"roxygen2","== 7.2.3","modules/data.hydrology","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.land","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.remote","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/emulator","Roxygen",FALSE
@@ -586,7 +583,6 @@
 "testthat",">= 1.0.2","models/template","Suggests",FALSE
 "testthat",">= 1.0.2","modules/allometry","Suggests",FALSE
 "testthat",">= 1.0.2","modules/assim.batch","Suggests",FALSE
-"testthat",">= 1.0.2","modules/data.hydrology","Suggests",FALSE
 "testthat",">= 1.0.2","modules/data.land","Suggests",FALSE
 "testthat",">= 1.0.2","modules/data.remote","Suggests",FALSE
 "testthat",">= 1.0.2","modules/meta.analysis","Suggests",FALSE
