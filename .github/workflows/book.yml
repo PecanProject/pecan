@@ -5,13 +5,11 @@ on:
     branches:
       - master
       - develop
-
     tags:
       - '*'
-
   pull_request:
-
   merge_group:
+  workflow_dispatch:
 
 jobs:
   bookdown:
@@ -24,11 +22,13 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v3
-    # install rmarkdown
-    - name: Install rmarkdown
+    - uses: actions/checkout@v4
+    # install bookdown
+    - name: Install bookdown
       run: |
-        Rscript -e 'install.packages(c("rmarkdown","bookdown"))'
+        Rscript \
+          -e 'repos <- c(getOption("repos"), sub(r"(\d{4}-\d{2}-\d{2})", "latest", getOption("repos")))' \
+          -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)'
     # copy files
     - name: copy extfiles
       run: |
@@ -53,7 +53,7 @@ jobs:
     # download documentation repo
     - name: Checkout documentation repo
       if: github.event_name == 'push'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation

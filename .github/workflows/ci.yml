@@ -8,14 +8,12 @@ on:
 
     tags:
       - '*'
-
   pull_request:
-
   merge_group:
-
   issue_comment:
     types:
       - created
+  workflow_dispatch:
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
@@ -25,67 +23,21 @@ env:
   CI: true
 
 jobs:
-  # ----------------------------------------------------------------------
-  # R TEST
-  # ----------------------------------------------------------------------
   test:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
     strategy:
       fail-fast: false
       matrix:
         R:
           - "4.2"
           - "4.1"
+    uses: ./.github/workflows/test.yml
+    with:
+      R-version: ${{ matrix.R }}
+    secrets: inherit
 
-    services:
-      postgres:
-        image: mdillon/postgis:9.5
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - name: work around https://github.com/actions/checkout/issues/766
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
-      with:
-        set-safe-directory: false
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: update dependency lists
-      run: Rscript scripts/generate_dependencies.R
-    - name: check for out-of-date dependencies files
-      uses: infotroph/tree-is-clean@v1
-    - name: install newly-added dependencies
-      run: Rscript docker/depends/pecan.depends.R
-
-    # initialize database
-    - name: db setup
-      uses: docker://pecan/db:ci
-    - name: add models to db
-      run: ./scripts/add.models.sh
-
-    # run PEcAn tests
-    - name: test
-      run: make -j1 test
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
-
-  # ----------------------------------------------------------------------
-  # R CHECK
-  # ----------------------------------------------------------------------
   check:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -93,115 +45,21 @@ jobs:
         R:
           - "4.2"
           - "4.1"
+    uses: ./.github/workflows/check.yml
+    with:
+      R-version: ${{ matrix.R }}
+      make-grouping: ${{ matrix.package }}
+    secrets: inherit
 
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      _R_CHECK_LENGTH_1_CONDITION_: true
-      _R_CHECK_LENGTH_1_LOGIC2_: true
-      # Avoid compilation check warnings that come from the system Makevars
-      # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
-      _R_CHECK_COMPILATION_FLAGS_KNOWN_: -Wformat -Werror=format-security -Wdate-time
-      # Keep R checks from trying to consult the very flaky worldclockapi.com
-      _R_CHECK_SYSTEM_CLOCK_: 0
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - name: work around https://github.com/actions/checkout/issues/766
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
-      with:
-        set-safe-directory: false
-
-    # Forbid spaces in names. Yes, *we* know it's not 1980 anymore, but Make doesn't.
-    - name: check for filenames that would confuse Make
-      run: |
-        SPACENAMES=`find . -name '* *'`
-        if [ -n "$SPACENAMES" ]; then
-          echo "::error file=${SPACENAMES}::Spaces in filename(s): ${SPACENAMES}. Please rename these files by converting spaces to underscores."
-          exit 1
-        fi
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-
-    # run PEcAn checks
-    # The package names of base, modules, and models are passed as matrix variables to avoid repeatability of code
-    - name: check
-      run: make -j1 ${{ matrix.package }}
-      env:
-        REBUILD_DOCS: "FALSE"
-        RUN_TESTS: "FALSE"
-
-    - name: check for out-of-date files
-      uses: infotroph/tree-is-clean@v1
-
-
-  # ----------------------------------------------------------------------
-  # SIPNET TESTS
-  # ----------------------------------------------------------------------
   sipnet:
     if: github.event_name != 'issue_comment' || startsWith(github.event.comment.body, '/build')
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
     strategy:
       fail-fast: false
       matrix:
         R:
           - "4.2"
           - "4.1"
-
-    services:
-      postgres:
-        image: mdillon/postgis:9.5
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    container: 
-      image: pecan/depends:R${{ matrix.R }}
-
-    steps:
-    # checkout source code
-    - name: work around https://github.com/actions/checkout/issues/766
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v3
-      with:
-        set-safe-directory: false
-
-    # install additional tools needed
-    - name: install utils
-      run: apt-get update && apt-get install -y postgresql-client qpdf
-    - name: install new dependencies
-      run: Rscript scripts/generate_dependencies.R && Rscript docker/depends/pecan.depends.R
-
-    # initialize database
-    - name: db setup
-      uses: docker://pecan/db:ci
-    - name: add models to db
-      run: ./scripts/add.models.sh
-
-    # install sipnet
-    - name: Check out SIPNET
-      uses: actions/checkout@v3
-      with:
-        repository: PecanProject/sipnet
-        path: sipnet
-        set-safe-directory: false
-    - name: install sipnet
-      run: |
-        cd ${GITHUB_WORKSPACE}/sipnet
-        make
-
-    # compile PEcAn code
-    - name: build
-      run: make -j1
-
-    # run SIPNET test
-    - name: integration test
-      run: ./tests/integration.sh ghaction
+    uses: ./.github/workflows/sipnet.yml
+    with:
+      R-version: ${{ matrix.R }}
+    secrets: inherit

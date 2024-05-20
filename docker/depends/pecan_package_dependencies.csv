@@ -1,0 +1,663 @@
+"package","version","needed_by_dir","type","is_pecan"
+"abind","*","modules/assim.batch","Imports",FALSE
+"abind",">= 1.4.5","base/utils","Imports",FALSE
+"abind",">= 1.4.5","models/ed","Imports",FALSE
+"abind",">= 1.4.5","modules/data.atmosphere","Imports",FALSE
+"amerifluxr","*","modules/data.atmosphere","Imports",FALSE
+"arrow","*","modules/data.atmosphere","Imports",FALSE
+"assertthat","*","models/ed","Imports",FALSE
+"assertthat","*","modules/data.atmosphere","Imports",FALSE
+"BayesianTools","*","modules/assim.batch","Imports",FALSE
+"BayesianTools","*","modules/rtm","Imports",FALSE
+"BioCro","*","models/biocro","Suggests",FALSE
+"bit64","*","base/db","Suggests",FALSE
+"BrownDog","*","modules/benchmark","Suggests",FALSE
+"coda","*","models/maespa","Suggests",FALSE
+"coda","*","models/sipnet","Suggests",FALSE
+"coda","*","modules/assim.sequential","Imports",FALSE
+"coda","*","modules/data.land","Imports",FALSE
+"coda","*","modules/rtm","Imports",FALSE
+"coda",">= 0.18","base/utils","Suggests",FALSE
+"coda",">= 0.18","modules/allometry","Imports",FALSE
+"coda",">= 0.18","modules/assim.batch","Imports",FALSE
+"coda",">= 0.18","modules/emulator","Imports",FALSE
+"coda",">= 0.18","modules/meta.analysis","Imports",FALSE
+"coda",">= 0.18","modules/photosynthesis","Imports",FALSE
+"corrplot","*","modules/assim.sequential","Suggests",FALSE
+"curl","*","base/db","Imports",FALSE
+"curl","*","base/utils","Imports",FALSE
+"curl","*","modules/data.atmosphere","Imports",FALSE
+"curl","*","modules/data.land","Imports",FALSE
+"curl","*","modules/data.remote","Imports",FALSE
+"data.table","*","base/db","Suggests",FALSE
+"data.table","*","base/utils","Suggests",FALSE
+"data.table","*","base/visualization","Imports",FALSE
+"data.table","*","models/biocro","Imports",FALSE
+"data.table","*","modules/data.remote","Suggests",FALSE
+"dataone","*","modules/data.land","Suggests",FALSE
+"datapack","*","modules/data.land","Imports",FALSE
+"DBI","*","base/db","Imports",FALSE
+"DBI","*","modules/data.remote","Imports",FALSE
+"dbplyr",">= 2.4.0","base/db","Imports",FALSE
+"devtools","*","models/ed","Suggests",FALSE
+"doParallel","*","modules/data.atmosphere","Suggests",FALSE
+"doParallel","*","modules/data.remote","Imports",FALSE
+"doSNOW","*","base/remote","Suggests",FALSE
+"dplR","*","modules/data.land","Imports",FALSE
+"dplyr","*","base/qaqc","Imports",FALSE
+"dplyr","*","base/remote","Imports",FALSE
+"dplyr","*","base/utils","Imports",FALSE
+"dplyr","*","base/workflow","Imports",FALSE
+"dplyr","*","models/biocro","Imports",FALSE
+"dplyr","*","models/ed","Imports",FALSE
+"dplyr","*","models/ldndc","Imports",FALSE
+"dplyr","*","models/stics","Imports",FALSE
+"dplyr","*","modules/assim.sequential","Imports",FALSE
+"dplyr","*","modules/benchmark","Imports",FALSE
+"dplyr","*","modules/data.land","Imports",FALSE
+"dplyr","*","modules/data.remote","Suggests",FALSE
+"dplyr","*","modules/uncertainty","Imports",FALSE
+"dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
+"dplyr",">= 1.1.2","base/db","Imports",FALSE
+"ellipse","*","modules/assim.batch","Imports",FALSE
+"emdbook","*","modules/assim.sequential","Suggests",FALSE
+"foreach","*","base/remote","Imports",FALSE
+"foreach","*","modules/data.atmosphere","Suggests",FALSE
+"foreach","*","modules/data.remote","Imports",FALSE
+"fs","*","base/db","Imports",FALSE
+"fs","*","modules/data.land","Imports",FALSE
+"furrr","*","base/remote","Imports",FALSE
+"furrr","*","modules/assim.sequential","Imports",FALSE
+"furrr","*","modules/data.atmosphere","Suggests",FALSE
+"furrr","*","modules/data.land","Imports",FALSE
+"furrr","*","modules/data.remote","Imports",FALSE
+"future","*","modules/assim.sequential","Imports",FALSE
+"future","*","modules/data.atmosphere","Suggests",FALSE
+"future","*","modules/data.land","Imports",FALSE
+"future","*","modules/data.remote","Imports",FALSE
+"geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
+"getPass","*","base/remote","Suggests",FALSE
+"ggmcmc","*","modules/meta.analysis","Suggests",FALSE
+"ggplot2","*","base/utils","Suggests",FALSE
+"ggplot2","*","base/visualization","Imports",FALSE
+"ggplot2","*","modules/assim.sequential","Imports",FALSE
+"ggplot2","*","modules/benchmark","Imports",FALSE
+"ggplot2","*","modules/data.atmosphere","Imports",FALSE
+"ggplot2","*","modules/data.remote","Suggests",FALSE
+"ggplot2","*","modules/meta.analysis","Suggests",FALSE
+"ggplot2","*","modules/priors","Imports",FALSE
+"ggplot2","*","modules/uncertainty","Imports",FALSE
+"ggpubr","*","modules/assim.sequential","Suggests",FALSE
+"ggrepel","*","modules/assim.sequential","Suggests",FALSE
+"glue","*","base/db","Imports",FALSE
+"glue","*","models/ed","Imports",FALSE
+"glue","*","modules/assim.sequential","Suggests",FALSE
+"glue","*","modules/data.atmosphere","Imports",FALSE
+"glue","*","modules/data.remote","Imports",FALSE
+"graphics","*","base/qaqc","Imports",FALSE
+"graphics","*","modules/allometry","Imports",FALSE
+"graphics","*","modules/assim.batch","Imports",FALSE
+"graphics","*","modules/photosynthesis","Imports",FALSE
+"grDevices","*","modules/allometry","Imports",FALSE
+"grDevices","*","modules/assim.batch","Imports",FALSE
+"grDevices","*","modules/benchmark","Imports",FALSE
+"grid","*","base/visualization","Suggests",FALSE
+"gridExtra","*","modules/assim.sequential","Suggests",FALSE
+"gridExtra","*","modules/benchmark","Imports",FALSE
+"gridExtra","*","modules/uncertainty","Imports",FALSE
+"hdf5r","*","models/ed","Imports",FALSE
+"here","*","base/db","Suggests",FALSE
+"httr","*","base/remote","Imports",FALSE
+"httr","*","modules/data.atmosphere","Imports",FALSE
+"httr","*","modules/data.land","Imports",FALSE
+"IDPmisc","*","modules/assim.batch","Imports",FALSE
+"jsonlite","*","base/remote","Imports",FALSE
+"jsonlite","*","models/stics","Imports",FALSE
+"jsonlite","*","modules/data.atmosphere","Imports",FALSE
+"knitr",">= 1.42","base/db","Suggests",FALSE
+"knitr",">= 1.42","base/qaqc","Suggests",FALSE
+"knitr",">= 1.42","modules/allometry","Suggests",FALSE
+"knitr",">= 1.42","modules/assim.batch","Suggests",FALSE
+"knitr",">= 1.42","modules/meta.analysis","Suggests",FALSE
+"knitr",">= 1.42","modules/photosynthesis","Suggests",FALSE
+"knitr",">= 1.42","modules/rtm","Suggests",FALSE
+"lattice","*","modules/meta.analysis","Imports",FALSE
+"linkages","*","models/linkages","Suggests",FALSE
+"lqmm","*","modules/assim.batch","Imports",FALSE
+"lubridate","*","base/db","Imports",FALSE
+"lubridate","*","models/basgra","Imports",FALSE
+"lubridate","*","models/dvmdostem","Imports",FALSE
+"lubridate","*","models/ed","Imports",FALSE
+"lubridate","*","models/ldndc","Imports",FALSE
+"lubridate","*","models/stics","Imports",FALSE
+"lubridate","*","modules/data.land","Imports",FALSE
+"lubridate","*","modules/data.remote","Suggests",FALSE
+"lubridate",">= 1.6.0","base/settings","Imports",FALSE
+"lubridate",">= 1.6.0","base/utils","Imports",FALSE
+"lubridate",">= 1.6.0","models/dalec","Imports",FALSE
+"lubridate",">= 1.6.0","models/fates","Imports",FALSE
+"lubridate",">= 1.6.0","models/gday","Imports",FALSE
+"lubridate",">= 1.6.0","models/jules","Imports",FALSE
+"lubridate",">= 1.6.0","models/linkages","Imports",FALSE
+"lubridate",">= 1.6.0","models/lpjguess","Imports",FALSE
+"lubridate",">= 1.6.0","models/maat","Imports",FALSE
+"lubridate",">= 1.6.0","models/maespa","Imports",FALSE
+"lubridate",">= 1.6.0","models/preles","Imports",FALSE
+"lubridate",">= 1.6.0","models/sipnet","Imports",FALSE
+"lubridate",">= 1.6.0","modules/assim.batch","Imports",FALSE
+"lubridate",">= 1.6.0","modules/assim.sequential","Imports",FALSE
+"lubridate",">= 1.6.0","modules/benchmark","Imports",FALSE
+"lubridate",">= 1.6.0","modules/data.atmosphere","Imports",FALSE
+"lubridate",">= 1.6.0","modules/rtm","Imports",FALSE
+"lubridate",">= 1.7.0","models/biocro","Imports",FALSE
+"Maeswrap","*","models/maespa","Suggests",FALSE
+"magic",">= 1.5.0","modules/assim.sequential","Suggests",FALSE
+"magrittr","*","base/db","Imports",FALSE
+"magrittr","*","base/utils","Imports",FALSE
+"magrittr","*","models/ed","Imports",FALSE
+"magrittr","*","modules/assim.sequential","Imports",FALSE
+"magrittr","*","modules/benchmark","Imports",FALSE
+"magrittr","*","modules/data.land","Imports",FALSE
+"magrittr","*","modules/data.remote","Imports",FALSE
+"markdown","*","modules/allometry","Suggests",FALSE
+"markdown","*","modules/photosynthesis","Suggests",FALSE
+"MASS","*","base/utils","Suggests",FALSE
+"MASS","*","modules/assim.batch","Imports",FALSE
+"MASS","*","modules/data.atmosphere","Imports",FALSE
+"MASS","*","modules/meta.analysis","Imports",FALSE
+"MASS","*","modules/priors","Imports",FALSE
+"MASS","*","modules/rtm","Imports",FALSE
+"Matrix","*","modules/assim.sequential","Imports",FALSE
+"mclust","*","modules/rtm","Suggests",FALSE
+"MCMCpack","*","modules/allometry","Imports",FALSE
+"MCMCpack","*","modules/assim.batch","Imports",FALSE
+"MCMCpack","*","modules/emulator","Imports",FALSE
+"methods","*","base/db","Imports",FALSE
+"methods","*","base/settings","Depends",FALSE
+"methods","*","modules/allometry","Imports",FALSE
+"methods","*","modules/assim.batch","Imports",FALSE
+"methods","*","modules/assim.sequential","Suggests",FALSE
+"methods","*","modules/emulator","Imports",FALSE
+"mgcv","*","modules/data.atmosphere","Imports",FALSE
+"minpack.lm","*","modules/rtm","Suggests",FALSE
+"mlegp","*","modules/assim.batch","Imports",FALSE
+"mockery","*","base/all","Suggests",FALSE
+"mockery","*","base/qaqc","Suggests",FALSE
+"mockery","*","base/remote","Suggests",FALSE
+"mockery","*","base/settings","Suggests",FALSE
+"mockery","*","base/utils","Suggests",FALSE
+"mockery","*","base/visualization","Suggests",FALSE
+"mockery","*","base/workflow","Suggests",FALSE
+"mockery",">= 0.3.0","models/biocro","Suggests",FALSE
+"mockery",">= 0.4.3","base/db","Suggests",FALSE
+"MODISTools",">= 1.1.0","modules/data.remote","Imports",FALSE
+"mvbutils","*","base/qaqc","Suggests",FALSE
+"mvtnorm","*","modules/allometry","Imports",FALSE
+"mvtnorm","*","modules/assim.batch","Imports",FALSE
+"mvtnorm","*","modules/assim.sequential","Imports",FALSE
+"mvtnorm","*","modules/data.land","Imports",FALSE
+"mvtnorm","*","modules/emulator","Imports",FALSE
+"ncdf4","*","base/db","Imports",FALSE
+"ncdf4","*","models/basgra","Imports",FALSE
+"ncdf4","*","models/dvmdostem","Imports",FALSE
+"ncdf4","*","models/ldndc","Imports",FALSE
+"ncdf4","*","models/sibcasa","Imports",FALSE
+"ncdf4","*","models/stics","Imports",FALSE
+"ncdf4","*","modules/assim.sequential","Imports",FALSE
+"ncdf4","*","modules/data.remote","Imports",FALSE
+"ncdf4",">= 1.15","base/utils","Imports",FALSE
+"ncdf4",">= 1.15","base/visualization","Imports",FALSE
+"ncdf4",">= 1.15","models/biocro","Imports",FALSE
+"ncdf4",">= 1.15","models/clm45","Imports",FALSE
+"ncdf4",">= 1.15","models/dalec","Imports",FALSE
+"ncdf4",">= 1.15","models/ed","Imports",FALSE
+"ncdf4",">= 1.15","models/fates","Imports",FALSE
+"ncdf4",">= 1.15","models/gday","Imports",FALSE
+"ncdf4",">= 1.15","models/jules","Imports",FALSE
+"ncdf4",">= 1.15","models/linkages","Imports",FALSE
+"ncdf4",">= 1.15","models/lpjguess","Imports",FALSE
+"ncdf4",">= 1.15","models/maat","Imports",FALSE
+"ncdf4",">= 1.15","models/maespa","Imports",FALSE
+"ncdf4",">= 1.15","models/preles","Imports",FALSE
+"ncdf4",">= 1.15","models/sipnet","Imports",FALSE
+"ncdf4",">= 1.15","modules/assim.batch","Imports",FALSE
+"ncdf4",">= 1.15","modules/benchmark","Imports",FALSE
+"ncdf4",">= 1.15","modules/data.atmosphere","Imports",FALSE
+"ncdf4",">= 1.15","modules/data.land","Imports",FALSE
+"neonstore","*","modules/data.land","Imports",FALSE
+"neonUtilities","*","modules/data.land","Imports",FALSE
+"nimble","*","modules/assim.sequential","Imports",FALSE
+"nneo","*","modules/data.atmosphere","Imports",FALSE
+"optparse","*","base/settings","Imports",FALSE
+"parallel","*","modules/assim.batch","Imports",FALSE
+"parallel","*","modules/data.atmosphere","Suggests",FALSE
+"parallel","*","modules/data.remote","Imports",FALSE
+"PEcAn.allometry","*","base/all","Suggests",TRUE
+"PEcAn.assim.batch","*","base/all","Depends",TRUE
+"PEcAn.assim.batch","*","modules/rtm","Imports",TRUE
+"PEcAn.benchmark","*","base/all","Depends",TRUE
+"PEcAn.benchmark","*","modules/assim.batch","Imports",TRUE
+"PEcAn.benchmark","*","modules/assim.sequential","Suggests",TRUE
+"PEcAn.benchmark","*","modules/data.land","Imports",TRUE
+"PEcAn.BIOCRO","*","base/all","Suggests",TRUE
+"PEcAn.BIOCRO","*","base/qaqc","Suggests",TRUE
+"PEcAn.DALEC","*","base/all","Suggests",TRUE
+"PEcAn.data.atmosphere","*","base/all","Depends",TRUE
+"PEcAn.data.atmosphere","*","base/workflow","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/basgra","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/biocro","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/ed","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/jules","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/ldndc","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/linkages","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/maat","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/maespa","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/preles","Imports",TRUE
+"PEcAn.data.atmosphere","*","models/sipnet","Depends",TRUE
+"PEcAn.data.atmosphere","*","modules/data.land","Imports",TRUE
+"PEcAn.data.land","*","base/all","Depends",TRUE
+"PEcAn.data.land","*","base/workflow","Imports",TRUE
+"PEcAn.data.land","*","models/biocro","Imports",TRUE
+"PEcAn.data.land","*","models/ed","Imports",TRUE
+"PEcAn.data.land","*","models/ldndc","Imports",TRUE
+"PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
+"PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
+"PEcAn.data.remote","*","base/all","Depends",TRUE
+"PEcAn.data.remote","*","modules/assim.sequential","Suggests",TRUE
+"PEcAn.DB","*","base/all","Depends",TRUE
+"PEcAn.DB","*","base/qaqc","Imports",TRUE
+"PEcAn.DB","*","base/settings","Imports",TRUE
+"PEcAn.DB","*","base/workflow","Imports",TRUE
+"PEcAn.DB","*","models/biocro","Suggests",TRUE
+"PEcAn.DB","*","models/template","Imports",TRUE
+"PEcAn.DB","*","modules/allometry","Imports",TRUE
+"PEcAn.DB","*","modules/assim.batch","Imports",TRUE
+"PEcAn.DB","*","modules/assim.sequential","Imports",TRUE
+"PEcAn.DB","*","modules/benchmark","Imports",TRUE
+"PEcAn.DB","*","modules/data.atmosphere","Imports",TRUE
+"PEcAn.DB","*","modules/data.land","Imports",TRUE
+"PEcAn.DB","*","modules/data.remote","Imports",TRUE
+"PEcAn.DB","*","modules/meta.analysis","Imports",TRUE
+"PEcAn.DB","*","modules/uncertainty","Imports",TRUE
+"PEcAn.ED2","*","base/all","Suggests",TRUE
+"PEcAn.ED2","*","base/qaqc","Suggests",TRUE
+"PEcAn.ED2","*","modules/rtm","Suggests",TRUE
+"PEcAn.emulator","*","base/all","Depends",TRUE
+"PEcAn.emulator","*","modules/assim.batch","Imports",TRUE
+"PEcAn.emulator","*","modules/uncertainty","Imports",TRUE
+"PEcAn.LINKAGES","*","base/all","Suggests",TRUE
+"PEcAn.logger","*","base/all","Depends",TRUE
+"PEcAn.logger","*","base/db","Imports",TRUE
+"PEcAn.logger","*","base/qaqc","Imports",TRUE
+"PEcAn.logger","*","base/remote","Imports",TRUE
+"PEcAn.logger","*","base/settings","Imports",TRUE
+"PEcAn.logger","*","base/utils","Imports",TRUE
+"PEcAn.logger","*","base/visualization","Imports",TRUE
+"PEcAn.logger","*","base/workflow","Imports",TRUE
+"PEcAn.logger","*","models/basgra","Imports",TRUE
+"PEcAn.logger","*","models/biocro","Imports",TRUE
+"PEcAn.logger","*","models/cable","Imports",TRUE
+"PEcAn.logger","*","models/clm45","Depends",TRUE
+"PEcAn.logger","*","models/dalec","Imports",TRUE
+"PEcAn.logger","*","models/dvmdostem","Imports",TRUE
+"PEcAn.logger","*","models/ed","Imports",TRUE
+"PEcAn.logger","*","models/fates","Imports",TRUE
+"PEcAn.logger","*","models/gday","Imports",TRUE
+"PEcAn.logger","*","models/jules","Imports",TRUE
+"PEcAn.logger","*","models/ldndc","Imports",TRUE
+"PEcAn.logger","*","models/linkages","Imports",TRUE
+"PEcAn.logger","*","models/lpjguess","Imports",TRUE
+"PEcAn.logger","*","models/maat","Imports",TRUE
+"PEcAn.logger","*","models/maespa","Imports",TRUE
+"PEcAn.logger","*","models/preles","Imports",TRUE
+"PEcAn.logger","*","models/sibcasa","Imports",TRUE
+"PEcAn.logger","*","models/sipnet","Imports",TRUE
+"PEcAn.logger","*","models/stics","Imports",TRUE
+"PEcAn.logger","*","models/template","Imports",TRUE
+"PEcAn.logger","*","modules/assim.batch","Imports",TRUE
+"PEcAn.logger","*","modules/assim.sequential","Imports",TRUE
+"PEcAn.logger","*","modules/benchmark","Imports",TRUE
+"PEcAn.logger","*","modules/data.atmosphere","Imports",TRUE
+"PEcAn.logger","*","modules/data.land","Imports",TRUE
+"PEcAn.logger","*","modules/data.remote","Imports",TRUE
+"PEcAn.logger","*","modules/meta.analysis","Imports",TRUE
+"PEcAn.logger","*","modules/priors","Imports",TRUE
+"PEcAn.logger","*","modules/rtm","Imports",TRUE
+"PEcAn.logger","*","modules/uncertainty","Imports",TRUE
+"PEcAn.MA","*","base/all","Depends",TRUE
+"PEcAn.MA","*","modules/assim.batch","Imports",TRUE
+"PEcAn.MA","*","modules/priors","Imports",TRUE
+"PEcAn.photosynthesis","*","base/all","Suggests",TRUE
+"PEcAn.priors","*","base/all","Depends",TRUE
+"PEcAn.priors","*","modules/uncertainty","Imports",TRUE
+"PEcAn.remote","*","base/all","Depends",TRUE
+"PEcAn.remote","*","base/db","Imports",TRUE
+"PEcAn.remote","*","base/settings","Imports",TRUE
+"PEcAn.remote","*","base/workflow","Imports",TRUE
+"PEcAn.remote","*","models/biocro","Imports",TRUE
+"PEcAn.remote","*","models/dalec","Imports",TRUE
+"PEcAn.remote","*","models/ed","Imports",TRUE
+"PEcAn.remote","*","models/fates","Imports",TRUE
+"PEcAn.remote","*","models/gday","Imports",TRUE
+"PEcAn.remote","*","models/jules","Imports",TRUE
+"PEcAn.remote","*","models/ldndc","Imports",TRUE
+"PEcAn.remote","*","models/linkages","Imports",TRUE
+"PEcAn.remote","*","models/lpjguess","Imports",TRUE
+"PEcAn.remote","*","models/maat","Imports",TRUE
+"PEcAn.remote","*","models/maespa","Imports",TRUE
+"PEcAn.remote","*","models/sipnet","Imports",TRUE
+"PEcAn.remote","*","models/stics","Imports",TRUE
+"PEcAn.remote","*","modules/assim.batch","Imports",TRUE
+"PEcAn.remote","*","modules/assim.sequential","Imports",TRUE
+"PEcAn.remote","*","modules/data.atmosphere","Imports",TRUE
+"PEcAn.remote","*","modules/data.land","Imports",TRUE
+"PEcAn.remote","*","modules/data.remote","Imports",TRUE
+"PEcAn.settings","*","base/all","Depends",TRUE
+"PEcAn.settings","*","base/workflow","Imports",TRUE
+"PEcAn.settings","*","models/biocro","Imports",TRUE
+"PEcAn.settings","*","models/ed","Imports",TRUE
+"PEcAn.settings","*","models/maat","Imports",TRUE
+"PEcAn.settings","*","models/stics","Imports",TRUE
+"PEcAn.settings","*","modules/assim.batch","Imports",TRUE
+"PEcAn.settings","*","modules/assim.sequential","Imports",TRUE
+"PEcAn.settings","*","modules/benchmark","Imports",TRUE
+"PEcAn.settings","*","modules/data.atmosphere","Suggests",TRUE
+"PEcAn.settings","*","modules/data.land","Suggests",TRUE
+"PEcAn.settings","*","modules/meta.analysis","Imports",TRUE
+"PEcAn.settings","*","modules/uncertainty","Imports",TRUE
+"PEcAn.SIPNET","*","base/all","Suggests",TRUE
+"PEcAn.SIPNET","*","base/qaqc","Suggests",TRUE
+"PEcAn.uncertainty","*","base/all","Depends",TRUE
+"PEcAn.uncertainty","*","base/workflow","Imports",TRUE
+"PEcAn.uncertainty","*","modules/assim.batch","Imports",TRUE
+"PEcAn.uncertainty","*","modules/assim.sequential","Imports",TRUE
+"PEcAn.utils","*","base/all","Depends",TRUE
+"PEcAn.utils","*","base/db","Imports",TRUE
+"PEcAn.utils","*","base/qaqc","Suggests",TRUE
+"PEcAn.utils","*","base/settings","Imports",TRUE
+"PEcAn.utils","*","base/workflow","Imports",TRUE
+"PEcAn.utils","*","models/biocro","Imports",TRUE
+"PEcAn.utils","*","models/clm45","Depends",TRUE
+"PEcAn.utils","*","models/dalec","Imports",TRUE
+"PEcAn.utils","*","models/ed","Imports",TRUE
+"PEcAn.utils","*","models/fates","Imports",TRUE
+"PEcAn.utils","*","models/gday","Depends",TRUE
+"PEcAn.utils","*","models/jules","Imports",TRUE
+"PEcAn.utils","*","models/linkages","Depends",TRUE
+"PEcAn.utils","*","models/lpjguess","Imports",TRUE
+"PEcAn.utils","*","models/maat","Imports",TRUE
+"PEcAn.utils","*","models/maespa","Imports",TRUE
+"PEcAn.utils","*","models/preles","Depends",TRUE
+"PEcAn.utils","*","models/preles","Imports",TRUE
+"PEcAn.utils","*","models/sipnet","Imports",TRUE
+"PEcAn.utils","*","modules/assim.batch","Imports",TRUE
+"PEcAn.utils","*","modules/assim.sequential","Suggests",TRUE
+"PEcAn.utils","*","modules/benchmark","Imports",TRUE
+"PEcAn.utils","*","modules/data.atmosphere","Imports",TRUE
+"PEcAn.utils","*","modules/data.land","Imports",TRUE
+"PEcAn.utils","*","modules/data.remote","Imports",TRUE
+"PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
+"PEcAn.utils","*","modules/rtm","Suggests",TRUE
+"PEcAn.utils","*","modules/uncertainty","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/basgra","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/cable","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/dvmdostem","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/ldndc","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/sibcasa","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/stics","Imports",TRUE
+"PEcAn.utils",">= 1.4.8","models/template","Imports",TRUE
+"PEcAn.visualization","*","modules/assim.sequential","Suggests",TRUE
+"PEcAn.visualization","*","modules/data.land","Imports",TRUE
+"PEcAn.visualization","*","modules/priors","Suggests",TRUE
+"PEcAn.workflow","*","base/all","Depends",TRUE
+"PEcAn.workflow","*","modules/assim.batch","Imports",TRUE
+"PEcAn.workflow","*","modules/assim.sequential","Imports",TRUE
+"plotrix","*","base/qaqc","Imports",FALSE
+"plotrix","*","modules/assim.sequential","Suggests",FALSE
+"plyr",">= 1.8.4","base/visualization","Imports",FALSE
+"plyr",">= 1.8.4","modules/assim.sequential","Suggests",FALSE
+"plyr",">= 1.8.4","modules/uncertainty","Imports",FALSE
+"png","*","base/visualization","Suggests",FALSE
+"prodlim","*","modules/assim.batch","Imports",FALSE
+"progress","*","modules/data.atmosphere","Suggests",FALSE
+"purrr","*","base/db","Imports",FALSE
+"purrr","*","base/settings","Imports",FALSE
+"purrr","*","base/utils","Imports",FALSE
+"purrr","*","models/ed","Imports",FALSE
+"purrr","*","modules/assim.sequential","Imports",FALSE
+"purrr","*","modules/data.land","Imports",FALSE
+"purrr","*","modules/data.remote","Imports",FALSE
+"purrr","*","modules/uncertainty","Imports",FALSE
+"purrr",">= 0.2.3","base/workflow","Imports",FALSE
+"purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
+"pwr","*","modules/rtm","Suggests",FALSE
+"R.utils","*","base/db","Imports",FALSE
+"randomForest","*","modules/assim.sequential","Suggests",FALSE
+"randtoolbox","*","base/utils","Suggests",FALSE
+"randtoolbox","*","modules/uncertainty","Imports",FALSE
+"raster","*","base/visualization","Suggests",FALSE
+"raster","*","modules/assim.sequential","Suggests",FALSE
+"raster","*","modules/data.atmosphere","Imports",FALSE
+"raster","*","modules/data.land","Suggests",FALSE
+"raster","*","modules/data.remote","Suggests",FALSE
+"rcrossref","*","base/db","Suggests",FALSE
+"readr","*","models/ldndc","Imports",FALSE
+"readr","*","modules/assim.sequential","Suggests",FALSE
+"REddyProc","*","modules/data.atmosphere","Imports",FALSE
+"redland","*","modules/data.land","Suggests",FALSE
+"reshape","*","modules/data.remote","Suggests",FALSE
+"reshape2","*","base/visualization","Imports",FALSE
+"reshape2","*","modules/benchmark","Imports",FALSE
+"reshape2","*","modules/data.atmosphere","Imports",FALSE
+"reshape2",">= 1.4.2","modules/assim.sequential","Suggests",FALSE
+"reticulate","*","modules/data.atmosphere","Suggests",FALSE
+"reticulate","*","modules/data.remote","Imports",FALSE
+"rjags","*","base/utils","Suggests",FALSE
+"rjags","*","modules/assim.batch","Imports",FALSE
+"rjags","*","modules/data.land","Imports",FALSE
+"rjags","*","modules/meta.analysis","Imports",FALSE
+"rjags","*","modules/photosynthesis","Depends",FALSE
+"rjson","*","models/dvmdostem","Imports",FALSE
+"rlang","*","base/db","Imports",FALSE
+"rlang","*","base/qaqc","Imports",FALSE
+"rlang","*","base/utils","Imports",FALSE
+"rlang","*","base/visualization","Imports",FALSE
+"rlang","*","models/biocro","Imports",FALSE
+"rlang","*","models/ed","Imports",FALSE
+"rlang","*","models/ldndc","Imports",FALSE
+"rlang","*","modules/assim.sequential","Imports",FALSE
+"rlang","*","modules/benchmark","Imports",FALSE
+"rlang","*","modules/data.land","Imports",FALSE
+"rlang","*","modules/uncertainty","Imports",FALSE
+"rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
+"rlist","*","modules/assim.sequential","Suggests",FALSE
+"rmarkdown",">= 2.19","base/db","Suggests",FALSE
+"rmarkdown",">= 2.19","base/qaqc","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/allometry","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/assim.batch","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/meta.analysis","Suggests",FALSE
+"rmarkdown",">= 2.19","modules/photosynthesis","Suggests",FALSE
+"roxygen2","== 7.2.3","base/all","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/db","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/logger","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/qaqc","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/remote","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/settings","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/utils","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/visualization","Roxygen",FALSE
+"roxygen2","== 7.2.3","base/workflow","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/basgra","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/biocro","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/cable","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/clm45","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/dalec","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/dvmdostem","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/ed","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/fates","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/gday","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/jules","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/ldndc","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/linkages","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/lpjguess","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/maat","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/maespa","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/preles","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/sibcasa","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/sipnet","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/stics","Roxygen",FALSE
+"roxygen2","== 7.2.3","models/template","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/allometry","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/assim.batch","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/assim.sequential","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/benchmark","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.atmosphere","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.land","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/data.remote","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/emulator","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/meta.analysis","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/photosynthesis","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/priors","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/rtm","Roxygen",FALSE
+"roxygen2","== 7.2.3","modules/uncertainty","Roxygen",FALSE
+"RPostgres","*","base/db","Suggests",FALSE
+"RPostgreSQL","*","base/db","Suggests",FALSE
+"RPostgreSQL","*","models/biocro","Suggests",FALSE
+"Rpreles","*","models/preles","Suggests",FALSE
+"RSQLite","*","base/db","Suggests",FALSE
+"sessioninfo","*","base/all","Suggests",FALSE
+"sf","*","modules/assim.sequential","Suggests",FALSE
+"sf","*","modules/data.atmosphere","Imports",FALSE
+"sf","*","modules/data.land","Imports",FALSE
+"SimilarityMeasures","*","modules/benchmark","Imports",FALSE
+"sirt","*","modules/data.land","Imports",FALSE
+"sp","*","base/visualization","Suggests",FALSE
+"sp","*","modules/assim.sequential","Suggests",FALSE
+"sp","*","modules/data.atmosphere","Imports",FALSE
+"sp","*","modules/data.land","Imports",FALSE
+"sp","*","modules/data.remote","Imports",FALSE
+"stats","*","base/qaqc","Imports",FALSE
+"stats","*","modules/allometry","Imports",FALSE
+"stats","*","modules/assim.batch","Imports",FALSE
+"stats","*","modules/assim.sequential","Suggests",FALSE
+"stats","*","modules/photosynthesis","Imports",FALSE
+"SticsRFiles","*","models/stics","Suggests",FALSE
+"stringi","*","base/logger","Imports",FALSE
+"stringi","*","base/utils","Imports",FALSE
+"stringr","*","models/fates","Imports",FALSE
+"stringr","*","modules/assim.sequential","Imports",FALSE
+"stringr","*","modules/benchmark","Imports",FALSE
+"stringr","*","modules/data.land","Imports",FALSE
+"stringr",">= 1.1.0","base/visualization","Imports",FALSE
+"stringr",">= 1.1.0","models/ed","Imports",FALSE
+"stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
+"suntools","*","modules/data.atmosphere","Imports",FALSE
+"swfscMisc","*","modules/data.land","Imports",FALSE
+"terra","*","modules/assim.sequential","Suggests",FALSE
+"terra","*","modules/data.atmosphere","Imports",FALSE
+"terra","*","modules/data.land","Imports",FALSE
+"terra","*","modules/data.remote","Imports",FALSE
+"testthat","*","base/all","Suggests",FALSE
+"testthat","*","base/logger","Suggests",FALSE
+"testthat","*","base/remote","Suggests",FALSE
+"testthat","*","base/workflow","Suggests",FALSE
+"testthat","*","modules/assim.sequential","Suggests",FALSE
+"testthat","*","modules/priors","Suggests",FALSE
+"testthat",">= 1.0.2","base/visualization","Suggests",FALSE
+"testthat",">= 1.0.2","models/basgra","Suggests",FALSE
+"testthat",">= 1.0.2","models/cable","Suggests",FALSE
+"testthat",">= 1.0.2","models/clm45","Suggests",FALSE
+"testthat",">= 1.0.2","models/dalec","Suggests",FALSE
+"testthat",">= 1.0.2","models/dvmdostem","Suggests",FALSE
+"testthat",">= 1.0.2","models/ed","Suggests",FALSE
+"testthat",">= 1.0.2","models/fates","Suggests",FALSE
+"testthat",">= 1.0.2","models/gday","Suggests",FALSE
+"testthat",">= 1.0.2","models/jules","Suggests",FALSE
+"testthat",">= 1.0.2","models/ldndc","Suggests",FALSE
+"testthat",">= 1.0.2","models/linkages","Suggests",FALSE
+"testthat",">= 1.0.2","models/lpjguess","Suggests",FALSE
+"testthat",">= 1.0.2","models/maat","Suggests",FALSE
+"testthat",">= 1.0.2","models/maespa","Suggests",FALSE
+"testthat",">= 1.0.2","models/preles","Suggests",FALSE
+"testthat",">= 1.0.2","models/sipnet","Suggests",FALSE
+"testthat",">= 1.0.2","models/stics","Suggests",FALSE
+"testthat",">= 1.0.2","models/template","Suggests",FALSE
+"testthat",">= 1.0.2","modules/allometry","Suggests",FALSE
+"testthat",">= 1.0.2","modules/assim.batch","Suggests",FALSE
+"testthat",">= 1.0.2","modules/data.land","Suggests",FALSE
+"testthat",">= 1.0.2","modules/data.remote","Suggests",FALSE
+"testthat",">= 1.0.2","modules/meta.analysis","Suggests",FALSE
+"testthat",">= 1.0.2","modules/rtm","Suggests",FALSE
+"testthat",">= 1.0.2","modules/uncertainty","Suggests",FALSE
+"testthat",">= 2.0.0","base/db","Suggests",FALSE
+"testthat",">= 2.0.0","base/settings","Suggests",FALSE
+"testthat",">= 2.0.0","base/utils","Suggests",FALSE
+"testthat",">= 2.0.0","models/biocro","Suggests",FALSE
+"testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
+"testthat",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
+"testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
+"testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
+"tibble","*","base/db","Imports",FALSE
+"tibble","*","models/ed","Imports",FALSE
+"tibble","*","models/lpjguess","Imports",FALSE
+"tibble","*","modules/data.atmosphere","Imports",FALSE
+"tibble","*","modules/data.remote","Suggests",FALSE
+"tictoc","*","modules/assim.sequential","Suggests",FALSE
+"tidyr","*","base/db","Imports",FALSE
+"tidyr","*","models/ed","Imports",FALSE
+"tidyr","*","modules/assim.sequential","Suggests",FALSE
+"tidyr","*","modules/data.atmosphere","Imports",FALSE
+"tidyr","*","modules/data.land","Imports",FALSE
+"tidyselect","*","modules/benchmark","Imports",FALSE
+"tidyselect","*","modules/data.atmosphere","Imports",FALSE
+"tidyselect","*","modules/data.land","Imports",FALSE
+"tidyverse","*","base/db","Suggests",FALSE
+"tools","*","base/remote","Suggests",FALSE
+"tools","*","modules/allometry","Imports",FALSE
+"traits","*","modules/data.land","Imports",FALSE
+"TruncatedNormal",">= 2.2","modules/assim.batch","Imports",FALSE
+"truncnorm","*","modules/data.atmosphere","Imports",FALSE
+"units","*","base/db","Imports",FALSE
+"units","*","base/utils","Imports",FALSE
+"units","*","modules/benchmark","Imports",FALSE
+"units","*","modules/data.atmosphere","Imports",FALSE
+"urltools","*","base/remote","Imports",FALSE
+"utils","*","base/all","Imports",FALSE
+"utils","*","base/logger","Imports",FALSE
+"utils","*","models/ed","Imports",FALSE
+"utils","*","modules/allometry","Imports",FALSE
+"utils","*","modules/assim.batch","Imports",FALSE
+"utils","*","modules/assim.sequential","Suggests",FALSE
+"utils","*","modules/benchmark","Imports",FALSE
+"utils","*","modules/photosynthesis","Imports",FALSE
+"vdiffr",">= 1.0.2","base/qaqc","Suggests",FALSE
+"withr","*","base/db","Suggests",FALSE
+"withr","*","base/logger","Suggests",FALSE
+"withr","*","base/qaqc","Suggests",FALSE
+"withr","*","base/remote","Suggests",FALSE
+"withr","*","base/settings","Suggests",FALSE
+"withr","*","base/utils","Suggests",FALSE
+"withr","*","base/visualization","Suggests",FALSE
+"withr","*","base/workflow","Suggests",FALSE
+"withr","*","models/basgra","Suggests",FALSE
+"withr","*","models/ed","Suggests",FALSE
+"withr","*","models/sibcasa","Suggests",FALSE
+"withr","*","modules/allometry","Suggests",FALSE
+"withr","*","modules/data.atmosphere","Suggests",FALSE
+"XML","*","base/db","Imports",FALSE
+"XML","*","base/workflow","Imports",FALSE
+"XML","*","models/biocro","Imports",FALSE
+"XML","*","models/maat","Imports",FALSE
+"XML","*","models/stics","Imports",FALSE
+"XML","*","modules/assim.batch","Imports",FALSE
+"XML","*","modules/assim.sequential","Suggests",FALSE
+"XML","*","modules/data.remote","Imports",FALSE
+"XML","*","modules/rtm","Suggests",FALSE
+"XML",">= 3.98-1.3","base/settings","Imports",FALSE
+"XML",">= 3.98-1.4","models/ed","Imports",FALSE
+"XML",">= 3.98-1.4","modules/benchmark","Imports",FALSE
+"XML",">= 3.98-1.4","modules/data.atmosphere","Imports",FALSE
+"XML",">= 3.98-1.4","modules/data.land","Imports",FALSE
+"xtable","*","base/utils","Suggests",FALSE
+"xts","*","modules/data.atmosphere","Imports",FALSE
+"zoo","*","modules/benchmark","Imports",FALSE
+"zoo","*","modules/data.atmosphere","Imports",FALSE

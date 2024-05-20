@@ -7,15 +7,15 @@ Authors@R: c(person("Henri", "Kajasilta", role = c("aut", "cre"),
                     email = "henri.kajasilta@fmi.fi"))
 Description: This module provides functions to link the (LDNDC) to PEcAn.
 Imports:
-    PEcAn.DB,
-    PEcAn.logger,
-    PEcAn.utils (>= 1.4.8),
     dplyr,
     lubridate,
     ncdf4,
-    data.table,
-    PEcAn.remote,
     PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.utils (>= 1.4.8),
+    readr,
     rlang
 Suggests:
     testthat (>= 1.0.2)

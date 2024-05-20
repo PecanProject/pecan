@@ -297,6 +297,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
 
     if (length(pid) == 0) {
       pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
+      
     }
 
     if (length(pid) > 0) {
@@ -322,7 +323,11 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     # make sure there are no left over distributions in the environment
     suppressWarnings(rm(post.distns, prior.distns))
 
-    load(prior.paths[[i]])
+    distns <- new.env()
+    load(prior.paths[[i]], envir = "distns")
+    prior.distns <- distns$prior.distns
+    post.distns <- distns$post.distns
+    
     if (!exists("post.distns")) {
       prior.out[[i]] <- prior.distns
     } else {

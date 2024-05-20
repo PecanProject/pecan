@@ -8,6 +8,8 @@ metric_Frechet(metric_dat, ...)
 }
 \arguments{
 \item{metric_dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Frechet Distance

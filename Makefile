@@ -6,8 +6,8 @@ MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
 				ldndc lpjguess maat maespa preles sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
-				 data.atmosphere data.hydrology data.land \
-				 data.remote emulator meta.analysis \
+				 data.atmosphere data.land data.remote \
+				 emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
 # Components not currently included in the build
@@ -153,7 +153,8 @@ clean:
 	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
 		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
 		-e "    || packageVersion('roxygen2') != '7.2.3') {" \
-		-e "  devtools::install_github('r-lib/roxygen2@v7.2.3')" \
+		-e "  cran <- c(getOption('repos'), 'cloud.r-project.org')" \
+		-e "  remotes::install_version('roxygen2', '7.2.3', repos = cran, upgrade = FALSE)" \
 		-e "}"
 	$(eval INSTALLED_ROXYGEN_VERSION := 7.2.3)
 	echo `date` > $@

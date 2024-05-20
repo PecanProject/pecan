@@ -61,7 +61,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
   }
   
-  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -69,6 +68,23 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
+  
+  # create rabbitmq specific setup.
+  cpruncmd <- cpoutcmd <- rmoutdircmd <- rmrundircmd <- ""
+  if (!is.null(settings$host$rabbitmq)) {
+    #rsync cmd from remote to local host.
+    settings$host$rabbitmq$cpfcmd <- ifelse(is.null(settings$host$rabbitmq$cpfcmd), "", settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTDIR@", settings$host$rundir, settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTFOLDER@", rundir, cpruncmd)
+    
+    cpoutcmd <- gsub("@OUTDIR@", settings$host$outdir, settings$host$rabbitmq$cpfcmd)
+    cpoutcmd <- gsub("@OUTFOLDER@", outdir, cpoutcmd)
+    
+    #delete files within rundir and outdir.
+    rmoutdircmd <- paste("rm", file.path(outdir, "*"))
+    rmrundircmd <- paste("rm", file.path(rundir, "*"))
+  }
+  
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
@@ -86,6 +102,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
+  
+  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
+  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
+  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
   
   if(is.null(settings$state.data.assimilation$NC.Prefix)){
     settings$state.data.assimilation$NC.Prefix <- "sipnet.out"

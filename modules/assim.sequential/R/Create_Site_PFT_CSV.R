@@ -26,7 +26,7 @@
 Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
 
   # Bail out if packages in Suggests not available
-  suggests_needed <- c("DBI", "glue", "raster")
+  suggests_needed <- c("glue", "raster")
   suggests_found <- sapply(suggests_needed, requireNamespace, quietly = TRUE)
   if (!all(suggests_found)) {
     PEcAn.logger::logger.error(
@@ -48,8 +48,7 @@ Create_Site_PFT_CSV <- function(settings, Ecoregion, NLCD, con){
   suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
                                               ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id IN ({ids*})",
                                               ids = site_ID, .con = con))
-  suppressWarnings(qry_results <- DBI::dbSendQuery(con,site_qry))
-  suppressWarnings(qry_results <- DBI::dbFetch(qry_results))
+  suppressWarnings(qry_results <- PEcAn.DB::db.query(site_qry, con))
   site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
                     lon=qry_results$lon, time_zone=qry_results$time_zone)
   

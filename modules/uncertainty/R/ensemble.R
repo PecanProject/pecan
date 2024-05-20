@@ -29,8 +29,9 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
   if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, "samples.Rdata")
     if (file.exists(samples.file)) {
-      load(samples.file)
-      ens.run.ids <- runs.samples$ensemble
+      samples = new.env()
+      load(samples.file, envir = samples)
+      ens.run.ids <- samples$runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")
     }
@@ -297,7 +298,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
       )
     }
-    
+
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){

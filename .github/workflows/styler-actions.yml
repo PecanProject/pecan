@@ -14,13 +14,13 @@ jobs:
         run: echo '${{ steps.file_changes.outputs.files_modified }}'
       - name: work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
-      - uses: r-lib/actions/pr-fetch@master
+      - uses: r-lib/actions/pr-fetch@v2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-r@v2
       - name: Install styler
         run: |
           Rscript -e 'install.packages("styler")'
@@ -39,7 +39,7 @@ jobs:
           git add \*.R
           git add \*.Rmd
           if [ "$(git diff --name-only --cached)" != "" ]; then  git commit -m 'automated syle update' ; fi
-      - uses: r-lib/actions/pr-push@master
+      - uses: r-lib/actions/pr-push@v2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: work around https://github.com/actions/checkout/issues/766
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           set-safe-directory: false
       - uses: r-lib/actions/pr-fetch@v1
@@ -62,7 +62,8 @@ jobs:
       - name: install any new dependencies
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        run: Rscript docker/depends/pecan.depends.R
+        working-directory: docker/depends
+        run: Rscript pecan.depends.R
       - id: file_changes
         uses: trilom/file-changes-action@v1.2.4
       - name : make
@@ -82,7 +83,7 @@ jobs:
         run: |
           git config --global user.email "pecan_bot@example.com"
           git config --global user.name "PEcAn stylebot"
-          git add \*.Rd \*NAMESPACE Makefile.depends docker/depends/pecan.depends.R
+          git add \*.Rd \*NAMESPACE Makefile.depends docker/depends/pecan_package_dependencies.R docker/depends/pecan_deps_from_github.txt
           if [ "$(git diff --name-only --cached)" != "" ]; then  git commit -m 'automated documentation update' ; fi
       - uses: r-lib/actions/pr-push@master
         with:

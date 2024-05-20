@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_data.R
 \name{load_data}
 \alias{load_data}
-\title{load_data}
+\title{load data}
 \usage{
 load_data(
   data.path,
@@ -24,12 +24,15 @@ load_data(
 \item{end_year}{numeric}
 
 \item{site}{list}
+
+\item{vars.used.index}{which variables to use? If NULL, these are taken from `format`}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
-load_data
+Generic function to convert input files containing observational data to
+a common PEcAn format.
 }
 \author{
 Betsy Cowdery, Istem Fer, Joshua Mantooth
-Generic function to convert input files containing observational data to 
-a common PEcAn format.
 }
