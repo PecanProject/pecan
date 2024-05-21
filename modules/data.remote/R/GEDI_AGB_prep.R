@@ -71,7 +71,7 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, buffer = 0.01, 
       if (nrow(AGB[[i]]) == 1) {
         AGB_Output[j, paste0(time_points[i], "_SD")] <- AGB[[j]]$agbd_se # sd
       } else {
-        AGB_Output[j, paste0(time_points[i], "_SD")] <- sd(AGB[[j]]$agbd, na.rm = T) # sd
+        AGB_Output[j, paste0(time_points[i], "_SD")] <- stats::sd(AGB[[j]]$agbd, na.rm = T) # sd
       }
     }
   }
@@ -114,12 +114,12 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
                                          extends["xmin"], extends["ymax"]), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
       res <- utils::read.csv(file.path(site_folder, "GEDI_AGB.csv"))
       ggplot2::ggplot() +
-        ggplot2::geom_polygon(data = extends.x.y, aes(x = lon, y = lat), color="blue", fill = "white") +
-        ggplot2::geom_point(data = res, aes(x = lon_lowestmode, y = lat_lowestmode, color = agbd)) +
-        ggplot2::geom_point(shape = 24, data = point.lat.lon, aes(x = lon, y = lat), size = 3) +
-        geom_text(data = point.lat.lon, aes(x = lon, y = lat, label=site.id, hjust=-0.1, vjust=0)) +
-        scale_color_distiller(palette = 'Greens', direction = 1) +
-        labs(color = "AGB")
+        ggplot2::geom_polygon(data = extends.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color="blue", fill = "white") +
+        ggplot2::geom_point(data = res, ggplot2::aes(x = .data$lon_lowestmode, y = .data$lat_lowestmode, color = .data$agbd)) +
+        ggplot2::geom_point(shape = 24, data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat), size = 3) +
+        ggplot2::geom_text(data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat, label=site.id, hjust=-0.1, vjust=0)) +
+        ggplot2::scale_color_distiller(palette = 'Greens', direction = 1) +
+        ggplot2::labs(color = "AGB")
     }
   }
 }
@@ -170,12 +170,12 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
             extends <- extends[nrow(extends),]
           }
           # filter previous records based on space and time.
-          res.filter <- res %>% dplyr::filter(lat_lowestmode <= extends["ymax"],
-                                              lat_lowestmode >= extends["ymin"],
-                                              lon_lowestmode >= extends["xmin"], 
-                                              lon_lowestmode <= extends["xmax"],
-                                              lubridate::as_date(date) >= lubridate::as_date(start_date),
-                                              lubridate::as_date(date) <= lubridate::as_date(end_date))
+          res.filter <- res %>% dplyr::filter(.data$lat_lowestmode <= extends["ymax"],
+                                              .data$lat_lowestmode >= extends["ymin"],
+                                              .data$lon_lowestmode >= extends["xmin"], 
+                                              .data$lon_lowestmode <= extends["xmax"],
+                                              lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
+                                              lubridate::as_date(.data$date) <= lubridate::as_date(end_date))
           # determine if res.filter is not empty.
           if (nrow(res.filter) > 0) {
             csv.valid <- TRUE
@@ -189,7 +189,7 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
       }
       # filter out point outside the GEDI spatial domain.
       if (point$lat > 52 | point$lat < -52) {
-        write.table("Point is outside the GEDI domain.", file = file.path(site_folder, "Error.txt"))
+        utils::write.table("Point is outside the GEDI domain.", file = file.path(site_folder, "Error.txt"))
         return(NA)
       }
       # if we have previous GEDI records covering space and time.
@@ -213,9 +213,9 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
         if (exists("res") & !all(is.na(res.current))) {
           utils::write.csv(res, file = file.path(site_folder, "GEDI_AGB.csv"), row.names = F)
           # save plot.
-          png(file.path(site_folder, "plot.png"))
+          grDevices::png(file.path(site_folder, "plot.png"))
           print(GEDI_AGB_plot(outdir = outdir, site.id = point$site_id, start_date = start_date, end_date = end_date))
-          dev.off()
+          grDevices::dev.off()
           return(res.current)
         } else {
           return(NA)
@@ -447,7 +447,7 @@ l4_download <-
     
     # Get path to GEDI2A data
     gLevel4 <-
-      gedifinder(
+      GEDI4R::gedifinder(
         ul_lat,
         ul_lon,
         lr_lat,
@@ -499,9 +499,9 @@ l4_download <-
         response <-
           httr::GET(
             gLevel4[i],
-            write_disk(file.path(outdir, basename(gLevel4)[i]), overwrite = T),
-            config(netrc = TRUE, netrc_file = netrc_file),
-            set_cookies("LC" = "cookies")
+            httr::write_disk(file.path(outdir, basename(gLevel4)[i]), overwrite = T),
+            httr::config(netrc = TRUE, netrc_file = netrc_file),
+            httr::set_cookies("LC" = "cookies")
           )
       }
       parallel::stopCluster(cl)
