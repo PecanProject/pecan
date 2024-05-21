@@ -84,7 +84,7 @@ for (i in seq_along(LAI_df$LAI_Output$site_id)) {
 
 ```{r}
 #prepare AGB
-AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_geotiff(site_info = site_info, 
+AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_2010_global(site_info = site_info, 
                                                       paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
                                                                         uncertainty = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010_uncertainty.tif"), 
                                                       ens = 100) %>% as.data.frame()
@@ -141,8 +141,8 @@ for (i in seq_along(site_info$site_id)) {
   paths <- c()
   for (j in 1:ens) {
     #unit conversion for AGB.
-    AGB <- if(is.na(AGB_IC[j, i])) NULL else {PEcAn.utils::ud_convert(AGB_IC[j, i], "Mg ha-1", "kg m-2")}
-    leaf_carbon_content <- if(is.na(LAI_IC[j, i])) NULL else {LAI_IC[j, i]/sample(sla, 1)}#calculate leaf C based on LAI and SLA.
+    AGB <- ifelse(is.na(AGB_IC[j, i]), NULL, PEcAn.utils::ud_convert(AGB_IC[j, i], "Mg ha-1", "kg m-2"))
+    leaf_carbon_content <- ifelse(is.na(LAI_IC[j, i]), NULL, LAI_IC[j, i]/sample(sla, 1))
     #woody biomass calculation based on leaf and aboveground biomass densities.
     if (!is.null(AGB)) {
       if (!is.null(leaf_carbon_content)) {
@@ -158,8 +158,8 @@ for (i in seq_along(site_info$site_id)) {
     variables <-list(AbvGrndWood = AGB, 
                      wood_carbon_content = wood_carbon_content, 
                      leaf_carbon_content = leaf_carbon_content, 
-                     soil_organic_carbon_content = if(is.na(SOC_IC[j, i])) NULL else {SOC_IC[j, i]},
-                     SoilMoistFrac = if(is.na(SM_IC[j, i])) NULL else {SM_IC[j, i]})
+                     soil_organic_carbon_content = ifelse(is.na(SOC_IC[j, i]), NULL, SOC_IC[j, i]),
+                     SoilMoistFrac = ifelse(is.na(SM_IC[j, i]), NULL, SM_IC[j, i]))
     variables[sapply(variables, is.null)] <- NULL
     poolinfo <- list(dims = dims, vals = variables)
     out <- PEcAn.SIPNET::veg2model.SIPNET(file.path(outfolder, site_info$site_id[i]), 
