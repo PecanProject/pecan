@@ -9,7 +9,8 @@ MODIS_LAI_prep(
   time_points,
   outdir = NULL,
   search_window = 30,
-  export_csv = FALSE
+  export_csv = FALSE,
+  sd_threshold = 20
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ MODIS_LAI_prep(
 \item{search_window}{search window for locate available LAI values.}
 
 \item{export_csv}{Decide if we want to export the CSV file.}
+
+\item{sd_threshold}{Threshold for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

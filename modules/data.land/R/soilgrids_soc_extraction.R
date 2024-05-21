@@ -81,11 +81,22 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   data_tag <- c("_mean.vrt", "_Q0.05.vrt", "_Q0.5.vrt", "_Q0.95.vrt")
   name_tag <- expand.grid(depths, data_tag, stringsAsFactors = F)#find the combinations between data and depth tags.
   L <- split(as.data.frame(name_tag), seq(nrow(as.data.frame(name_tag))))#convert tags into lists.
-  ocd_real <- L %>% furrr::future_map(function(l){
+  if ("try-error" %in% class(try(ocd_real <- L %>% furrr::future_map(function(l){
     ocd_url <- paste0(base_data_url, l[[1]], l[[2]])
     ocd_map <- terra::extract(terra::rast(ocd_url), p_reproj)
     unlist(ocd_map[, -1])/10
-  }, .progress = T)
+  }, .progress = T)))) {
+    ocd_real <- vector("list", length = length(L))
+    pb <- utils::txtProgressBar(min = 0, max = length(L), style = 3)
+    for (i in seq_along(L)) {
+      l <- L[[i]]
+      ocd_url <- paste0(base_data_url, l[[1]], l[[2]])
+      ocd_map <- terra::extract(terra::rast(ocd_url), p_reproj)
+      ocd_real[[i]] <- unlist(ocd_map[, -1])/10
+      utils::setTxtProgressBar(pb, i)
+    }
+  }
+  
   for (dep in seq_along(depths)) {
     dep.ind <- which(grepl(depths[dep], name_tag[, 1]))
     ocdquant[dep, ] <- ocd_real[dep.ind] %>% unlist

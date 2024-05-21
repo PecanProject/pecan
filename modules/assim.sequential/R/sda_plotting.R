@@ -830,7 +830,7 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
              Name=.data$site.names)
     
     suppressMessages({
-      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAnAssimSequential"))
+      aoi_boundary_HARV <- sf::st_read(system.file("extdata", "eco-regionl2.json", package = "PEcAn.data.land"))
     })
     
     #transform site locs into new projection - UTM 2163
@@ -918,13 +918,19 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 ##' @param CI range of confidence interval.
 ##' @param unit list of unit used for y axis label.
 ##' @param style color option.
+##' @param PDF_w width of exported PDF file.
+##' @param PDF_h height of exported PDF file.
+##' @param t.inds index of period that will be plotted.
 ##' @export
 ##' @author Dongchen Zhang
 SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = NULL, outdir, pft.path = NULL, by = "site", types = c("FORECAST", "ANALYSIS", "OBS"), CI = c(0.025, 0.975), 
                                 unit = list(AbvGrndWood = "Mg/ha", LAI = "m2/m2", SoilMoistFrac = "", TotSoilCarb = "kg/m2"),
                                 style = list(general_color = c("FORECAST" = "blue", "ANALYSIS" = "red", "OBS" = "black"),
                                              fill_color = c("FORECAST" = "yellow", "ANALYSIS" = "green", "OBS" = "grey"),
-                                             title_color = "red")){
+                                             title_color = "red"), 
+                                PDF_w = 20,
+                                PDF_h = 16,
+                                t.inds = NULL){
   #Check package availability.
   if("try-error" %in% class(try(find.package("ggpubr"), silent = T))){
     PEcAn.logger::logger.info("Package ggpubr is not installed! Please install it and rerun the function!")
@@ -932,6 +938,9 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
   }
   #TODO: make page, font, line, point sizes adjustable.
   time_points <- names(FORECAST)
+  if (!is.null(t.inds)) {
+    time_points <- time_points[t.inds]
+  }
   site_ids <- attributes(FORECAST[[1]])$Site
   var_names <- attributes(FORECAST[[1]])$dimnames[[2]]
   #new diag function: fixed the bug when length==1 then it will return 0x0 matrix
@@ -979,8 +988,6 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
   }
   #if we plot by each site.
   if(by == "site") {
-    PDF_w <- 10
-    PDF_h <- 8
     p <- list()
     for (site.id in sort(unique(site_ids))) {
       site_p <- list()
@@ -1001,8 +1008,6 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
     }
     #if we plot by each state variable
   } else if (by == "var") {
-    PDF_w <- 20
-    PDF_h <- 16
     p <- list()
     for (var.name in sort(unique(var_names))) {
       var_p <- list()
@@ -1028,8 +1033,6 @@ SDA_timeseries_plot <- function(ANALYSIS, FORECAST, obs.mean = NULL, obs.cov = N
       PEcAn.logger::logger.info("Please provide the pdf path!")
       return(0)
     } else {
-      PDF_w <- 20
-      PDF_h <- 16
       p <- list()
       for (PFT in sort(unique(pft$pft))) {
         site_id_pft <- pft$site[which(pft$pft == PFT)]
