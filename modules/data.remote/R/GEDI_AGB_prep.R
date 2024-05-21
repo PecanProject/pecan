@@ -90,6 +90,7 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, buffer = 0.01, 
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
   # redirect to the site folder.
   site_folder <- file.path(outdir, site.id)
@@ -139,6 +140,7 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 0, buffer = 0.01) {
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {

@@ -43,6 +43,7 @@ Suggests:
     lubridate,
     raster,
     reshape,
+    rlang,
     sf,
     testthat (>= 1.0.2),
     tibble,
