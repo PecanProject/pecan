@@ -475,7 +475,7 @@
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
 "rlang","*","modules/data.land","Imports",FALSE
-"rlang","*","modules/data.remote","Suggests",FALSE
+"rlang","*","modules/data.remote","Imports",FALSE
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
