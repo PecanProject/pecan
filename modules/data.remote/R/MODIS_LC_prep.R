@@ -11,8 +11,10 @@
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-#' @details This function enables the feature of grabing pre-extracted MODIS LC CSV files such that any site that 
-#' has records will be skipped (See Line 33).
+#' @details This function enables the feature of grabbing pre-extracted MODIS LC CSV files such that any site that 
+#' has records will be skipped (See Line 33). In more detail, we will be loading the previous `LC.csv` file, which
+#' contains previous extracted land cover records and trying to match that with current requests (location, time).
+#' Any requests that fail the match will be regarded as new extractions and combine with the previous `LC.csv` file.
 MODIS_LC_prep <- function(site_info, time_points, outdir = NULL, qc.filter = c("000", "001")){
   #initialize future parallel computation.
   if (future::supportsMulticore()) {
