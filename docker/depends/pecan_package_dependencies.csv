@@ -6,6 +6,7 @@
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
+"assertthat","*","modules/data.atmosphere","Imports",FALSE
 "BayesianTools","*","modules/assim.batch","Imports",FALSE
 "BayesianTools","*","modules/rtm","Imports",FALSE
 "BioCro","*","models/biocro","Suggests",FALSE
@@ -32,7 +33,6 @@
 "data.table","*","base/utils","Suggests",FALSE
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
-"data.table","*","models/ldndc","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Imports",FALSE
@@ -261,6 +261,7 @@
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE
 "PEcAn.data.land","*","models/ed","Imports",TRUE
+"PEcAn.data.land","*","models/ldndc","Imports",TRUE
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
@@ -319,7 +320,6 @@
 "PEcAn.logger","*","modules/assim.sequential","Imports",TRUE
 "PEcAn.logger","*","modules/benchmark","Imports",TRUE
 "PEcAn.logger","*","modules/data.atmosphere","Imports",TRUE
-"PEcAn.logger","*","modules/data.hydrology","Imports",TRUE
 "PEcAn.logger","*","modules/data.land","Imports",TRUE
 "PEcAn.logger","*","modules/data.remote","Imports",TRUE
 "PEcAn.logger","*","modules/meta.analysis","Imports",TRUE
@@ -396,7 +396,6 @@
 "PEcAn.utils","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.utils","*","modules/benchmark","Imports",TRUE
 "PEcAn.utils","*","modules/data.atmosphere","Imports",TRUE
-"PEcAn.utils","*","modules/data.hydrology","Imports",TRUE
 "PEcAn.utils","*","modules/data.land","Imports",TRUE
 "PEcAn.utils","*","modules/data.remote","Imports",TRUE
 "PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
@@ -444,6 +443,7 @@
 "raster","*","modules/data.land","Suggests",FALSE
 "raster","*","modules/data.remote","Suggests",FALSE
 "rcrossref","*","base/db","Suggests",FALSE
+"readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
@@ -514,7 +514,6 @@
 "roxygen2","== 7.2.3","modules/assim.sequential","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/benchmark","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.atmosphere","Roxygen",FALSE
-"roxygen2","== 7.2.3","modules/data.hydrology","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.land","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/data.remote","Roxygen",FALSE
 "roxygen2","== 7.2.3","modules/emulator","Roxygen",FALSE
@@ -587,7 +586,6 @@
 "testthat",">= 1.0.2","models/template","Suggests",FALSE
 "testthat",">= 1.0.2","modules/allometry","Suggests",FALSE
 "testthat",">= 1.0.2","modules/assim.batch","Suggests",FALSE
-"testthat",">= 1.0.2","modules/data.hydrology","Suggests",FALSE
 "testthat",">= 1.0.2","modules/data.land","Suggests",FALSE
 "testthat",">= 1.0.2","modules/data.remote","Suggests",FALSE
 "testthat",">= 1.0.2","modules/meta.analysis","Suggests",FALSE
@@ -598,7 +596,7 @@
 "testthat",">= 2.0.0","base/utils","Suggests",FALSE
 "testthat",">= 2.0.0","models/biocro","Suggests",FALSE
 "testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
-"testthat",">= 2.0.0","modules/data.atmosphere","Imports",FALSE
+"testthat",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
