@@ -507,7 +507,7 @@ sda.enkf.multisite <- function(settings,
       ###-------------------------------------------------------------------###---- 
       #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
       #Then specify the settings$state.data.assimilation$scalef as 0, and settings$state.data.assimilation$free.run as TRUE.
-      if (!is.null(obs.mean[[t]][[1]]) | as.logical(settings$state.data.assimilation$free.run) & control$forceRun) {
+      if (!is.null(obs.mean[[t]][[1]]) | (as.logical(settings$state.data.assimilation$free.run) & control$forceRun)) {
         # TODO: as currently configured, Analysis runs even if all obs are NA, 
         #  which clearly should be triggering the `else` of this if, but the
         #  `else` has not been invoked in a while an may need updating
@@ -756,6 +756,7 @@ sda.enkf.multisite <- function(settings,
       system2(sendmail, c("-f", paste0("\"", control$send_email$from, "\""), paste0("\"", control$send_email$to, "\""), "<", mailfile))
       unlink(mailfile)
     }
+      gc()
     # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
 #    if (keepNC && t == 1){
 #      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))

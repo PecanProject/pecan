@@ -551,8 +551,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
-      if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
-        param[which(param[, 1] == "soilWFracInit"), 2] <- sum(soilWFrac)
+      if (!"try-error" %in% class(soilWFrac)) {
+        if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
+          param[which(param[, 1] == "soilWFracInit"), 2] <- sum(soilWFrac)/100
+        }
       }
       ## litterWFracInit fraction
       litterWFrac <- soilWFrac

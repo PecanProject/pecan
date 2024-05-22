@@ -153,7 +153,7 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
       settings[[i]]$run$site$met.end <- 
         settings[[i]]$run$end.date <- 
         settings[[i]]$state.data.assimilation$end.date
-      settings[[i]]$run$inputs$met <- as.list(unlist(Clim_paths[[i]])) %>% purrr::set_names(rep("path", length(Clim_paths[[i]])))
+      settings[[i]]$run$inputs$met$path <- as.list(unlist(Clim_paths[[i]])) %>% purrr::set_names(rep("path", length(Clim_paths[[i]])))
     }
     
     #write settings into xml file.
