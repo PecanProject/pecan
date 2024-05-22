@@ -14,9 +14,6 @@
 * Newly supported met data sources:
 	- ERA5 via `ERA5_met_process()` [@DongchenZ, #2886]
 	- NOAA GEFS data hosted by the Ecological Forecasting Initiative, via `download_NOAA_GEFS_EFI()` [@helge22a, #3174] (For GEFS data directly from NOAA, continue to use `download.NOAA_GEFS`)
-	- ICOS?
-	- MERRA?
-* half-hourly downscaling via `downscale_*_to_half_hrly()`?
 * Integration tests of met download from CRUNCEP (#3203), ERA5 (#3207), and Ameriflux (#3208) [@meetagrawal09]
 
 ## Changed
