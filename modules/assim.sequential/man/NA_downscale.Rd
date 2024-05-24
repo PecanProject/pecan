@@ -4,18 +4,18 @@
 \alias{NA_downscale}
 \title{North America Downscale Function}
 \usage{
-NA_downscale(data, cords, covariates, focus_year, C_pool)
+NA_downscale(data, coords, date, C_pool)
 }
 \arguments{
 \item{data}{In quotes, file path for .rds containing ensemble data.}
 
-\item{focus_year}{In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.}
+\item{coords}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
+
+\item{date}{In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.}
 
 \item{C_pool}{In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.}
 
-\item{covariates}{In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.}
-
-\item{cords}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
+\item{covariates}{Should be loaded in using 'covariates' instructions in inst folder}
 }
 \value{
 It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
