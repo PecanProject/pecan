@@ -148,9 +148,6 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
         #compare two progresses and set the maximum progress for the progress bar.
         pbi <- L_folder - length(folders)
         utils::setTxtProgressBar(pb, pbi)
-        
-        pbi1 <- L_jobid - length(jobids)
-        utils::setTxtProgressBar(pb1, pbi1)
       }
     } else {
       #special case that only detect the job ids on the server.
