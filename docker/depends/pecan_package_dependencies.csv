@@ -77,6 +77,7 @@
 "future","*","modules/data.remote","Imports",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
+"getPass","*","modules/data.land","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
 "ggplot2","*","base/utils","Suggests",FALSE
 "ggplot2","*","base/visualization","Imports",FALSE
@@ -93,6 +94,7 @@
 "glue","*","models/ed","Imports",FALSE
 "glue","*","modules/assim.sequential","Suggests",FALSE
 "glue","*","modules/data.atmosphere","Imports",FALSE
+"glue","*","modules/data.land","Suggests",FALSE
 "glue","*","modules/data.remote","Imports",FALSE
 "graphics","*","base/qaqc","Imports",FALSE
 "graphics","*","modules/allometry","Imports",FALSE
@@ -451,6 +453,7 @@
 "reshape2","*","modules/data.atmosphere","Imports",FALSE
 "reshape2",">= 1.4.2","modules/assim.sequential","Suggests",FALSE
 "reticulate","*","modules/data.atmosphere","Suggests",FALSE
+"reticulate","*","modules/data.land","Suggests",FALSE
 "reticulate","*","modules/data.remote","Imports",FALSE
 "rjags","*","base/utils","Suggests",FALSE
 "rjags","*","modules/assim.batch","Imports",FALSE

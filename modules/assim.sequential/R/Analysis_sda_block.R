@@ -203,8 +203,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$data$muf <- mu.f[f.start:f.end]
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
       #find indexs for Y.
-      y.start <- sum(obs_per_site[1:i])
-      y.end <- y.start + obs_per_site[i] - 1
+      y.start <- sum(obs_per_site[1:i]) - obs_per_site[i] + 1
+      y.end <- sum(obs_per_site[1:i])
       #fill in y and r
       #if there is no observation for this site.
       if (y.end < y.start) {
@@ -256,8 +256,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       for (j in seq_along(ids)) {
         f.start <- (ids[j] - 1) * length(var.names) + 1
         f.end <- ids[j] * length(var.names)
-        y.start <- sum(obs_per_site[1:ids[j]])
-        y.end <- y.start + obs_per_site[ids[j]] - 1
+        y.start <- sum(obs_per_site[1:ids[j]]) - obs_per_site[ids[j]] + 1
+        y.end <- sum(obs_per_site[1:ids[j]])
         f.ind <- c(f.ind, f.start:f.end)
         #if the current site has greater or equal than 1 observation.
         if (y.end >= y.start) {
