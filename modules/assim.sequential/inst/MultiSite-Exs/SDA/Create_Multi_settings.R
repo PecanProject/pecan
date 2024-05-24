@@ -9,14 +9,14 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/"
-SDA_run_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/run/"
-SDA_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/out/"
+outdir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/"
+SDA_run_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/run/"
+SDA_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/out/"
 
-ERA5_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/ERA5_2012_2021/"
-XML_out_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/SDA/pecan.xml"
+ERA5_dir <- "/projectnb/dietzelab/dongchen/anchorSites/ERA5_2012_2021/"
+XML_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml"
 
-pft_csv_dir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"
+pft_csv_dir <- "/projectnb/dietzelab/dongchen/anchorSites/site_pft.csv"
 
 #Obs_prep part
 #AGB
@@ -44,14 +44,14 @@ SoilC_export_csv <- TRUE
 #Obs Date
 obs_start_date <- "2012-07-15"
 obs_end_date <- "2021-07-15"
-obs_outdir <- "/projectnb/dietzelab/dongchen/All_NEON_SDA/test_OBS"
+obs_outdir <- "/projectnb/dietzelab/dongchen/anchorSites/Obs"
 timestep <- list(unit="year", num=1)
 
 #specify model binary
 model_binary <- "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if"
 
 #specify host section
-host.flag <- "rabbitmq"
+host.flag <- "local"
 if (host.flag == "remote") {
   #if we submit jobs through tunnel remotely.
   host = structure(list(
@@ -78,11 +78,10 @@ if (host.flag == "remote") {
   host = structure(list(
     name = "localhost",
     rabbitmq = structure(list(
-      prefix = NULL,
       uri = "amqp://guest:guest@pecan-rabbitmq:15672/%2F",
       queue = "SIPNET_r136",
       cp2cmd = "oc rsync @RUNDIR@ $(oc get pod -l app.kubernetes.io/name=pecan-model-sipnet-136 -o name):@RUNDIR@",
-      cpfcmd = "/data/bin/oc rsync @OUTFOLDER@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
+      cpfcmd = "/data/bin/oc rsync @OUTDIR@ $(/data/bin/oc get pod -l app=dongchen-sda -o name):@OUTDIR@"
     )),
     folder = SDA_out_dir,
     outdir = SDA_out_dir,
@@ -109,11 +108,11 @@ template <- PEcAn.settings::Settings(list(
     FullYearNC = TRUE,
     NC.Overwrite = FALSE,
     NC.Prefix = "sipnet.out",
-    q.type = "SINGLE",
+    q.type = "vector",
     by.site = FALSE,
     Localization.FUN = "Local.support",
     scalef = 1,
-    chains = 5,
+    chains = 1,
     data = structure(list(format_id = 1000000040, input.id = 1000013298)),
     state.variables = structure(list(
       #you could add more state variables here
@@ -291,7 +290,7 @@ template <- PEcAn.settings::Settings(list(
       #                               )),
       # soilinitcond = structure(list(path = "/projectnb/dietzelab/ahelgeso/EFI_Forecast_Challenge/"
       #                               )),
-      pft.site = structure(list(path = "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/site_pft.csv"))
+      pft.site = structure(list(path = pft_csv_dir))
     ))
   ))
 ))
@@ -304,8 +303,8 @@ template <- PEcAn.settings::Settings(list(
 ############################################################################
 ############################################################################
 
-sitegroupId <- 1000000031
-nSite <- 39
+sitegroupId <- 1000000033
+nSite <- 330
 
 multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
   template,
@@ -314,6 +313,9 @@ multiRunSettings <- PEcAn.settings::createSitegroupMultiSettings(
 if(file.exists(XML_out_dir)){
   unlink(XML_out_dir)
 }
+
+
+
 PEcAn.settings::write.settings(multiRunSettings, outputfile = "pecan.xml")
 
 #here we re-read the xml file to fix issues of some special character within the Host section.
@@ -345,6 +347,26 @@ for (i in 1:nSite) {
   settings[[i]]$run$site$lon <- site_info$lon[index_site_info]
   settings[[i]]$run$site$name <- site_info$sitename[index_site_info]#temp_ID
 }
+
+#remove overlapped sites
+site.locs <- settings$run %>% 
+  purrr::map('site') %>% 
+  purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+  t %>%
+  `colnames<-`(c("lon","lat")) %>% data.frame
+del.ind <- c()
+for (i in 1:nrow(site.locs)) {
+  for (j in i:nrow(site.locs)) {
+    if (i == j) {
+      next
+    }
+    if (site.locs$lon[i] == site.locs$lon[j] &&
+        site.locs$lat[i] == site.locs$lat[j]) {
+      del.ind <- c(del.ind, j)
+    }
+  }
+}
+settings <- settings[-del.ind]
 
 #####
 unlink(paste0(settings$outdir,"/pecan.xml"))

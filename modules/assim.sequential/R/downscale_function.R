@@ -6,7 +6,7 @@
 ##' @param coords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
 ##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates Should be loaded in using 'covariates' instructions in inst folder
+##' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
 ##' @description This function uses the randomForest model.
@@ -14,7 +14,7 @@
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-NA_downscale <- function(data, coords, date, C_pool){
+NA_downscale <- function(data, coords, date, C_pool, covariates){
   
   # Read the input data and site coordinates
   input_data <- readRDS(data)
@@ -62,7 +62,7 @@ NA_downscale <- function(data, coords, date, C_pool){
     rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
                                                  data = ensembles[[i]][[1]],
                                                  ntree = 1000,
-                                                 na.action = na.omit,
+                                                 na.action = stats::na.omit,
                                                  keep.forest = T,
                                                  importance = T)
   }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/temporal.downscaling.R
 \name{cfmet.downscale.daily}
 \alias{cfmet.downscale.daily}
-\title{daily to subdaily downscaling}
+\title{Simple, Fast Daily to Hourly Climate Downscaling}
 \usage{
 cfmet.downscale.daily(dailymet, output.dt = 1, lat)
 }
 \arguments{
-\item{dailymet}{data table with climate variables}
+\item{dailymet}{data frame with climate variables}
 
 \item{output.dt}{output timestep}
 
@@ -17,12 +17,9 @@ cfmet.downscale.daily(dailymet, output.dt = 1, lat)
 weather file with subdaily timesteps
 }
 \description{
-Simple, Fast Daily to Hourly Climate Downscaling
-}
-\details{
 Based on weach family of functions but 5x faster than weachNEW,
-and requiring metric units (temperature in celsius, windspeed in kph,
-precip in mm, relative humidity as fraction).
+and requiring metric units (temperature in Kelvins on input and celsius on
+  output, windspeed in kph, precip in mm, relative humidity as fraction).
 Derived from the weachDT function in the BioCro package.
 }
 \author{
