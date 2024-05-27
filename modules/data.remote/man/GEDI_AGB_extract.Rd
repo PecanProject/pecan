@@ -2,7 +2,7 @@
 % Please edit documentation in R/GEDI_AGB_prep.R
 \name{GEDI_AGB_extract}
 \alias{GEDI_AGB_extract}
-\title{Extract GEDI AGB data for the GEDI AGB prep function.}
+\title{Extract L4A GEDI above ground biomass data for the GEDI AGB prep function.}
 \usage{
 GEDI_AGB_extract(
   site_info,
@@ -11,29 +11,32 @@ GEDI_AGB_extract(
   outdir,
   nfile.min = 0,
   nrow.min = 0,
-  buffer = 0.01
+  buffer = 0.01,
+  gradient = 0
 )
 }
 \arguments{
-\item{site_info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{A list including site_id, longitude, and latitude.}
 
-\item{start_date}{start date for filtering out the existing CSV file.}
+\item{start_date}{target start date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.}
 
-\item{end_date}{end date for filtering out the existing CSV file.}
+\item{end_date}{end date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.}
 
-\item{outdir}{Where the final CSV file will be stored.}
+\item{outdir}{Directory where the final CSV file will be stored.}
 
-\item{nfile.min}{the minimum required file number to be downloaded and extracted.}
+\item{nfile.min}{the minimum required file number to be downloaded and extracted, default is 0.}
 
-\item{nrow.min}{the minimum required observation number to be extracted.}
+\item{nrow.min}{the minimum required observation number to be extracted, default is 0.}
 
-\item{buffer}{buffer distance for locate GEDI AGB searching box (default is 0.01 ~ 1 km)}
+\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).}
+
+\item{gradient}{the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
 }
 \value{
 A list of AGB data frames for each site.
 }
 \description{
-Extract GEDI AGB data for the GEDI AGB prep function.
+Extract L4A GEDI above ground biomass data for the GEDI AGB prep function.
 }
 \author{
 Dongchen Zhang

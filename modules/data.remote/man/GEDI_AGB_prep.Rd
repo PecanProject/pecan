@@ -2,37 +2,51 @@
 % Please edit documentation in R/GEDI_AGB_prep.R
 \name{GEDI_AGB_prep}
 \alias{GEDI_AGB_prep}
-\title{Prepare GEDI AGB data for the SDA workflow.}
+\title{Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
+This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
+for more}
 \usage{
 GEDI_AGB_prep(
   site_info,
   time_points,
-  outdir = NULL,
+  outdir = file.path(getwd(), "GEDI_AGB"),
   buffer = 0.01,
   search_window = "3 month"
 )
 }
 \arguments{
-\item{site_info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{A list including site_id, longitude, and latitude.}
 
-\item{time_points}{A vector contains each time point within the start and end date.}
+\item{time_points}{A vector contains target dates (in YYYY-MM-DD).}
 
-\item{outdir}{Where the final CSV file will be stored.}
+\item{outdir}{Directory where the final CSV file will be stored.}
 
-\item{buffer}{buffer distance for locate GEDI AGB searching box (default is 0.01 ~ 1 km)}
+\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).}
 
-\item{search_window}{search window for locate available GEDI AGB values.}
+\item{search_window}{search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.}
 }
 \value{
 A data frame containing AGB and sd for each site and each time step.
 }
 \description{
-Prepare GEDI AGB data for the SDA workflow.
+Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
+This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
+for more
+}
+\details{
+During the first use, users will be ask to enter their Earth Explore
+ login Information for downloading the data. If you don't have already an
+ account, register
+ \href{https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40}{at
+ this link}. These information will be saved in \code{outdir} as a netrc
+ file. This function uses the \code{\link[foreach]{foreach}} package for
+ downloading files in parallel, with the
+ \code{\link[doParallel]{doParallel}} configuration. If a file with the same
+ name is already presented in \code{outdir} it will be overwrite.
 }
 \examples{
 \dontrun{
-settings_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml"
-settings <- PEcAn.settings::read.settings(settings_dir)
+settings <- PEcAn.settings::read.settings("pecan.xml")
 site_info <- settings \%>\% 
   purrr::map(~.x[['run']] ) \%>\% 
   purrr::map('site')\%>\% 
@@ -44,8 +58,8 @@ site_info <- settings \%>\%
   })\%>\% 
   dplyr::bind_rows() \%>\% 
   as.list()
-  time_points <- seq(as.Date("2019-07-15"), as.Date("2023-07-15"), by = "1 year")
-  outdir <- "/projectnb/dietzelab/dongchen/anchorSites/GEDI_Tami/test/"
+  time_points <- seq(start.date, end.date, by = time.step)
+  buffer <- 0.01
 GEDI_AGB <- GEDI_AGB_prep(site_info, time_points, outdir, buffer)
 }
 }

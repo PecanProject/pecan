@@ -1,18 +1,27 @@
-#' Prepare GEDI AGB data for the SDA workflow.
+#' Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
+#' This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
+#' for more 
+#' @details During the first use, users will be ask to enter their Earth Explore
+#'  login Information for downloading the data. If you don't have already an
+#'  account, register
+#'  \href{https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40}{at
+#'  this link}. These information will be saved in \code{outdir} as a netrc
+#'  file. This function uses the \code{\link[foreach]{foreach}} package for
+#'  downloading files in parallel, with the
+#'  \code{\link[doParallel]{doParallel}} configuration. If a file with the same
+#'  name is already presented in \code{outdir} it will be overwrite.
 #'
-#' @param site_info Bety list of site info including site_id, lon, and lat.
-#' @param time_points A vector contains each time point within the start and end date.
-#' @param outdir Where the final CSV file will be stored.
-#' @param buffer buffer distance for locate GEDI AGB searching box (default is 0.01 ~ 1 km)
-#' @param search_window search window for locate available GEDI AGB values.
+#' @param site_info A list including site_id, longitude, and latitude.
+#' @param time_points A vector contains target dates (in YYYY-MM-DD).
+#' @param outdir Directory where the final CSV file will be stored.
+#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).
+#' @param search_window search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.
 #'
 #' @return A data frame containing AGB and sd for each site and each time step.
-#' @export
 #' 
 #' @examples
 #' \dontrun{
-#' settings_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml"
-#' settings <- PEcAn.settings::read.settings(settings_dir)
+#' settings <- PEcAn.settings::read.settings("pecan.xml")
 #' site_info <- settings %>% 
 #'   purrr::map(~.x[['run']] ) %>% 
 #'   purrr::map('site')%>% 
@@ -24,27 +33,47 @@
 #'   })%>% 
 #'   dplyr::bind_rows() %>% 
 #'   as.list()
-#'   time_points <- seq(as.Date("2019-07-15"), as.Date("2023-07-15"), by = "1 year")
-#'   outdir <- "/projectnb/dietzelab/dongchen/anchorSites/GEDI_Tami/test/"
+#'   time_points <- seq(start.date, end.date, by = time.step)
+#'   buffer <- 0.01
 #' GEDI_AGB <- GEDI_AGB_prep(site_info, time_points, outdir, buffer)
 #' }
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, buffer = 0.01, search_window = "3 month") {
+GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "GEDI_AGB"), buffer = 0.01, search_window = "3 month") {
   # if we don't have outdir, we will use the temp dir as outdir.
-  if (is.null(outdir)) {
-    outdir <- file.path(getwd(), "GEDI_AGB")
-    if (file.exists(outdir)) {
-      # if dir already exists.
-      # delete everything in this folder 
-      # to make sure the download process will work.
-      unlink(outdir, recursive = T)
-    } else {
-      dir.create(outdir)
-    }
+  if (!dir.exists(outdir)) {
+    dir.create(outdir)
   }
+  #define function for building netrc file with access credentials
+  getnetrc <- function (dl_dir) {
+    netrc <- file.path(dl_dir, "netrc")
+    if (file.exists(netrc) == FALSE ||
+        any(grepl("urs.earthdata.nasa.gov",
+                  readLines(netrc))) == FALSE) {
+      netrc_conn <- file(netrc)
+      writeLines(c(
+        "machine urs.earthdata.nasa.gov",
+        sprintf(
+          "login %s",
+          getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
+        ),
+        sprintf(
+          "password %s",
+          getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
+        )
+      ),
+      netrc_conn)
+      close(netrc_conn)
+      message(
+        "A netrc file with your Earthdata Login credentials was stored in the output directory "
+      )
+    }
+    return(netrc)
+  }
+  # Create credential file into outdir.
+  getnetrc(outdir)
   # check dates.
-  time_points <- time_points[which(time_points >= as.Date("2019-04-18") & time_points <= as.Date("2023-03-16"))]
+  time_points <- time_points[which(time_points >= as.Date("2019-04-18"))]
   # if we don't have any observation for those dates.
   if (length(time_points) == 0) {
     return(NULL)
@@ -68,6 +97,8 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, buffer = 0.01, 
       }
       # otherwise calculate the mean and standard error.
       AGB_Output[j, paste0(time_points[i], "_AGB")] <- mean(AGB[[j]]$agbd, na.rm = T) # mean
+      # Note: the following sd calculation is only for testing.
+      # TODO: making sure to upgrade this sd calculation.
       if (nrow(AGB[[i]]) == 1) {
         AGB_Output[j, paste0(time_points[i], "_SD")] <- AGB[[j]]$agbd_se # sd
       } else {
@@ -81,8 +112,8 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = NULL, buffer = 0.01, 
 #'
 #' @param outdir Where the plot PNG file will be stored.
 #' @param site.id Unique ID for the target site.
-#' @param start_date start date for filtering out the existing CSV file.
-#' @param end_date end date for filtering out the existing CSV file.
+#' @param start_date start date (in YYYY-MM-DD) for filtering out the existing CSV file.
+#' @param end_date end date (in YYYY-MM-DD) for filtering out the existing CSV file.
 #'
 #' @return 
 #' @export 
@@ -124,24 +155,24 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
     }
   }
 }
-#' Extract GEDI AGB data for the GEDI AGB prep function.
+#' Extract L4A GEDI above ground biomass data for the GEDI AGB prep function.
 #'
-#' @param site_info Bety list of site info including site_id, lon, and lat.
-#' @param start_date start date for filtering out the existing CSV file.
-#' @param end_date end date for filtering out the existing CSV file.
-#' @param outdir Where the final CSV file will be stored.
-#' @param nfile.min the minimum required file number to be downloaded and extracted.
-#' @param nrow.min the minimum required observation number to be extracted.
-#' @param buffer buffer distance for locate GEDI AGB searching box (default is 0.01 ~ 1 km)
+#' @param site_info A list including site_id, longitude, and latitude.
+#' @param start_date target start date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.
+#' @param end_date end date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.
+#' @param outdir Directory where the final CSV file will be stored.
+#' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
+#' @param nrow.min the minimum required observation number to be extracted, default is 0.
+#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).
+#' @param gradient the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
 #' @return A list of AGB data frames for each site.
-#' @export
 #' 
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
-GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 0, buffer = 0.01) {
+GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 0, buffer = 0.01, gradient = 0) {
   #Initialize the multicore computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore)
@@ -154,19 +185,19 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
       # flag determine if we have satisfied res.filter object.
       csv.valid <- FALSE
       # extends for filter.
-      extends <- c(point$lat + buffer,
-                   point$lat - buffer,
-                   point$lon - buffer,
-                   point$lon + buffer) %>% 
-        purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
+      extends <- data.frame(ymax = point$lat + buffer,
+                            ymin = point$lat - buffer,
+                            xmin = point$lon - buffer,
+                            xmax = point$lon + buffer)
       # redirect to the current folder.
       # if we already create the folder.
       site_folder <- file.path(outdir, point$site_id)
       if (file.exists(site_folder)) {
         # if csv file has been generated.
-        if (length(list.files(site_folder, "GEDI_AGB.csv", full.names = T)) > 0) {
+        csv.path <- list.files(site_folder, "GEDI_AGB.csv", full.names = T)
+        if (length(csv.path) > 0) {
           # read csv file.
-          res <- utils::read.csv(list.files(site_folder, "GEDI_AGB.csv", full.names = T))
+          res <- utils::read.csv(csv.path)
           if (file.exists(file.path(site_folder, "extends.txt")) & nfile.min != 0) {
             extends <- utils::read.table(file.path(site_folder, "extends.txt"), skip = 1, col.names = c("ymax", "ymin", "xmin", "xmax"))
             extends <- extends[nrow(extends),]
@@ -179,6 +210,9 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
                                               lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
                                               lubridate::as_date(.data$date) <= lubridate::as_date(end_date))
           # determine if res.filter is not empty.
+          # In the future, we will need to document 
+          # file name of each pre-downloaded `GEDI L4A` files 
+          # such that any new files within the range will be downloaded and processed.
           if (nrow(res.filter) > 0) {
             csv.valid <- TRUE
           }
@@ -204,7 +238,8 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
                                          outdir = site_folder, 
                                          extends = extends,
                                          nfile.min = nfile.min,
-                                         nrow.min = nrow.min)
+                                         nrow.min = nrow.min,
+                                         gradient = gradient)
         # if we have previous downloaded GEDI records.
         if (exists("res", mode = "environment") & !all(is.na(res.current))) {
           res <- rbind(res, res.current)
@@ -228,21 +263,20 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
 }
 #' Download GEDI AGB data for the GEDI AGB extract function.
 #'
-#' @param start_date start date for filtering out the existing CSV file.
-#' @param end_date end date for filtering out the existing CSV file.
-#' @param outdir Where the final CSV file will be stored.
+#' @param start_date start date (YYYY-MM-DD) for downloading GEDI AGB from remote database.
+#' @param end_date end date (YYYY-MM-DD) for downloading GEDI AGB from remote database.
+#' @param outdir Directory where the final CSV file will be stored.
 #' @param extends the XY box (in degrees) for downloading GEDI AGB file.
-#' @param nfile.min the minimum required file number to be downloaded and extracted.
-#' @param nrow.min the minimum required observation number to be extracted.
-#' @param gradient the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached.
+#' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
+#' @param nrow.min the minimum required observation number to be extracted, default is 0.
+#' @param gradient the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
 #' @return A data frame containing AGB and sd for the target spatial and temporal extends.
-#' @export
 #' 
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min = 0, nrow.min = 0, gradient = 0.001) {
+GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min = 0, nrow.min = 0, gradient = 0) {
   # download GEDI AGB files.
   # if there is no data within current buffer distance.
   files <- try(l4_download(ncore = 1,
@@ -405,32 +439,6 @@ l4_download <-
     op <- options("warn")
     on.exit(options(op))
     options(warn=1)
-    #define function for building netrc file with access credentials
-    getnetrc <- function (dl_dir) {
-      netrc <- file.path(dl_dir, "netrc")
-      if (file.exists(netrc) == FALSE ||
-          any(grepl("urs.earthdata.nasa.gov",
-                    readLines(netrc))) == FALSE) {
-        netrc_conn <- file(netrc)
-        writeLines(c(
-          "machine urs.earthdata.nasa.gov",
-          sprintf(
-            "login %s",
-            getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
-          ),
-          sprintf(
-            "password %s",
-            getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
-          )
-        ),
-        netrc_conn)
-        close(netrc_conn)
-        message(
-          "A netrc file with your Earthdata Login credentials was stored in the output directory "
-        )
-      }
-      return(netrc)
-    }
     #check if outdir exist and if there is a netrc file in
     if (!just_path) {
       # stopifnot("outdir is not character" = check_char(outdir))
