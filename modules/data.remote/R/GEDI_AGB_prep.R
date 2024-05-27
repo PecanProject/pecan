@@ -390,40 +390,6 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min =
 #'   \code{\link[doParallel]{doParallel}} configuration. If a file with the same
 #'   name is already presented in \code{outdir} it will be overwrite.
 #' @return List of file path in \code{outdir}
-#' @examples
-#'
-#'#retrive Italy bound
-#'bound <- sf::st_as_sf(raster::getData('GADM', country='ITA', level=1))
-#'ex <- raster::extent(bound)
-#'ul_lat <- ex[4]
-#'lr_lat <- ex[3]
-#'ul_lon <- ex[2]
-#'lr_lon <- ex[1]
-#'from <- "2020-07-01"
-#'to <- "2020-07-02"
-#'#get just files path available for the searched parameters
-#'l4_download(ul_lat=ul_lat,
-#'            lr_lat=lr_lat,
-#'            ul_lon=ul_lon,
-#'            lr_lon=lr_lon,
-#'            from=from,
-#'            to=to,
-#'            just_path=T
-#')
-#'
-#'#download the first 4 files
-#'
-#'l4_download(ul_lat=ul_lat,
-#'            lr_lat=lr_lat,
-#'            ul_lon=ul_lon,
-#'            lr_lon=lr_lon,
-#'            from=from,
-#'            to=to,
-#'            just_path=F,
-#'            outdir = tempdir(),
-#'            subset=1:4)
-#' @export
-
 l4_download <-
   function(ul_lat,
            lr_lat,
