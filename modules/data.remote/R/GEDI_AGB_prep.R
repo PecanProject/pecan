@@ -3,13 +3,12 @@
 #' for more 
 #' @details During the first use, users will be ask to enter their Earth Explore
 #'  login Information for downloading the data. If you don't have already an
-#'  account, register
-#'  \href{https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40}{at
-#'  this link}. These information will be saved in \code{outdir} as a netrc
-#'  file. This function uses the \code{\link[foreach]{foreach}} package for
+#'  account, register at https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40. 
+#'  These information will be saved in outdir as a netrc
+#'  file. This function uses the foreach package for
 #'  downloading files in parallel, with the
-#'  \code{\link[doParallel]{doParallel}} configuration. If a file with the same
-#'  name is already presented in \code{outdir} it will be overwrite.
+#'  doParallel configuration. If a file with the same
+#'  name is already presented in outdir it will be overwrite.
 #'
 #' @param site_info A list including site_id, longitude, and latitude.
 #' @param time_points A vector contains target dates (in YYYY-MM-DD).
@@ -375,21 +374,20 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min =
 #'   "yyyy-mm-dd".
 #' @param outdir Character: path of the directory in which to save the
 #'   downloaded files.Default to the working directory. If it doesn't exist it
-#'   will be created. Ignored if \code{just_path=TRUE}
+#'   will be created. Ignored if just_path=TRUE.
 #' @param just_path Logical: if TRUE return a character vector of available
 #'   files without downloading them. Default to FALSE.
 #' @param subset Numeric vector of indices for downloading a subset of files
 #'   instead of all. If is not numeric it will be ignored silently.
 #' @details During the first use, users will be ask to enter their Earth Explore
-#'   login Information for downloading the data. If you don't have already an
-#'   account, register
-#'   \href{https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40}{at
-#'   this link}. These information will be saved in \code{outdir} as a netrc
-#'   file. This function uses the \code{\link[foreach]{foreach}} package for
-#'   downloading files in parallel, with the
-#'   \code{\link[doParallel]{doParallel}} configuration. If a file with the same
-#'   name is already presented in \code{outdir} it will be overwrite.
-#' @return List of file path in \code{outdir}
+#'  login Information for downloading the data. If you don't have already an
+#'  account, register at https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40. 
+#'  These information will be saved in outdir as a netrc
+#'  file. This function uses the foreach package for
+#'  downloading files in parallel, with the
+#'  doParallel configuration. If a file with the same
+#'  name is already presented in outdir it will be overwrite.
+#' @return List of file path in outdir.
 l4_download <-
   function(ul_lat,
            lr_lat,

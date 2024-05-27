@@ -38,7 +38,7 @@ number of cores available minus one.}
 
 \item{outdir}{Character: path of the directory in which to save the
 downloaded files.Default to the working directory. If it doesn't exist it
-will be created. Ignored if \code{just_path=TRUE}}
+will be created. Ignored if just_path=TRUE.}
 
 \item{just_path}{Logical: if TRUE return a character vector of available
 files without downloading them. Default to FALSE.}
@@ -47,7 +47,7 @@ files without downloading them. Default to FALSE.}
 instead of all. If is not numeric it will be ignored silently.}
 }
 \value{
-List of file path in \code{outdir}
+List of file path in outdir.
 }
 \description{
 Download all GEDI footprints from
@@ -58,12 +58,11 @@ and S and reported for the period 2019-04-18 to 2020-09-02
 }
 \details{
 During the first use, users will be ask to enter their Earth Explore
-  login Information for downloading the data. If you don't have already an
-  account, register
-  \href{https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40}{at
-  this link}. These information will be saved in \code{outdir} as a netrc
-  file. This function uses the \code{\link[foreach]{foreach}} package for
-  downloading files in parallel, with the
-  \code{\link[doParallel]{doParallel}} configuration. If a file with the same
-  name is already presented in \code{outdir} it will be overwrite.
+ login Information for downloading the data. If you don't have already an
+ account, register at https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40. 
+ These information will be saved in outdir as a netrc
+ file. This function uses the foreach package for
+ downloading files in parallel, with the
+ doParallel configuration. If a file with the same
+ name is already presented in outdir it will be overwrite.
 }
