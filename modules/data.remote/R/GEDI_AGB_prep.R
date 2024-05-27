@@ -411,9 +411,9 @@ l4_download <-
       if (!dir.exists(outdir)) {
         dir.create(outdir)
         message(outdir, " does not exist. It will be created")
-        netrc_file <- getnetrc(outdir)
+        # netrc_file <- getnetrc(outdir)
       } else if (length(list.files(outdir, pattern = "netrc")) == 0) {
-        netrc_file <- getnetrc(outdir)
+        # netrc_file <- getnetrc(outdir)
       } else{
         netrc_file <- list.files(outdir, pattern = "netrc", full.names = T)
       }
