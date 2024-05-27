@@ -4,7 +4,7 @@
 \alias{NA_downscale}
 \title{North America Downscale Function}
 \usage{
-NA_downscale(data, coords, date, C_pool)
+NA_downscale(data, coords, date, C_pool, covariates)
 }
 \arguments{
 \item{data}{In quotes, file path for .rds containing ensemble data.}
@@ -15,7 +15,7 @@ NA_downscale(data, coords, date, C_pool)
 
 \item{C_pool}{In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.}
 
-\item{covariates}{Should be loaded in using 'covariates' instructions in inst folder}
+\item{covariates}{SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder}
 }
 \value{
 It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
