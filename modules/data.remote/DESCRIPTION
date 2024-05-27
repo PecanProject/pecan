@@ -36,6 +36,7 @@ Imports:
 Suggests:
     data.table,
     dplyr,
+    GEDI4R,
     getPass,
     ggplot2,
     grDevices,

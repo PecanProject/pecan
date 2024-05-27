@@ -276,131 +276,6 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min = 0, nrow.min = 0, gradient = 0) {
-  # Define inside function for downloading GEDI L4A.
-  l4_getmulti <- function (gediL4_path, just_colnames = F, add_col = NULL, tct = NULL, 
-                           ncore = parallel::detectCores() - 1, merge = T, catch = T, 
-                           source = F) {
-    stopifnot(`Path to file is not a character` = all(sapply(gediL4_path, 
-                                                             check_char)), `just_colnames is not logical` = check_log(just_colnames), 
-              `merge is not logical` = check_log(merge), `catch is not logical` = check_log(catch), 
-              `source is not logical` = check_log(source), `ncore not defined` = check_wholenumber(ncore), 
-              `ncore must be of lenght 1` = length(ncore) == 1)
-    if (length(gediL4_path) == 1) {
-      message("gediL4_path has lenght==1,l4_get will be used in single thread mode")
-      gediL4_path <- unlist(gediL4_path)
-      return(l4_get(gediL4_path, just_colnames = just_colnames, 
-                    add_col = add_col, tct = tct))
-    }
-    if (just_colnames) {
-      colname <- l4_get(gediL4_path, just_colnames = T)
-      return(colname)
-      stop(invisible())
-    }
-    readL4 <- function(path, add_col. = add_col, tct. = tct) {
-      level4a_h5 <- hdf5r::H5File$new(path, mode = "r")
-      groups_id <- grep("BEAM\\d{4}$", gsub("/", "", hdf5r::list.groups(level4a_h5, 
-                                                                        recursive = F)), value = T)
-      rh.dt <- data.table::data.table()
-      raw_date <- substr(basename(path), 10, 22)
-      year <- as.numeric(substr(raw_date, 1, 4))
-      doy <- as.numeric(substr(raw_date, 5, 7))
-      time <- substr(raw_date, 8, 13)
-      time <- substr(gsub("(.{2})", "\\1:", time), 1, 8)
-      date <- paste(as.Date(doy, origin = paste(year - 1, 
-                                                "12-31", sep = "-")), time)
-      for (i in groups_id) {
-        level4a_i <- level4a_h5[[i]]
-        if (any(hdf5r::list.datasets(level4a_i) == "shot_number")) {
-          rhs <- data.table::data.table(date = date, beam = rep(i, 
-                                                                length(level4a_i[["shot_number"]][])), shot_number = level4a_i[["shot_number"]][], 
-                                        degrade_flag = level4a_i[["degrade_flag"]][], 
-                                        l4_quality_flag = level4a_i[["l4_quality_flag"]][], 
-                                        l2_quality_flag = level4a_i[["l2_quality_flag"]][], 
-                                        algorithm_run_flag = level4a_i[["algorithm_run_flag"]][], 
-                                        sensitivity = level4a_i[["sensitivity"]][], 
-                                        lat_lowestmode = level4a_i[["lat_lowestmode"]][], 
-                                        lon_lowestmode = level4a_i[["lon_lowestmode"]][], 
-                                        elev_lowestmode = level4a_i[["elev_lowestmode"]][], 
-                                        tree_cover = level4a_i[["land_cover_data/landsat_treecover"]][], 
-                                        pft_class = level4a_i[["land_cover_data/pft_class"]][], 
-                                        agbd_se = level4a_i[["agbd_se"]][], agbd = level4a_i[["agbd"]][])
-          ncols <- ncol(rhs)
-          if (!is.null(add_col.)) {
-            add_col <- add_col[!add_col %in% c("beam", 
-                                               "shot_number", "degrade_flag", "l4_quality_flag", 
-                                               "l2_quality_flag", "algorithm_run_flag", 
-                                               "sensitivity", "lat_lowestmode", "lon_lowestmode", 
-                                               "elev_lowestmode", "land_cover_data/landsat_treecover", 
-                                               "land_cover_data/pft_class", "agbd_se", 
-                                               "agbd", "xvar")]
-            if (length(add_col) == 0) {
-              message("all columns selected are already present in the defaul output")
-            }
-            else {
-              df_add_col <- data.table::data.table()
-              for (j in add_col) {
-                rhs <- cbind(rhs, level4a_i[[j]][])
-              }
-              colnames(rhs)[(ncols + 1):ncol(rhs)] <- add_col
-            }
-          }
-          rh.dt <- rbind(rh.dt, rhs)
-          rh.dt <- rh.dt[rh.dt$agbd >= 0, ]
-          if (!is.null(tct.)) {
-            stopifnot(`tct must be of lenght 1` = length(tct) == 
-                        1, `tct must be numeric` = is.numeric(tct))
-            rh.dt <- rh.dt[rh.dt$tree_cover >= tct, ]
-          }
-        }
-      }
-      rh.dt <- rh.dt[!is.na(rh.dt$lat_lowestmode), ]
-      rh.dt <- rh.dt[!is.na(rh.dt$lon_lowestmode), ]
-      if (nrow(rh.dt) == 0) {
-        warning("there are no footprints in this file with agbd >0")
-        return(NULL)
-      }
-      level4a_h5$close_all()
-      return(rh.dt)
-    }
-    if (catch) {
-      test_function <- function(gediL4_path, add_col. = add_col, 
-                                tct. = tct) {
-        return(tryCatch(readL4(gediL4_path, add_col. = add_col, 
-                               tct. = tct), error = function(e) NULL))
-      }
-    }
-    else {
-      test_function <- readL4
-    }
-    snowfall::sfInit(parallel = TRUE, cpus = ifelse(length(gediL4_path) < 
-                                                      parallel::detectCores() - 1, length(gediL4_path), ncore))
-    snowfall::sfExport("gediL4_path", "add_col", "tct", "test_function")
-    snowfall::sfLibrary(hdf5r)
-    suppressWarnings(snowfall::sfLibrary(data.table))
-    l4_list <- snowfall::sfLapply(gediL4_path, test_function, 
-                                  add_col = add_col, tct = tct)
-    snowfall::sfStop()
-    n <- unlist(lapply(l4_list, function(x) {
-      ifelse(is.null(x), 0, nrow(x))
-    }))
-    failed <- sapply(l4_list, is.null)
-    if (all(failed)) {
-      warning("failed loading all files")
-      return(invisible())
-    }
-    if (any(failed)) {
-      message("failed loading files n#:\n", paste0(paste(which(failed), 
-                                                         ": ", gediL4_path[failed]), collapse = "\n"))
-    }
-    if (merge) {
-      l4_list <- do.call(rbind, l4_list)
-      if (source) {
-        l4_list$source <- unlist(rep(gediL4_path, times = n))
-      }
-    }
-    message("Finish!")
-    return(l4_list)
-  }
   # download GEDI AGB files.
   # if there is no data within current buffer distance.
   files <- try(l4_download(ncore = 1,
@@ -439,7 +314,7 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min =
                            to = end_date,
                            outdir = outdir), silent = T)
   # load files.
-  res <- l4_getmulti(files, ncore = 1)
+  res <- GEDI4R::l4_getmulti(files, ncore = 1)
   # filter observations based on filter buffer distance.
   keep.ind <- which(res$lat_lowestmode <= extends["ymax"] & 
                       res$lat_lowestmode >= extends["ymin"] & 
@@ -524,42 +399,7 @@ l4_download <-
            outdir=getwd(),
            just_path = F,
            subset = NULL) {
-    # Define inside functions.
-    gedifinder <- function (ul_lat, ul_lon, lr_lat, lr_lon, daterange = NULL) {
-      doi <- "10.3334/ORNLDAAC/2056"
-      cmrurl <- "https://cmr.earthdata.nasa.gov/search/"
-      doisearch <- paste0(cmrurl, "collections.json?doi=", doi)
-      request <- httr::GET(doisearch)
-      httr::stop_for_status(request)
-      concept_id <- httr::content(request, "parsed")$feed$entry[[1]]$id
-      version <- "002"
-      page <- 1
-      bbox <- paste(ul_lon, lr_lat, lr_lon, ul_lat, sep = ",")
-      url_format <- paste0("https://cmr.earthdata.nasa.gov/search/granules.json?", 
-                           "pretty=true&provider=ORNL_CLOUD&page_size=2000&concept_id=%s", 
-                           "&bounding_box=%s")
-      request_url <- sprintf(url_format, concept_id, bbox)
-      if (!is.null(daterange)) {
-        url_format <- paste0(request_url, "&temporal=%s,%s")
-        request_url <- sprintf(url_format, daterange[1], daterange[2])
-      }
-      granules_href <- c()
-      repeat {
-        response <- curl::curl_fetch_memory(paste0(request_url, 
-                                                   "&pageNum=", page))
-        content <- rawToChar(response$content)
-        result <- jsonlite::parse_json(content)
-        if (response$status_code != 200) {
-          stop(paste("\n", result$errors, collapse = "\n"))
-        }
-        granules <- result$feed$entry
-        if (length(granules) == 0) 
-          break
-        granules_href <- c(granules_href, sapply(granules, function(x) x$links[[1]]$href))
-        page <- page + 1
-      }
-      return(granules_href)
-    }
+    
     op <- options("warn")
     on.exit(options(op))
     options(warn=1)
@@ -581,7 +421,7 @@ l4_download <-
     
     # Get path to GEDI2A data
     gLevel4 <-
-      gedifinder(
+      GEDI4R::gedifinder(
         ul_lat,
         ul_lon,
         lr_lat,
