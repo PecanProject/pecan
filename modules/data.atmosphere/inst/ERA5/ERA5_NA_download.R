@@ -2,10 +2,14 @@ library(reticulate)
 library(future)
 library(purrr)
 library(furrr)
-setwd("/projectnb/dietzelab/hamzed/ERA5/Data/Ensemble") # change this to your own working directory
-plan(multiprocess)
-
-c(2020:2021) %>%
+setwd("/projectnb/dietzelab/dongchen/anchorSites/ERA5/") # change this to your own working directory
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+options(timeout=360000)
+c(2012:2021) %>%
   future_map(function(year) {
     
     # you need to have an account for downloaing the files
@@ -38,7 +42,7 @@ c(2020:2021) %>%
                        '07','08','09',
                        '10','11','12'),
         'year' = as.character(year),
-        "area" = "49.6/-125.11/25.1/-67.1",
+        "area" = "84/-179/14/-52",
         'variable' = list( "2m_temperature","surface_pressure",
                            "2m_dewpoint_temperature","total_precipitation",                
                            "10m_u_component_of_wind","10m_v_component_of_wind",            

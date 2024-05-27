@@ -4,12 +4,14 @@
 \alias{EPA_ecoregion_finder}
 \title{EPA_ecoregion_finder}
 \usage{
-EPA_ecoregion_finder(Lat, Lon)
+EPA_ecoregion_finder(Lat, Lon, folder.path = NULL)
 }
 \arguments{
 \item{Lat}{numeric latitude}
 
 \item{Lon}{numeric longitude}
+
+\item{folder.path}{path to the directory where you store the shape files of L1 and L2 ecoregion maps.}
 }
 \value{
 a dataframe with codes corresponding to level1 and level2 codes as two columns

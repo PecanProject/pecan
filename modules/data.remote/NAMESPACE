@@ -2,6 +2,8 @@
 
 export(Landtrendr_AGB_prep)
 export(MODIS_LAI_prep)
+export(MODIS_LC_prep)
+export(Prep_AGB_IC_from_2010_global)
 export(SMAP_SMP_prep)
 export(call_MODIS)
 export(download.LandTrendr.AGB)

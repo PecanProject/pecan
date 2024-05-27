@@ -103,7 +103,10 @@ SDA_timeseries_plot(
     "kg/m2"),
   style = list(general_color = c(FORECAST = "blue", ANALYSIS = "red", OBS = "black"),
     fill_color = c(FORECAST = "yellow", ANALYSIS = "green", OBS = "grey"), title_color =
-    "red")
+    "red"),
+  PDF_w = 20,
+  PDF_h = 16,
+  t.inds = NULL
 )
 }
 \arguments{
@@ -142,6 +145,12 @@ SDA_timeseries_plot(
 \item{unit}{list of unit used for y axis label.}
 
 \item{style}{color option.}
+
+\item{PDF_w}{width of exported PDF file.}
+
+\item{PDF_h}{height of exported PDF file.}
+
+\item{t.inds}{index of period that will be plotted.}
 }
 \description{
 Internal functions for plotting SDA outputs. Interactive, post analysis time-series and bias plots in base plotting system and ggplot
