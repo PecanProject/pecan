@@ -3,8 +3,7 @@
 \name{GEDI_AGB_prep}
 \alias{GEDI_AGB_prep}
 \title{Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
-This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
-for more}
+This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.}
 \usage{
 GEDI_AGB_prep(
   site_info,
@@ -17,11 +16,11 @@ GEDI_AGB_prep(
 \arguments{
 \item{site_info}{A list including site_id, longitude, and latitude.}
 
-\item{time_points}{A vector contains target dates (in YYYY-MM-DD).}
+\item{time_points}{A vector of date contains target dates (in YYYY-MM-DD).}
 
 \item{outdir}{Directory where the final CSV file will be stored.}
 
-\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).}
+\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).}
 
 \item{search_window}{search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.}
 }
@@ -31,7 +30,6 @@ A data frame containing AGB and sd for each site and each time step.
 \description{
 Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
 This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
-for more
 }
 \details{
 During the first use, users will be ask to enter their Earth Explore
@@ -57,8 +55,9 @@ site_info <- settings \%>\%
   })\%>\% 
   dplyr::bind_rows() \%>\% 
   as.list()
-  time_points <- seq(start.date, end.date, by = time.step)
-  buffer <- 0.01
+time_points <- seq(start.date, end.date, by = time.step)
+buffer <- 0.01
+outdir <- getwd()
 GEDI_AGB <- GEDI_AGB_prep(site_info, time_points, outdir, buffer)
 }
 }

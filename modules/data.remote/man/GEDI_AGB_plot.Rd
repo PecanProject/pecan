@@ -11,9 +11,9 @@ GEDI_AGB_plot(outdir, site.id, start_date, end_date)
 
 \item{site.id}{Unique ID for the target site.}
 
-\item{start_date}{start date (in YYYY-MM-DD) for filtering out the existing CSV file.}
+\item{start_date}{start date (date with YYYY-MM-DD format) for filtering out the existing CSV file.}
 
-\item{end_date}{end date (in YYYY-MM-DD) for filtering out the existing CSV file.}
+\item{end_date}{end date (date with YYYY-MM-DD format) for filtering out the existing CSV file.}
 }
 \description{
 Plot GEDI AGB observations around the target site.

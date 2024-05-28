@@ -1,6 +1,5 @@
 #' Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
 #' This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
-#' for more 
 #' @details During the first use, users will be ask to enter their Earth Explore
 #'  login Information for downloading the data. If you don't have already an
 #'  account, register at https://urs.earthdata.nasa.gov/users/new.
@@ -11,9 +10,9 @@
 #'  name is already presented in outdir it will be overwrite.
 #'
 #' @param site_info A list including site_id, longitude, and latitude.
-#' @param time_points A vector contains target dates (in YYYY-MM-DD).
+#' @param time_points A vector of date contains target dates (in YYYY-MM-DD).
 #' @param outdir Directory where the final CSV file will be stored.
-#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).
+#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).
 #' @param search_window search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.
 #'
 #' @return A data frame containing AGB and sd for each site and each time step.
@@ -32,8 +31,9 @@
 #'   })%>% 
 #'   dplyr::bind_rows() %>% 
 #'   as.list()
-#'   time_points <- seq(start.date, end.date, by = time.step)
-#'   buffer <- 0.01
+#' time_points <- seq(start.date, end.date, by = time.step)
+#' buffer <- 0.01
+#' outdir <- getwd()
 #' GEDI_AGB <- GEDI_AGB_prep(site_info, time_points, outdir, buffer)
 #' }
 #' @author Dongchen Zhang
@@ -42,32 +42,6 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
   # if we don't have outdir, we will use the temp dir as outdir.
   if (!dir.exists(outdir)) {
     dir.create(outdir)
-  }
-  #define function for building netrc file with access credentials
-  getnetrc <- function (dl_dir) {
-    netrc <- file.path(dl_dir, "netrc")
-    if (file.exists(netrc) == FALSE ||
-        any(grepl("urs.earthdata.nasa.gov",
-                  readLines(netrc))) == FALSE) {
-      netrc_conn <- file(netrc)
-      writeLines(c(
-        "machine urs.earthdata.nasa.gov",
-        sprintf(
-          "login %s",
-          getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
-        ),
-        sprintf(
-          "password %s",
-          getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
-        )
-      ),
-      netrc_conn)
-      close(netrc_conn)
-      message(
-        "A netrc file with your Earthdata Login credentials was stored in the output directory "
-      )
-    }
-    return(netrc)
   }
   # Create credential file into outdir.
   getnetrc(outdir)
@@ -111,8 +85,8 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
 #'
 #' @param outdir Where the plot PNG file will be stored.
 #' @param site.id Unique ID for the target site.
-#' @param start_date start date (in YYYY-MM-DD) for filtering out the existing CSV file.
-#' @param end_date end date (in YYYY-MM-DD) for filtering out the existing CSV file.
+#' @param start_date start date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
+#' @param end_date end date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
 #'
 #' @return 
 #' @export 
@@ -129,23 +103,23 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
     PEcAn.logger::logger.info("The current point is outside of GEDI domain!")
     return(FALSE)
   } else {
-    if (!file.exists(file.path(site_folder, "extends.txt")) | !file.exists(file.path(site_folder, "GEDI_AGB.csv"))) {
+    if (!file.exists(file.path(site_folder, "extend.txt")) | !file.exists(file.path(site_folder, "GEDI_AGB.csv"))) {
       PEcAn.logger::logger.info("Please rerun the GEDI_AGB_prep function for this site!")
       return(FALSE)
     } else {
-      extends <- utils::read.table(file.path(site_folder, "extends.txt"), skip = 1) %>%
+      extend <- utils::read.table(file.path(site_folder, "extend.txt"), skip = 1) %>%
         as.numeric %>%
         purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-      point.lat.lon <- matrix(c(mean(extends[c("ymin", "ymax")]), mean(extends[c("xmin", "xmax")])), nrow = 1) %>% 
+      point.lat.lon <- matrix(c(mean(extend[c("ymin", "ymax")]), mean(extend[c("xmin", "xmax")])), nrow = 1) %>% 
         `colnames<-`(c("lat", "lon")) %>%
         as.data.frame
-      extends.x.y <- data.frame(matrix(c(extends["xmin"], extends["ymin"],
-                                         extends["xmax"], extends["ymin"],
-                                         extends["xmax"], extends["ymax"],
-                                         extends["xmin"], extends["ymax"]), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
+      extend.x.y <- data.frame(matrix(c(extend["xmin"], extend["ymin"],
+                                         extend["xmax"], extend["ymin"],
+                                         extend["xmax"], extend["ymax"],
+                                         extend["xmin"], extend["ymax"]), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
       res <- utils::read.csv(file.path(site_folder, "GEDI_AGB.csv"))
       ggplot2::ggplot() +
-        ggplot2::geom_polygon(data = extends.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color="blue", fill = "white") +
+        ggplot2::geom_polygon(data = extend.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color="blue", fill = "white") +
         ggplot2::geom_point(data = res, ggplot2::aes(x = .data$lon_lowestmode, y = .data$lat_lowestmode, color = .data$agbd)) +
         ggplot2::geom_point(shape = 24, data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat), size = 3) +
         ggplot2::geom_text(data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat, label=site.id, hjust=-0.1, vjust=0)) +
@@ -157,13 +131,13 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
 #' Extract L4A GEDI above ground biomass data for the GEDI AGB prep function.
 #'
 #' @param site_info A list including site_id, longitude, and latitude.
-#' @param start_date target start date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.
-#' @param end_date end date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.
+#' @param start_date target start date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.
+#' @param end_date end date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.
 #' @param outdir Directory where the final CSV file will be stored.
 #' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
 #' @param nrow.min the minimum required observation number to be extracted, default is 0.
-#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).
-#' @param gradient the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
+#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).
+#' @param gradient the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
 #' @return A list of AGB data frames for each site.
 #' 
@@ -183,8 +157,8 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
     furrr::future_map(function(point){
       # flag determine if we have satisfied res.filter object.
       csv.valid <- FALSE
-      # extends for filter.
-      extends <- data.frame(ymax = point$lat + buffer,
+      # extend for filter.
+      extend <- data.frame(ymax = point$lat + buffer,
                             ymin = point$lat - buffer,
                             xmin = point$lon - buffer,
                             xmax = point$lon + buffer)
@@ -197,15 +171,15 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
         if (length(csv.path) > 0) {
           # read csv file.
           res <- utils::read.csv(csv.path)
-          if (file.exists(file.path(site_folder, "extends.txt")) & nfile.min != 0) {
-            extends <- utils::read.table(file.path(site_folder, "extends.txt"), skip = 1, col.names = c("ymax", "ymin", "xmin", "xmax"))
-            extends <- extends[nrow(extends),]
+          if (file.exists(file.path(site_folder, "extend.txt")) & nfile.min != 0) {
+            extend <- utils::read.table(file.path(site_folder, "extend.txt"), skip = 1, col.names = c("ymax", "ymin", "xmin", "xmax"))
+            extend <- extend[nrow(extend),]
           }
           # filter previous records based on space and time.
-          res.filter <- res %>% dplyr::filter(.data$lat_lowestmode <= extends["ymax"],
-                                              .data$lat_lowestmode >= extends["ymin"],
-                                              .data$lon_lowestmode >= extends["xmin"], 
-                                              .data$lon_lowestmode <= extends["xmax"],
+          res.filter <- res %>% dplyr::filter(.data$lat_lowestmode <= extend["ymax"],
+                                              .data$lat_lowestmode >= extend["ymin"],
+                                              .data$lon_lowestmode >= extend["xmin"], 
+                                              .data$lon_lowestmode <= extend["xmax"],
                                               lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
                                               lubridate::as_date(.data$date) <= lubridate::as_date(end_date))
           # determine if res.filter is not empty.
@@ -235,7 +209,7 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
         res.current <- GEDI_AGB_download(start_date = start_date,
                                          end_date = end_date, 
                                          outdir = site_folder, 
-                                         extends = extends,
+                                         extend = extend,
                                          nfile.min = nfile.min,
                                          nrow.min = nrow.min,
                                          gradient = gradient)
@@ -262,88 +236,88 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
 }
 #' Download GEDI AGB data for the GEDI AGB extract function.
 #'
-#' @param start_date start date (YYYY-MM-DD) for downloading GEDI AGB from remote database.
-#' @param end_date end date (YYYY-MM-DD) for downloading GEDI AGB from remote database.
+#' @param start_date start date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.
+#' @param end_date end date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.
 #' @param outdir Directory where the final CSV file will be stored.
-#' @param extends the XY box (in degrees) for downloading GEDI AGB file.
+#' @param extend the XY box (in degrees) for downloading GEDI AGB file.
 #' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
 #' @param nrow.min the minimum required observation number to be extracted, default is 0.
-#' @param gradient the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
+#' @param gradient the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
-#' @return A data frame containing AGB and sd for the target spatial and temporal extends.
+#' @return A data frame containing AGB and sd for the target spatial and temporal extend.
 #' 
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min = 0, nrow.min = 0, gradient = 0) {
+GEDI_AGB_download <- function(start_date, end_date, outdir, extend, nfile.min = 0, nrow.min = 0, gradient = 0) {
   # download GEDI AGB files.
   # if there is no data within current buffer distance.
   files <- try(l4_download(ncore = 1,
-                           ul_lat = extends["ymax"], 
-                           lr_lat = extends["ymin"], 
-                           ul_lon = extends["xmin"], 
-                           lr_lon = extends["xmax"], 
+                           ul_lat = extend["ymax"], 
+                           lr_lat = extend["ymin"], 
+                           ul_lon = extend["xmin"], 
+                           lr_lon = extend["xmax"], 
                            from = start_date, 
                            to = end_date,
                            outdir = outdir,
                            just_path = T), silent = T)
-  # if we just need the data within fixed extends and hit error.
+  # if we just need the data within fixed extend and hit error.
   if ("try-error" %in% class(files) & nfile.min == 0) {
     return(NA)
   }
   while ("try-error" %in% class(files) | length(files) < nfile.min) {
     # we iteratively add 0.1 degree to the buffer distance.
-    extends[c(1, 4)] <- extends[c(1, 4)] + gradient
-    extends[c(2, 3)] <- extends[c(2, 3)] - gradient
+    extend[c(1, 4)] <- extend[c(1, 4)] + gradient
+    extend[c(2, 3)] <- extend[c(2, 3)] - gradient
     files <- try(l4_download(ncore = 1,
-                             ul_lat = extends["ymax"], 
-                             lr_lat = extends["ymin"], 
-                             ul_lon = extends["xmin"], 
-                             lr_lon = extends["xmax"], 
+                             ul_lat = extend["ymax"], 
+                             lr_lat = extend["ymin"], 
+                             ul_lon = extend["xmin"], 
+                             lr_lon = extend["xmax"], 
                              from = start_date, 
                              to = end_date,
                              outdir = outdir,
                              just_path = T), silent = T)
   }
   try(files <- l4_download(ncore = 1,
-                           ul_lat = extends["ymax"], 
-                           lr_lat = extends["ymin"], 
-                           ul_lon = extends["xmin"], 
-                           lr_lon = extends["xmax"], 
+                           ul_lat = extend["ymax"], 
+                           lr_lat = extend["ymin"], 
+                           ul_lon = extend["xmin"], 
+                           lr_lon = extend["xmax"], 
                            from = start_date, 
                            to = end_date,
                            outdir = outdir), silent = T)
   # load files.
   res <- GEDI4R::l4_getmulti(files, ncore = 1)
   # filter observations based on filter buffer distance.
-  keep.ind <- which(res$lat_lowestmode <= extends["ymax"] & 
-                      res$lat_lowestmode >= extends["ymin"] & 
-                      res$lon_lowestmode >= extends["xmin"] & 
-                      res$lon_lowestmode <= extends["xmax"])
+  keep.ind <- which(res$lat_lowestmode <= extend["ymax"] & 
+                      res$lat_lowestmode >= extend["ymin"] & 
+                      res$lon_lowestmode >= extend["xmin"] & 
+                      res$lon_lowestmode <= extend["xmax"])
   while (length(keep.ind) < nrow.min & length(files) > 0) {
     # we iteratively add 0.1 degree to the buffer distance.
-    # because sometimes even the the extends ensure at least 1 tile nearby the location.
-    # they may not be accessible by the extends when we try to extract the file.
+    # because sometimes even the the extend ensure at least 1 tile nearby the location.
+    # they may not be accessible by the extend when we try to extract the file.
     # possible due to accuracy issue.
-    extends[c(1, 4)] <- extends[c(1, 4)] + gradient
-    extends[c(2, 3)] <- extends[c(2, 3)] - gradient
+    extend[c(1, 4)] <- extend[c(1, 4)] + gradient
+    extend[c(2, 3)] <- extend[c(2, 3)] - gradient
     # filter observations based on filter buffer distance.
-    keep.ind <- which(res$lat_lowestmode <= extends["ymax"] &
-                        res$lat_lowestmode >= extends["ymin"] &
-                        res$lon_lowestmode >= extends["xmin"] &
-                        res$lon_lowestmode <= extends["xmax"])
+    keep.ind <- which(res$lat_lowestmode <= extend["ymax"] &
+                        res$lat_lowestmode >= extend["ymin"] &
+                        res$lon_lowestmode >= extend["xmin"] &
+                        res$lon_lowestmode <= extend["xmax"])
   }
-  # record extends for download and extraction.
-  extends <- data.frame(matrix(extends, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-  utils::write.table(extends, file = file.path(outdir, "extends.txt"), row.names = F)
-  # if (file.exists(file.path(outdir, "extends.txt"))) {
-  #   pre.extends <- utils::read.table(file.path(outdir, "extends.txt"), skip = 1)
-  #   extends <- rbind(pre.extends, extends) %>% `colnames<-`(c("ymax", "ymin", "xmin", "xmax"))
-  #   extends <- extends[!base::duplicated(extends),]
-  #   utils::write.table(extends, file = file.path(outdir, "extends.txt"), row.names = F)
+  # record extend for download and extraction.
+  extend <- data.frame(matrix(extend, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
+  utils::write.table(extend, file = file.path(outdir, "extend.txt"), row.names = F)
+  # if (file.exists(file.path(outdir, "extend.txt"))) {
+  #   pre.extend <- utils::read.table(file.path(outdir, "extend.txt"), skip = 1)
+  #   extend <- rbind(pre.extend, extend) %>% `colnames<-`(c("ymax", "ymin", "xmin", "xmax"))
+  #   extend <- extend[!base::duplicated(extend),]
+  #   utils::write.table(extend, file = file.path(outdir, "extend.txt"), row.names = F)
   # } else {
-  #   extends <- data.frame(matrix(extends, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-  #   utils::write.table(extends, file = file.path(outdir, "extends.txt"), row.names = F)
+  #   extend <- data.frame(matrix(extend, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
+  #   utils::write.table(extend, file = file.path(outdir, "extend.txt"), row.names = F)
   # }
   # delete downloaded H5 files.
   unlink(list.files(outdir, "*.h5", full.names = T), recursive = T)
@@ -388,6 +362,40 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extends, nfile.min =
 #'  doParallel configuration. If a file with the same
 #'  name is already presented in outdir it will be overwrite.
 #' @return List of file path in outdir.
+#' @examples
+#' \dontrun{
+#' #retrive Italy bound
+#' bound <- sf::st_as_sf(raster::getData('GADM', country='ITA', level=1))
+#' ex <- raster::extent(bound)
+#' ul_lat <- ex[4]
+#' lr_lat <- ex[3]
+#' ul_lon <- ex[2]
+#' lr_lon <- ex[1]
+#' from <- "2020-07-01"
+#' to <- "2020-07-02"
+#' #get just files path available for the searched parameters
+#' l4_download(ul_lat=ul_lat,
+#'             lr_lat=lr_lat,
+#'             ul_lon=ul_lon,
+#'             lr_lon=lr_lon,
+#'             from=from,
+#'             to=to,
+#'             just_path=T
+#' )
+#' 
+#' #download the first 4 files
+#' 
+#' l4_download(ul_lat=ul_lat,
+#'             lr_lat=lr_lat,
+#'             ul_lon=ul_lon,
+#'             lr_lon=lr_lon,
+#'             from=from,
+#'             to=to,
+#'             just_path=F,
+#'             outdir = tempdir(),
+#'             subset=1:4)
+#' }
+#' @author Elia Vangi
 l4_download <-
   function(ul_lat,
            lr_lat,
@@ -497,3 +505,32 @@ l4_download <-
     files <- list.files(outdir, pattern = "h5", full.names = T)
     return(files)
   }
+#' Function for building netrc file with access credentials
+#'
+#' @param dl_dir Directory where the netrc file will be stored.
+#' @return file path of the netrc file.
+getnetrc <- function (dl_dir) {
+  netrc <- file.path(dl_dir, "netrc")
+  if (file.exists(netrc) == FALSE ||
+      any(grepl("urs.earthdata.nasa.gov",
+                readLines(netrc))) == FALSE) {
+    netrc_conn <- file(netrc)
+    writeLines(c(
+      "machine urs.earthdata.nasa.gov",
+      sprintf(
+        "login %s",
+        getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
+      ),
+      sprintf(
+        "password %s",
+        getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
+      )
+    ),
+    netrc_conn)
+    close(netrc_conn)
+    message(
+      "A netrc file with your Earthdata Login credentials was stored in the output directory "
+    )
+  }
+  return(netrc)
+}

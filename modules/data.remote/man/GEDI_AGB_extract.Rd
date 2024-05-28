@@ -18,9 +18,9 @@ GEDI_AGB_extract(
 \arguments{
 \item{site_info}{A list including site_id, longitude, and latitude.}
 
-\item{start_date}{target start date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.}
+\item{start_date}{target start date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.}
 
-\item{end_date}{end date (in YYYY-MM-DD) for preparing GEDI AGB from remote or local database.}
+\item{end_date}{end date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.}
 
 \item{outdir}{Directory where the final CSV file will be stored.}
 
@@ -28,9 +28,9 @@ GEDI_AGB_extract(
 
 \item{nrow.min}{the minimum required observation number to be extracted, default is 0.}
 
-\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01).}
+\item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).}
 
-\item{gradient}{the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
+\item{gradient}{the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
 }
 \value{
 A list of AGB data frames for each site.

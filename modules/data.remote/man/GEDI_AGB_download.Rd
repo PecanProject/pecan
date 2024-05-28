@@ -8,29 +8,29 @@ GEDI_AGB_download(
   start_date,
   end_date,
   outdir,
-  extends,
+  extend,
   nfile.min = 0,
   nrow.min = 0,
   gradient = 0
 )
 }
 \arguments{
-\item{start_date}{start date (YYYY-MM-DD) for downloading GEDI AGB from remote database.}
+\item{start_date}{start date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.}
 
-\item{end_date}{end date (YYYY-MM-DD) for downloading GEDI AGB from remote database.}
+\item{end_date}{end date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.}
 
 \item{outdir}{Directory where the final CSV file will be stored.}
 
-\item{extends}{the XY box (in degrees) for downloading GEDI AGB file.}
+\item{extend}{the XY box (in degrees) for downloading GEDI AGB file.}
 
 \item{nfile.min}{the minimum required file number to be downloaded and extracted, default is 0.}
 
 \item{nrow.min}{the minimum required observation number to be extracted, default is 0.}
 
-\item{gradient}{the gradient for iteratively enlarge the extends if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
+\item{gradient}{the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
 }
 \value{
-A data frame containing AGB and sd for the target spatial and temporal extends.
+A data frame containing AGB and sd for the target spatial and temporal extend.
 }
 \description{
 Download GEDI AGB data for the GEDI AGB extract function.
