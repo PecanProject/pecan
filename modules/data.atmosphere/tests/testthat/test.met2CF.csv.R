@@ -3,7 +3,7 @@ context("testing csv import using met2CF.csv")
 format <- list(
        header = 1,
        time_zone = "America/New_York",
-       time.row = 1,
+       time.row = list(1),
        orig = c(
               "Corrected.Date.Time", "Solar.Radiation..W.m2.", "Temp..C.",
               "PAR_.umol_m.2_s.1.", "PAR_.mol_m.2_h.1.", "RH....", "Wind.Speed..m.s.",
@@ -34,8 +34,8 @@ lat <- 42 + 47 / 60 + 30 / 6000
 lon <- 76 + 7 / 60 + 20 / 6000
 
 
-start_date <- as.Date("2013-03-26")
-end_date <- as.Date("2013-03-27")
+start_date <- lubridate::mdy_hm("03/26/2013 18:00")
+end_date <- lubridate::mdy_hm("03/27/2013 17:00")
 
 test_that("met2CF.csv function works correctly", {
        output <- PEcAn.data.atmosphere::met2CF.csv(
