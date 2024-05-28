@@ -36,7 +36,7 @@ for more
 \details{
 During the first use, users will be ask to enter their Earth Explore
  login Information for downloading the data. If you don't have already an
- account, register at https://urs.earthdata.nasa.gov/users/new?client_id=YQOhivHfMTau88rjbMOVyg&redirect_uri=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Furs%2Furs_logon_proc.pl&response_type=code&state=https%3A%2F%2Fdaac.ornl.gov%2Fcgi-bin%2Fdataset_lister.pl%3Fp%3D40. 
+ account, register at https://urs.earthdata.nasa.gov/users/new.
  These information will be saved in outdir as a netrc
  file. This function uses the foreach package for
  downloading files in parallel, with the
