@@ -37,6 +37,7 @@ Suggests:
     data.table,
     dplyr,
     getPass,
+    GEDI4R,
     ggplot2,
     grDevices,
     httr,
