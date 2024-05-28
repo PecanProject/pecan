@@ -36,7 +36,6 @@ Imports:
 Suggests:
     data.table,
     dplyr,
-    GEDI4R,
     getPass,
     ggplot2,
     grDevices,
@@ -48,6 +47,8 @@ Suggests:
     testthat (>= 1.0.2),
     tibble,
     utils
+Remotes:
+    VangiElia/GEDI4R
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
