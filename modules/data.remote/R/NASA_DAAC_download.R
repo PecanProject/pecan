@@ -86,9 +86,9 @@ NASA_DAAC_download <- function(ul_lat,
         response <-
           httr::GET(
             granules_href[i],
-            write_disk(file.path(outdir, basename(granules_href)[i]), overwrite = T),
-            config(netrc = TRUE, netrc_file = netrc_file),
-            set_cookies("LC" = "cookies")
+            httr::write_disk(file.path(outdir, basename(granules_href)[i]), overwrite = T),
+            httr::config(netrc = TRUE, netrc_file = netrc_file),
+            httr::set_cookies("LC" = "cookies")
           )
       }
       parallel::stopCluster(cl)
