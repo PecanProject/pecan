@@ -30,7 +30,7 @@ GEDI_AGB_extract(
 
 \item{buffer}{buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).}
 
-\item{gradient}{the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
+\item{gradient}{the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
 }
 \value{
 A list of AGB data frames for each site.

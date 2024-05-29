@@ -8,7 +8,7 @@ GEDI_AGB_download(
   start_date,
   end_date,
   outdir,
-  extend,
+  extent,
   nfile.min = 0,
   nrow.min = 0,
   gradient = 0
@@ -21,16 +21,16 @@ GEDI_AGB_download(
 
 \item{outdir}{Directory where the final CSV file will be stored.}
 
-\item{extend}{the XY box (in degrees) for downloading GEDI AGB file.}
+\item{extent}{the XY box (in degrees) for downloading GEDI AGB file.}
 
 \item{nfile.min}{the minimum required file number to be downloaded and extracted, default is 0.}
 
 \item{nrow.min}{the minimum required observation number to be extracted, default is 0.}
 
-\item{gradient}{the gradient for iteratively enlarge the extend if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
+\item{gradient}{the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.}
 }
 \value{
-A data frame containing AGB and sd for the target spatial and temporal extend.
+A data frame containing AGB and sd for the target spatial and temporal extent.
 }
 \description{
 Download GEDI AGB data for the GEDI AGB extract function.
