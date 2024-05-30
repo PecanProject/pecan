@@ -75,9 +75,11 @@
 "future","*","modules/data.atmosphere","Suggests",FALSE
 "future","*","modules/data.land","Imports",FALSE
 "future","*","modules/data.remote","Imports",FALSE
+"GEDI4R","*","modules/data.remote","Suggests",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "getPass","*","modules/data.land","Suggests",FALSE
+"getPass","*","modules/data.remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
 "ggplot2","*","base/utils","Suggests",FALSE
 "ggplot2","*","base/visualization","Imports",FALSE
@@ -103,6 +105,7 @@
 "grDevices","*","modules/allometry","Imports",FALSE
 "grDevices","*","modules/assim.batch","Imports",FALSE
 "grDevices","*","modules/benchmark","Imports",FALSE
+"grDevices","*","modules/data.remote","Suggests",FALSE
 "grid","*","base/visualization","Suggests",FALSE
 "gridExtra","*","modules/assim.sequential","Suggests",FALSE
 "gridExtra","*","modules/benchmark","Imports",FALSE
@@ -112,6 +115,7 @@
 "httr","*","base/remote","Imports",FALSE
 "httr","*","modules/data.atmosphere","Imports",FALSE
 "httr","*","modules/data.land","Imports",FALSE
+"httr","*","modules/data.remote","Suggests",FALSE
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","models/stics","Imports",FALSE
@@ -471,6 +475,7 @@
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
 "rlang","*","modules/data.land","Imports",FALSE
+"rlang","*","modules/data.remote","Imports",FALSE
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
@@ -531,6 +536,7 @@
 "sf","*","modules/assim.sequential","Suggests",FALSE
 "sf","*","modules/data.atmosphere","Imports",FALSE
 "sf","*","modules/data.land","Imports",FALSE
+"sf","*","modules/data.remote","Suggests",FALSE
 "SimilarityMeasures","*","modules/benchmark","Imports",FALSE
 "sirt","*","modules/data.land","Imports",FALSE
 "sp","*","base/visualization","Suggests",FALSE
@@ -631,6 +637,7 @@
 "utils","*","modules/assim.batch","Imports",FALSE
 "utils","*","modules/assim.sequential","Suggests",FALSE
 "utils","*","modules/benchmark","Imports",FALSE
+"utils","*","modules/data.remote","Suggests",FALSE
 "utils","*","modules/photosynthesis","Imports",FALSE
 "vdiffr",">= 1.0.2","base/qaqc","Suggests",FALSE
 "withr","*","base/db","Suggests",FALSE

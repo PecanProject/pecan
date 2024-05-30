@@ -1,16 +1,4 @@
 #' Download CDS soil moisture data for the SDA workflow.
-#'
-#' @param outfolder physical paths to where the unziped soil moisture files are downloaded.
-#' @param time.points A vector contains each time point within the start and end date.
-#' @param overwrite flag determine if we want to overwrite existing files when downloading.
-#' @param auto.create.key flag determine if we want to automatically create the credential file.
-#'
-#' @return A vector containing file paths to the downloaded files.
-#' @export
-#' 
-#' @examples
-#' @author Dongchen Zhang
-#' @importFrom dplyr %>%
 #' @details 
 #' Introduction on how to play with the CDS python API
 #' to correctly build the python environment with the cdsapi installed, you need to follow those steps.
@@ -42,6 +30,18 @@
 #' run this function.
 #' go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
 #' copy and paste url and key to the prompt window.
+#'
+#' @param outfolder physical paths to where the unziped soil moisture files are downloaded.
+#' @param time.points A vector contains each time point within the start and end date.
+#' @param overwrite flag determine if we want to overwrite existing files when downloading.
+#' @param auto.create.key flag determine if we want to automatically create the credential file.
+#'
+#' @return A vector containing file paths to the downloaded files.
+#' @export
+#' 
+#' @examples
+#' @author Dongchen Zhang
+#' @importFrom dplyr %>%
 download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.create.key = FALSE) {
   #load cdsapi from python environment.
   tryCatch({
