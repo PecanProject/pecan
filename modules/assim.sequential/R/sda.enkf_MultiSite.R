@@ -403,6 +403,7 @@ sda.enkf.multisite <- function(settings,
       } else { ## t == 1
         restart.list <- vector("list", length(conf.settings))
       }
+      save(restart.list,file = file.path(settings$outdir, "restart_list.Rdata"))
       #add flag for restart t=1 to skip model runs
       if(restart_flag & t == 1){
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
@@ -423,7 +424,6 @@ sda.enkf.multisite <- function(settings,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
               rename = TRUE,
-              time = obs.year,
               update_phenology=control$update_phenology
             )
           }) %>%

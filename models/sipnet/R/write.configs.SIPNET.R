@@ -24,7 +24,7 @@
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
-                                restart = NULL, spinup = NULL,obs_time=NULL,update_phenology=FALSE) {
+                                restart = NULL, spinup = NULL,update_phenology=FALSE) {
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
@@ -454,8 +454,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
      if (!is.null(leaf_pheno_outdir)) {
     ##read data
        leafphdata <- utils::read.csv(paste0(leaf_pheno_outdir,"/leaf_phenology.csv"))
-       leafOnDay <- leafphdata$leafonday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
-       leafOffDay<- leafphdata$leafoffday[leafphdata$year==obs_time & leafphdata$site_id==settings$run$site$id]
+       leafOnDay <- leafphdata$leafonday[leafphdata$year==obs.year & leafphdata$site_id==settings$run$site$id]
+       leafOffDay<- leafphdata$leafoffday[leafphdata$year==obs.year & leafphdata$site_id==settings$run$site$id]
        if (!is.na(leafOnDay)){
 	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }

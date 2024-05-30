@@ -14,8 +14,7 @@ write_restart.SIPNET(
   RENAME = TRUE,
   new.params = FALSE,
   inputs,
-  obs_time = NULL,
-  update_phenology = NULL,
+  update_phenology = FALSE,
   verbose = FALSE
 )
 }
@@ -38,11 +37,11 @@ write_restart.SIPNET(
 
 \item{inputs}{list of model inputs to use in write.configs.SIPNET}
 
-\item{obs_time}{obervation timepoints}
-
 \item{update_phenology}{TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA}
 
 \item{verbose}{decide if we want to print the outputs.}
+
+\item{obs_time}{obervation timepoints}
 }
 \value{
 NONE
