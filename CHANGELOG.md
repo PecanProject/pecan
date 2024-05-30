@@ -47,6 +47,7 @@ see if you need to change any of these:
 - Added the new feature of the block-based SDA workflow, which supports the parallel computation.
 - Added new SDA workflow for the 342 North America anchor sites.
 - Added new feature of preparing initial conditions for MODIS LAI, AGB, ISCN SOC, and soil moisture across NA anchor sites.
+- Added GEDI AGB preparation workflow.
 
 ### Fixed
 

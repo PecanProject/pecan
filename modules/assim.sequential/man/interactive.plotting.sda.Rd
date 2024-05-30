@@ -146,9 +146,9 @@ SDA_timeseries_plot(
 
 \item{style}{color option.}
 
-\item{PDF_w}{width of exported PDF file.}
+\item{PDF_w}{width of exported PDF file, passed on to `base::pdf()`.}
 
-\item{PDF_h}{height of exported PDF file.}
+\item{PDF_h}{height of exported PDF file, passed on to `base::pdf()`.}
 
 \item{t.inds}{index of period that will be plotted.}
 }
