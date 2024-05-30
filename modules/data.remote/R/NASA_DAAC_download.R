@@ -12,7 +12,7 @@
 #' @param outdir Character: path of the directory in which to save the
 #'   downloaded files.Default to the working directory. If it doesn't exist it
 #'   will be created. Ignored if \code{just_path=TRUE}
-#' @param doi Character: data DOI on the NASA DAAC server.
+#' @param doi Character: data DOI on the NASA DAAC server, it can be obtained directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).
 #' @param netrc_file Character: path to the credential file, default is NULL.
 #' @param just_path Boolean: if we just want the metadata and URL or proceed the actual download.
 #'
@@ -20,13 +20,30 @@
 #' @export
 #' 
 #' @examples
+#' \dontrun{
+#' ul_lat <- 35
+#' ul_lon <- -121
+#' lr_lat <- 33
+#' lr_lon <- -117
+#' from <- "2022-02-23"
+#' to <- "2022-05-30"
+#' doi <- "10.3334/ORNLDAAC/2183"
+#' metadata <- NASA_DAAC_download(ul_lat = ul_lat, 
+#'                                ul_lon = ul_lon, 
+#'                                lr_lat = lr_lat, 
+#'                                lr_lon = lr_lon, 
+#'                                from = from, 
+#'                                to = to, 
+#'                                doi = doi,
+#'                                just_path = T)
+#' }
 #' @author Dongchen Zhang
 #' @importFrom foreach %dopar%
 NASA_DAAC_download <- function(ul_lat,
                                ul_lon,
                                lr_lat,
                                lr_lon,
-                               ncore = parallel::detectCores() - 1,
+                               ncore = 1,
                                from,
                                to,
                                outdir,

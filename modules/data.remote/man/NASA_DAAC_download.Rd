@@ -9,7 +9,7 @@ NASA_DAAC_download(
   ul_lon,
   lr_lat,
   lr_lon,
-  ncore = parallel::detectCores() - 1,
+  ncore = 1,
   from,
   to,
   outdir,
@@ -39,7 +39,7 @@ NASA_DAAC_download(
 downloaded files.Default to the working directory. If it doesn't exist it
 will be created. Ignored if \code{just_path=TRUE}}
 
-\item{doi}{Character: data DOI on the NASA DAAC server.}
+\item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).}
 
 \item{netrc_file}{Character: path to the credential file, default is NULL.}
 
@@ -50,6 +50,25 @@ A list containing meta data for each data downloaded.
 }
 \description{
 Parallel download data from the NASA ORNL DAAC server given period, spatial bounding box, and data DOI.
+}
+\examples{
+\dontrun{
+ul_lat <- 35
+ul_lon <- -121
+lr_lat <- 33
+lr_lon <- -117
+from <- "2022-02-23"
+to <- "2022-05-30"
+doi <- "10.3334/ORNLDAAC/2183"
+metadata <- NASA_DAAC_download(ul_lat = ul_lat, 
+                               ul_lon = ul_lon, 
+                               lr_lat = lr_lat, 
+                               lr_lon = lr_lon, 
+                               from = from, 
+                               to = to, 
+                               doi = doi,
+                               just_path = T)
+}
 }
 \author{
 Dongchen Zhang
