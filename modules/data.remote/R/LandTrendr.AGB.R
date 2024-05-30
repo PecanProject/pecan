@@ -151,6 +151,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
       # check type - there is a better way to do this
       if (file_ext==".zip") {
         zip_files <- list.files(file.path(outdir), pattern = "*.zip", full.names = TRUE)
+        k <- NULL # for passing the GitHub check that there is no global binding for k.
         foreach::foreach(k=1:length(zip_files)) %dopar% try(utils::unzip(file.path(zip_files[k]),
                                                                          files = NULL, list = FALSE, overwrite = TRUE,
                                                                          junkpaths = FALSE, 

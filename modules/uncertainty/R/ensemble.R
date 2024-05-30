@@ -300,7 +300,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                                          parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
       )
     }
-    
+
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){

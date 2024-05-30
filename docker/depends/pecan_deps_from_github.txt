@@ -5,3 +5,6 @@ ebimodeling/biocro@0.951
 MikkoPeltoniemi/Rpreles
 ropensci/geonames
 ropensci/nneo
+SticsRPacks/SticsOnR
+SticsRPacks/SticsRFiles
+VangiElia/GEDI4R

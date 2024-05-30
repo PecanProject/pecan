@@ -5,7 +5,7 @@
 #' @return list of obs.mean and obs.cov
 #' @export
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @importFrom lubridate %m+%
 #'
 #' @examples
