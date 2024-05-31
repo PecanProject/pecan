@@ -26,15 +26,17 @@ format <- list(
                      "PAR_(umol_m-2_s-1)", "PAR_(mol_m-2_h-1)", "RH (%)", "Wind Speed (m/s)",
                      "VPD", "Rain (mm)"
               ),
+              input_units = c("", "", "", "", "", "", "", "", ""),
               bety_name = c(
                      "datetime", "solar_radiation", "airT",
                      "PAR", NA, "relative_humidity", "Wspd", NA, "precipitation_rate"
               ),
-              units = c("", "", "", "", "", "", "", "", ""),
               storage_type = c(
                      "%m/%d/%y %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
               )
-       )
+       ),
+       lat <- 42 + 47 / 60 + 30 / 6000,
+       lon <- 76 + 7 / 60 + 20 / 6000
 )
 # met2CF.csv(in.path = "data", in.file = "met2CF.csv.csv", outfolder = tempdir(),
 #            format = format,
@@ -45,15 +47,13 @@ format <- list(
 in.path <- "data"
 in.file <- "test.met2CF.csv.csv"
 outfolder <- tempdir()
-lat <- 42 + 47 / 60 + 30 / 6000
-lon <- 76 + 7 / 60 + 20 / 6000
 start_date <- lubridate::mdy_hm("03/01/13 18:00")
 end_date <- lubridate::mdy_hm("03/27/13 17:00")
 
 test_that("met2CF.csv function works correctly", {
        output <- met2CF.csv(
               in.path = in.path, in.prefix = in.file, outfolder = outfolder, start_date = start_date,
-              end_date = end_date, format = format, lat = lat, lon = lon, overwrite = TRUE
+              end_date = end_date, format = format, lat = format$lat, lon = format$lon, overwrite = TRUE
        )
        nc_files <- list.files(outfolder, pattern = "\\.nc$", full.names = TRUE)
        expect_true(length(nc_files) > 0)
