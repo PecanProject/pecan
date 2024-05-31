@@ -49,6 +49,7 @@ outfolder <- tempdir()
 start_date <- lubridate::mdy_hm("03/01/13 18:00")
 end_date <- lubridate::mdy_hm("03/27/13 17:00")
 
+# Initial test suite to test the met2CF.csv function
 test_that("met2CF.csv function works correctly", {
        output <- PEcAn.data.atmosphere::met2CF.csv(
               in.path = in.path, in.prefix = in.file, outfolder = outfolder, start_date = start_date,
