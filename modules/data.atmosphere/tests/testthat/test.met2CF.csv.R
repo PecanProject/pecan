@@ -52,7 +52,7 @@ end_date <- lubridate::mdy_hm("03/27/13 17:00")
 test_that("met2CF.csv function works correctly", {
        output <- PEcAn.data.atmosphere::met2CF.csv(
               in.path = in.path, in.prefix = in.file, outfolder = outfolder, start_date = start_date,
-              end_date = end_date, format = format, lat = format$lat, lon = format$lon, overwrite = TRUE
+              end_date = end_date, format = format, lat = format$lon, lon = format$lon, overwrite = TRUE
        )
        nc_files <- list.files(outfolder, pattern = "\\.nc$", full.names = TRUE)
        expect_true(length(nc_files) > 0)
