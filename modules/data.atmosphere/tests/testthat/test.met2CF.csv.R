@@ -1,5 +1,4 @@
 context("testing csv import using met2CF.csv")
-source("../../R/met2CF.csv.R")
 format <- list(
        header = 1,
        time_zone = "GMT",
@@ -51,7 +50,7 @@ start_date <- lubridate::mdy_hm("03/01/13 18:00")
 end_date <- lubridate::mdy_hm("03/27/13 17:00")
 
 test_that("met2CF.csv function works correctly", {
-       output <- met2CF.csv(
+       output <- PEcAn.data.atmosphere::met2CF.csv(
               in.path = in.path, in.prefix = in.file, outfolder = outfolder, start_date = start_date,
               end_date = end_date, format = format, lat = format$lat, lon = format$lon, overwrite = TRUE
        )
