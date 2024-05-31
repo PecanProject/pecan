@@ -120,6 +120,7 @@
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
+"jsonlite","*","modules/data.remote","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
 "knitr",">= 1.42","base/qaqc","Suggests",FALSE
 "knitr",">= 1.42","modules/allometry","Suggests",FALSE
