@@ -1,5 +1,4 @@
 context("testing csv import using met2CF.csv")
-source('../../R/met2CF.csv.R')
 format <- list(
        header = 1,
        time_zone = "GMT",
