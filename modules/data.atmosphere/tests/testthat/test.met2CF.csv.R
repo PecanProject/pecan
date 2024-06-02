@@ -32,7 +32,6 @@ format <- list(
                      "PAR", NA, "relative_humidity", "Wspd", NA, "precipitation_rate"
               ),
               storage_type = c(
-                     # "%Y/%m/%d %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
                      "%Y-%m-%d %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
               )
        ),
