@@ -53,8 +53,6 @@ test_that("met2CF.csv function works correctly", {
               in.path = "data",
               in.prefix = "test.met2CF.csv.csv",
               outfolder = outfolder,
-              # start_date = lubridate::mdy_hm("03/01/13 18:00"),
-              # end_date = lubridate::mdy_hm("03/27/13 17:00"),
               start_date = lubridate::ymd_hm("2013-03-01 18:00"),
               end_date = lubridate::ymd_hm("2013-03-27 17:00"),
               format = format,
