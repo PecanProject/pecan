@@ -9,7 +9,7 @@ format <- list(
               "VPD", "Rain (mm)"
        ),
        units = c(
-              "mdy_hm", "W m-2", "celsius",
+              "ymd_hm", "W m-2", "celsius",
               "umol m-2 s-1", "mol m-2 h-1", "%", "m s-1", "Pa", "mm h-1"
        ),
        bety = c(
@@ -31,7 +31,8 @@ format <- list(
                      "PAR", NA, "relative_humidity", "Wspd", NA, "precipitation_rate"
               ),
               storage_type = c(
-                     "%m/%d/%y %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
+                     # "%Y/%m/%d %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
+                     "%Y-%m-%d %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
               )
        ),
        lat <- 42 + 47 / 60 + 30 / 6000,
@@ -51,8 +52,10 @@ test_that("met2CF.csv function works correctly", {
               in.path = "data",
               in.prefix = "test.met2CF.csv.csv",
               outfolder = outfolder,
-              start_date = lubridate::mdy_hm("03/01/13 18:00"),
-              end_date = lubridate::mdy_hm("03/27/13 17:00"),
+              # start_date = lubridate::mdy_hm("03/01/13 18:00"),
+              # end_date = lubridate::mdy_hm("03/27/13 17:00"),
+              start_date = lubridate::ymd_hm("2013-03-01 18:00"),
+              end_date = lubridate::ymd_hm("2013-03-27 17:00"),
               format = format,
               lat = format$lat,
               lon = format$lon,
