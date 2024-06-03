@@ -28,7 +28,6 @@ NA_downscale <- function(data, coords, date, C_pool, covariates){
   
   # Extract predictors from covariates raster using site coordinates
   predictors <- as.data.frame(terra::extract(covariates, site_coordinates,ID = FALSE)) 
-  predictors <- dplyr::select(predictors, -ID)
   
   # Combine each ensemble member with all predictors
   ensembles <- list()
