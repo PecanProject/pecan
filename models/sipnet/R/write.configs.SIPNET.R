@@ -19,12 +19,10 @@
 ##' @param IC initial condition
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
 ##' @param spinup
-##' @param obs_time obervation timepoints
-##' @param update_phenology TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
-                                restart = NULL, spinup = NULL,update_phenology=FALSE) {
+                                restart = NULL, spinup = NULL) {
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
   config.text <- readLines(con = template.in, n = -1)
@@ -450,13 +448,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
     #update LeafOnday and LeafOffDay
-    if (update_phenology){
-     leaf_pheno_outdir <- settings$model$leaf_phenology$outdir  ## read from settings
-     if (!is.null(leaf_pheno_outdir)) {
+    if (settings$model$leaf_phenology){
+     obs_year <- lubridate::year(settings$run$start.date)
+     leaf_pheno_data <- settings$run$inputs$leaf_phenology$path  ## read from settings
+     if (!is.null(leaf_pheno_data)) {
     ##read data
-       leafphdata <- utils::read.csv(paste0(leaf_pheno_outdir,"/leaf_phenology.csv"))
-       leafOnDay <- leafphdata$leafonday[leafphdata$year==obs.year & leafphdata$site_id==settings$run$site$id]
-       leafOffDay<- leafphdata$leafoffday[leafphdata$year==obs.year & leafphdata$site_id==settings$run$site$id]
+       leafphdata <- utils::read.csv(leaf_pheno_data)
+       leafOnDay <- leafphdata$leafonday[leafphdata$year == obs_year & leafphdata$site_id==settings$run$site$id]
+       leafOffDay<- leafphdata$leafoffday[leafphdata$year== obs_year & leafphdata$site_id==settings$run$site$id]
        if (!is.na(leafOnDay)){
 	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }
@@ -464,7 +463,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
        }
       }else {
-      PEcAn.logger::logger.info("No phenology data were found. Please consider running modules/data.remote/R/phenology_MODIS_extract.R to get the parameter file.")
+      PEcAn.logger::logger.info("No phenology data were found. Please consider running `PEcAn.data.remote::extract_phenology_MODIS` to get the parameter file.")
       }
     }
   } ## end loop over PFTS
@@ -552,7 +551,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
     IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
 
-    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, settings, constants = list(sla = SLA))
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
@@ -564,6 +563,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
+      }
+
+      #Initial LAI is set as 0 for deciduous forests and grasslands for non-growing seasons
+      if (!(lubridate::month(settings$run$start.date) %in% seq(5,9))){ #Growing seasons are coarsely defined as months from May to September for non-conifers in the US
+         site_pft <- utils::read.csv(settings$run$inputs$pft.site$path)
+         site.pft.name <- site_pft$pft[site_pft$site == settings$run$site$id]
+         if (site.pft.name!="boreal.coniferous") {   #Currently only excluding boreal conifers. Other evergreen PFTs could be added here later.
+              param[which(param[, 1] == "laiInit"), 2] <- 0       
+          }
       }
       ## neeInit gC/m2
       nee <- try(ncdf4::ncvar_get(IC.nc,"nee"),silent = TRUE)

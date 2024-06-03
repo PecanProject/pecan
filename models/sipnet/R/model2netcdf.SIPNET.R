@@ -97,14 +97,13 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param revision model revision
 ##' @param overwrite Flag for overwriting nc files or not
 ##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
-##' conflict is set to TRUE to enable the assimilation of monthly data.
 ##' @param prefix prefix to read the output files
 ##' @param delete.raw Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
-                                overwrite = FALSE, conflict = TRUE) {
+                                overwrite = FALSE, conflict = FALSE) {
 
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
@@ -141,7 +140,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   for (y in year_seq) {
     #initialize the conflicted as FALSE
     conflicted <- FALSE
-    
+    conflict <- TRUE    #conflict is set to TRUE to enable the rename of yearly nc file for merging SDA results with sub-annual data
     #if we have conflicts on this file.
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
       next
@@ -297,7 +296,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       close(varfile)
       ncdf4::nc_close(nc)
       
-      #merge nc files of the same year together to enable the assimilation of subannual data
+      #merge nc files of the same year together to enable the assimilation of sub-annual data
       if(file.exists(file.path(outdir, "previous.nc"))){
         files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
       }else{

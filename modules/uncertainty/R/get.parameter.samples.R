@@ -58,14 +58,9 @@ get.parameter.samples <- function(settings,
     ## Load posteriors
     if (!is.na(posterior.files[i])) {
       # Load specified file
-      load(posterior.files[i])
-      fname <- file.path(outdirs[i], "post.distns.Rdata")
-      if (file.exists(fname)) {
-        load(fname)
-        prior.distns <- post.distns
-      }
-      if (exists("trait.mcmc") & exists("post.distns")) {
-        post.distns <- post.distns[!(row.names(post.distns) %in% names(trait.mcmc)),]
+      load(posterior.files[i], envir = distns)
+      if (is.null(distns$prior.distns) & !is.null(distns$post.distns)) {
+        distns$prior.distns <- distns$post.distns
       }
     } else {
       # Default to most recent posterior in the workflow, or the prior if there is none
@@ -111,16 +106,13 @@ get.parameter.samples <- function(settings,
     
     ### When no ma for a trait, sample from prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
-    if(exists("post.distns") & exists("trait.mcmc")){
-      priors <- c(names(trait.mcmc), rownames(post.distns))
-      prior.distns <- post.distns
-    }else{
-      priors <- rownames(prior.distns)
-    }
-    #priors <- names(trait.mcmc)
-  
-    if (exists("trait.mcmc")) {
-      param.names[[i]] <- names(trait.mcmc)
+    if(!is.null(distns$prior.distns)){
+      priors <- rownames(distns$prior.distns)
+    } else {
+      priors <- NULL
+    }  
+    if (!is.null(distns$trait.mcmc)) {
+      param.names[[i]] <- names(distns$trait.mcmc)
       names(param.names)[i] <- pft.name
       
       samples.num <- min(sapply(distns$trait.mcmc, function(x) nrow(as.matrix(x))))

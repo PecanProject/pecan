@@ -4,12 +4,10 @@
 \alias{prepare_pools}
 \title{prepare_pools}
 \usage{
-prepare_pools(nc.path, settings, constants = NULL)
+prepare_pools(nc.path, constants = NULL)
 }
 \arguments{
 \item{nc.path}{path to netcdf file containing standard dimensions and variables; currently supports these variables: TotLivBiom, leaf_carbon_content, LAI, AbvGrndWood, root_carbon_content, fine_root_carbon_content, coarse_root_carbon_content, litter_carbon_content, soil_organic_carbon_content, soil_carbon_content, wood_debris_carbon_content}
-
-\item{settings}{PEcAn settings object}
 
 \item{constants}{list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon}
 }

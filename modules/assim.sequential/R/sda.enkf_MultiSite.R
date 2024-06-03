@@ -50,8 +50,7 @@ sda.enkf.multisite <- function(settings,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
                                             run_parallel = TRUE,
-                                            MCMC.args = NULL,
-                                            update_phenology = TRUE),
+                                            MCMC.args = NULL),
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -297,8 +296,7 @@ sda.enkf.multisite <- function(settings,
             settings = settings,
             model = settings$model$type,
             write.to.db = settings$database$bety$write,
-            restart = restart.arg,
-            update_phenology=control$update_phenology
+            restart = restart.arg
           )
         }) %>%
         stats::setNames(site.ids)
@@ -403,7 +401,6 @@ sda.enkf.multisite <- function(settings,
       } else { ## t == 1
         restart.list <- vector("list", length(conf.settings))
       }
-      save(restart.list,file = file.path(settings$outdir, "restart_list.Rdata"))
       #add flag for restart t=1 to skip model runs
       if(restart_flag & t == 1){
         #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
@@ -423,8 +420,7 @@ sda.enkf.multisite <- function(settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
-              rename = TRUE,
-              update_phenology=control$update_phenology
+              rename = TRUE
             )
           }) %>%
           stats::setNames(site.ids)

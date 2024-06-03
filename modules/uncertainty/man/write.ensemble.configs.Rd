@@ -12,8 +12,7 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  rename = FALSE,
-  update_phenology = FALSE
+  rename = FALSE
 )
 }
 \arguments{
@@ -32,10 +31,6 @@ write.ensemble.configs(
 \item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
-
-\item{update_phenology}{TRUE if we want to update the phenological data (i.e. leaf-on and leaf-off dates) for each restart run during SDA}
-
-\item{time}{obervation timepoints}
 }
 \value{
 list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
