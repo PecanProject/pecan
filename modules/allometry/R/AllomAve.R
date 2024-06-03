@@ -170,7 +170,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       beta <- allom.stats[[pft.name]][[component]]$statistics[, "Mean"]
       y.0  <- exp(beta["mu0"] + beta["mu1"] * log(dseq))
       y.g  <- exp(beta["Bg0"] + beta["Bg1"] * log(dseq))
-      y.o  <- predict.allom.orig(dseq, allom$parm[ntally, ])
+      y.o  <- predict_allom_orig(dseq, allom$parm[ntally, ])
       graphics::lines(dseq, y.0, lwd = 2, col = 1)
       graphics::lines(dseq, y.g, lwd = 2, col = 2)
       for (i in seq_len(nrow(y.o))) {
@@ -192,7 +192,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
   return(allom.stats)
 } # AllomAve
 
-predict.allom.orig <- function(x, parm) {
+predict_allom_orig <- function(x, parm) {
   
   out <- matrix(NA, nrow(parm), length(x))
   
@@ -262,4 +262,4 @@ predict.allom.orig <- function(x, parm) {
   }
   
   return(out)
-} # predict.allom.orig
+} # predict_allom_orig
