@@ -9,7 +9,7 @@ qsub_parallel(
   files = NULL,
   prefix = "sipnet.out",
   sleep = 10,
-  hybrid = FALSE
+  hybrid = TRUE
 )
 }
 \arguments{
