@@ -918,8 +918,8 @@ post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs
 ##' @param CI range of confidence interval.
 ##' @param unit list of unit used for y axis label.
 ##' @param style color option.
-##' @param PDF_w width of exported PDF file.
-##' @param PDF_h height of exported PDF file.
+##' @param PDF_w width of exported PDF file, passed on to `base::pdf()`.
+##' @param PDF_h height of exported PDF file, passed on to `base::pdf()`.
 ##' @param t.inds index of period that will be plotted.
 ##' @export
 ##' @author Dongchen Zhang
