@@ -19,6 +19,8 @@
 ##' @param IC initial condition
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
 ##' @param spinup currently unused, included for compatibility with other models
+##' @importFrom rlang .data
+##' @importFrom dplyr %>%
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
@@ -458,8 +460,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.null(leaf_pheno_path)){
     ##read data
        leafphdata <- utils::read.csv(leaf_pheno_path)
-       leafOnDay <-  dplyr::filter(leafphdata, year== obs_year_start & site_id==settings$run$site$id) %>%  dplyr::select (leafonday)
-       leafOffDay<-  dplyr::filter(leafphdata, year== obs_year_start & site_id==settings$run$site$id) %>%  dplyr::select (leafoffday)
+       leafOnDay <-  dplyr::filter(leafphdata, .data$yea r== obs_year_start & .data$site_id==settings$run$site$id) %>%  dplyr::select (.data$leafonday)
+       leafOffDay<-  dplyr::filter(leafphdata, .data$year == obs_year_start & .data$site_id==settings$run$site$id) %>%  dplyr::select (.data$leafoffday)
        if (!is.na(leafOnDay)){
 	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }
