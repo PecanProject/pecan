@@ -460,8 +460,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if (!is.null(leaf_pheno_path)){
     ##read data
        leafphdata <- utils::read.csv(leaf_pheno_path)
-       leafOnDay <-  dplyr::filter(leafphdata, .data$yea r== obs_year_start & .data$site_id==settings$run$site$id) %>%  dplyr::select (.data$leafonday)
-       leafOffDay<-  dplyr::filter(leafphdata, .data$year == obs_year_start & .data$site_id==settings$run$site$id) %>%  dplyr::select (.data$leafoffday)
+       leafOnDay <-  dplyr::filter(leafphdata, .data$year == obs_year_start & .data$site_id==settings$run$site$id) %>%
+         dplyr::select (.data$leafonday)
+       leafOffDay<-  dplyr::filter(leafphdata, .data$year == obs_year_start & .data$site_id==settings$run$site$id) %>%
+         dplyr::select (.data$leafoffday)
        if (!is.na(leafOnDay)){
 	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }
