@@ -261,6 +261,7 @@
 "PEcAn.data.atmosphere","*","models/maespa","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/preles","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/sipnet","Depends",TRUE
+"PEcAn.data.atmosphere","*","modules/data.land","Imports",TRUE
 "PEcAn.data.land","*","base/all","Depends",TRUE
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE

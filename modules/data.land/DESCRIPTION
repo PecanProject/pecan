@@ -41,6 +41,7 @@ Imports:
     neonstore,
     swfscMisc,
     PEcAn.benchmark,
+    PEcAn.data.atmosphere,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
