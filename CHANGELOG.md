@@ -20,7 +20,6 @@ see if you need to change any of these:
   to star PEcAn with https.
 - TRAEFIK_HTTPS_OPTIONS is no longer used, this is the default when you use https.
 - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
-- Updated `soil_process` function in `soil_process.R` and `ic_process` to use `PEcAn.DB::query.site` instead of `PEcAn.data.atmosphere::db.site.lat.lon` for retrieving site latitude and longitude.
 
 ### Added
 - Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
