@@ -448,21 +448,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
     #update LeafOnday and LeafOffDay
-    if (settings$model$leaf_phenology){
-     obs_year <- lubridate::year(settings$run$start.date)
-     leaf_pheno_data <- settings$run$inputs$leaf_phenology$path  ## read from settings
-     if (!is.null(leaf_pheno_data)) {
+     if (!is.null(settings$run$inputs$leaf_phenology)){
+     obs_year_start <- lubridate::year(settings$run$start.date)
+     obs_year_end <- lubridate::year(settings$run$end.date)
+     if (obs_year_start != obs_year_end) {
+      PEcAn.logger::logger.info("Start.date and end.date are not in the same year. Currently start.date is used for refering phenological data")
+     }
+     leaf_pheno_path <- settings$run$inputs$leaf_phenology$path  ## read from settings
+      if (!is.null(leaf_pheno_path)){
     ##read data
-       leafphdata <- utils::read.csv(leaf_pheno_data)
-       leafOnDay <- leafphdata$leafonday[leafphdata$year == obs_year & leafphdata$site_id==settings$run$site$id]
-       leafOffDay<- leafphdata$leafoffday[leafphdata$year== obs_year & leafphdata$site_id==settings$run$site$id]
+       leafphdata <- utils::read.csv(leaf_pheno_path)
+       leafOnDay <-  dplyr::filter(leafphdata, year== obs_year_start & site_id==settings$run$site$id) %>%  dplyr::select (leafonday)
+       leafOffDay<-  dplyr::filter(leafphdata, year== obs_year_start & site_id==settings$run$site$id) %>%  dplyr::select (leafoffday)
        if (!is.na(leafOnDay)){
 	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
        }
        if (!is.na(leafOffDay)){
         param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
        }
-      }else {
+      } else {
       PEcAn.logger::logger.info("No phenology data were found. Please consider running `PEcAn.data.remote::extract_phenology_MODIS` to get the parameter file.")
       }
     }

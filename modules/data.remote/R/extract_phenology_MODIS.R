@@ -10,7 +10,7 @@
 ##' site is needed and there are >1 CPUs available.
 ##' @param ncores number of cpus to use if run_parallel is set to TRUE. If you do not know the 
 ##' number of CPU's available, enter NULL. 
-##' @return a dataframe containing phenology dates and corresponding QA.  
+##' @return the path for output file 
 ##' The output file will be saved as a CSV file to the outdir.
 ##' Output column names are "year", "site_id", "lat", "lon", "leafonday","leafoffday","leafon_qa","leafoff_qa"
 ##' @author Qianyu Li
@@ -86,8 +86,9 @@ extract_phenology_MODIS<- function(site_info,start_date,end_date,outdir,run_para
     leafphdata$year<-lubridate::year(leafphdata$year)
     leafphdata$site_id<-as.character(leafphdata$site_id)
     
-    PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"leaf_phenology.csv")))
-    utils::write.csv(leafphdata, file = file.path(outdir, "leaf_phenology.csv"), row.names = FALSE)
-    return(leafphdata)
+    file_path<-file.path(outdir,"leaf_phenology.csv")
+    PEcAn.logger::logger.info(paste0("Storing results in: ",file_path))
+    utils::write.csv(leafphdata, file = file_path, row.names = FALSE)
+    return(file_path)
   }
 }

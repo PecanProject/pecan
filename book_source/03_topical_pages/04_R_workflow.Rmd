@@ -125,8 +125,7 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 
 To enable the use of MODIS phenology data (MODIS Land Cover Dynamics (MCD12Q2)) to update the phenological parameters (leaf-on date) and (leaf-off date) at each restart timepoint: 
  1. Generate the phenological parameter CSV file by running `PEcAn.data.remote::extract_phenology_MODIS`.
- 2. Turn the tag under `settings$model$leaf_phenology` in xml file to be `TRUE`.
- 3. Provide the generated phenological parameter CSV file to `settings$run$inputs$leaf_phenology$path`.
+ 2. Provide the generated phenological parameter CSV file to `settings$run$inputs$leaf_phenology$path`.
 
 ## Traits {#workflow-traits}
 

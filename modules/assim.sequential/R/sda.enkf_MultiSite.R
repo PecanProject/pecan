@@ -530,7 +530,7 @@ sda.enkf.multisite <- function(settings,
           if (is.null(control$MCMC.args)) {
             MCMC.args <- list(niter = 1e5,
                               nthin = 10,
-                              nchain = 1,
+                              nchain = 3,
                               nburnin = 5e4)
           } else {
             MCMC.args <- control$MCMC.args

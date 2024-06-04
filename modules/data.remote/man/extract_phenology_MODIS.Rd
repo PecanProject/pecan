@@ -30,7 +30,7 @@ site is needed and there are >1 CPUs available.}
 number of CPU's available, enter NULL.}
 }
 \value{
-a dataframe containing phenology dates and corresponding QA.  
+the path for output file 
 The output file will be saved as a CSV file to the outdir.
 Output column names are "year", "site_id", "lat", "lon", "leafonday","leafoffday","leafon_qa","leafoff_qa"
 }

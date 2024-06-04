@@ -241,8 +241,7 @@ template <- PEcAn.settings::Settings(list(
                          revision = "ssr",
                          delete.raw = FALSE,
                          binary = model_binary,
-                         jobtemplate = "~/sipnet_geo.job",
-                         leaf_phenology= TRUE
+                         jobtemplate = "~/sipnet_geo.job"
   )),
   
   ###########################################################################
