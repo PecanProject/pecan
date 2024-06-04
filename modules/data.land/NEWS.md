@@ -8,8 +8,7 @@
 ## Removed
 
 * `find.land()` has been removed. It is not used anywhere we know if, has apparently not been working for some time, and relied on the `maptools` package which is scheduled for retirement.
-* Updated `soil_process` function in `soil_process.R` and `ic_process` to use `PEcAn.DB::query.site` instead of `PEcAn.data.atmosphere::db.site.lat.lon` for retrieving site latitude and longitude.
-* Dependency of `PEcAn.data.atmosphere` has been completly removed. This change was introduced via PR [#3300](https://github.com/PecanProject/pecan/pull/3300) by Abhinav Pandey.
+* Removed dependency on `PEcAn.data.atmosphere`, notably by retrieving site latitude and longitude directly from `PEcAn.DB::query.site` instead of custom lookups (#3300, Abhinav Pandey).
 
 # PEcAn.data.land 1.7.1
 
