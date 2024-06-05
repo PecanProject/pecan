@@ -12,7 +12,10 @@ format <- list(
                      "PAR_(umol_m-2_s-1)", "PAR_(mol_m-2_h-1)", "RH (%)", "Wind Speed (m/s)",
                      "VPD", "Rain (mm)"
               ),
-              input_units = c("", "", "", "", "", "", "", "", ""),
+              input_units = c(
+                     "ymd_hm", "W m-2", "celsius",
+                     "umol m-2 s-1", "mol m-2 h-1", "%", "m s-1", "Pa", "mm h-1"
+              ),
               bety_name = c(
                      "datetime", "solar_radiation", "airT",
                      "PAR", NA, "relative_humidity", "Wspd", NA, "precipitation_rate"
