@@ -13,7 +13,7 @@ format <- list(
                      "VPD", "Rain (mm)"
               ),
               input_units = c(
-                     "ymd_hm", "W m-2", "celsius",
+                     NA, "W m-2", "celsius",
                      "umol m-2 s-1", "mol m-2 h-1", "%", "m s-1", "Pa", "mm h-1"
               ),
               bety_name = c(
