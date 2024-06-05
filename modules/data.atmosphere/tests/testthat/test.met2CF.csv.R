@@ -31,7 +31,7 @@ format <- list(
                      "PAR", NA, "relative_humidity", "Wspd", NA, "precipitation_rate"
               ),
               storage_type = c(
-                     "%Y-%m-%d %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
+                     "%m/%d/%y %H:%M", NA, NA, NA, NA, NA, NA, NA, NA
               )
        ),
        lat <- 42 + 47 / 60 + 30 / 6000,
