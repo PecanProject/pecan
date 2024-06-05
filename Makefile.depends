@@ -32,7 +32,7 @@ $(call depends,modules/assim.batch): | .install/base/db .install/base/logger .in
 $(call depends,modules/assim.sequential): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization .install/base/workflow .install/modules/benchmark .install/modules/data.land .install/modules/data.remote .install/modules/uncertainty
 $(call depends,modules/benchmark): | .install/base/db .install/base/logger .install/base/settings .install/base/utils .install/modules/data.land
 $(call depends,modules/data.atmosphere): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils
-$(call depends,modules/data.land): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization .install/modules/benchmark .install/modules/data.atmosphere
+$(call depends,modules/data.land): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization .install/modules/benchmark
 $(call depends,modules/data.remote): | .install/base/db .install/base/logger .install/base/remote .install/base/utils
 $(call depends,modules/meta.analysis): | .install/base/db .install/base/logger .install/base/settings .install/base/utils
 $(call depends,modules/priors): | .install/base/logger .install/base/visualization .install/modules/meta.analysis

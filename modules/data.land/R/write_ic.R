@@ -55,7 +55,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   # read in registration xml for pool specific information
   register.xml <- system.file(paste0("register.", model$type, ".xml"), package = paste0("PEcAn.", model$type))
   if(file.exists(register.xml)){
-    register     <- PEcAn.data.atmosphere::read.register(register.xml, con = NULL)
+    register     <- XML::xmlToList(XML::xmlParse(register.xml))
     
   }else{
     PEcAn.logger::logger.warn("No model register file found")
