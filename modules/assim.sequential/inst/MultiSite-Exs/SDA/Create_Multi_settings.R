@@ -17,6 +17,7 @@ ERA5_dir <- "/projectnb/dietzelab/dongchen/anchorSites/ERA5_2012_2021/"
 XML_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml"
 
 pft_csv_dir <- "/projectnb/dietzelab/dongchen/anchorSites/site_pft.csv"
+modis_phenology_dir <- "/projectnb/dietzelab/Cherry/pft_files/leaf_phenology.csv"
 
 #Obs_prep part
 #AGB
@@ -290,7 +291,8 @@ template <- PEcAn.settings::Settings(list(
       #                               )),
       # soilinitcond = structure(list(path = "/projectnb/dietzelab/ahelgeso/EFI_Forecast_Challenge/"
       #                               )),
-      pft.site = structure(list(path = pft_csv_dir))
+      pft.site = structure(list(path = pft_csv_dir)),
+      leaf_phenology = structure(list(path = modis_phenology_dir))
     ))
   ))
 ))
