@@ -52,6 +52,6 @@
 # Add 'Tests' label to any changes in the tests directory
 'Tests':
 - changed-files:
-  - any-glob-to-any-file: 'tests/**'
-  - any-glob-to-any-file: '**/tests/**'
-  - any-glob-to-any-file: '!**/tests/Rcheck_reference.log'
+  - all:
+    - any-glob-to-any-file: ['tests/**', '**/tests/**']
+    - any-glob-to-any-file: '!**/tests/Rcheck_reference.log'
