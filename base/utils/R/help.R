@@ -31,7 +31,6 @@
 ##'
 ##' Current development is focused on developing PEcAn into a real-time data assimilation and forecasting system. This system will provide a detailed analysis of the past and present ecosystem functioning that seamlessly transitions into forecasts.
 ##'
-##' @docType package
 ##' @name PEcAn
 ##' @aliases PECAn pecan package-pecan
-NULL
+"_PACKAGE"

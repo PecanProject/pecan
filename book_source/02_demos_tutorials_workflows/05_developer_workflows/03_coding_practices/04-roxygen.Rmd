@@ -70,3 +70,24 @@ PEcAn's automated testing (Travis) will check if any documentation is out of dat
 These files were changed by the build process:
 {...}
 ```
+
+
+
+#### Updating to a new Roxygen version
+
+For consistency across packages and machines, all PEcAn developers need to compile documentation with the same version of Roxygen. Roxygen itself will check for this and refuse to rebuild a package that was last touched by a newer version of Roxygen, but the warning it gives is very quiet and easy to miss. We take a louder approach by hardcoding the expected Roxygen version into PEcAn's Makefile and throwing a build failure if the installed Roxygen is not an exact match.
+
+When it is time for everyone to update to a newer Roxygen, follow the same procedure we used when updating from 7.2.3 to 7.3.1, replacing version strings as appropriate:
+
+* Before starting, work with the team to merge/close as many existing PRs as feasible -- this process touches a lot of files and is likely to create merge conflicts in other PRs.
+* Edit the Makefile to change `EXPECTED_ROXYGEN_VERSION := 7.2.3` to `EXPECTED_ROXYGEN_VERSION := 7.3.1`.
+* Run `make clean && make document` to be sure Roxygen has been run on all packages.
+* Check the console output for warnings from Roxygen, and fix them as needed. New versions often get pickier about formatting issues that used to be considered minor.
+* Run `./scripts/generate_dependencies.R` to update the version of Roxygen recorded as a Docker dependency.
+* Grep the PEcAn folder for the string `7.3.1` to make sure no references were missed.
+  - e.g. this time I found  a remaining `RoxygenNote: 7.2.3` in models/cable/DESCRIPTION -- Make currently skips cable, so I redocumented it manually.
+* Review all changes.
+  - The changes should mostly just consist of updated `RoxygenNote:` lines in all the DESCRIPTION files.
+  - In all cases but extra-double-specially if any NAMESPACE files change, make sure you understand what happened rather than blindly committing the changes. Usually the new version is an improvement, but this is the time to check.
+* Once all looks good, commit and push.
+* Make a loud announcement, e.g. on Slack, to tell all developers to update roxygen2 on their machines as soon as the PR is merged.

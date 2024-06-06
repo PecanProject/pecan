@@ -69,24 +69,6 @@ plot_variance_decomposition <- function(plot.inputs,
 } # plot_variance_decomposition
 
 
-format.plot.input <- function(plot.inputs, convert.var, trait.order = c()) {
-  traits <- row.names(as.data.frame(plot.inputs))
-  if (length(trait.order) == 0) {
-    trait.order <- traits
-  }
-  plot.data <- data.frame(traits = traits, 
-                          trait.labels = PEcAn.utils::trait.lookup(traits)$figid, 
-                          units = PEcAn.utils::trait.lookup(traits)$units, 
-                          coef.vars = abs(plot.inputs$coef.vars * 100),
-                          elasticities = (plot.inputs$elasticities), 
-                          variances = convert.var(abs(plot.inputs$variances)))
-  plot.data <- merge(data.frame(traits = trait.order, 
-                                points = seq(trait.order) - 0.5),
-                     plot.data)
-  
-  return(plot.data)
-}
-
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot univariate response of model output to a trait parameter.

@@ -2,7 +2,7 @@
 ## ported by M. Dietze 08/30/12
 ## some of this is redundant with other parts of PEcAn and needs to be cleaned up 
 
-plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
+plot_da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
 
   # source('code/R/approx.posterior.R') source('code/R/utils.R')
 
@@ -32,7 +32,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     ensemble.samples <- samples$ensemble.samples
     sa.samples <- samples$sa.samples
   } else {
-    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the plot.da function")
+    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the plot_da function")
   }
   
   if(file.exists(L.nee.file)) {
@@ -41,7 +41,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     x <- L.nee$x
     y <- L.nee$y
   } else {
-    PEcAn.logger::logger.error(L.nee.file, "not found, this file is required by the plot.da function")
+    PEcAn.logger::logger.error(L.nee.file, "not found, this file is required by the plot_da function")
   }
 
   prior.x <- x
@@ -116,7 +116,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
       load(run.id.file, envir = "run.env")
       m <- run.env$m
     } else {
-      PEcAn.logger::logger.error(run.id.file, "not found, this file is required by the plot.da function")
+      PEcAn.logger::logger.error(run.id.file, "not found, this file is required by the plot_da function")
     }
     
     return(m)
@@ -210,4 +210,4 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   graphics::par(mfrow = c(1, 1), cex = 0.5)
   # graphics::plot(foo[,6] ~ as.factor(rownames(priors)))
   
-} # plot.da
+} # plot_da
