@@ -19,31 +19,26 @@
 
 
 # Add 'Website' label to any changes in the web directory
-
 'Website':
 - changed-files:
   - any-glob-to-any-file: 'web/**'
 
 # Add 'Base' label to any changes in the base directory
-
 'Base':
 - changed-files:
   - any-glob-to-any-file: 'base/**'
 
 # Add 'Models' label to any changes in the models directory
-
 'Models':
 - changed-files:
   - any-glob-to-any-file: 'models/**'
 
 # Add 'Modules' label to any changes in the modules directory
-
 'Modules':
 - changed-files:
   - any-glob-to-any-file: 'modules/**'
 
 # Add 'GitHub Actions' label to any changes in the .github/workflows directory
-
 'GitHub Actions':
 - changed-files:
   - any-glob-to-any-file: '.github/workflows/**'
@@ -55,7 +50,6 @@
   - any-glob-to-any-file: 'scripts/**'
 
 # Add 'Tests' label to any changes in the tests directory
-
 'Tests':
 - changed-files:
   - any-glob-to-any-file: 'tests/**'
