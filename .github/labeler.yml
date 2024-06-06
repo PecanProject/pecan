@@ -51,7 +51,5 @@
 
 'Tests':
   - tests/**
-  - '**/tests/**'
-  - '!**/tests/Rcheck_reference.log'
-
-
+  - **/tests/**
+  - !**/tests/Rcheck_reference.log
