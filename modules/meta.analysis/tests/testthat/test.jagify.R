@@ -25,9 +25,7 @@ test_that("jagify correctly assigns treatment index of 1 to all control treatmen
                            statname = "SE",
                            treatment_id = 1:10
   )
-  i <- sapply(testresult, is.factor)
-  testresult[i] <- lapply(testresult[i], as.character)
 
   jagged.data <- jagify(testresult)
-  expect_equal(jagged.data$trt_num[jagged.data$trt == "control"], c(1, 1)) 
+  expect_equal(jagged.data$trt_num[jagged.data$trt == "control"], c(1, 1))
 })
