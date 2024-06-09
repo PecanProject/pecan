@@ -10,7 +10,7 @@ New functionality is typically directed toward modules to provide a slimmer PEcA
 Generally, new model should be added to the models folder and new modules should be added to the modules folder.
 Exceptions include code that is reused in many models or modules and wrapper functions that call specific implementations in models; these can be placed in the core packages.
 
-If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ) or ask on the pecan-develop mailing list for advice.
+If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may join our [Slack Channel](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ).
 
 ## Creating Issues
 

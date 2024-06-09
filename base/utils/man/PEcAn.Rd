@@ -2,6 +2,8 @@
 % Please edit documentation in R/help.R
 \docType{package}
 \name{PEcAn}
+\alias{PEcAn.utils}
+\alias{PEcAn.utils-package}
 \alias{PEcAn}
 \alias{PECAn}
 \alias{pecan}
@@ -31,4 +33,26 @@ In addition to generating forecasts that reflect available data, PEcAn quantifie
 This information informs targeted data collection and synthesis efforts that most efficiently reduce forecast uncertainty.
 
 Current development is focused on developing PEcAn into a real-time data assimilation and forecasting system. This system will provide a detailed analysis of the past and present ecosystem functioning that seamlessly transitions into forecasts.
+}
+\author{
+\strong{Maintainer}: Rob Kooper \email{kooper@illinois.edu}
+
+Authors:
+\itemize{
+  \item Mike Dietze \email{dietze@bu.edu}
+  \item David LeBauer \email{dlebauer@email.arizona.edu}
+  \item Xiaohui Feng \email{feng22@illinois.edu}
+  \item Dan Wang
+  \item Carl Davidson \email{davids14@illinois.edu}
+  \item Shawn Serbin \email{sserbin@bnl.gov}
+  \item Shashank Singh \email{shashanksingh819@gmail.com}
+  \item Chris Black \email{chris@ckblack.org}
+  \item Tanishq Jain \email{tanishqjain010@gmail.com}
+}
+
+Other contributors:
+\itemize{
+  \item University of Illinois, NCSA [copyright holder]
+}
+
 }

@@ -16,4 +16,4 @@ Description: Implementation of a Gaussian Process model (both likelihood and
     for sampling design and prediction.
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

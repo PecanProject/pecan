@@ -211,7 +211,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart=NULL, rename = FALSE) {
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -408,7 +408,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       
       do.call(my.write.config, args = list( defaults = defaults, 
                                             trait.values = lapply(samples$parameters$samples, function(x, n) { x[n, , drop=FALSE] }, n=i), # this is the params
-                                            settings = settings, 
+                                            settings = settings,
                                             run.id = run.id
       )
       )
