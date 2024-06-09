@@ -28,6 +28,7 @@ Imports:
     PEcAn.logger,
     magrittr,
     PEcAn.remote,
+    rlang,
     terra,
     doParallel,
     parallel,
@@ -35,15 +36,24 @@ Imports:
 Suggests:
     data.table,
     dplyr,
+    getPass,
+    GEDI4R,
     ggplot2,
+    grDevices,
+    httr,
+    jsonlite,
     lubridate,
     raster,
     reshape,
+    sf,
     testthat (>= 1.0.2),
-    tibble
+    tibble,
+    utils
+Remotes:
+    github::VangiElia/GEDI4R
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
