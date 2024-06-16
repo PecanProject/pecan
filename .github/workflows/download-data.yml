@@ -50,10 +50,14 @@ jobs:
     - name: add models to db
       run: ./scripts/add.models.sh
 
+    # compile PEcAn code
+    - name: build
+      run: make -j1
+
     - name: CRUNCEP Test
       run: |
         Rscript ./web/test.R --settings ./tests/docker.CRUNCEP.xml
     
-    - name: CRUNCEP Test
+    - name: AmerifluxLBL Test
       run: |
         Rscript ./web/test.R --settings ./tests/docker.AmerifluxLBL.xml
