@@ -1,10 +1,13 @@
 name : Test Data Download
 on :
-  workflow_call:
-    inputs:
-      R-version:
-        required: true
-        type: string
+  pull_request:
+
+  # allow manual triggering
+  workflow_dispatch:
+
+  schedule:
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
@@ -25,7 +28,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     container: 
-      image: pecan/depends:R${{ inputs.R-version }}
+      image: pecan/depends:R4.1
 
     steps:
     # checkout source code
