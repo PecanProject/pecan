@@ -54,10 +54,14 @@ jobs:
     - name: build
       run: make -j1
 
-    - name: CRUNCEP Test
+    - name: CRUNCEP
       run: |
         Rscript ./web/test.R --settings ./tests/docker.CRUNCEP.xml
     
-    - name: AmerifluxLBL Test
+    - name: AmerifluxLBL
       run: |
         Rscript ./web/test.R --settings ./tests/docker.AmerifluxLBL.xml
+
+    - name: NOAA_GEFS
+      run: |
+        Rscript ./web/test.R --settings ./tests/docker.NOAA_GEFS.xml
