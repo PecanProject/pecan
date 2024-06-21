@@ -164,10 +164,10 @@ for(i in seq_along(paleon.sitegroups)){
     sitename <- db.query(paste0("SELECT sitename from sites where id =",site_id),con)
     str_ns <- paste0(site_id %/% 1e+09, "-", site_id %% 1e+09)
     outfile <- paste0("PalEONregional_CF_site_", str_ns)
-    
+    latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
     site.info <- rbind(site.info,data.frame(id = site_id, 
-                           lat = db.site.lat.lon(site_id, con = con)$lat, 
-                           lon = db.site.lat.lon(site_id, con = con)$lon,
+                           lat = latlon$lat, 
+                           lon = latlon$lon,
                            str_ns = str_ns,
                            outfile = outfile))
   }    
