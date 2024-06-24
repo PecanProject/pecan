@@ -3,10 +3,10 @@
 ##' @author Joshua Ploshay
 ##'
 ##' @param data  In quotes, file path for .rds containing ensemble data.
-##' @param focus_year In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
+##' @param coords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
+##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates In quotes, file path of SpatRaster stack, used as predictors in randomForest. Layers within stack should be named.
-##' @param cords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
+##' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
 ##' @description This function uses the randomForest model.
@@ -14,25 +14,20 @@
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-NA_downscale <- function(data, cords, covariates, focus_year, C_pool){
-  
-  # Read in the covariates and set CRS to EPSG:4326
-  covariates <- terra::rast(covariates) # ADD package to every function
-  terra::crs(covariates) <- "EPSG:4326"
+NA_downscale <- function(data, coords, date, C_pool, covariates){
   
   # Read the input data and site coordinates
   input_data <- readRDS(data)
-  site_coordinates <- terra::vect(readr::read_csv(cords), geom=c("lon", "lat"), crs="EPSG:4326")
+  site_coordinates <- terra::vect(readr::read_csv(coords), geom=c("lon", "lat"), crs="EPSG:4326")
   
   # Extract the carbon data for the specified focus year
-  index <- which(names(input_data) == focus_year)
+  index <- which(names(input_data) == date)
   data <- input_data[[index]]
   carbon_data <- as.data.frame(t(data[which(names(data) == C_pool)]))
   names(carbon_data) <- paste0("ensemble",seq(1:ncol(carbon_data)))
   
   # Extract predictors from covariates raster using site coordinates
-  predictors <- as.data.frame(terra::extract(covariates, site_coordinates)) 
-  predictors <- dplyr::select(predictors, -1)
+  predictors <- as.data.frame(terra::extract(covariates, site_coordinates,ID = FALSE)) 
   
   # Combine each ensemble member with all predictors
   ensembles <- list()
@@ -61,25 +56,25 @@ NA_downscale <- function(data, cords, covariates, focus_year, C_pool){
   }
   
   # Train a random forest model for each ensemble member using the training data
-  output <- list()
+  rf_output <- list()
   for (i in 1:length(ensembles)) {
-    output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
-                                data = ensembles[[i]][[1]],
-                                ntree = 1000,
-                                na.action = stats::na.omit,
-                                keep.forest = T,
-                                importance = T)
+    rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
+                                                 data = ensembles[[i]][[1]],
+                                                 ntree = 1000,
+                                                 na.action = stats::na.omit,
+                                                 keep.forest = T,
+                                                 importance = T)
   }
   
   # Generate predictions (maps) for each ensemble member using the trained models
-  maps <- list(ncol(output))
-  for (i in 1:length(output)) {
+  maps <- list(ncol(rf_output))
+  for (i in 1:length(rf_output)) {
     maps[[i]] <- terra::predict(object = covariates,
-                         model = output[[i]],na.rm = T)
+                                model = rf_output[[i]],na.rm = T)
   }
   
   # Organize the results into a single output list
-  downscale_output <- list(ensembles, output, maps)
+  downscale_output <- list(ensembles, rf_output, maps)
   
   # Rename each element of the output list with appropriate ensemble numbers
   for (i in 1:length(downscale_output)) {

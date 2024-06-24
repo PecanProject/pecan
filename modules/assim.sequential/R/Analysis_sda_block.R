@@ -112,9 +112,9 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     PEcAn.logger::logger.warn("The zero variances in Pf is being replaced by one fifth of the minimum variance in those matrices respectively.")
   }
   #distance calculations and localization
-  site.locs <- settings$run %>% 
-    purrr::map('site') %>% 
-    purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+  site.locs <- settings$run %>%
+    purrr::map('site') %>%
+    purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>%
     t %>%
     `colnames<-`(c("Lon","Lat")) %>%
     `rownames<-`(site.ids)
@@ -172,9 +172,9 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     # if there is any site that has zero observation.
     if (any(obs_per_site == 0)) {
       #name matching between observation names and state variable names.
-      f.2.y.ind <- obs.mean[[t]] %>% 
-        purrr::map(\(x)which(var.names %in% names(x))) %>% 
-        unlist %>% 
+      f.2.y.ind <- obs.mean[[t]] %>%
+        purrr::map(\(x)which(var.names %in% names(x))) %>%
+        unlist %>%
         unique
       H <- list(ind = f.2.y.ind %>% purrr::map(function(start){
         seq(start, length(site.ids) * length(var.names), length(var.names))
@@ -203,8 +203,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       block.list[[i]]$data$muf <- mu.f[f.start:f.end]
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
       #find indexs for Y.
-      y.start <- sum(obs_per_site[1:i])
-      y.end <- y.start + obs_per_site[i] - 1
+      y.start <- sum(obs_per_site[1:i]) - obs_per_site[i] + 1
+      y.end <- sum(obs_per_site[1:i])
       #fill in y and r
       #if there is no observation for this site.
       if (y.end < y.start) {
@@ -256,8 +256,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       for (j in seq_along(ids)) {
         f.start <- (ids[j] - 1) * length(var.names) + 1
         f.end <- ids[j] * length(var.names)
-        y.start <- sum(obs_per_site[1:ids[j]])
-        y.end <- y.start + obs_per_site[ids[j]] - 1
+        y.start <- sum(obs_per_site[1:ids[j]]) - obs_per_site[ids[j]] + 1
+        y.end <- sum(obs_per_site[1:ids[j]])
         f.ind <- c(f.ind, f.start:f.end)
         #if the current site has greater or equal than 1 observation.
         if (y.end >= y.start) {
@@ -283,9 +283,9 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
         if (is.null(obs.mean[[t]])) {
           f.2.y.ind <- seq_along(var.names)
         } else {
-          f.2.y.ind <- obs.mean[[t]] %>% 
-            purrr::map(\(x)which(var.names %in% names(x))) %>% 
-            unlist %>% 
+          f.2.y.ind <- obs.mean[[t]] %>%
+            purrr::map(\(x)which(var.names %in% names(x))) %>%
+            unlist %>%
             unique
         }
         seq.ind <- f.2.y.ind %>% purrr::map(function(start){
@@ -430,7 +430,7 @@ MCMC_block_function <- function(block) {
   conf$addSampler(target = samplerLists[[X.mod.ind]]$target, type = "ess",
                   control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
                                  latents = "X", pfOptimizeNparticles = TRUE))
-  
+
   #add toggle Y sampler.
   for (i in 1:block$constant$YN) {
     conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
@@ -451,7 +451,6 @@ MCMC_block_function <- function(block) {
   
   #run MCMC
   dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
-  
   #update aq, bq, mua, and pa
   M <- colMeans(dat)
   block$update$aq <- block$Inits$q

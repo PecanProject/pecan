@@ -74,7 +74,6 @@ getBurnin <- function(jags_out,
 #' samples (as list). Default = FALSE.
 #' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
 #' and \code{gelman.diag}.
-#' @inheritParams getBurnin
 #' @examples
 #'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
 #'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))

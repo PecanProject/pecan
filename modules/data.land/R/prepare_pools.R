@@ -80,8 +80,7 @@ prepare_pools <- function(nc.path, constants = NULL){
       #Calculate LAI given leaf and sla
       sla <- constants$sla
       if (!is.null(sla) && is.valid(leaf)) {
-        LAI <- PEcAn.utils::ud_convert(leaf * sla, "g", "kg") #convert from g to kg
-        
+        LAI <- leaf * sla
         IC.params[["LAI"]] <- LAI
       }
       

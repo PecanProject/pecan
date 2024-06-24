@@ -22,6 +22,8 @@ Within the PEcAn repository, code pertaining to input conversion is in the MODUL
 
 ## Initial Conditions {#workflow-input-initial}
 
+### CONUS (NEON/FIA/BADM) Initial Conditions.
+
 To convert initial condition data into the PEcAn Standard and then into the model formats we follow three main steps:
 
   1. Downloading vegetation info
@@ -52,6 +54,21 @@ This function will create ensemble member ncdf files by resampling the veg file 
 put_veg_module()
 This function will convert the ensemble member ncdf files into model specific format. Currently the supported models are ED2 and SIPNET. 
 
+### North America (NA) Initial Conditions.
+
+To create initial condition files across North America, you will need to strictly follow the script located at `~/pecan/modules/assim.sequential/inst/anchor/IC_prep_anchorSites.Rmd`. Within the script we will be following those main steps:
+  1. Loading `settings.xml` file and specify paths.
+  2. Downloading/extracting estimations of four major carbon/water pools (leaf, wood, soil C, soil water) into by-site and by-ensemble tables.
+  3. Doing unit conversion. For each ensemble of each site, we will be preparing the `poolinfo` object consisting of converted pool estimations.
+  4. We will finally be writing the NC files through the `PEcAn.SIPNET::veg2model.SIPNET` function.
+  5. Within the loop, we will store the NC file paths into the settings object and rewrite the settings into the XML file to the destination.
+
+Within the script we proposed the following new datasets for handling the NA initial condition preparations:
+
+  1. The leaf carbon is initialized with MODIS LAI observations and the SLA for the corresponding PFT.
+  2. The above ground biomass (AGB) is initialized with the 2010 global AGB map (DOI: https://doi.org/10.3334/ORNLDAAC/1763).
+  3. The soil moisture (SM) is initialized with the SM estimations starting from 1978 (DOI: 10.24381/cds.d7782f18).
+  4. The soil organic carbon (SOC) is initialized with ISCN SOC estimations (data already prepared on PEcAn, use `PEcAn.data.land::iscn_soc` to load) based on the level 2 ecoregion map (pre-downloaded using the following link: https://www.epa.gov/eco-research/ecoregions).
 
 ## Meteorological Data {#workflow-met}
 
@@ -104,6 +121,12 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 
 ### Converting from PEcAn standard to model-specific format {#workflow-met-model}
 
+## Input phenological Data {#workflow-input-phenology}
+
+To enable the use of MODIS phenology data (MODIS Land Cover Dynamics (MCD12Q2)) to update the phenological parameters (leaf-on date) and (leaf-off date) at each restart timepoint: 
+ 1. Generate the phenological parameter CSV file by running `PEcAn.data.remote::extract_phenology_MODIS`.
+ 2. Provide the generated phenological parameter CSV file to `settings$run$inputs$leaf_phenology$path`.
+
 ## Traits {#workflow-traits}
 
 (TODO: Under construction)
@@ -113,6 +136,7 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 (TODO: Under construction)
 
 ## Model Configuration {#workflow-modelconfig}
+To enable the state data assimilation with sub-annual data, default `conflict` in `model2netcdf` should be `TRUE`. 
 
 (TODO: Under construction)
 
