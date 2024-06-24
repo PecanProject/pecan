@@ -35,14 +35,11 @@ read.register <- function(register.xml, con) {
     } else if ((!is.null(register$format$id) & is.null(register$format$name)) 
                | 
                (!is.null(register$format$id) & is.null(register$format$mimetype))) {
-      # get name and mime_type from formats table in a singular dataframe
-      format.info <- PEcAn.DB::db.query(
-        paste("SELECT name, mime_type FROM formats WHERE id = ", register$format$id), con
+      # Retrieve format name and mimetype from the database
+      register$format <- PEcAn.DB::db.query(
+        paste("SELECT name, mime_type AS mimetype FROM formats WHERE id = ", register$format$id), con
       )
 
-      # Assign the values from the data frame to the respective columns in register$format
-      register$format$name <- format.info$name
-      register$format$mimetype <- format.info$mime_type
     } else if (is.null(register$format$id) & !is.null(register$format$name) & !is.null(register$format$mimetype)) {
       register$format$id <- PEcAn.DB::db.query(
         paste0("SELECT id from formats where name = '", register$format$name,
