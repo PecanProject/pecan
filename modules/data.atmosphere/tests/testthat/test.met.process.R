@@ -13,7 +13,14 @@ test_that("`met.process` able to call .download.raw.met.module based on met proc
 
   mocked_res <- mockery::mock(1)
   mockery::stub(met.process, '.download.raw.met.module', mocked_res)
-  res <- met.process(site = list(id =  1), input_met = input_met, start_date = '2001-01-01', end_date = '2003-01-01', model = 'ED2', dbparms = list(), dir = 'test')
+  res <- met.process(
+    site = list(id =  1),
+    input_met = input_met,
+    start_date = '2001-01-01',
+    end_date = '2003-01-01',
+    model = 'ED2',
+    dbparms = list(),
+    dir = 'test')
   mockery::expect_called(mocked_res, 1) 
   expect_equal(res$path$path1, '/test/path/test')
 })
