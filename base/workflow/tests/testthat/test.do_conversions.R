@@ -18,7 +18,11 @@ test_that("`do_conversions` able to call met.process if the input tag has met, u
   withr::with_dir(tempdir(), {
     mocked_res <- mockery::mock(list(path = 'test'))
     mockery::stub(do_conversions, 'PEcAn.data.atmosphere::met.process', mocked_res)
-    settings <- list(host = list(name = 'test', folder = 'test'), outdir = getwd(), run = list(site = list(id = 0), inputs = list(met = list(id = 1))))
+    settings <- list(
+      host = list(name = 'test', folder = 'test'),
+      outdir = getwd(),
+      run = list(site = list(id = 0), inputs = list(met = list(id = 1)))
+    )
     res <- do_conversions(settings)
     mockery::expect_called(mocked_res, 1)
     expect_equal(res$run$inputs$met$path, 'test')
