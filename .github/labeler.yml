@@ -1,57 +1,57 @@
 #
-# Add project labels
-#
+# Add project labels to PRs
+# Invocation is done by .github/workflows/prlabeler.yml
 
-# Add 'Documentation' label to any changes in the documentation
-
+# changes in the documentation
 'Documentation':
-  - book_source/**
-  - documentation/**
-  - CONTRIBUTING.md
-  - DEBUGING.md
-  - DEV-INTRO.md
-  - README.md
+- changed-files:
+  - any-glob-to-any-file: 'book_source/**'
+  - any-glob-to-any-file: 'documentation/**'
+  - any-glob-to-any-file: 'CONTRIBUTING.md'
+  - any-glob-to-any-file: 'DEBUGING.md'
+  - any-glob-to-any-file: 'DEV-INTRO.md'
+  - any-glob-to-any-file: 'README.md'
 
 # Add 'Dockerfile' label to any changes in the docker directory
 'Dockerfile':
-  - docker/**
+- changed-files:
+  - any-glob-to-any-file: 'docker/**'
 
 
 # Add 'Website' label to any changes in the web directory
-
 'Website':
-  - web/**
+- changed-files:
+  - any-glob-to-any-file: 'web/**'
 
 # Add 'Base' label to any changes in the base directory
-
 'Base':
-  - base/**
+- changed-files:
+  - any-glob-to-any-file: 'base/**'
 
 # Add 'Models' label to any changes in the models directory
-
 'Models':
-  - models/**
+- changed-files:
+  - any-glob-to-any-file: 'models/**'
 
 # Add 'Modules' label to any changes in the modules directory
-
 'Modules':
-  - modules/**
+- changed-files:
+  - any-glob-to-any-file: 'modules/**'
 
 # Add 'GitHub Actions' label to any changes in the .github/workflows directory
-
 'GitHub Actions':
-  - .github/workflows/**
+- changed-files:
+  - any-glob-to-any-file: '.github/workflows/**'
 
 # Add 'Scripts' label to any changes in the scripts directory
 
 'Scripts':
-  - scripts/**
+- changed-files:
+  - any-glob-to-any-file: 'scripts/**'
 
 # Add 'Tests' label to any changes in the tests directory
-
 'Tests':
-  - tests/**
-  - '**/tests/**'
-  - '!**/tests/Rcheck_reference.log'
-
-
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['tests/**', '**/tests/**']
+    - any-glob-to-any-file: '!**/tests/Rcheck_reference.log'

@@ -159,9 +159,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
+  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
   new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = db.site.lat.lon(site$id, con = con)$lat, 
-                         lon = db.site.lat.lon(site$id, con = con)$lon)
+                         lat = latlon$lat, 
+                         lon = latlon$lon)
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   if (is.null(format.vars$lat)) {
@@ -401,27 +402,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   return(input_met) # Returns an updated $met entry for the settings object.
 } # met.process
 
-################################################################################################################################# 
-
-##' Look up lat/lon from siteid
-##'
-##' @export
-##' @param site.id BeTY ID of site to look up
-##' @param con database connection
-##' @author Betsy Cowdery
-db.site.lat.lon <- function(site.id, con) {
-  site <- PEcAn.DB::db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
-                         site.id), con)
-  if (nrow(site) == 0) {
-   PEcAn.logger::logger.error("Site not found")
-    return(NULL)
-  }
-  if (!(is.na(site$lat)) && !(is.na(site$lat))) {
-    return(list(lat = site$lat, lon = site$lon))
-  } else {
-   PEcAn.logger::logger.severe("We should not be here!")
-  }
-} # db.site.lat.lon
 
 ################################################################################################################################# 
 

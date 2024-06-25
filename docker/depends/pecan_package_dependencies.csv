@@ -195,6 +195,7 @@
 "mockery","*","base/utils","Suggests",FALSE
 "mockery","*","base/visualization","Suggests",FALSE
 "mockery","*","base/workflow","Suggests",FALSE
+"mockery","*","modules/data.atmosphere","Suggests",FALSE
 "mockery",">= 0.3.0","models/biocro","Suggests",FALSE
 "mockery",">= 0.4.3","base/db","Suggests",FALSE
 "MODISTools",">= 1.1.0","modules/data.remote","Imports",FALSE

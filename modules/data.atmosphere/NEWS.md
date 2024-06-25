@@ -24,6 +24,7 @@
 ## Removed
 
 *  Helper function `robustly` has moved to package PEcAn.utils [@meetagrawal, #3096]
+*  Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
 
 
 # PEcAn.data.atmosphere 1.7.1
