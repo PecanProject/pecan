@@ -31,7 +31,7 @@ vapr <- terra::app(vapr, mean)
 
 
 ## Average Temperature (*C)
-tavg <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/WorldClim",
+tavg <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/WorldClim",
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
