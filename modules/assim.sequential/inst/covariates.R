@@ -84,20 +84,6 @@ land_cover <- GLanCE_extract(pattern = "NA_LC.tif$")
 # Define the extent to crop the covariates to North America
 NA_extent <- terra::ext(-178.19453125, -10, 7.22006835937502, 83.5996093750001)
 
-
-## Align CRS for all datasets
-crs_target <- "EPSG:4326"
-tavg <- terra::project(tavg, crs_target)
-srad <- terra::project(srad, crs_target)
-prec <- terra::project(prec, crs_target)
-vapr <- terra::project(vapr, crs_target)
-
-phh2o <- terra::project(phh2o, crs_target)
-nitrogen <- terra::project(nitrogen, crs_target)
-soc <- terra::project(soc, crs_target)
-sand <- terra::project(sand, crs_target)
-land_cover <- terra::project(land_cover, crs_target)
-
 # Stack WorldClim maps 
 WorldClim <- c(tavg, srad, prec, vapr)
 
