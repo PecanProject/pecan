@@ -63,7 +63,7 @@ PEcAn2EFI <- function(outdir = NULL, ne = NULL, site_id = NULL, start_date=NULL,
     ensemble.output[[row]]$time_bounds = tod
     
     ## convert to data frame
-    ensemble.output[[row]]  = as.data.frame(ensemble.output[[row]]) %>% 
+    ensemble.output[[row]]  = as.data.frame(ensemble.output[[row]]) |> 
       dplyr::mutate(
         parameter = row,
         reference_datetime = lubridate::as_datetime(start_date),
@@ -85,9 +85,10 @@ PEcAn2EFI.ens <- function(outdir,run.id,start_date,end_date = NULL){
   PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
   ensemble.output <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables=NULL)
   
-  if(!is.numeric(nrow(ensemble.output))) return(NULL)
-  
+  if(length(ensemble.output)==0)  return(NULL)
+    
   ## reprocess time_bounds
+  if(length(dim(ensemble.output$time_bounds)<2)) ensemble.output$time_bounds = matrix(ensemble.output$time_bounds,nrow=2)
   doy = as.vector(ensemble.output$time_bounds[1,])  ## day of year
   years = c(which(doy < 0.00001),length(doy)+1) ## get breaks between years
   if(years[1] != 1) years = c(1,years) ## add current year if not start of year
@@ -98,7 +99,7 @@ PEcAn2EFI.ens <- function(outdir,run.id,start_date,end_date = NULL){
   ensemble.output$time_bounds = tod
   
   ## convert to data frame
-  ensemble.output  = as.data.frame(ensemble.output) %>% 
+  ensemble.output  = as.data.frame(ensemble.output) |> 
     dplyr::mutate(
       parameter = ens.id,
       reference_datetime = lubridate::as_datetime(start_date),
