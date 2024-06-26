@@ -12,10 +12,10 @@
 # Product is a zip file containing 12 .tif files, one for each month
 # Use code below to average the 12 files to obtain one map
 # 2023 REU project used 10 minute spatial resolution
-prefix = "path/to/covariates_data/"
+
 
 ## Solar Radiation (kJ m-2 day-1)
-srad <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/10m_srad",
+srad <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/10m_srad",
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
@@ -23,7 +23,7 @@ srad <- terra::app(srad, mean)
 
 
 ## Vapor Pressure (kPa)
-vapr <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/10m_vapr",
+vapr <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/10m_vapr",
                                pattern='.tif$',
                                all.files= T,
                                full.names= T)) 
@@ -31,7 +31,7 @@ vapr <- terra::app(vapr, mean)
 
 
 ## Average Temperature (*C)
-tavg <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/WorldClim",
+tavg <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/WorldClim",
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
@@ -39,7 +39,7 @@ tavg <- terra::app(tavg, mean)
 
 
 ## Total Precipitation (mm)
-prec <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/total_prec",
+prec <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/total_prec",
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
