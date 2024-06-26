@@ -66,7 +66,7 @@ sand <- geodata::soil_world(var = "sand", depth = 5, stat = "mean", path = tempd
 
 #### Land Cover ####
 GLanCE_extract <- function(pattern, path) {
-   files <- list.files(path = "/projectnb/dietzelab/dietze/glance2012/e4ftl01.cr.usgs.gov/MEASURES/GLanCE30.001/2012.07.01", #make this path default
+  files <- list.files(path = "/projectnb/dietzelab/dietze/glance2012/e4ftl01.cr.usgs.gov/MEASURES/GLanCE30.001/2012.07.01", #make this path default
                       all.files = T,
                       full.names = T,
                       pattern)
