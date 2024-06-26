@@ -8,6 +8,7 @@
 * New function `convert_input`, used to convert between formats while reusing
   existing files where possible. It previously lived in package `PEcAn.utils`,
   but was moved here to simplify dependencies. (#3026; @nanu1605)
+* `get.trait.data` gains new argument `write` (with default FALSE), passed on to `get.trait.data.pft` (@Aariq, #3065).
 
 # PEcAn.DB 1.7.2
 
