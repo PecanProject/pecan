@@ -13,7 +13,6 @@
 # Use code below to average the 12 files to obtain one map
 # 2023 REU project used 10 minute spatial resolution
 
-
 ## Solar Radiation (kJ m-2 day-1)
 srad <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/10m_srad",
                                pattern='.tif$',
@@ -79,6 +78,7 @@ GLanCE_extract <- function(pattern, path) {
 
 # Integer identifier for class in the current year
 land_cover <- GLanCE_extract(pattern = "NA_LC.tif$")
+
 
 #### Resample and Stack Maps ####
 # Define the extent to crop the covariates to North America
