@@ -12,9 +12,10 @@
 # Product is a zip file containing 12 .tif files, one for each month
 # Use code below to average the 12 files to obtain one map
 # 2023 REU project used 10 minute spatial resolution
+prefix = "path/to/covariates_data/"
 
 ## Solar Radiation (kJ m-2 day-1)
-srad <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/10m_srad",
+srad <- terra::rast(list.files(path = paste0(prefix, "10m_srad"),
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
@@ -22,7 +23,7 @@ srad <- terra::app(srad, mean)
 
 
 ## Vapor Pressure (kPa)
-vapr <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/10m_vapr",
+vapr <- terra::rast(list.files(path = paste0(prefix, "10m_vapr"),
                                pattern='.tif$',
                                all.files= T,
                                full.names= T)) 
@@ -30,7 +31,7 @@ vapr <- terra::app(vapr, mean)
 
 
 ## Average Temperature (*C)
-tavg <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/avg_temp_prep/WorldClim",
+tavg <- terra::rast(list.files(path = paste0(prefix, "WorldClim"),
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
@@ -38,7 +39,7 @@ tavg <- terra::app(tavg, mean)
 
 
 ## Total Precipitation (mm)
-prec <- terra::rast(list.files(path = "/projectnb/dietzelab/jploshay/pecan_copy/jploshay/total_prec",
+prec <- terra::rast(list.files(path = paste0(prefix, "total_prec"),
                                pattern='.tif$',
                                all.files= T,
                                full.names= T))
@@ -64,8 +65,8 @@ sand <- geodata::soil_world(var = "sand", depth = 5, stat = "mean", path = tempd
 
 
 #### Land Cover ####
-GLanCE_extract <- function(pattern, path) {
-  files <- list.files(path = "/projectnb/dietzelab/dietze/glance2012/e4ftl01.cr.usgs.gov/MEASURES/GLanCE30.001/2012.07.01", #make this path default
+GLanCE_extract <- function(pattern) {
+  files <- list.files(path = paste0(prefix,"GLanCE30.001/2012.07.01"),
                       all.files = T,
                       full.names = T,
                       pattern)
@@ -79,10 +80,23 @@ GLanCE_extract <- function(pattern, path) {
 # Integer identifier for class in the current year
 land_cover <- GLanCE_extract(pattern = "NA_LC.tif$")
 
-
 #### Resample and Stack Maps ####
 # Define the extent to crop the covariates to North America
 NA_extent <- terra::ext(-178.19453125, -10, 7.22006835937502, 83.5996093750001)
+
+
+## Align CRS for all datasets
+crs_target <- "EPSG:4326"
+tavg <- terra::project(tavg, crs_target)
+srad <- terra::project(srad, crs_target)
+prec <- terra::project(prec, crs_target)
+vapr <- terra::project(vapr, crs_target)
+
+phh2o <- terra::project(phh2o, crs_target)
+nitrogen <- terra::project(nitrogen, crs_target)
+soc <- terra::project(soc, crs_target)
+sand <- terra::project(sand, crs_target)
+land_cover <- terra::project(land_cover, crs_target)
 
 # Stack WorldClim maps 
 WorldClim <- c(tavg, srad, prec, vapr)
@@ -99,7 +113,7 @@ NA_SoilGrids <- terra::crop(SoilGrids, NA_extent)
 names(NA_SoilGrids) <- c("phh2o", "nitrogen", "soc", "sand")
 
 # Resample SoilGrids to match WorldClim maps
-NA_SoilGrids <- terra::resample(NA_WorldClim, NA_SoilGrids, method = 'bilinear') # made change
+NA_SoilGrids <- terra::resample(NA_SoilGrids, NA_WorldClim, method = 'bilinear')
 
 # Resample land cover to match WorldClim maps (~25 min)
 land_cover <- terra::resample(land_cover, NA_WorldClim, method = 'near')
