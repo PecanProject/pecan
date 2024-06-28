@@ -283,7 +283,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$standardize) {
     standardize_result <- list()
     is_standardized <- FALSE
-    ready.id <- list(input.id = c(), dbfile.id = c())
+    ready.id <- list(input.id = NULL, dbfile.id = NULL)
 
     for (i in seq_along(cf.id[[1]])) {
 
