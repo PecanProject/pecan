@@ -255,9 +255,9 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
   }
 
   # setup parent part of query if specified
-  if (is.na(parentid)) {
-    parent <- ""
-  } else {
+  parent <- ""
+  
+  if (!is.na(parentid)) {
     parent <- paste0(" AND parent_id=", parentid)
   }
 
