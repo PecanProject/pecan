@@ -7,20 +7,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-Some changes have been made to the docker-compose file. Check your .env file to
-see if you need to change any of these:
-- TRAEFIK_HOST is now TRAEFIK_HOSTNAME without the Host: and ;, for example if you have
-  `TRAEFIK_HOST=Host:pecan.example.com;` you will need to change this to
-  `TRAEFIK_HOST=pecan.example.com`.
-- TRAEFIK_IPFILTER is no longer used, and should be removed.
-- TRAEFIK_HTTP_PORT now defaults to port 80
-- TRAEFIK_HTTPS_PORT now defaults to port 443
-- TRAEFIK_ACME_ENABLE is no longer used. If you want to use https you will need to add
-  `docker-compose.https.yml` to your command line. You can use the script `compose.sh`
-  to star PEcAn with https.
-- TRAEFIK_HTTPS_OPTIONS is no longer used, this is the default when you use https.
-- TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
-
 ### Added
 - Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
 
@@ -31,19 +17,14 @@ see if you need to change any of these:
 - Added a new function `unit_is_parseable` in PEcAn.utils to replace `udunits2::ud.is.parseable`.
   (#3002; @nanu1605)
 - Initial LDNDC model coupling
-- `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
-- `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
--  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
 - Added optional `process_partial` argument to `model2netcdf.ED2()` to allow it to process existing output from failed runs.
-- Added litter_mass_content_of_water to standard_vars table
-- Added litter_mass_content_of_water to model2netcdf.SIPNET
+- Added litter_mass_content_of_water to standard_vars table and model2netcdf.SIPNET
 - Added all SIPNET state variables to read_restart and write_restart
 - Added Observation preparation functions into the SDA workflow, which supports AGB, LAI, Soil Carbon, and Soil moisture.
-- We are slowly change the license from NCSA opensource to BSD-3 to help with publishing PEcAn to CRAN.
 - Added an optional `pfts` argument to `PEcAn.uncertainty::run.sensitivity.analysis()` so that sensitivity analysis and variance decomposition can be run on a subset of PFTs defined in `settings` if desired (#3155).
 - Added new features of the SDA function including: 1) allow user-defined free-run mode; 
 2) allow user-defined parallel mode for the qsub submission; 3) allow user-defined email option to report the progress.
-- The analysis function now supports the parallelization of multi-chain MCMC sampling with the fully randomized inits function.
+- `PEcAnAssimSequential::GET.MultiSite()` now supports the parallelization of multi-chain MCMC sampling with the fully randomized inits function.
 - Added the new feature of the block-based SDA workflow, which supports the parallel computation.
 - Added new SDA workflow for the 342 North America anchor sites.
 - Added new feature of preparing initial conditions for MODIS LAI, AGB, ISCN SOC, and soil moisture across NA anchor sites.
@@ -75,31 +56,50 @@ convert data for a single PFT fixed (#1329, #2974, #2981)
 - `PEcAn.data.land::gSSURGO.Query` has been updated to work again after changes to the gSSURGO API.
 - `PEcAn.settings::read.settings()` now prints a warning when falling back on default `"pecan.xml"` if the named `inputfile` doesn't exist.
 - fqdn() can access hostname on Windows (#3044 fixed by #3058)
-- The model2netcdf_SIPNET function can now export full year nc files by using 
-  the cdo_setup argument in the template job file. In detail, people will need
-  to specify cdosetup = "module load cdo/2.0.6" in the host section. More details
-  are in the Create_Multi_settings.R script. (#3052)
 - write.config.xml.ED2() wasn't using the <revision> tag in settings correctly (#3080)
 - runModule.get.trait.data() now correctly respects the settings$database$bety$write setting (#2968)
 - Fixed a bug in `model2netcdf.ed2()` where .nc file connections were being closed multiple times, printing warnings (#3078)
 - Fixed a bug causing the model2netcdf.ED2() step in jobs.sh to be incorrectly written (#3075)
 - Fixed a bug where `plant_min_temp` trait value wasn't being converted from ºC to K when writing config file for ED2 (#3110)
 - Fixed a bug in `PEcAn.ED2::read_E_files()` affecting `PEcAn.ED2::model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
-- DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
-- The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
-- Update Dockerfile for sipnet/maespa/template to use pecan/models:tag to build.
 - Fixed a bug in `PEcAn.utils::ud_convert()` where it failed with objects of class "difftime" introduced by refactoring to use the `units` package instead of `udunits` (#3012)
 - The propagation of aqq and bqq for the SINGLE Q type has been corrected.
 - The issue where the indirect constraints will be increase with the increase of the covariance sizes.
+- Updated URL for MERRA downloads (#2888)
 
 ### Changed
 
-- Using R4.0 and R4.1 tags to build PEcAn. Default is now 4.1
+- The default build of PEcAn now uses R 4.1. PEcAn is also tested daily on R 4.2 and weekly on R-devel. R 4.0 and older are no longer tested and will probably not work.
+- Some changes have been made to the docker-compose file. Check your .env file to 
+  see if you need to change any of these:
+  - TRAEFIK_HOST is now TRAEFIK_HOSTNAME without the `Host:` and `;`, for example if you have
+    `TRAEFIK_HOST=Host:pecan.example.com;` you will need to change this to
+    `TRAEFIK_HOST=pecan.example.com`.
+  - TRAEFIK_IPFILTER is no longer used, and should be removed.
+  - TRAEFIK_HTTP_PORT now defaults to port 80
+  - TRAEFIK_HTTPS_PORT now defaults to port 443
+  - TRAEFIK_ACME_ENABLE is no longer used. If you want to use https you will need to add
+    `docker-compose.https.yml` to your command line. You can use the script `compose.sh`
+    to start PEcAn with https.
+  - TRAEFIK_HTTPS_OPTIONS is no longer used, this is the default when you use https.
+  - TRAEFIK_HTTP_REDIRECT is no longer used, this is the default when you use https.
+- Updated Dockerfile for sipnet/maespa/template to use pecan/models:tag to build.
+- The `yr` and `yfiles` arguments of `PEcAn.ED2::read_E_files()` are no longer used
+  and the simulation date is extracted from the names of the .h5 files output by ED2.
+- DDBH (change in DBH over time) is no longer extracted and summarized from
+  monthly -E- files by `PEcAn.ED2::model2netcdf.ED2()`.  We are not sure it makes
+  sense to summarize this variable across cohorts of different sizes.
+- `PEcAn.SIPNET::model2netcdf.SIPNET` can now export full year nc files by using 
+  the cdo_setup argument in the template job file. In detail, people will need
+  to specify `cdosetup = "module load cdo/2.0.6"`` in the host section. More details
+  are in the Create_Multi_settings.R script. (#3052)
+- `PEcAn.settings::read.settings()` now strips comments so HTML style comments (e.g. `<!-- a comment -->`) are now allowed in pecan.xml files
+- `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
+-  Warning messages for `model2netcdf.ed2()` coming from `ncdf4::ncvar_put()` now are prepended with the variable name for easier debugging (#3078)
 - Database connections consistently use `DBI::dbConnect` instead of the deprecated `dplyr::src_postgres` (#2881). This change should be invisible to most users, but it involved converting a lot of internal variables from `bety$con` to `con`. If you see errors involving these symbols it means we missed a place, so please report them as bugs.
 - `PEcAn.utils::download.url` argument `retry404` is now renamed to `retry` and
   now functions as intended (it was being ignored completely before).
-- Update URL for MERRA downloads (#2888)
-- PEcAn.logger is now BSD-3 License
+- We have begun the process of relicensing the PEcAn packages from the previous NCSA license to BSD-3, with the consent of all contributors. PEcAn.logger is now distributed as BSD-3; others will be changed as their authors sign off.
 - Skipped ICOS and MERRA download tests when running in github actions
 - Converted .zenodo.json to CITATION.cff
 - Using traefik 2.5 instead of 1.7

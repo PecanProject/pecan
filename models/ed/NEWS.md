@@ -9,7 +9,7 @@
 * Fixed a bug in `read_E_files()` affecting `model2netcdf.ED2()` that resulted in incorrect calculations (#3126)
 * DDBH (change in DBH over time) is no longer extracted and summarized from monthly -E- files by `model2netcdf.ED2()`.  We are not sure it makes sense to summarize this variable across cohorts of different sizes.
 * The `yr` and `yfiles` arguments of `read_E_files()` are no longer used and the simulation date is extracted from the names of the .h5 files output by ED2.
-* Fixed a bug where dimensions of output .nc file would be incorrect if a PFT was missing from ED2 output for less than a full year
+* Fixed a bug where dimensions of output .nc file would be incorrect if a PFT was missing from ED2 output for less than a full year (#3140, #3143).
 
 
 # PEcAn.ED2 1.7.2.9000
