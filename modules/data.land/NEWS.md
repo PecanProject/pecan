@@ -1,5 +1,9 @@
 # PEcAn.data.land 1.7.2.9000
 
+## Added
+
+* New function `soilgrids_soilC_extract` retrieves soil C estimates with uncertainty from the ISRIC SoilGrids 250m data. (#3040, @Qianyuxuan)
+
 ## Fixed
 
 * `gSSURGO.Query()` now always returns all the columns requested, even ones that are all NA. It also now always requires `mukeys` to be specified.
