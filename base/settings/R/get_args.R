@@ -24,6 +24,9 @@ get_args <- function() {
       type = "logical",
       help = "Continue processing",
     )
+    make_option(c("-l", "--lat"), type = "numeric", default = NULL, help = "Latitude"),
+    make_option(c("-o", "--lon"), type = "numeric", default = NULL, help = "Longitude"),
+    make_option(c("-s", "--siteID"), type = "character", default = NULL, help = "Site ID (optional)", action = "store")
   )
 
   parser <- optparse::OptionParser(option_list = option_list)
