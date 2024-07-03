@@ -75,7 +75,7 @@ if (args$continue && file.exists(status_file)) {
 }
 
 # Do conversions
-settings <- PEcAn.workflow::do_conversions(settings, args$site.data)
+settings <- PEcAn.workflow::do_conversions(settings)
 
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0) {
