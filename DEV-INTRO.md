@@ -124,7 +124,7 @@ echo "PWD=%CD%" >> .env
 Once you have setup `docker-compose.override.yml` and the `.env` files, it is time to pull all docker images that will be used. Doing this will make sure you have the latest version of those images on your local system.
 
 ```sh
-docker-compose pull
+docker compose pull
 ```
 
 #### folders (optional)
@@ -226,12 +226,12 @@ copy docker\web\config.docker.php web\config.php
 To begin development we first have to bring up the full PEcAn stack. This assumes you have done once the steps above. You don\'t need to stop any running containers, you can use the following command to start all containers. At this point you have PEcAn running in docker.
 
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 
 The current folder (most likely your clone of the git repository) is mounted in some containers as `/pecan`, and in the case of rstudio also in your home folder as `pecan`. You can see which containers exactly in `docker-compose.override.yml`.
 
-You can now modify the code on your local machine, or you can use [rstudio](http://pecan.localhost) in the docker stack. Once you made changes to the code you can compile the code either in the terminal of rstudio (`cd pecan && make`) or using `./scripts/compile.sh` from your machine (latter is nothing more than a shell script that runs `docker-compose exec executor sh -c 'cd /pecan && make'`.
+You can now modify the code on your local machine, or you can use [rstudio](http://pecan.localhost) in the docker stack. Once you made changes to the code you can compile the code either in the terminal of rstudio (`cd pecan && make`) or using `./scripts/compile.sh` from your machine (latter is nothing more than a shell script that runs `docker compose exec executor sh -c 'cd /pecan && make'`.
 
 The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/lib` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
 
@@ -242,7 +242,7 @@ To compile the PEcAn code you can use the make command in either the rstudio con
 You can submit your workflow either in the executor container or in rstudio container. For example to run the `docker.sipnet.xml` workflow located in the tests folder you can use:
 
 ```sh
-docker-compose exec executor bash
+docker compose exec executor bash
 # inside the container
 cd /pecan/tests
 R CMD ../web/workflow.R --settings docker.sipnet.xml
@@ -304,18 +304,18 @@ docker volume rm $(docker volume ls -q -f name=pecan)
 
 If you changed the docker-compose.override.yml file to point to a location on disk for some of the containers (instead of having them managed by docker) you will need to actually delete the data on your local disk, docker will NOT do this.
 
-## Reset the lib folder
+## Reset the R_library folder
 
-If you want to reset the pecan lib folder that is mounted across all machines, for example when there is a new version of PEcAn or a a new version of R, you will need to delete the volume pecan_lib, and repopulate it. To delete the volume use the following command, and then look at "copy R packages" to copy the data again.
+If you want to reset the R library folder that is mounted across all machines, for example when there is a new version of PEcAn or a a new version of R, you will need to delete the volume pecan_R_library, and repopulate it. To delete the volume use the following command, and then look at "copy R packages" to copy the data again.
 
 ```sh
-docker-compose down
-docker volume rm pecan_lib
+docker compose down
+docker volume rm pecan_R_library
 ```
 
 ## Linux and User permissions
 
-(On Mac OSX and Windows files should automatically be owned by the user running the docker-compose commands).
+(On Mac OSX and Windows files should automatically be owned by the user running the docker compose commands).
 
 If you use mounted folders, make sure that these folders are writable by the containers. Docker on Linux will try to preserve the file permissions. To do this it might be necessary for the folders to have rw permissions. This can be done by using `chmod 777 $HOME/volumes/pecan/{lib,pecan,portainer,postgres,rabbitmq,traefik}`.
 
