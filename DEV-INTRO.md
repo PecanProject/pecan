@@ -4,7 +4,7 @@ This is a minimal guide to getting started with PEcAn development under Docker. 
 
 ## Requirements and Recommendations
 
-Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Sonoma, and Windows 10 with Windows Subsystem for Linux 2.
+Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Sonoma, and Windows 10 with Windows Subsystem for Linux 2 (following the Linux instructions).
 
 - Software (installation instructions below):
   - Docker version 26
@@ -57,12 +57,6 @@ For Linux/MacOSX
 cp docker-compose.dev.yml docker-compose.override.yml
 ```
 
-For Windows
-
-```sh
-copy docker-compose.dev.yml docker-compose.override.yml
-```
-
 You can now use the command `docker-compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
 
 ### First time setup
@@ -78,48 +72,35 @@ The steps in this section only need to be done the first time you start working 
 
 #### .env file
 
-You can copy the [`docker/env.example`](docker/env.example) file as .env in your pecan folder. The variables we want to modify are:
-
-For Linux/MacOSX
+You can copy the [`docker/env.example`](docker/env.example) file as .env in your pecan folder.
 
 ```sh
 cp docker/env.example .env
 ```
 
-For Windows
+
+The variables we want to modify are:
+
+- `COMPOSE_PROJECT_NAME`, the prefix for all containers. Set this to "pecan".
+- `PECAN_VERSION`, the docker image we start with. Set this to "develop".
+
+Both of these variables should also be uncommented by removing the # preceding them.
+
+At the end you should see the following if you run the command  `egrep -v '^(#|$)' .env`:
 
 ```sh
-copy docker/env.example .env
+COMPOSE_PROJECT_NAME=pecan
+PECAN_VERSION=develop
 ```
 
-- `COMPOSE_PROJECT_NAME` set this to pecan, the prefix for all containers
-- `PECAN_VERSION` set this to develop, the docker image we start with
-
-Both of these variables should also be uncommented by removing the # preceding them.  At the end you should see the following if you run the following command  `egrep -v '^(#|$)' .env`. If you have a windows system, you will need to set the variable PWD as well, and for linux you will need to set UID and GID (for rstudio).
-
-For Linux
+If you have a Linux system you will need to set UID and GID (these are needed by rstudio when sharing files between host and container):
 
 ```sh
-echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-echo "PECAN_VERSION=develop" >> .env
 echo "UID=$(id -u)" >> .env
 echo "GID=$(id -g)" >> .env
 ```
 
-For MacOSX
-
-```sh
-echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-echo "PECAN_VERSION=develop" >> .env
-```
-
-For Windows:
-
-```sh
-echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-echo "PECAN_VERSION=develop" >> .env
-echo "PWD=%CD%" >> .env
-```
+Later you may wish to modify other variables in `.env`, but for this intro please confirm that the system is working with this minimal configuration first.
 
 Once you have setup `docker-compose.override.yml` and the `.env` files, it is time to pull all docker images that will be used. Doing this will make sure you have the latest version of those images on your local system.
 
