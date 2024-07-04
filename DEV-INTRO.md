@@ -4,11 +4,11 @@ This is a minimal guide to getting started with PEcAn development under Docker. 
 
 ## Requirements and Recommendations
 
-Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Catalina, and Windows 10 with Windows Subsystem for Linux 2.
+Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Sonoma, and Windows 10 with Windows Subsystem for Linux 2.
 
 - Software (installation instructions below):
-  - Docker version 19
-  - Docker-compose version 1.26
+  - Docker version 26
+  - Docker Compose version 2.27
   - Git (optional until you want to make major changes)
 - Hardware
   - 100 GB storage (minimum 50 GB)
@@ -33,10 +33,10 @@ The use of Docker in PEcAn is described in detail in the [PEcAn documentation](h
 
 ### Installing Docker
 
-To install Docker and docker-compose, see the docker documentation:
+To install Docker and Docker Compose, see the docker documentation:
 
-- Docker Desktop in [MacOS](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
-- Docker (e.g. [Ubuntu](https://docs.docker.com/compose/install/)) and [docker-compose](https://docs.docker.com/compose/install/) on your linux operating system.
+- Docker Desktop (includes Docker Compose) in [MacOS](https://docs.docker.com/desktop/install/mac-install/) or [Windows](https://docs.docker.com/desktop/install/windows-install/) or [Linux](https://docs.docker.com/desktop/install/linux-install/)
+- On Linux, you can also choose to separately install the [Docker engine](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 _Note for Linux (including Windows WSL2) users:_ add your user to the docker group. This will prevent you from having to use `sudo` to start the docker containers, and makes sure that any file that is written to a mounted volume is owned by you. This can be done using
 
@@ -129,7 +129,7 @@ docker-compose pull
 
 #### folders (optional)
 
-The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on a presentation done during [DockerCon 2020](https://docker.events.cube365.net/docker/dockercon/content/Videos/92BAM7vob5uQ2spZf). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, by uncommenting the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
+The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on Dave Scott's DockerCon 2020 presentation ["New Docker Desktop Filesharing Features"](https://www.youtube.com/watch?v=gyddZyc8r48). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, by uncommenting the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
 
 If you have uncommented the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with:
 
