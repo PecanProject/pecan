@@ -127,21 +127,21 @@ Once you have setup `docker-compose.override.yml` and the `.env` files, it is ti
 docker compose pull
 ```
 
-#### folders (optional)
+#### Folders (optional)
 
 The goal of the development is to share the development folder with your container, whilst minimizing the latency. What this will do is setup the folders to allow for your pecan folder to be shared, and keep the rest of the folders managed by docker. Some of this is based on Dave Scott's DockerCon 2020 presentation ["New Docker Desktop Filesharing Features"](https://www.youtube.com/watch?v=gyddZyc8r48). In this talk it is recommended to keep the database on the filesystem managed by docker, as well as any other folders that are not directly modified on the host system (not using the docker managed volumes could lead to a large speed loss when reading/writing to the disk). The `docker-compose.override.yml` can be modified to copy all the data to the local filesystem, by uncommenting the appropriate blocks. If you are sharing more than the pecan home directory you will need to make sure that these folder exist. As from the video, it is recommended to keep these folders outside of the actual pecan folder to allow for better caching capabilities of the docker system.
 
 If you have uncommented the volumes in `docker-compose.override.yml` you will need to create the folders. Assuming you have not modified the values, you can do this with:
 
 ```sh
-mkdir -p $HOME/volumes/pecan/{lib,pecan,portainer,postgres,rabbitmq,traefik}
+mkdir -p $HOME/volumes/pecan/{R_library,pecan,portainer,postgres,rabbitmq,traefik}
 ```
 
 The following volumes are specified:
 
 - **pecan_home** : is the checked out folder of PEcAn. This is shared with the executor and rstudio container allowing you to share and compile PEcAn. (defaults to current folder)
 - **pecan_web** : is the checked out web folder of PEcAn. This is shared with the web container allowing you to share and modify the PEcAn web app. (defaults to web folder in the current folder)
-- **pecan_lib** : holds all the R packages for the specific version of PEcAn and R. This folder will be shared amongst all other containers, and will contain the compiled PEcAn code. (defaults to managed by docker, or $HOME/volumes/pecan/lib)
+- **R_library** : holds all the R packages for the specific version of PEcAn and R. This folder will be shared amongst all other containers, and will contain the compiled PEcAn code. (defaults to managed by docker, or $HOME/volumes/pecan/R_library)
 - **pecan** this holds all the data, such as workflows and any downloaded data.  (defaults to managed by docker, or $HOME/volumes/pecan/pecan)
 - **traefik** holds persisent data for the web proxy, that directs incoming traffic to the correct container. (defaults to managed by docker, or $HOME/volumes/pecan/traefik)
 - **postgres** holds the actual database data. If you want to backup the database, you can stop the postgres container, zip up the folder. (defaults to managed by docker, or $HOME/volumes/pecan/postgres)
@@ -149,6 +149,8 @@ The following volumes are specified:
 - **portainer** if you enabled the portainer service this folder is used to hold persistent data for this service. You will need to enable this service. (defaults to managed by docker, or $HOME/volumes/pecan/portainer)
 
 These folders will hold all the persistent data for each of the respective containers and can grow. For example the postgres database is multiple GB. The pecan folder will hold all data produced by the workflows, including any downloaded data, and can grow to many giga bytes.
+
+Note that the volume names shown here are the ones that appear in the compose file. When examining volumes in Docker, each name will have an additional `pecan_` prefixed: `pecan_pecan_home`, `pecan_traefik`, and so on.
 
 #### Postgresql database
 
@@ -199,7 +201,13 @@ Next copy the R packages from a container to volume `pecan_lib`. This is not rea
 You can copy all the data using the following command. This will copy all compiled packages to your local machine.
 
 ```
-docker run -ti --rm -v pecan_lib:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/
+docker run -ti --rm -v pecan_R_library:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/
+```
+
+If you have set a custom UID or GID in your `.env`, change ownership of these files as described above for the data volume. E.g. if you use the same UID in the containers as on your host machine, run:
+
+```
+docker run -ti --rm -v pecan_R_library:/rlib pecan/base:develop chown -R "$(id -u):$(id -g)" /rlib/
 ```
 
 #### Copy web config file (optional)
@@ -233,7 +241,7 @@ The current folder (most likely your clone of the git repository) is mounted in 
 
 You can now modify the code on your local machine, or you can use [rstudio](http://pecan.localhost) in the docker stack. Once you made changes to the code you can compile the code either in the terminal of rstudio (`cd pecan && make`) or using `./scripts/compile.sh` from your machine (latter is nothing more than a shell script that runs `docker compose exec executor sh -c 'cd /pecan && make'`.
 
-The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/lib` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
+The compiled code is written to `/usr/local/lib/R/site-library` which is mapped to `volumes/pecan/R_library` on your machine. This same folder is mounted in many other containers, allowing you to share the same PEcAn modules in all containers. Now if you change a module, and compile all other containers will see and use this new version of your module.
 
 To compile the PEcAn code you can use the make command in either the rstudio container, or in the executor container. The script [`compile.sh`](scripts/compile.sh) will run make inside the executor container.
 
