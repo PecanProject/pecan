@@ -166,6 +166,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                          lon = latlon$lon)
     str_ns <- paste0(new.site$lat,'-',new.site$lon)
   } else {
+    new.site <- data.frame(id = as.numeric(site$id), 
+                         lat = site$lat, 
+                         lon = site$lon)
     str_ns <- paste0(site$lat,'-',site$lon)
   }
   
