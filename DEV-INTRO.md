@@ -49,7 +49,7 @@ sudo adduser ${USER} docker.
 
 To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
 
-By default docker-compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. :
+By default Compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. :
 
 For Linux/MacOSX
 
@@ -57,7 +57,7 @@ For Linux/MacOSX
 cp docker-compose.dev.yml docker-compose.override.yml
 ```
 
-You can now use the command `docker-compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
+You can now use the command `docker compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
 
 ### First time setup
 
@@ -138,10 +138,10 @@ Note that the volume names shown here are the ones that appear in the compose fi
 First we bring up postgresql (we will start RabbitMQ as well since it takes some time to start):
 
 ```sh
-docker-compose up -d postgres rabbitmq
+docker compose up -d postgres rabbitmq
 ```
 
-This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker-compose logs postgres`) to see if it is ready.
+This will start postgresql and rabbitmq. We need to wait for a few minutes (you can look at the logs using `docker compose logs postgres`) to see if it is ready.
 
 Once the database has finished starting up we will initialize the database. Now you can load the database using the following commands. The first command will make sure we have the latest version of the image, the second command will actually load the information into the database.
 
@@ -153,8 +153,8 @@ docker run --rm --network pecan_pecan pecan/db
 Once that is done we create two users for BETY,  first user is the guest user that you can use to login in the BETY interface. The second user is a user with admin rights.
 
 ```sh
-docker-compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
-docker-compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
+docker compose run --rm bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+docker compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 ```
 
 #### Load example data
