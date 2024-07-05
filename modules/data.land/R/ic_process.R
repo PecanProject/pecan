@@ -50,7 +50,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE, site = settings$
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
-  site.info <- PEcAn.remote::get.site.info(site, con)
+  site.info <- PEcAn.remote::get.new.site(site, con)
 
   # extract new.site and str_ns from site.info
   new.site <- site.info$new.site

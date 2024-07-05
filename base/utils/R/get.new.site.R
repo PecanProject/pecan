@@ -17,9 +17,9 @@
 ##' @author Abhinav Pandey
 ##'
 ##' @examples
-##' get.site.info(site = data.frame(lat = 40.1, lon = -88.2, time_zone = "America/Chicago"), con = con)
+##' get.new.site(site = data.frame(lat = 40.1, lon = -88.2, time_zone = "America/Chicago"), con = con)
 
-get.site.info <- function(site, con) {
+get.new.site <- function(site, con) {
     
     # setup site database number, lat, lon and name and copy for format.vars if new input
     if (is.null(site$lat) | is.null(site$lon)) {
