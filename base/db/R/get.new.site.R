@@ -23,7 +23,7 @@ get.new.site <- function(site, con) {
     
     # setup site database number, lat, lon and name and copy for format.vars if new input
     if (is.null(site$lat) | is.null(site$lon)) {
-        latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
+        latlon <- query.site(site$id, con = con)[c("lat", "lon")]
         new.site <- data.frame(
             id = as.numeric(site$id),
             lat = latlon$lat,
