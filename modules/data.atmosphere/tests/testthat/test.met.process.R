@@ -8,7 +8,7 @@ test_that("`met.process` able to call .download.raw.met.module based on met proc
   mockery::stub(met.process, 'PEcAn.DB::query.format.vars', list())
   mockery::stub(met.process, 'PEcAn.DB::dbfile.check', list(id = 1))
   mockery::stub(met.process, 'assign', 1)
-  mockery::stub(met.process, 'PEcAn.DB::query.site', list(lat = 0, lon = 0))
+  mockery::stub(met.process, 'get.new.site', list(new.site = data.frame(id = 1, lat = 0, lon = 0), str_ns = "0-0"))
   mockery::stub(met.process, 'met.process.stage', list(download.raw = TRUE, met2cf = FALSE, standardize = FALSE, met2model = FALSE))
 
   mocked_res <- mockery::mock(1)
