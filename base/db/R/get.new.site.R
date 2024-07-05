@@ -17,9 +17,19 @@
 ##' @author Abhinav Pandey
 ##'
 ##' @examples
-##' get.new.site(site = data.frame(lat = 40.1, lon = -88.2, time_zone = "America/Chicago"), con = con)
+##' get.new.site(site = data.frame(id = 1, lat = 40.1, lon = -88.2, time_zone = "UTC"), con = con)
 
 get.new.site <- function(site, con) {
+
+    # Check if site dataframe has an id column
+    if (is.null(site$id)) {
+        # Trying to stop current running process if no ID present.
+        # Currently, i want to replace this with a helper function which will check for the ID 
+        ## If ID is not present, the helper function will generate a new one.
+        PEcAn.logger::logger.error("Site dataframe does not have an id column")
+    }
+
+    latlon <- NULL
     
     # setup site database number, lat, lon and name and copy for format.vars if new input
     if (is.null(site$lat) | is.null(site$lon)) {
