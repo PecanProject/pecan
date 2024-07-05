@@ -10,7 +10,7 @@
 ##' Get new site info using provided site information
 ##'
 ##' @title Get New Site Info
-##' @params site a dataframe with site information on lat, lon and time_zone
+##' @param site a dataframe with site information on lat, lon and time_zone
 ##' @param con Database connection object
 ##' @return a dataframe with new site information on lat, lon and time_zone
 ##' @export
