@@ -28,13 +28,13 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   # set up bety connection
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
-  # get site info
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
-  new.site <- data.frame(id = as.numeric(site$id),
-                         lat = latlon$lat,
-                         lon = latlon$lon)
+  
+  # setup site database number, lat, lon and name and copy for format.vars if new input
+  site.info <- PEcAn.remote::get.site.info(site, con)
 
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  # extract new.site and str_ns from site.info
+  new.site <- site.info$new.site
+  str_ns <- site.info$str_ns
 
   outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
 

@@ -6,14 +6,14 @@
 ##' @param input Taken from settings$run$inputs. This should include id, path, and source
 ##' @param dir settings$database$dbfiles
 ##' @param overwrite Default = FALSE. whether to force ic_process to proceed
+##' @param site Current site information
 ##'
 ##' @author Istem Fer, Hamze Dokoohaki
-ic_process <- function(settings, input, dir, overwrite = FALSE){
+ic_process <- function(settings, input, dir, overwrite = FALSE, site = settings$run$site){
 
 
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
-  site       <- settings$run$site
   model <- list()
     model$type <- settings$model$type
     model$id <- settings$model$id
@@ -49,12 +49,12 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
-  #grab site lat and lon info
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
   # setup site database number, lat, lon and name and copy for format.vars if new input
-  new.site <- data.frame(id = as.numeric(site$id),
-                         lat = latlon$lat,
-                         lon = latlon$lon)
+  site.info <- PEcAn.remote::get.site.info(site, con)
+
+  # extract new.site and str_ns from site.info
+  new.site <- site.info$new.site
+  str_ns <- site.info$str_ns
 
   new.site$name <- settings$run$site$name
 
