@@ -1,7 +1,7 @@
 Package: PEcAn.qaqc
 Type: Package
 Title: QAQC
-Version: 1.7.2
+Version: 1.7.3
 Date: 2021-10-04
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),

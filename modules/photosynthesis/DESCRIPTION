@@ -1,7 +1,7 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.7.2.9000
+Version: 1.7.3
 Date: 2021-10-04
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
