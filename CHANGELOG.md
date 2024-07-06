@@ -5,7 +5,7 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
-## [1.8.0] - 2024-xx-xx
+## [1.8.0] - 2024-07-12
 
 ### Added
 - Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
