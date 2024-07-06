@@ -39,5 +39,5 @@ Collate:
     Licor.QC.R
     plots.R
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr

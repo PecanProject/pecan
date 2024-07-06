@@ -29,5 +29,5 @@ Suggests:
     withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

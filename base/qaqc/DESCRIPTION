@@ -37,4 +37,4 @@ LazyData: FALSE
 Encoding: UTF-8
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
