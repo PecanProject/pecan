@@ -29,7 +29,6 @@ get.new.site <- function(site, con) {
         # Currently, i want to replace this with a helper function which will check for the ID 
         ## If ID is not present, the helper function will generate a new one.
         PEcAn.logger::logger.error("Site dataframe does not have an id column")
-        return NULL
     }
     
     # setup site database number, lat, lon and name and copy for format.vars if new input
