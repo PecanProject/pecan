@@ -21,15 +21,16 @@
 
 get.new.site <- function(site, con) {
 
+    latlon <- NULL
+
     # Check if site dataframe has an id column
     if (is.null(site$id)) {
         # Trying to stop current running process if no ID present.
         # Currently, i want to replace this with a helper function which will check for the ID 
         ## If ID is not present, the helper function will generate a new one.
         PEcAn.logger::logger.error("Site dataframe does not have an id column")
+        return NULL
     }
-
-    latlon <- NULL
     
     # setup site database number, lat, lon and name and copy for format.vars if new input
     if (is.null(site$lat) | is.null(site$lon)) {
