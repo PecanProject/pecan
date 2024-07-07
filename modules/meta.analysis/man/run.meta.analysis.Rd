@@ -40,7 +40,7 @@ nothing, as side effect saves \code{trait.mcmc} created by
 and post.distns.Rdata, respectively
 }
 \description{
-This will use the following items from setings:
+This will use the following items from settings:
 \itemize{
 \item settings$pfts
 \item settings$database$bety

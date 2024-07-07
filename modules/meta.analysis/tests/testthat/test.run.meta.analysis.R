@@ -15,6 +15,19 @@ test_that("`run.meta.analysis` able to call run.meta.analysis.pft for each pft i
   expect_equal(args[[2]][[1]], "temperate.coniferous")
 })
 
-test_that("`run.meta.analysis.pft`", {
-  
+test_that("`run.meta.analysis.pft` throws an error if it cannot find output from get.trait", {
+  pft <- list(outdir = "", name = "ebifarm.salix")
+  expect_error(
+    run.meta.analysis.pft(pft = pft, iterations = 1, dbfiles = NULL, dbcon = NULL),
+    "Could not find output from get.trait"
+  )
+})
+
+test_that("`run.meta.analysis.pft` throws an error for missing posteriorid", {
+  pft <- list(outdir = "test", name = "ebifarm.salix")
+  mockery::stub(run.meta.analysis.pft, 'file.exists', TRUE)
+  expect_error(
+    run.meta.analysis.pft(pft = pft, iterations = 1, dbfiles = NULL, dbcon = NULL, update = TRUE),
+    "Missing posteriorid"
+  )
 })
