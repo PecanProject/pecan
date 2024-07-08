@@ -12,6 +12,7 @@
 ##' @title Get New Site Info
 ##' @param site a dataframe with site information on lat, lon and time_zone
 ##' @param con Database connection object
+##' latlon Global latlon abjoect which will store updated lat/lon
 ##' @return a dataframe with new site information on lat, lon and time_zone
 ##' @export
 ##' @author Abhinav Pandey

@@ -4,12 +4,13 @@
 \alias{get.new.site}
 \title{Get New Site Info}
 \usage{
-get.new.site(site, con)
+get.new.site(site, con, latlon = NULL)
 }
 \arguments{
 \item{site}{a dataframe with site information on lat, lon and time_zone}
 
-\item{con}{Database connection object}
+\item{con}{Database connection object
+latlon Global latlon abjoect which will store updated lat/lon}
 }
 \value{
 a dataframe with new site information on lat, lon and time_zone
