@@ -19,6 +19,9 @@
 ##' @examples
 ##' get.new.site(site = data.frame(id = 1, lat = 40.1, lon = -88.2, time_zone = "UTC"), con = con)
 
+# Trying to Inform R CMD check about global variables
+utils::globalVariables(c("latlon"))
+
 get.new.site <- function(site, con) {
     latlon <- NULL
 
