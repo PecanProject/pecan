@@ -10,18 +10,17 @@
 ##' Get new site info using provided site information
 ##'
 ##' @title Get New Site Info
-##' @param site a dataframe with site information on lat, lon and time_zone
-##' @param con Database connection object
-##' latlon Global latlon abjoect which will store updated lat/lon
+##' @param site a dataframe with site information including id, lat, lon, and time_zone.
+##' @param con Database connection object.
+##' @param latlon Optional global latlon object which will store updated lat/lon.
 ##' @return a dataframe with new site information on lat, lon and time_zone
 ##' @export
 ##' @author Abhinav Pandey
 ##'
 ##' @examples
-##' get.new.site(site = data.frame(id = 1, lat = 40.1, lon = -88.2, time_zone = "UTC"), con = con, latlon = NULL)
+##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=con,latlon=NULL)
 
 get.new.site <- function(site, con, latlon = NULL) {
-
     # Check if site dataframe has an id column
     if (is.null(site$id)) {
         # Trying to stop current running process if no ID present.
@@ -50,5 +49,5 @@ get.new.site <- function(site, con, latlon = NULL) {
 
     site.info <- list(new.site = new.site, str_ns = str_ns)
 
-    return (site.info)
+    return(site.info)
 }

@@ -7,10 +7,11 @@
 get.new.site(site, con, latlon = NULL)
 }
 \arguments{
-\item{site}{a dataframe with site information on lat, lon and time_zone}
+\item{site}{a dataframe with site information including id, lat, lon, and time_zone.}
 
-\item{con}{Database connection object
-latlon Global latlon abjoect which will store updated lat/lon}
+\item{con}{Database connection object.}
+
+\item{latlon}{Optional global latlon object which will store updated lat/lon.}
 }
 \value{
 a dataframe with new site information on lat, lon and time_zone
@@ -19,7 +20,7 @@ a dataframe with new site information on lat, lon and time_zone
 Get new site info using provided site information
 }
 \examples{
-get.new.site(site = data.frame(id = 1, lat = 40.1, lon = -88.2, time_zone = "UTC"), con = con, latlon = NULL)
+get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=con,latlon=NULL)
 }
 \author{
 Abhinav Pandey
