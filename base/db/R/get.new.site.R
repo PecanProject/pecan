@@ -19,8 +19,7 @@
 ##' @examples
 ##' get.new.site(site = data.frame(id = 1, lat = 40.1, lon = -88.2, time_zone = "UTC"), con = con)
 
-get.new.site <- function(site, con) {
-    latlon <- NULL
+get.new.site <- function(site, con, latlon = NULL) {
 
     # Check if site dataframe has an id column
     if (is.null(site$id)) {
@@ -50,5 +49,5 @@ get.new.site <- function(site, con) {
 
     site.info <- list(new.site = new.site, str_ns = str_ns)
 
-    return(site.info)
+    return (site.info)
 }
