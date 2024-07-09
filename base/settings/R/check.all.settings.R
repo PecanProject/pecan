@@ -260,13 +260,11 @@ check.bety.version <- function(dbcon) {
   }
 
   # check if database is newer
-  last_migration_date <- lubridate::ymd_hms(utils::tail(versions, n = 1))
-  pecan_release_date <- lubridate::ymd(
-    utils::packageDescription("PEcAn.DB")$Date)
-  if (last_migration_date > pecan_release_date) {
+  unknown_migrations <- setdiff(versions, .known_bety_migrations)
+  if (any(unknown_migrations)) {
     PEcAn.logger::logger.warn(
-      "Last database migration", utils::tail(versions, n = 1),
-      "is more recent than this", pecan_release_date, "release of PEcAn.",
+      "Found database migration(s) not known by this release of PEcAn.settings:",
+      unknown_migrations,
       "This could result in PEcAn not working as expected.")
   }
 }
