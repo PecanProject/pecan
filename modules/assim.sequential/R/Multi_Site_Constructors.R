@@ -46,7 +46,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   }
   
   # if I see that there is a localization function passed to this - I run it by the function.
-  if (!is.null(localization.FUN) & nsite>1) {
+  if (!is.null(localization.FUN) && nsite > 1) {
     pf.matrix.out <- localization.FUN (pf.matrix, blocked.dis, ...)
   } else{
     pf.matrix.out <- pf.matrix

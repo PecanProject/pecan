@@ -1,10 +1,10 @@
 #' tobit_model_censored
 #'
-#' @param settings 
-#' @param X 
-#' @param var.names 
-#' @param mu.f 
-#' @param Pf 
+#' @param settings (list) pecan standard settings list.
+#' @param X (numeric) A matrix contains ensemble forecasts (ensembles * variables).
+#' @param var.names (character) variable names.
+#' @param mu.f (numeric) forecast mean values.
+#' @param Pf (numeric) forecast covariance matrix.
 #'
 #' @return
 #' @export

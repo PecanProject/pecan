@@ -7,15 +7,15 @@
 tobit_model_censored(settings, X, var.names, mu.f, Pf, t)
 }
 \arguments{
-\item{settings}{}
+\item{settings}{(list) pecan standard settings list.}
 
-\item{X}{}
+\item{X}{(numeric) A matrix contains ensemble forecasts (ensembles * variables).}
 
-\item{var.names}{}
+\item{var.names}{(character) variable names.}
 
-\item{mu.f}{}
+\item{mu.f}{(numeric) forecast mean values.}
 
-\item{Pf}{}
+\item{Pf}{(numeric) forecast covariance matrix.}
 }
 \description{
 tobit_model_censored
