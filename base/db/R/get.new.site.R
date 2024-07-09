@@ -18,7 +18,7 @@
 ##' @author Abhinav Pandey
 ##'
 ##' @examples
-##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=con,latlon=NULL)
+##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con,latlon=NULL)
 
 get.new.site <- function(site, con, latlon = NULL) {
     if (is.null(con)) {
