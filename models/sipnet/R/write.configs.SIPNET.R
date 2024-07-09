@@ -11,6 +11,14 @@
 ##' Writes a configuration files for your model
 ##' @name write.config.SIPNET
 ##' @title Writes a configuration files for SIPNET model
+##' @param defaults pft
+##' @param trait.values vector of samples for a given trait
+##' @param settings PEcAn settings object
+##' @param run.id run ID
+##' @param inputs list of model inputs
+##' @param IC initial condition
+##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param spinup currently unused, included for compatibility with other models
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
@@ -438,7 +446,31 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("leafGrowth" %in% pft.names) {
       param[which(param[, 1] == "leafGrowth"), 2] <- pft.traits[which(pft.names == "leafGrowth")]
     }
-  }  ## end loop over PFTS
+
+    #update LeafOnday and LeafOffDay
+     if (!is.null(settings$run$inputs$leaf_phenology)){
+     obs_year_start <- lubridate::year(settings$run$start.date)
+     obs_year_end <- lubridate::year(settings$run$end.date)
+     if (obs_year_start != obs_year_end) {
+      PEcAn.logger::logger.info("Start.date and end.date are not in the same year. Currently start.date is used for refering phenological data")
+     }
+     leaf_pheno_path <- settings$run$inputs$leaf_phenology$path  ## read from settings
+      if (!is.null(leaf_pheno_path)){
+    ##read data
+       leafphdata <- utils::read.csv(leaf_pheno_path)
+       leafOnDay <-  leafphdata$leafonday[leafphdata$year == obs_year_start & leafphdata$site_id==settings$run$site$id]
+       leafOffDay<-  leafphdata$leafoffday[leafphdata$year== obs_year_start & leafphdata$site_id==settings$run$site$id]
+       if (!is.na(leafOnDay)){
+	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+       }
+       if (!is.na(leafOffDay)){
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
+       }
+      } else {
+      PEcAn.logger::logger.info("No phenology data were found. Please consider running `PEcAn.data.remote::extract_phenology_MODIS` to get the parameter file.")
+      }
+    }
+  } ## end loop over PFTS
   ####### end parameter update
   #working on reading soil file (only working for 1 soil file)
   if(length(settings$run$inputs$soilinitcond$path)==1){
@@ -467,7 +499,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }else{
         wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
       }
-      
+
       #Sanity check
       if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
         wood_total_C <- 0
@@ -535,6 +567,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
+      }
+
+      #Initial LAI is set as 0 for deciduous forests and grasslands for non-growing seasons
+      if (!(lubridate::month(settings$run$start.date) %in% seq(5,9))){ #Growing seasons are coarsely defined as months from May to September for non-conifers in the US
+         site_pft <- utils::read.csv(settings$run$inputs$pft.site$path)
+         site.pft.name <- site_pft$pft[site_pft$site == settings$run$site$id]
+         if (site.pft.name!="boreal.coniferous") {   #Currently only excluding boreal conifers. Other evergreen PFTs could be added here later.
+              param[which(param[, 1] == "laiInit"), 2] <- 0       
+          }
       }
       ## neeInit gC/m2
       nee <- try(ncdf4::ncvar_get(IC.nc,"nee"),silent = TRUE)

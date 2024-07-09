@@ -140,7 +140,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   for (y in year_seq) {
     #initialize the conflicted as FALSE
     conflicted <- FALSE
-    
+    conflict <- TRUE    #conflict is set to TRUE to enable the rename of yearly nc file for merging SDA results with sub-annual data
     #if we have conflicts on this file.
     if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
       next
@@ -296,13 +296,19 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       close(varfile)
       ncdf4::nc_close(nc)
       
-      #merge nc files
+      #merge nc files of the same year together to enable the assimilation of sub-annual data
       if(file.exists(file.path(outdir, "previous.nc"))){
         files <- c(file.path(outdir, "previous.nc"), file.path(outdir, "current.nc"))
       }else{
         files <- file.path(outdir, "current.nc")
       }
       mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
+      #The command "cdo" in mergeNC will automatically rename "time_bounds" to "time_bnds". However, "time_bounds" is used 
+      #in read_restart codes later. So we need to read the new NetCDF file and convert the variable name back. 
+      nc<- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")),write=TRUE)
+      nc<-ncdf4::ncvar_rename(nc,"time_bnds","time_bounds")
+      ncdf4::ncatt_put(nc, "time", "bounds","time_bounds", prec=NA)
+      ncdf4::nc_close(nc)
       unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

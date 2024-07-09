@@ -29,7 +29,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
-  latlon <- PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)
+  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
   new.site <- data.frame(id = as.numeric(site$id),
                          lat = latlon$lat,
                          lon = latlon$lon)

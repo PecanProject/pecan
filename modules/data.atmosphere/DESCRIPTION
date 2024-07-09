@@ -64,6 +64,7 @@ Suggests:
     foreach,
     furrr,
     future,
+    mockery,
     parallel,
     PEcAn.settings,
     progress,
@@ -80,4 +81,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

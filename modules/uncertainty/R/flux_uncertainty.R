@@ -159,7 +159,7 @@ plot_flux_uncertainty <- function(f, ...) {
 } # plot_flux_uncertainty
 
 
-plot.oechel.flux <- function(observations, site) {
+plot_oechel_flux <- function(observations, site) {
   graphics::par(mfrow = c(2, 2))
   # only use data from March 1 through November 1
   observations <- observations[observations$DOY > 60 & observations$DOY < 305, ]
@@ -187,7 +187,7 @@ plot.oechel.flux <- function(observations, site) {
                         main = site, xlab = "Soil Temp bin (+)", ylab = "Soil Temp random error")
   plot_flux_uncertainty(observations$TS1[observations$TS1 <= 0], flags = flags, 
                         main = site, xlab = "Soil Temp bin (-)", ylab = "Soil Temp random error")
-} # plot.oechel.flux
+} # plot_oechel_flux
 
 
 tundra.flux.uncertainty <- function() {
@@ -216,7 +216,7 @@ tundra.flux.uncertainty <- function() {
     return(read.ameriflux.L2(file, year))
   })
   oechel.atqasuk <- do.call(rbind, oechel.atqasuk)
-  plot.oechel.flux(oechel.atqasuk, "Atqasuk")
+  plot_oechel_flux(oechel.atqasuk, "Atqasuk")
   plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("AD")], 
                         main = "Atqasuk", 
                         xlab = "Soil Moisture bin (%vol)", 
@@ -228,7 +228,7 @@ tundra.flux.uncertainty <- function() {
     return(read.ameriflux.L2(file, year))
   })
   oechel.barrow <- do.call(rbind, oechel.barrow)
-  plot.oechel.flux(oechel.barrow, "Barrow")
+  plot_oechel_flux(oechel.barrow, "Barrow")
   return(plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
                                main = "Barrow", 
                                xlab = "Soil Moisture bin (%vol)", 
