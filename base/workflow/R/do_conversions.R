@@ -10,9 +10,6 @@
 
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
 
-  # extract site info from settings to be utilizes later in processing.
-  site.info <- settings$run$site
-
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
@@ -56,7 +53,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
     if (ic.flag) {
-      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic, site = site.info)
+      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic, site = settings$run$site)
       needsave <- TRUE
     }
     
@@ -92,7 +89,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
         PEcAn.logger::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]] <- 
           PEcAn.data.atmosphere::met.process(
-            site       = site.info, 
+            site       = settings$run$site, 
             input_met  = settings$run$inputs$met,
             start_date = settings$run$start.date,
             end_date   = settings$run$end.date,
