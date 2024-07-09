@@ -76,7 +76,7 @@ get.new.site <- function(site, con, latlon = NULL) {
     } else {
         # Check if site dataframe has an id column
         if (is.null(site$id) | is.na(site$id)) {
-            PEcAn.logger::warn("Site dataframe does not have an id column. Generating a unique ID")
+            PEcAn.logger::logger.warn("Site dataframe does not have an id column. Generating a unique ID")
             site.id <- generate_new_siteID()
             PEcAn.logger::logger.info(paste0("Generated siteID:", site.id))
             if ((!is.null(site$lat) && !is.null(site$lon)) |
