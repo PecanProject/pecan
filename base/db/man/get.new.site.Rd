@@ -4,7 +4,7 @@
 \alias{get.new.site}
 \title{Get New Site Info}
 \usage{
-get.new.site(site, con, latlon = NULL)
+get.new.site(site, con = NULL, latlon = NULL)
 }
 \arguments{
 \item{site}{a dataframe with site information including id, lat, lon, and time_zone.}
@@ -20,7 +20,7 @@ a dataframe with new site information on lat, lon and time_zone
 Get new site info using provided site information
 }
 \examples{
-get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con,latlon=NULL)
+get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=NULL,latlon=NULL)
 }
 \author{
 Abhinav Pandey

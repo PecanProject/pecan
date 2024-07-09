@@ -31,7 +31,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   latlon <- NULL
-  site.info <- PEcAn.DB::get.new.site(site, con, latlon = latlon)
+  site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
 
   # extract new.site and str_ns from site.info
   new.site <- site.info$new.site

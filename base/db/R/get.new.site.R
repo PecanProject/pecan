@@ -18,9 +18,9 @@
 ##' @author Abhinav Pandey
 ##'
 ##' @examples
-##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con,latlon=NULL)
+##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=NULL,latlon=NULL)
 
-get.new.site <- function(site, con, latlon = NULL) {
+get.new.site <- function(site, con = NULL, latlon = NULL) {
     if (is.null(con)) {
         # No DB connection present. Generate a new ID using one of below steps:
 
