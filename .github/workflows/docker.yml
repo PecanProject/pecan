@@ -73,9 +73,7 @@ jobs:
             echo "PECAN_TAGS=develop" >> $GITHUB_ENV
           fi
       # If any dependencies changed in this PR, try to update depends image
-      # Only runs on pull_request -- others it's not clear what base to compare to
       - name: check for changed dependencies
-        if: github.base_ref != ''
         uses: dorny/paths-filter@v3
         id: findchanges
         with:
@@ -83,7 +81,14 @@ jobs:
             deps:
               - docker/depends/**
       - if: steps.findchanges.outputs.deps == 'true'
-        run: echo "UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}" >> $GITHUB_ENV
+        # NB: GITHUB_BASE_REF is only set on pull requests,
+        # so non-PR builds will find no existing tag and build fresh
+        run: |
+          if $(docker manifest inspect pecan/depends:${GITHUB_BASE_REF##*/} > /dev/null 2>&1); then
+            echo "UPDATE_DEPENDS_FROM_TAG=${GITHUB_BASE_REF##*/}" >> $GITHUB_ENV
+          else
+            echo "BUILD_DEPENDS_FRESH=true" >> GITHUB_ENV
+          fi
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
       # use shell script to build, there is some complexity in this
@@ -94,6 +99,7 @@ jobs:
           PECAN_GIT_BRANCH: ${GITHUB_BRANCH}
           VERSION: ${{ env.PECAN_VERSION }}
           UPDATE_DEPENDS_FROM_TAG: ${{ env.UPDATE_DEPENDS_FROM_TAG }}
+          BUILD: ${{ env.BUILD_DEPENDS_FRESH }}
 
       # push all images to github
       - name: Publish to GitHub

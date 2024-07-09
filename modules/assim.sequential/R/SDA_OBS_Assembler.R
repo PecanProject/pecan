@@ -36,7 +36,7 @@ SDA_OBS_Assembler <- function(settings){
   }
   
   #prepare site_info offline, because we need to submit this to server remotely, which might not support the Bety connection.
-  site_info <- settings$run %>% 
+  site_info <- settings$run %>%
     purrr::map('site')%>% 
     purrr::map(function(site.list){
       #conversion from string to number
@@ -189,12 +189,13 @@ SDA_OBS_Assembler <- function(settings){
     for (j in seq_along(obs.mean[[i]])) {
       if (sum(is.na(obs.mean[[i]][[j]]))){
         na_ind <- which(is.na(obs.mean[[i]][[j]]))
-        obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
-        if(length(new_diag(obs.cov[[i]][[j]])) == 1){
+        #obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
+        if(length(obs.mean[[i]][[j]]) == 1){
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind]
         }else{
           obs.cov[[i]][[j]] <- obs.cov[[i]][[j]][-na_ind, -na_ind]
         }
+	obs.mean[[i]][[j]] <- obs.mean[[i]][[j]][-na_ind]
       }
       SoilC_ind <- which(names(obs.mean[[i]][[j]]) == "TotSoilCarb")
       if (length(SoilC_ind) > 0){
@@ -217,7 +218,7 @@ SDA_OBS_Assembler <- function(settings){
                          Obs_Prep[var_ind] %>% purrr::map(~.x$end.date)),
                     function(var_timestep, var_start_date, var_end_date){
                       obs_timestep2timepoint(var_start_date, var_end_date, var_timestep)
-                    }) %>% 
+                    }) %>%
         purrr::map(function(all_timepoints){
           all_timepoints[which(!all_timepoints %in% time_points)]
         }) %>% 

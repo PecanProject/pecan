@@ -121,6 +121,12 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 
 ### Converting from PEcAn standard to model-specific format {#workflow-met-model}
 
+## Input phenological Data {#workflow-input-phenology}
+
+To enable the use of MODIS phenology data (MODIS Land Cover Dynamics (MCD12Q2)) to update the phenological parameters (leaf-on date) and (leaf-off date) at each restart timepoint: 
+ 1. Generate the phenological parameter CSV file by running `PEcAn.data.remote::extract_phenology_MODIS`.
+ 2. Provide the generated phenological parameter CSV file to `settings$run$inputs$leaf_phenology$path`.
+
 ## Traits {#workflow-traits}
 
 (TODO: Under construction)
@@ -130,6 +136,7 @@ The main script that handles Met Processing, is [`met.process`](https://github.c
 (TODO: Under construction)
 
 ## Model Configuration {#workflow-modelconfig}
+To enable the state data assimilation with sub-annual data, default `conflict` in `model2netcdf` should be `TRUE`. 
 
 (TODO: Under construction)
 

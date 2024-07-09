@@ -10,7 +10,7 @@ New functionality is typically directed toward modules to provide a slimmer PEcA
 Generally, new model should be added to the models folder and new modules should be added to the modules folder.
 Exceptions include code that is reused in many models or modules and wrapper functions that call specific implementations in models; these can be placed in the core packages.
 
-If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ) or ask on the pecan-develop mailing list for advice.
+If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may join our [Slack Channel](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ).
 
 ## Creating Issues
 
@@ -86,7 +86,16 @@ git checkout -b GH-issuenumber-title-of-issue
 
 ### Work and commit
 
-Do you work, and commit as you see fit.Make your commit messages helpful.
+Do you work, and commit as you see fit. Make your commit messages helpful.
+
+### Update other files (CITATION, NEWS, CHANGELOG)
+
+Your PR should include:
+
+- CITATION.cff: if you are making or have made a non-trivial contribution (please ask if unsure; our approach is inclusive), add your name to the author section.
+- NEWS.md: for each package
+- CHANGELOG.md: add changes to [Unreleased] section
+
 
 ### Push your changes up to GitHub
 
@@ -95,6 +104,7 @@ If this is the first time pushing to GitHub you will need to extended command, o
 ```bash
 git push -u origin GH-issuenumber-title-of-issue
 ```
+
 
 ### Pull Request
 
