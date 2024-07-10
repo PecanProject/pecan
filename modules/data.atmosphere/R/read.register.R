@@ -37,7 +37,11 @@ read.register <- function(register.xml, con) {
                (!is.null(register$format$id) & is.null(register$format$mimetype))) {
       # Retrieve format name and mimetype from the database
       query.format.info <- PEcAn.DB::db.query(
-        paste("SELECT name, mimetype_id AS mimetype FROM formats WHERE id = ", register$format$id), con
+        paste(
+          "SELECT name, type_string AS mimetype",
+          "FROM formats JOIN mimetypes ON formats.mimetype_id = mimetypes.id",
+          "WHERE formats.id = ", register$format$id),
+        con
       )
       
       register$format$name <- query.format.info$name
