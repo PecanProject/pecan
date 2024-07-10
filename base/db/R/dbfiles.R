@@ -251,7 +251,7 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
 
   if (is.null(formatid)) {
-    return(invisible(data.frame()))
+    (invisible(data.frame()))
   }
 
   # setup parent part of query if specified
