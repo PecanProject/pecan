@@ -49,7 +49,9 @@ read.register <- function(register.xml, con) {
 
     } else if (is.null(register$format$id) & !is.null(register$format$name) & !is.null(register$format$mimetype)) {
       register$format$id <- PEcAn.DB::db.query(
-        paste0("SELECT id from formats where name = '", register$format$name,
+        paste0(
+          "SELECT formats.id FROM formats JOIN mimetypes ON formats.mimetype_id = mimetypes.id ",
+          "WHERE name = '", register$format$name,
                "' AND type_string = '", register$format$mimetype, "'"), con)[[1]]
     }
   }
