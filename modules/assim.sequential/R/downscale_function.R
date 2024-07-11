@@ -226,6 +226,54 @@ for (i in seq_along(result$metrics)) {
   print(result$metrics[[i]])
 }
 
+# Function to create a Taylor diagram
+TaylorDiagram <- function(taylor_data, ...) {
+  # Convert data to the format required by the plot
+  taylor_data$color <- as.factor(taylor_data$Ensemble)
+  
+  plot <- ggplot(taylor_data, aes(x = Modelled, y = Observed, color = color)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = rainbow(length(unique(taylor_data$color)))) +
+    coord_fixed() +
+    theme_minimal() +
+    labs(title = "Taylor Diagram for Ensemble Members",
+         x = "Standard Deviation (normalised)",
+         y = "Standard Deviation (normalised)",
+         color = "Model") +
+    theme(legend.position = "right")
+  
+  return(plot)
+}
+
+# Prepare data for Taylor diagram
+taylor_data <- data.frame()
+
+for (i in seq_along(result$metrics)) {
+  ensemble_name <- names(result$metrics)[i]
+  actual <- result$metrics[[i]]$actual
+  predicted <- result$metrics[[i]]$predicted
+  
+  # Calculate required statistics
+  obs_sd <- sd(actual)
+  mod_sd <- sd(predicted)
+  correlation <- cor(actual, predicted)
+  
+  # Normalize standard deviations
+  norm_obs_sd <- obs_sd / max(obs_sd, mod_sd)
+  norm_mod_sd <- mod_sd / max(obs_sd, mod_sd)
+  
+  # Add to the data frame
+  taylor_data <- rbind(taylor_data, data.frame(
+    Ensemble = ensemble_name,
+    Observed = norm_obs_sd,
+    Modelled = norm_mod_sd,
+    r = correlation
+  ))
+}
+
+# Create and display Taylor diagram
+taylor_plot <- TaylorDiagram(taylor_data)
+print(taylor_plot)
 
 # Prepare metrics data for line plot with multiple y-axes
 metrics_df <- do.call(rbind, lapply(seq_along(result$metrics), function(i) {
