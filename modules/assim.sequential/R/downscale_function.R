@@ -58,34 +58,33 @@ NA_preprocess <- function(data_path, coords_path, date, C_pool) {
 
 ##' @title North America Downscale Function
 ##' @name NA_downscale
-##' @author Joshua Ploshay
+##' @author Joshua Ploshay , Sambhav Dixit
 ##'
-##' @param data  In quotes, file path for .rds containing ensemble data.
-##' @param coords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
+##' @param preprocessed , In quotes, prepocessed data returned as an output for passing the raw data to the NA_preprocess function.
 ##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
+##' @param covariates_path SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
-##' @description This function uses the randomForest model.
+##' @description This function uses the Convolutional Neural Network(CNN) model.
 ##'
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-NA_downscale <- function(data, coords, date, C_pool, covariates){
+NA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   
-  # Read the input data and site coordinates
-  input_data <- readRDS(data)
-  site_coordinates <- terra::vect(readr::read_csv(coords), geom=c("lon", "lat"), crs="EPSG:4326")
+  input_data <- preprocessed$input_data
+  site_coordinates <- preprocessed$site_coordinates
+  carbon_data <- preprocessed$carbon_data
   
-  # Extract the carbon data for the specified focus year
-  index <- which(names(input_data) == date)
-  data <- input_data[[index]]
-  carbon_data <- as.data.frame(t(data[which(names(data) == C_pool)]))
-  names(carbon_data) <- paste0("ensemble",seq(1:ncol(carbon_data)))
+  # Convert site coordinates to SpatVector
+  site_coordinates <- terra::vect(site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
+  
+  # Load the covariates raster stack
+  covariates <- rast(covariates_path)
   
   # Extract predictors from covariates raster using site coordinates
-  predictors <- as.data.frame(terra::extract(covariates, site_coordinates,ID = FALSE)) 
+  predictors <- as.data.frame(terra::extract(covariates, site_coordinates, ID = FALSE))
   
   # Combine each ensemble member with all predictors
   ensembles <- list()
@@ -95,52 +94,109 @@ NA_downscale <- function(data, coords, date, C_pool, covariates){
   
   # Rename the carbon_data column for each ensemble member
   for (i in 1:length(ensembles)) {
-    ensembles[[i]] <- dplyr::rename(ensembles[[i]], "carbon_data" = "carbon_data[[i]]")
+    colnames(ensembles[[i]])[1] <- "carbon_data"
   }
   
   # Split the observations in each data frame into two data frames based on the proportion of 3/4
   ensembles <- lapply(ensembles, function(df) {
-    sample <- sample(1:nrow(df), size = round(0.75*nrow(df)))
-    train  <- df[sample, ]
-    test   <- df[-sample, ]
-    split_list <- list(train, test)
+    sample <- sample(1:nrow(df), size = round(0.75 * nrow(df)))
+    train <- df[sample, ]
+    test <- df[-sample, ]
+    split_list <- list(training = train, testing = test)
     return(split_list)
   })
   
-  # Rename the training and testing data frames for each ensemble member
+  # Train a CNN model for each ensemble member using the training data
+  cnn_output <- list()
   for (i in 1:length(ensembles)) {
-    # names(ensembles) <- paste0("ensemble",seq(1:length(ensembles)))
-    names(ensembles[[i]]) <- c("training", "testing")
+    # Prepare data for CNN
+    x_train <- as.matrix(ensembles[[i]]$training[, c("tavg", "prec", "srad", "vapr")])
+    y_train <- as.matrix(ensembles[[i]]$training$carbon_data)
+    x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
+    y_test <- as.matrix(ensembles[[i]]$testing$carbon_data)
+    
+    # Normalize the data
+    x_train <- scale(x_train)
+    x_test <- scale(x_test)
+    
+    # Reshape data for CNN input (samples, timesteps, features)
+    x_train <- array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
+    x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+    
+    # Define the CNN model
+    model <- keras_model_sequential() %>%
+      layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) %>%
+      layer_flatten() %>%
+      layer_dense(units = 64, activation = 'relu') %>%
+      layer_dense(units = 1)
+    
+    # Compile the model
+    model %>% compile(
+      loss = 'mean_squared_error',
+      optimizer = optimizer_adam(),
+      metrics = c('mean_absolute_error')
+    )
+    
+    # Train the model
+    model %>% fit(
+      x = x_train,
+      y = y_train,
+      epochs = 100,
+      batch_size = 32,
+      validation_split = 0.2,
+      verbose = 0
+    )
+    
+    cnn_output[[i]] <- model
   }
   
-  # Train a random forest model for each ensemble member using the training data
-  rf_output <- list()
-  for (i in 1:length(ensembles)) {
-    rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
-                                                 data = ensembles[[i]][[1]],
-                                                 ntree = 1000,
-                                                 na.action = stats::na.omit,
-                                                 keep.forest = T,
-                                                 importance = T)
+  # Wrapper function to apply the trained model
+  predict_with_model <- function(model, data) {
+    data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
+    data <- scale(data)
+    data <- array_reshape(data, c(nrow(data), 1, ncol(data)))
+    predictions <- predict(model, data)
+    return(predictions)
   }
   
   # Generate predictions (maps) for each ensemble member using the trained models
-  maps <- list(ncol(rf_output))
-  for (i in 1:length(rf_output)) {
-    maps[[i]] <- terra::predict(object = covariates,
-                                model = rf_output[[i]],na.rm = T)
+  maps <- list()
+  predictions <- list()
+  for (i in 1:length(cnn_output)) {
+    # Prepare data for prediction
+    x_pred <- as.matrix(predictors[, c("tavg", "prec", "srad", "vapr")])
+    x_pred <- scale(x_pred)
+    x_pred <- array_reshape(x_pred, c(nrow(x_pred), 1, ncol(x_pred)))
+    
+    map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]))
+    map_pred <- rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = ext(covariates), crs = crs(covariates))
+    maps[[i]] <- map_pred
+    
+    # Generate predictions for testing data
+    predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing)
+  }
+  
+  # Calculate performance metrics for each ensemble member
+  metrics <- list()
+  for (i in 1:length(predictions)) {
+    actual <- ensembles[[i]]$testing$carbon_data
+    predicted <- predictions[[i]]
+    mse <- mean((actual - predicted)^2)
+    mae <- mean(abs(actual - predicted))
+    r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
+    metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
   }
   
   # Organize the results into a single output list
-  downscale_output <- list(ensembles, rf_output, maps)
+  downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics)
   
   # Rename each element of the output list with appropriate ensemble numbers
-  for (i in 1:length(downscale_output)) {
-    names(downscale_output[[i]]) <- paste0("ensemble",seq(1:length(downscale_output[[i]])))
+  for (i in 1:length(downscale_output$data)) {
+    names(downscale_output$data)[i] <- paste0("ensemble", i)
+    names(downscale_output$models)[i] <- paste0("ensemble", i)
+    names(downscale_output$maps)[i] <- paste0("ensemble", i)
+    names(downscale_output$metrics)[i] <- paste0("ensemble", i)
   }
-  
-  # Rename the main components of the output list
-  names(downscale_output) <- c("data", "models", "maps")
   
   return(downscale_output)
 }
