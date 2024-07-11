@@ -258,3 +258,37 @@ p2 <- ggplot(metrics_melted[metrics_melted$variable == "R_squared", ], aes(x = E
 
 # Combine the plots
 grid.arrange(p1, p2, ncol = 1)
+
+# Scatter plot to compare actual and predicted values for each ensemble with one random instance
+set.seed(123)  # For reproducibility
+sampled_data <- do.call(rbind, lapply(seq_along(result$metrics), function(i) {
+  ensemble_name <- names(result$metrics)[i]
+  actual <- result$metrics[[i]]$actual
+  predicted <- result$metrics[[i]]$predicted
+  
+  # Sample one random instance
+  sample_index <- sample(1:length(actual), 1)
+  actual_sample <- actual[sample_index]
+  predicted_sample <- predicted[sample_index]
+  
+  data.frame(Ensemble = ensemble_name, Actual = actual_sample, Predicted = predicted_sample)
+}))
+
+# Create scatter plot with lines connecting actual and predicted values
+p3 <- ggplot(sampled_data, aes(x = Actual, y = Predicted, color = Ensemble)) +
+  geom_point(aes(x = Actual, y = Actual, shape = "Actual"), size = 3) + # Circle for actual values
+  geom_point(aes(x = Predicted, y = Predicted, shape = "Predicted"), size = 3) + # Square for predicted values
+  geom_segment(aes(x = Actual, y = Actual, xend = Actual, yend = Predicted), linetype = "dotted") + # Connect actual to predicted
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
+  geom_smooth(method = "lm", linetype = "solid", se = FALSE, color = "blue") + # Regression line
+  labs(title = "Actual vs. Predicted Scatter Plot for Random Samples",
+       x = "Actual",
+       y = "Predicted",
+       color = "Ensemble",
+       shape = "Type") +
+  scale_shape_manual(values = c("Actual" = 16, "Predicted" = 22)) + # Define shapes
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Display scatter plot
+print(p3)
