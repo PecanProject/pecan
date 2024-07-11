@@ -200,3 +200,24 @@ NA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   
   return(downscale_output)
 }
+
+# Define file paths for the data
+data_path <- " " # Replace with the actual path to your data file
+coords_path <- " "  # Replace with the actual path to your coordinates file
+covariates_path <- " " # Replace with the actual path to your .tiff file
+
+# Define parameters
+date <- " " # Replace with the actual date you want to use
+C_pool <- " " # Replace with the actual carbon pool name you want to use
+
+# Preprocess the data
+preprocessed_data <- preprocess(data_path, coords_path, date, C_pool)
+
+# Run the NA_downscale function
+result <- NA_downscale(preprocessed_data, date, C_pool, covariates_path)
+
+# Print the result
+print(result)
+
+
+
