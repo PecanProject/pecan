@@ -219,5 +219,11 @@ result <- NA_downscale(preprocessed_data, date, C_pool, covariates_path)
 # Print the result
 print(result)
 
+# Print the accuracy metrics
+print("Accuracy Metrics for Each Ensemble:")
+for (i in seq_along(result$metrics)) {
+  cat(paste0("Ensemble ", i, ":"))
+  print(result$metrics[[i]])
+}
 
 
