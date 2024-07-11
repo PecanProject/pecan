@@ -247,3 +247,14 @@ p1 <- ggplot(metrics_melted[metrics_melted$variable %in% c("MSE", "MAE"), ], aes
        x = "Ensemble",
        color = "Metrics") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p2 <- ggplot(metrics_melted[metrics_melted$variable == "R_squared", ], aes(x = Ensemble, y = value, color = variable, group = variable)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(name = "R_squared") +
+  labs(x = "Ensemble",
+       color = "Metrics") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Combine the plots
+grid.arrange(p1, p2, ncol = 1)
