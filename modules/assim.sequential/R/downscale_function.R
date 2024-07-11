@@ -227,3 +227,13 @@ for (i in seq_along(result$metrics)) {
 }
 
 
+# Prepare metrics data for line plot with multiple y-axes
+metrics_df <- do.call(rbind, lapply(seq_along(result$metrics), function(i) {
+  data.frame(Ensemble = paste0("ensemble", i),
+             MSE = result$metrics[[i]]$MSE,
+             MAE = result$metrics[[i]]$MAE,
+             R_squared = result$metrics[[i]]$R_squared)
+}))
+
+# Reshape data for ggplot
+metrics_melted <- reshape2::melt(metrics_df, id.vars = "Ensemble")
