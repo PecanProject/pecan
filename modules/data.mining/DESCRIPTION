@@ -21,4 +21,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.1
