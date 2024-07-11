@@ -237,3 +237,13 @@ metrics_df <- do.call(rbind, lapply(seq_along(result$metrics), function(i) {
 
 # Reshape data for ggplot
 metrics_melted <- reshape2::melt(metrics_df, id.vars = "Ensemble")
+
+# Create a line plot with multiple y-axes using ggplot2
+p1 <- ggplot(metrics_melted[metrics_melted$variable %in% c("MSE", "MAE"), ], aes(x = Ensemble, y = value, color = variable, group = variable)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(name = "MSE and MAE") +
+  labs(title = "Performance Metrics for Each Ensemble",
+       x = "Ensemble",
+       color = "Metrics") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
