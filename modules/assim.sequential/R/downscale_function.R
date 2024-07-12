@@ -1,5 +1,5 @@
 ##' @title Preprocess Data for Downscaling
-##' @name NA_preprocess
+##' @name SDA_downscale_preprocess
 ##' @author Sambhav Dixit
 ##'
 ##' @param data_path Character. File path for .rds containing ensemble data.
@@ -13,7 +13,7 @@
 ##' @return A list containing The read .rds data , The cleaned site coordinates ,The extracted and possibly truncated carbon data.
 
 # Preprocess function to check and clean the data
-NA_preprocess <- function(data_path, coords_path, date, C_pool) {
+SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
   # Read the input data and site coordinates
   input_data <- readRDS(data_path)
   site_coordinates <- read_csv(coords_path)
@@ -57,7 +57,7 @@ NA_preprocess <- function(data_path, coords_path, date, C_pool) {
 }
 
 ##' @title North America Downscale Function
-##' @name NA_downscale
+##' @name SDA_downscale
 ##' @author Joshua Ploshay , Sambhav Dixit
 ##'
 ##' @param preprocessed , In quotes, prepocessed data returned as an output for passing the raw data to the NA_preprocess function.
@@ -71,7 +71,7 @@ NA_preprocess <- function(data_path, coords_path, date, C_pool) {
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-NA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
+SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
@@ -211,10 +211,10 @@ date <- " " # Replace with the actual date you want to use
 C_pool <- " " # Replace with the actual carbon pool name you want to use
 
 # Preprocess the data
-preprocessed_data <- preprocess(data_path, coords_path, date, C_pool)
+preprocessed_data <- SDA_downscale_preprocess(data_path, coords_path, date, C_pool)
 
-# Run the NA_downscale function
-result <- NA_downscale(preprocessed_data, date, C_pool, covariates_path)
+# Run the SDA_downscale function
+result <- SDA_downscale(preprocessed_data, date, C_pool, covariates_path)
 
 # Print the result
 print(result)
