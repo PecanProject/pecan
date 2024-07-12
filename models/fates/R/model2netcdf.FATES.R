@@ -13,9 +13,9 @@
 ##' @param outdir Location of FATES model output (e.g. a path to a single ensemble output)
 ##' @param sitelat Latitude of the site
 ##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @param vars_names Names of Selected variables in PEcAn format
+##' @param start_date Start time of the simulation, not string
+##' @param end_date End time of the simulation, not string
+##' @param vars_names Names of Selected variables in PEcAn format, (e.g. c("",""))
 ##' @param pfts a named vector of PFT numbers where the names are PFT names
 ##' 
 ##' @examples  
@@ -25,22 +25,26 @@
 ##' }
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-##  modified Yucong Hu 10/07/24
+##  modified Yucong Hu 22/07/24
 ##' 
 ##' @export
 
 model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, vars_names, pfts){
-  ## matched_var could be expanded for more selected variables in argument:vars_names 
-  matched_var <- list(list("FATES_GPP_PF","GPP","kgC m-2 s-1","Gross Primary Productivity"), 
-                   list("NEE","NEE","kgC m-2 s-1", "Net Ecosystem Exchange of carbon, includes fire and hrv_xsmrpool"),
-                   list("TLAI","LAI","m2 m-2","Total projected leaf area index"),
-                   list("ER","TotalResp","kgC m-2 s-1","Total Respiration"),
-                   list("AR","AutoResp","kgC m-2 s-1","Autotrophic respiration (MR + GR)"),
-                   list("HR","HeteroResp","kgC m-2 s-1","Total heterotrophic respiration"),
-                   list("SR","SoilResp","kgC m-2 s-1","Total soil respiration (HR + root resp)"),
-                   list("Qle","Evap","Evap","kgC m-2 s-1","Total evaporation"),
-                   list("QVEGT","Transp","kg m-2 s-1","Canopy transpiration")) 
-
+  ## Tips: matched_var could be expanded for more selected variables
+  matched_var <- tibble::tribble(
+    ~fatesname, ~pecanname, ~pecanunits, ~longname,
+    "FATES_GPP_PF","GPP","kgC m-2 s-1","Gross Primary Productivity", 
+    "FATES_NPP_PF","NPP","kg m-2 yr-1", "Total PFT-level NPP in kg carbon per m2 land area per second",
+    "NEE","NEE","kgC m-2 s-1", "Net Ecosystem Exchange of carbon, includes fire and hrv_xsmrpool",
+    "TLAI","LAI","m2 m-2","Total projected leaf area index",
+    "ER","TotalResp","kgC m-2 s-1","Total Respiration",
+    "AR","AutoResp","kgC m-2 s-1","Autotrophic respiration (MR + GR)",
+    "HR","HeteroResp","kgC m-2 s-1","Total heterotrophic respiration",
+    "SR","SoilResp","kgC m-2 s-1","Total soil respiration (HR + root resp)",
+    "Qle","Evap","kgC m-2 s-1","Total evaporation",
+    "QVEGT","Transp","kg m-2 s-1","Canopy transpiration")
+  
+  ## Update unit, dimension and 
   var_update <- function(out,oldname,newname,nc_month,nc_month_names,newunits=NULL,long_name=NULL){
     if (oldname %in% nc_month_names) {
 
@@ -58,8 +62,8 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, v
       if (any(grepl('pft',d_name))){
         dimension <- xypt # include fates_levpft
       }else{ 
-        dimension <- xyt 
-      } # only xyt
+        dimension <- xyt # only xyt
+      } 
 
       ## transpose dimensions into (,t)
       if (d_name[length(d_name)]=='time'){
@@ -67,7 +71,8 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, v
             dat.new <- PEcAn.utils::misc.convert(dat_0,oldunits,newunits) # convert data units
       }
       newvar <- ncdf4::ncvar_def(name = newname, units = newunits, longname=long_name, dim = dimension)
-      ## Adding target variables into out 
+     
+      ## adding target variables into out 
       if(is.null(out)) {
         out <- list(var <- list(),dat <- list(), dimm<-list())
         out$var[[1]] <- newvar
@@ -95,13 +100,13 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, v
     oname <- file.path(dirname(files[1]), paste0(year, ".nc"))
     out <- NULL
     
-    ## Monthly write files
+    ## monthly write files
     for (mo in 1:12){
       if (((year == start_year) & mo < start_month) | ((year == end_year) & mo > end_month)){
         next ## skip unselected months
       }
       else{
-        if (mo<10){
+        if (mo < 10){
           month_file <- paste0(gsub("h0.*.nc","",files[1]),"h0.",year,"-0",mo,".nc")
         }else{
           month_file <- paste0(gsub("h0.*.nc","",files[1]),"h0.",year,"-",mo,".nc")
@@ -109,54 +114,52 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, v
         nc_month <- ncdf4::nc_open(month_file) # read monthly output file of FATES model
         nc_month_names <- names(nc_month$var)
 
-        ## Create time bounds to populate time_bounds variable iteratively
+        ## create time bounds to populate time_bounds variable iteratively
         var_bound <- ncdf4::ncvar_get(nc_month, "time_bounds") # start,end day of month
         
-        ## Define dimensions 
+        ## define dimensions 
         t <- ncdf4::ncdim_def(name = "time", units = "days since 1700-01-01 00:00:00",
                     vals = as.double(1.0:1.0), calendar = "noleap", unlim = TRUE)
         time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
                     longname = "history time interval endpoint dimensions",vals = 1:2, units = "")
-        lat  <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.double(1.0:1.0), longname = "coordinate_latitude")
-        #print(lat)
+        lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.double(1.0:1.0), longname = "coordinate_latitude")
         lon  <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.double(1.0:1.0), longname = "coordinate_longitude")
         pft  <- ncdf4::ncdim_def('pft', '', vals=1:12, longname = "FATES pft number")
         xyt  <- list(lon, lat, t)
         xypt <- list(lon, lat, pft, t)
         
-        ## Write monthly files with start(1,1,i)
+        ## write monthly files with start(1,1,i)
         for (var_s in vars_names){
-          for (name_param in matched_var){
-            if (var_s == name_param[2]){ ## select variables
-              out  <- var_update(out,name_param[1],name_param[2],name_param[3],name_param[4],nc_month,nc_month_names) # convert monthly fates output into one variable
-            }
-          }          
+          matched_ind <- which(matched_var$pecanname == var_s)
+          out <- var_update(out, matched_var$fatesname[matched_ind],matched_var$pecanname[matched_ind],
+                            nc_month,nc_month_names,matched_var$pecanunits[matched_ind],matched_var$longname[matched_ind])          
         }
         out$var[[length(out$var) + 1]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
                                           longname = "history time interval endpoints", dim=list(time_interval,t), prec = "double")
         out$dat[[length(out$dat) + 1]] <- c(rbind(var_bound[1], var_bound[2])) #start, end days of the year
         out$dimm[[length(out$dimm) + 1]] <- 2
 
-        ## Define vars
+        ## define vars
         if (((year != start_year) & (mo == 1)) | ((year == start_year) & (mo == start_month))){
-          ncout <- ncdf4::nc_create(oname,out$var) # create yearly nc file
-          # HYC: define var time, lon, lat, and put var lon, lat
-          time_var <- ncdf4::ncvar_def(name = "time", units = paste0("days since 1700-01-01 00:00:00"),longname = "time", dim = list(t), prec = "double")
-          lat_var  <- ncdf4::ncvar_def(name = "lat", units = "degrees_north", longname = "coordinate_latitude", dim=list(lat), prec = "double")
-          lon_var  <- ncdf4::ncvar_def(name = "lon", units = "degrees_east", longname = "coordinate_longitude", dim=list(lon), prec = "double")
-          ncdf4::ncvar_put(ncout, lat_var, sitelat, start=c(1))
-          ncdf4::ncvar_put(ncout, lon_var, sitelon, start=c(1))
+          ncout <- ncdf4::nc_create(oname, out$var) # create yearly nc file
+          time_var <- ncdf4::ncvar_def(name = "time", units = "days since 1700-01-01 00:00:00",longname = "time", dim = list(t), prec = "double")
+          lat_var  <- ncdf4::ncvar_def(name = "lat", units = "degrees_north", longname = "coordinate_latitude", dim = list(lat), prec = "double")
+          lon_var  <- ncdf4::ncvar_def(name = "lon", units = "degrees_east", longname = "coordinate_longitude", dim = list(lon), prec = "double")
+          
+          ncdf4::ncvar_put(ncout, lat_var, sitelat, start = c(1))
+          ncdf4::ncvar_put(ncout, lon_var, sitelon, start = c(1))
         }
 
-        ## Put time and vars 
-        ncdf4::ncvar_put(ncout, time_var, mean(var_bound), start=c(month), count=c(1))
+        ## put time and vars 
+        ncdf4::ncvar_put(ncout, time_var, mean(var_bound), start=c(mo), count=c(1))
+
         for (i in seq_along(out$var)) {
           if(out$dimm[[i]]==4){ # xypt
-            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,1,1,month), count=c(1,1,12,1))
+            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,1,1,mo), count=c(1,1,12,1))
           }else if (out$dimm[[i]]==3) { # xyt
-            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,1,month))
+            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,1,mo))
           }else{ # time_bounds
-            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,month))
+            ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]], start=c(1,mo))
           }
         } 
       }
