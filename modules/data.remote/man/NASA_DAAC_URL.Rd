@@ -26,6 +26,8 @@ default is "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true".}
 
 \item{concept_id}{Character: CMR Concept ID. See `NASA_CMR_finder` for more details.}
 
+\item{bbox}{Numeric: vector of bounding box coordinates.}
+
 \item{daterange}{Character: vectors of the requested start and end dates. In the form "yyyy-mm-dd".}
 }
 \value{

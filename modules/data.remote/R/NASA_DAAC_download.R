@@ -147,6 +147,7 @@ NASA_DAAC_download <- function(ul_lat,
 #' @param page_size Numeric: maximum requested length, default is 2000.
 #' @param page Numeric: which page of the URL, default is 1.
 #' @param concept_id Character: CMR Concept ID. See `NASA_CMR_finder` for more details.
+#' @param bbox Numeric: vector of bounding box coordinates.
 #' @param daterange Character: vectors of the requested start and end dates. In the form "yyyy-mm-dd".
 #'
 #' @return A character of URL that can be used to request data.
