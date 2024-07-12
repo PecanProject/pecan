@@ -10,7 +10,7 @@
 #' @param to Character: date on which the data search end. In the form
 #'   "yyyy-mm-dd".
 #' @param outdir Character: path of the directory in which to save the
-#'   downloaded files. Default is NULL.
+#'   downloaded files. Default is the current work directory(getwd()).
 #' @param doi Character: data DOI on the NASA DAAC server, it can be obtained 
 #' directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
 #' https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).
@@ -48,7 +48,7 @@ NASA_DAAC_download <- function(ul_lat,
                                ncore = 1,
                                from,
                                to,
-                               outdir = NULL,
+                               outdir = getwd(),
                                doi,
                                netrc_file = NULL,
                                just_path = FALSE) {
@@ -157,7 +157,10 @@ NASA_DAAC_download <- function(ul_lat,
 #' concept_id <- "C2770099044-ORNL_CLOUD"
 #' bbox <- "-121,33,-117,35"
 #' daterange <- c("2022-02-23", "2022-05-30")
-#' URL <- NASA_DAAC_URL(provider = provider, concept_id = concept_id, bbox = bbox, daterange = daterange)
+#' URL <- NASA_DAAC_URL(provider = provider, 
+#' concept_id = concept_id, 
+#' bbox = bbox, 
+#' daterange = daterange)
 #' }
 #' @author Dongchen Zhang
 NASA_DAAC_URL <- function(base_url = "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true",

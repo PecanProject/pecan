@@ -12,7 +12,7 @@ NASA_DAAC_download(
   ncore = 1,
   from,
   to,
-  outdir = NULL,
+  outdir = getwd(),
   doi,
   netrc_file = NULL,
   just_path = FALSE
@@ -36,7 +36,7 @@ NASA_DAAC_download(
 "yyyy-mm-dd".}
 
 \item{outdir}{Character: path of the directory in which to save the
-downloaded files. Default is NULL.}
+downloaded files. Default is the current work directory(getwd()).}
 
 \item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained 
 directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
