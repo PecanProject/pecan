@@ -14,6 +14,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Changed
 - The following components have changed their licensing. With approval of all their contributors, we now provide them under a BSD 3-clause license rather than the previously used NCSA Open Source license. As a reminder, we intend to relicense the entire system and this list will expand as we gather permission from the relevant copyright owners.
     * Shiny apps `dbsync` and `Elicitation`
+    * Base package `PEcAn.all`
+    * Model packages `PEcAn.LDNDC` and `PEcAn.SIBCASA`
 
 ### Removed
 
