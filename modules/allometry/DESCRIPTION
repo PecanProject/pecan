@@ -1,7 +1,7 @@
 Package: PEcAn.allometry
 Type: Package
 Title: PEcAn Allometry Functions
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Shashank", "Singh", role = c("ctb")),

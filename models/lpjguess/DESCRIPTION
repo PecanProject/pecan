@@ -1,7 +1,7 @@
 Package: PEcAn.LPJGUESS
 Type: Package
 Title: PEcAn Package for Integration of the LPJ-GUESS Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Istem", "Fer", role = c("aut", "cre"),
                      email = "istem.fer@fmi.fi"),
              person("Tony", "Gardella", role = c("aut"),
