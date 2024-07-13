@@ -458,7 +458,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   # find appropriate pft
   pftid <- get.id(table = "pfts", values = "name", colnames = pft, con = con)
   if (is.null(pftid)) {
-    return invisible(data.frame())
+    return (invisible(data.frame()))
   }
 
   # find appropriate format
@@ -469,7 +469,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
 
   if (is.null(formatid)) {
-    return invisible(data.frame())
+    return (invisible(data.frame()))
   }
 
   # find appropriate posterior
@@ -481,7 +481,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
     con = con
   )[["id"]]
   if (is.null(posteriorid)) {
-    return invisible(data.frame())
+    return (invisible(data.frame()))
   }
 
   invisible(dbfile.check(type = "Posterior", container.id = posteriorid, con = con, hostname = hostname))
@@ -647,12 +647,12 @@ dbfile.file <- function(type, id, con, hostname = PEcAn.remote::fqdn()) {
 
   if (nrow(files) > 1) {
     PEcAn.logger::logger.warn("multiple files found for", id, "returned; using the first one found")
-    return invisible(file.path(files[1, "file_path"], files[1, "file_name"]))
+    (invisible(file.path(files[1, "file_path"], files[1, "file_name"])))
   } else if (nrow(files) == 1) {
-    return invisible(file.path(files[1, "file_path"], files[1, "file_name"]))
+    (invisible(file.path(files[1, "file_path"], files[1, "file_name"])))
   } else {
     PEcAn.logger::logger.warn("no files found for ", id, "in database")
-    return invisible(NA)
+    invisible(NA)
   }
 }
 
@@ -671,7 +671,7 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
   hostid <- db.query(query = paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con = con)[["id"]]
   if (is.null(hostid)) {
     PEcAn.logger::logger.warn("hostid not found in database")
-    return invisible(NA)
+    return (invisible(NA))
   }
 
   # find file
@@ -689,12 +689,12 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
 
   if (nrow(ids) > 1) {
     PEcAn.logger::logger.warn("multiple ids found for", file, "returned; using the first one found")
-    return invisible(ids[1, "container_id"])
+    invisible(ids[1, "container_id"])
   } else if (nrow(ids) == 1) {
-    return invisible(ids[1, "container_id"])
+    invisible(ids[1, "container_id"])
   } else {
     PEcAn.logger::logger.warn("no id found for", file, "in database")
-    return invisible(NA)
+    invisible(NA)
   }
 }
 
