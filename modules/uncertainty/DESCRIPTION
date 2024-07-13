@@ -1,7 +1,7 @@
 Package: PEcAn.uncertainty
 Type: Package
 Title: PEcAn Functions Used for Propagating and Partitioning Uncertainties in Ecological Forecasts and Reanalysis
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),

@@ -1,7 +1,7 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn Functions Used for Radiative Transfer Modeling
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Shawn", "Serbin", role = c("aut"),

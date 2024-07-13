@@ -1,7 +1,7 @@
 Package: PEcAn.LINKAGES
 Type: Package
 Title: PEcAn Package for Integration of the LINKAGES Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Ann", "Raiho", role = c("aut", "cre"),

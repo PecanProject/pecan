@@ -2,7 +2,7 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and
     Reanalysis
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Rob", "Kooper", role = c("aut", "cre"),

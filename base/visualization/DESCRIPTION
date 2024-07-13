@@ -1,7 +1,7 @@
 Package: PEcAn.visualization
 Type: Package
 Title: PEcAn visualization functions
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
