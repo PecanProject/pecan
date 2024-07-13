@@ -1,14 +1,26 @@
+##' @param lon site longitude 
+##'
+##' @param lat site latitude
+##' @param start_date "YYYY-MM-DD"
+##' @param end_date "YYYY-MM-DD"
+##' @param gridres taken from input_veg, DEFAULT = 0.075
+##' @param dbparms taken from settings object
+##' @param ... Additional parameters
+##'
 ##' @name extract_FIA
 ##' @title extract_FIA
 ##' @export
 ##' @author Istem Fer
-extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms){
+extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms, ...){
   
-
+  #Set start_date and end_date as Date objects
+  start_date = as.Date(start_date)
+  end_date = as.Date(end_date)
+  
   veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
-  on.exit(db.close(fia.con), add = TRUE)
+  on.exit(PEcAn.DB::db.close(fia.con), add = TRUE)
   
   lonmin   <- lon - gridres
   lonmax   <- lon + gridres
@@ -37,7 +49,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
                    " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                    " AND p.measyear <= ", max.year, " GROUP BY p.cn")
     
-  plot.info <- db.query(query, con = fia.con)
+  plot.info <- PEcAn.DB::db.query(query, con = fia.con)
   if (nrow(plot.info) == 0) {
     PEcAn.logger::logger.severe("No plot data found on FIA.")
   }
@@ -85,7 +97,7 @@ extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms
                     " and p.lon < ", lonmax, 
                     " and p.lat >= ", latmin,
                     " and p.lat < ", latmax)
-  tree.info <- db.query(query, con = fia.con)
+  tree.info <- PEcAn.DB::db.query(query, con = fia.con)
   names(tree.info) <- tolower(names(tree.info))
     
   if (nrow(tree.info) == 0) {

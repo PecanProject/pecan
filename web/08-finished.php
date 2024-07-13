@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -49,7 +49,7 @@ if ($workflow['value'] != '') {
   $params = array();
 }
 if (isset($params['hostname'])) {
-    $hostname = "&hostname=${params['hostname']}";
+    $hostname = "&hostname={$params['hostname']}";
 }
 
 # check to make sure all is ok
@@ -84,7 +84,7 @@ if (is_dir($folder)) {
 if (is_dir("$folder/ensemble")) {
   foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
     if ($file[0] != ".") {
-      $pecanfiles[] = $file;      
+      $pecanfiles[] = $file;
     }
   }
 }
@@ -104,7 +104,7 @@ if (is_dir("$folder/pft")) {
       continue;
     }
     $pfts[$pft] = array();
-    foreach(recursive_scandir("$folder/pft/${pft}", "") as $file) {
+    foreach(recursive_scandir("$folder/pft/{$pft}", "") as $file) {
       if (is_dir("$folder/pft/$pft/$file")) {
         continue;
       }
@@ -145,7 +145,7 @@ if (is_dir("$folder/run")) {
       $outfile[$runid][] = $file;
       if (preg_match('/^\d\d\d\d.nc$/', $file)) {
         $year = substr($file, 0, 4);
-        $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
+        $vars = explode("\n", file_get_contents("{$folder}/out/{$runid}/{$file}.var"));
         $outplot[$runid][$year] = array_filter($vars);
         sort($outplot[$runid][$year]);
       }
@@ -253,7 +253,7 @@ foreach ($status as $line) {
       foreach($y as $s) {
         $kv = explode(" ", $s, 2);
         if ($kv[1] == '') $kv[1] = $kv[0];
-        print "  outplot['$key']['$x']['{$kv[0]}'] = '${kv[1]}';\n";
+        print "  outplot['$key']['$x']['{$kv[0]}'] = '{$kv[1]}';\n";
       }
     }
   }
@@ -265,14 +265,20 @@ foreach ($status as $line) {
   function nextStep() {
     $("#formnext").submit();
   }
-  
+
   function showGraph() {
     var run = $('#runid').val();
     var year = $('#graphyear').val();
     var xvar = $('#graphxvar').val();
     var yvar = $('#graphyvar').val();
-    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&xvar=" + xvar + "&yvar=" + yvar + "&width=" + ($("#output").width()-10) + "&height=" + ($("#output").height() - 10);
-    $("#output").html("<img src=\"" + url + "\">");    
+    var width = $("#output").width() - 10;
+    var height = $("#output").height() - 10;
+<?php if ($api_url == "") {?>
+    var url="dataset.php?workflowid=<?php echo $workflowid; ?>&type=plot&run=" + run + "&year=" + year + "&xvar=" + xvar + "&yvar=" + yvar + "&width=" + width + "&height=" + height;
+<?php } else { ?>
+    var url="<?php echo $api_url; ?>runs/" + run + "/graph/" + year + "/" + yvar + "?xvar=" + xvar +"&width=" + width + "&height=" + height;
+<?php } ?>
+    $("#output").html("<img src=\"" + url + "\">");
   }
 
   function showInputFile() {
@@ -322,10 +328,10 @@ foreach ($status as $line) {
   function updatePFT() {
     var pft = $('#pft').val();
     $('#pftfile').empty();
-    $.each(pfts[pft], function(key, value) {   
+    $.each(pfts[pft], function(key, value) {
          $('#pftfile')
              .append($("<option></option>")
-             .text(value)); 
+             .text(value));
     });
   }
 
@@ -337,23 +343,23 @@ foreach ($status as $line) {
       $.each(Object.keys(outplot[run]), function(key, value) {
            $('#graphyear')
                .append($("<option></option>")
-               .text(value)); 
+               .text(value));
       });
       updateGraphYear();
     }
 
     $('#inpfile').empty();
-    $.each(inpfile[run], function(key, value) {   
+    $.each(inpfile[run], function(key, value) {
          $('#inpfile')
              .append($("<option></option>")
-             .text(value)); 
+             .text(value));
     });
 
     $('#outfile').empty();
-    $.each(outfile[run], function(key, value) {   
+    $.each(outfile[run], function(key, value) {
          $('#outfile')
              .append($("<option></option>")
-             .text(value)); 
+             .text(value));
     });
   }
 
@@ -372,11 +378,11 @@ foreach ($status as $line) {
          $('#graphxvar')
              .append($("<option></option>")
                 .attr("value", key)
-                .text(value)); 
+                .text(value));
          $('#graphyvar')
              .append($("<option></option>")
                 .attr("value", key)
-                .text(value)); 
+                .text(value));
     });
 <?php if ($xaxis) { ?>
     $('#graphxvar')
@@ -438,7 +444,7 @@ foreach ($status as $line) {
       <select id="graphyear" onChange="updateGraphYear();">
       </select>
       <div class="spacer"></div>
-      
+
 <?php if ($xaxis) { ?>
       <label>X-axis</label>
       <select id="graphxvar">
@@ -456,9 +462,9 @@ foreach ($status as $line) {
       <select id="graphyvar">
       </select>
       <div class="spacer"></div>
-      
+
       <input id="home" type="button" value="Plot run/year/variable" onclick="showGraph();" />
-            
+
       <a href="../shiny/workflowPlot/?workflow_id=<?php echo $workflowid; ?>" target="_blank">Open SHINY</a>
 
       <p></p>
@@ -496,7 +502,7 @@ foreach ($status as $line) {
 ?>
       </select>
       <div class="spacer"></div>
-      
+
       <label>Output</label>
       <select id="pftfile">
       </select>
@@ -515,16 +521,16 @@ foreach ($status as $line) {
       </select>
       <div class="spacer"></div>
       <input id="home" type="button" value="Show File" onclick="showPEcAnFile();" />
-      
+
       <div class="spacer"></div>
     </form>
-    
+
     <form id="formprev" method="POST" action="history.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
     </form>
-    
+
     <form id="formnext" method="POST" action="02-modelsite.php">
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
@@ -535,10 +541,10 @@ foreach ($status as $line) {
     <span id="error" class="small">&nbsp;</span>
     <input id="prev" type="button" value="History" onclick="prevStep();" />
 <?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
-    <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
+    <input id="next" type="button" value="Start Over" onclick="nextStep();"/>
 <?php } ?>
     <div class="spacer"></div>
-<?php whoami(); ?>    
+<?php whoami(); ?>
 <p>
   <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
   <br>
@@ -567,24 +573,24 @@ foreach ($status as $line) {
   echo "    <tr>\n";
   if ($data[0] == "BrownDog") {
     echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
-    echo "${data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
+    echo "{$data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
   } else {
-    echo "      <td>${data[0]}</td>\n";    
+    echo "      <td>{$data[0]}</td>\n";
   }
   if (count($data) >= 2) {
-    echo "      <td>${data[1]}</td>\n";
+    echo "      <td>{$data[1]}</td>\n";
   } else {
-    echo "      <td></td>\n";    
+    echo "      <td></td>\n";
   }
   if (count($data) >= 3) {
-    echo "      <td>${data[2]}</td>\n";
+    echo "      <td>{$data[2]}</td>\n";
   } else {
-    echo "      <td></td>\n";    
+    echo "      <td></td>\n";
   }
   if (count($data) >= 4) {
-    echo "      <td>${data[3]}</td>\n";
+    echo "      <td>{$data[3]}</td>\n";
   } else {
-    echo "      <td>RUNNING</td>\n";        
+    echo "      <td>RUNNING</td>\n";
   }
   echo "    <t/r>\n";
 }
@@ -624,7 +630,7 @@ foreach ($status as $line) {
   model outputs as well as the logfiles of the model run. You can look at these logfiles
   to see if the model run was successful. In case of a successful model execution you will
   also find the converted outputs of the model into
-  <a targe="MsTMIP" href="http://nacp.ornl.gov/">MsTMIP</a> format.</p> 
+  <a targe="MsTMIP" href="http://nacp.ornl.gov/">MsTMIP</a> format.</p>
 <?php } ?>
   <p>The next selection will list the PFTs and all the files that were used to generate the
   input data for the models based on the PFT and trait information available.</p>
@@ -642,7 +648,7 @@ foreach ($status as $line) {
   </script>
 </html>
 
-<?php 
+<?php
 $pdo = null;
 
 function recursive_scandir($dir, $base) {
@@ -658,7 +664,7 @@ function recursive_scandir($dir, $base) {
       if ($base == "") {
         $files[] = $file;
       } else {
-        $files[] = "$base/$file"; 
+        $files[] = "$base/$file";
       }
     }
   }

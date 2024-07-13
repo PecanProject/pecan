@@ -1,0 +1,190 @@
+---
+title: "Initial condition prep script for NA anchor sites"
+author: "Dongchen Zhang"
+date: '2024-04-25'
+output: html_document
+---
+
+# setup environments.
+## Here we will first load required packages and read the `pecan.xml` settings object and convert it into the `site_info` object containing `site_id`, `latitude`, `longitude`, and `site_name`. Making sure you are using the same column names for `site_id` and `site_name` acorss the entire SDA workflow. After that, we will setup the ensemble number, time, and the directory for searching and extracting the initial conditions. Finally, the PFT and parameter files are loaded because we need to specify the specific leaf area (`SLA`) to convert from LAI to leaf carbon.
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+setwd("/projectnb/dietzelab/dongchen/anchorSites/")
+#read settings.
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
+#grab settings info.
+site_info <- settings %>% 
+  purrr::map(~.x[['run']] ) %>% 
+  purrr::map('site')%>% 
+  purrr::map(function(site.list){
+    #conversion from string to number
+    site.list$lat <- as.numeric(site.list$lat)
+    site.list$lon <- as.numeric(site.list$lon)
+    list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+  })%>% 
+  dplyr::bind_rows() %>% 
+  as.list()
+#setup configurations.
+time_poimt <- as.Date("2011-07-15")
+ens <- 100
+source <- "RS_veg"
+Write_into_settings <- TRUE
+outfolder <- "/projectnb/dietzelab/dongchen/anchorSites/IC/IC"
+
+#read parameters and pfts.
+load("/projectnb/dietzelab/dongchen/anchorSites/SDA/samples.Rdata")
+pft <- read.csv(settings[[1]]$run$inputs$pft.site$path)
+```
+
+# Prep LAI initial conditions using the MODIS LAI prep function.
+## Here we will just use the MODIS LAI prep function within the `PEcAn.data.remote` package, which was used for preparing SDA observations. After that, we will be sampling based on normal distribution prescribed by LAI mean and standard error.
+
+```{r}
+#prepare LAI
+LAI_df <- PEcAn.data.remote::MODIS_LAI_prep(site_info = site_info, 
+                                            time_points = time_poimt, 
+                                            outdir = "/projectnb/dietzelab/dongchen/anchorSites/IC/LAI/",
+                                            export_csv = T)
+#sample LAI IC
+LAI_IC <- data.frame(matrix(NA, ens, length(site_info$site_id))) %>% `colnames<-`(site_info$site_id)
+for (i in seq_along(LAI_df$LAI_Output$site_id)) {
+  if (is.na(LAI_df$LAI_Output[i,2])) {
+    next
+  } else {
+    LAI_IC[,i] <- rnorm(ens, LAI_df$LAI_Output[i,2], LAI_df$LAI_Output[i,3])
+  }
+}
+```
+
+# Prep AGB initial condition using GeoTIFF images.
+# DOI: https://doi.org/10.3334/ORNLDAAC/1763
+## Here we are using the product specific function for the extraction, within which we will first extract AGB mean and standard error and sampling based on them.
+
+```{r}
+#prepare AGB
+AGB_IC <- PEcAn.data.remote::Prep_AGB_IC_from_2010_global(site_info = site_info, 
+                                                      paths.list = list(mean = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif",
+                                                                        uncertainty = "/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010_uncertainty.tif"), 
+                                                      ens = 100) %>% as.data.frame()
+```
+
+# Pre soil moisture initial condition through the CDS server.
+# DOI: 10.24381/cds.d7782f18
+## Here we will extract the soil moisture estimations from the Copernicus Climatic Data Server (CDS). Before executing the function, making sure that the `cdsapi` is corrected installed based on the instructions within the `PEcAn.data.land::download.SM_CDS` function. To make sure that we will get the global coverage for the anchor sites, we will need to specify the time window (30 days here) in the function usage.
+
+```{r}
+#prepare SM
+SM_df <- PEcAn.data.land::extract_SM_CDS(site_info = site_info, 
+                                         time.points = time_poimt, 
+                                         in.path = "/projectnb/dietzelab/dongchen/anchorSites/IC/SM", 
+                                         search_window = 30)
+#sample SM IC
+SM_IC <- data.frame(matrix(NA, ens, length(site_info$site_id))) %>% `colnames<-`(site_info$site_id)
+for (i in seq_along(site_info$site_id)) {
+  if (is.na(SM_df$sm.mean[i])) {
+    next
+  } else {
+    SM_IC[,i] <- rnorm(ens, SM_df$sm.mean[i], SM_df$sm.uncertainty[i])
+  }
+}
+SM_IC[SM_IC<0] <- 0
+```
+
+# Prep SOC initial conditions from the ISCN database.
+## Here we will be preparing the SOC initial conditions for the anchor sites. The basic logic is to sample ISCN SOC estimations (data already prepared on PEcAn, use `PEcAn.data.land::iscn_soc` to load) based on the level 2 ecoregion map (pre-downloaded using the following link: https://www.epa.gov/eco-research/ecoregions).
+
+```{r}
+#prepare SOC
+ecoregion.path <- "~/ecoregionMap/"
+SOC_IC <- PEcAn.data.land::IC_ISCN_SOC(site_info = site_info, ens = ens, ecoregion.path = ecoregion.path)
+```
+
+# Convert and write IC files into local directory and into settings.
+## Here we will loop over each site and each ensemble member (we will be creating folders for each `site_id` and store the NC files associated with each ensemble member within the folder). Within each loop, we will first do some unit conversions (e.g., AGB, LAI), and then assemble the `poolinfo` object, which is required for writing the NC files through the `PEcAn.SIPNET::veg2model.SIPNET` function. Finally, if we set the `Write_into_settings` as TRUE at the beginning, we will then write those paths into the settings and rewrite the XML file to the `outdir`.
+
+```{r}
+# write with ensemble number
+pb <- utils::txtProgressBar(min = 0, max = length(site_info$site_id), style = 3)
+for (i in seq_along(site_info$site_id)) {
+  #create new folder for each site.
+  if(!file.exists(file.path(outfolder, site_info$site_id[i]))) {
+    dir.create(file.path(outfolder, site_info$site_id[i]))
+  } else {
+    #if folder already exists, go to the next.
+    next
+  }
+  #grab SLA from parameter file.
+  site_pft <- pft$pft[which(pft$site == site_info$site_id[i])]
+  sla <- ensemble.samples[[site_pft]]$SLA
+  paths <- c()
+  for (j in 1:ens) {
+    #unit conversion for AGB.
+    AGB <- ifelse(is.na(AGB_IC[j, i]), NULL, PEcAn.utils::ud_convert(AGB_IC[j, i], "Mg ha-1", "kg m-2"))
+    leaf_carbon_content <- ifelse(is.na(LAI_IC[j, i]), NULL, LAI_IC[j, i]/sample(sla, 1))
+    #woody biomass calculation based on leaf and aboveground biomass densities.
+    if (!is.null(AGB)) {
+      if (!is.null(leaf_carbon_content)) {
+        wood_carbon_content <- AGB - leaf_carbon_content
+      } else {
+        wood_carbon_content <- AGB
+      }
+    } else {
+      wood_carbon_content <- NULL
+    }
+    #assemble poolinfo and write into NC files.
+    dims <- list(time =1) #Time dimension may be irrelevant
+    variables <-list(AbvGrndWood = AGB, 
+                     wood_carbon_content = wood_carbon_content, 
+                     leaf_carbon_content = leaf_carbon_content, 
+                     soil_organic_carbon_content = ifelse(is.na(SOC_IC[j, i]), NULL, SOC_IC[j, i]),
+                     SoilMoistFrac = ifelse(is.na(SM_IC[j, i]), NULL, SM_IC[j, i]))
+    variables[sapply(variables, is.null)] <- NULL
+    poolinfo <- list(dims = dims, vals = variables)
+    out <- PEcAn.SIPNET::veg2model.SIPNET(file.path(outfolder, site_info$site_id[i]), 
+                                          poolinfo, as.numeric(site_info$site_id[i]), 
+                                          ens = j)
+    #record paths.
+    paths <- c(out$file, paths)
+  }
+  #write paths of initial conditions into settings.
+  if(Write_into_settings){
+    #populated IC file paths into settings
+    Create_mult_list <- function(list.names, paths){
+      out <- as.list(paths)
+      names(out) <- list.names
+      out
+    }
+    settings[[i]]$run$inputs$poolinitcond$source <- source
+    settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
+    settings[[i]]$run$inputs$poolinitcond$ensemble <- ens
+    settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", ens), paths)
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+#write settings.
+if(Write_into_settings){
+  PEcAn.settings::write.settings(settings, outputdir = file.path(settings$outdir), outputfile = "pecanIC.xml")
+}
+```

@@ -1,8 +1,7 @@
 Package: PEcAn.STICS
 Type: Package
-Title: PEcAn package for integration of the STICS model
-Version: 1.7.2
-Date: 2021-10-04
+Title: PEcAn Package for Integration of the STICS Model
+Version: 1.8.0
 Authors@R: c(
   person("Istem", "Fer",
     email = "istem.fer@fmi.fi",
@@ -10,18 +9,20 @@ Authors@R: c(
 Description: This module provides functions to link the STICS to PEcAn.
 Imports:
     PEcAn.settings,
-    PEcAn.DB,
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8),
     PEcAn.remote,
+    jsonlite,
     lubridate,
     ncdf4,
-    purrr,
     XML,
-    udunits2,
     dplyr
 Suggests:
+    SticsRFiles,
     testthat (>= 1.0.2)
+Remotes:
+    github::SticsRPacks/SticsRFiles,
+    github::SticsRPacks/SticsOnR
 SystemRequirements: STICS
 OS_type: unix
 License: BSD_3_clause + file LICENSE
@@ -29,4 +30,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2

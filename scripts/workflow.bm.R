@@ -12,7 +12,6 @@
 # Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
-library(RCurl)
 
 #--------------------------------------------------------------------------------#
 # Functions used to write STATUS used by history
@@ -181,7 +180,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANC
 # Start ecosystem model runs
 if (status.check("MODEL") == 0) {
   status.start("MODEL")
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  PEcAn.workflow::start_model_runs(settings, settings$database$bety$write)
   status.end()
 }
 

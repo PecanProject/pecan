@@ -21,7 +21,10 @@ Calculate distribution of function of a variable
 }
 \details{
 Transform trait parameter through trait-specific univariate model emulator spline function
-Given a matrix of parameter sets, calculates a matrix of model output by applying appropriate spline function to each parameter. Output is use with \code{\link{variance.decomposition}} and \code{\link{spline.ensemble}}
+Given a matrix of parameter sets, calculates a matrix of model output
+  by applying appropriate spline function to each parameter.
+  Output is used with \code{\link{plot_variance_decomposition}}
+  and \code{\link{spline.ensemble}}
 }
 \author{
 David LeBauer

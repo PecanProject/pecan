@@ -9,8 +9,6 @@
 
 ##' Sends email. This assumes the program sendmail is installed. 
 ##'
-##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
-##' @name sendmail
 ##' @param from the sender of the mail message
 ##' @param to the receipient of the mail message
 ##' @param subject the subject of the mail message
@@ -34,7 +32,7 @@ sendmail <- function(from, to, subject, body) {
     cat(paste0("From: ", from, "\n", 
                "Subject: ", subject, "\n", 
                "To: ", to, "\n", "\n", 
-               body), file = mailfile)
+               body, "\n"), file = mailfile)
     system2(sendmail, c("-f", paste0("\"", from, "\""), 
                         paste0("\"", to, "\""), "<", mailfile))
     unlink(mailfile)

@@ -7,7 +7,9 @@
 \method{predict}{density}(den, xnew)
 }
 \arguments{
-\item{xnew}{}
+\item{den}{density object}
+
+\item{xnew}{new x coordinate}
 }
 \value{
 ynew

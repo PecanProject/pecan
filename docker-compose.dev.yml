@@ -8,7 +8,7 @@ services:
 
   # web application. This expects the config.php to be copied from docker/web
   # cp docker/web/config.docker.php web/config.php
-  #web:
+  #pecan:
   #  volumes:
   #    - 'pecan_web:/var/www/html/pecan'
 
@@ -16,20 +16,26 @@ services:
   executor:
     volumes:
       - 'pecan_home:/pecan/'
-      - 'pecan_lib:/usr/local/lib/R/site-library/'
+      - 'R_library:/usr/local/lib/R/site-library/'
 
   # use same for R development in rstudio
   rstudio:
     volumes:
       - 'pecan_home:/pecan/'
-      - 'pecan_home:/home/carya/pecan/'
-      - 'pecan_lib:/usr/local/lib/R/site-library/'
+      - 'pecan_home:/home/${PECAN_RSTUDIO_USER:-carya}/pecan/'
+      - 'R_library:/usr/local/lib/R/site-library/'
+    # add route to api for help when debugging plumber application. Same can
+    # be used for other apps.
+    #labels:
+    #  - "traefik.http.routers.rstudio-api.rule=Host(`api.pecan.localhost`)"
+    #  - "traefik.http.routers.rstudio-api.service=rstudio-api"
+    #  - "traefik.http.services.rstudio-api.loadbalancer.server.port=8000"
 
   # use following as template for other models
   # this can be used if you are changng the code for a model in PEcAN
   sipnet:
     volumes:
-      - 'pecan_lib:/usr/local/lib/R/site-library/'    
+      - 'R_library:/usr/local/lib/R/site-library/'
 
   # this will open postgres to the hostcompute
   #postgres:
@@ -73,10 +79,10 @@ volumes:
       type: none
       device: '${PWD}/web/'
       o: bind
-  pecan_lib:
+  R_library:
   #  driver_opts:
   #    type: none
-  #    device: '${HOME}/volumes/pecan/lib'
+  #    device: '${HOME}/volumes/pecan/R_library'
   #    o: bind
   #pecan:
   #  driver_opts:

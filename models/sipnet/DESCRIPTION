@@ -1,9 +1,10 @@
 Package: PEcAn.SIPNET
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Mike","Dietze"))
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
+Version: 1.8.0
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -19,7 +20,6 @@ Imports:
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
 Suggests:
     coda,
     testthat (>= 1.0.2)
@@ -31,4 +31,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 Require: 
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2

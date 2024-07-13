@@ -4,7 +4,9 @@
 \name{GEF.MultiSite.Nimble}
 \alias{GEF.MultiSite.Nimble}
 \title{multisite TWEnF}
-\format{TBD}
+\format{
+TBD
+}
 \usage{
 GEF.MultiSite.Nimble
 }

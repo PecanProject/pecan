@@ -42,7 +42,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       PEcAn.logger::logger.severe(paste0("No files found matching ", in.prefix, "; cannot process data."))
     }
     
-    # This function is supposed to process netcdf files, so we'll search for files the the extension .nc and use those first.
+    # This function is supposed to process netcdf files, so we'll search for files with the extension .nc and use those first.
     nc_file = grep("\\.nc$", matching_files)
     if (length(nc_file) > 0) {
       if (grepl("\\.nc$", in.prefix)) {
@@ -54,7 +54,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     } else { # no .nc files found... it could be that the extension was left off, or some other problem
       PEcAn.logger::logger.warn("No files found with extension '.nc'.  Using the first file in the list below:")
       PEcAn.logger::logger.warn(matching_files)
-      in.prefix <- matching_files[i]
+      in.prefix <- matching_files[1]
     }
   } else { # Default behavior
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
@@ -118,7 +118,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- PEcAn.utils::ud_convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       # Calculate the delta time.  If using whole-year data, the appropriate length in seconds is 
       # fetched; otherwise, it is assumed that the length of time provided in the time dimension of
@@ -136,7 +136,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       lat <- ncdf4::ncvar_get(nc, "latitude")
       lon <- ncdf4::ncvar_get(nc, "longitude")
       Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
+      Tair_C <- PEcAn.utils::ud_convert(Tair, "K", "degC")
       Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
       ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
       if (!is.numeric(ws)) {
@@ -147,12 +147,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       }
       
       Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
-      # pres <- ncdf4::ncvar_get(nc,'air_pressure') ## in pascal
+      
+      press <- ncdf4::ncvar_get(nc,'air_pressure') ## in pascal
+
       SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
       
-      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
+      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in umol/m2/s
       if (!is.numeric(PAR)) {
-        PAR <- SW * 0.45
+        PAR <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::sw2ppfd(SW), "umol ", "mol")
         PEcAn.logger::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
       }
       
@@ -163,21 +165,23 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
         soilT <- convolve(Tair, filt)
-        soilT <- udunits2::ud.convert(soilT, "K", "degC")
+        soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
-        soilT <- udunits2::ud.convert(soilT, "K", "degC")
+        soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
       }
       
-      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
-        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C))
+
+        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C, press = press/100))
+
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
-      VPDsoil <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
-        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT))
+      VPDsoil <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
+        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT, press/100))
       
       ncdf4::nc_close(nc)
     } else {
@@ -314,7 +318,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   if (!is.null(out)) {
     
     ## write output
-    write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+    utils::write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
     return(invisible(results))
   } else {
     PEcAn.logger::logger.info("NO MET TO OUTPUT")

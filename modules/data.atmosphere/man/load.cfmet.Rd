@@ -2,14 +2,14 @@
 % Please edit documentation in R/load.cfmet.R
 \name{load.cfmet}
 \alias{load.cfmet}
-\title{load CF met}
+\title{Load met data from PEcAn formatted met driver}
 \usage{
 load.cfmet(met.nc, lat, lon, start.date, end.date)
 }
 \arguments{
 \item{met.nc}{object of class ncdf4 representing an open CF compliant, PEcAn standard netcdf file with met data}
 
-\item{lat}{numeric value of latutude}
+\item{lat}{numeric value of latitude}
 
 \item{lon}{numeric value of longitude}
 
@@ -18,13 +18,10 @@ load.cfmet(met.nc, lat, lon, start.date, end.date)
 \item{end.date}{format is 'YYYY-MM-DD'}
 }
 \value{
-data.table of met data
+data frame of met data
 }
 \description{
-Load met data from PEcAn formatted met driver
-}
-\details{
-subsets a PEcAn formatted met driver file and converts to a data.table / data.frame object
+subsets a PEcAn formatted met driver file and converts to a data.frame object
 }
 \author{
 David LeBauer

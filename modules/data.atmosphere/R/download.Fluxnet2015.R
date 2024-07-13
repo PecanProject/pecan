@@ -4,7 +4,7 @@
 ##' @title download.Fluxnet2015
 ##' @export
 ##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-##' The 'SITE_ID' field in \href{http://fluxnet.fluxdata.org//sites/site-list-and-pages/}{list of Ameriflux sites}
+##' The 'SITE_ID' field in \href{https://fluxnet.org/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -36,7 +36,10 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   result <- httr::POST(url, body = json_query, encode = "json", httr::add_headers(`Content-Type` = "application/json"))
   link <- httr::content(result)
   ftplink <- NULL
-  if (length(link$dataURLsList) > 0) {
+
+  if(is.null(link) || is.atomic(link)) {
+    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an Fluxnet2015 site?")
+  } else if (length(link$dataURLsList) > 0) {
     ftplink <- link$dataURLsList[[1]]$URL
   }
   
@@ -105,7 +108,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   
   if (download_file_flag) {
     extract_file_flag <- TRUE
-    PEcAn.utils::download.file(ftplink, output_zip_file)
+    PEcAn.utils::download_file(ftplink, output_zip_file)
     if (!file.exists(output_zip_file)) {
       PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }

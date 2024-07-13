@@ -52,7 +52,7 @@
 ##' @param spag plot spaghetti lines?
 ##' @param spag.color color of spaghetti lines
 ##' @param mweight should the median smoother be visually weighted?
-##' @param show.lm should the linear regresison line be plotted?
+##' @param show.lm should the linear regression line be plotted?
 ##' @param show.CI should the 95% CI limits be plotted?
 ##' @param show.median should the median smoother be plotted?
 ##' @param median.col color of the median smoother
@@ -65,6 +65,7 @@
 ##' @param quantize either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)
 ##' @param add if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)
 ##' @param ... further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''
+##' 
 ##' @return NULL plot as side effect
 ##' @author Felix Schönbrodt
 ##' @export
@@ -187,7 +188,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       gg.tiles <- list(
         ggplot2::geom_tile(
           data = d2,
-          ggplot2::aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)),
+          ggplot2::aes(x = .data$x, y = .data$y, fill = .data$dens.scaled, alpha = .data$alpha.factor)),
         ggplot2::scale_fill_gradientn("dens.scaled", colours = palette),
         ggplot2::scale_alpha_continuous(range = c(0.001, 1)))
     }
@@ -209,7 +210,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       }
       
       gg.poly <- list(
-        ggplot2::geom_polygon(data = d3, ggplot2::aes(x = x, y = value, color = NULL, fill = col, group = group)),
+        ggplot2::geom_polygon(data = d3, ggplot2::aes(x = .data$x, y = .data$value, color = NULL, fill = col, group = .data$group)),
         ggplot2::scale_fill_gradientn("dens.scaled", colours = palette, values = seq(-1, 3, 1)))
     }
   }
@@ -220,7 +221,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   if (spag) {
     gg.spag <- ggplot2::geom_path(
       data = b2,
-      ggplot2::aes(x = x, y = value, group = B),
+      ggplot2::aes(x = .data$x, y = .data$value, group = B),
       size = 0.7,
       alpha = 10 / B,
       color = spag.color)
@@ -230,14 +231,14 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     if (mweight) {
       gg.median <- ggplot2::geom_path(
         data = CI.boot,
-        ggplot2::aes(x = x, y = M, alpha = w3 ^ 3),
+        ggplot2::aes(x = .data$x, y = .data$M, alpha = .data$w3 ^ 3),
         size = 0.6,
         linejoin = "mitre",
         color = median.col)
     } else {
       gg.median <- ggplot2::geom_path(
         data = CI.boot,
-        ggplot2::aes(x = x, y = M),
+        ggplot2::aes(x = .data$x, y = .data$M),
         size = 0.6,
         linejoin = "mitre",
         color = median.col)
@@ -246,8 +247,8 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   
   # Confidence limits
   if (show.CI) {
-    gg.CI1 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = UL), size = 1, color = "red")
-    gg.CI2 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = x, y = LL), size = 1, color = "red")
+    gg.CI1 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = .data$x, y = .data$UL), size = 1, color = "red")
+    gg.CI2 <- ggplot2::geom_path(data = CI.boot, ggplot2::aes(x = .data$x, y = .data$LL), size = 1, color = "red")
   }
   
   # plain linear regression line

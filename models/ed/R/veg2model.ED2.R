@@ -1,10 +1,16 @@
 #' Writes ED specific IC files
-#'
+#' 
+#' @param veg_info object passed from write_ic includes pft matches
+#' @param start_date "YYYY-MM-DD" passed from write_ic
+#' @param new_site object passed from write_ic includes site id, lat, lon, and sitename
+#' @param source object passed from write_ic
 #' @param outfolder where to write files
+#' @param ens number of ensemble members
+#'
 #' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source, ens){
   
 
   lat       <- as.numeric(as.character(new_site$lat))
@@ -17,7 +23,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste(source, start_year,
+  file.prefix <- paste(source, start_year, ens,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
 
   
@@ -144,7 +150,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   
   
   # Convert PFT names to ED2 Numbers
-  data(pftmapping, package = "PEcAn.ED2")
+  pftmapping <- PEcAn.ED2::pftmapping
   css$pft.number <- NA
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
@@ -157,7 +163,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   css$time[is.na(css$time)]     <- start_year
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)]       <- 1  # assign nominal small dbh to missing
-  density.median                <- median(css$n[which(css$n > 0)])
+  density.median                <- stats::median(css$n[which(css$n > 0)])
   css$n[is.na(css$n) | css$n == 0]    <- density.median
   css$hite <- css$bdead <- css$balive <- css$lai <- 0
     
@@ -171,10 +177,10 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Write files
   
   # css
-  write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
+  utils::write.table(css, filenames_full[1], quote = FALSE, row.names = FALSE)
   
   # pss
-  write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
+  utils::write.table(pss, filenames_full[2], quote = FALSE, row.names = FALSE)
   
   # site
   # hardcoded per fia2ED implemention
@@ -188,8 +194,8 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-  # convert.input inserts only 1 file anyway
-  return(list(filepath = filenames_full[1], filename = filenames[1], 
+  # convert_input inserts only 1 file anyway
+  return(list(file = filenames_full[1], dbfile.name = filenames[1], 
               mimetype = "text/plain", formatname = "ED2.cohort"))
 
 }

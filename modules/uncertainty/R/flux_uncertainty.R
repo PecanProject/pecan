@@ -16,7 +16,7 @@
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 read.ameriflux.L2 <- function(file.name, year) {
-  data <- as.data.frame(read.table(file.name, header = TRUE, sep = ",", 
+  data <- as.data.frame(utils::read.table(file.name, header = TRUE, sep = ",", 
                                    na.strings = c("-9999", "-6999"), 
                                    stringsAsFactors = FALSE))
   # data$time <- year + (data$DTIME / 366.0)
@@ -92,7 +92,7 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
     
     if (nBin[k] > minBin) {
       ## && sum(!is.na(change[use])) > 50) {
-      errBin[k] <- sd(indErr[use], na.rm = TRUE)
+      errBin[k] <- stats::sd(indErr[use], na.rm = TRUE)
       biasBin[k] <- mean(indErr[use], na.rm = TRUE)
       print(paste(length(magnitude[use]), sum(!is.na(change[use])), 
                   magBin[k], errBin[k]))
@@ -125,11 +125,11 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
                       intercept = intercept)
   
   if(!all(is.na(E2[pos]))){
-    mp <- lm(E2[pos] ~ magBin[pos] - 1)
+    mp <- stats::lm(E2[pos] ~ magBin[pos] - 1)
     return.list$slopeP <- mp$coefficients[1]
   } 
   if(!all(is.na(E2[neg]))){
-    mn <- lm(E2[neg] ~ magBin[neg] - 1)
+    mn <- stats::lm(E2[neg] ~ magBin[neg] - 1)
     return.list$slopeN <- mn$coefficients[1]
   }else{
     return.list$slopeN <- mp$coefficients[1]
@@ -149,18 +149,18 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
 plot_flux_uncertainty <- function(f, ...) {
-  plot(f$mag, f$err, ...)
+  graphics::plot(f$mag, f$err, ...)
   big <- 10000
-  lines(c(0, big), c(f$intercept, f$slopeP * big))
-  lines(c(0, -big), c(f$intercept, -f$slopeN * big))
-  legend("bottomleft", legend = c("intercept", f$intercept,
+  graphics::lines(c(0, big), c(f$intercept, f$slopeP * big))
+  graphics::lines(c(0, -big), c(f$intercept, -f$slopeN * big))
+  graphics::legend("bottomleft", legend = c("intercept", f$intercept,
                                   "slopeP", f$slopeP, 
                                   "slopeN", f$slopeN))
 } # plot_flux_uncertainty
 
 
-plot.oechel.flux <- function(observations, site) {
-  par(mfrow = c(2, 2))
+plot_oechel_flux <- function(observations, site) {
+  graphics::par(mfrow = c(2, 2))
   # only use data from March 1 through November 1
   observations <- observations[observations$DOY > 60 & observations$DOY < 305, ]
   
@@ -187,7 +187,7 @@ plot.oechel.flux <- function(observations, site) {
                         main = site, xlab = "Soil Temp bin (+)", ylab = "Soil Temp random error")
   plot_flux_uncertainty(observations$TS1[observations$TS1 <= 0], flags = flags, 
                         main = site, xlab = "Soil Temp bin (-)", ylab = "Soil Temp random error")
-} # plot.oechel.flux
+} # plot_oechel_flux
 
 
 tundra.flux.uncertainty <- function() {
@@ -198,7 +198,7 @@ tundra.flux.uncertainty <- function() {
     file <- paste0(year, "%20ITEX")
     file <- dir(folder, pattern = file, full.names = TRUE)
     print(file)
-    data <- as.data.frame(read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
+    data <- as.data.frame(utils::read.table(file, header = FALSE, sep = "\t", stringsAsFactors = FALSE))
     columns <- c("UTC", "ATZ", "location", "site", "treatment", "plot",
                  "year", "julian", "month", "hour")
     colnames(data)[1:length(columns)] <- columns
@@ -216,7 +216,7 @@ tundra.flux.uncertainty <- function() {
     return(read.ameriflux.L2(file, year))
   })
   oechel.atqasuk <- do.call(rbind, oechel.atqasuk)
-  plot.oechel.flux(oechel.atqasuk, "Atqasuk")
+  plot_oechel_flux(oechel.atqasuk, "Atqasuk")
   plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("AD")], 
                         main = "Atqasuk", 
                         xlab = "Soil Moisture bin (%vol)", 
@@ -228,7 +228,7 @@ tundra.flux.uncertainty <- function() {
     return(read.ameriflux.L2(file, year))
   })
   oechel.barrow <- do.call(rbind, oechel.barrow)
-  plot.oechel.flux(oechel.barrow, "Barrow")
+  plot_oechel_flux(oechel.barrow, "Barrow")
   return(plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
                                main = "Barrow", 
                                xlab = "Soil Moisture bin (%vol)", 

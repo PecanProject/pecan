@@ -60,6 +60,8 @@ slow_soil_pool_carbon_content,slow_soil_pool_carbon_content_of_soil_layer,kg C m
 fast_soil_pool_carbon_content,fast_soil_pool_carbon_content_of_soil_layer,kg C m-2,Fast Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Fast soil pool carbon content of soil layer,
 structural_soil_pool_carbon_content,structural_soil_pool_carbon_content_of_soil_layer,kg C m-2,Structural Soil Pool Carbon Content by Layer,Carbon Pools,real,lon,lat,time,depth,Structural soil pool carbon content of soil layer,
 soil_nitrogen_content,soil_nitrogen_content_of_soil_layer,kg N m-2,Soil Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,Total nitrogen content of soil layer,
+soil_inorganic_nitrogen_content,soil_inorganic_nitrogen_content_of_soil_layer,kg N m-2,Soil Inorganic Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,Total inorganic nitrogen content of soil layer (mineralized nitrogen),
+soil_organic_nitrogen_content,soil_organic_nitrogen_content_of_soil_layer,kg N m-2,Soil Organic Nitrogen Content by Layer,Nitrogen Pools,real,lon,lat,time,depth,"Total organic nitrogen content of soil layer, excluding litter",
 soil_phosphorus_content,soil_phosphorus_content_of_soil_layer,kg P m-2,Soil Phosphorus Content by Layer,Phosphorus Pools,real,lon,lat,time,depth,Total phosphorus content of soil layer,
 Qh,NA,W m-2,Sensible heat,Energy Fluxes,real,lon,lat,time,NA,Sensible heat flux into the boundary layer (positive into atmosphere),
 Qle,NA,W m-2,Latent heat,Energy Fluxes,real,lon,lat,time,NA,Latent heat flux into the boundary layer (positive into atmosphere),
@@ -106,11 +108,12 @@ PAR,surface_downwelling_photosynthetic_photon_flux_in_air,mol m-2 s-1,Photosynth
 precipf,NA,kg m-2 s-1,Precipitation,Driver,real,lon,lat,time,NA,"The per unit area and time precipitation representing the sum of convective rainfall, stratiform rainfall, and snowfall",
 BA,NA,m2 ha-1,Basal area,Diversity,real,lon,lat,time,pft,Basal area by PFT,
 Dens,NA,1 ha-1,Stem Density,Diversity,real,lon,lat,time,pft,Stem Density by PFT,
-DBH,NA,cm,Diameter at Breast Height,Diversity,real,lon,lat,time,pft,NA,DBH by PFT
+DBH,NA,cm,Diameter at Breast Height,Diversity,real,lon,lat,time,pft,DBH by PFT,
 Fcomp,NA,kgC kgC-1,Aboveground Biomass Fractional Composition,Diversity,real,lon,lat,time,pft,Aboveground biomass Fractional composition of each PFT within each grid cell,
 Estab,NA,1 ha-1,New Individuals,Diversity,real,lon,lat,time,pft,New Individuals,
 Mort,NA,1 ha-1,Mortality,Diversity,real,lon,lat,time,pft,Individuals lost through death,
 SoilDepth,NA,m,Soil Depth Layer,Deprecated,real,depth,NA,NA,NA,Depth to the bottom of each model-defined soil layer,
 assimilation_rate,NA,kg C m-2 s-1,Leaf assimilation rate,Carbon Fluxes,real,lon,lat,time,NA,Rate of leaf photosynthesis / carbon assimilation,
-date_of_budburst,NA,day of year,Date of Budburst,Phenology,real,lon,lat,time,NA,Date of Budburst
-date_of_senescence,NA,day of year,Date of Senescence,Phenology,real,lon,lat,time,NA,Date of Senescence
+date_of_budburst,NA,day of year,Date of Budburst,Phenology,real,lon,lat,time,NA,Date of Budburst,
+date_of_senescence,NA,day of year,Date of Senescence,Phenology,real,lon,lat,time,NA,Date of Senescence,
+litter_mass_content_of_water,NA,kg m-2,Average layer litter moisture,Physical Variables,real,lon,lat,depth,time,Litter water content in litter layer including liquid vapor and ice,

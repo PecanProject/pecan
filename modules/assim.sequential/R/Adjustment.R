@@ -9,7 +9,6 @@
 ##' @param Pa The state estimate cov matrix of analysis.
 ##’ @details
 ##’  
-##' 
 ##' @description This functions gives weights to different ensemble members based on their likelihood during the analysis step. Then it adjusts the analysis mean estimates of state variables based on the estimated weights.
 ##' 
 ##' @return Returns a vector of adjusted analysis mean estimates of state variables.
@@ -45,10 +44,14 @@ adj.ens<-function(Pf, X, mu.f, mu.a, Pa){
     X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
   }
   
-  
-  if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
-  if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
-  
+  if (sum(mu.a - colMeans(X_a)) > 1
+      || sum(mu.a - colMeans(X_a)) < -1) { 
+    PEcAn.logger::logger.warn('Problem with ensemble adjustment (1)')
+  }
+  if (sum(diag(Pa) - diag(stats::cov(X_a))) > 5 
+      || sum(diag(Pa) - diag(stats::cov(X_a))) < -5) {
+    PEcAn.logger::logger.warn('Problem with ensemble adjustment (2)')
+  }
   analysis <- as.data.frame(X_a)
   
   return(analysis)

@@ -284,13 +284,13 @@ if (isset($_REQUEST['doit'])) {
     echo "      <p>Following files/folders could not be removed.</p>\n";
     echo "      <ul>\n";
     foreach($deleted_files['kept'] as $file) {
-      echo "        <li style=\"color: red;\">${file}</li>\n";
+      echo "        <li style=\"color: red;\">{$file}</li>\n";
     }
     echo "      </ul>\n";
     echo "      <p>Following files/folders are removed.</p>\n";
     echo "      <ul>\n";
     foreach($deleted_files['removed'] as $file) {
-      echo "        <li>${file}</li>\n";
+      echo "        <li>{$file}</li>\n";
     }
     echo "      </ul>\n";
   } else {

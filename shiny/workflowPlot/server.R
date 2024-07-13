@@ -45,10 +45,10 @@ options(shiny.maxRequestSize=100*1024^2)
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
-  
+
   dbConnect <- reactiveValues(bety = NULL)
-  
-  # Try `betyConnect` function. 
+
+  # Try `betyConnect` function.
   # If it breaks, ask user to enter user, password and host information
   # then use the `db.open` function to connect to the database
   tryCatch({
@@ -57,7 +57,7 @@ server <- shinyServer(function(input, output, session) {
     dbConnect$bety <- betyConnect(".")
   },
   error = function(e){
-    
+
     #---- shiny modal----
     showModal(
       modalDialog(
@@ -74,18 +74,24 @@ server <- shinyServer(function(input, output, session) {
         size = 's'
       )
     )
-    
+
     # --- connect to database ---
     observeEvent(input$submitInfo,{
       tryCatch({
-                 
-          dbConnect$bety <- dplyr::src_postgres(dbname ='bety' , 
-                                                host =input$host, user = input$user, 
-                                                password = input$password)
+
+          dbConnect$bety <- PEcAnDB::db.open(
+            params = list(
+            driver = "Postgres",
+              dbname ='bety' ,
+              host =input$host,
+              user = input$user,
+              password = input$password
+            )
+          )
 
           # For testing reactivity of bety connection
           #dbConnect$bety <- betyConnect()
-          
+
           removeModal()
           toastr_success("Connect to Database")
         },
@@ -95,8 +101,8 @@ server <- shinyServer(function(input, output, session) {
       )
     })
   })
-  
-  
+
+
   # Hiding the animation and showing the application content
   hide(id = "loading-content", anim = TRUE, animType = "fade")
   showElement("app")
@@ -109,7 +115,7 @@ server <- shinyServer(function(input, output, session) {
 
   # Page 1: Select Data
   source("server_files/select_data_server.R", local = TRUE)
-  
+
   # Page 2: History Runs
   source("server_files/history_server.R", local = TRUE)
 

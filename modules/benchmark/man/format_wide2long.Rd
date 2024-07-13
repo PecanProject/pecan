@@ -2,7 +2,7 @@
 % Please edit documentation in R/format_wide2long.R
 \name{format_wide2long}
 \alias{format_wide2long}
-\title{format_wide2long}
+\title{Function to convert wide format to long format}
 \usage{
 format_wide2long(out, format, vars_used, time.row)
 }
@@ -11,15 +11,16 @@ format_wide2long(out, format, vars_used, time.row)
 
 \item{format}{as returned by query.format.vars}
 
-\item{vars_used}{}
+\item{vars_used}{data frame mapping `input_name` to `bety_name`}
+
+\item{time.row}{ignored; value in output is set from `format$vars$storage_type`}
 }
 \value{
 list of updated values
 }
 \description{
-format_wide2long
+Function to convert wide format to long format
 }
 \author{
 Istem Fer
-Function to convert wide format to long format
 }

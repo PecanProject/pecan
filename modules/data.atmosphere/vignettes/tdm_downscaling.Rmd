@@ -9,7 +9,7 @@ Examples:
 * Fluxnet2015 30-minute/hourly
 * Ameriflux 30-minute/hourly
 
-### Extract Training Data and Merge All Years Into 1 File 
+### Extract Training Data and Merge All Years Into 1 File
 
 ```{r}
 library(PEcAn.data.atmosphere)
@@ -22,27 +22,28 @@ lon        <- -105.546
 start_date <- '2000/01/01'
 end_date   <- '2014/12/31'
 outfolder  <- "~/Example"
-bety      <- dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
-format    <- query.format.vars(input.id = 5000000005, bety = bety)
+# TODO show where `bety` comes from
+con <- db.open(params = bety)
+format    <- query.format.vars(input.id = 5000000005, bety = con)
 in.prefix <- 'FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3'
 download.Fluxnet2015(sitename, lat, lon, start_date, end_date, outfolder, username = 'pecan', overwrite = FALSE)
 
 # Convert the data to CF metadata standards
-met2CF.csv(in.path = file.path(outfolder), in.prefix, outfolder = file.path(outfolder, "CF"), start_date, end_date, format, lat, lon) 
+met2CF.csv(in.path = file.path(outfolder), in.prefix, outfolder = file.path(outfolder, "CF"), start_date, end_date, format, lat, lon)
 
 # Fill the gaps in the flux tower dataset
 metgapfill(lst = -7, in.path = file.path(outfolder, "CF"), in.prefix, outfolder = file.path(outfolder, "gapfill"), start_date, end_date)
 
-# Merge the individual years of the gapfilled NC files together 
+# Merge the individual years of the gapfilled NC files together
 nc.merge(outfolder = file.path(outfolder, "training_data"), in.path = file.path(outfolder, "gapfill"), in.prefix, start_date, end_date, upscale = "hour")
 ```
 
-### Generate Linear Regression Models From Training Data 
+### Generate Linear Regression Models From Training Data
 
 Note: This requires ~ 120 GB of space if using the entire training dataset
 ```{r}
 in.prefix      <- "US-NR1"
-dat.train.file <- "~/Example/training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train.nc" 
+dat.train.file <- "~/Example/training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train.nc"
 n.beta         <- 10 # Number of betas for the linear regression model to create, we'll choose 10 for time's sake
 day.window     <- 5  # Number of days around a specific timestamp to gather statistics from (at the same timestamp)
 gen.subdaily.models(outfolder = dir.create(outfolder, "lm_models_base"), dat.train.file, in.prefix, n.beta, day.window)
@@ -68,7 +69,7 @@ download.MACA(outfolder, start_date, end_date, site_id, model, scenario, ensembl
 
 ```
 
-### Predict Subdaily Data Using Statistics From Training Data 
+### Predict Subdaily Data Using Statistics From Training Data
 
 ```{r}
 in.path        <- "~/Example/MACA_site_0-772"

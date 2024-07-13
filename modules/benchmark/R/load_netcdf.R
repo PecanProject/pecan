@@ -1,13 +1,11 @@
-##' @name load_x_netcdf
-##' @title load_x_netcdf
-##' @export
+##' Load from netCDF
+##'
 ##' @param data.path character vector or list
 ##' @param format list
-##' @param start_year numeric
-##' @param end_year numeric
 ##' @param site list
 ##' @param vars character
 ##' @author Istem Fer
+##' @export
 load_x_netcdf <- function(data.path, format, site, vars = NULL) {
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   nc <- lapply(data.path, ncdf4::nc_open)
@@ -70,7 +68,7 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
                     t.units)
     # need to change system TZ otherwise, lines below keeps writing in the current time zone
     Sys.setenv(TZ = 'UTC')
-    foo <- as.POSIXct(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
+    foo <- as.POSIXct(date.origin, tz = "UTC") + PEcAn.utils::ud_convert(time.col[[i]], t.units, "seconds")
     time.col[[i]] <- foo
   }
   # needed to use 'round' to 'mins' here, otherwise I end up with values like '2006-12-31 23:29:59'

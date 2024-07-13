@@ -23,7 +23,7 @@ observeEvent(input$load_model,{
       
       clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
       settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
-      ref_run <- PEcAn.benchmark::check_BRR(settings_xml, dbConnect$bety$con)
+      ref_run <- PEcAn.benchmark::check_BRR(settings_xml, dbConnect$bety)
       
       if(length(ref_run) == 0){
         # If not registered, button appears with option to run create.BRR
@@ -61,7 +61,7 @@ observeEvent(input$create_bm,{
     withProgress(message = 'Calculation in progress',
                  detail = 'This may take a while...',
                  value = 0,{
-                   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = dbConnect$bety$con)
+                   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = dbConnect$bety)
                    incProgress( 10/ 15)
                    bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
                    bm$button_BRR <- FALSE

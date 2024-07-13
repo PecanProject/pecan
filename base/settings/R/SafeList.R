@@ -9,20 +9,19 @@
 
 #' Create a SafeList object
 #'
-#' SafeList is a wrapper class for the normal R list.
-#'  It should behave identically, except for the $ operator being overridden
-#'  to require exact matches.
+#' `SafeList` is a wrapper class for the normal R list. It should behave
+#' identically, except for the `$` operator being overridden to require exact
+#' matches.
 #'
-#' The constructor works identical to list(...) unless:
+#' The constructor works identical to `list()` unless:
 #'
 #' 1) The only argument is a list, in which case the result is the same list,
 #'    with its class attribute updated to include 'SafeList', or
 #' 2) The only argument is a SafeList, in which case that argument is returned
 #'    unchanged
 #'
-#' @title Construct SafeList Object
-#' @param ... A list to upgrade to SafeList,
-#'    or elements to be added to a new SafeList
+#' @param ... A list to upgrade to SafeList, or elements to be added to a new
+#'   SafeList
 #' @return The resulting SafeList
 #' @export
 #' @author Ryan Kelly
@@ -59,8 +58,8 @@ is.SafeList <- function(x) {
 
 #' Extract SafeList component by name
 #'
-#' Overrides `$`.list, and works just like it except forces exact match
-#' (i.e., makes x$name behave exactly like x[[name, exact=T]])
+#' Overrides `$.list`, and works just like it except forces exact match
+#' (i.e., makes `x$name` behave exactly like `x[[name, exact=T]]`)
 #'
 #' @title Extract SafeList component by name
 #' @param x the SafeList object

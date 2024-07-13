@@ -3,11 +3,11 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet stics template
+				ldndc lpjguess maat maespa preles sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
-				 data.atmosphere data.hydrology data.land \
-				 data.remote emulator meta.analysis \
+				 data.atmosphere data.land data.remote \
+				 emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
 # Components not currently included in the build
@@ -44,8 +44,13 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
-SETROPTIONS = "options(Ncpus = ${NCPUS})"
+SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
+EXPECTED_ROXYGEN_VERSION := 7.3.2
+INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
+	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
+	-e   "cat(as.character(packageVersion('roxygen2')))" \
+	-e "}")
 
 ### Macros
 
@@ -62,30 +67,47 @@ drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 # Generates a list of regular files at any depth inside its argument
 files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
-# HACK: assigning to `deps` is an ugly workaround for circular dependencies in utils pkg.
-# When these are fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript -e ${SETROPTIONS} \
-	-e "deps <- if (grepl('(base/utils|modules/benchmark)', '$(1)')) { c('Depends', 'Imports', 'LinkingTo') } else { TRUE }" \
-	-e "devtools::install_deps('$(strip $(1))', dependencies = deps, upgrade=FALSE)"
+# HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
+# a circular dependency between benchmark and data.land.
+# When this is fixed, can go back to simple `dependencies = TRUE`
+depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
+	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
-	-e "devtools::install('$(strip $(1))', upgrade=FALSE)"
+	-e "remotes::install_local('$(strip $(1))', force=TRUE, dependencies=FALSE, upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \
 	-e "devtools::test('$(strip $(1))'," \
 	-e "stop_on_failure = TRUE," \
 	-e "stop_on_warning = FALSE)" # TODO: Raise bar to stop_on_warning = TRUE when we can
 
-doc_R_pkg = ./scripts/time.sh "document ${1}" Rscript -e "devtools::document('"$(strip $(1))"')"
+doc_R_pkg = \
+	$(if \
+		$(filter ${EXPECTED_ROXYGEN_VERSION},${INSTALLED_ROXYGEN_VERSION}), \
+		./scripts/time.sh "document ${1}" \
+			Rscript -e "devtools::document('"$(strip $(1))"')", \
+		$(error Roxygen2 version is ${INSTALLED_ROXYGEN_VERSION}, \
+			but PEcAn package documentation must be built with exactly \
+			version ${EXPECTED_ROXYGEN_VERSION}))
+
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 
 ### Rules
 
-.PHONY: all install check test document shiny
+.PHONY: all install check test document shiny \
+            check_base check_models check_modules 
 
 all: install document
+
+
+check_base: $(BASE_C) 
+check_models: $(MODELS_C) 
+
+# Install base first as Modules has a circular dependency on base,
+# and then run a check on modules
+check_modules: $(BASE_I) $(MODULES_C) 
 
 document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
@@ -127,8 +149,14 @@ clean:
 	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
 	echo `date` > $@
 
-.install/roxygen2: | .install
-	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2')"
+.install/roxygen2: | .install .install/devtools
+	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
+		-e "    || packageVersion('roxygen2') != '"${EXPECTED_ROXYGEN_VERSION}"') {" \
+		-e "  cran <- c(getOption('repos'), 'cloud.r-project.org')" \
+		-e "  remotes::install_version('roxygen2', '"${EXPECTED_ROXYGEN_VERSION}"', repos = cran, upgrade = FALSE)" \
+		-e "}"
+	$(eval INSTALLED_ROXYGEN_VERSION := ${EXPECTED_ROXYGEN_VERSION})
 	echo `date` > $@
 
 .install/testthat: | .install
@@ -143,9 +171,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 
 .SECONDEXPANSION:
 .doc/%: $$(call files_in_dir, %) | $$(@D)
-ifeq ($(CI),) # skipped on CI because we start the run by bulk-installing all deps
 	+ $(call depends_R_pkg, $(subst .doc/,,$@))
-endif
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	echo `date` > $@
 

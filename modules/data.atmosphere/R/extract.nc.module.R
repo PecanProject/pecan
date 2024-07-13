@@ -1,5 +1,4 @@
 ##' @export
-##' @import dplyr
 .extract.nc.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE) {
   PEcAn.logger::logger.info("Site Extraction")
@@ -23,7 +22,7 @@
 if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
   
 
-  ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
+  ready.id <- PEcAn.DB::convert_input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype = mimetype, 

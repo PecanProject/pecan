@@ -9,7 +9,7 @@
 
 ##' R package to support PEcAn, the Predictive Ecosystem Analyzer
 ##'
-##' Instructions for the use of this package are provided in the project documentation \url{https://pecan.gitbooks.io/pecan-documentation/content/}.
+##' Instructions for the use of this package are provided in the project documentation \url{https://pecanproject.github.io/documentation.html}.
 ##'
 ##' Project homepage: \url{pecanproject.org}
 ##'
@@ -31,7 +31,6 @@
 ##'
 ##' Current development is focused on developing PEcAn into a real-time data assimilation and forecasting system. This system will provide a detailed analysis of the past and present ecosystem functioning that seamlessly transitions into forecasts.
 ##'
-##' @docType package
 ##' @name PEcAn
-##' @aliases PECAn, pecan, package-pecan
-NULL
+##' @aliases PECAn pecan package-pecan
+"_PACKAGE"

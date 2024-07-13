@@ -1,15 +1,15 @@
-* using log directory ‘/tmp/RtmpNECEcU/PEcAn.assim.batch.Rcheck’
-* using R version 3.5.2 (2018-12-20)
+* using log directory ‘/tmp/Rtmp0m7lr6/PEcAn.assim.batch.Rcheck’
+* using R version 4.1.3 (2022-03-10)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
 * checking for file ‘PEcAn.assim.batch/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘PEcAn.assim.batch’ version ‘1.7.0’
+* this is package ‘PEcAn.assim.batch’ version ‘1.7.2.9000’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
-Imports includes 28 non-default packages.
+Imports includes 26 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -23,6 +23,8 @@ use conditionally.
 * checking whether package ‘PEcAn.assim.batch’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking ‘build’ directory ... OK
 * checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
@@ -41,29 +43,12 @@ use conditionally.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-get.da.data: no visible binding for global variable ‘ensemble.samples’
-get.da.data : <anonymous>: no visible binding for global variable
-  ‘sa.samples’
-get.da.data: no visible binding for global variable ‘sa.samples’
 get.da.data : <anonymous>: no visible global function definition for
   ‘read.output.type’
-get.da.data.growth: no visible binding for global variable
-  ‘ensemble.samples’
-get.da.data.growth: no visible binding for global variable ‘sa.samples’
 get.da.data.growth : <anonymous>: no visible global function definition
   for ‘read.output.type’
-pda.load.priors: no visible binding for global variable ‘post.distns’
-pda.load.priors: no visible binding for global variable ‘prior.distns’
-plot.da: no visible binding for global variable ‘y’
-plot.da: no visible binding for global variable ‘ensemble.samples’
-plot.da : <anonymous>: no visible binding for global variable
-  ‘ensemble.samples’
-plot.da : <anonymous>: no visible binding for global variable
-  ‘sa.samples’
-plot.da : <anonymous>: no visible binding for global variable ‘m’
 Undefined global functions or variables:
-  ensemble.samples m post.distns prior.distns read.output.type
-  sa.samples y
+  read.output.type
 
 Found the following assignments to the global environment:
 File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
@@ -77,10 +62,23 @@ File ‘PEcAn.assim.batch/R/pda.get.model.output.R’:
 * checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
+* checking installed files from ‘inst/doc’ ... OK
 * checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
+  Running ‘testthat.R’
  OK
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ‘inst/doc’ ... OK
+* checking re-building of vignette outputs ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
 * DONE
-Status: 1 NOTE
+
+Status: 1 WARNING, 2 NOTEs
+See
+  ‘/tmp/Rtmp0m7lr6/PEcAn.assim.batch.Rcheck/00check.log’
+for details.
+
+

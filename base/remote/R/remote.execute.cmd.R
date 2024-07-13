@@ -5,7 +5,7 @@
 #' machine it will execute the command locally without ssh.
 #'
 #' @title Execute command remotely
-#' @param command the system command to be invoked, as a character string.
+#' @param cmd the system command to be invoked, as a character string.
 #' @param host host structure to execute command on
 #' @param args a character vector of arguments to command.
 #' @param stderr should stderr be returned as well.
@@ -18,6 +18,10 @@
 #'   print(remote.execute.cmd(host, 'ls', c('-l', '/'), stderr=TRUE))
 #' }
 remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
+  if(is.null(host)) {
+    PEcAn.logger::logger.severe("`host` cannot be `NULL` for remote execution")
+  }
+  
   if (is.character(host)) {
     host <- list(name = host)
   }
@@ -26,6 +30,9 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
     PEcAn.logger::logger.debug(paste(c(cmd, args), collapse = ' '))
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
+    if(is.null(host$name) || host$name == "") {
+      PEcAn.logger::logger.severe("`name`parameter in `host` object cannot be `NULL` or empty for remote execution")
+    }
     remote <- host$name
     if (!is.null(host$tunnel)) {
       if (!file.exists(host$tunnel)) {

@@ -1,18 +1,28 @@
 Package: PEcAn.ED2
 Type: Package
-Title: PEcAn package for integration of ED2 model
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Xiaohui", "Feng"),
-             person("Dan"," Wang"),
-             person("Carl", "Davidson"),
-             person("Rob","Kooper"),
-             person("Shawn", "Serbin"),
-             person("Alexey", "Shiklomanov"))
+Title: PEcAn Package for Integration of ED2 Model
+Version: 1.8.0
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Xiaohui", "Feng", role = c("aut"),
+                     email = "feng22@illinois.edu"),
+             person("Dan", "Wang", role = c("aut")),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Shawn", "Serbin", role = c("aut"),
+                     email = "sserbin@bnl.gov"),
+             person("Alexey", "Shiklomanov", role = c("aut"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
+             person("Eric R.", "Scott", role = c("ctb"),
+                     email = "ericrscott@arizona.edu",
+                     comment = c(ORCID = "0000-0002-7430-7879")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
-    Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov
+    Davidson, Rob Kooper, Shawn Serbin, Alexey Shiklomanov, Eric R. Scott
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -20,33 +30,40 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the Ecosystem Demography Model, version 2, to PEcAn.
+Depends: 
+    R (>= 2.10)
 Imports:
-    PEcAn.data.atmosphere,
-    PEcAn.data.land,
-    PEcAn.logger,
-    PEcAn.remote,
-    PEcAn.settings,
-    PEcAn.utils,
     abind (>= 1.4.5),
+    assertthat,
     dplyr,
     glue,
     hdf5r,
     lubridate,
     magrittr,
     ncdf4 (>= 1.15),
+    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.settings,
+    PEcAn.utils,
     purrr,
+    rlang,
     stringr(>= 1.1.0),
     tidyr,
     tibble,
-    udunits2 (>= 0.11),
     utils,
     XML (>= 3.98-1.4)
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    devtools,
+    withr
+Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
-LazyData: FALSE
+LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 2

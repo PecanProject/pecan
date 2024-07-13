@@ -8,7 +8,8 @@
 #' @param depths  Standard set of soil depths in m to create the ensemble of soil profiles with.
 #'
 #' @return It returns the address for the generated soil netcdf file
-#' @export
+#'
+#' @importFrom rlang .data
 #'
 #' @examples
 #' \dontrun{
@@ -18,6 +19,7 @@
 #'    PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
 #' }
 #' @author Hamze Dokoohaki
+#' @export
 #' 
 extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.15,0.30,0.60)){
   # I keep all the ensembles here 
@@ -27,100 +29,66 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
   # Basically I think of this as me going around and taking soil samples within 500m of my site.
   #https://sdmdataaccess.nrcs.usda.gov/SpatialFilterHelp.htm
   mu.Path <- paste0(
-    "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?SERVICE=WFS&VERSION=1.1.0&REQUEST=GetFeature&TYPENAME=MapunitPoly&FILTER=<Filter><DWithin><PropertyName>Geometry</PropertyName><gml:Point>%20<gml:coordinates>",
-    lon ,
-    ",",
-    lat,
-    "</gml:coordinates></gml:Point><Distance%20units=%27m%27>",radius,"</Distance></DWithin></Filter>"
+    "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?",
+    "SERVICE=WFS",
+    "&VERSION=1.1.0",
+    "&REQUEST=GetFeature&TYPENAME=MapunitPoly",
+    "&FILTER=",
+      "<Filter>",
+        "<DWithin>",
+          "<PropertyName>Geometry</PropertyName>",
+          "<gml:Point>",
+            "<gml:coordinates>", lon, ",", lat, "</gml:coordinates>",
+          "</gml:Point>",
+          "<Distance%20units=%27m%27>", radius, "</Distance>",
+        "</DWithin>",
+      "</Filter>",
+    "&OUTPUTFORMAT=XMLMukeyList"
   )
-  # We are trying to find the mapunit key here. Either using rgdal if the driver is defined or parsing it's gml
   
-  if ("GML" %in% rgdal::ogrDrivers()$name) {
-    
-    suppressMessages({
+  xmll <- curl::curl_download(
+    mu.Path,
+    ssl.verifyhost = FALSE,
+    ssl.verifypeer = FALSE)
 
-    #disambiguateFIDs if TRUE, and FID values are not unique, they will be set to unique values 1:N for N features; problem observed in GML files
-    #idk why but gssurgo api seems to fail for no reason, that'w why I try 3 times.
-      for(i in 1:3){
-       # try to read the polygon to get the mukey
-       sarea <-try(rgdal::readOGR(mu.Path, disambiguateFIDs=T), silent = TRUE)
-       if( class(sarea) != "try-error" ) break;
-       PEcAn.logger::logger.warn(paste0(i, " attemp was unsuccessful"))
-       Sys.sleep(1)
-     }
+  mukey_str <- XML::xpathApply(
+    doc = XML::xmlParse(xmll),
+    path = "//MapUnitKeyList",
+    fun = XML::xmlValue)
+  mukeys <- strsplit(mukey_str, ",")[[1]]
 
-      # flipping the coordinates 
-      # gdal reads the gSSUGO layers with fliped coordinateds
-      for (i in seq_along(sarea@polygons)){
-        for (j in seq_along(sarea@polygons[[i]]@Polygons)){
-          # flip the coordinates
-          sarea@polygons[[i]]@Polygons[[j]]@coords <- sarea@polygons[[i]]@Polygons[[j]]@coords[, c(2,1)]
-        }
-      }
-      
-      areasf <-sf::st_as_sf(sarea)
-      # getting the site point ready
-      site = sf::st_as_sf(data.frame(long=lon, lat=lat), coords=c("long","lat"))
-      
-      #buffer the radius around site / and clip the study area based on buffer
-      site_buffer = sf::st_buffer(site, (radius/111000)) # converting radius m to dgree - each degree is about 111 Km
-      site_area = sf::st_intersection(site_buffer, areasf)
-      # calculating areas again for the clipped regions
-     mukey_area <- data.frame(Area=raster::area(x= as(site_area, 'Spatial')),
-                              mukey=site_area$mukey)
-
-    })
-    
-    mukeys <- mukey_area$mukey %>% as.character()
-  }else{
-    #reading the mapunit based on latitude and longitude of the site
-    #the output is a gml file which need to be downloaded and read as a spatial file but I don't do that.
-    #I just read the file as a text and parse it out and try to find the mukey==mapunitkey
-    xmll <-
-      RCurl::getURL(mu.Path,
-                    ssl.verifyhost = FALSE,
-                    ssl.verifypeer = FALSE
-      )
-    
-    startp <- regexpr('<ms:mukey>', xmll)
-    stopp <- regexpr('</ms:mukey>', xmll)
-    
-    #if you found the mapunit key
-    if (startp == -1 |
-        stopp == -1)
-      PEcAn.logger::logger.error("There was no mapunit keys found for this site.")
-    mukeys <-substr(xmll, startp %>% as.numeric + 10, stopp %>% as.numeric - 1)  
+  if (length(mukeys) == 0) {
+    PEcAn.logger::logger.error("No mapunit keys were found for this site.")
   }
-  
+
   # calling the query function sending the mapunit keys
-  soilprop <- gSSURGO.Query(mukeys,c("chorizon.sandtotal_r",
-                                    "chorizon.silttotal_r",
-                                    "chorizon.claytotal_r",
-                                    "chorizon.hzdept_r"))
+  soilprop <- gSSURGO.Query(
+    mukeys,
+    c("chorizon.sandtotal_r",
+      "chorizon.silttotal_r",
+      "chorizon.claytotal_r",
+      "chorizon.hzdept_r"))
 
   soilprop.new <- soilprop %>%
-    dplyr::arrange(hzdept_r) %>%
-    dplyr::select(-comppct_r) %>%
-    `colnames<-`(
-      c(
-        "fraction_of_sand_in_soil",
-        "fraction_of_silt_in_soil",
-        "fraction_of_clay_in_soil",
-        "soil_depth",
-        "mukey"
-      )
-    )
-  #unit conversion
-  soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" , "fraction_of_clay_in_soil" ,
-                    "soil_depth")] <- soilprop.new [, c("fraction_of_sand_in_soil", "fraction_of_silt_in_soil" ,
-                                                        "fraction_of_clay_in_soil" , "soil_depth")]/100
-  soilprop.new <- soilprop.new[ complete.cases(soilprop.new) , ]
+    dplyr::arrange(.data$hzdept_r) %>%
+    dplyr::select(
+      fraction_of_sand_in_soil = "sandtotal_r",
+      fraction_of_silt_in_soil = "silttotal_r",
+      fraction_of_clay_in_soil = "claytotal_r",
+      soil_depth = "hzdept_r",
+      mukey = "mukey") %>%
+    dplyr::mutate(dplyr::across(
+        c(dplyr::starts_with("fraction_of"),
+          "soil_depth"),
+        function(x) x / 100))
+
+  soilprop.new <- soilprop.new[ stats::complete.cases(soilprop.new) , ]
   #converting it to list
   soil.data.gssurgo <- names(soilprop.new)[1:4] %>%
     purrr::map(function(var) {
       soilprop.new[, var]
     }) %>%
-    setNames(names(soilprop.new)[1:4])
+    stats::setNames(names(soilprop.new)[1:4])
   #This ensures that I have at least one soil ensemble in case the modeling part failed
   all.soil.ens <-c(all.soil.ens, list(soil.data.gssurgo))
   
@@ -137,7 +105,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     depth.levs[depth.levs>length(depths)] <-length(depths)
     
      soilprop.new.grouped<-soilprop.new %>% 
-      mutate(DepthL=depths[depth.levs])
+      dplyr::mutate(DepthL=depths[depth.levs])
     
     # let's fit dirichlet for each depth level separately
     simulated.soil.props<-soilprop.new.grouped %>%
@@ -155,7 +123,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           # # using the simulated sand/silt/clay to generate soil ensemble
           simulated.soil<-simulated.soil %>%
             as.data.frame %>%
-            mutate(DepthL=rep(DepthL.Data[1,6], size),
+            dplyr::mutate(DepthL=rep(DepthL.Data[1,6], size),
                    mukey=rep(DepthL.Data[1,5], size)) %>%
             `colnames<-`(c("fraction_of_sand_in_soil",
                            "fraction_of_silt_in_soil",
@@ -173,8 +141,8 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     
     # estimating the proportion of areas for those mukeys which are modeled
     mukey_area <- mukey_area %>%
-      filter(mukeys %in% simulated.soil.props$mukey) %>%
-      mutate(Area=Area/sum(Area))
+      dplyr::filter(mukeys %in% simulated.soil.props$mukey) %>%
+      dplyr::mutate(Area=.data$Area/sum(.data$Area))
     
     #--- Mixing the depths
     soil.profiles<-simulated.soil.props %>% 
@@ -198,7 +166,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
           purrr::map(function(var){
             SEns[,var]
           })%>% 
-          setNames(names(SEns))
+          stats::setNames(names(SEns))
       })%>%
       c(all.soil.ens,.)
     
@@ -235,7 +203,7 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
     purrr::discard(is.null)
   
   out.ense<-out.ense%>% 
-    setNames(rep("path", length(out.ense)))
+    stats::setNames(rep("path", length(out.ense)))
   
   return(out.ense)
 }
@@ -276,8 +244,8 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   soil.lon <- ncdf4::ncvar_get(nc, lon.dim)
   
   ## check in range
-  dlat <- abs(median(diff(soil.lat)))
-  dlon <- abs(median(diff(soil.lon)))
+  dlat <- abs(stats::median(diff(soil.lat)))
+  dlon <- abs(stats::median(diff(soil.lon)))
   if(lat < (min(soil.lat)-dlat) | lat > (max(soil.lat)+dlat)){
     PEcAn.logger::logger.error("site lat out of bounds",lat,range(soil.lat))
   }
@@ -326,7 +294,7 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   soil.data$clay   <- soil.data$clay/100
   soil.data$oc     <- soil.data$oc/100
   soil.data$gravel <- soil.data$gravel/100
-  soil.data$ref_bulk <- udunits2::ud.convert(soil.data$ref_bulk,"g cm-3","kg m-3")
+  soil.data$ref_bulk <- PEcAn.utils::ud_convert(soil.data$ref_bulk,"g cm-3","kg m-3")
   names(soil.data)[which(names(soil.data) == "clay")] <- "fraction_of_clay_in_soil"
   names(soil.data)[which(names(soil.data) == "sand")] <- "fraction_of_sand_in_soil"
   names(soil.data)[which(names(soil.data) == "silt")] <- "fraction_of_silt_in_soil"

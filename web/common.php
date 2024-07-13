@@ -14,7 +14,7 @@ function get_footer() {
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), 
     Department of Defense, the Arizona Experiment Station, the Energy Biosciences Institute, 
     and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.7.2</span>";
+    <span style=\"float:right\">PEcAn Version 1.8.0</span>";
 }
 
 function whoami() {
@@ -55,10 +55,10 @@ function passvars($ignore) {
     if (!array_key_exists($key, $ignore)) {
       if (is_array($value)) {
         foreach($value as $v) {
-          echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          echo "<input name=\"{$key}[]\" id=\"{$key}[]\" type=\"hidden\" value=\"{$v}\"/>";
         }
       } else {
-        echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        echo "<input name=\"{$key}\" id=\"{$key}\" type=\"hidden\" value=\"{$value}\"/>";
       }
     }
   }
@@ -84,16 +84,15 @@ function open_database() {
   global $pdo;
 
   try {
-    $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database};port=${db_bety_port}", $db_bety_username, $db_bety_password);
+    $pdo = new PDO("{$db_bety_type}:host={$db_bety_hostname};dbname={$db_bety_database};port={$db_bety_port}", $db_bety_username, $db_bety_password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   } catch (PDOException $e) {
     // handler to input database configurations manually
     $host  = $_SERVER['HTTP_HOST'];
-    header("Location: http://$host/setups/edit.php?key=database&message=1",TRUE,307);
-    //echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
+    echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
     die();
   }
-//  $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
+//  $pdo = new PDO("{$db_bety_type}:host={$db_bety_hostname};dbname={$db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
 function close_database() {
@@ -208,19 +207,19 @@ function get_page_acccess_level() {
 function make_rabbitmq_connection($rabbitmq_uri) {
   $rabbitmq = parse_url($rabbitmq_uri);
   $connection = new AMQPConnection();
-  if ($rabbitmq['host']) {
+  if (!empty($rabbitmq['host'])) {
     $connection->setHost($rabbitmq['host']);
   }
-  if ($rabbitmq['port']) {
+  if (!empty($rabbitmq['port'])) {
     $connection->setPort($rabbitmq['port']);
   }
-  if ($rabbitmq['path']) {
+  if (!empty($rabbitmq['path'])) {
     $connection->setVhost(urldecode(ltrim($rabbitmq['path'], '/')));
   }
-  if ($rabbitmq['user']) {
+  if (!empty($rabbitmq['user'])) {
     $connection->setLogin($rabbitmq['user']);
   }
-  if ($rabbitmq['pass']) {
+  if (!empty($rabbitmq['pass'])) {
     $connection->setPassword($rabbitmq['pass']);
   }
   $connection->connect();

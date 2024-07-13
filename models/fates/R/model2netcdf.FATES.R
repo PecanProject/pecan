@@ -91,7 +91,7 @@ model2netcdf.FATES <- function(outdir) {
         nstep <- ncdf4::ncvar_get(ncin, "nstep")                    # model time step
         time <- day + sec / 86400                                   # fractional time since base date (typically first day of full model simulation)
         iter_per_day <- length(unique(sec))                         # how many outputs per day (e.g. 1, 24, 48)
-        timesteps <- head(seq(0, 1, by = 1 / iter_per_day), -1)     # time of day fraction
+        timesteps <- utils::head(seq(0, 1, by = 1 / iter_per_day), -1)     # time of day fraction
         current_year_tvals <- (julian_dates-1 + timesteps)          # fractional DOY of current year
         nt <- length(time)                                          # output length
         nc_time <- ncin$dim$time$vals                               # days since "start_date"
@@ -164,7 +164,7 @@ model2netcdf.FATES <- function(outdir) {
         }
 
         ## extract variable and long names to VAR file for PEcAn vis
-        write.table(sapply(ncout$var, function(x) { x$longname }), 
+        utils::write.table(sapply(ncout$var, function(x) { x$longname }), 
                     file = paste0(oname, ".var"), 
                     col.names = FALSE, 
                     row.names = TRUE, 

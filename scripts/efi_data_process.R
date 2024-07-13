@@ -13,17 +13,12 @@ efi.data.process <- function(args){
   if (is.null(start_date)) {
     in_wid <- as.integer(args[1])
   }
-  dbparms = list()
-  dbparms$dbname = "bety"
-  dbparms$host = "128.197.168.114"
-  dbparms$user = "bety"
-  dbparms$password = "bety"
-  #Connection code copied and pasted from met.process
-  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
-                              host     = dbparms$host, 
-                              user     = dbparms$user, 
-                              password = dbparms$password)
-  con <- bety$con #Connection to the database.  dplyr returns a list.
+  dbparms <- list(
+    dbname = "bety",
+    host = "128.197.168.114",
+    user = "bety",
+    password = "bety")
+  con <- PEcAn.DB::db.open(dbparms)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # Identify the workflow with the proper information
   if (!is.null(start_date)) {

@@ -11,7 +11,7 @@ cd $(dirname $0)
 # Can set the following variables
 DEBUG=${DEBUG:-""}
 DEPEND=${DEPEND:-""}
-R_VERSION=${R_VERSION:-"4.0.2"}
+R_VERSION=${R_VERSION:-"4.1"}
 
 # --------------------------------------------------------------------------------
 # PECAN BUILD SECTION
@@ -115,13 +115,28 @@ echo "#"
 echo "# The docker image for dependencies takes a long time to build. You"
 echo "# can use a prebuilt version (default) or force a new version to be"
 echo "# built locally using: DEPEND=build $0"
+echo "#"
+echo "# EXPERIMENTAL: To attempt updating an existing dependency image"
+echo "# instead of building from scratch, use UPDATE_DEPENDS_FROM_TAG=<tag>"
 echo "# ----------------------------------------------------------------------"
 
 # not building dependencies image, following command will build this
 if [ "${DEPEND}" == "build" ]; then
     ${DEBUG} docker build \
         --pull \
+        --secret id=github_token,env=GITHUB_PAT \
         --build-arg R_VERSION=${R_VERSION} ${GITHUB_WORKFLOW_ARG} \
+        --tag pecan/depends:${IMAGE_VERSION} \
+        docker/depends
+elif [ "${UPDATE_DEPENDS_FROM_TAG}" != "" ]; then
+    echo "# Attempting to update from existing pecan/depends:${UPDATE_DEPENDS_FROM_TAG}."
+    echo "# This is experimental. if it fails, please instead use"
+    echo "# 'DEPEND=build' to start from a known clean state."
+    ${DEBUG} docker build \
+        --pull \
+        --secret id=github_token,env=GITHUB_PAT \
+        --build-arg FROM_IMAGE="pecan/depends" \
+        --build-arg R_VERSION=${UPDATE_DEPENDS_FROM_TAG} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
 else
@@ -146,6 +161,7 @@ echo ""
 # require all of PEcAn to build
 for x in base web docs; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -158,7 +174,7 @@ for x in base web docs; do
 done
 
 # all files in subfolder
-for x in models executor data thredds monitor rstudio-nginx check; do
+for x in models executor data monitor rstudio-nginx; do
     ${DEBUG} docker build \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
@@ -196,7 +212,7 @@ for version in 0.95; do
 done
 
 # build ed2
-for version in 2.2.0; do
+for version in 2.2.0 git; do
     ${DEBUG} docker build \
         --tag pecan/model-ed2-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
@@ -215,7 +231,7 @@ for version in git; do
 done
 
 # build sipnet
-for version in git r136; do
+for version in git; do
     ${DEBUG} docker build \
         --tag pecan/model-sipnet-${version}:${IMAGE_VERSION} \
         --build-arg MODEL_VERSION="${version}" \
@@ -230,6 +246,7 @@ done
 # build apps
 for x in api; do
     ${DEBUG} docker build \
+        --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \

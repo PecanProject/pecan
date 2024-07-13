@@ -2,6 +2,8 @@
 ##' @title nderiv
 ##' @export
 ##' 
+##' @param x Name of variable to plot on X axis
+##' @param y Name of variable to plot on Y axis
 ##' @return der
 ##'
 ##' @author Michael Dietze

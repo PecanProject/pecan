@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 .utils.logger <- new.env()
 .utils.logger$filename <- NA
 .utils.logger$console <- TRUE
@@ -149,7 +140,7 @@ logger.message <- function(level, msg, ..., wrap = TRUE) {
     }
     
     stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
-    long.msg <- paste(c(msg, ...), collapse = " ")
+    long.msg <- stringi::stri_trans_general(paste(c(msg, ...), collapse = " "), "latin-ascii")
     if (nchar(long.msg) > 20 && wrap) {
       new.msg <- paste("\n", strwrap(long.msg, width = .utils.logger$width, 
                                      indent = 2, exdent = 2), collapse = " ")
@@ -180,13 +171,17 @@ logger.message <- function(level, msg, ..., wrap = TRUE) {
 ##'
 ##' @param level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
 ##' @export
+##' @return When logger level is set, the previous level is returned invisibly.
+##'   This can be passed to `logger.setLevel()` to restore the previous level.
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.setLevel('DEBUG')
 ##' }
 logger.setLevel <- function(level) {
+  original_level <- logger.getLevel()
   .utils.logger$level <- logger.getLevelNumber(level)
+  invisible(original_level)
 } # logger.setLevel
 
 

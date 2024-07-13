@@ -8,6 +8,8 @@ metric_R2(metric_dat, ...)
 }
 \arguments{
 \item{metric_dat}{dataframe}
+
+\item{...}{ignored}
 }
 \description{
 Coefficient of Determination (R2)

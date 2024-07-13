@@ -9,7 +9,7 @@
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 ##'   to control printing of debug info
-##' @param maxErrors Maximum times to re-try folloing an error accessing netCDF data through THREDDS
+##' @param maxErrors Maximum times to re-try following an error accessing netCDF data through THREDDS
 ##' @param sleep Wait time between attempts following a THREDDS or other error
 ##' @param method (string) Data access method. `opendap` (default)
 ##'   attempts to directly access files via OpenDAP. `ncss` (NetCDF
@@ -221,7 +221,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
       if (dap$dim$time$len != ntime) {
         PEcAn.logger::logger.severe("Expected", ntime, "observations, but", url,  "contained", dap$dim$time$len)
       }
-      dap_time <- udunits2::ud.convert(dap$dim$time$vals,
+      dap_time <- PEcAn.utils::ud_convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
       if (!isTRUE(all.equal(dap_time, time$vals))){

@@ -71,7 +71,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       "SELECT * FROM inputs WHERE site_id=", siteid,
       " AND name= '", name,
       "' AND format_id=", formatid,
-      parent
+      parent, ";"
     ),
     con = con
   )
@@ -120,26 +120,26 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
         "INSERT INTO inputs ",
         "(site_id, format_id, name) VALUES (",
         siteid, ", ", formatid, ", '", name,
-        "'", ") RETURNING id"
+        "'", ") RETURNING id;"
       )
     } else if (parent == "" && !is.null(startdate)) {
       cmd <- paste0(
         "INSERT INTO inputs ",
         "(site_id, format_id, start_date, end_date, name) VALUES (",
         siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name,
-        "') RETURNING id"
+        "') RETURNING id;"
       )
     } else if (is.null(startdate)) {
       cmd <- paste0(
         "INSERT INTO inputs ",
         "(site_id, format_id, name, parent_id) VALUES (",
-        siteid, ", ", formatid, ", '", name, "',", parentid, ") RETURNING id"
+        siteid, ", ", formatid, ", '", name, "',", parentid, ") RETURNING id;"
       )
     } else {
       cmd <- paste0(
         "INSERT INTO inputs ",
         "(site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
-        siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id"
+        siteid, ", ", formatid, ", '", startdate, "', '", enddate, "','", name, "',", parentid, ") RETURNING id;"
       )
     }
     # This is the id that we just registered
@@ -150,7 +150,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
       inputid <- db.query(
         query = paste0(
           "SELECT id FROM inputs WHERE site_id=", siteid,
-          " AND format_id=", formatid
+          " AND format_id=", formatid, ";"
         ),
         con = con
       )$id
@@ -780,13 +780,14 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
 
   ### Get BETY information ###
-  bety <- dplyr::src_postgres(
-    dbname = "bety",
-    host = "psql-pecan.bu.edu",
-    user = "bety",
-    password = "bety"
+  con <- db.open(
+    params = list(
+      driver = "Postgres",
+      dbname   = "bety",
+      host     = "psql-pecan.bu.edu",
+      user     = "bety",
+      password = "bety")
   )
-  con <- bety$con
 
   # get matching dbfiles from BETY
   dbfile.path <- dirname(full.old.file)

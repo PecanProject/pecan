@@ -89,7 +89,7 @@ modify_ed2in <- function(ed2in, ...,
   if (is.null(.dots)) {
     .dots <- list()
   }
-  dots <- modifyList(.dots, list(...))
+  dots <- utils::modifyList(.dots, list(...))
   is_upper <- names(dots) == toupper(names(dots))
   lower_args <- names(dots)[!is_upper]
   if (length(lower_args) > 0) {
@@ -147,7 +147,7 @@ modify_ed2in <- function(ed2in, ...,
 
   if (!is.null(EDI_path)) {
     ed2in[["VEG_DATABASE"]] <- normalizePath(file.path(EDI_path, "oge2OLD", "OGE2_"), mustWork = FALSE)
-    ed2in[["THSUMS_DATABASE"]] <- paste0(normalizePath(file.path(EDI_path, "ed_inputs")), "/")
+    ed2in[["THSUMS_DATABASE"]] <- paste0(normalizePath(file.path(EDI_path, "ed_inputs"), mustWork = FALSE), "/")
   }
 
   if (!is.null(met_driver)) {
@@ -163,7 +163,7 @@ modify_ed2in <- function(ed2in, ...,
         )
       }
     }
-    ed2in[["ED_MET_DRIVER_DB"]] <- normalizePath(met_driver)
+    ed2in[["ED_MET_DRIVER_DB"]] <- normalizePath(met_driver, mustWork = FALSE)
   }
 
   if (!is.null(start_date)) {
@@ -211,19 +211,19 @@ modify_ed2in <- function(ed2in, ...,
     # 3 for HDF5 output, 0 for no output
     on_types <- (valid_types %in% output_types) * 3
     names(on_types) <- names(valid_types)
-    ed2in <- modifyList(ed2in, as.list(on_types))
+    ed2in <- utils::modifyList(ed2in, as.list(on_types))
   }
 
   if (!is.null(output_dir)) {
     dir.create(output_dir, showWarnings = FALSE)
-    ed2in[["FFILOUT"]] <- file.path(normalizePath(output_dir), "analysis")
-    ed2in[["SFILOUT"]] <- file.path(normalizePath(output_dir), "history")
+    ed2in[["FFILOUT"]] <- file.path(normalizePath(output_dir, mustWork = FALSE), "analysis")
+    ed2in[["SFILOUT"]] <- file.path(normalizePath(output_dir, mustWork = FALSE), "history")
   }
 
   if (!is.null(run_dir)) {
     dir.create(run_dir, showWarnings = FALSE)
-    ed2in[["IEDCNFGF"]] <- file.path(normalizePath(run_dir), "config.xml")
-    ed2in[["EVENT_FILE"]] <- file.path(normalizePath(run_dir), "myevents.xml")
+    ed2in[["IEDCNFGF"]] <- file.path(normalizePath(run_dir, mustWork = FALSE), "config.xml")
+    ed2in[["EVENT_FILE"]] <- file.path(normalizePath(run_dir, mustWork = FALSE), "myevents.xml")
   }
 
   if (!is.null(include_these_pft)) {
@@ -249,6 +249,6 @@ modify_ed2in <- function(ed2in, ...,
       )
     }
   }
-  ed2in <- modifyList(ed2in, namelist_args)
+  ed2in <- utils::modifyList(ed2in, namelist_args)
   ed2in
 }

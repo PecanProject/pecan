@@ -1,12 +1,15 @@
 Package: PEcAn.benchmark
 Type: Package
-Title: PEcAn functions used for benchmarking
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Mike","Dietze"),
-             person("David","LeBauer"),
-             person("Rob","Kooper"),
-             person("Toni", "Viskari"))
+Title: PEcAn Functions Used for Benchmarking
+Version: 1.7.3
+Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Toni", "Viskari", role = c("aut")),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -15,7 +18,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
 Imports:
-    dbplyr,
     dplyr,
     ggplot2,
     gridExtra,
@@ -24,14 +26,16 @@ Imports:
     ncdf4 (>= 1.15),
     PEcAn.DB,
     PEcAn.logger,
-    PEcAn.remote,
     PEcAn.settings,
     PEcAn.utils,
     reshape2,
+    rlang,
     SimilarityMeasures,
     stringr,
     tidyselect,
-    udunits2 (>= 0.11),
+    units,
+    utils,
+    grDevices,
     XML (>= 3.98-1.4),
     zoo 
 Suggests:
@@ -43,4 +47,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2

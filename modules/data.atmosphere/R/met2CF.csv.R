@@ -1,51 +1,74 @@
-##' @name met2CF.csv
-##' @title met2CF.csv
-##' @export
-##' 
-##' @param in.path
-##' @param in.prefix
-##' @param outfolder
-##' @param format data frame or list with elements as described below
-##' format is output from db/R/query.format.vars, and should have:
-##'   REQUIRED:
-##'   format$lat = latitude of site (unless passed by lat)
-##'   format$lon = longitude of site (unless passed by lon)
-##'   format$header = number of lines of header
-##'   format$vars is a data.frame with lists of information for each variable to read, at least airT is required
-##'     format$vars$input_name = Name in CSV file
-##'     format$vars$input_units = Units in CSV file
-##'     format$vars$bety_name = Name in BETY - see https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html for allowable ones
-##'   OPTIONAL:
-##'   format$na.strings = list of missing values to convert to NA, such as -9999
-##'   format$skip = lines to skip excluding header
-##'   format$vars$column_number = Column number in CSV file (optional, will use header name first)
-##' Columns with NA for bety variable name are dropped. 
-##' Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}). 
-##' @param nc_verbose logical: run ncvar_add in verbose mode?
-##' @export
-##' @author Mike Dietze, David LeBauer, Ankur Desai
-##' @examples
-##' \dontrun{
-##' bety <- list(user='bety', password='bety', host='localhost',
-##'   dbname='bety', driver='PostgreSQL',write=TRUE)
-##' con <- PEcAn.DB::db.open(bety)
-##' bety$con <- con
-##' start_date <- lubridate::ymd_hm('200401010000')
-##' end_date <- lubridate::ymd_hm('200412312330')
-##' file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
-##' in.path <- '~/'
-##' in.prefix <- file$dbfile.name 
-##' outfolder <- '~/'
-##' format.id <- 5000000001
-##' format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
-##' format$lon <- -92.0
-##' format$lat <- 45.0
-##' format$time_zone <- "America/Chicago"
-##' results <- PEcAn.data.atmosphere::met2CF.csv(
-##'   in.path, in.prefix, outfolder,
-##'   start_date, end_date, format,
-##'   overwrite=TRUE)
-##' }
+#' Convert met data from CSV to CF
+#'
+#' @details
+#' The `format` argument takes an output from `PEcAn.DB::query.format.vars`,
+#'    and should have the following components:
+#'
+#' REQUIRED:
+#' \itemize{
+#'   \item `format$lat`: latitude of site (unless passed by `lat`)
+#'   \item `format$lon`: longitude of site (unless passed by `lon`)
+#'   \item `format$header`: number of lines of header
+#'   \item `format$vars`: a data.frame with lists of information for each
+#'         variable to read. At least `airT` is required
+#'   \item `format$vars$input_name`: name in CSV file
+#'   \item `format$vars$input_units`: units in CSV file
+#'   \item `format$vars$bety_name`: name in BETY.
+#'       See https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html
+#'       for allowable names.
+#' }
+#'
+#' OPTIONAL:
+#' \itemize{
+#'   \item `format$na.strings`: list of missing values to convert to NA,
+#'         such as -9999
+#'   \item `format$skip`: lines to skip excluding header
+#'   \item `format$vars$column_number`: column number in CSV file
+#'         (optional, will use header name first)
+#'}
+#'
+#' Columns with NA for bety variable name are dropped.
+#'
+#' Units for datetime field are the lubridate function that will be used to
+#'    parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).
+#'
+#' @param in.path directory in which to find met csv files
+#' @param in.prefix pattern to match to find met files inside `in.path`
+#' @param outfolder directory name to write CF outputs
+#' @param start_date,end_date when to start and stop conversion.
+#'   Specify as `Date` objects, but only the year component is used
+#' @param format data frame or list produced by `PEcAn.DB::query.format.vars`.
+#'    See details
+#' @param lat,lon latitude and longitude of site, in decimal degrees.
+#'   If not provided, these are taken from `format`.
+#' @param nc_verbose logical: run ncvar_add in verbose mode?
+#' @param overwrite Logical: Redo conversion if output file already exists?
+#' @param ... other arguments, currently ignored
+#' @export
+#' @author Mike Dietze, David LeBauer, Ankur Desai
+#' @examples
+#' \dontrun{
+#' con <- PEcAn.DB::db.open(
+#'   list(user='bety', password='bety', host='localhost',
+#'   dbname='bety', driver='PostgreSQL',write=TRUE))
+#' start_date <- lubridate::ymd_hm('200401010000')
+#' end_date <- lubridate::ymd_hm('200412312330')
+#' file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
+#' in.path <- '~/'
+#' in.prefix <- file$dbfile.name
+#' outfolder <- '~/'
+#' format.id <- 5000000001
+#' format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+#' format$lon <- -92.0
+#' format$lat <- 45.0
+#' format$time_zone <- "America/Chicago"
+#' results <- PEcAn.data.atmosphere::met2CF.csv(
+#'   in.path, in.prefix, outfolder,
+#'   start_date, end_date, format,
+#'   overwrite=TRUE)
+#' }
+#'
+#' @export
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE,...) {
   
@@ -244,7 +267,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ### create time dimension
       days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00")
       t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-      timestep <- as.numeric(mean(udunits2::ud.convert(diff(days_since_1700), "d", "s")))
+      timestep <- as.numeric(mean(PEcAn.utils::ud_convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
       x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
@@ -508,10 +531,10 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           rain <- rain / timestep
           "Mg m-2 s-1"
         }, `in` = {
-          rain <- udunits2::ud.convert(rain / timestep, "in", "mm")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "in", "mm")
           "kg m-2 s-1"
         }, `mm h-1` = {
-          rain <- udunits2::ud.convert(rain / timestep, "h", "s")
+          rain <- PEcAn.utils::ud_convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
         },
         'kg m-2 (30 minute)-1' = {
@@ -643,12 +666,6 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
 } # met2CF.csv
 
 
-datetime <- function(list) {
-  date_string <- sapply(list, as.character)
-  datetime <- paste(list, "00")
-  return(lubridate::ymd_hms(datetime))
-} # datetime
-
 met.conv <- function(x, orig, bety, CF) {
   orig <- as.character(orig)
   bety <- as.character(bety)
@@ -657,9 +674,9 @@ met.conv <- function(x, orig, bety, CF) {
   if (nchar(orig) == 0) {
     orig <- bety  ## if units not provided, default is that they were the same units as bety
   }
-  if (udunits2::ud.is.parseable(orig)) {
-    if (udunits2::ud.are.convertible(orig, bety)) {
-      return(udunits2::ud.convert(udunits2::ud.convert(x, orig, bety), bety, CF))
+  if (PEcAn.utils::unit_is_parseable(orig)) {
+    if (units::ud_are_convertible(orig, bety)) {
+      return(PEcAn.utils::ud_convert(PEcAn.utils::ud_convert(x, orig, bety), bety, CF))
     } else {
       PEcAn.logger::logger.error(paste("met.conv could not convert", orig, bety, CF))
     }

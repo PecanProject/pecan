@@ -217,31 +217,36 @@ call_MODIS <- function(var, product,
     if (run_parallel) 
     {
       qc <- foreach::foreach(i=seq_along(site_info$site_id), .combine = rbind) %dopar% 
-        MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
+        MODISTools::mt_subset(lat = site_coords$lat[i],
+                              lon = site_coords$lon[i],
                               product = product,
                               band = qc_band,
                               start = dates[1],
                               end = dates[length(dates)],
                               km_ab = size, km_lr = size,
                               progress = progress)
-      } else {
-        qc <- MODISTools::mt_subset(lat = site_coords$lat[i],lon = site_coords$lon[i],
-                                    product = product,
-                                    band = qc_band,
-                                    start = dates[1],
-                                    end = dates[length(dates)],
-                                    km_ab = size, km_lr = size,
-                                    progress = progress)
-        
-      }
-    
+    } else {
+      qc <- MODISTools::mt_subset(lat = site_coords$lat[i],
+                                  lon = site_coords$lon[i],
+                                  product = product,
+                                  band = qc_band,
+                                  start = dates[1],
+                                  end = dates[length(dates)],
+                                  km_ab = size, km_lr = size,
+                                  progress = progress)
+
+    }
+
     output$qc <- as.character(qc$value)
     
     #convert QC values and keep only okay values
     for (i in seq_len(nrow(output)))
     {
-      convert <- paste(binaryLogic::as.binary(as.integer(output$qc[i]), n = 8), collapse = "")
-      output$qc[i] <- substr(convert, nchar(convert) - 2, nchar(convert))
+      # QC flags are stored as an 8-bit mask
+      # we only care about the 3 least-significant bits
+      qc_flags <- intToBits(as.integer(output$qc[i])) # NB big-endian (ones place first)
+      qc_flags <- as.integer(rev(utils::head(qc_flags, 3))) # now ones place last
+      output$qc[i] <- paste(qc_flags, collapse = "")
     }
     good <- which(output$qc %in% c("000", "001"))
     if (length(good) > 0)
@@ -278,7 +283,7 @@ call_MODIS <- function(var, product,
         fname <- paste(site_info$site_id[i], "/", product, "_", band, "_", start_date, "-", end_date, "_unfiltered.csv", sep = "")
       }
       fname <- file.path(outdir, fname)
-      write.csv(site, fname, row.names = FALSE)
+      utils::write.csv(site, fname, row.names = FALSE)
     }
     
   }

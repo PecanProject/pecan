@@ -11,6 +11,14 @@
 ##' Writes a configuration files for your model
 ##' @name write.config.SIPNET
 ##' @title Writes a configuration files for SIPNET model
+##' @param defaults pft
+##' @param trait.values vector of samples for a given trait
+##' @param settings PEcAn settings object
+##' @param run.id run ID
+##' @param inputs list of model inputs
+##' @param IC initial condition
+##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param spinup currently unused, included for compatibility with other models
 ##' @export
 ##' @author Michael Dietze
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
@@ -55,6 +63,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
   
+  # create cdo specific settings
+  cdosetup <- ""
+  if (!is.null(settings$host$cdosetup)) {
+    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+  }
+  
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -62,8 +76,26 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
+  
+  # create rabbitmq specific setup.
+  cpruncmd <- cpoutcmd <- rmoutdircmd <- rmrundircmd <- ""
+  if (!is.null(settings$host$rabbitmq)) {
+    #rsync cmd from remote to local host.
+    settings$host$rabbitmq$cpfcmd <- ifelse(is.null(settings$host$rabbitmq$cpfcmd), "", settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTDIR@", settings$host$rundir, settings$host$rabbitmq$cpfcmd)
+    cpruncmd <- gsub("@OUTFOLDER@", rundir, cpruncmd)
+    
+    cpoutcmd <- gsub("@OUTDIR@", settings$host$outdir, settings$host$rabbitmq$cpfcmd)
+    cpoutcmd <- gsub("@OUTFOLDER@", outdir, cpoutcmd)
+    
+    #delete files within rundir and outdir.
+    rmoutdircmd <- paste("rm", file.path(outdir, "*"))
+    rmrundircmd <- paste("rm", file.path(rundir, "*"))
+  }
+  
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
   
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
@@ -78,6 +110,28 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
+  
+  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
+  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
+  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
+  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
+  
+  if(is.null(settings$state.data.assimilation$NC.Prefix)){
+    settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
+  }
+  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
+  
+  #overwrite argument
+  if(is.null(settings$state.data.assimilation$NC.Overwrite)){
+    settings$state.data.assimilation$NC.Overwrite <- FALSE
+  }
+  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
+  
+  #allow conflict? meaning allow full year nc export.
+  if(is.null(settings$state.data.assimilation$FullYearNC)){
+    settings$state.data.assimilation$FullYearNC <- FALSE
+  }
+  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
   
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
@@ -97,7 +151,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     template.param <- settings$model$default.param
   }
   
-  param <- read.table(template.param)
+  param <- utils::read.table(template.param)
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -392,16 +446,60 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("leafGrowth" %in% pft.names) {
       param[which(param[, 1] == "leafGrowth"), 2] <- pft.traits[which(pft.names == "leafGrowth")]
     }
-  }  ## end loop over PFTS
+
+    #update LeafOnday and LeafOffDay
+     if (!is.null(settings$run$inputs$leaf_phenology)){
+     obs_year_start <- lubridate::year(settings$run$start.date)
+     obs_year_end <- lubridate::year(settings$run$end.date)
+     if (obs_year_start != obs_year_end) {
+      PEcAn.logger::logger.info("Start.date and end.date are not in the same year. Currently start.date is used for refering phenological data")
+     }
+     leaf_pheno_path <- settings$run$inputs$leaf_phenology$path  ## read from settings
+      if (!is.null(leaf_pheno_path)){
+    ##read data
+       leafphdata <- utils::read.csv(leaf_pheno_path)
+       leafOnDay <-  leafphdata$leafonday[leafphdata$year == obs_year_start & leafphdata$site_id==settings$run$site$id]
+       leafOffDay<-  leafphdata$leafoffday[leafphdata$year== obs_year_start & leafphdata$site_id==settings$run$site$id]
+       if (!is.na(leafOnDay)){
+	      param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+       }
+       if (!is.na(leafOffDay)){
+        param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
+       }
+      } else {
+      PEcAn.logger::logger.info("No phenology data were found. Please consider running `PEcAn.data.remote::extract_phenology_MODIS` to get the parameter file.")
+      }
+    }
+  } ## end loop over PFTS
   ####### end parameter update
-  
+  #working on reading soil file (only working for 1 soil file)
+  if(length(settings$run$inputs$soilinitcond$path)==1){
+    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$soilinitcond$path)
+    #SoilWHC and LitterWHC
+    if("volume_fraction_of_water_in_soil_at_saturation"%in%names(soil_IC_list$vals)){
+      #SoilWHC
+      param[which(param[, 1] == "soilWHC"), 2] <- mean(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]))*100
+      
+      #LitterWHC
+      #param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*100
+    }
+    if("soil_hydraulic_conductivity_at_saturation"%in%names(soil_IC_list$vals)){
+      #litwaterDrainrate
+      param[which(param[, 1] == "litWaterDrainRate"), 2] <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1]*100/(3600*24)
+    }
+  }
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
     plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
       # reconstruct total wood C
-      wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      if(IC$abvGrndWoodFrac < 0.05){
+        wood_total_C <- IC$AbvGrndWood
+      }else{
+        wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      }
+
       #Sanity check
       if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
         wood_total_C <- 0
@@ -427,44 +525,57 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "laiInit"), 2] <- IC$lai
     }
     ## litterInit gC/m2
-    if ("litter" %in% ic.names) {
-      param[which(param[, 1] == "litterInit"), 2] <- IC$litter
+    if ("litter_carbon_content" %in% ic.names) {
+      param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
     }
     ## soilInit gC/m2
     if ("soil" %in% ic.names) {
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
     ## litterWFracInit fraction
-    if ("litterWFrac" %in% ic.names) {
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litterWFrac
+    if ("litter_mass_content_of_water" %in% ic.names) {
+      #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
+      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
     ## soilWFracInit fraction
     if ("soilWFrac" %in% ic.names) {
       param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
     }
     ## snowInit cm water equivalent
-    if ("snow" %in% ic.names) {
-      param[which(param[, 1] == "snowInit"), 2] <- IC$snow
+    if ("SWE" %in% ic.names) {
+      param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
     ## microbeInit mgC/g soil
     if ("microbe" %in% ic.names) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
   }
-  else if (!is.null(settings$run$inputs$poolinitcond$path)) {
-    IC.path <- settings$run$inputs$poolinitcond$path
+
+  else if (length(settings$run$inputs$poolinitcond$path)>0) {
+    ICs_num <- length(settings$run$inputs$poolinitcond$path)
+    IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
+
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "kg m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
-      lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+      lai <- IC.pools$LAI
       if (!is.na(lai) && is.numeric(lai)) {
         param[which(param[, 1] == "laiInit"), 2] <- lai
+      }
+
+      #Initial LAI is set as 0 for deciduous forests and grasslands for non-growing seasons
+      if (!(lubridate::month(settings$run$start.date) %in% seq(5,9))){ #Growing seasons are coarsely defined as months from May to September for non-conifers in the US
+         site_pft <- utils::read.csv(settings$run$inputs$pft.site$path)
+         site.pft.name <- site_pft$pft[site_pft$site == settings$run$site$id]
+         if (site.pft.name!="boreal.coniferous") {   #Currently only excluding boreal conifers. Other evergreen PFTs could be added here later.
+              param[which(param[, 1] == "laiInit"), 2] <- 0       
+          }
       }
       ## neeInit gC/m2
       nee <- try(ncdf4::ncvar_get(IC.nc,"nee"),silent = TRUE)
@@ -473,16 +584,18 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## litterInit gC/m2
       if ("litter" %in% names(IC.pools)) {
-        param[which(param[, 1] == "litterInit"), 2] <- udunits2::ud.convert(IC.pools$litter, 'kg m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "litterInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$litter, 'g m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- udunits2::ud.convert(sum(IC.pools$soil), 'kg m-2', 'g m-2') # BETY: kgC m-2
+        param[which(param[, 1] == "soilInit"), 2] <- PEcAn.utils::ud_convert(sum(IC.pools$soil), 'kg m-2', 'g m-2') # BETY: kgC m-2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
-      if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
-        param[which(param[, 1] == "soilWFracInit"), 2] <- sum(soilWFrac)
+      if (!"try-error" %in% class(soilWFrac)) {
+        if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
+          param[which(param[, 1] == "soilWFracInit"), 2] <- sum(soilWFrac)/100
+        }
       }
       ## litterWFracInit fraction
       litterWFrac <- soilWFrac
@@ -490,7 +603,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       ## snowInit cm water equivalent (cm = g / cm2 because 1 g water = 1 cm3 water)
       snow = try(ncdf4::ncvar_get(IC.nc,"SWE"),silent = TRUE)
       if (!is.na(snow) && is.numeric(snow)) {
-        param[which(param[, 1] == "snowInit"), 2] <- udunits2::ud.convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
+        param[which(param[, 1] == "snowInit"), 2] <- PEcAn.utils::ud_convert(snow, "kg m-2", "g cm-2")  # BETY: kg m-2
       }
       ## leafOnDay
       leafOnDay <- try(ncdf4::ncvar_get(IC.nc,"date_of_budburst"),silent = TRUE)
@@ -504,7 +617,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       microbe <- try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
       if (!is.na(microbe) && is.numeric(microbe)) {
-        param[which(param[, 1] == "microbeInit"), 2] <- udunits2::ud.convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
+        param[which(param[, 1] == "microbeInit"), 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
       }
       
       ncdf4::nc_close(IC.nc)
@@ -515,10 +628,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     #some stuff about IC file that we can give in lieu of actual ICs
   }
   
+  
+  if (!is.null(settings$run$inputs$soilmoisture)) {
+    #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
+    if(!is.null(settings$run$inputs$soilmoisture$path)){
+      soil.path <- settings$run$inputs$soilmoisture$path
+      soilWFrac <- ncdf4::ncvar_get(ncdf4::nc_open(soil.path), varid = "mass_fraction_of_unfrozen_water_in_soil_moisture")
+      
+      param[which(param[, 1] == "soilWFracInit"), 2] <- soilWFrac
+    }
+    
+  }
   if(file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) file.rename(file.path(settings$rundir, run.id, "sipnet.param"),file.path(settings$rundir, run.id, paste0("sipnet_",lubridate::year(settings$run$start.date),"_",lubridate::year(settings$run$end.date),".param")))
   
 
-  write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
+  utils::write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE,
               quote = FALSE)
 } # write.config.SIPNET
 #--------------------------------------------------------------------------------------------------#

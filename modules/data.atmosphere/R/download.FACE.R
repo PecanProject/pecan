@@ -1,19 +1,17 @@
 ##' Download Raw FACE data from the internet
 ##'
-##' @name download.FACE
-##' @title download.FACE
-##' @export
 ##'
 ##' @param sitename sitename
 ##' @param outfolder location where output is stored
-##' @param method Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
+##' @param method Optional. Passed to download_file() function.  Use this to set custom programs such as ncftp to use when
 ##' downloading files from FTP sites
 ##' @param start_date desired start date YYYY-MM-DD
 ##' @param end_date desired end date YYYY-MM-DD
 ##' @param overwrite overwrite existing files? Default is FALSE
 ##' @param ... other inputs
-##' 
+##'
 ##' @author Betsy Cowdery
+##' @export
 download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, method, ...) {
   # download.FACE <-
   # function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
@@ -34,7 +32,7 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   # url where Ameriflux data is stored
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/", site, "/", raw.file)
   print(url)
-  PEcAn.utils::download.file(url,out.file,method)
+  PEcAn.utils::download_file(url,out.file,method)
 
   # return file info
   return(invisible(data.frame(file = out.file, 

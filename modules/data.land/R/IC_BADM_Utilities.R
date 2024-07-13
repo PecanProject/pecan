@@ -1,5 +1,4 @@
 
-#Reading the data and writing the netcdf
 #' Read.IC.info.BADM
 #'
 #' @param lat numeric latitude
@@ -9,7 +8,8 @@
 #' This function first finds the level1 and level2 ecoregions  for the given coordinates, and then tries to filter BADM database for those eco-regions. 
 #' If no data found in the BADM database for the given lat/longs eco-regions, then all the data in the database will be used to return the initial condition.
 #' All the variables are also converted to kg/m^2. 
-#' @return a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content. Variable in the return objext refers to the what this value was called inside BADM database.
+#' @return a dataframe with 7 columns of Site, Variable, Date, Organ, AGB, soil_organic_carbon_content, litter_carbon_content.
+#'   Variable in the return object refers to what this value was called inside BADM database.
 #'
 #' @export
 #' @examples
@@ -20,8 +20,7 @@ Read.IC.info.BADM <-function(lat, long){
   cov.factor <-1
   #Reading in the DB
   #
-  U.S.SB <-
-    read.csv(system.file("data","BADM.csv", package = "PEcAn.data.land"))
+  U.S.SB <- PEcAn.data.land::BADM
 
   
   Regions <- EPA_ecoregion_finder(lat, long)
@@ -31,10 +30,10 @@ Read.IC.info.BADM <-function(lat, long){
   #L2
   biomass.df <- U.S.SB %>%
     dplyr::filter(
-      NA_L2CODE == Code_Level,
-      VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
+      .data$NA_L2CODE == Code_Level,
+      grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)
     ) %>%
-    dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+    dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   
 
   # if no data was found on L2, then let's check for L1
@@ -43,10 +42,10 @@ Read.IC.info.BADM <-function(lat, long){
     
     biomass.df <- U.S.SB %>%
       dplyr::filter(
-        NA_L1CODE == Code_Level,
-        VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)
+        .data$NA_L1CODE == Code_Level,
+        grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)
       ) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
   
 
@@ -54,8 +53,8 @@ Read.IC.info.BADM <-function(lat, long){
   if (nrow(biomass.df) < 3)  {
     Code_Level <- "ALL"
     biomass.df <- U.S.SB %>%
-      dplyr::filter(VARIABLE %>% grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .)) %>%
-      dplyr::select(SITE_ID, GROUP_ID, VARIABLE_GROUP, VARIABLE, DATAVALUE)
+      dplyr::filter(grepl("ROOT_|AG_BIOMASS|SOIL_STOCK|SOIL_CHEM", .data$VARIABLE)) %>%
+      dplyr::select("SITE_ID", "GROUP_ID", "VARIABLE_GROUP", "VARIABLE", "DATAVALUE")
   }
 
   
@@ -72,7 +71,7 @@ Read.IC.info.BADM <-function(lat, long){
         Rootini <- NA
         litterIni <- NA
         Date.in <- NA
-        Oregan.in <- NA
+        Organ.in <- NA
         # find what type of entry it is - biomass/soil or litter
         if (nrow(Gdf) > 0) {
           type <-
@@ -94,8 +93,8 @@ Read.IC.info.BADM <-function(lat, long){
           type <- type[-which(type == "*_BIOMASS")]
         #----------------- Unit conversion
         unit.in <- Gdf %>%
-          dplyr::filter(VARIABLE %>% grepl("UNIT", .)) %>%
-          dplyr::pull(DATAVALUE) %>% 
+          dplyr::filter(grepl("UNIT", .data$VARIABLE)) %>%
+          dplyr::pull(.data$DATAVALUE) %>% 
           as.character()
         
         
@@ -113,8 +112,8 @@ Read.IC.info.BADM <-function(lat, long){
           unit.ready <- "kg/m^2"
         
         Date.in <- Gdf %>%
-          dplyr::filter(VARIABLE %>% grepl("DATE", .)) %>%
-          dplyr::pull(DATAVALUE) %>%
+          dplyr::filter(grepl("DATE", .data$VARIABLE)) %>%
+          dplyr::pull(.data$DATAVALUE) %>%
           as.Date()
         
         if (length(Date.in) == 0)
@@ -123,32 +122,32 @@ Read.IC.info.BADM <-function(lat, long){
       
         # if it's biomass
         if (type == "*_BIOMASS") {
-          Oregan.in <- Gdf %>%
-            dplyr::filter(VARIABLE %>% grepl("ORGAN", .)) %>%
-            dplyr::pull(DATAVALUE) 
+          Organ.in <- Gdf %>%
+            dplyr::filter(grepl("ORGAN", .data$VARIABLE)) %>%
+            dplyr::pull(.data$DATAVALUE) 
           
           
           PlantWoodIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")#"AG_BIOMASS_CROP","AG_BIOMASS_SHRUB","AG_BIOMASS_TREE","AG_BIOMASS_OTHER"
           
         } else if (type == "*SOIL") {
           val <- Gdf %>%
-            dplyr::filter(VARIABLE %>% grepl("SOIL_STOCK_C_ORG", .)) %>% #"SOIL_STOCK_C_ORG"
-            dplyr::pull(DATAVALUE) %>%
+            dplyr::filter(grepl("SOIL_STOCK_C_ORG", .data$VARIABLE)) %>%
+            dplyr::pull(.data$DATAVALUE) %>%
             as.numeric()
           
           if (length(val) > 0)
-            SoilIni <- udunits2::ud.convert(val*cov.factor,  "g/m^2", "kg/m^2")
+            SoilIni <- PEcAn.utils::ud_convert(val*cov.factor,  "g/m^2", "kg/m^2")
           
         } else if (type == "*_LIT_BIOMASS") {
           litterIni <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1] %>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1] %>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         } else if (type == "*_ROOT_BIOMASS") {
           Rootini <-
-            udunits2::ud.convert(Gdf$DATAVALUE[1]%>%
+            PEcAn.utils::ud_convert(Gdf$DATAVALUE[1]%>%
                                    as.numeric()*cov.factor,  unit.ready, "kg/m^2")
           
         }
@@ -157,7 +156,7 @@ Read.IC.info.BADM <-function(lat, long){
             Site = Gdf$SITE_ID %>% unique(),
             Var = Gdf$VARIABLE[1],
             Date = Date.in,
-            Organ = Oregan.in,
+            # Organ = Organ.in,
             AGB = PlantWoodIni,
             soil_organic_carbon_content = SoilIni,
             litter_carbon_content = litterIni
@@ -240,15 +239,19 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #' @export
 #'
 BADM_IC_process <- function(settings, dir, overwrite=TRUE){
-  
-  
-  new.site <-
-    data.frame(
-      id = settings$run$site$id %>% as.numeric(),
-      lat = settings$run$site$lat ,
-      lon = settings$run$site$lon %>% as.numeric()
-    )
-  
+  # create site info.
+  new.site <- 
+    settings %>% 
+    purrr::map(~.x[['run']] ) %>% 
+    purrr::map('site')%>% 
+    purrr::map(function(site.list){
+      #conversion from string to number
+      site.list$lat <- as.numeric(site.list$lat)
+      site.list$lon <- as.numeric(site.list$lon)
+      list(id=site.list$id, lat=site.list$lat, lon=site.list$lon)
+    })%>% 
+    dplyr::bind_rows() %>% 
+    as.list()
 
   out.ense <- seq_len(settings$ensemble$size) %>%
     purrr::map(~ netcdf.writer.BADM(new.site$lat,
@@ -267,42 +270,49 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
 #'
 #' @param Lat numeric latitude
 #' @param Lon numeric longitude
+#' @param folder.path path to the directory where you store the shape files of L1 and L2 ecoregion maps.
 #' @description This function is designed to find the level1 and level2 code ecoregions for a given lat and long. 
-#' You can learn more about ecoregions here: \link{https://www.epa.gov/eco-research/ecoregions}.
+#' You can learn more about ecoregions here: \url{https://www.epa.gov/eco-research/ecoregions}.
 
 #'
 #' @return a dataframe with codes corresponding to level1 and level2 codes as two columns
 #' @export
 #'
-EPA_ecoregion_finder <- function(Lat, Lon){
+EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
+  #if we don't specify the folder path to the shapefiles.
+  #try eco-region map for just CONUS US.
+  if (is.null(folder.path)) {
+    file.paths <- system.file("extdata",c("eco-region.json", "eco-regionl2.json"), package = "PEcAn.data.land")
+  } else {
+    #if we have pre-downloaded shapefiles for the ecoregion map.
+    file.paths <- file.path(folder.path, c("NA_CEC_Eco_Level1.shp", "NA_CEC_Eco_Level2.shp"))
+  }
   #lat long to spatial point
   U.S.SB.sp <-
     data.frame(Lati = Lat %>% as.numeric(),
                Long = Lon %>% as.numeric())
   
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
-  
-
   # L1 layer
   L1 <-
-    sf::read_sf(system.file("data","eco-region.json", package = "PEcAn.data.land")) %>%
+    sf::read_sf(file.paths[1]) %>%
     sf::st_set_crs(
       "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
     ) %>%
     sf::st_transform("+proj=longlat +datum=WGS84")
-  # L2 layer
-  L2 <-
-    sf::read_sf(system.file("data","eco-regionl2.json", package = "PEcAn.data.land")) %>%
-    sf::st_set_crs(
-      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-    ) %>%
-    sf::st_transform("+proj=longlat +datum=WGS84")
-  
+  #reproject points based on projection of the eco-region map.
   sp::proj4string(U.S.SB.sp) <- sp::proj4string(sf::as_Spatial(L1))
   # finding the code for each site
-  over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))
+  over.out.L1 <- sp::over(U.S.SB.sp, sf::as_Spatial(L1))  
+  # L2 layer
+  L2 <-
+    sf::read_sf(file.paths[2]) %>%
+    sf::st_set_crs(
+      "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+    ) %>%
+    sf::st_transform("+proj=longlat +datum=WGS84")
+  # finding the code for each site
   over.out.L2 <- sp::over(U.S.SB.sp, sf::as_Spatial(L2))
-  
   return(data.frame(L1 = over.out.L1$NA_L1CODE, L2 = over.out.L2$NA_L2CODE))
 }
 

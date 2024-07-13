@@ -7,7 +7,9 @@
 define_benchmark(settings, bety)
 }
 \arguments{
-\item{bm.settings}{settings list}
+\item{settings}{settings list}
+
+\item{bety}{database connection}
 }
 \value{
 updated settings list

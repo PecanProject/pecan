@@ -1,9 +1,10 @@
 Package: PEcAn.MAESPA
 Type: Package
-Title: PEcAn functions used for ecological forecasts and reanalysis using MAESPA
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Tony", "Gardella"))
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis using MAESPA
+Version: 1.7.3
+Authors@R: c(person("Tony", "Gardella", role = c("aut", "cre"),
+                     email = "tonygard@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Tony Gardella
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -19,7 +20,6 @@ Imports:
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
 Suggests:
     Maeswrap,
     coda,
@@ -32,4 +32,4 @@ LazyLoad: yes
 LazyData: FALSE
 Require: 
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2

@@ -1,14 +1,14 @@
 Package: PEcAn.logger
 Title: Logger Functions for 'PEcAn'
-Version: 1.8.0
-Date: 2021-07-27
+Version: 1.8.2
 Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
-                email = "kooper@illinois.edu"),
+                     email = "kooper@illinois.edu"),
              person("Alexey", "Shiklomanov", role = c("aut"),
-                email = "ashiklom@bu.edu"),
+                     email = "alexey.shiklomanov@pnnl.gov"),
              person("Shashank", "Singh", role = c("aut"),
-                email = "shashanksingh819@gmail.com"),
-             person("Chris", "Black", role = c("ctb")),
+                     email = "shashanksingh819@gmail.com"),
+             person("Chris", "Black", role = c("aut"),
+                     email = "chris@ckblack.org"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Convenience functions for logging outputs from 'PEcAn',
    the Predictive Ecosystem Analyzer (LeBauer et al. 2017)
@@ -21,9 +21,13 @@ Description: Convenience functions for logging outputs from 'PEcAn',
    the 'log4j' package.
 BugReports: https://github.com/PecanProject/pecan/issues
 URL: https://pecanproject.github.io/
-Imports: utils
-Suggests: testthat
+Imports: 
+    utils,
+    stringi
+Suggests: 
+    testthat,
+    withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

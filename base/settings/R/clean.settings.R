@@ -15,6 +15,7 @@
 #' @param inputfile the PEcAn settings file to be used.
 #' @param outputfile the name of file to which the settings will be
 #'        written inside the outputdir.
+#' @param write Indicates whether to write the modified settings to a file.
 #' @return list of all settings as saved to the XML file(s)
 #' @export clean.settings
 #' @author Rob Kooper

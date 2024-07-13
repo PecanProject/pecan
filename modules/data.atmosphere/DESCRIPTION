@@ -1,34 +1,37 @@
 Package: PEcAn.data.atmosphere
 Type: Package
-Title: PEcAn functions used for managing climate driver data
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Mike","Dietze", role = "aut"),
-             person("David","LeBauer", role = c("aut", "cre"),
-                email = "dlebauer@illinois.edu"),
-             person("Carl", "Davidson", role = "aut"),
-             person("Rob","Kooper", role = "aut"),
-             person("Deepak", "Jaiswal", role = "aut"))
+Title: PEcAn Functions Used for Managing Climate Driver Data
+Version: 1.8.0
+Authors@R: c(person("Mike", "Dietze", role = c("aut"),
+                     email = "dietze@bu.edu"),
+             person("David", "LeBauer", role = c("aut", "cre"),
+                     email = "dlebauer@email.arizona.edu"),
+             person("Carl", "Davidson", role = c("aut"),
+                     email = "davids14@illinois.edu"),
+             person("Rob", "Kooper", role = c("aut"),
+                     email = "kooper@illinois.edu"),
+             person("Deepak", "Jaiswal", role = c("aut"),
+                     email = "djaiswal@djaiswal.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The PECAn.data.atmosphere
     package converts climate driver data into a standard format for models
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
-Depends:
-    methods
 Imports:
     abind (>= 1.4.5),
-    data.table,
-    dplyr,
+    amerifluxr,
+    assertthat,
+    arrow,
+    curl,
+    dplyr (>= 0.8.1),
     geonames (> 0.998),
     ggplot2,
     glue,
     httr,
     jsonlite,
     lubridate (>= 1.6.0),
-    magrittr,
-    maptools,
     MASS,
     mgcv,
     ncdf4 (>= 1.15),
@@ -39,29 +42,36 @@ Imports:
     PEcAn.utils,
     purrr (>= 0.2.3),
     raster,
-    RCurl,
     REddyProc,
     reshape2,
-    rgdal,
     rlang (>= 0.2.0),
+    sf,
     sp,
     stringr (>= 1.1.0),
-    testthat (>= 2.0.0),
+    suntools,
+    terra,
     tibble,
     tidyr,
     tidyselect,
     truncnorm,
-    udunits2 (>= 0.11),
+    units,
     XML (>= 3.98-1.4),
     xts,
     zoo
 Suggests:
     doParallel,
     foreach,
+    furrr,
+    future,
     parallel,
+    PEcAn.settings,
     progress,
-    reticulate
+    reticulate,
+    testthat (>= 2.0.0),
+    withr
 Remotes:
+    github::adokter/suntools,
+    github::chuhousen/amerifluxr,
     github::ropensci/geonames,
     github::ropensci/nneo
 License: BSD_3_clause + file LICENSE
@@ -69,4 +79,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.2

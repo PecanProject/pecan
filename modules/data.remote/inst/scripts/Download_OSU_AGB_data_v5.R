@@ -67,13 +67,13 @@ doParallel::registerDoParallel(cl)
 # get median data
 med_urls <- paste(URL,dataset_version,target_dataset,"median",med_files,sep="/")
 PEcAn.logger::logger.info("*** Downloading AGB median data")
-foreach::foreach(i=1:length(med_urls)) %dopar% try(download.file(med_urls[i], file.path(target_directory,med_files[i])))
+foreach::foreach(i=1:length(med_urls)) %dopar% try(utils::download.file(med_urls[i], file.path(target_directory,med_files[i])))
 rm(i)
 
 # get stdv data
 stdv_urls <- paste(URL,dataset_version,target_dataset,"stdv",stdv_files,sep="/")
 PEcAn.logger::logger.info("*** Downloading AGB stdv data")
-foreach::foreach(j=1:length(stdv_urls)) %dopar% try(download.file(stdv_urls[j], file.path(target_directory,stdv_files[j])))
+foreach::foreach(j=1:length(stdv_urls)) %dopar% try(utils::download.file(stdv_urls[j], file.path(target_directory,stdv_files[j])))
 rm(j)
 #--------------------------------------------------------------------------------------------------#
 
@@ -93,10 +93,10 @@ rm(k)
 
 #--------------------------------------------------------------------------------------------------#
 ## extract pixel values
-bety <- list(user='bety', password='bety', host='localhost',
-             dbname='bety', driver='PostgreSQL',write=TRUE)
-con <- PEcAn.DB::db.open(bety)
-bety$con <- con
+
+con <- PEcAn.DB::db.open(
+   list(user='bety', password='bety', host='localhost',
+   dbname='bety', driver='PostgreSQL',write=TRUE))
 site_ID <- c(2000000023,1000025731)  # US-CZ3, US-SSH
 sites <- list(PEcAn.DB::query.site(site_ID[1],con),PEcAn.DB::query.site(site_ID[2],con))
 

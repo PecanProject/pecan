@@ -1,10 +1,11 @@
 Package: PEcAn.CABLE
 Type: Package
 Title: PEcAn package for integration of the CABLE model
-Version: 1.7.2
-Date: 2021-10-04
-Authors@R: c(person("Kaitlin","Ragosta"),
-             person("Tony", "Gardella"))
+Version: 1.7.3
+Authors@R: c(person("Kaitlin", "Ragosta", role = c("aut")),
+             person("Tony", "Gardella", role = c("aut", "cre"),
+                     email = "tonygard@bu.edu"),
+             person("University of Illinois, NCSA", role = c("cph")))
 Author: Kaitlin Ragosta
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link the (CABLE) to PEcAn.
@@ -20,4 +21,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+RoxygenNote: 7.3.2

@@ -13,26 +13,26 @@ Before we start a full data assimilation exercise, let’s try something simple 
 
 + Open <http://localhost:3280/rstudio> or <http://localhost:6480/rstudio> or the Amazon URL/rstudio if running on the cloud.
 
-In Demo02, you have ran a sensitivity analysis of SIPNET model runs at Niwot Ridge sampling across quantiles of a parameter prior, while holding all others to the median value. The pecan.xml file told PEcAn to run an sensitivity analysis, which simply meant SIPNET was run multiple times with the same driver, but varying parameter values one at a time (while holding all others to their median), and the parameter range also specified in the pecan.xml file (as quantiles, which were then sampled against the BETY database of observed variation in the parameter for species within the specific plant functional type). 
+In Demo02, you have ran a sensitivity analysis of SIPNET model runs at Niwot Ridge sampling across quantiles of a parameter prior, while holding all others to the median value. The pecan.xml file told PEcAn to run an sensitivity analysis, which simply meant SIPNET was run multiple times with the same driver, but varying parameter values one at a time (while holding all others to their median), and the parameter range also specified in the pecan.xml file (as quantiles, which were then sampled against the BETY database of observed variation in the parameter for species within the specific plant functional type).
 
 Let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then discuss some other tests, too.
 
 #### A. Read in settings object from a run xml
 
-Open up a connection to the bety database and create a settings object from your xml, just like in the modelVSdata tutorial. 
+Open up a connection to the bety database and create a settings object from your xml, just like in the modelVSdata tutorial.
 ```{r echo= TRUE, eval=FALSE}
 
 settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000002/pecan.CONFIGS.xml")
 
-bety<-settings$database$bety
-bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+con <- PEcan.DB::db.open(settings$database$bety)
+
 ```
 
 We read in the pecan.CONFIG.xml instead of the pecan.xml because the pecan.CONFIG.xml has already incorperated some of the information from the database we would have to query again if we used the pecan.xml.  
 
 ```{r echo= TRUE, eval=FALSE}
 
-runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id 
+runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id
 outdir<- paste(settings$outdir,"/out/",runid,sep= "")
 start.year<-as.numeric(lubridate::year(settings$run$start.date))
 end.year<-as.numeric(lubridate::year(settings$run$end.date))
@@ -81,7 +81,7 @@ plot(psnTOpt,sensitivity.output$temperate.coniferous$psnTOpt)
 What do you notice?
 
 
-Let’s try to read the output from a single run id as you did in the earlier tutorial. 
+Let’s try to read the output from a single run id as you did in the earlier tutorial.
 ```{r echo= TRUE, eval=FALSE}
 runids <- sa.run.ids$temperate.coniferous$psnTOpt
 arun <- PEcAn.utils::read.output(runids[1], paste(settings$outdir, "out", runids[1], sep="/"), start.year= start.year, end.year= end.year,"NEE", dataframe = TRUE)
@@ -91,14 +91,14 @@ plot(arun$posix,arun$NEE)
 
 #### B. Now let’s bring in the actual observations
 
-Recall reading Ameriflux NEE in the modelVSdata tutorial. 
+Recall reading Ameriflux NEE in the modelVSdata tutorial.
 ```{r echo= TRUE, eval=FALSE}
 File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
 
-File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
-site<-PEcAn.DB::query.site(site.id = site.id,bety$con)  
+File_format<-PEcAn.DB::query.format.vars(bety = con, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+site<-PEcAn.DB::query.site(site.id = site.id, con)
 
-obs<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
+obs<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year)
 
 obs$NEE[obs$UST<0.2]<-NA #Apply a U* filter
 
@@ -109,7 +109,7 @@ head(plottable)
 
 #### C. Finally, we can finally compare model to data
 
-In the modelVSdata, you also compared NEE to the ensemble model run. Here we will do the same except we include each sensitivity run. 
+In the modelVSdata, you also compared NEE to the ensemble model run. Here we will do the same except we include each sensitivity run.
 
 ```{r echo= TRUE, eval=FALSE}
 plot(plottable$NEE.m,plottable$NEE.o)
@@ -118,7 +118,7 @@ abline(0,1,col="red")
 
 And remember the formula for RMSE:
 ```{r echo= TRUE, eval=FALSE}
-sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))	
+sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))
 ```
 
 All we need to do to go beyond this is to make a loop that reads in each sensitivity run NEE based on runids, calculates RMSE against the observations, and stores it in an array, by combining the steps above in a for loop. Make sure you change the directory names and year to your specific run.
@@ -133,7 +133,7 @@ rmses[r] <- sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))
 rmses
 ```
 
-Let’s plot that array 
+Let’s plot that array
 ```{r echo= TRUE, eval=FALSE}
 plot(psnTOpt,rmses)
 ```
@@ -142,7 +142,7 @@ Can you identify a minimum (if there is one)? If so, is there any reason to beli
 
 Now that you have the hang of it, here are a few more things to try:
 
-1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. 
+1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane.
 
 Alternatively, you can source the function from the console using:
 ```{r echo= TRUE, eval=FALSE}
@@ -151,9 +151,9 @@ source("pecan/modules/uncertainty/R/flux_uncertainty.R")
 
 Then you can run:
 ```{r echo= TRUE, eval=FALSE}
-unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) 
+unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520))
 plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
 
-Try a few other parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained. 
+Try a few other parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained.

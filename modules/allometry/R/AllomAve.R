@@ -93,7 +93,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       if (!is.null(con)) {
         ### If running within PEcAn, grab the data from the database
         pft.name <- pft$name
-        allom <- query.allom.data(pft.name, component, con)
+        allom <- query.allom.data(pft_name = pft.name, variable = component, con = con)
       } else {
         allom <- read.allom.data(pft, component, field, parm)
       }
@@ -110,10 +110,10 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
         } else {
           allom.out <- allom.BayesFit(allom, ngibbs, dmin = dmin, dmax = dmax)
         }
-        mc[[i]] <- as.mcmc(allom.out[["mc"]][sel, ])
+        mc[[i]] <- coda::as.mcmc(allom.out[["mc"]][sel, ])
         obs[[i]] <- allom.out[["obs"]]
       }
-      mc <- as.mcmc.list(mc)
+      mc <- coda::as.mcmc.list(mc)
       
       ## Model Selection
       D    <- as.array(mc)[, "D", ]
@@ -130,17 +130,12 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       save(mc, DIC, DICg, pD, pDg, obs, allom, file = outfile)
       
       allom.stats[[pft.name]][[component]] <- summary(mc)
-      allom.stats[[pft.name]][[component]]$cov <- cov(as.matrix(mc))
-      
-      ## Save Posterior information (Pass to update.posterior module)
-      if (FALSE) {
-        
-      }
-      
+      allom.stats[[pft.name]][[component]]$cov <- stats::cov(as.matrix(mc))
+
       ## Analysis/visualization
       pdffile <- file.path(outdir, paste("Allom", pft.name, component, "MCMC", "pdf", sep = "."))
       print(c("saving diagnostic graphs to", pdffile))
-      pdf(pdffile)
+      grDevices::pdf(pdffile)
       
       ## specifying which rows were used in the fit & should be graphed; 
       ## note, this requires removing equations whose n is 0
@@ -167,7 +162,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       # pseudodata
       for (i in seq_len(nchain)) {
         for (j in seq_along(obs[[i]])) {
-          points(obs[[i]][[j]]$x, obs[[i]][[j]]$y, col = j, pch = i)
+          graphics::points(obs[[i]][[j]]$x, obs[[i]][[j]]$y, col = j, pch = i)
         }
       }
       # naive prediction
@@ -175,18 +170,18 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
       beta <- allom.stats[[pft.name]][[component]]$statistics[, "Mean"]
       y.0  <- exp(beta["mu0"] + beta["mu1"] * log(dseq))
       y.g  <- exp(beta["Bg0"] + beta["Bg1"] * log(dseq))
-      y.o  <- predict.allom.orig(dseq, allom$parm[ntally, ])
-      lines(dseq, y.0, lwd = 2, col = 1)
-      lines(dseq, y.g, lwd = 2, col = 2)
+      y.o  <- predict_allom_orig(dseq, allom$parm[ntally, ])
+      graphics::lines(dseq, y.0, lwd = 2, col = 1)
+      graphics::lines(dseq, y.g, lwd = 2, col = 2)
       for (i in seq_len(nrow(y.o))) {
-        lines(dseq, y.o[i, ], col = i + 2)
+        graphics::lines(dseq, y.o[i, ], col = i + 2)
       }
-      legend("topleft", legend = c("Hier", "global", paste("allom", ntally)), 
-             lwd = c(2, 2, rep(1, nrow(y.o))), col = 1:(2 + nrow(y.o)))
+      graphics::legend("topleft", legend = c("Hier", "global", paste("allom", ntally)), 
+                       lwd = c(2, 2, rep(1, nrow(y.o))), col = 1:(2 + nrow(y.o)))
       
       ### MCMC diagnostics
       plot(mc)
-      dev.off()
+      grDevices::dev.off()
       
       ## DIC statistics
       print(c("DIC", DIC, "pD", pD))
@@ -197,7 +192,7 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
   return(allom.stats)
 } # AllomAve
 
-predict.allom.orig <- function(x, parm) {
+predict_allom_orig <- function(x, parm) {
   
   out <- matrix(NA, nrow(parm), length(x))
   
@@ -267,4 +262,4 @@ predict.allom.orig <- function(x, parm) {
   }
   
   return(out)
-} # predict.allom.orig
+} # predict_allom_orig

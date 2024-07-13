@@ -1,4 +1,4 @@
-#' @title List only files in a directory
+#' List only files in a directory
 #'
 #' Mostly useful when `recursive` and `full.names` are both FALSE:
 #'   The current implementation sets `full.names` internally, and for recursive
@@ -17,8 +17,11 @@ list.files.nodir <- function(path, ...) {
 
 
 #' Function translating pecan vars to ED vars
+#' @param varnames character; variable names to translate
+#' @export
+#' @examples
 #' var.names <- c("DBH", "AGB", "AbvGrndWood")
-#' @export 
+#' translate_vars_ed(var.names)
 translate_vars_ed <- function(varnames) {
   
   var.list <- add.list <- list()

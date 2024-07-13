@@ -13,25 +13,25 @@
 #' @export check.inputs
 check.inputs <- function(settings) {
   if (is.null(settings$model$type)) return(settings)
-
+  
   # don't know how to check inputs
   if (is.null(settings$database$bety)) {
     PEcAn.logger::logger.info("No database connection, can't check inputs.")
     return(settings)
   }
-
+  
   # get list of inputs associated with model type
   dbcon <- PEcAn.DB::db.open(settings$database$bety)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
-
+  
   inputs <- PEcAn.DB::db.query(
     paste0(
       "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
       "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
-        "AND modeltypes.name='", settings$model$type, "' ",
-        "AND modeltypes_formats.input"),
+      "AND modeltypes.name='", settings$model$type, "' ",
+      "AND modeltypes_formats.input"),
     con = dbcon)
-
+  
   # check list of inputs
   allinputs <- names(settings$run$inputs)
   if (nrow(inputs) > 0) {
@@ -39,7 +39,7 @@ check.inputs <- function(settings) {
       tag <- inputs$tag[i]
       hostname <- settings$host$name
       allinputs <- allinputs[allinputs != tag]
-
+      
       # check if tag exists
       if (is.null(settings$run$inputs[[tag]])) {
         if (inputs$required[i]) {
@@ -49,7 +49,7 @@ check.inputs <- function(settings) {
         }
         next
       }
-
+      
       # check if <id> exists
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         id <- settings$run$inputs[[tag]][["id"]]
@@ -67,12 +67,17 @@ check.inputs <- function(settings) {
         }
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
-        id <- PEcAn.DB::dbfile.id(
-          "Input",
-          settings$run$inputs[[tag]][["path"]],
-          dbcon,
-          hostname)
-        if (!is.na(id)) {
+        #adding for to loop over ensemble member filepaths 
+        id <- list()
+        path <- settings$run$inputs[[tag]][["path"]]
+        for (j in 1:length(path)){
+          id[j] <- PEcAn.DB::dbfile.id(
+            "Input",
+            path[[j]],
+            dbcon,
+            hostname)
+        }
+        if (any(!is.na(id))) {
           settings$run$inputs[[tag]][["id"]] <- id
         }
       }
@@ -101,15 +106,16 @@ check.inputs <- function(settings) {
       PEcAn.logger::logger.info("path", settings$run$inputs[[tag]][["path"]])
     }
   }
-
+  
   if (length(allinputs) > 0) {
     PEcAn.logger::logger.info(
       "Unused inputs found :",
       paste(allinputs, collapse = " "))
   }
-
+  
   return(settings)
 }
+
 
 # check database section
 #' @title Check Database
@@ -254,13 +260,11 @@ check.bety.version <- function(dbcon) {
   }
 
   # check if database is newer
-  last_migration_date <- lubridate::ymd_hms(utils::tail(versions, n = 1))
-  pecan_release_date <- lubridate::ymd(
-    utils::packageDescription("PEcAn.DB")$Date)
-  if (last_migration_date > pecan_release_date) {
+  unknown_migrations <- setdiff(versions, .known_bety_migrations)
+  if (any(unknown_migrations)) {
     PEcAn.logger::logger.warn(
-      "Last database migration", utils::tail(versions, n = 1),
-      "is more recent than this", pecan_release_date, "release of PEcAn.",
+      "Found database migration(s) not known by this release of PEcAn.settings:",
+      unknown_migrations,
       "This could result in PEcAn not working as expected.")
   }
 }
@@ -273,6 +277,7 @@ check.bety.version <- function(dbcon) {
 #' - pfts with at least one pft defined
 #' @title Check Settings
 #' @param settings settings file
+#' @param force Logical: Rerun check even if these settings have been checked previously?
 #' @return will return the updated settings values with defaults set.
 #' @author Rob Kooper, David LeBauer
 #' @export check.settings
@@ -397,7 +402,7 @@ check.settings <- function(settings, force = FALSE) {
         "qsub not specified using default value :", settings$host$qsub)
     }
     if (is.null(settings$host$qsub.jobid)) {
-      settings$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      settings$host$qsub.jobid <- ".* ([0-9]+).*"
       PEcAn.logger::logger.info(
         "qsub.jobid not specified using default value :",
         settings$host$qsub.jobid)
@@ -608,6 +613,7 @@ check.settings <- function(settings, force = FALSE) {
 
 #' @title Check Run Settings
 #' @param settings settings file
+#' @param dbcon database connection.
 #' @export check.run.settings
 check.run.settings <- function(settings, dbcon = NULL) {
   scipen <- getOption("scipen")
@@ -721,6 +727,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
+      site <- NULL
       if (!is.null(dbcon)) {
         site <- PEcAn.DB::db.query(
           paste(
@@ -798,6 +805,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
 
 #' @title Check Model Settings
 #' @param settings settings file
+#' @param dbcon database connection.
 #' @export check.model.settings
 check.model.settings <- function(settings, dbcon = NULL) {
   # check modelid with values
@@ -1070,6 +1078,7 @@ check.database.settings <- function(settings) {
 #' @param settings settings file
 #' @export check.ensemble.settings
 check.ensemble.settings <- function(settings) {
+  
   # check ensemble
   if (!is.null(settings$ensemble)) {
     if (is.null(settings$ensemble$variable)) {
@@ -1090,6 +1099,10 @@ check.ensemble.settings <- function(settings) {
 
     if (is.null(settings$ensemble$start.year)) {
       if (!is.null(settings$run$start.date)) {
+        startdate <- lubridate::parse_date_time(
+          settings$run$start.date,
+          "ymd_HMS",
+          truncated = 3)
         settings$ensemble$start.year <- lubridate::year(
           settings$run$start.date)
         PEcAn.logger::logger.info(
@@ -1109,6 +1122,10 @@ check.ensemble.settings <- function(settings) {
 
     if (is.null(settings$ensemble$end.year)) {
       if (!is.null(settings$run$end.date)) {
+        enddate <- lubridate::parse_date_time(
+          settings$run$end.date,
+          "ymd_HMS",
+          truncated = 3)
         settings$ensemble$end.year <- lubridate::year(settings$run$end.date)
         PEcAn.logger::logger.info(
           "No end date passed to ensemble - using the run date (",
@@ -1142,21 +1159,22 @@ check.ensemble.settings <- function(settings) {
       PEcAn.logger::logger.severe(
        "Start year of ensemble should come before the end year of the ensemble")
     }
-  }
-  # Old version of pecan xml files which they don't have a sampling space
-  # or it's just sampling space and nothing inside it.
-  if (is.null(settings$ensemble$samplingspace)
-      || !is.list(settings$ensemble$samplingspace)) {
-    PEcAn.logger::logger.info(
-      "We are updating the ensemble tag inside the xml file.")
-    # I try to put ensemble method in older versions into the parameter space -
-    # If I fail (when no method is defined) I just set it as uniform
-    settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
-      settings$ensemble$samplingspace$parameters$method <- "uniform"
+
+    # Old version of pecan xml files which they don't have a sampling space
+    # or it's just sampling space and nothing inside it.
+    if (is.null(settings$ensemble$samplingspace)
+        || !is.list(settings$ensemble$samplingspace)) {
+      PEcAn.logger::logger.info(
+        "We are updating the ensemble tag inside the xml file.")
+      # I try to put ensemble method in older versions into the parameter space -
+      # If I fail (when no method is defined) I just set it as uniform
+      settings$ensemble$samplingspace$parameters$method <- settings$ensemble$method
+      if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+        settings$ensemble$samplingspace$parameters$method <- "uniform"
+      }
+      #putting something simple in the met
+      settings$ensemble$samplingspace$met$method <- "sampling"
     }
-    #putting something simple in the met
-    settings$ensemble$samplingspace$met$method <- "sampling"
   }
   return(settings)
 }

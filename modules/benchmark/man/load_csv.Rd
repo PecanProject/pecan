@@ -13,9 +13,7 @@ load_csv(data.path, format, site, vars = NULL)
 
 \item{site}{list}
 
-\item{start_year}{numeric}
-
-\item{end_year}{numeric}
+\item{vars}{column names to return. If NULL, returns all columns}
 }
 \description{
 load_csv
