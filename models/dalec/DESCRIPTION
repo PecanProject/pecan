@@ -1,7 +1,7 @@
 Package: PEcAn.DALEC
 Type: Package
 Title: PEcAn Package for Integration of the DALEC Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Tristan", "Quaife", role = c("aut")),

@@ -1,7 +1,7 @@
 Package: PEcAn.GDAY
 Type: Package
 Title: PEcAn Package for Integration of the GDAY Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Martin", "De Kauwe", role = c("aut", "cre"),
                      email = "mdekauwe@gmail.com"),
              person("Tony", "Gardella", role = c("aut"),
