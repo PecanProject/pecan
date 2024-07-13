@@ -1,7 +1,7 @@
 Package: PEcAn.CABLE
 Type: Package
 Title: PEcAn package for integration of the CABLE model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Kaitlin", "Ragosta", role = c("aut")),
              person("Tony", "Gardella", role = c("aut", "cre"),
                      email = "tonygard@bu.edu"),

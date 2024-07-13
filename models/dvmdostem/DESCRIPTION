@@ -1,7 +1,7 @@
 Package: PEcAn.dvmdostem
 Type: Package
 Title: PEcAn Package for Integration of the Dvmdostem Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Shawn", "Serbin", role = c("aut"),
                      email = "sserbin@bnl.gov"),
              person("Tobey", "Carman", role = c("aut", "cre"),

@@ -1,7 +1,7 @@
 Package: PEcAn.ModelName
 Type: Package
 Title: PEcAn Package for Integration of the ModelName Model
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R: c(person("Jane", "Doe", role = c("aut", "cre"),
                     email = "jdoe@illinois.edu"),
              person("John", "Doe", role = c("aut")))

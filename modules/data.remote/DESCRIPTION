@@ -1,7 +1,7 @@
 Package: PEcAn.data.remote
 Type: Package
 Title: PEcAn Functions Used for Extracting Remote Sensing Data
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Bailey", "Morrison", role = c("aut", "cre"),

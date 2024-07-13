@@ -1,7 +1,7 @@
 Package: PEcAn.FATES
 Type: Package
 Title: PEcAn Package for Integration of FATES Model
-Version: 1.7.3
+Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Shawn", "Serbin", role = c("aut"),
