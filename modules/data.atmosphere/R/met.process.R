@@ -325,6 +325,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
       if(is_standardized) {
         ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
         ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
+      } else {
+         ready.id$input.id <- c(ready.id$input.id, NA)
+          ready.id$dbfile.id <- c(ready.id$dbfile.id, NA)
       }
       
     } # End for loop
