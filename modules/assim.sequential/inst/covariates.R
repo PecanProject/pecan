@@ -99,7 +99,7 @@ NA_SoilGrids <- terra::crop(SoilGrids, NA_extent)
 names(NA_SoilGrids) <- c("phh2o", "nitrogen", "soc", "sand")
 
 # Resample SoilGrids to match WorldClim maps
-NA_SoilGrids <- terra::resample(NA_WorldClim, NA_SoilGrids, method = 'bilinear') # made change
+NA_SoilGrids <- terra::resample(NA_SoilGrids, NA_WorldClim, method = 'bilinear')
 
 # Resample land cover to match WorldClim maps (~25 min)
 land_cover <- terra::resample(land_cover, NA_WorldClim, method = 'near')

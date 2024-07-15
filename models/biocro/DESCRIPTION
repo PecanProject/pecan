@@ -1,8 +1,7 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn Package for Integration of the BioCro Model
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.7.3.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Chris", "Black", role = c("aut"),
@@ -39,4 +38,4 @@ Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

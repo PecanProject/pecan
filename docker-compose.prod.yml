@@ -1,0 +1,285 @@
+services:
+
+  # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
+  traefik:
+    image: "traefik:v2.9"
+    command:
+      - --log.level=INFO
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      # Docker setup
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+      # https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.certresolver=myresolver
+      # letsencrypt
+      - --certificatesresolvers.myresolver.acme.email=${TRAEFIK_ACME_EMAIL:-"cert@example.com"}
+      - --certificatesresolvers.myresolver.acme.storage=/config/acme.json
+      # uncomment to use testing certs
+      # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+    restart: "unless-stopped"
+    networks:
+      - pecan
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "${TRAEFIK_HTTP_PORT-80}:80"
+      - "${TRAEFIK_HTTPS_PORT-443}:443"
+    volumes:
+      - "traefik:/config"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  # ----------------------------------------------------------------------
+  # Job management system. Jobs are distributed through the message
+  # system. PEcAn uses this to distribute the work/load across multiple
+  # containers.
+  # ----------------------------------------------------------------------
+
+  # rabbitmq to connect to extractors
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+
+  # ----------------------------------------------------------------------
+  # Database to hold the data from PEcAn and BETY.
+  # ----------------------------------------------------------------------
+
+  # postgresql + postgis to hold all the data
+  postgres:
+    image: mdillon/postgis:9.5
+    restart: unless-stopped
+    networks:
+      - pecan
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  # ----------------------------------------------------------------------
+  # BETY rails frontend to the database
+  # ----------------------------------------------------------------------
+  bety:
+    image: pecan/bety:${BETY_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - UNICORN_WORKER_PROCESSES=1
+      - SECRET_KEY_BASE=${BETY_SECRET_KEY:-notasecret}
+      - RAILS_RELATIVE_URL_ROOT=/bety
+      - LOCAL_SERVER=${BETY_LOCAL_SERVER:-99}
+    depends_on:
+      - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.bety.loadbalancer.server.port=8000"
+      - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
+
+  # ----------------------------------------------------------------------
+  # PEcAn application
+  # ----------------------------------------------------------------------
+
+  # PEcAn documentation as well as PEcAn home page
+  docs:
+    image: pecan/docs:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.docs.loadbalancer.server.port=80"
+      - "traefik.http.routers.docs.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/`)"
+
+  # PEcAn web front end, this is just the PHP code
+  pecan:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/web:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
+      - NAME=${PECAN_NAME:-docker}
+      - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
+    depends_on:
+       - postgres
+       - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.pecan.loadbalancer.server.port=8080"
+      - "traefik.http.routers.pecan.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/pecan/`)"
+    volumes:
+      - pecan:/data
+      - pecan:/var/www/html/pecan/data
+
+  # PEcAn model monitor
+  monitor:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/monitor:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - FQDN=${PECAN_FQDN:-docker}
+    depends_on:
+       - rabbitmq
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.monitor.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/monitor/`)"
+      - "traefik.http.routers.monitor.middlewares=monitor-stripprefix"
+      - "traefik.http.middlewares.monitor-stripprefix.stripprefix.prefixes=/monitor"
+    volumes:
+      - pecan:/data
+
+  # PEcAn executor, executes jobs. Does not the actual models
+  executor:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/executor:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - RABBITMQ_PREFIX=/
+      - RABBITMQ_PORT=15672
+      - FQDN=${PECAN_FQDN:-docker}
+    depends_on:
+       - postgres
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # ----------------------------------------------------------------------
+  # PEcAn models, list each model you want to run below
+  # ----------------------------------------------------------------------
+
+  # PEcAn basgra model runner
+  basgra:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # PEcAn sipnet model runner
+  sipnet:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # PEcAn ED model runner
+  ed2:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # PEcAn MAESPA model runner
+  maespa:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # PEcAn BioCro model runner
+  biocro:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+    depends_on:
+       - rabbitmq
+    volumes:
+      - pecan:/data
+
+  # ----------------------------------------------------------------------
+  # PEcAn API
+  # ----------------------------------------------------------------------
+  api:
+    user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/api:${PECAN_VERSION:-latest}
+    restart: unless-stopped
+    networks:
+      - pecan
+    environment:
+      - PGHOST=${PGHOST:-postgres}
+      - HOST_ONLY=${HOST_ONLY:-FALSE}
+      - AUTH_REQ=${AUTH_REQ:-FALSE}
+      - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
+      - DATA_DIR=${DATA_DIR:-/data/}
+      - DBFILES_DIR=${DBFILES_DIR:-/data/dbfiles/}
+      - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/api/`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    depends_on:
+      - postgres
+    volumes:
+      - pecan:/data/
+
+# ----------------------------------------------------------------------
+# Name of network to be used by all containers
+# ----------------------------------------------------------------------
+networks:
+  pecan:
+
+# ----------------------------------------------------------------------
+# Volumes used by the PEcAn stack. These volumes are used to make sure
+# we have persistent data. You can use add the commented section to your
+# docker-compose.override.yml to have the docker volumes placed at a
+# specific location.
+# ----------------------------------------------------------------------
+volumes:
+  traefik:
+  postgres:
+  rabbitmq:
+  pecan:
+  rstudio:
+

@@ -86,7 +86,16 @@ git checkout -b GH-issuenumber-title-of-issue
 
 ### Work and commit
 
-Do you work, and commit as you see fit.Make your commit messages helpful.
+Do you work, and commit as you see fit. Make your commit messages helpful.
+
+### Update other files (CITATION, NEWS, CHANGELOG)
+
+Your PR should include:
+
+- CITATION.cff: if you are making or have made a non-trivial contribution (please ask if unsure; our approach is inclusive), add your name to the author section.
+- NEWS.md: for each package
+- CHANGELOG.md: add changes to [Unreleased] section
+
 
 ### Push your changes up to GitHub
 
@@ -95,6 +104,7 @@ If this is the first time pushing to GitHub you will need to extended command, o
 ```bash
 git push -u origin GH-issuenumber-title-of-issue
 ```
+
 
 ### Pull Request
 

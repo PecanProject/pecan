@@ -1,8 +1,7 @@
 Package: PEcAn.DB
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.7.2.9000
-Date: 2021-10-04
+Version: 1.8.0.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Mike", "Dietze", role = c("aut"),
@@ -81,4 +80,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
