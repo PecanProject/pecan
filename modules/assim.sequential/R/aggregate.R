@@ -21,16 +21,21 @@ library(terra)
 library(sf)
 
 aggregate <- function(downscale_output, polygon_data){
-
-    # Perform spatial operations on each raster
-    for (name in names(downscale_output$maps)) {
-      raster_data <- downscale_output$maps[[name]]
-
-      mean_values <- exact_extract(raster_data, polygon_data, fun = 'mean')
-      sum_values <- exact_extract(raster_data, polygon_data, fun = 'sum')
-      
-      polygon_data[[paste0(name, "_mean")]] <- mean_values
-      polygon_data[[paste0(name, "_sum")]] <- sum_values
-    }
-return (polygon_data)
+  grand_total <- 0
+  overall_ave <- 0
+  
+  # Perform spatial operations on each raster
+  for (name in names(downscale_output$maps)) {
+    raster_data <- downscale_output$maps[[name]]
+    mean_values <- exact_extract(raster_data, polygon_data, fun = 'mean')
+    sum_values <- exact_extract(raster_data, polygon_data, fun = 'sum')
+    polygon_data[[paste0(name, "_mean")]] <- mean_values
+    polygon_data[[paste0(name, "_sum")]] <- sum_values
+    grand_total = grand_total + sum_values
+    overall_ave = grand_total + mean_values
+  }
+  overall_ave = overall_ave/length(downscale_output$maps)
+  polygon_data[["grand_total"]] <- grand_total
+  polygon_data[["overall_mean"]] <- overall_ave
+  return (polygon_data)
 }
