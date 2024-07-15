@@ -1,8 +1,7 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn Package for Integration of the MAAT Model
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.7.3.9000
 Authors@R: as.person(c(
     "Shawn Serbin <sserbin@bnl.gov> [aut, cre]", 
     "Anthony Walker <walkerap@ornl.gov> [aut]"
@@ -27,4 +26,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

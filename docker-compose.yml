@@ -224,7 +224,7 @@ services:
   # PEcAn sipnet model runner
   sipnet:
     user: "${UID:-1001}:${GID:-1001}"
-    image: pecan/model-sipnet-r136:${PECAN_VERSION:-latest}
+    image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
       - pecan
@@ -298,8 +298,9 @@ services:
   # PEcAn API
   # ----------------------------------------------------------------------
   api:
-    image: pecan/api:${PECAN_VERSION:-latest}
     user: "${UID:-1001}:${GID:-1001}"
+    image: pecan/api:${PECAN_VERSION:-latest}
+    restart: unless-stopped
     networks:
       - pecan
     environment:

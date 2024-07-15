@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.analysis.R
 \name{spline.truncate}
 \alias{spline.truncate}
-\title{Truncate spline}
+\title{Truncate spline at zero if...}
 \usage{
 spline.truncate(x, min.quantile = stats::pnorm(-3))
 }
@@ -15,9 +15,6 @@ spline.truncate(x, min.quantile = stats::pnorm(-3))
 either x or a vector with values < 0 converted to zero
 }
 \description{
-Truncate spline at zero if..
-}
-\details{
 Truncate spline at zero if P[x<0] < pnorm(-3)
 pnorm(-3) chosen as default value for min quantile
 because this is the default low end of range for the
@@ -27,7 +24,7 @@ settings$sensitivity.analysis$quantiles
 }
 \examples{
 set.seed(0)
-x <- c(rgamma(998,1,1), rnorm(10)) 
+x <- c(rgamma(998,1,1), rnorm(10))
 min(x) # -0.5238
 min(PEcAn.uncertainty::spline.truncate(x))
 }

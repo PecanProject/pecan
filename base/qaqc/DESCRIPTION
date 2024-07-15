@@ -1,8 +1,7 @@
 Package: PEcAn.qaqc
 Type: Package
 Title: QAQC
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.7.3.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Tess", "McCabe", role = c("aut"),
@@ -38,4 +37,4 @@ LazyData: FALSE
 Encoding: UTF-8
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

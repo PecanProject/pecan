@@ -5,8 +5,7 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.8.0.9000
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
@@ -29,5 +28,5 @@ Suggests:
     testthat (>= 2.0.0),
     withr
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
