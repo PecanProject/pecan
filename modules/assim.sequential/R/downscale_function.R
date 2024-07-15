@@ -10,7 +10,7 @@
 ##'
 ##' @description This function reads and checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
 ##'
-##' @return A list containing The read .rds data , The cleaned site coordinates ,The extracted and possibly truncated carbon data.
+##' @return A list containing The read .rds data , The cleaned site coordinates, and the preprocessed carbon data.
 
 # Preprocess function to check and clean the data
 SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
