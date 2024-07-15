@@ -84,7 +84,7 @@ When it is time for everyone to update to a newer Roxygen, follow the same proce
 * Run `make clean && make document` to be sure Roxygen has been run on all packages.
 * Check the console output for warnings from Roxygen, and fix them as needed. New versions often get pickier about formatting issues that used to be considered minor.
 * Run `./scripts/generate_dependencies.R` to update the version of Roxygen recorded as a Docker dependency.
-* Grep the PEcAn folder for the string `7.3.1` to make sure no references were missed.
+* Grep the PEcAn folder for the string `7.2.3` to make sure no references were missed.
   - e.g. this time I found  a remaining `RoxygenNote: 7.2.3` in models/cable/DESCRIPTION -- Make currently skips cable, so I redocumented it manually.
 * Review all changes.
   - The changes should mostly just consist of updated `RoxygenNote:` lines in all the DESCRIPTION files.
