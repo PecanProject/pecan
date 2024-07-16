@@ -8,7 +8,7 @@ read.allom.data(pft.data, component, field, parm, nsim = 10000)
 }
 \arguments{
 \item{pft.data}{PFT dataframe
-\itemize{
+\describe{
   \item{acronym}{USDA species acronyms, used with FIELD data (vector)}
   \item{spcd}{USFS species codes, use with TALLY data (vector)}
 }}

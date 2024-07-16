@@ -47,5 +47,5 @@ ggplot(data=df, aes(x=x, y=y)) + geom_point() + theme_bw() +
 \author{
 Rudolf Cardinal
 
-\url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
+\href{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}{ggplot2 google group}
 }

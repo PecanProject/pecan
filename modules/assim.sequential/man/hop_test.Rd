@@ -9,6 +9,8 @@ hop_test(settings, ens.runid = NULL, nyear)
 \arguments{
 \item{settings}{SDA PEcAn settings object}
 
+\item{ens.runid}{run id. If not provided, is looked up from [settings$outdir]/runs.txt}
+
 \item{nyear}{number of years to run hop test over}
 }
 \value{

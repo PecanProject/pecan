@@ -73,7 +73,8 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... NOTE
 Non-standard file/directory found at top level:
   ‘examples’
@@ -140,36 +141,7 @@ All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'addSecrets'
-  ‘force’
-
-Undocumented arguments in documentation object 'check.model.settings'
-  ‘dbcon’
-
-Undocumented arguments in documentation object 'check.run.settings'
-  ‘dbcon’
-
-Undocumented arguments in documentation object 'check.settings'
-  ‘force’
-
-Undocumented arguments in documentation object 'check.workflow.settings'
-  ‘dbcon’
-
-Undocumented arguments in documentation object 'clean.settings'
-  ‘write’
-
-Undocumented arguments in documentation object 'fix.deprecated.settings'
-  ‘force’
-
-Undocumented arguments in documentation object 'update.settings'
-  ‘force’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
@@ -179,4 +151,4 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 5 WARNINGs, 3 NOTEs
+Status: 3 WARNINGs, 2 NOTEs

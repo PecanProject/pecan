@@ -27,6 +27,8 @@ The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Download Ameriflux L2 netCDF files
