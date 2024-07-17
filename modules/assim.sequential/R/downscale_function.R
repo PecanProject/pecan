@@ -94,7 +94,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   
   # Rename the carbon_data column for each ensemble member
   for (i in 1:length(ensembles)) {
-    colnames(ensembles[[i]])[1] <- "carbon_data"
+    colnames(ensembles[[i]])[1] <- paste0(C_pool, "_ens", i)
   }
   
   # Split the observations in each data frame into two data frames based on the proportion of 3/4
@@ -111,9 +111,9 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   for (i in 1:length(ensembles)) {
     # Prepare data for CNN
     x_train <- as.matrix(ensembles[[i]]$training[, c("tavg", "prec", "srad", "vapr")])
-    y_train <- as.matrix(ensembles[[i]]$training$carbon_data)
+    y_train <- as.matrix(ensembles[[i]]$training[[paste0(C_pool, "_ens", i)]])
     x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
-    y_test <- as.matrix(ensembles[[i]]$testing$carbon_data)
+    y_test <- as.matrix(ensembles[[i]]$testing[[paste0(C_pool, "_ens", i)]])
     
     # Normalize the data
     x_train <- scale(x_train)
@@ -179,7 +179,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   # Calculate performance metrics for each ensemble member
   metrics <- list()
   for (i in 1:length(predictions)) {
-    actual <- ensembles[[i]]$testing$carbon_data
+    actual <- ensembles[[i]]$testing[[paste0(C_pool, "_ens", i)]]
     predicted <- predictions[[i]]
     mse <- mean((actual - predicted)^2)
     mae <- mean(abs(actual - predicted))
