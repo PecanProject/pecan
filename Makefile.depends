@@ -35,6 +35,6 @@ $(call depends,modules/data.atmosphere): | .install/base/db .install/base/logger
 $(call depends,modules/data.land): | .install/base/db .install/base/logger .install/base/remote .install/base/settings .install/base/utils .install/base/visualization .install/modules/benchmark
 $(call depends,modules/data.remote): | .install/base/db .install/base/logger .install/base/remote .install/base/utils
 $(call depends,modules/meta.analysis): | .install/base/db .install/base/logger .install/base/settings .install/base/utils
-$(call depends,modules/priors): | .install/base/logger .install/base/visualization .install/modules/meta.analysis
+$(call depends,modules/priors): | .install/base/logger .install/base/utils .install/base/visualization .install/modules/meta.analysis
 $(call depends,modules/rtm): | .install/base/logger .install/base/utils .install/models/ed .install/modules/assim.batch
 $(call depends,modules/uncertainty): | .install/base/db .install/base/logger .install/base/settings .install/base/utils .install/modules/emulator .install/modules/priors

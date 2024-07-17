@@ -62,7 +62,8 @@ download.NLCD <- function(outdir, year = 2011, con = NULL) {
 ##' @param coords  data frame containing elements 'long' and 'lat'. Currently just supports single point extraction.
 ##' @param data_dir  directory where input data is located. Can be NUL if con is specified
 ##' @param con       connection to PEcAn database. Can be NULL if data_dir is specified
-##' 
+##' @param year one of 2001 or 2011
+##'
 ##' @return dataframe of fractional cover of different cover classes
 ##' 
 ##' @description Based on codes from Christy Rollinson and from Max Joseph (http://mbjoseph.github.io/2014/11/08/nlcd.html)

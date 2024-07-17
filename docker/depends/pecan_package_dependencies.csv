@@ -56,6 +56,7 @@
 "dplyr","*","modules/benchmark","Imports",FALSE
 "dplyr","*","modules/data.land","Imports",FALSE
 "dplyr","*","modules/data.remote","Suggests",FALSE
+"dplyr","*","modules/priors","Suggests",FALSE
 "dplyr","*","modules/uncertainty","Imports",FALSE
 "dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
@@ -124,6 +125,7 @@
 "jsonlite","*","modules/data.remote","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
+"knitr","*","modules/priors","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
 "knitr",">= 1.42","base/qaqc","Suggests",FALSE
 "knitr",">= 1.42","modules/allometry","Suggests",FALSE
@@ -407,6 +409,7 @@
 "PEcAn.utils","*","modules/data.land","Imports",TRUE
 "PEcAn.utils","*","modules/data.remote","Imports",TRUE
 "PEcAn.utils","*","modules/meta.analysis","Imports",TRUE
+"PEcAn.utils","*","modules/priors","Imports",TRUE
 "PEcAn.utils","*","modules/rtm","Suggests",TRUE
 "PEcAn.utils","*","modules/uncertainty","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/basgra","Imports",TRUE
@@ -468,6 +471,7 @@
 "rjags","*","modules/data.land","Imports",FALSE
 "rjags","*","modules/meta.analysis","Imports",FALSE
 "rjags","*","modules/photosynthesis","Depends",FALSE
+"rjags","*","modules/priors","Suggests",FALSE
 "rjson","*","models/dvmdostem","Imports",FALSE
 "rlang","*","base/db","Imports",FALSE
 "rlang","*","base/qaqc","Imports",FALSE

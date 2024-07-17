@@ -477,6 +477,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' Function for generating samples based on sampling method, parent or etc
 #'
 #' @param settings list of PEcAn settings
+#' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
 #'
