@@ -124,21 +124,21 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
     
     # Define the CNN model
-    model <- keras_model_sequential() %>%
-      layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) %>%
-      layer_flatten() %>%
-      layer_dense(units = 64, activation = 'relu') %>%
+    model <- keras_model_sequential() |>
+      layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
+      layer_flatten() |>
+      layer_dense(units = 64, activation = 'relu') |>
       layer_dense(units = 1)
     
     # Compile the model
-    model %>% compile(
+    model |> compile(
       loss = 'mean_squared_error',
       optimizer = optimizer_adam(),
       metrics = c('mean_absolute_error')
     )
     
     # Train the model
-    model %>% fit(
+    model |> fit(
       x = x_train,
       y = y_train,
       epochs = 100,
