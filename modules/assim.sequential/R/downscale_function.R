@@ -16,7 +16,7 @@
 SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
   # Read the input data and site coordinates
   input_data <- readRDS(data_path)
-  site_coordinates <- read_csv(coords_path)
+  site_coordinates <- readr::read_csv(coords_path)
   
   # Ensure the date exists in the input data
   if (!date %in% names(input_data)) {
@@ -81,7 +81,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   site_coordinates <- terra::vect(site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
   
   # Load the covariates raster stack
-  covariates <- rast(covariates_path)
+  covariates <- terra::rast(covariates_path)
   
   # Extract predictors from covariates raster using site coordinates
   predictors <- as.data.frame(terra::extract(covariates, site_coordinates, ID = FALSE))
@@ -120,25 +120,25 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     x_test <- scale(x_test)
     
     # Reshape data for CNN input (samples, timesteps, features)
-    x_train <- array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
-    x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+    x_train <- keras::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
+    x_test <- keras::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
     
     # Define the CNN model
-    model <- keras_model_sequential() |>
-      layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
-      layer_flatten() |>
-      layer_dense(units = 64, activation = 'relu') |>
-      layer_dense(units = 1)
+    model <- keras::keras_model_sequential() |>
+      keras::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
+      keras::layer_flatten() |>
+      keras::layer_dense(units = 64, activation = 'relu') |>
+      keras::layer_dense(units = 1)
     
     # Compile the model
-    model |> compile(
+    model |> keras::compile(
       loss = 'mean_squared_error',
-      optimizer = optimizer_adam(),
+      optimizer = keras::optimizer_adam(),
       metrics = c('mean_absolute_error')
     )
     
     # Train the model
-    model |> fit(
+    model |> keras::fit(
       x = x_train,
       y = y_train,
       epochs = 100,
@@ -154,8 +154,8 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
   predict_with_model <- function(model, data) {
     data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
     data <- scale(data)
-    data <- array_reshape(data, c(nrow(data), 1, ncol(data)))
-    predictions <- predict(model, data)
+    data <- keras::array_reshape(data, c(nrow(data), 1, ncol(data)))
+    predictions <- keras::predict(model, data)
     return(predictions)
   }
   
@@ -166,10 +166,10 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     # Prepare data for prediction
     x_pred <- as.matrix(predictors[, c("tavg", "prec", "srad", "vapr")])
     x_pred <- scale(x_pred)
-    x_pred <- array_reshape(x_pred, c(nrow(x_pred), 1, ncol(x_pred)))
+    x_pred <- keras::array_reshape(x_pred, c(nrow(x_pred), 1, ncol(x_pred)))
     
     map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]))
-    map_pred <- rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = ext(covariates), crs = crs(covariates))
+    map_pred <- terra::rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = terra::ext(covariates), crs = terra::crs(covariates))
     maps[[i]] <- map_pred
     
     # Generate predictions for testing data
