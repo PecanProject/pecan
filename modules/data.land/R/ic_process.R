@@ -51,14 +51,23 @@ ic_process <- function(settings, input, dir, overwrite = FALSE, site = settings$
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   latlon <- NULL
-  site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
+  if(is.null(site$lat) | is.null(site$lon)) {
+    site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
 
-  # extract new.site and str_ns from site.info
-  new.site <- site.info$new.site
-  str_ns <- site.info$str_ns
+    # extract new.site and str_ns from site.info
+    new.site <- site.info$new.site
+    str_ns <- site.info$str_ns
+  } else {
+    latlon <- list(lon = site$lat, lon=site$lon)
+    new.site <- data.frame(
+      id = as.numeric(site$id),
+      lat = site$lat,
+      lon = site$lon
+    )
+    str_ns <- paste0(site$lat, "-", site$lon)
+  }
 
   new.site$name <- settings$run$site$name
-
 
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
 

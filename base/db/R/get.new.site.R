@@ -22,6 +22,7 @@
 
 get.new.site <- function(site, con = NULL, latlon = NULL) {
     if (is.null(con)) {
+        PEcAn.logger::loger.info("DB connection is closed. Trying to generate a new site ID or use pre-existing one.")
         # No DB connection present. Generate a new ID using one of below steps:
 
         if (is.null(site$id) | is.na(site$id)) {
