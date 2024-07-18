@@ -46,7 +46,7 @@ ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
-EXPECTED_ROXYGEN_VERSION := 7.3.1
+EXPECTED_ROXYGEN_VERSION := 7.3.2
 INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
 	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
 	-e   "cat(as.character(packageVersion('roxygen2')))" \

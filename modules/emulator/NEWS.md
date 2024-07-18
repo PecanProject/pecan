@@ -1,4 +1,8 @@
-# PEcAn.emulator 1.7.2.9000
+# PEcAn.emulator 1.8.0.9000
+
+
+
+# PEcAn.emulator 1.8.0
 
 ## Removed
 * Functions `bounded`, `calculate.prior`, `ddist`, `get_ss`, `get_y`, `gepeval`, `is.accepted`, `mcmc.GP`, `minimize.GP` have been moved to package `PEcAn.assim.batch` to correct a circular dependency.

@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+# SUPERSEDED, DO NOT USE -- instead just edit the CSVs in `data/`.
+
 # Adds the current versions of all PEcAn packages to `pecan_version_history`,
 # and adds the specified tag and version number to `pecan_releases`.
 
