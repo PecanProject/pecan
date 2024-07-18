@@ -1,10 +1,21 @@
 test_that("`convert_input()` able to call the respective download function for a data item with the correct arguments", {
   mocked_res <- mockery::mock(list(c("A", "B")))
 
-  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
-  mockery::stub(convert_input, 'PEcAn.remote::remote.execute.R', mocked_res)
-  mockery::stub(convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
+  mockery::stub(convert_input, "dbfile.input.check", data.frame())
+  mockery::stub(convert_input, "db.query", data.frame(id = 1))
+  mockery::stub(convert_input, "PEcAn.remote::remote.execute.R", mocked_res)
+  mockery::stub(convert_input, "check_missing_files", list(
+    result_sizes = data.frame(
+      file = c("A", "B"),
+      file_size = c(100, 200),
+      missing = c(FALSE, FALSE),
+      empty = c(FALSE, FALSE)
+    ),
+    outlist = "test",
+    existing.input = list(data.frame(file = character(0))),
+    existing.dbfile = list(data.frame(file = character(0)))
+  ))
+  mockery::stub(convert_input, "add.database.entries", list(input.id = 1, dbfile.id = 1))
 
   convert_input(
     input.id = NA,
@@ -14,8 +25,8 @@ test_that("`convert_input()` able to call the respective download function for a
     site.id = 1,
     start_date = "2011-01-01",
     end_date = "2011-12-31",
-    pkg = 'PEcAn.data.atmosphere',
-    fcn = 'download.AmerifluxLBL',
+    pkg = "PEcAn.data.atmosphere",
+    fcn = "download.AmerifluxLBL",
     con = NULL,
     host = data.frame(name = "localhost"),
     browndog = NULL,
@@ -23,10 +34,10 @@ test_that("`convert_input()` able to call the respective download function for a
     lat.in = 40,
     lon.in = -88
   )
-  
+
   args <- mockery::mock_args(mocked_res)
   expect_equal(
-    args[[1]]$script, 
+    args[[1]]$script,
     "PEcAn.data.atmosphere::download.AmerifluxLBL(lat.in=40, lon.in=-88, overwrite=FALSE, outfolder='test/', start_date='2011-01-01', end_date='2011-12-31')"
   )
 })
