@@ -72,31 +72,54 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
 
 
 SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
-  
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
-  
+
   # Convert site coordinates to SpatVector
   site_coordinates <- terra::vect(site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
-  
+
   # Load the covariates raster stack
   covariates <- terra::rast(covariates_path)
-  
+
   # Extract predictors from covariates raster using site coordinates
   predictors <- as.data.frame(terra::extract(covariates, site_coordinates, ID = FALSE))
-  
+
   # Combine each ensemble member with all predictors
   ensembles <- list()
   for (i in seq_along(carbon_data)) {
     ensembles[[i]] <- cbind(carbon_data[[i]], predictors)
   }
-  
+
   # Rename the carbon_data column for each ensemble member
   for (i in 1:length(ensembles)) {
     colnames(ensembles[[i]])[1] <- paste0(C_pool, "_ens", i)
   }
-  
+
+  # Function to scale data
+  scale_data <- function(data, scale_params = NULL) {
+    if (is.null(scale_params)) {
+      scale_params <- list(
+        center = apply(data, 2, mean),
+        scale = apply(data, 2, sd)
+      )
+    }
+    scaled_data <- scale(data, center = scale_params$center, scale = scale_params$scale)
+    return(list(scaled_data = scaled_data, scale_params = scale_params))
+  }
+
+  # Scale all predictor data together
+  all_predictor_data <- do.call(rbind, lapply(ensembles, function(df) df[, c("tavg", "prec", "srad", "vapr")]))
+  scaled_all <- scale_data(all_predictor_data)
+  scale_params <- scaled_all$scale_params
+
+  # Apply scaling to each ensemble
+  for (i in 1:length(ensembles)) {
+    ensembles[[i]][, c("tavg", "prec", "srad", "vapr")] <- scale(ensembles[[i]][, c("tavg", "prec", "srad", "vapr")], 
+                                                                 center = scale_params$center, 
+                                                                 scale = scale_params$scale)
+  }
+
   # Split the observations in each data frame into two data frames based on the proportion of 3/4
   ensembles <- lapply(ensembles, function(df) {
     sample <- sample(1:nrow(df), size = round(0.75 * nrow(df)))
@@ -105,7 +128,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     split_list <- list(training = train, testing = test)
     return(split_list)
   })
-  
+
   # Train a CNN model for each ensemble member using the training data
   cnn_output <- list()
   for (i in 1:length(ensembles)) {
@@ -114,68 +137,61 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     y_train <- as.matrix(ensembles[[i]]$training[[paste0(C_pool, "_ens", i)]])
     x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
     y_test <- as.matrix(ensembles[[i]]$testing[[paste0(C_pool, "_ens", i)]])
-    
-    # Normalize the data
-    x_train <- scale(x_train)
-    x_test <- scale(x_test)
-    
+
     # Reshape data for CNN input (samples, timesteps, features)
-    x_train <- keras::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
-    x_test <- keras::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
-    
+    x_train_reshaped <- keras::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
+    x_test_reshaped <- keras::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+
     # Define the CNN model
     model <- keras::keras_model_sequential() |>
       keras::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
       keras::layer_flatten() |>
       keras::layer_dense(units = 64, activation = 'relu') |>
       keras::layer_dense(units = 1)
-    
+
     # Compile the model
     model |> keras::compile(
       loss = 'mean_squared_error',
       optimizer = keras::optimizer_adam(),
       metrics = c('mean_absolute_error')
     )
-    
+
     # Train the model
     model |> keras::fit(
-      x = x_train,
+      x = x_train_reshaped,
       y = y_train,
       epochs = 100,
       batch_size = 32,
       validation_split = 0.2,
       verbose = 0
     )
-    
+
     cnn_output[[i]] <- model
   }
-  
+
   # Wrapper function to apply the trained model
   predict_with_model <- function(model, data) {
-    data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
-    data <- scale(data)
-    data <- keras::array_reshape(data, c(nrow(data), 1, ncol(data)))
-    predictions <- keras::predict(model, data)
+    data_reshaped <- keras::array_reshape(data, c(nrow(data), 1, ncol(data)))
+    predictions <- keras::predict(model, data_reshaped)
     return(predictions)
   }
-  
+
   # Generate predictions (maps) for each ensemble member using the trained models
   maps <- list()
   predictions <- list()
   for (i in 1:length(cnn_output)) {
     # Prepare data for prediction
-    x_pred <- as.matrix(predictors[, c("tavg", "prec", "srad", "vapr")])
-    x_pred <- scale(x_pred)
-    x_pred <- keras::array_reshape(x_pred, c(nrow(x_pred), 1, ncol(x_pred)))
+    x_pred <- as.matrix(as.data.frame(covariates[])[, c("tavg", "prec", "srad", "vapr")])
+    x_pred_scaled <- scale(x_pred, center = scale_params$center, scale = scale_params$scale)
     
-    map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]))
+    map_pred <- predict_with_model(cnn_output[[i]], x_pred_scaled)
     map_pred <- terra::rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = terra::ext(covariates), crs = terra::crs(covariates))
     maps[[i]] <- map_pred
-    
+
     # Generate predictions for testing data
-    predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing)
+    predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
   }
-  
+
   # Calculate performance metrics for each ensemble member
   metrics <- list()
   for (i in 1:length(predictions)) {
@@ -186,10 +202,10 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
     metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
   }
-  
+
   # Organize the results into a single output list
-  downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics)
-  
+  downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics, scale_params = scale_params)
+
   # Rename each element of the output list with appropriate ensemble numbers
   for (i in 1:length(downscale_output$data)) {
     names(downscale_output$data)[i] <- paste0("ensemble", i)
@@ -197,6 +213,6 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates_path) {
     names(downscale_output$maps)[i] <- paste0("ensemble", i)
     names(downscale_output$metrics)[i] <- paste0("ensemble", i)
   }
-  
+
   return(downscale_output)
 }
