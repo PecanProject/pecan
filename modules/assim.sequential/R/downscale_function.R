@@ -13,7 +13,7 @@
 ##' @return A list containing The read .rds data , The cleaned site coordinates, and the preprocessed carbon data.
 
 # Preprocess function to check and clean the data
-SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
+SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) {
   # Read the input data and site coordinates
   input_data <- readRDS(data_path)
   site_coordinates <- readr::read_csv(coords_path)
@@ -39,11 +39,11 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
   # Rest of the function remains the same...
   
   # Ensure the carbon pool exists in the input data
-  if (!C_pool %in% names(data)) {
-    stop(paste("Carbon pool", C_pool, "not found in the input data."))
+  if (!carbon_pool %in% names(data)) {
+    stop(paste("Carbon pool", carbon_pool, "not found in the input data."))
   }
   
-  carbon_data <- as.data.frame(t(data[which(names(data) == C_pool)]))
+  carbon_data <- as.data.frame(t(data[which(names(data) == carbon_pool)]))
   names(carbon_data) <- paste0("ensemble", seq(ncol(carbon_data)))
   
   # Ensure site coordinates have 'lon' and 'lat' columns
@@ -82,7 +82,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-SDA_downscale <- function(preprocessed, date, C_pool, covariates) {
+SDA_downscale <- function(preprocessed, date, carbon_pool, covariates) {
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
@@ -101,7 +101,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates) {
   
   # Rename the carbon_data column for each ensemble member
   for (i in 1:length(ensembles)) {
-    colnames(ensembles[[i]])[1] <- paste0(C_pool, "_ens", i)
+    colnames(ensembles[[i]])[1] <- paste0(carbon_pool, "_ens", i)
   }
   
   # Split the observations in each data frame into two data frames based on the proportion of 3/4
@@ -119,9 +119,9 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates) {
   for (i in 1:length(ensembles)) {
     # Prepare data for CNN
     x_train <- as.matrix(ensembles[[i]]$training[, c("tavg", "prec", "srad", "vapr")])
-    y_train <- as.matrix(ensembles[[i]]$training[[paste0(C_pool, "_ens", i)]])
+    y_train <- as.matrix(ensembles[[i]]$training[[paste0(carbon_pool, "_ens", i)]])
     x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
-    y_test <- as.matrix(ensembles[[i]]$testing[[paste0(C_pool, "_ens", i)]])
+    y_test <- as.matrix(ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]])
     
     # Calculate scaling parameters from training data
     scaling_params[[i]] <- list(
@@ -191,7 +191,7 @@ SDA_downscale <- function(preprocessed, date, C_pool, covariates) {
   # Calculate performance metrics for each ensemble member
   metrics <- list()
   for (i in 1:length(predictions)) {
-    actual <- ensembles[[i]]$testing[[paste0(C_pool, "_ens", i)]]
+    actual <- ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]]
     predicted <- predictions[[i]]
     mse <- mean((actual - predicted)^2)
     mae <- mean(abs(actual - predicted))
