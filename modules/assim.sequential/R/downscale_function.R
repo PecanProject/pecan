@@ -74,7 +74,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
 ##' @param preprocessed , In quotes, prepocessed data returned as an output for passing the raw data to the NA_preprocess function.
 ##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
 ##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
-##' @param covariates_path SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
+##' @param covariates SpatRaster stack, used as predictors in CNN. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
 ##' @description This function uses the Convolutional Neural Network(CNN) model.
