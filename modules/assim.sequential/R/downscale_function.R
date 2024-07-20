@@ -5,7 +5,7 @@
 ##' @param data_path Character. File path for .rds containing ensemble data.
 ##' @param coords_path Character. File path for .csv file containing the site coordinates, with columns named "lon" and "lat".
 ##' @param date Character. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.
-##' @param C_pool Character. Carbon pool of interest. Name must match the carbon pool name found within the file supplied to 'data_path'.
+##' @param carbon_pool Character. Carbon pool of interest. Name must match the carbon pool name found within the file supplied to 'data_path'.
 ##' @details This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and aligns the number of rows between site coordinates and carbon data.
 ##'
 ##' @description This function reads and checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
@@ -73,7 +73,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##'
 ##' @param preprocessed , In quotes, prepocessed data returned as an output for passing the raw data to the NA_preprocess function.
 ##' @param date In quotes, if SDA site run, format is yyyy/mm/dd, if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
-##' @param C_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
+##' @param carbon_pool In quotes, carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
 ##' @param covariates SpatRaster stack, used as predictors in CNN. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
 ##'
