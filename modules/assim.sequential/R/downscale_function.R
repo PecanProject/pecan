@@ -18,14 +18,25 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, C_pool) {
   input_data <- readRDS(data_path)
   site_coordinates <- readr::read_csv(coords_path)
   
+  # Convert input_data names to standard date format
+  input_date_names <- suppressWarnings(as.character(lubridate::ymd(names(input_data))))
+  names(input_data) <- ifelse(is.na(input_date_names), 
+                              names(input_data),
+                              input_date_names)
+  
+  # Convert the input date to standard format
+  standard_date <- as.character(lubridate::ymd(date))
+  
   # Ensure the date exists in the input data
-  if (!date %in% names(input_data)) {
+  if (!standard_date %in% names(input_data)) {
     stop(paste("Date", date, "not found in the input data."))
   }
   
   # Extract the carbon data for the specified focus year
-  index <- which(names(input_data) == date)
+  index <- which(names(input_data) == standard_date)
   data <- input_data[[index]]
+  
+  # Rest of the function remains the same...
   
   # Ensure the carbon pool exists in the input data
   if (!C_pool %in% names(data)) {
