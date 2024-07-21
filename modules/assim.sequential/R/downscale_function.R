@@ -254,3 +254,23 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   
   return(downscale_output)
 }
+
+# New separate function for calculating metrics
+calculate_metrics <- function(downscale_output, carbon_pool) {
+  metrics <- list()
+  
+  for (i in 1:length(downscale_output$data)) {
+    actual <- downscale_output$data[[i]]$testing[[paste0(carbon_pool, "_ens", i)]]
+    predicted <- downscale_output$predictions[[i]]
+    
+    mse <- mean((actual - predicted)^2)
+    mae <- mean(abs(actual - predicted))
+    r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
+    
+    metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
+  }
+  
+  names(metrics) <- paste0("ensemble", seq_along(metrics))
+  
+  return(metrics)
+}
