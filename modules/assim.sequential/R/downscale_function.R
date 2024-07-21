@@ -255,7 +255,19 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   return(downscale_output)
 }
 
-# New separate function for calculating metrics
+##' @title Calculate Metrics for Downscaling Results
+##' @name calculate_metrics
+##' @author Sambhav Dixit
+##'
+##' @param downscale_output List. Output from the SDA_downscale function, containing data, models, maps, and predictions for each ensemble.
+##' @param carbon_pool Character. Name of the carbon pool used in the downscaling process.
+##'
+##' @details This function calculates performance metrics for the downscaling results. It computes Mean Squared Error (MSE), Mean Absolute Error (MAE), and R-squared for each ensemble. The function uses the actual values from the testing data and the predictions generated during the downscaling process.
+##'
+##' @description This function takes the output from the SDA_downscale function and computes various performance metrics for each ensemble. It provides a way to evaluate the accuracy of the downscaling results without modifying the main downscaling function.
+##'
+##' @return A list of metrics for each ensemble, where each element contains MAE , MSE ,R_squared ,actual values from testing data and predicted values for the testing data 
+
 calculate_metrics <- function(downscale_output, carbon_pool) {
   metrics <- list()
   
