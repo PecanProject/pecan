@@ -83,7 +83,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type ) {
+SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type) {
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
@@ -236,26 +236,15 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing, scaling_params[[i]])
     }
     
-    # Calculate performance metrics for each ensemble member
-    metrics <- list()
-    for (i in 1:length(predictions)) {
-      actual <- ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]]
-      predicted <- predictions[[i]]
-      mse <- mean((actual - predicted)^2)
-      mae <- mean(abs(actual - predicted))
-      r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
-      metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
-    }
-    
     # Organize the results into a single output list
-    downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics, scaling_params = scaling_params)
+    downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, predictions = predictions, scaling_params = scaling_params)
     
     # Rename each element of the output list with appropriate ensemble numbers
     for (i in 1:length(downscale_output$data)) {
       names(downscale_output$data)[i] <- paste0("ensemble", i)
       names(downscale_output$models)[i] <- paste0("ensemble", i)
       names(downscale_output$maps)[i] <- paste0("ensemble", i)
-      names(downscale_output$metrics)[i] <- paste0("ensemble", i)
+      names(downscale_output$predictions)[i] <- paste0("ensemble", i)
       names(downscale_output$scaling_params)[i] <- paste0("ensemble", i)
     }
     
