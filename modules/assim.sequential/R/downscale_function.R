@@ -82,7 +82,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
-SDA_downscale <- function(preprocessed, date, carbon_pool, covariates) {
+SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type = "rf") {
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
@@ -99,116 +99,167 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates) {
     ensembles[[i]] <- cbind(carbon_data[[i]], predictors)
   }
   
-  # Rename the carbon_data column for each ensemble member
-  for (i in 1:length(ensembles)) {
-    colnames(ensembles[[i]])[1] <- paste0(carbon_pool, "_ens", i)
-  }
-  
-  # Split the observations in each data frame into two data frames based on the proportion of 3/4
-  ensembles <- lapply(ensembles, function(df) {
-    sample <- sample(1:nrow(df), size = round(0.75 * nrow(df)))
-    train <- df[sample, ]
-    test <- df[-sample, ]
-    split_list <- list(training = train, testing = test)
-    return(split_list)
-  })
-  
-  # Train a CNN model for each ensemble member using the training data
-  cnn_output <- list()
-  scaling_params <- list()
-  for (i in 1:length(ensembles)) {
-    # Prepare data for CNN
-    x_train <- as.matrix(ensembles[[i]]$training[, c("tavg", "prec", "srad", "vapr")])
-    y_train <- as.matrix(ensembles[[i]]$training[[paste0(carbon_pool, "_ens", i)]])
-    x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
-    y_test <- as.matrix(ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]])
+  if (model_type == "rf") {
+    # Rename the carbon_data column for each ensemble member
+    for (i in 1:length(ensembles)) {
+      ensembles[[i]] <- dplyr::rename(ensembles[[i]], "carbon_data" = "carbon_data[[i]]")
+    }
     
-    # Calculate scaling parameters from training data
-    scaling_params[[i]] <- list(
-      mean = colMeans(x_train),
-      sd = apply(x_train, 2, sd)
-    )
+    # Split the observations in each data frame into two data frames based on the proportion of 3/4
+    ensembles <- lapply(ensembles, function(df) {
+      sample <- sample(1:nrow(df), size = round(0.75*nrow(df)))
+      train  <- df[sample, ]
+      test   <- df[-sample, ]
+      split_list <- list(train, test)
+      return(split_list)
+    })
     
-    # Normalize the data using training data parameters
-    x_train <- scale(x_train, center = scaling_params[[i]]$mean, scale = scaling_params[[i]]$sd)
-    x_test <- scale(x_test, center = scaling_params[[i]]$mean, scale = scaling_params[[i]]$sd)
+    # Rename the training and testing data frames for each ensemble member
+    for (i in 1:length(ensembles)) {
+      names(ensembles[[i]]) <- c("training", "testing")
+    }
     
-    # Reshape data for CNN input (samples, timesteps, features)
-    x_train <- array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
-    x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+    # Train a random forest model for each ensemble member using the training data
+    rf_output <- list()
+    for (i in 1:length(ensembles)) {
+      rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ tavg+prec+srad+vapr,
+                                                   data = ensembles[[i]][[1]],
+                                                   ntree = 1000,
+                                                   na.action = stats::na.omit,
+                                                   keep.forest = T,
+                                                   importance = T)
+    }
     
-    # Define the CNN model
-    model <- keras_model_sequential() |>
-      layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
-      layer_flatten() |>
-      layer_dense(units = 64, activation = 'relu') |>
-      layer_dense(units = 1)
+    # Generate predictions (maps) for each ensemble member using the trained models
+    maps <- list(ncol(rf_output))
+    for (i in 1:length(rf_output)) {
+      maps[[i]] <- terra::predict(object = covariates,
+                                  model = rf_output[[i]], na.rm = T)
+    }
     
-    # Compile the model
-    model |> compile(
-      loss = 'mean_squared_error',
-      optimizer = optimizer_adam(),
-      metrics = c('mean_absolute_error')
-    )
+    # Organize the results into a single output list
+    downscale_output <- list(ensembles, rf_output, maps)
     
-    # Train the model
-    model |> fit(
-      x = x_train,
-      y = y_train,
-      epochs = 100,
-      batch_size = 32,
-      validation_split = 0.2,
-      verbose = 0
-    )
+    # Rename each element of the output list with appropriate ensemble numbers
+    for (i in 1:length(downscale_output)) {
+      names(downscale_output[[i]]) <- paste0("ensemble", seq(1:length(downscale_output[[i]])))
+    }
     
-    cnn_output[[i]] <- model
-  }
-  
-  # Wrapper function to apply the trained model
-  predict_with_model <- function(model, data, scaling_params) {
-    data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
-    data <- scale(data, center = scaling_params$mean, scale = scaling_params$sd)
-    data <- array_reshape(data, c(nrow(data), 1, ncol(data)))
-    predictions <- predict(model, data)
-    return(predictions)
-  }
-  
-  # Generate predictions (maps) for each ensemble member using the trained models
-  maps <- list()
-  predictions <- list()
-  for (i in 1:length(cnn_output)) {
-    # Prepare data for prediction
-    x_pred <- as.matrix(predictors[, c("tavg", "prec", "srad", "vapr")])
+    # Rename the main components of the output list
+    names(downscale_output) <- c("data", "models", "maps")
     
-    map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]), scaling_params[[i]])
-    map_pred <- terra::rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = terra::ext(covariates), crs = terra::crs(covariates))
-    maps[[i]] <- map_pred
+  } else if (model_type == "cnn") {
+    # Rename the carbon_data column for each ensemble member
+    for (i in 1:length(ensembles)) {
+      colnames(ensembles[[i]])[1] <- paste0(carbon_pool, "_ens", i)
+    }
     
-    # Generate predictions for testing data
-    predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing, scaling_params[[i]])
-  }
-  
-  # Calculate performance metrics for each ensemble member
-  metrics <- list()
-  for (i in 1:length(predictions)) {
-    actual <- ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]]
-    predicted <- predictions[[i]]
-    mse <- mean((actual - predicted)^2)
-    mae <- mean(abs(actual - predicted))
-    r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
-    metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
-  }
-  
-  # Organize the results into a single output list
-  downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics, scaling_params = scaling_params)
-  
-  # Rename each element of the output list with appropriate ensemble numbers
-  for (i in 1:length(downscale_output$data)) {
-    names(downscale_output$data)[i] <- paste0("ensemble", i)
-    names(downscale_output$models)[i] <- paste0("ensemble", i)
-    names(downscale_output$maps)[i] <- paste0("ensemble", i)
-    names(downscale_output$metrics)[i] <- paste0("ensemble", i)
-    names(downscale_output$scaling_params)[i] <- paste0("ensemble", i)
+    # Split the observations in each data frame into two data frames based on the proportion of 3/4
+    ensembles <- lapply(ensembles, function(df) {
+      sample <- sample(1:nrow(df), size = round(0.75 * nrow(df)))
+      train <- df[sample, ]
+      test <- df[-sample, ]
+      split_list <- list(training = train, testing = test)
+      return(split_list)
+    })
+    
+    # Train a CNN model for each ensemble member using the training data
+    cnn_output <- list()
+    scaling_params <- list()
+    for (i in 1:length(ensembles)) {
+      # Prepare data for CNN
+      x_train <- as.matrix(ensembles[[i]]$training[, c("tavg", "prec", "srad", "vapr")])
+      y_train <- as.matrix(ensembles[[i]]$training[[paste0(carbon_pool, "_ens", i)]])
+      x_test <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
+      y_test <- as.matrix(ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]])
+      
+      # Calculate scaling parameters from training data
+      scaling_params[[i]] <- list(
+        mean = colMeans(x_train),
+        sd = apply(x_train, 2, sd)
+      )
+      
+      # Normalize the data using training data parameters
+      x_train <- scale(x_train, center = scaling_params[[i]]$mean, scale = scaling_params[[i]]$sd)
+      x_test <- scale(x_test, center = scaling_params[[i]]$mean, scale = scaling_params[[i]]$sd)
+      
+      # Reshape data for CNN input (samples, timesteps, features)
+      x_train <- array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
+      x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+      
+      # Define the CNN model
+      model <- keras_model_sequential() |>
+        layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, 4)) |>
+        layer_flatten() |>
+        layer_dense(units = 64, activation = 'relu') |>
+        layer_dense(units = 1)
+      
+      # Compile the model
+      model |> compile(
+        loss = 'mean_squared_error',
+        optimizer = optimizer_adam(),
+        metrics = c('mean_absolute_error')
+      )
+      
+      # Train the model
+      model |> fit(
+        x = x_train,
+        y = y_train,
+        epochs = 100,
+        batch_size = 32,
+        validation_split = 0.2,
+        verbose = 0
+      )
+      
+      cnn_output[[i]] <- model
+    }
+    
+    # Wrapper function to apply the trained model
+    predict_with_model <- function(model, data, scaling_params) {
+      data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
+      data <- scale(data, center = scaling_params$mean, scale = scaling_params$sd)
+      data <- array_reshape(data, c(nrow(data), 1, ncol(data)))
+      predictions <- predict(model, data)
+      return(predictions)
+    }
+    
+    # Generate predictions (maps) for each ensemble member using the trained models
+    maps <- list()
+    predictions <- list()
+    for (i in 1:length(cnn_output)) {
+      map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]), scaling_params[[i]])
+      map_pred <- terra::rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = terra::ext(covariates), crs = terra::crs(covariates))
+      maps[[i]] <- map_pred
+      
+      # Generate predictions for testing data
+      predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing, scaling_params[[i]])
+    }
+    
+    # Calculate performance metrics for each ensemble member
+    metrics <- list()
+    for (i in 1:length(predictions)) {
+      actual <- ensembles[[i]]$testing[[paste0(carbon_pool, "_ens", i)]]
+      predicted <- predictions[[i]]
+      mse <- mean((actual - predicted)^2)
+      mae <- mean(abs(actual - predicted))
+      r_squared <- 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
+      metrics[[i]] <- list(MSE = mse, MAE = mae, R_squared = r_squared, actual = actual, predicted = predicted)
+    }
+    
+    # Organize the results into a single output list
+    downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, metrics = metrics, scaling_params = scaling_params)
+    
+    # Rename each element of the output list with appropriate ensemble numbers
+    for (i in 1:length(downscale_output$data)) {
+      names(downscale_output$data)[i] <- paste0("ensemble", i)
+      names(downscale_output$models)[i] <- paste0("ensemble", i)
+      names(downscale_output$maps)[i] <- paste0("ensemble", i)
+      names(downscale_output$metrics)[i] <- paste0("ensemble", i)
+      names(downscale_output$scaling_params)[i] <- paste0("ensemble", i)
+    }
+    
+  } else {
+    stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
   }
   
   return(downscale_output)
