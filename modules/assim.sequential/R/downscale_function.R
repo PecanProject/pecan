@@ -83,6 +83,21 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 
 
+##' @title North America Downscale Function
+##' @name SDA_downscale
+##' @author Joshua Ploshay, Sambhav Dixit
+##'
+##' @param preprocessed List. Preprocessed data returned as an output from the SDA_downscale_preprocess function.
+##' @param date Character. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.
+##' @param carbon_pool Character. Carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.
+##' @param covariates SpatRaster stack. Used as predictors in CNN. Layers within stack should be named.
+##' @param model_type Character. Either "rf" for Random Forest or "cnn" for Convolutional Neural Network.
+##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
+##'
+##' @description This function uses either Random Forest or Convolutional Neural Network model based on the model_type parameter.
+##'
+##' @return A list containing the training and testing data sets, models, predicted maps for each ensemble member, and predictions for testing data.
+
 SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type) {
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
@@ -132,22 +147,15 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     }
     
     # Generate predictions (maps) for each ensemble member using the trained models
-    maps <- list(ncol(rf_output))
+    maps <- list()
+    predictions <- list()
     for (i in 1:length(rf_output)) {
-      maps[[i]] <- terra::predict(object = covariates,
-                                  model = rf_output[[i]], na.rm = T)
+      maps[[i]] <- terra::predict(covariates, model = rf_output[[i]], na.rm = TRUE)
+      predictions[[i]] <- predict(rf_output[[i]], ensembles[[i]]$testing)
     }
     
     # Organize the results into a single output list
-    downscale_output <- list(ensembles, rf_output, maps)
-    
-    # Rename each element of the output list with appropriate ensemble numbers
-    for (i in 1:length(downscale_output)) {
-      names(downscale_output[[i]]) <- paste0("ensemble", seq(1:length(downscale_output[[i]])))
-    }
-    
-    # Rename the main components of the output list
-    names(downscale_output) <- c("data", "models", "maps")
+    downscale_output <- list(data = ensembles, models = rf_output, maps = maps, predictions = predictions)
     
   } else if (model_type == "cnn") {
     # Rename the carbon_data column for each ensemble member
@@ -215,41 +223,46 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       cnn_output[[i]] <- model
     }
     
-    # Wrapper function to apply the trained model
-    predict_with_model <- function(model, data, scaling_params) {
-      data <- as.matrix(data[, c("tavg", "prec", "srad", "vapr")])
-      data <- scale(data, center = scaling_params$mean, scale = scaling_params$sd)
-      data <- array_reshape(data, c(nrow(data), 1, ncol(data)))
-      predictions <- predict(model, data)
-      return(predictions)
+    # Custom predict function for CNN
+    cnn_predict <- function(model, newdata, scaling_params) {
+      newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
+      newdata <- array_reshape(newdata, c(nrow(newdata), 1, ncol(newdata)))
+      predictions <- predict(model, newdata)
+      return(as.vector(predictions))
     }
     
     # Generate predictions (maps) for each ensemble member using the trained models
     maps <- list()
     predictions <- list()
     for (i in 1:length(cnn_output)) {
-      map_pred <- predict_with_model(cnn_output[[i]], as.data.frame(covariates[]), scaling_params[[i]])
-      map_pred <- terra::rast(matrix(map_pred, nrow = nrow(covariates), ncol = ncol(covariates)), ext = terra::ext(covariates), crs = terra::crs(covariates))
-      maps[[i]] <- map_pred
+      # Create a SpatRaster with the same properties as covariates
+      prediction_rast <- terra::rast(covariates)
+      
+      # Use terra::predict to apply the CNN model
+      maps[[i]] <- terra::predict(prediction_rast, model = cnn_output[[i]], 
+                                  fun = cnn_predict, 
+                                  scaling_params = scaling_params[[i]])
       
       # Generate predictions for testing data
-      predictions[[i]] <- predict_with_model(cnn_output[[i]], ensembles[[i]]$testing, scaling_params[[i]])
+      test_data <- as.matrix(ensembles[[i]]$testing[, c("tavg", "prec", "srad", "vapr")])
+      predictions[[i]] <- cnn_predict(cnn_output[[i]], test_data, scaling_params[[i]])
     }
     
     # Organize the results into a single output list
     downscale_output <- list(data = ensembles, models = cnn_output, maps = maps, predictions = predictions, scaling_params = scaling_params)
-    
-    # Rename each element of the output list with appropriate ensemble numbers
-    for (i in 1:length(downscale_output$data)) {
-      names(downscale_output$data)[i] <- paste0("ensemble", i)
-      names(downscale_output$models)[i] <- paste0("ensemble", i)
-      names(downscale_output$maps)[i] <- paste0("ensemble", i)
-      names(downscale_output$predictions)[i] <- paste0("ensemble", i)
-      names(downscale_output$scaling_params)[i] <- paste0("ensemble", i)
-    }
-    
   } else {
     stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
+  }
+  
+  # Rename each element of the output list with appropriate ensemble numbers
+  for (i in 1:length(downscale_output$data)) {
+    names(downscale_output$data)[i] <- paste0("ensemble", i)
+    names(downscale_output$models)[i] <- paste0("ensemble", i)
+    names(downscale_output$maps)[i] <- paste0("ensemble", i)
+    names(downscale_output$predictions)[i] <- paste0("ensemble", i)
+    if (model_type == "cnn") {
+      names(downscale_output$scaling_params)[i] <- paste0("ensemble", i)
+    }
   }
   
   return(downscale_output)
