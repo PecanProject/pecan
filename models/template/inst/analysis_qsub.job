@@ -1,0 +1,5 @@
+#!/bin/bash -l
+module load R/4.1.2
+echo "require (PEcAnAssimSequential)
+    qsub_analysis('@FOLDER_PATH@')
+    " | R --no-save
