@@ -1,5 +1,5 @@
-* using log directory ‘/tmp/RtmpDf3LIm/PEcAnAssimSequential.Rcheck’
-* using R version 4.1.3 (2022-03-10)
+* using log directory ‘/scratch/8499487.1.geo/RtmpJb6cjn/PEcAnAssimSequential.Rcheck’
+* using R version 4.1.2 (2021-11-01)
 * using platform: x86_64-pc-linux-gnu (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
@@ -46,26 +46,6 @@ Use \uxxxx escapes for other characters.
 EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF: no visible binding for global variable ‘obs.mean’
 GEF: no visible global function definition for ‘abline’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘tobit2space_pred’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘conf_tobit2space’
-GEF.MultiSite: no visible binding for global variable
-  ‘tobit2space_pred’
-GEF.MultiSite: no visible binding for global variable
-  ‘conf_tobit2space’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘samplerNumberOffset_tobit2space’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘Rmcmc_tobit2space’
-GEF.MultiSite: no visible binding for '<<-' assignment to
-  ‘Cmcmc_tobit2space’
-GEF.MultiSite: no visible binding for global variable
-  ‘Rmcmc_tobit2space’
-GEF.MultiSite: no visible binding for global variable
-  ‘Cmcmc_tobit2space’
-GEF.MultiSite: no visible binding for global variable
-  ‘samplerNumberOffset_tobit2space’
 GEF.MultiSite: no visible binding for global variable ‘blocked.dis’
 GEF.MultiSite: no visible binding for global variable ‘nt’
 GEF.MultiSite: no visible binding for global variable ‘distances’
@@ -98,6 +78,26 @@ sda.enkf.original: no visible global function definition for ‘cov’
 sda.enkf.original : <anonymous>: no visible global function definition
   for ‘quantile’
 simple.local: no visible binding for global variable ‘rloc’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘tobit2space_pred’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘conf_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘tobit2space_pred’
+tobit_model_censored: no visible binding for global variable
+  ‘conf_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘samplerNumberOffset_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘Rmcmc_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘Cmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘Rmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘Cmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘samplerNumberOffset_tobit2space’
 Undefined global functions or variables:
   . Cmcmc_tobit2space J MCMC_iteration N Rmcmc_tobit2space YN abline
   blocked.dis col2rgb conf_tobit2space cov distances ensemble.samples
@@ -145,6 +145,9 @@ Undocumented arguments in documentation object 'sda.enkf'
 Undocumented arguments in documentation object 'sda.enkf.multisite'
   ‘...’
 
+Undocumented arguments in documentation object 'tobit_model_censored'
+  ‘t’
+
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
@@ -156,10 +159,4 @@ Extensions’ manual.
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-
 Status: 2 WARNINGs, 1 NOTE
-See
-  ‘/tmp/RtmpDf3LIm/PEcAnAssimSequential.Rcheck/00check.log’
-for details.
-
-

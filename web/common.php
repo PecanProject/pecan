@@ -14,7 +14,7 @@ function get_footer() {
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), 
     Department of Defense, the Arizona Experiment Station, the Energy Biosciences Institute, 
     and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.7.2</span>";
+    <span style=\"float:right\">PEcAn Version 1.8.0.9000</span>";
 }
 
 function whoami() {

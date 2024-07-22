@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.analysis.R
 \name{sd.var}
 \alias{sd.var}
-\title{Standard deviation of sample variance}
+\title{Calculates the standard deviation of the variance estimate}
 \usage{
 sd.var(x)
 }
@@ -13,9 +13,6 @@ sd.var(x)
 estimate of standard deviation of the sample variance
 }
 \description{
-Calculates the standard deviation of the variance estimate
-}
-\details{
 Uses the equation \eqn{\sigma^4\left(\frac{2}{n-1}+\frac{\kappa}{n}\right)}{\sigma^4 (2/(n-1) + \kappa/n)}
 }
 \references{

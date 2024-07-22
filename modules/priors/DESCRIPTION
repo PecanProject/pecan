@@ -1,8 +1,7 @@
 Package: PEcAn.priors
 Type: Package
 Title: PEcAn Functions Used to Estimate Priors from Data
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.7.3.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -22,4 +21,4 @@ Suggests:
     PEcAn.visualization,
     testthat
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

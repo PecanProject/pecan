@@ -1,8 +1,7 @@
 Package: PEcAn.LDNDC
 Type: Package
 Title: PEcAn package for integration of the LDNDC model
-Version: 1.7.2
-Date: 2022-07-28
+Version: 1.0.0.9000
 Authors@R: c(person("Henri", "Kajasilta", role = c("aut", "cre"),
                     email = "henri.kajasilta@fmi.fi"))
 Description: This module provides functions to link the (LDNDC) to PEcAn.
@@ -26,4 +25,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

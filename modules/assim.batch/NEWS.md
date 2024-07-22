@@ -1,4 +1,8 @@
-# PEcAn.assim.batch 1.7.2.9000
+# PEcAn.assim.batch 1.8.0.9000
+
+
+
+# PEcAn.assim.batch 1.8.0
 
 ## Breaking changes
 * In functions `gpeval` and `mcmc.GP`, parameter `splinefcns` has been renamed to `splinefuns` to match the spelling in `minimize.GP`, thereby also fixing several cases where the wrong name was passed between functions.

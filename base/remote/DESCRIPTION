@@ -1,8 +1,7 @@
 Package: PEcAn.remote
 Type: Package
 Title: PEcAn Model Execution Utilities
-Version: 1.7.2
-Date: 2021-10-04
+Version: 1.8.0.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut"),
                      email = "dlebauer@email.arizona.edu"),
              person("Rob", "Kooper", role = c("aut", "cre"),
@@ -35,4 +34,4 @@ License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
