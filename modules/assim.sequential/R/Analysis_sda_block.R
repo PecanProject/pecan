@@ -633,3 +633,95 @@ block.2.vector <- function (block.list, X, H) {
               mu.a = mu.a,
               Pa = Pa))
 }
+
+##' This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
+##' Including job creation, submission, and assemble.
+##' @title qsub_analysis_submission
+##' @param block.Rdata list: MCMC configuration lists for the block SDA analysis.
+##' @param outdir character: SDA output path.
+##' @param job.per.folder numeric: number of jobs per folder.
+##' @export
+##' 
+qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
+  L <- length(block.list)
+  # calculate proper folder number based on settings.
+  folder.num <- ceiling(L/job.per.folder)
+  # create folder.
+  # if we have previous outputs, remove them.
+  if (file.exists(file.path(outdir, "qsub_analysis"))) {
+    unlink(file.path(outdir, "qsub_analysis"), recursive = T)
+  }
+  # create new folder.
+  dir.create(file.path(outdir, "qsub_analysis"))
+  # loop over sub-folders.
+  folder.paths <- c()
+  PEcAn.logger::logger.info(paste("Submitting", folder.num, "jobs."))
+  for (i in 1:folder.num) {
+    # create folder for each set of job runs.
+    # calculate start and end index for the current folder.
+    head.num <- (i-1)*job.per.folder + 1
+    if (i*job.per.folder > L) {
+      tail.num <- L
+    } else {
+      tail.num <- i*job.per.folder
+    }
+    # naming and creating folder.
+    folder.name <- paste0("From_", head.num, "_to_", tail.num)
+    folder.path <- file.path(outdir, "qsub_analysis", folder.name)
+    folder.paths <- c(folder.paths, folder.path)
+    dir.create(folder.path)
+    # save corresponding block list to the folder.
+    blocks <- block.list[head.num:tail.num]
+    save(blocks, file = file.path(folder.path, "block.Rdata"))
+    # create job file.
+    jobsh <- readLines(con = system.file("analysis_qsub.job", package = "PEcAn.ModelName"), n = -1, warn=FALSE)
+    jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
+    writeLines(jobsh, con = file.path(folder.path, "job.sh"))
+    # qsub command.
+    qsub <- "qsub -l h_rt=48:00:00 -l buyin -pe omp 28 -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+    qsub <- gsub("@NAME@", paste0("Job-", i), qsub)
+    qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
+    qsub <- gsub("@STDERR@", file.path(folder.path, "stderr.log"), qsub)
+    qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
+    cmd <- qsub[[1]]
+    out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+  }
+  # checking results.
+  PEcAn.logger::logger.info("Checking results.")
+  while (length(list.files(outdir, pattern="results.Rdata", recursive = T)) < folder.num) {
+    Sys.sleep(60)
+  }
+  # assemble results.
+  PEcAn.logger::logger.info("Assembling results.")
+  analysis <- c()
+  for (path in seq_along(folder.paths)) {
+    load(file.path(path, "results.Rdata"))
+    analysis <- c(analysis, results)
+  }
+  return(analysis)
+}
+
+##' This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
+##' @title qsub_analysis
+##' @param folder.path character: path where the `block.Rdata` file is stored.
+##' @export
+qsub_analysis <- function(folder.path) {
+  # load file.
+  load(file.path(folder.path, "block.Rdata"))
+  # initialize parallel.
+  cores <- parallel::detectCores()
+  if (cores > 28) cores <- 28
+  cl <- parallel::makeCluster(cores)
+  doSNOW::registerDoSNOW(cl)
+  # progress bar
+  pb <- utils::txtProgressBar(min=1, max=length(blocks), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
+  # parallel computation.
+  results <- foreach::foreach(l = blocks, .packages=c("Kendall", "purrr"), .options.snow=opts) %dopar% {
+    MCMC_block_function(l)
+  }
+  # wrap results.
+  parallel::stopCluster(cl)
+  save(results, file = file.path(folder.path, "results.Rdata"))
+}
