@@ -644,7 +644,7 @@ block.2.vector <- function (block.list, X, H) {
 ##' This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
 ##' Including job creation, submission, and assemble.
 ##' @title qsub_analysis_submission
-##' @param block.Rdata list: MCMC configuration lists for the block SDA analysis.
+##' @param block.list list: MCMC configuration lists for the block SDA analysis.
 ##' @param outdir character: SDA output path.
 ##' @param job.per.folder numeric: number of jobs per folder.
 ##' @export
@@ -711,6 +711,7 @@ qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
 ##' This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
 ##' @title qsub_analysis
 ##' @param folder.path character: path where the `block.Rdata` file is stored.
+##' @importFrom foreach %dopar%
 ##' @export
 qsub_analysis <- function(folder.path) {
   # load file.
@@ -725,6 +726,8 @@ qsub_analysis <- function(folder.path) {
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
   # parallel computation.
+  l <- NULL # fix GitHub check issue.
+  results <- NULL # fix GitHub check issue.
   results <- foreach::foreach(l = blocks, .packages=c("Kendall", "purrr"), .options.snow=opts) %dopar% {
     MCMC_block_function(l)
   }

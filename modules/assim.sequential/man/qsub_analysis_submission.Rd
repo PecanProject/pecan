@@ -7,11 +7,11 @@
 qsub_analysis_submission(block.list, outdir, job.per.folder = 200)
 }
 \arguments{
+\item{block.list}{list: MCMC configuration lists for the block SDA analysis.}
+
 \item{outdir}{character: SDA output path.}
 
 \item{job.per.folder}{numeric: number of jobs per folder.}
-
-\item{block.Rdata}{list: MCMC configuration lists for the block SDA analysis.}
 }
 \description{
 This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
