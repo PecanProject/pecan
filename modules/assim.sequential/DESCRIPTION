@@ -12,7 +12,6 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Imports:
     coda,
     dplyr,
-    foreach,
     furrr,
     future,
     ggplot2,
@@ -34,6 +33,7 @@ Imports:
 Suggests:
     corrplot,
     doSNOW,
+    foreach,
     ggrepel,
     emdbook,
     glue,
