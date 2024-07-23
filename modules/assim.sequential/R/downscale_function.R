@@ -99,7 +99,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##'
 ##' @return A list containing the training and testing data sets, models, predicted maps for each ensemble member, and predictions for testing data.
 
-SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type, seed = NULL) {
+SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type = "rf", seed = NULL) {
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
