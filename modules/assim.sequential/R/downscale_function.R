@@ -14,31 +14,21 @@
 
 # Preprocess function to check and clean the data
 SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) {
-  # Read the input data and site coordinates
   input_data <- readRDS(data_path)
   site_coordinates <- readr::read_csv(coords_path)
   
-  # Convert input_data names to standard date format
-  input_date_names <- suppressWarnings(as.character(lubridate::ymd(names(input_data))))
-  names(input_data) <- ifelse(is.na(input_date_names), 
-                              names(input_data),
-                              input_date_names)
+  input_date_names <- lubridate::ymd(names(input_data))
+  names(input_data) <- input_date_names
   
-  # Convert the input date to standard format
-  standard_date <- as.character(lubridate::ymd(date))
+  standard_date <- lubridate::ymd(date)
   
-  # Ensure the date exists in the input data
   if (!standard_date %in% names(input_data)) {
     stop(paste("Date", date, "not found in the input data."))
   }
   
-  # Extract the carbon data for the specified focus year
   index <- which(names(input_data) == standard_date)
   data <- input_data[[index]]
   
-  # Rest of the function remains the same...
-  
-  # Ensure the carbon pool exists in the input data
   if (!carbon_pool %in% names(data)) {
     stop(paste("Carbon pool", carbon_pool, "not found in the input data."))
   }
@@ -46,12 +36,10 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
   carbon_data <- as.data.frame(t(data[which(names(data) == carbon_pool)]))
   names(carbon_data) <- paste0("ensemble", seq(ncol(carbon_data)))
   
-  # Ensure site coordinates have 'lon' and 'lat' columns
   if (!all(c("lon", "lat") %in% names(site_coordinates))) {
     stop("Site coordinates must contain 'lon' and 'lat' columns.")
   }
   
-  # Ensure the number of rows in site coordinates matches the number of rows in carbon data
   if (nrow(site_coordinates) != nrow(carbon_data)) {
     message("Number of rows in site coordinates does not match the number of rows in carbon data.")
     if (nrow(site_coordinates) > nrow(carbon_data)) {
