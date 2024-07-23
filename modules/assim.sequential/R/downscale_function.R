@@ -252,7 +252,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
 }
 
 ##' @title Calculate Metrics for Downscaling Results
-##' @name calculate_metrics
+##' @name SDA_downscale_metrics
 ##' @author Sambhav Dixit
 ##'
 ##' @param downscale_output List. Output from the SDA_downscale function, containing data, models, maps, and predictions for each ensemble.
@@ -264,7 +264,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
 ##'
 ##' @return A list of metrics for each ensemble, where each element contains MAE , MSE ,R_squared ,actual values from testing data and predicted values for the testing data 
 
-calculate_metrics <- function(downscale_output, carbon_pool) {
+SDA_downscale_metrics <- function(downscale_output, carbon_pool) {
   metrics <- list()
   
   for (i in 1:length(downscale_output$data)) {
