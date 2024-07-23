@@ -102,25 +102,44 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   input_data <- preprocessed$input_data
   site_coordinates <- preprocessed$site_coordinates
   carbon_data <- preprocessed$carbon_data
-  
+
   # Convert site coordinates to SpatVector
   site_coordinates <- terra::vect(site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
-  
+
   # Extract predictors from covariates raster using site coordinates
   predictors <- as.data.frame(terra::extract(covariates, site_coordinates, ID = FALSE))
-  
+
   # Dynamically get covariate names
   covariate_names <- names(predictors)
-  
+
   # Create a single data frame with all predictors and ensemble data
   full_data <- cbind(carbon_data, predictors)
-  
+
   # Split the observations into training and testing sets
   set.seed(123)  # for reproducibility
   sample <- sample(1:nrow(full_data), size = round(0.75 * nrow(full_data)))
   train_data <- full_data[sample, ]
   test_data <- full_data[-sample, ]
-  
+
+  # Prepare data for both RF and CNN
+  x_data <- as.matrix(full_data[, covariate_names])
+  y_data <- as.matrix(carbon_data)
+
+  # Calculate scaling parameters from all data
+  scaling_params <- list(
+    mean = colMeans(x_data),
+    sd = apply(x_data, 2, sd)
+  )
+
+  # Normalize the data
+  x_data_scaled <- scale(x_data, center = scaling_params$mean, scale = scaling_params$sd)
+
+  # Split into training and testing sets
+  x_train <- x_data_scaled[sample, ]
+  x_test <- x_data_scaled[-sample, ]
+  y_train <- y_data[sample, ]
+  y_test <- y_data[-sample, ]
+
   if (model_type == "rf") {
     # Train a random forest model for each ensemble member using the training data
     rf_output <- list()
@@ -152,25 +171,6 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     )
     
   } else if (model_type == "cnn") {
-    # Prepare data for CNN
-    x_data <- as.matrix(full_data[, covariate_names])
-    y_data <- as.matrix(carbon_data)
-    
-    # Calculate scaling parameters from all data
-    scaling_params <- list(
-      mean = colMeans(x_data),
-      sd = apply(x_data, 2, sd)
-    )
-    
-    # Normalize the data
-    x_data_scaled <- scale(x_data, center = scaling_params$mean, scale = scaling_params$sd)
-    
-    # Split into training and testing sets
-    x_train <- x_data_scaled[sample, ]
-    x_test <- x_data_scaled[-sample, ]
-    y_train <- y_data[sample, ]
-    y_test <- y_data[-sample, ]
-    
     # Reshape data for CNN input (samples, timesteps, features)
     x_train <- array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
     x_test <- array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
@@ -221,8 +221,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       prediction_rast <- terra::rast(covariates)
       
       # Use terra::predict to apply the CNN model
-      maps[[i]] <- terra::predict(prediction_rast, model = cnn_output[[i]], 
-                                  fun = cnn_predict, 
+      maps[[i]] <- terra::predict(prediction_rast, model = cnn_output[[i]],
+                                  fun = cnn_predict,
                                   scaling_params = scaling_params)
       
       # Generate predictions for testing data
@@ -240,14 +240,14 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   } else {
     stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
   }
-  
+
   # Rename each element of the output list with appropriate ensemble numbers
   for (i in seq_along(carbon_data)) {
     names(downscale_output$models)[i] <- paste0("ensemble", i)
     names(downscale_output$maps)[i] <- paste0("ensemble", i)
     names(downscale_output$predictions)[i] <- paste0("ensemble", i)
   }
-  
+
   return(downscale_output)
 }
 
