@@ -4,7 +4,12 @@
 \alias{qsub_analysis_submission}
 \title{qsub_analysis_submission}
 \usage{
-qsub_analysis_submission(block.list, outdir, job.per.folder = 200)
+qsub_analysis_submission(
+  block.list,
+  outdir,
+  job.per.folder = 200,
+  cores = NULL
+)
 }
 \arguments{
 \item{block.list}{list: MCMC configuration lists for the block SDA analysis.}
@@ -12,6 +17,8 @@ qsub_analysis_submission(block.list, outdir, job.per.folder = 200)
 \item{outdir}{character: SDA output path.}
 
 \item{job.per.folder}{numeric: number of jobs per folder.}
+
+\item{cores}{numeric: number of cpus used for parallel computaion. Default is NULL.}
 }
 \description{
 This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.

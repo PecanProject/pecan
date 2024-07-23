@@ -58,8 +58,10 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
-  if (as.logical(settings$state.data.assimilation$qsub_analysis)) {
-    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(block.list.all[[t]], settings$outdir)))) {
+  if (!is.null(settings$state.data.assimilation$qsub_analysis)) {# qsub_analysis <- list(cores = 28)
+    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(block.list = block.list.all[[t]], 
+                                                                                   outdir = settings$outdir, 
+                                                                                   cores = as.numeric(settings$state.data.assimilation$qsub_analysis$cores))))) {
       PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
       return(0)
     }
@@ -647,9 +649,10 @@ block.2.vector <- function (block.list, X, H) {
 ##' @param block.list list: MCMC configuration lists for the block SDA analysis.
 ##' @param outdir character: SDA output path.
 ##' @param job.per.folder numeric: number of jobs per folder.
+##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
 ##' @export
 ##' 
-qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
+qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200, cores = NULL) {
   L <- length(block.list)
   # calculate proper folder number based on settings.
   folder.num <- ceiling(L/job.per.folder)
@@ -661,7 +664,7 @@ qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
   # create new folder.
   dir.create(file.path(outdir, "qsub_analysis"))
   # loop over sub-folders.
-  folder.paths <- c()
+  folder.paths <- job.ids <- c()
   PEcAn.logger::logger.info(paste("Submitting", folder.num, "jobs."))
   for (i in 1:folder.num) {
     # create folder for each set of job runs.
@@ -692,18 +695,34 @@ qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
     qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
     cmd <- qsub[[1]]
     out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
   }
   # checking results.
   PEcAn.logger::logger.info("Checking results.")
-  while (length(list.files(outdir, pattern="results.Rdata", recursive = T)) < folder.num) {
+  # if remaining number of jobs larger than 0.
+  while (length(job.ids) > 0) {
     Sys.sleep(60)
+    completed_jobs <- job.ids %>% purrr::map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat)) {
+        return(id)
+      }
+    }) %>% unlist()
+    job.ids <- job.ids[which(!job.ids %in% completed_jobs)]
   }
   # assemble results.
   PEcAn.logger::logger.info("Assembling results.")
   analysis <- c()
   for (path in seq_along(folder.paths)) {
-    load(file.path(path, "results.Rdata"))
-    analysis <- c(analysis, results)
+    res_env <- new.env()
+    load(file.path(path, "results.Rdata"), envir = res_env)
+    analysis <- c(analysis, res_env$results)
   }
   return(analysis)
 }
@@ -711,14 +730,16 @@ qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200) {
 ##' This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
 ##' @title qsub_analysis
 ##' @param folder.path character: path where the `block.Rdata` file is stored.
+##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
 ##' @importFrom foreach %dopar%
 ##' @export
-qsub_analysis <- function(folder.path) {
+qsub_analysis <- function(folder.path, cores = NULL) {
   # load file.
   load(file.path(folder.path, "block.Rdata"))
   # initialize parallel.
-  cores <- parallel::detectCores()
-  if (cores > 28) cores <- 28
+  if (is.null(cores)) {
+    cores <- parallel::detectCores()
+  }
   cl <- parallel::makeCluster(cores)
   doSNOW::registerDoSNOW(cl)
   # progress bar
@@ -727,7 +748,6 @@ qsub_analysis <- function(folder.path) {
   opts <- list(progress=progress)
   # parallel computation.
   l <- NULL # fix GitHub check issue.
-  results <- NULL # fix GitHub check issue.
   results <- foreach::foreach(l = blocks, .packages=c("Kendall", "purrr"), .options.snow=opts) %dopar% {
     MCMC_block_function(l)
   }

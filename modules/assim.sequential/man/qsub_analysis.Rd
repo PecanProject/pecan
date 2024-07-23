@@ -4,10 +4,12 @@
 \alias{qsub_analysis}
 \title{qsub_analysis}
 \usage{
-qsub_analysis(folder.path)
+qsub_analysis(folder.path, cores = NULL)
 }
 \arguments{
 \item{folder.path}{character: path where the `block.Rdata` file is stored.}
+
+\item{cores}{numeric: number of cpus used for parallel computaion. Default is NULL.}
 }
 \description{
 This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
