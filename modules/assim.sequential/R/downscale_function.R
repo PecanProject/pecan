@@ -90,7 +90,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   covariate_names <- base::names(predictors)
   
   # Create a single data frame with all predictors and ensemble data
-  full_data <- base::cbind(carbon_data, predictors)
+  full_data <- base::cbind(preprocessed$carbon_data, predictors)
   
   # Split the observations into training and testing sets
   if (!base::is.null(seed)) {
