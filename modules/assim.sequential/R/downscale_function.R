@@ -123,59 +123,42 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   y_train <- y_data[sample, ]
   y_test <- y_data[-sample, ]
   
+  # Initialize lists for outputs
+  models <- base::list()
+  maps <- base::list()
+  predictions <- base::list()
+  
   if (model_type == "rf") {
-    # Train a random forest model for each ensemble member using the training data
-    rf_output <- base::list()
     for (i in base::seq_along(carbon_data)) {
       ensemble_col <- base::paste0("ensemble", i)
       formula <- stats::as.formula(base::paste(ensemble_col, "~", base::paste(covariate_names, collapse = " + ")))
-      rf_output[[i]] <- randomForest::randomForest(formula,
-                                                   data = train_data,
-                                                   ntree = 1000,
-                                                   na.action = stats::na.omit,
-                                                   keep.forest = TRUE,
-                                                   importance = TRUE)
+      models[[i]] <- randomForest::randomForest(formula,
+                                                data = train_data,
+                                                ntree = 1000,
+                                                na.action = stats::na.omit,
+                                                keep.forest = TRUE,
+                                                importance = TRUE)
+      
+      maps[[i]] <- terra::predict(covariates, model = models[[i]], na.rm = TRUE)
+      predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
-    
-    # Generate predictions (maps) for each ensemble member using the trained models
-    maps <- base::list()
-    predictions <- base::list()
-    for (i in base::seq_along(rf_output)) {
-      maps[[i]] <- terra::predict(covariates, model = rf_output[[i]], na.rm = TRUE)
-      predictions[[i]] <- stats::predict(rf_output[[i]], test_data)
-    }
-    
-    # Organize the results into a single output list
-    downscale_output <- base::list(
-      data = base::list(training = train_data, testing = test_data),
-      models = rf_output,
-      maps = maps,
-      predictions = predictions
-    )
-    
   } else if (model_type == "cnn") {
-    # Reshape data for CNN input (samples, timesteps, features)
     x_train <- array_reshape(x_train, c(base::nrow(x_train), 1, base::ncol(x_train)))
     x_test <- array_reshape(x_test, c(base::nrow(x_test), 1, base::ncol(x_test)))
     
-    # Train a CNN model for each ensemble member
-    cnn_output <- base::list()
     for (i in base::seq_along(carbon_data)) {
-      # Define the CNN model
       model <- keras_model_sequential() |>
         layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, base::length(covariate_names))) |>
         layer_flatten() |>
         layer_dense(units = 64, activation = 'relu') |>
         layer_dense(units = 1)
       
-      # Compile the model
       model |> compile(
         loss = 'mean_squared_error',
         optimizer = optimizer_adam(),
         metrics = c('mean_absolute_error')
       )
       
-      # Train the model
       model |> fit(
         x = x_train,
         y = y_train[, i],
@@ -185,44 +168,34 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         verbose = 0
       )
       
-      cnn_output[[i]] <- model
-    }
-    
-    # Custom predict function for CNN
-    cnn_predict <- function(model, newdata, scaling_params) {
-      newdata <- base::scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
-      newdata <- array_reshape(newdata, c(base::nrow(newdata), 1, base::ncol(newdata)))
-      predictions <- stats::predict(model, newdata)
-      base::return(base::as.vector(predictions))
-    }
-    
-    # Generate predictions (maps) for each ensemble member using the trained models
-    maps <- base::list()
-    predictions <- base::list()
-    for (i in base::seq_along(cnn_output)) {
-      # Create a SpatRaster with the same properties as covariates
-      prediction_rast <- terra::rast(covariates)
+      models[[i]] <- model
       
-      # Use terra::predict to apply the CNN model
-      maps[[i]] <- terra::predict(prediction_rast, model = cnn_output[[i]],
+      cnn_predict <- function(model, newdata, scaling_params) {
+        newdata <- base::scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
+        newdata <- array_reshape(newdata, c(base::nrow(newdata), 1, base::ncol(newdata)))
+        predictions <- stats::predict(model, newdata)
+        base::return(base::as.vector(predictions))
+      }
+      
+      prediction_rast <- terra::rast(covariates)
+      maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
                                   fun = cnn_predict,
                                   scaling_params = scaling_params)
       
-      # Generate predictions for testing data
-      predictions[[i]] <- cnn_predict(cnn_output[[i]], x_data[-sample, ], scaling_params)
+      predictions[[i]] <- cnn_predict(models[[i]], x_data[-sample, ], scaling_params)
     }
-    
-    # Organize the results into a single output list
-    downscale_output <- base::list(
-      data = base::list(training = train_data, testing = test_data),
-      models = cnn_output,
-      maps = maps,
-      predictions = predictions,
-      scaling_params = scaling_params
-    )
   } else {
     base::stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
   }
+  
+  # Organize the results into a single output list
+  downscale_output <- base::list(
+    data = base::list(training = train_data, testing = test_data),
+    models = models,
+    maps = maps,
+    predictions = predictions,
+    scaling_params = scaling_params
+  )
   
   # Rename each element of the output list with appropriate ensemble numbers
   for (i in base::seq_along(carbon_data)) {
