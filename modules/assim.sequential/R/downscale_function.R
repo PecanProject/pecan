@@ -12,7 +12,6 @@
 ##'
 ##' @return A list containing The read .rds data , The cleaned site coordinates, and the preprocessed carbon data.
 
-# Preprocess function to check and clean the data
 SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) {
   # Read the input data and site coordinates
   input_data <- base::readRDS(data_path)
