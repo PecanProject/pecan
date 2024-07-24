@@ -2,21 +2,18 @@
 % Please edit documentation in R/sensitivity.analysis.R
 \name{sa.splinefun}
 \alias{sa.splinefun}
-\title{Sensitivity spline function}
+\title{Spline estimate of univariate relationship between parameter value and model output}
 \usage{
 sa.splinefun(quantiles.input, quantiles.output)
 }
 \arguments{
-\item{quantiles.input}{}
+\item{quantiles.input}{passed to `x` argument of `stats::splinefun`}
 
-\item{quantiles.output}{}
+\item{quantiles.output}{passed to `y` argument of `stats::splinefun`}
 }
 \value{
 function
 }
 \description{
-Spline estimate of univariate relationship between parameter value and model output
-}
-\details{
 Creates a spline function using the splinefun function that estimates univariate response of parameter input to model output
 }

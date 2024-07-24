@@ -1,7 +1,6 @@
 Package: PEcAn.logger
 Title: Logger Functions for 'PEcAn'
-Version: 1.8.1.9000
-Date: 2021-07-27
+Version: 1.8.2.9000
 Authors@R: c(person("Rob", "Kooper", role = c("aut", "cre"),
                      email = "kooper@illinois.edu"),
              person("Alexey", "Shiklomanov", role = c("aut"),
@@ -30,5 +29,5 @@ Suggests:
     withr
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

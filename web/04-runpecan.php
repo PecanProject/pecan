@@ -401,7 +401,9 @@ foreach($_REQUEST as $key => $val) {
     $parts=explode(".", $val, 3);
     fwrite($fh, "        <source>{$parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>{$parts[1]}</output>" . PHP_EOL);
-    fwrite($fh, "        <product>{$parts[2]}</product>" . PHP_EOL);
+    if (count($parts) > 2) {
+      fwrite($fh, "        <product>{$parts[2]}</product>" . PHP_EOL);
+    }
     if (isset($_REQUEST['fluxusername'])) {
       fwrite($fh, "      <username>{$_REQUEST['fluxusername']}</username>" . PHP_EOL);
     }

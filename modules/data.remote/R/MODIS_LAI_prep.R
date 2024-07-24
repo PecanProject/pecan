@@ -40,7 +40,10 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
     Previous_CSV <- utils::read.csv(file.path(outdir, "LAI.csv"))
     if (!is.null(sd_threshold)) {
       PEcAn.logger::logger.info("filtering out records with high standard errors!")
-      Previous_CSV <- Previous_CSV[-which(Previous_CSV$sd >= sd_threshold),]
+      ind.rm <- which(Previous_CSV$sd >= sd_threshold)
+      if (length(ind.rm) > 0) {
+        Previous_CSV <- Previous_CSV[-ind.rm,]
+      }
     }
     LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
       `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
@@ -147,7 +150,7 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
           next
         }
         if (!is.null(sd_threshold)) {
-          if (lai_std >= sd_threshold) {
+          if (lai_std[[i]][j] >= sd_threshold) {
             next
           }
         }
@@ -180,11 +183,9 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
         site_LAI <- Current_CSV[which(Current_CSV$site_id == id),]
         site_LAI$sd[which(site_LAI$sd<=0.66)] <- 0.66
         diff_days <- abs(lubridate::days(lubridate::date(site_LAI$date)-lubridate::date(t))@day)
-        if(sum(diff_days <= as.numeric(search_window))){#data found
-          IND <- which((diff_days <= as.numeric(search_window)))
-          IND1 <- which(site_LAI$lai[IND] == max(site_LAI$lai[IND]))[1]
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- max(site_LAI$lai[IND[IND1]])
-          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[IND[IND1]]
+        if(any(diff_days <= as.numeric(search_window))){#data found
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_LAI")] <- site_LAI$lai[which.min(diff_days)]
+          LAI_Output[which(LAI_Output$site_id==id), paste0(t, "_SD")] <- site_LAI$sd[which.min(diff_days)]
         }
       }
     }

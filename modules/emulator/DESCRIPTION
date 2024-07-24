@@ -1,8 +1,7 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process Emulator
-Version: 1.7.2.9000
-Date: 2021-10-04
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -16,4 +15,4 @@ Description: Implementation of a Gaussian Process model (both likelihood and
     for sampling design and prediction.
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

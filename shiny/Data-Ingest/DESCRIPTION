@@ -1,7 +1,6 @@
 Type: Shiny
 Title: Data-Ingest
 License: BSD_3_clause + file LICENSE
-Date: 2019-09-05
 Author: Liam Burke liam.burke24@gmail.com
 Tags: PEcAn
 DisplayMode: showcase 

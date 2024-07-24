@@ -1,8 +1,7 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.7.2.9000
-Date: 2021-10-04
+Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut"),
@@ -71,4 +70,4 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

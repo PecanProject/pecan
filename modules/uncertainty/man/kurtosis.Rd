@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity.analysis.R
 \name{kurtosis}
 \alias{kurtosis}
-\title{Calculate excess kurtosis from a vector}
+\title{Calculates the excess kurtosis of a vector}
 \usage{
 kurtosis(x)
 }
@@ -13,13 +13,9 @@ kurtosis(x)
 numeric value of kurtosis
 }
 \description{
-Calculates the excess kurtosis of a vector
-}
-\details{
 Note that this calculates the 'excess kurtosis', which is defined as kurtosis - 3.
 This statistic is used in the calculation of the standard deviation of sample variance
-in the function \code{\link{sd.var}}.  
-Additional details
+in the function \code{\link{sd.var}}.
 }
 \references{
 NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.

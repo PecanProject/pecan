@@ -8,6 +8,21 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Added
+
+### Fixed
+
+### Changed
+- The following components have changed their licensing. With approval of all their contributors, we now provide them under a BSD 3-clause license rather than the previously used NCSA Open Source license. As a reminder, we intend to relicense the entire system and this list will expand as we gather permission from the relevant copyright owners.
+    * Shiny apps `dbsync`, `Data-Ingest`, and `Elicitation`
+    * Base packages `PEcAn.all` and `PEcAn.QAQC`
+    * Model packages `PEcAn.LDNDC`, `PEcAn.SIBCASA`, and `PEcAn.STICS`
+
+### Removed
+
+
+## [1.8.0] - 2024-07-12
+
+### Added
 - Created a new soilgrids function to extract the mean soil organic carbon profile with associated undertainty values at each depth for any lat/long location (#3040). Function was created for the CMS SDA workflow
 
 - `PEcAn.all` gains new function `pecan_version`, which reports for each PEcAn
