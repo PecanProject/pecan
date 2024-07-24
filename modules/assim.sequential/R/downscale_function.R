@@ -79,7 +79,6 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##' @return A list containing the training and testing data sets, models, predicted maps for each ensemble member, and predictions for testing data.
 
 SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_type = "rf", seed = NULL) {
-  carbon_data <- preprocessed$carbon_data
   
   # Convert site coordinates to SpatVector
   site_coordinates <- terra::vect(preprocessed$site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
