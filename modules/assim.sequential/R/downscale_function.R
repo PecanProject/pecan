@@ -84,7 +84,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   carbon_data <- preprocessed$carbon_data
   
   # Convert site coordinates to SpatVector
-  site_coordinates <- terra::vect(site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
+  site_coordinates <- terra::vect(preprocessed$site_coordinates, geom = c("lon", "lat"), crs = "EPSG:4326")
   
   # Extract predictors from covariates raster using site coordinates
   predictors <- base::as.data.frame(terra::extract(covariates, site_coordinates, ID = FALSE))
