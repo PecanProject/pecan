@@ -2,38 +2,39 @@
 % Please edit documentation in R/downscale_function.R
 \name{SDA_downscale}
 \alias{SDA_downscale}
-\title{North America Downscale Function}
+\title{SDA Downscale Function}
 \usage{
-SDA_downscale(preprocessed, date, carbon_pool, covariates, model_type)
+SDA_downscale(
+  preprocessed,
+  date,
+  carbon_pool,
+  covariates,
+  model_type = "rf",
+  seed = NULL
+)
 }
 \arguments{
 \item{preprocessed}{List. Preprocessed data returned as an output from the SDA_downscale_preprocess function.}
 
-\item{date}{Character. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'data'.}
+\item{date}{Date. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within file supplied to 'preprocessed' from the 'data_path'.}
 
-\item{carbon_pool}{Character. Carbon pool of interest. Name must match carbon pool name found within file supplied to 'data'.}
+\item{carbon_pool}{Character. Carbon pool of interest. Name must match carbon pool name found within file supplied to 'preprocessed' from the 'data_path'.}
 
-\item{covariates}{SpatRaster stack. Used as predictors in CNN. Layers within stack should be named.}
+\item{covariates}{SpatRaster stack. Used as predictors in downscaling. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder}
 
-\item{model_type}{Character. Either "rf" for Random Forest or "cnn" for Convolutional Neural Network.}
+\item{model_type}{Character. Either "rf" for Random Forest or "cnn" for Convolutional Neural Network. Default is Random Forest.}
+
+\item{seed}{Numeric or NULL. Optional seed for random number generation. Default is NULL.}
 }
 \value{
-It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
-
 A list containing the training and testing data sets, models, predicted maps for each ensemble member, and predictions for testing data.
 }
 \description{
 This function uses either Random Forest or Convolutional Neural Network model based on the model_type parameter.
-
-This function uses either Random Forest or Convolutional Neural Network model based on the model_type parameter.
 }
 \details{
 This function will downscale forecast data to unmodeled locations using covariates and site locations
-
-This function will downscale forecast data to unmodeled locations using covariates and site locations
 }
 \author{
-Joshua Ploshay , Sambhav Dixit
-
 Joshua Ploshay, Sambhav Dixit
 }
