@@ -731,7 +731,6 @@ qsub_analysis_submission <- function(block.list, outdir, job.per.folder = 200, c
 ##' @title qsub_analysis
 ##' @param folder.path character: path where the `block.Rdata` file is stored.
 ##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
-##' @importFrom foreach %dopar%
 ##' @export
 qsub_analysis <- function(folder.path, cores = NULL) {
   # load file.
