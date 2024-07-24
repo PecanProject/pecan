@@ -4,7 +4,7 @@
 ##'
 ##' @param data_path Character. File path for .rds containing ensemble data.
 ##' @param coords_path Character. File path for .csv file containing the site coordinates, with columns named "lon" and "lat".
-##' @param date Character. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.
+##' @param date Date. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.
 ##' @param carbon_pool Character. Carbon pool of interest. Name must match the carbon pool name found within the file supplied to 'data_path'.
 ##' @details This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and aligns the number of rows between site coordinates and carbon data.
 ##'
