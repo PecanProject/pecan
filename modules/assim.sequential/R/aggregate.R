@@ -5,7 +5,6 @@
 #' @param downscale_output  Raster file output from downscale_function.R. Read file in this way if stored locally: \code{downscale_output <- readRDS("xxx.rds")}
 #' @param polygon_data A spatial polygon object (e.g., an `sf` object) that defines the spatial units for aggregation. 
 #'                     This data should be in a coordinate reference system compatible with the raster data (e.g., "EPSG:4326").
-#'                     Example of state-level aggregation: 
 #' @param func A character string specifying the aggregation function to use (e.g., 'mean', 'sum').
 #' @details This function will aggregate previously downscaled carbon flux amount to a spatial unit of choice 
 #'
@@ -16,7 +15,7 @@
 #' @export
 #' @examples
 #'        \dontrun{
-#'        # Download US polygon data
+#'        # Download a shapefile of U.S. (polygon data)
 #'        url <- "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_state_20m.zip"
 #'        download.file(url, destfile = "polygon/us_states.zip")
 #'        
@@ -35,6 +34,7 @@
 #'        
 #'        # Slot in as argument to the aggregate function
 #'        result <- aggregate(downscale_output, polygon_data)
+#'        print(result)
 #'        }
 
 aggregate <- function(downscale_output, polygon_data, func = 'mean'){
