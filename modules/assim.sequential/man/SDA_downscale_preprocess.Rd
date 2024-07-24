@@ -11,7 +11,7 @@ SDA_downscale_preprocess(data_path, coords_path, date, carbon_pool)
 
 \item{coords_path}{Character. File path for .csv file containing the site coordinates, with columns named "lon" and "lat".}
 
-\item{date}{Character. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.}
+\item{date}{Date. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.}
 
 \item{carbon_pool}{Character. Carbon pool of interest. Name must match the carbon pool name found within the file supplied to 'data_path'.}
 }
