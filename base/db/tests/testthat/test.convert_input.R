@@ -3,6 +3,11 @@ test_that("`convert_input()` able to call the respective download function for a
 
   mockery::stub(convert_input, "dbfile.input.check", data.frame())
   mockery::stub(convert_input, "db.query", data.frame(id = 1))
+  mockery::stub(convert_input, "get.machine.info", list(
+    machine = data.frame(id = 1),
+    input = data.frame(id = 1),
+    dbfile = data.frame(id = 1)
+  ))
   mockery::stub(convert_input, "PEcAn.remote::remote.execute.R", mocked_res)
   mockery::stub(convert_input, "check_missing_files", list(
     result_sizes = data.frame(

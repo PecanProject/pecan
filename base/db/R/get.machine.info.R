@@ -7,7 +7,7 @@
 #' @return list of machine, input, and dbfile records
 #' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-get.machine.info <- function(host, dbfile.id, input.id = NULL, con) {
+get.machine.info <- function(host, input.args, input.id = NULL, con = NULL) {
     machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
     machine <- db.query(paste0(
         "SELECT * from machines where hostname = '",

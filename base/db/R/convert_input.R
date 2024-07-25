@@ -520,7 +520,7 @@ convert_input <-
   
   #---------------------------------------------------------------------------------------------------------------#
   # Get machine information
-  machine.info <- get.machine.info(host, dbfile.id = input.args$dbfile.id, input.id = input.id)
+  machine.info <- get.machine.info(host, input.args = input.args, input.id = input.id)
 
   machine <- machine.info$machine
   input <- machine.info$input
