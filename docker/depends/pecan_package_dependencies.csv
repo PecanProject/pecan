@@ -61,6 +61,7 @@
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "emdbook","*","modules/assim.sequential","Suggests",FALSE
+"exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Suggests",FALSE
 "foreach","*","modules/data.remote","Imports",FALSE
