@@ -38,7 +38,13 @@ test_that("returns error of unmatched CRS", {
   polygon_data <- st_transform(us_states[us_states$STUSPS == state, ], crs = "EPSG:2222")
   
   # Load the downscaled raster output
-  downscale_output <- readRDS("test_aggregation/downscale_output_hrly.rds")
+  downscale_output <- list(
+    maps = list(
+      ensemble1 = "test_aggregation/ensemble1.tif",
+      ensemble2 = "test_aggregation/ensemble2.tif",
+      ensemble3 = "test_aggregation/ensemble3.tif"
+    )
+  )
   
   read_raster <- function(file_path) {
     rast(file_path)
