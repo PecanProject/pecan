@@ -514,7 +514,7 @@ convert_input <-
         # we'll need to update its start/end dates .
       } 
     } else {
-      # No existing record found. Should be good to go.
+      PEcAn.logger::logger.debug("No existing record found. Should be good to go.")
     }
   }
   
