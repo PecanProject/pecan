@@ -4,7 +4,8 @@
 # ./confirm_deps path/to/package [dependencies]
 # Usage as a function: source in and use as documented below
 
-
+# NOTE: Superseded.
+# `pak::local_install_deps(..., upgrade = FALSE)` now does this nicely.
 
 #' Check whether a local package's dependencies are already satisfied
 #'

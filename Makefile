@@ -70,8 +70,10 @@ files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
 # a circular dependency between benchmark and data.land.
 # When this is fixed, can go back to simple `dependencies = TRUE`
-depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
-	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
+depends_R_pkg = ./scripts/time.sh "depends ${1}" Rscript \
+	-e "pak::local_install_deps('$(strip $(1))'," \
+	-e "dependencies = $(if $(findstring modules/benchmark,$(1)),NA,TRUE)," \
+	-e "upgrade = FALSE)"
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
 	-e "remotes::install_local('$(strip $(1))', force=TRUE, dependencies=FALSE, upgrade=FALSE)"
@@ -146,7 +148,13 @@ clean:
 	find models/basgra/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
-	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
+	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
+	echo `date` > $@
+
+.install/pak: | .install
+	+ ./scripts/time.sh "pak ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if(!requireNamespace('pak', quietly = TRUE)) install.packages('pak')"
 	echo `date` > $@
 
 .install/roxygen2: | .install .install/devtools
@@ -167,7 +175,7 @@ clean:
 	+ ./scripts/time.sh "mockery ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('mockery', quietly = TRUE)) install.packages('mockery')"
 	echo `date` > $@
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/roxygen2 .install/testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .install/pak .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(call files_in_dir, %) | $$(@D)
