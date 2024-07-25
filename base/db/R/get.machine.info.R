@@ -1,6 +1,6 @@
 #' Get machine information from db
 #' @param host host information
-#' @param dbfile.id dbfile id for existing records
+#' @param input.args input args.r for existing records
 #' @param input.id input id for existing records
 #' @param con database connection
 #' 

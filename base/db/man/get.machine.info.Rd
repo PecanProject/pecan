@@ -4,12 +4,12 @@
 \alias{get.machine.info}
 \title{Get machine information from db}
 \usage{
-get.machine.info(host, dbfile.id, input.id = NULL, con)
+get.machine.info(host, input.args, input.id = NULL, con = NULL)
 }
 \arguments{
 \item{host}{host information}
 
-\item{dbfile.id}{dbfile id for existing records}
+\item{input.args}{input args for existing records}
 
 \item{input.id}{input id for existing records}
 
