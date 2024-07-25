@@ -33,6 +33,7 @@ add.database.entries <- function(
         # Setup newinput. This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
         # This list will be returned.
         newinput <- list(input.id = NULL, dbfile.id = NULL) # Blank vectors are null.
+
         for (i in 1:length(result)) { # Master for loop
             id_not_added <- TRUE
 
@@ -72,7 +73,16 @@ add.database.entries <- function(
             }
 
             if (insert.new.file && id_not_added) {
-                dbfile.id <- dbfile.insert(in.path = dirname(result[[i]]$file[1]), in.prefix = result[[i]]$dbfile.name[1], "Input", existing.input[[i]]$id, con, reuse = TRUE, hostname = machine$hostname)
+                dbfile.id <- dbfile.insert(
+                    in.path = dirname(result[[i]]$file[1]),
+                    in.prefix = result[[i]]$dbfile.name[1],
+                    "Input",
+                    existing.input[[i]]$id,
+                    con,
+                    reuse = TRUE,
+                    hostname = machine$hostname
+                )
+
                 newinput$input.id <- c(newinput$input.id, existing.input[[i]]$id)
                 newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
             } else if (id_not_added) {

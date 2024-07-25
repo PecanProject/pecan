@@ -737,10 +737,8 @@ convert_input <-
   checked.missing.files <- check_missing_files(result, outname, existing.input, existing.dbfile)
 
   # Unwrap parameters after performing checks for missing files
-  result_sizes <- checked.missing.files$result_sizes;
-  outlist <- checked.missing.files$outlist;
-  existing.input <- checked.missing.files$existing.input;
-  existing.dbfile <- checked.missing.files$existing.dbfile;
+  existing.input <- checked.missing.files$existing.input
+  existing.dbfile <- checked.missing.files$existing.dbfile
   
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
