@@ -609,6 +609,7 @@
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
 "tibble","*","models/ed","Imports",FALSE
+"tibble","*","models/fates","Imports",FALSE
 "tibble","*","models/lpjguess","Imports",FALSE
 "tibble","*","modules/data.atmosphere","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE
