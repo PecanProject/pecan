@@ -1,3 +1,5 @@
+version: "3.2"
+
 services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.

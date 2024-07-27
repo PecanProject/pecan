@@ -32,7 +32,6 @@ Imports:
     stringr
 Suggests:
     corrplot,
-    exactextractr,
     ggrepel,
     emdbook,
     glue,

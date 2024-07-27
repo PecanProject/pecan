@@ -1,4 +1,5 @@
 # Use this file to enable https
+version: "3.2"
 
 services:
   traefik:
