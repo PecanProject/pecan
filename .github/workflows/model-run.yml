@@ -1,0 +1,59 @@
+name : Sipnet Model Run
+on :
+  pull_request:
+
+  # allow manual triggering
+  workflow_dispatch:
+
+  schedule:
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'    
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    
+    container: 
+      image: pecan/base:develop
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Compose
+      run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
+
+    - name: Build Containers
+      run: |
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+        echo "UID=$(id -u)" >> .env
+        echo "GID=$(id -g)" >> .env
+        docker-compose up -d postgres
+        docker run --rm --network pecan_pecan pecan/db
+        
+        docker-compose run  bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
+        docker-compose run  bety user carya illinois "Carya Demo User" carya@example.com 1 1
+
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
+
+        docker run --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+    
+    - name: Run required containers
+      run: |
+        docker-compose up pecan bety sipnet rstudio -d
+
+    - name: Check if containers are running # This will be updated soon to a loop
+      run: |
+        docker ps
+        sleep 50
+
+    - name: Run SIPNET
+      run: |
+        docker exec --workdir /pecan/tests pecan-rstudio-1 R CMD ../web/workflow.R --settings test.xml
