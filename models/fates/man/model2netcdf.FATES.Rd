@@ -21,11 +21,11 @@ model2netcdf.FATES(
 
 \item{sitelon}{Longitude of the site}
 
-\item{start_date}{Start time of the simulation}
+\item{start_date}{Start time of the simulation, not string}
 
-\item{end_date}{End time of the simulation}
+\item{end_date}{End time of the simulation, not string}
 
-\item{vars_names}{Names of Selected variables in PEcAn format}
+\item{vars_names}{Names of Selected variables in PEcAn format, (e.g. c("",""))}
 
 \item{pfts}{a named vector of PFT numbers where the names are PFT names}
 }
