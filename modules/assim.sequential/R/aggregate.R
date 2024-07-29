@@ -9,9 +9,6 @@
 #' @details This function will aggregate previously downscaled carbon flux amount to a spatial unit of choice 
 #'
 #' @return It returns the `polygon_data` with added columns for mean and sum values of the aggregated raster data for each ensemble member.
-#' @import sf
-#' @import exactextractr
-#' @import raster
 #' @export
 #' @examples
 #'        \dontrun{
@@ -38,6 +35,23 @@
 #'        }
 
 aggregate <- function(downscale_output, polygon_data, func = 'mean'){
+  # check availability of optional packages
+  missing_pkgs <- c()
+  if (!requireNamespace("sf", quietly = TRUE)) {
+    missing_pkgs <- c(missing_pkgs, "sf")
+  }
+  if (!requireNamespace("exactextractr", quietly = TRUE)) {
+    missing_pkgs <- c(missing_pkgs, "exactextractr")
+  }
+  if (!requireNamespace("raster", quietly = TRUE)) {
+    missing_pkgs <- c(missing_pkgs, "raster")
+  }
+  if (length(missing_pkgs) > 0) {
+    PEcAn.logger::logger.severe(
+      "Package(s)", missing_pkgs,
+      "needed by PEcAnAssimSequential::aggregate() but not installed")
+  }
+
   grand_TTL <- 0
   if (sf::st_crs(downscale_output$maps$ensemble1) != sf::st_crs(polygon_data)) {
     stop("CRS of downscale_output and polygon_data must match.")
