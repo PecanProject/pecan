@@ -48,7 +48,7 @@ Default is stem biomass (6). See data(allom.components)}
 nested list of parameter summary statistics
 }
 \description{
-Allometery wrapper function that handles loading and subsetting the data,
+Allometry wrapper function that handles loading and subsetting the data,
  fitting the Bayesian models, and generating diagnostic figures. Set up to loop over
   multiple PFTs and components. 
   Writes raw MCMC and PDF of diagnositcs to file and returns table of summary stats.
