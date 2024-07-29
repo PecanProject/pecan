@@ -19,11 +19,22 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   input_data <- ncvar_get(nc_data, "NEE")
   covariate_names <- names(covariates)
   
-  # Timereadable
+  
+  # Extract time and units
   time <- nc_data$dim$time$vals
   time_units <- nc_data$dim$time$units
   time_origin_str <- substr(time_units, 12, 31)
-  time_origin <- ymd_hm(time_origin_str, tz="EST")
+  
+  # Check if timezone is specified in the time units string
+  if (grepl("UTC|GMT", time_units)) {
+    time_origin <- ymd_hm(time_origin_str, tz = "UTC")
+  } else if (grepl("EST", time_units)) {
+    time_origin <- ymd_hm(time_origin_str, tz = "EST")
+  } else {
+    time_origin <- ymd_hm(time_origin_str, tz = "UTC")  # Default to UTC if not specified
+  }
+  
+  # Timereadable
   if (grepl("hours", time_units)) {
     time_readable <- time_origin + dhours(time)
   } else if (grepl("seconds", time_units)) {
