@@ -11,9 +11,9 @@ SDA_downscale_hrly(nc_file, coords, yyyy, covariates)
 
 \item{coords}{In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".}
 
-\item{covariates}{SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder}
+\item{yyyy}{In string, format is yyyy(year of interest)}
 
-\item{date}{In quotes, format is yyyy-mm-dd hh:mm:ss EST. Restricted to time within file supplied to 'data' (hours since 1986-01-01T00:00).}
+\item{covariates}{SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder}
 }
 \value{
 It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
