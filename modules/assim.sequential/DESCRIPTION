@@ -48,7 +48,6 @@ Suggests:
     plotrix,
     plyr (>= 1.8.4),
     randomForest,
-    keras3,
     raster,
     readr,
     reshape2 (>= 1.4.2),
