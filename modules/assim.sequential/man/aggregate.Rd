@@ -32,7 +32,7 @@ This function will aggregate previously downscaled carbon flux amount to a spati
        # Unzip the downloaded file and save locally
        unzip("polygon/us_states.zip", exdir = "polygon/us_states")
        us_states <- st_read("polygon/us_states/cb_2020_us_state_20m.shp")
-       saveRDS(us_states, "polygon/polygon_us_states.rds")
+       saveRDS(us_states, "polygon/us_states.rds")
        
        # Load the saved polygon data with Massachusetts as an example
        us_states <- readRDS("polygon/us_states.rds")
