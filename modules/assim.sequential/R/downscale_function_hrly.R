@@ -9,6 +9,7 @@
 #' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 #' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 #' @import ncdf4
+#' @import lubridate
 #' @export
 
 SDA_downscale_hrly <- function(nc_file, coords, date, covariates){
@@ -20,8 +21,16 @@ SDA_downscale_hrly <- function(nc_file, coords, date, covariates){
   # Timereadable
   time <- nc_data$dim$time$vals
   time_units <- nc_data$dim$time$units
-  time_origin <- as.POSIXct(substr(time_units, 12, 31), format="%Y-%m-%dT%H:%M")
-  time_readable <- time_origin + time * 3600  # Convert hours to seconds
+  time_origin_str <- substr(time_units, 12, 31)
+  time_origin <- ymd_hm(time_origin_str, tz="EST")
+  # Check if time units are in hours and convert appropriately
+  if (grepl("hours", time_units)) {
+    time_readable <- time_origin + dhours(time)
+  } else if (grepl("seconds", time_units)) {
+    time_readable <- time_origin + dseconds(time)
+  } else {
+    stop("Unsupported time units")
+  }
   
   # Extract predictors from covariates raster using site coordinates
   site_coordinates <- terra::vect(readr::read_csv(coords), geom=c("lon", "lat"), crs="EPSG:4326")
