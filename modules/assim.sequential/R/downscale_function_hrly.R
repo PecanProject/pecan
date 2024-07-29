@@ -12,18 +12,18 @@
 #' @import lubridate
 #' @export
 
-SDA_downscale_hrly <- function(nc_file, coords, date, covariates){
-  nc_data <- nc_open(nc_file)
+SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
+  
   # Read the input data and site coordinates
+  nc_data <- nc_open(nc_file)
   input_data <- ncvar_get(nc_data, "NEE")
-  weights_rrel <- ncvar_get(nc_data, "weights_rrel")
+  covariate_names <- names(covariates)
   
   # Timereadable
   time <- nc_data$dim$time$vals
   time_units <- nc_data$dim$time$units
   time_origin_str <- substr(time_units, 12, 31)
   time_origin <- ymd_hm(time_origin_str, tz="EST")
-  # Check if time units are in hours and convert appropriately
   if (grepl("hours", time_units)) {
     time_readable <- time_origin + dhours(time)
   } else if (grepl("seconds", time_units)) {
@@ -34,70 +34,64 @@ SDA_downscale_hrly <- function(nc_file, coords, date, covariates){
   
   # Extract predictors from covariates raster using site coordinates
   site_coordinates <- terra::vect(readr::read_csv(coords), geom=c("lon", "lat"), crs="EPSG:4326")
-  index <- which(time_readable == date)
-  data <- input_data[index, , ]
-  carbon_data <- as.data.frame(data)
   predictors <- as.data.frame(terra::extract(covariates, site_coordinates,ID = FALSE)) 
 
-  # Arrange relative weights of each ensemble member over time and space/site
-  curr_weights_rrel <- weights_rrel[, , index]
-  names(carbon_data) <- paste0("ensemble",seq(1:ncol(carbon_data)))
-  colnames(curr_weights_rrel) <- paste0("ensemble",seq(1:ncol(curr_weights_rrel)))
+  downscale_output<- list()
   
-  # Combine each ensemble member with all predictors
-  ensembles <- list()
-  for (i in seq_along(carbon_data)) {
-    ensembles[[i]] <- cbind(carbon_data[[i]], predictors)
+  # Train & Test split
+  sample <- sample(1:nrow(predictors), size = round(0.75*nrow(predictors)))
+  
+  # Predict for each time stamp of the year selected
+  time_indices <- which(year(time_readable) == yyyy)
+  for (index in time_indices) {
+    if(index == 37986){
+      break
+    }
+    data <- input_data[index, , ]
+    carbon_data <- as.data.frame(data)
+    names(carbon_data) <- paste0("ensemble",seq(1:ncol(carbon_data)))
+
+    # Combine carbon data and covariates/predictors and split into training/test
+    full_data <- cbind(carbon_data, predictors)
+    train_data <- full_data[sample, ]
+    test_data <- full_data[-sample, ]
+    
+    # Combine each ensemble member with all predictors
+    models <- list()
+    maps <- list()
+    predictions <- list()
+    ensembles <- list()
+    for (i in seq_along(carbon_data)) {
+      ensemble_col <- paste0("ensemble", i)
+      formula <- stats::as.formula(paste(ensemble_col, "~", paste(covariate_names, collapse = " + ")))
+      models[[i]] <- randomForest::randomForest(formula,
+                                                data = train_data,
+                                                ntree = 1000,
+                                                na.action = stats::na.omit,
+                                                keep.forest = TRUE,
+                                                importance = TRUE)
+      
+      maps[[i]] <- terra::predict(covariates, model = models[[i]], na.rm = TRUE)
+      predictions[[i]] <- stats::predict(models[[i]], test_data)
+    }
+
+    # Organize the results into a single output list
+    curr_downscaled <- list( data = list(training = train_data, testing = test_data),
+                             models = models,
+                             maps = maps,
+                             predictions = predictions
+                            )
+    
+    # Rename each element of the output list with appropriate ensemble numbers
+    for (i in 1:length(curr_downscaled$data)) {
+      names(curr_downscaled$data[[i]]) <- paste0("ensemble", seq(1:ncol(carbon_data)))
+    }
+    names(curr_downscaled$models) <- paste0("ensemble", seq(1:ncol(carbon_data)))
+    names(curr_downscaled$maps) <- paste0("ensemble", seq(1:ncol(carbon_data)))
+    names(curr_downscaled$predictions) <- paste0("ensemble", seq(1:ncol(carbon_data)))
+    
+    downscale_output[[as.character(time_readable[index])]]<-curr_downscaled
   }
-  
-  # Rename the carbon_data column for each ensemble member
-  for (i in 1:length(ensembles)) {
-    ensembles[[i]] <- dplyr::rename(ensembles[[i]], "carbon_data" = "carbon_data[[i]]")
-  }
-  
-  # Split the observations in each data frame into two data frames based on the proportion of 3/4
-  ensembles <- lapply(ensembles, function(df) {
-    sample <- sample(1:nrow(df), size = round(0.75*nrow(df)))
-    train  <- df[sample, ]
-    test   <- df[-sample, ]
-    split_list <- list(train, test)
-    return(split_list)
-  })
-  
-  # Rename the training and testing data frames for each ensemble member
-  for (i in 1:length(ensembles)) {
-    # names(ensembles) <- paste0("ensemble",seq(1:length(ensembles)))
-    names(ensembles[[i]]) <- c("training", "testing")
-  }
-  
-  # Train a random forest model for each ensemble member using the training data
-  rf_output <- list()
-  for (i in 1:length(ensembles)) {
-    rf_output[[i]] <- randomForest::randomForest(ensembles[[i]][[1]][["carbon_data"]] ~ land_cover+tavg+prec+srad+vapr+nitrogen+phh2o+soc+sand,
-                                                 data = ensembles[[i]][[1]],
-                                                 ntree = 1000,
-                                                 na.action = stats::na.omit,
-                                                 keep.forest = T,
-                                                 importance = T)
-  }
-  
-  # Generate predictions (maps) for each ensemble member using the trained models
-  maps <- list(ncol(rf_output))
-  for (i in 1:length(rf_output)) {
-    maps[[i]] <- terra::predict(object = covariates,
-                                model = rf_output[[i]],na.rm = T)
-  }
-  
-  # Organize the results into a single output list
-  downscale_output <- list(ensembles, rf_output, maps, curr_weights_rrel)
-  
-  # Rename each element of the output list with appropriate ensemble numbers
-  for (i in 1:(length(downscale_output)-1)) {
-    names(downscale_output[[i]]) <- paste0("ensemble",seq(1:length(downscale_output[[i]])))
-  }
-  
-  # Rename the main components of the output list
-  names(downscale_output) <- c("data", "models", "maps", "weights_rrel")
-  
+  nc_close(nc_data)
   return(downscale_output)
 }
