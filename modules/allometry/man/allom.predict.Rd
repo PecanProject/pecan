@@ -36,7 +36,7 @@ Can be NULL if only one PFT/species exists, otherwise needs to the same length a
 
 \item{interval}{c('none','confidence','prediction') default is prediction}
 
-\item{single.tree}{logical: Is this a DBH time series from one indidual tree?
+\item{single.tree}{logical: Is this a DBH time series from one individual tree?
 If TRUE, will use a fixed error for all draws.}
 }
 \value{

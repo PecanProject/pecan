@@ -25,7 +25,7 @@
 #' @param n Number of Monte Carlo samples. Defaults to the same number as in the MCMC object
 #' @param use  c('Bg','mu','best')
 #' @param interval c('none','confidence','prediction') default is prediction
-#' @param single.tree logical: Is this a DBH time series from one indidual tree?
+#' @param single.tree logical: Is this a DBH time series from one individual tree?
 #'  If TRUE, will use a fixed error for all draws.
 #'
 #' @return matrix of Monte Carlo predictions that has n rows and one column per DBH
