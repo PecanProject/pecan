@@ -1,20 +1,18 @@
-#' @title North America Downscale Function
-#' @name NA_downscale_hrly
+#' SDA　Downscale Function for Hourly Data
+#' 
+#' This function uses the randomForest model to downscale forecast data (hourly) to unmodeled locations using covariates and site locations
+#' 
 #' @author Harunobu Ishii
-#'
-#' @param nc_data  In quotes, file path for .nc containing ensemble data.
+#' @param nc_file  In quotes, file path for .nc containing ensemble data.
 #' @param coords In quotes, file path for .csv file containing the site coordinates, columns named "lon" and "lat".
 #' @param date In quotes, format is yyyy-mm-dd hh:mm:ss EST. Restricted to time within file supplied to 'data' (hours since 1986-01-01T00:00).
 #' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
-#' @details This function will downscale forecast data (hourly) to unmodeled locations using covariates and site locations
-#'
-#' @description This function uses the randomForest model.
 #' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
 #' @import ncdf4
 #' @export
 
-NA_downscale_hrly <- function(nc_data, coords, date, covariates){
-  
+SDA_downscale_hrly <- function(nc_file, coords, date, covariates){
+  nc_data <- nc_open(nc_file)
   # Read the input data and site coordinates
   input_data <- ncvar_get(nc_data, "NEE")
   weights_rrel <- ncvar_get(nc_data, "weights_rrel")
