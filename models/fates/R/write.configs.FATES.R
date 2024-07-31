@@ -27,19 +27,19 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## site information
    site <- settings$run$site
-   site.id <- site$id #as.numeric(
+   site.id <- site$id # change1: 772 -> SOD1
   
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir       <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
-   casedir      <- file.path(rundir,"case") ## /ctsm-api/resources/cases/case_SOD1
+   casedir      <- file.path(rundir,site.id) ## /ctsm-api/resources/cases/case_SOD1, change2: 'case' -> site.id
    outdir       <- file.path(settings$host$outdir, run.id)
-   refcase      <- settings$model$binary
+   refcase      <- settings$model$binary # question1: refcase==casedir?
    bld          <- file.path(refcase,"bld")
    binary       <- file.path(bld,"cesm.exe")
    indir        <- file.path(rundir,"input") ## input directory
    default      <- settings$run$inputs$default$path ## reference inputs file structure
-   site_name    <- paste0(site.id, "_c", site.id)
+   site_name    <- paste0(site.id, "_c", run.id) ## change3 
    
    ## DATES
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
@@ -72,8 +72,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    
    ## SURF - should also store this in the refcase directory for PEcAn so we can grab from there, and not the PEcAn package
    surf.default <- system.file("surfdata_1x1_brazil_16pfts_Irrig_CMIP6_simyr2000_c171214.nc",package = "PEcAn.FATES")
-   
-   surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
+   surf.file    <- file.path(local.rundir,paste0("surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_",site_name, ".nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
    surf.nc <- ncdf4::nc_open(surf.file,write=TRUE)
@@ -81,6 +80,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
    ncdf4::nc_close(surf.nc)   
    
+   ## DATM & DATM Stream??
    ## MET HEADERS
    if(!is.null(settings$run$inputs$met)){
 
@@ -201,6 +201,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    # CLM
    #clm.param.default <- system.file("clm5_params.c171117.nc",package="PEcAn.FATES")
    #clm.param.file <- file.path(local.rundir,paste0("clm_params.",run.id,".nc"))
+   ## Position of parameters file?
    clm.param.default <- file.path(refcase,"clm5_params.c171117.nc") # probably need to allow custom param file names here (pecan.xml?)
    clm.param.file <- file.path(local.rundir,paste0("clm_params.",run.id,".nc"))
    file.copy(clm.param.default,clm.param.file)
@@ -384,4 +385,3 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 }
 #---------------------------------------------------------------------------------------------------------------------#
 ### EOF
-write.config.FATES(defaults, trait.values, )
