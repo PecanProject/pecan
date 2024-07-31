@@ -29,17 +29,15 @@ metgapfill.NOAA_GEFS(
 \item{overwrite}{Whether or not to overwrite the output file if it exists or not}
 
 \item{verbose}{Passed to nc writing functions for additional output}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
-Gapfill NOAA_GEFS weather data
+This function uses simple methods to gapfill NOAA GEFS met data.
+Temperature and Precipitation are gapfilled with splines;
+ other data sources are gapfilled using linear models fitted to
+ other fitted data.
 }
-\section{Purpose}{
-
-This function uses simple methods to gapfill NOAA GEFS met data
-Temperature and Precipitation are gapfilled with spline; other data sources are gapfilled with
-using linear models fitted to other fitted data.
-}
-
 \author{
 Luke Dramko
 }

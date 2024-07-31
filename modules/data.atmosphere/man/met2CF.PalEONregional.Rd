@@ -27,6 +27,10 @@ met2CF.PalEONregional(
 \item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
 
 \item{overwrite}{should existing files be overwritten}
+
+\item{verbose}{logical: enable verbose mode for netcdf writer functions?}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Get meteorology variables from PalEON netCDF files and convert to netCDF CF format

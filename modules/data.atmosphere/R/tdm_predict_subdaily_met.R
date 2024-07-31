@@ -37,6 +37,8 @@
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
 ##' @param print.progress - print the progress bar?
 ##' @param seed - manually set seed for results to be reproducible
+##' @param ... further arguments, currently ignored
+##'
 ##' @export
 ##' @examples
 ##' \dontrun{

@@ -20,6 +20,7 @@
 ##' @param useremail Used email, should include 'address sign' for code to be functional
 ##' @param data_product AmeriFlux data product
 ##' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'
+##' @param ... further arguments, currently ignored
 ##'
 ##' @examples
 ##' \dontrun{

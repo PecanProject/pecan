@@ -28,6 +28,10 @@ The 'SITE_ID' field in \href{https://fluxnet.org/sites/site-list-and-pages/}{lis
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{username}{login name for Ameriflux}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Download Fluxnet 2015 CSV files

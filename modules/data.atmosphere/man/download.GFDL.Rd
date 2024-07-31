@@ -40,6 +40,8 @@ the same name already exists?}
 \item{scenario}{Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)}
 
 \item{ensemble_member}{Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF

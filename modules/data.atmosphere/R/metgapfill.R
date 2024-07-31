@@ -13,6 +13,8 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units attribute in file, it will use that, default is to assume UTC
+##' @param ... further arguments, currently ignored
+##'
 ##' @author Ankur Desai
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
