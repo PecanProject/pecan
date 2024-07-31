@@ -17,7 +17,7 @@ allom.predict(
 }
 \arguments{
 \item{object}{Allometry model object. Option includes
-\itemize{
+\describe{
   \item{'list of mcmc'}{ - mcmc outputs in a list by PFT then component}
   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
   \item{'directory where files are located}{ - }
@@ -25,7 +25,8 @@ allom.predict(
 
 \item{dbh}{Diameter at Breast Height (cm)}
 
-\item{pft}{Plant Functional Type. Needs to match the name used in AllomAve. Can be NULL if only one PFT/species exists, otherwise needs to the same length as dbh}
+\item{pft}{Plant Functional Type. Needs to match the name used in AllomAve.
+Can be NULL if only one PFT/species exists, otherwise needs to the same length as dbh}
 
 \item{component}{Which component to predict. Can be NULL if only one component was analysed in AllomAve.}
 
@@ -34,6 +35,9 @@ allom.predict(
 \item{use}{c('Bg','mu','best')}
 
 \item{interval}{c('none','confidence','prediction') default is prediction}
+
+\item{single.tree}{logical: Is this a DBH time series from one individual tree?
+If TRUE, will use a fixed error for all draws.}
 }
 \value{
 matrix of Monte Carlo predictions that has n rows and one column per DBH

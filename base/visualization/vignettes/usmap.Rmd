@@ -1,7 +1,19 @@
+---
+title: "Maps"
+output: html_vignette
+vignette: >
+   %\VignetteIndexEntry{Maps}
+   %\VignetteEngine{knitr::rmarkdown}
+---
+
+
+
 Map
 ========================================================
 
-```{r}
+(all code chunks are disabled because vignette build was throwing errors. TODO: debug and re-enable.)
+
+```{r,eval=FALSE}
 require(raster)
 require(sp)
 require(ggplot2)
@@ -20,7 +32,7 @@ spplot(spdf)
 
 ### Plot all maps for BETYdb
 
-```{r}
+```{r,eval=FALSE}
 files <- dir("~/dev/bety/local/modelout", pattern="grid.csv", full.names=TRUE)
 yieldfiles <- files[!grepl("evapotranspiration", files)]
 etfiles <- files[grepl("evapotranspiration", files)]
@@ -42,7 +54,7 @@ for(file in etfiles){
 ```
 
 ### Misc additional code
-```{r}
+```{r,eval=FALSE}
 # Make an evenly spaced raster, the same extent as original data
 e <- extent( spdf )
 
@@ -63,7 +75,7 @@ ggplot( NULL ) + geom_raster( data = rdf , aes( x , y , fill = layer ) )
 
 ```
 
-```{r}
+```{r,eval=FALSE}
 # from http://gis.stackexchange.com/a/20052/3218
 require(rgdal)
 proj4string(spdf) <- CRS("+init=epsg:4326")

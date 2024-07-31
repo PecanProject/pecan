@@ -24,17 +24,13 @@ use conditionally.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
-* checking R files for non-ASCII characters ... WARNING
-Found the following file with non-ASCII characters:
-  download.PalEON.R
-Portable packages must use only ASCII characters in their R code,
-except perhaps in comments.
-Use \uxxxx escapes for other characters.
+* checking R files for non-ASCII characters ... OK
 * checking R files for syntax errors ... OK
 * checking whether the package can be loaded ... OK
 * checking whether the package can be loaded with stated dependencies ... OK
@@ -63,11 +59,7 @@ Undefined global functions or variables:
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... WARNING
-Missing link or links in documentation object 'extract.nc.ERA5.Rd':
-  ‘https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid’
-
-See section 'Cross-references' in the 'Writing R Extensions' manual.
+* checking Rd cross-references ... OK
 * checking for missing documentation entries ... WARNING
 Undocumented data sets:
   ‘FLUXNET.sitemap’ ‘cruncep_landmask’ ‘cruncep’ ‘ebifarm’ ‘narr’
@@ -76,94 +68,8 @@ All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'closest_xy'
-  ‘slat’ ‘slon’ ‘infolder’ ‘infile’
-
-Undocumented arguments in documentation object 'daygroup'
-  ‘date’ ‘flx’
-
-Undocumented arguments in documentation object 'download.Ameriflux'
-  ‘...’
-
-Undocumented arguments in documentation object 'download.AmerifluxLBL'
-  ‘...’
-
-Undocumented arguments in documentation object 'download.Fluxnet2015'
-  ‘username’ ‘...’
-
-Undocumented arguments in documentation object 'download.FluxnetLaThuile'
-  ‘...’
-
-Undocumented arguments in documentation object 'download.GFDL'
-  ‘...’
-
-Undocumented arguments in documentation object 'download.NARR_site'
-  ‘progress’ ‘...’
-
-Undocumented arguments in documentation object 'download.NEONmet'
-  ‘...’
-
-Undocumented arguments in documentation object 'extract.nc'
-  ‘...’
-
-Undocumented arguments in documentation object 'lm_ensemble_sims'
-  ‘lags.list’
-
-Undocumented arguments in documentation object 'met.process'
-  ‘browndog’
-
-Undocumented arguments in documentation object 'met2CF.ALMA'
-  ‘verbose’
-
-Undocumented arguments in documentation object 'met2CF.Ameriflux'
-  ‘...’
-
-Undocumented arguments in documentation object 'met2CF.AmerifluxLBL'
-  ‘...’
-
-Undocumented arguments in documentation object 'met2CF.PalEON'
-  ‘lat’ ‘lon’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'met2CF.PalEONregional'
-  ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'metgapfill.NOAA_GEFS'
-  ‘...’
-
-Undocumented arguments in documentation object 'metgapfill'
-  ‘...’
-
-Undocumented arguments in documentation object 'model.train'
-  ‘v’ ‘...’
-
-Undocumented arguments in documentation object 'nc.merge'
-  ‘...’
-
-Undocumented arguments in documentation object 'permute.nc'
-  ‘...’
-
-Undocumented arguments in documentation object 'predict_subdaily_met'
-  ‘...’
-
-Undocumented arguments in documentation object 'temporal.downscale.functions'
-  ‘...’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'gen.subdaily.models':
-  ‘in.prefix’
-
-Argument items with no description in Rd object 'merge_met_variable':
-  ‘start_date’ ‘end_date’ ‘...’
-
-Argument items with no description in Rd object 'split_wind':
-  ‘start_date’ ‘end_date’
-
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
@@ -174,11 +80,7 @@ Argument items with no description in Rd object 'split_wind':
                              old_size new_size compress
   cruncep_landmask.RData         39Kb      9Kb       xz
   narr_cruncep_ebifarm.RData    790Kb    597Kb       xz
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘ameriflux_demo.Rmd’, ‘cfmet_downscaling.Rmd’,
-    ‘compare_narr_cruncep_met.Rmd’, ‘tdm_downscaling.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... OK
@@ -187,4 +89,4 @@ Package has no Sweave vignette sources and no VignetteBuilder field.
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 7 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 3 NOTEs

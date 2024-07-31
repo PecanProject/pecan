@@ -36,6 +36,8 @@ metgapfill(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Take an Ameriflux NetCDF file
