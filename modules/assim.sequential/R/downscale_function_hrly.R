@@ -15,7 +15,7 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   # Read the input data and site coordinates
   nc_data <- ncdf4::nc_open(nc_file)
   on.exit(ncdf4::nc_close(nc_data))
-  input_data <- ncvar_get(nc_data, "NEE")
+  input_data <- ncdf4::ncvar_get(nc_data, "NEE")
   covariate_names <- names(covariates)
   
   
@@ -35,9 +35,9 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   
   # Timereadable
   if (grepl("hours", time_units)) {
-    time_readable <- time_origin + dhours(time)
+    time_readable <- time_origin + lubridate::dhours(time)
   } else if (grepl("seconds", time_units)) {
-    time_readable <- time_origin + dseconds(time)
+    time_readable <- time_origin + lubridate::dseconds(time)
   } else {
     stop("Unsupported time units")
   }
