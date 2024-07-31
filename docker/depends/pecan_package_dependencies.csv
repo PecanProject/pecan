@@ -24,7 +24,6 @@
 "coda",">= 0.18","modules/meta.analysis","Imports",FALSE
 "coda",">= 0.18","modules/photosynthesis","Imports",FALSE
 "corrplot","*","modules/assim.sequential","Suggests",FALSE
-"curl","*","base/db","Imports",FALSE
 "curl","*","base/utils","Imports",FALSE
 "curl","*","modules/data.atmosphere","Imports",FALSE
 "curl","*","modules/data.land","Imports",FALSE
@@ -656,7 +655,6 @@
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
 "withr","*","modules/data.atmosphere","Suggests",FALSE
-"XML","*","base/db","Imports",FALSE
 "XML","*","base/workflow","Imports",FALSE
 "XML","*","models/biocro","Imports",FALSE
 "XML","*","models/maat","Imports",FALSE
