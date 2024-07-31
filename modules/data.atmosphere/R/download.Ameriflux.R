@@ -18,6 +18,7 @@ download.Ameriflux.site <- function(site_id) {
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param ... further arguments, currently ignored
 ##' 
 ##' @author Josh Mantooth, Rob Kooper, Ankur Desai
 download.Ameriflux <- function(sitename, outfolder, start_date, end_date,

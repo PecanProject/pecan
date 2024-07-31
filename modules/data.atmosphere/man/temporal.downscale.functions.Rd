@@ -37,6 +37,8 @@ still being worked on, set to FALSE}
 \item{outfolder}{= where the output should be stored}
 
 \item{print.progress}{- print progress of model generation?}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 This function contains the functions that do the heavy lifting in gen.subdaily.models()

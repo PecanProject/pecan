@@ -19,9 +19,7 @@ split_wind(
 
 \item{in.prefix}{prefix of original data}
 
-\item{start_date}{}
-
-\item{end_date}{}
+\item{start_date, end_date}{date (or character in a standard date format). Only year component is used.}
 
 \item{overwrite}{logical: replace output file if it already exists?}
 
@@ -33,9 +31,6 @@ split_wind(
 nothing. TODO: Return data frame summarizing results
 }
 \description{
-Split wind_speed into eastward_wind and northward_wind
-}
-\details{
 Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record.
 }
 \examples{

@@ -20,7 +20,9 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
   else if (sitename == "Howland Forest- main tower (US-Ho1) (PalEON PHO)") {
     site <- "PHO"
   }  # 0-759
-  else if (sitename == "Billy’s Lake (PalEON PBL)") {
+  else if (sitename == "Billy\U2019s Lake (PalEON PBL)") {
+    #\U2019 = curly right single-quote, escaped to keep R from complaining about non-ASCII in code files
+    # (yes, the curly quote is present in the DB sitename)
     site <- "PBL"
   }  # 1-672 done
   else if (sitename == "Deming Lake (PalEON PDL)") {

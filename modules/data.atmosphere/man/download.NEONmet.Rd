@@ -27,6 +27,8 @@ The 4-letter SITE code  in \href{https://www.neonscience.org/science-design/fiel
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{makes the function output more text}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 download.NEONmet

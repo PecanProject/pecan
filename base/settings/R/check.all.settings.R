@@ -936,9 +936,10 @@ check.model.settings <- function(settings, dbcon = NULL) {
   return(settings)
 }
 
-#' @title Check Workflow Settings
+#' Check Workflow Settings
 #' @param settings settings file
-#' @export check.workflow.settings
+#' @param dbcon database connection
+#' @export
 check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE

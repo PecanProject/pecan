@@ -1,5 +1,10 @@
-##' @title sda.enkf
-##' @name  sda.enkf
+##' State Variable Data Assimilation: Ensemble Kalman Filter
+##'
+##' Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast),
+##'  a new workflow folder is created and the previous forecast for the start_time is copied over.
+##' During restart the initial run before the loop is skipped, with the info being populated from the previous run.
+##' The function then dives right into the first Analysis, then continues on like normal.
+##'
 ##' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
@@ -10,11 +15,6 @@
 ##' @param adjustment  flag for using ensemble adjustment filter or not
 ##' @param restart      Used for iterative updating previous forecasts. This is a list that includes ens.inputs, the list of inputs by ensemble member, params, the parameters, and old_outdir, the output directory from the previous workflow. These three things are needed to ensure that if a new workflow is started that ensemble members keep there run-specific met and params. See Details
 ##'
-##’ @details
-##’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
-##' 
-##' @description State Variable Data Assimilation: Ensemble Kalman Filter
-##' 
 ##' 
 ##' @return NONE
 ##' @export

@@ -294,7 +294,7 @@ load_data_paleon_sda <- function(settings){
     
     ### Error Message for no data product
     if(format_id[[i]] != '1000000040' & format_id[[i]] != '1000000058'){
-      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
+      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function :(')
     }
     
   }
