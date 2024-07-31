@@ -21,6 +21,7 @@ Suggests:
     knitr,
     PEcAn.visualization,
     rjags,
+    rmarkdown,
     testthat
 Encoding: UTF-8
 VignetteBuilder: knitr
