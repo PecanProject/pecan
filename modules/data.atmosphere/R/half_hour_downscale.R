@@ -292,7 +292,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
     #previous 6hr period
     dplyr::mutate(lead_var = dplyr::lead(df[,varName], 1))
   #check for NA values and gapfill using closest timestep
-  for(k in 2:dim(df)[1]){
+  for(k in 1:dim(df)[1]){
     if (is.na(df$lead_var[k])) {
       df$lead_var[k] <- df$lead_var[k-1]
     }
