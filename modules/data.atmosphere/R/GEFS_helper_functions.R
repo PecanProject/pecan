@@ -68,7 +68,7 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
   curr_date <- lubridate::as_date(curr_time)
   potential_dates <- curr_date - lubridate::days(3:0)
 
-  potential_dates = potential_dates[which(potential_dates == forecast_date)]
+  potential_dates <- potential_dates[which(potential_dates == forecast_date)]
   
   if(length(potential_dates) == 0){PEcAn.logger::logger.error("Forecast Date not available")}
   
