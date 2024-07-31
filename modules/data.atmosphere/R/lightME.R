@@ -13,7 +13,7 @@
 ##' @param alpha atmospheric transmittance, default 0.85.
 ##' @export
 ##' @return a \code{\link{list}} structure with components:
-##' \itemize{
+##' \describe{
 ##'  \item{'I.dir'}{Direct radiation (\eqn{\mu} mol \eqn{m^{-2}s^{-1}}}
 ##'  \item{'I.diff'}{Indirect (diffuse) radiation (\eqn{\mu} mol\eqn{m^{-2}s^{-1}}}
 ##'  \item{'cos.th'}{cosine of \eqn{\theta}, solar zenith angle.}

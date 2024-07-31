@@ -1,8 +1,11 @@
 ##' Given latitude and longitude coordinates, find NARR x and y indices
 ##'
+##' @param slat,slon site location, in decimal degrees
+##' @param infolder path to folder containing infile
+##' @param infile pattern to match for filename inside infile.
+##'   Only the first file matching this pattern AND ending with '.nc'
+##'   will be used
 ##'
-##' @name closest_xy
-##' @title closest_xy
 ##' @export
 ##' @author Betsy Cowdery, Ankur Desai
 closest_xy <- function(slat, slon, infolder, infile) {

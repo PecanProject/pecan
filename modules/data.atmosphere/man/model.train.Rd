@@ -9,12 +9,16 @@ model.train(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...)
 \arguments{
 \item{dat.subset}{data.frame containing lags, next, and downscale period data}
 
+\item{v}{variable name, as character}
+
 \item{n.beta}{number of betas to pull from}
 
 \item{resids}{TRUE or FALSE, whether to use residuals or not}
 
 \item{threshold}{NULL except for surface_downwelling_shortwave_radiation, helps with our
 distinction between day and night (no shortwave without sunlight)}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Function to create linear regression models for specific met

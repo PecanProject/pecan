@@ -70,7 +70,7 @@ Author field differs from that derived from Authors@R
 Maintainer field differs from that derived from Authors@R
   Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
   Authors@R:  ‘David LeBauer <dlebauer@email.arizona.edu>’
-
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK

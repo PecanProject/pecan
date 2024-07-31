@@ -20,9 +20,7 @@ merge_met_variable(
 
 \item{in.prefix}{prefix of original data}
 
-\item{start_date}{}
-
-\item{end_date}{}
+\item{start_date, end_date}{date (or character in a standard date format). Only year component is used.}
 
 \item{merge.file}{path of file to be merged in}
 
@@ -31,15 +29,12 @@ merge_met_variable(
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
 print debugging information as they run?}
 
-\item{...}{}
+\item{...}{other arguments, currently ignored}
 }
 \value{
 Currently nothing. TODO: Return a data frame summarizing the merged files.
 }
 \description{
-Merge a new met variable from an external file (e.g. CO2) into existing met files
-}
-\details{
 Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 Currently unit and name checking only implemented for CO2. 
 Currently does not yet support merge data that has lat/lon

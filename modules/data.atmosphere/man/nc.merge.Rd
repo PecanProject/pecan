@@ -33,6 +33,8 @@ nc.merge(
 
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 functions print debugging information as they run?}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
