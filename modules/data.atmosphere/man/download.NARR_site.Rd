@@ -33,10 +33,15 @@ download.NARR_site(
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
+\item{progress}{Whether or not to show a progress bar.
+Requires the `progress` package to be installed.}
+
 \item{parallel}{Download in parallel? Default = TRUE}
 
 \item{ncores}{Number of cores for parallel download. Default is
 `parallel::detectCores()`}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Download NARR time series for a single site

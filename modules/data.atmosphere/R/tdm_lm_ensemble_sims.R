@@ -19,6 +19,7 @@
 ##' @param path.model - path to where the training model & betas is stored
 ##' @param direction.filter - Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
 ##'                           (PalEON will go backward, anybody interested in the future will go forward)
+##' @param lags.list - optional list form of lags.init, with one entry for each unique `ens.day` in dat.mod
 ##' @param lags.init - a data frame of initialization parameters to match the data in dat.mod
 ##' @param dat.train - the training data used to fit the model; needed for night/day in
 ##'                    surface_downwelling_shortwave_flux_in_air

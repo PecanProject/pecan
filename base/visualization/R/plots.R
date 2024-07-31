@@ -263,7 +263,7 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
 ##' 
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
-##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
+##' @author [ggplot2 google group](https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE)
 ##' @examples
 ##' \dontrun{
 ##' df = data.frame( x=c(1,2,3), y=c(4,5,6) )

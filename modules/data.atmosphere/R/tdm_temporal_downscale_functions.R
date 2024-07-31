@@ -28,6 +28,8 @@
 ##' @param seed - allows this to be reproducible
 ##' @param outfolder = where the output should be stored
 ##' @param print.progress - print progress of model generation?
+##' @param ... further arguments, currently ignored
+##'
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------

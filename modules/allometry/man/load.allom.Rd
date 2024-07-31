@@ -8,7 +8,7 @@ load.allom(object)
 }
 \arguments{
 \item{object}{Allometry model object. Option includes
-\itemize{
+\describe{
   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
   \item{'directory where files are located}{ - }
 }}
