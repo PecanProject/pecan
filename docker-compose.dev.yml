@@ -2,8 +2,6 @@
 # 
 # docker-compose -f docker-compose.yml -f docker-compose.dev.yml
 
-version: '3.2'
-
 services:
 
   # web application. This expects the config.php to be copied from docker/web
