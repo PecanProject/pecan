@@ -8,14 +8,13 @@
 #' @param yyyy In string, format is yyyy(year of interest)
 #' @param covariates SpatRaster stack, used as predictors in randomForest. Layers within stack should be named. Recommended that this stack be generated using 'covariates' instructions in assim.sequential/inst folder
 #' @return It returns the `downscale_output` list containing lists for the training and testing data sets, models, and predicted maps for each ensemble member.
-#' @import ncdf4
-#' @import lubridate
 #' @export
 
 SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   
   # Read the input data and site coordinates
-  nc_data <- nc_open(nc_file)
+  nc_data <- ncdf4::nc_open(nc_file)
+  on.exit(ncdf4::nc_close(nc_data))
   input_data <- ncvar_get(nc_data, "NEE")
   covariate_names <- names(covariates)
   
@@ -27,11 +26,11 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   
   # Check if timezone is specified in the time units string
   if (grepl("UTC|GMT", time_units)) {
-    time_origin <- ymd_hm(time_origin_str, tz = "UTC")
+    time_origin <- lubridate::ymd_hm(time_origin_str, tz = "UTC")
   } else if (grepl("EST", time_units)) {
-    time_origin <- ymd_hm(time_origin_str, tz = "EST")
+    time_origin <- lubridate::ymd_hm(time_origin_str, tz = "EST")
   } else {
-    time_origin <- ymd_hm(time_origin_str, tz = "UTC")  # Default to UTC if not specified
+    time_origin <- lubridate::ymd_hm(time_origin_str, tz = "UTC")  # Default to UTC if not specified
   }
   
   # Timereadable
@@ -55,9 +54,6 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
   # Predict for each time stamp of the year selected
   time_indices <- which(year(time_readable) == yyyy)
   for (index in time_indices) {
-    if(index == 37986){
-      break
-    }
     data <- input_data[index, , ]
     carbon_data <- as.data.frame(data)
     names(carbon_data) <- paste0("ensemble",seq(1:ncol(carbon_data)))
@@ -103,6 +99,5 @@ SDA_downscale_hrly <- function(nc_file, coords, yyyy, covariates){
     
     downscale_output[[as.character(time_readable[index])]]<-curr_downscaled
   }
-  nc_close(nc_data)
   return(downscale_output)
 }
