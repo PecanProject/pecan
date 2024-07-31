@@ -59,7 +59,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    gridres <- 0.125  ## ultimately this should be a variable
    lat <- as.numeric(site$lat)
    lon <- (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
-   domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
+   domain.default <- system.file("domain.lnd.360x720_gswp3.0v1.c170606.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.fv0.9x1.25_gx1v7_",site_name,".nc"))
    file.copy(domain.default,domain.file)
    domain.nc <- ncdf4::nc_open(domain.file,write=TRUE)
@@ -71,7 +71,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::nc_close(domain.nc)
    
    ## SURF - should also store this in the refcase directory for PEcAn so we can grab from there, and not the PEcAn package
-   surf.default <- system.file("surfdata_1x1_brazil_16pfts_Irrig_CMIP6_simyr2000_c171214.nc",package = "PEcAn.FATES")
+   surf.default <- system.file("surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_",site_name, ".nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
@@ -98,7 +98,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      #met <- gsub('@DOMAIN@',domain.file.name, met)  # attempting to provide correct domain file name
      met <- gsub('@MET_PATH@',settings$run$inputs$met$path, met)
      met.files <- dir(settings$run$inputs$met$path,"*.nc")
-     met <- gsub('@MET_FILES@',paste(met.files,collapse = "\n            "), met)
+     met <- gsub('@MET_FILES@',paste(met.files,collapse = "\n"), met)
      writeLines(met, con=file.path(local.rundir, "datm.streams.txt.PEcAn_met"))
      
    }
