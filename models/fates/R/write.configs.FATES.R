@@ -22,38 +22,24 @@
 ##-------------------------------------------------------------------------------------------------# # nolint
 
 # example trait.values list
-trait.values <- list()
-trait.values$temperate.coniferous <- list()
-trait.values$env <- list()
-
-tc_traits <- as.data.frame(matrix(c(9999, 8888), nrow=1, ncol=2))
-colnames(tc_traits) <- c("leaf_turnover_rate", "veg_respiration_Q10")
-# Fates names for these params are "fates_leaf_long", "q10_mr"
-
-trait.values$temperate.coniferous <- tc_traits
-print(trait.values)
-
-settings = './test.fates.xml'
-
-run.id = 
 
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## site information
    site <- settings$run$site
-   site.id <- as.numeric(site$id)
+   site.id <- site$id #as.numeric(
   
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir       <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
-   casedir      <- file.path(rundir,"case") 
+   casedir      <- file.path(rundir,"case") ## /ctsm-api/resources/cases/case_SOD1
    outdir       <- file.path(settings$host$outdir, run.id)
    refcase      <- settings$model$binary
    bld          <- file.path(refcase,"bld")
    binary       <- file.path(bld,"cesm.exe")
    indir        <- file.path(rundir,"input") ## input directory
    default      <- settings$run$inputs$default$path ## reference inputs file structure
-   site_name    <- paste0(site.id %/% 1000000000, "-", site.id %% 1000000000)
+   site_name    <- paste0(site.id, "_c", site.id)
    
    ## DATES
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
@@ -74,7 +60,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    lat <- as.numeric(site$lat)
    lon <- (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
-   domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
+   domain.file <- file.path(local.rundir,paste0("domain.lnd.fv0.9x1.25_gx1v7_",site_name,".nc"))
    file.copy(domain.default,domain.file)
    domain.nc <- ncdf4::nc_open(domain.file,write=TRUE)
    ncdf4::ncvar_put(nc=domain.nc, varid='xc', vals=lon)
@@ -134,7 +120,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
    }
    
- # create host specific setttings
+ # create host specific settings
    hostsetup <- ""
    if (!is.null(settings$model$prerun)) {
      hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
@@ -156,37 +142,32 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
    
    ## Machine configs
-   #   ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@
+   #   ./create_newcase –case A –res @RES@ –compset @COMPSET@ –driver @DRIVER@ –machine @MACHINE@ –run-unsupported
+   ## --run-unspported??
    if (!is.null(settings$model$machine)) {
      machine <- paste(settings$model$machine, collapse="\n") 
    } else {
-     machine <- "eddi"
+     machine <- "container-nlp"
    }
    jobsh <- gsub('@MACHINE@', machine, jobsh)
-   if (!is.null(settings$model$compiler)) {
-     compiler <- paste(settings$model$compiler, collapse="\n")
+   if (!is.null(settings$model$driver)) {
+     driver <- paste(settings$model$driver, collapse="\n")
    } else {
-     compiler <- "gnu"
+     driver <- "nuopc"
    }
-   jobsh <- gsub('@COMPILER@', compiler, jobsh)
-   if (!is.null(settings$model$resolution)) {
-     resolution <- paste(settings$model$resolution, collapse="\n")
-   } else {
-     resolution <- "1x1_brazil"
-   }
-   jobsh <- gsub('@RES@', resolution, jobsh)
+   jobsh <- gsub('@DRIVER@', driver, jobsh)
    if (!is.null(settings$model$compset)) {
      compset <- paste(settings$model$compset, collapse="\n")
    } else {
-     compset <- "I2000Clm50FatesGs"
+     compset <- "2000_DATM%GSWP3v1_CLM51%FATES_SICE_SOCN_MOSART_SGLC_SWAV"
    }
    jobsh <- gsub('@COMPSET@', compset, jobsh)
-   if (!is.null(settings$model$project)) {
-     project <- paste(settings$model$project, collapse="\n")
+   if (!is.null(settings$model$res)) {
+     res <- paste(settings$model$res, collapse="\n")
    } else {
-     project <- "pecan"
+     res <- "CLM_USRDAT"
    }
-   jobsh <- gsub('@PROJECT@', project, jobsh)
+   jobsh <- gsub('@RES@', res, jobsh)
    
    ## PATHS
    jobsh <- gsub('@RUNDIR@', rundir, jobsh)
