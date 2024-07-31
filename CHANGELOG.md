@@ -20,7 +20,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Removed
 
-- Remove Browndog support for converisons.
+- Remove Browndog support for conversions (#3348, @Sweetdevil144).
 
 ## [1.8.0] - 2024-07-12
 
