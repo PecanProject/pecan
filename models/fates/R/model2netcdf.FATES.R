@@ -32,7 +32,7 @@
 model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, vars_names, pfts){
   ## Tips: matched_var could be expanded for more selected variables
   matched_var <- tibble::tribble(
-    ~fatesname, ~pecanname, ~pecanunits, ~longname,
+    ~fatesname,~pecanname,~pecanunits,~longname,
     "FATES_GPP_PF","GPP","kgC m-2 s-1","Gross Primary Productivity", 
     "FATES_NPP_PF","NPP","kg m-2 yr-1", "Total PFT-level NPP in kg carbon per m2 land area per second",
     "NEE","NEE","kgC m-2 s-1", "Net Ecosystem Exchange of carbon, includes fire and hrv_xsmrpool",
