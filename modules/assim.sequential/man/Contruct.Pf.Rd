@@ -22,6 +22,12 @@ Contruct.Pf(
 \item{X}{a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.}
 
 \item{localization.FUN}{This is the function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.}
+
+\item{t}{not used}
+
+\item{blocked.dis}{passed to `localization.FUN`}
+
+\item{...}{passed to `localization.FUN`}
 }
 \value{
 It returns the var-cov matrix of state variables at multiple sites.

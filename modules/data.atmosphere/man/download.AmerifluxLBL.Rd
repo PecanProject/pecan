@@ -42,6 +42,8 @@ The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 \item{data_product}{AmeriFlux data product}
 
 \item{data_policy}{Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package

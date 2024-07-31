@@ -29,6 +29,8 @@ met2CF.Ameriflux(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should ouput of function be extra verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format

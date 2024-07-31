@@ -13,6 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          - "4.3"
           - "devel"
     uses: ./.github/workflows/test.yml
     with:
@@ -24,6 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          - "4.3"
           - "devel"
     uses: ./.github/workflows/check.yml
     with:
@@ -36,6 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          - "4.3"
           - "devel"
     uses: ./.github/workflows/sipnet.yml
     with:

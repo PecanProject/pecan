@@ -20,6 +20,8 @@ insertPmet <- function(vals, nc2, var2, dim2, units2 = NA, conv = NULL,
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
+##' @param verbose logical: enable verbose mode for netcdf writer functions?
+##' @param ... further arguments, currently ignored
 ##'
 ##' @author Mike Dietze
 met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE,
@@ -179,7 +181,10 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param lat,lon site location in decimal degrees. Caution: both must have length one.
 ##' @param overwrite should existing files be overwritten
+##' @param verbose logical: enable verbose mode for netcdf writer functions?
+##' @param ... further arguments, currently ignored
 ##'
 ##' @author Mike Dietze
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
@@ -373,6 +378,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
+##' @param verbose logical: enable verbose mode for netcdf writer functions?
 ##'
 ##' @author Mike Dietze
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {

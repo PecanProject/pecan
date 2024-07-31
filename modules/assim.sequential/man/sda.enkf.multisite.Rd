@@ -2,7 +2,7 @@
 % Please edit documentation in R/sda.enkf_MultiSite.R
 \name{sda.enkf.multisite}
 \alias{sda.enkf.multisite}
-\title{sda.enkf.multisite}
+\title{State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter}
 \usage{
 sda.enkf.multisite(
   settings,
@@ -46,12 +46,22 @@ sda.enkf.multisite(
 `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
 `run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
 `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).}
+
+\item{...}{Additional arguments, currently ignored}
 }
 \value{
 NONE
 }
 \description{
-State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
+Check out SDA_control function for more details on the control arguments.
+}
+\details{
+Restart mode:  Basic idea is that during a restart (primary case envisioned
+as an iterative forecast), a new workflow folder is created and the previous
+forecast for the start_time is copied over. During restart the initial run
+before the loop is skipped, with the info being populated from the previous
+run. The function then dives right into the first Analysis, then continues
+on like normal.
 }
 \author{
 Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@bu.edu}

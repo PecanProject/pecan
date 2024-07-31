@@ -2,9 +2,18 @@
 % Please edit documentation in R/closest_xy.R
 \name{closest_xy}
 \alias{closest_xy}
-\title{closest_xy}
+\title{Given latitude and longitude coordinates, find NARR x and y indices}
 \usage{
 closest_xy(slat, slon, infolder, infile)
+}
+\arguments{
+\item{slat, slon}{site location, in decimal degrees}
+
+\item{infolder}{path to folder containing infile}
+
+\item{infile}{pattern to match for filename inside infile.
+Only the first file matching this pattern AND ending with '.nc'
+will be used}
 }
 \description{
 Given latitude and longitude coordinates, find NARR x and y indices

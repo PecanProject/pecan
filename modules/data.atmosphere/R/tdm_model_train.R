@@ -14,10 +14,13 @@
 # Parameters
 # -----------------------------------
 ##' @param dat.subset data.frame containing lags, next, and downscale period data
+##' @param v variable name, as character
 ##' @param n.beta number of betas to pull from
 ##' @param resids TRUE or FALSE, whether to use residuals or not
 ##' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
 ##'                  distinction between day and night (no shortwave without sunlight)
+##' @param ... further arguments, currently ignored
+##'
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
