@@ -1,11 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
 test_that("jagify correctly assigns treatment index of 1 to all control treatments, regardless of alphabetical order", {
   ## generate test data; controls assigned to early alphabet and late alphabet trt names
