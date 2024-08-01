@@ -18,11 +18,11 @@ query.allom.data(pft_name, variable, con, nsim = 10000)
 \description{
 Module to grab allometric information from the raw data table
 Will grab both original field data and tallied equations
-
-Tallied equation format based on Jenkins et al 2004 USFS
-General Technical Report NE-319
 }
 \details{
+Tallied equation format based on Jenkins et al 2004 USFS
+General Technical Report NE-319
+
 database is assumed to conform to the PEcAn Schema
 }
 \author{

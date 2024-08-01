@@ -20,20 +20,20 @@ download.ERA5.old(
 \item{outfolder}{Directory where results should be written}
 
 \item{start_date, end_date}{Range of years to retrieve. Format is
-`YYYY-MM-DD`.}
+\code{YYYY-MM-DD}.}
 
 \item{lat.in, lon.in}{Site coordinates, decimal degrees (numeric)}
 
-\item{product_types}{Character vector of product types, or `"all"`.
-Must be one or more of: `"reanalysis"`, `"ensemble members"`,
-`"ensemble mean"`, `"ensemble spread"`}
+\item{product_types}{Character vector of product types, or \code{"all"}.
+Must be one or more of: \code{"reanalysis"}, \code{"ensemble members"},
+\code{"ensemble mean"}, \code{"ensemble spread"}}
 
-\item{overwrite}{Logical. If `FALSE` (default), skip any files with
+\item{overwrite}{Logical. If \code{FALSE} (default), skip any files with
 the same target name (i.e. same variable) that already exist in
-`outfolder`. If `TRUE`, silently overwrite existing files.}
+\code{outfolder}. If \code{TRUE}, silently overwrite existing files.}
 
-\item{reticulate_python}{Path to Python binary for `reticulate`
-(passed to [reticulate::use_python()]). If `NULL` (default), use
+\item{reticulate_python}{Path to Python binary for \code{reticulate}
+(passed to \code{\link[reticulate:use_python]{reticulate::use_python()}}). If \code{NULL} (default), use
 the system default.}
 
 \item{...}{Currently unused. Allows soaking up additional arguments
@@ -41,21 +41,21 @@ to other methods.}
 }
 \value{
 Character vector of file names containing raw, downloaded
-  data (invisibly)
+data (invisibly)
 }
 \description{
-Link to [full data documentation](https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation).
+Link to \href{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation}{full data documentation}.
 }
 \details{
-Under the hood, this function uses the Python `cdsapi` module,
-which can be installed via `pip` (`pip install --user cdsapi`). The
-module is accessed via the `reticulate` package.
+Under the hood, this function uses the Python \code{cdsapi} module,
+which can be installed via \code{pip} (\verb{pip install --user cdsapi}). The
+module is accessed via the \code{reticulate} package.
 
 Using the CDS API requires you to create a free account at
 https://cds.climate.copernicus.eu. Once you have done that, you
 will need to configure the CDS API on your local machine by
-creating a `${HOME}/.cdsapi` file, as described
-[here](https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key).
+creating a \verb{$\{HOME\}/.cdsapi} file, as described
+\href{https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key}{here}.
 }
 \examples{
 \dontrun{

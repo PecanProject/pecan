@@ -29,6 +29,8 @@ permute.nc(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should ouput of function be extra verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Permute netCDF files

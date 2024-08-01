@@ -10,6 +10,8 @@ SDA_remote_launcher(settingPath, ObsPath, run.bash.args)
 \item{settingPath}{The Path to the setting that will run SDA}
 
 \item{ObsPath}{Path to the obs data which is expected to be an .Rdata.}
+
+\item{run.bash.args}{Shell commands to be run on the remote host before launching the SDA. See examples}
 }
 \value{
 This function returns a list of two pieces of information. One the remote path that SDA is running and the PID of the active run.

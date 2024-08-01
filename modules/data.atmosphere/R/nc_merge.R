@@ -23,6 +23,8 @@
 ##' @param overwrite logical: replace output file if it already exists?
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 ##'   functions print debugging information as they run?
+##' @param ... further arguments, currently ignored
+##'
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------

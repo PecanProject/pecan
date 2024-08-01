@@ -19,6 +19,8 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+##' @param browndog login info for the Browndog conversion service, if used.
+##'  List of `url`, `username`, `password`
 ##' @importFrom rlang .data .env
 ##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly

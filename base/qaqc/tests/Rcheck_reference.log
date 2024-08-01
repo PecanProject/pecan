@@ -24,6 +24,7 @@ Malformed Description field: should contain one or more complete sentences.
 Authors@R field gives no person with name and roles.
 Authors@R field gives no person with maintainer role, valid email
 address and non-empty name.
+License stub is invalid DCF.
 * checking top-level files ... NOTE
 Non-standard file/directory found at top level:
   ‘README.Rmd’
