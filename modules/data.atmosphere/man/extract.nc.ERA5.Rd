@@ -32,11 +32,13 @@ extract.nc.ERA5(
 
 \item{outfolder}{Path to directory where nc files need to be saved.}
 
-\item{in.prefix}{initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path.}
+\item{in.prefix}{initial portion of the filename that does not vary by date.
+Does not include directory; specify that as part of in.path.}
 
 \item{newsite}{site name.}
 
-\item{vars}{variables to be extracted. If NULL all the variables will be returned.}
+\item{vars}{variables to be extracted. If NULL all the variables will be
+returned.}
 
 \item{overwrite}{Logical if files needs to be overwritten.}
 
@@ -51,7 +53,8 @@ a list of xts objects with all the variables for the requested years
 ERA5_extract
 }
 \details{
-For the list of variables check out the documentation at \link{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
+For the list of variables check out the documentation at \url{
+ https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 }
 \examples{
 \dontrun{

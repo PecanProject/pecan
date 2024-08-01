@@ -4,6 +4,7 @@
 ##' 
 ##' @param settings    SDA PEcAn settings object
 ##' @param nyear       number of years to run hop test over
+##' @param ens.runid   run id. If not provided, is looked up from [settings$outdir]/runs.txt
 ##'
 ##' @description Hop test. This script tests that the model successfully reads it's own restart and can restart without loss of information.
 ##' 

@@ -31,6 +31,7 @@ jobs:
           - "4.1"
           - "4.2"
           - "4.3"
+          - "4.4"
           - "devel"
 
     steps:
@@ -49,11 +50,14 @@ jobs:
 
       # calculate some variables that are used later
       - name: github branch
-        # build Rdevel only on Mondays, others every day (but not twice on Mondays)
+        # build weekly-tested versions only on Mondays, others every day
+        # (but not twice on Mondays)
         if: |
           github.event_name == 'workflow_dispatch' ||
-          (matrix.R != 'devel' && github.event.schedule == '0 0 * * *') ||
-          (matrix.R == 'devel' && github.event.schedule == '30 1 * * 1')
+          (contains(fromJSON('["4.1", "4.2", "4.4"]'), matrix.R)
+            && github.event.schedule == '0 0 * * *') ||
+          (contains(fromJSON('["4.3", "devel"]'), matrix.R)
+            && github.event.schedule == '30 1 * * 1')
         run: |
           BRANCH=${GITHUB_REF##*/}
           echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV

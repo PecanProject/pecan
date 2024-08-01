@@ -5,8 +5,9 @@
 #' @param var.names (character) variable names.
 #' @param mu.f (numeric) forecast mean values.
 #' @param Pf (numeric) forecast covariance matrix.
+#' @param t (numeric) timestep. If t=1, initial values are imputed for zero values in mu.f
 #'
-#' @return
+#' @return list with updated mu.f, pf, X, and indication of which y values are censored
 #' @export
 #'
 #' @examples

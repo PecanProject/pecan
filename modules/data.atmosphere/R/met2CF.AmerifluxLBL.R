@@ -29,6 +29,7 @@
 
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should ouput of function be extra verbose
+##' @param ... further arguments, currently ignored
 ##'
 ##' @author Ankur Desai
 met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_date, format,

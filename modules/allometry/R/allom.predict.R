@@ -7,27 +7,29 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#' @title allom.predict
-#' @name  allom.predict
-#' @aliases allom.predict
+#' allom.predict
+#'
+#' Function for making tree-level Monte Carlo predictions
+#' from allometric equations estimated from the PEcAn allometry module
 #'
 #' @param object Allometry model object. Option includes
-#'\itemize{
+#'\describe{
 #'   \item{'list of mcmc'}{ - mcmc outputs in a list by PFT then component}
 #'   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
 #'   \item{'directory where files are located}{ - }
 #' }
 #' @param dbh Diameter at Breast Height (cm)
-#' @param pft Plant Functional Type. Needs to match the name used in AllomAve. Can be NULL if only one PFT/species exists, otherwise needs to the same length as dbh
+#' @param pft Plant Functional Type. Needs to match the name used in AllomAve.
+#'  Can be NULL if only one PFT/species exists, otherwise needs to the same length as dbh
 #' @param component Which component to predict. Can be NULL if only one component was analysed in AllomAve.
 #' @param n Number of Monte Carlo samples. Defaults to the same number as in the MCMC object
 #' @param use  c('Bg','mu','best')
 #' @param interval c('none','confidence','prediction') default is prediction
+#' @param single.tree logical: Is this a DBH time series from one individual tree?
+#'  If TRUE, will use a fixed error for all draws.
 #'
 #' @return matrix of Monte Carlo predictions that has n rows and one column per DBH
 #'
-#' @description Function for making tree-level Monte Carlo predictions
-#' from allometric equations estimated from the PEcAn allometry module
 #'
 #' @examples
 #'
@@ -240,18 +242,17 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   return(out)
 } # allom.predict
 
-#' @title load.allom
-#' @name  load.allom
+#' load.allom
+#'
+#' loads allom files
 #'
 #' @param object Allometry model object. Option includes
-#'\itemize{
+#'\describe{
 #'   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
 #'   \item{'directory where files are located}{ - }
 #' }
 #'
 #' @return mcmc outputs in a list by PFT then component
-#'
-#' @description loads allom files
 #'
 #' @examples
 #'

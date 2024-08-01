@@ -12,21 +12,21 @@ allom.BayesFit(allom, nrep = 10000, form = "power", dmin = 0.1, dmax = 500)
   'field' - contains a list, each entry for which is
             a data frame with 'x' and 'y'. Can be NULL
   'parm' -  a single data frame with the following components:
-  \itemize{
-         \item{n}     {sample size}
-         \item{a}     {eqn coefficient}
-         \item{b}     {eqn coefficient}
-         \item{c}     {eqn coefficient}
-         \item{d}     {eqn coefficient}
-         \item{e}     {eqn coefficient}
-         \item{se}    {standard error}
-         \item{eqn}   {sample size}
-         \item{Xmin}  {smallest tree sampled (cm)}
-         \item{Xmax}  {largest tree sampled (cm)}
-         \item{Xcor}  {units correction on X}
-         \item{Ycor}  {units correction on Y}
-         \item{Xtype} {type of measurement on the X}
-         \item{spp}   { - USFS species code}
+  \describe{
+         \item{n}{sample size}
+         \item{a}{eqn coefficient}
+         \item{b}{eqn coefficient}
+         \item{c}{eqn coefficient}
+         \item{d}{eqn coefficient}
+         \item{e}{eqn coefficient}
+         \item{se}{standard error}
+         \item{eqn}{sample size}
+         \item{Xmin}{smallest tree sampled (cm)}
+         \item{Xmax}{largest tree sampled (cm)}
+         \item{Xcor}{units correction on X}
+         \item{Ycor}{units correction on Y}
+         \item{Xtype}{type of measurement on the X}
+         \item{spp}{ - USFS species code}
 }}
 
 \item{nrep}{- number of MCMC replicates}

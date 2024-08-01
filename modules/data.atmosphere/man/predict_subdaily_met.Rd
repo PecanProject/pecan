@@ -60,6 +60,8 @@ ensemble rather than overwriting with a default naming scheme}
 \item{seed}{- manually set seed for results to be reproducible}
 
 \item{print.progress}{- print the progress bar?}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 This is the main function of the tdm family workflow. This function predicts subdaily meteorology
