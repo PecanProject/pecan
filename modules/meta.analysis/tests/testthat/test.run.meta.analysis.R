@@ -1,42 +1,33 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-context("run.meta.analysis")
-
-
-test_that("singleMA gives expected result for example inputs",{
-  ## need to calculate x
-  ## x <- singleMA(....)
-  #expect_equal(round(summary(x)$statistics["beta.o", "Mean"]), 5)
+test_that("`runModule.run.meta.analysis` throws an error for incorrect input", {
+  expect_error(runModule.run.meta.analysis('test'), "only works with Settings or MultiSettings")
 })
 
-test_that("jagify correctly assigns treatment index of 1 to all control treatments, regardless of alphabetical order", {
-  ## generate test data; controls assigned to early alphabet and late alphabet trt names
-  testresult <- data.frame(citation_id = 1,
-                           site_id = rep(1:2, each = 5),
-                           name = rep(letters[1:5],2),
-                           trt_id = as.character(rep(letters[1:5],2)),
-                           control = c(1, rep(0,8), 1), 
-                           greenhouse = c(rep(0,5), rep(1,5)),
-                           date = 1,
-                           time = NA,
-                           cultivar_id = 1,
-                           specie_id = 1,
-                           n = 2,
-                           mean = sqrt(1:10),
-                           stat = 1,
-                           statname = "SE",
-                           treatment_id = 1:10
-  )
-  i <- sapply(testresult, is.factor)
-  testresult[i] <- lapply(testresult[i], as.character)
+test_that("`run.meta.analysis` able to call run.meta.analysis.pft for each pft in the input list", {
+  mocked_res <- mockery::mock(1, cycle = TRUE)
+  mockery::stub(run.meta.analysis, 'run.meta.analysis.pft', mocked_res)
+  mockery::stub(run.meta.analysis, 'PEcAn.DB::db.open', 1)
+  mockery::stub(run.meta.analysis, 'PEcAn.DB::db.close', 1)
+  pfts <- list('ebifarm.salix', 'temperate.coniferous')
+  run.meta.analysis(pfts = pfts, iterations = 1, dbfiles = NULL, database = NULL)
+  mockery::expect_called(mocked_res, 2)
+  args <- mockery::mock_args(mocked_res)
+  expect_equal(args[[1]][[1]], "ebifarm.salix")
+  expect_equal(args[[2]][[1]], "temperate.coniferous")
+})
 
-  jagged.data <- jagify(testresult)
-  expect_equal(jagged.data$trt_num[jagged.data$trt == "control"], c(1, 1)) 
+test_that("`run.meta.analysis.pft` throws an error if it cannot find output from get.trait", {
+  pft <- list(outdir = "", name = "ebifarm.salix")
+  expect_error(
+    run.meta.analysis.pft(pft = pft, iterations = 1, dbfiles = NULL, dbcon = NULL),
+    "Could not find output from get.trait"
+  )
+})
+
+test_that("`run.meta.analysis.pft` throws an error for missing posteriorid", {
+  pft <- list(outdir = "test", name = "ebifarm.salix")
+  mockery::stub(run.meta.analysis.pft, 'file.exists', TRUE)
+  expect_error(
+    run.meta.analysis.pft(pft = pft, iterations = 1, dbfiles = NULL, dbcon = NULL, update = TRUE),
+    "Missing posteriorid"
+  )
 })
