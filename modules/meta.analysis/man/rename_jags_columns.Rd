@@ -2,7 +2,7 @@
 % Please edit documentation in R/rename_jags_columns.R
 \name{rename_jags_columns}
 \alias{rename_jags_columns}
-\title{renames the variables within output data frame trait.data}
+\title{Renames the variables within output data frame trait.data}
 \usage{
 rename_jags_columns(data)
 }
@@ -10,7 +10,7 @@ rename_jags_columns(data)
 \item{data}{data frame to with variables to rename}
 }
 \description{
-renames the variables within output data frame trait.data
+Renames the variables within output data frame trait.data
 }
 \seealso{
 used with \code{\link[PEcAn.MA]{jagify}};

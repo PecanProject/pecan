@@ -55,7 +55,7 @@ It is important values for `type` and `version` are set correct. The PEcAn code 
 
 To build the docker image, we use a Dockerfile (see example below) and run the following command. This command will expect the Dockerfile to live in the model specific folder and the command is executed in the root pecan folder. It will copy the content of the pecan folder and make it available to the build process (in this example we do not need any additional files). 
 
-Since we can have multiple different versions of a model be available for PEcAn we ar using the following naming schema `pecan/model-<modeltype>-<version>:<pecan version`. For example the image below will be named pecan/model-ed2-git, since we do not specify the exact version it will be atomically be named `pecan/model-ed2-git:latest`.
+Since we can have multiple different versions of a model be available for PEcAn we are using the following naming schema `pecan/model-<modeltype>-<version>:<pecan version`. For example the image below will be named pecan/model-ed2-git, since we do not specify the exact version it will be atomically be named `pecan/model-ed2-git:latest`.
 
 ````bash
 docker build \

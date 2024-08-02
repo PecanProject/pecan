@@ -47,7 +47,7 @@ as well as Y, SE, and n for each observation or summary statistic.}
 four chains with 5000 total samples from posterior
 }
 \description{
-Runs heirarchical meta-analysis of plant trait data
+Runs hierarchical meta-analysis of plant trait data
 }
 \details{
 \code{pecan.ma} runs a hierarchical Bayesian meta-analytical model.
