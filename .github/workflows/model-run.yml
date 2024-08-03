@@ -10,7 +10,7 @@ on :
   - cron: '30 4 * * 4'    
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -32,11 +32,10 @@ jobs:
         echo "UID=$(id -u)" >> .env
         echo "GID=$(id -g)" >> .env
         
-        docker-compose up -d postgres
-        docker run --rm --network pecan_pecan pecan/db
+        docker compose up -d postgres
+        docker run --rm --network pecan_pecan pecan/db:ci
         
-        docker-compose run bety user guestuser guestuser "Guest User" guestuser@example.com 4 4
-        docker-compose run bety user carya illinois "Carya Demo User" carya@example.com 1 1
+        docker compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
 
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
