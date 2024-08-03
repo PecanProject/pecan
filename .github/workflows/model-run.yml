@@ -40,7 +40,7 @@ jobs:
     
     - name: Run required containers
       run: |
-        docker-compose up -d pecan bety sipnet rstudio
+        docker compose up -d sipnet executor
 
     - name: Check if containers are running # This will be updated soon to a loop
       run: |
@@ -49,4 +49,4 @@ jobs:
 
     - name: Run SIPNET
       run: |
-        docker exec --workdir /pecan/tests pecan-rstudio-1 R CMD ../web/workflow.R --settings test.xml
+        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings test.xml
