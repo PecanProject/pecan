@@ -122,6 +122,9 @@
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
 "jsonlite","*","modules/data.remote","Suggests",FALSE
+"keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
+"knitr","*","base/visualization","Suggests",FALSE
+"knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
 "knitr",">= 1.42","base/qaqc","Suggests",FALSE
 "knitr",">= 1.42","modules/allometry","Suggests",FALSE
@@ -197,6 +200,7 @@
 "mockery","*","base/visualization","Suggests",FALSE
 "mockery","*","base/workflow","Suggests",FALSE
 "mockery","*","modules/data.atmosphere","Suggests",FALSE
+"mockery","*","modules/meta.analysis","Suggests",FALSE
 "mockery",">= 0.3.0","models/biocro","Suggests",FALSE
 "mockery",">= 0.4.3","base/db","Suggests",FALSE
 "MODISTools",">= 1.1.0","modules/data.remote","Imports",FALSE
@@ -481,6 +485,7 @@
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
+"rmarkdown","*","base/visualization","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE
 "rmarkdown",">= 2.19","base/qaqc","Suggests",FALSE
 "rmarkdown",">= 2.19","modules/allometry","Suggests",FALSE

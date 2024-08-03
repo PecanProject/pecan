@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_generate_subdaily_models.R
 \name{gen.subdaily.models}
 \alias{gen.subdaily.models}
-\title{gen.subdaily.models}
+\title{Generate Subdaily Models}
 \usage{
 gen.subdaily.models(
   outfolder,
@@ -32,7 +32,7 @@ the subdaily cycle.  If NULL, will default to all years}
 \item{direction.filter}{- Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
 (PalEON will go backward, anybody interested in the future will go forward)}
 
-\item{in.prefix}{}
+\item{in.prefix}{not used}
 
 \item{n.beta}{- number of betas to save from linear regression model}
 
@@ -55,6 +55,7 @@ for each day surrounding the model day}
 \item{print.progress}{- print progress bar? (gets passed through)}
 }
 \description{
+Create statistical models to predict subdaily meteorology
 This is the 2nd function in the tdm workflow that takes the dat.train_file that is created from the
              nc2dat.train function and generates "lag.days" and "next.days". These variables pass along information
              of the previous time step and provides a preview of the next time step. After these variables are created,
@@ -63,10 +64,6 @@ This is the 2nd function in the tdm workflow that takes the dat.train_file that 
              amount of space. The storage required varies by the size of the training dataset, but prepare for
              >100 GB. These will be called later in tdm_predict_subdaily_met to perform the linear regression
              analysis.
-}
-\details{
-Generate Subdaily Models
-Create statistical models to predict subdaily meteorology
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

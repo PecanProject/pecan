@@ -27,16 +27,17 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Imports:
     coda (>= 0.18),
     lattice,
-    PEcAn.utils,
+    MASS,
     PEcAn.DB,
     PEcAn.logger,
-    MASS,
     PEcAn.settings,
+    PEcAn.utils,
     rjags
 Suggests:
     ggmcmc,
     ggplot2,
     knitr (>= 1.42),
+    mockery,
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
 SystemRequirements: JAGS

@@ -9,7 +9,7 @@
 
 ##' Trait Meta-analysis
 ##'
-##' Runs heirarchical meta-analysis of plant trait data
+##' Runs hierarchical meta-analysis of plant trait data
 ##'
 ##' `pecan.ma` runs a hierarchical Bayesian meta-analytical model.
 ##' This model combines prior information with data from studies on the particular species or group of interest.

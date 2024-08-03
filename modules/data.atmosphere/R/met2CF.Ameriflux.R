@@ -69,6 +69,7 @@ getLatLon <- function(nc1) {
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should ouput of function be extra verbose
+##' @param ... further arguments, currently ignored
 ##'
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date,

@@ -7,16 +7,27 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#' @title AllomAve
-#' @name  AllomAve
-#' @aliases AllomAve
+#' AllomAve
+#'
+#' Allometry wrapper function that handles loading and subsetting the data,
+#'  fitting the Bayesian models, and generating diagnostic figures. Set up to loop over
+#'   multiple PFTs and components. 
+#'   Writes raw MCMC and PDF of diagnositcs to file and returns table of summary stats.
+#'   
+#' There are two usages of this function. 
+#' When running 'online' (connected to the PEcAn database), pass the database connection,
+#'  con, and the pfts subsection of the PEcAn settings.
+#' When running 'stand alone' pass the pft list mapping species to species codes
+#'  and the file paths to the allometry table and field data (optional)
+#'
 #' @param pfts        pft list from PEcAn settings (if con) OR list of pft spcd's
 #' If the latter, the names within the list are used to identify PFTs
-#' \itemize{
+#' \describe{
 #'   \item{'acronym'}{ - USDA species acronyms (see plants.usda.gov), used with FIELD data (vector)}
 #'   \item{'spcd'}{ - USFS species codes, use with PARM data (vector)}
 #' }
-#' @param components  IDs for allometry components from Jenkins et al 2004 Table 5. Default is stem biomass (6). See data(allom.components)
+#' @param components  IDs for allometry components from Jenkins et al 2004 Table 5.
+#'  Default is stem biomass (6). See data(allom.components)
 #' @param outdir      output directory files are written to. Default is getwd()
 #' @param con         database connection
 #' @param field       path(s) to raw data files
@@ -27,14 +38,6 @@
 #' @param dmax        maximum dbh of interest
 #' @return nested list of parameter summary statistics
 #' @export
-#' @description allometery wrapper function that handles loading and subsetting the data,
-#'  fitting the Bayesian models, and generating diagnostic figures. Set up to loop over
-#'   multiple PFTs and components. 
-#'   Writes raw MCMC and PDF of diagnositcs to file and returns table of summary stats.
-#'   
-#' @details There are two usages of this function. 
-#' When running 'online' (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
-#' When running 'stand alone' pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 #' 
 #' @examples 
 #' 
