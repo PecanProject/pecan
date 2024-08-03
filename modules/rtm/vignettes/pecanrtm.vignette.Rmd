@@ -1,7 +1,7 @@
 ---
 title: "The PEcAn RTM package"
 author: Alexey Shiklomanov
-output_format: html_vignette
+output_format: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{The PEcAn RTM package}
   %\VignetteEngine{knitr::rmarkdown}

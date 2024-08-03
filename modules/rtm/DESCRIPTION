@@ -27,6 +27,7 @@ Suggests:
     PEcAn.utils,
     PEcAn.ED2,
     XML,
+    rmarkdown,
     testthat (>= 1.0.2),
     knitr (>= 1.42),
     pwr
