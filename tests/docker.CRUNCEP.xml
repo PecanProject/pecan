@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/data/tests/met_download/CRUNCEP</outdir>
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>postgres</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+  <model>
+    <type>SIPNET</type>
+  </model>
+  <run>
+    <site>
+      <id>1000000057</id>
+    </site>
+    <inputs>
+      <met>
+        <source>CRUNCEP</source>
+      </met>
+    </inputs>
+    <start.date>2001-01-01</start.date>
+    <end.date>2001-12-31</end.date>
+    <dbfiles>/data/dbfiles</dbfiles>
+  </run>
+  <host>
+    <name>localhost</name>
+  </host>
+</pecan>
