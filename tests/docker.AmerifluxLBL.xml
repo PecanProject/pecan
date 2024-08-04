@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/data/tests/sipnet</outdir>
+  <outdir>/data/tests/met_download/AmerifluxLBL</outdir>
   <database>
     <bety>
       <driver>PostgreSQL</driver>
@@ -25,6 +25,7 @@
     </inputs>
     <start.date>2011-01-01</start.date>
     <end.date>2011-12-31</end.date>
+    <dbfiles>/data/dbfiles</dbfiles>
   </run>
   <host>
     <name>localhost</name>
