@@ -31,7 +31,6 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
       fcn = 'download.ERA5.old',
       con = NULL,
       host = data.frame(name = "localhost"),
-      browndog = NULL,
       write = FALSE,
       lat.in = lat.in,
       lon.in = lon.in,

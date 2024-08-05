@@ -29,7 +29,7 @@
                             mimetype =  mimetype, 
                             site.id = site$id, 
                             start_date = start_date, end_date = end_date, 
-                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
+                            pkg = pkg, fcn = fcn, con = con, host = host,
                             write = TRUE, 
                             lst = lst, 
                             overwrite = overwrite,
