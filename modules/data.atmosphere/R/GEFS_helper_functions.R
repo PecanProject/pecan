@@ -193,9 +193,9 @@ process_gridded_noaa_download <- function(lat_list,
     dlwrfsfc <- array(NA, dim = c(site_length, length(hours_char)))
     dswrfsfc <- array(NA, dim = c(site_length, length(hours_char)))
     
-    ens_base <- if (ens_index == 1) { "gec" } else { "gep" }
-    ens_name <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
-    base_filename2 <- paste0(ens_base,ens_name,".t",cycle,"z.pgrb2a.0p50.f")
+    member_type <- if (ens_index == 1) { "gec" } else { "gep" } # "_c_ontrol", "_p_erturbed"
+    ens_idxname <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
+    base_filename2 <- paste0(member_type,ens_idxname,".t",cycle,"z.pgrb2a.0p50.f")
     
     lats <- round(lat_list/.5)*.5
     lons <- round(lon_list/.5)*.5
