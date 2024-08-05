@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 
 ##-----------------------------------------------------------------------------#
-##' renames the variables within output data frame trait.data
+##' Renames the variables within output data frame trait.data
 ##'
 ##' @param data data frame to with variables to rename
 ##'
