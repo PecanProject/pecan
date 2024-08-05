@@ -18,8 +18,8 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
   
   download_grid <- function(ens_index, location, directory, hours_char, cycle, base_filename1, vars,working_directory){
     ens_base <- if (ens_index == 1) { "gec" } else { "gep" }
-    ens_name <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
-    base_filename2 <- paste0(ens_base,ens_name,".t",cycle,"z.pgrb2a.0p50.f")
+    ens_idx <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
+    base_filename2 <- paste0(ens_base,ens_idx,".t",cycle,"z.pgrb2a.0p50.f")
     curr_hours <- hours_char
 
     for(i in 1:length(curr_hours)){
