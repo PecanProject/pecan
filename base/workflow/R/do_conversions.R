@@ -96,7 +96,6 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             host       = settings$host,
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
-            browndog   = settings$browndog,
             spin       = settings$spin,
             overwrite  = overwrite.met)
         PEcAn.logger::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
