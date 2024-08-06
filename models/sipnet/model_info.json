@@ -7,9 +7,9 @@
   "creator": "Rob Kooper <kooper@illinois.edu>",
   "contributors": [],
   "links": {
-    "source": "http://someurl/code",
-    "issues": "http://someurl/issues",
-    "documentation": "http://someurl/wiki"
+    "source": "https://github.com/PecanProject/sipnet",
+    "issues": "https://github.com/PecanProject/sipnet/issues",
+    "documentation": "https://github.com/PecanProject/sipnet/tree/master/docs"
   },
   "inputs": {},
   "bibtex": []
