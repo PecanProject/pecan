@@ -1,14 +1,14 @@
 name: renderbook
 
-on:
-  push:
-    branches:
-      - master
-      - develop
-    tags:
-      - '*'
-  pull_request:
-  merge_group:
+# on:
+#   push:
+#     branches:
+#       - master
+#       - develop
+#     tags:
+#       - '*'
+#   pull_request:
+#   merge_group:
   workflow_dispatch:
 
 jobs:

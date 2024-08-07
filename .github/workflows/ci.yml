@@ -1,18 +1,18 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - master
-      - develop
+  # push:
+  #   branches:
+  #     - master
+  #     - develop
 
-    tags:
-      - '*'
-  pull_request:
-  merge_group:
-  issue_comment:
-    types:
-      - created
+  #   tags:
+  #     - '*'
+  # pull_request:
+  # merge_group:
+  # issue_comment:
+  #   types:
+  #     - created
   workflow_dispatch:
 
 env:
