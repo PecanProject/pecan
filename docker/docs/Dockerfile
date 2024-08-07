@@ -5,7 +5,6 @@ ARG IMAGE_VERSION="latest"
 # compile bookdown to html
 # ----------------------------------------------------------------------
 FROM pecan/base:${IMAGE_VERSION} AS pecandocs
-MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \
