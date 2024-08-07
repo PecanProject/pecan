@@ -94,7 +94,7 @@ jobs:
           # cache-to: type=registry,ref=classtranscribe/frontend:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=docker,dest=/tmp/depends.tar
+          outputs: type=image,dest=/tmp/depends.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ github.event.inputs.r_version}}
