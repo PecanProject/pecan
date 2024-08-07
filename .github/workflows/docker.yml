@@ -6,7 +6,7 @@ on:
   #     - main
   #   tags:
   #     - "v*.*.*"
-  # pull_request:
+  pull_request:
   workflow_dispatch:
     inputs:
       depends:
