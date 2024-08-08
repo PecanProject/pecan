@@ -69,8 +69,8 @@ files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
 # Git hash + clean status for this directory
 git_rev = $(shell \
-	CLEAN=$$(if [[ -n $$(git status -s $1) ]]; then echo "modified from "; fi); \
-	echo "$$CLEAN"$$(git rev-parse --short=10 HEAD))
+	CLEAN=$$([[ -n $$(git status -s $1) ]] && echo "+mods"); \
+	echo $$(git rev-parse --short=10 HEAD)"$$CLEAN")
 
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
 # a circular dependency between benchmark and data.land.
