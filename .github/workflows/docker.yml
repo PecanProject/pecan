@@ -97,7 +97,7 @@ jobs:
           outputs: type=image,dest=/tmp/depends.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ github.event.inputs.r_version}}
+            R_VERSION=${{ github.event.inputs.r_version }}
 
       # so depends image can be used in other steps
       - name: Upload artifact
