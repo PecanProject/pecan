@@ -1,0 +1,51 @@
+name : Sipnet Model Run
+on :
+  pull_request:
+
+  # allow manual triggering
+  workflow_dispatch:
+
+  schedule:
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'    
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Compose
+      run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
+
+    - name: Build Containers
+      run: |
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+        echo "UID=$(id -u)" >> .env
+        echo "GID=$(id -g)" >> .env
+        
+        docker compose up -d postgres
+        sleep 30
+        docker run --rm --network pecan_pecan pecan/db:ci
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+    
+    - name: Run required containers
+      run: |
+        docker compose up -d sipnet executor
+
+    - name: Check if containers are running # This will be updated soon to a loop
+      run: |
+        docker ps
+        sleep 50
+
+    - name: Run SIPNET
+      run: |
+        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings test.xml
