@@ -26,7 +26,7 @@ test_that("pecan_version", {
   # tags substring matched only when exact = FALSE
   expect_named(
     pecan_version("v1.5"),
-    c("package", paste0("v1.5.", 0:3), "installed", "source")
+    c("package", paste0("v1.5.", 0:3), "installed", "build_hash", "source")
   )
   expect_error(
     pecan_version("v1.5", exact = TRUE),
@@ -34,14 +34,14 @@ test_that("pecan_version", {
   )
   expect_named(
     pecan_version("v1.3", exact = TRUE),
-    c("package", "v1.3", "installed", "source")
+    c("package", "v1.3", "installed", "build_hash", "source")
   )
 
   # returns current release if no args given
   noargs <- pecan_version()
   expected_tag <- tail(PEcAn.all::pecan_releases, 1)$tag
-  expect_length(noargs, 4)
-  expect_named(noargs, c("package", expected_tag, "installed", "source"))
+  expect_length(noargs, 5)
+  expect_named(noargs, c("package", expected_tag, "installed", "build_hash", "source"))
 
   # Why the `any()`s below?
   # Because R CMD check runs tests with local test dir added to .libPaths,
@@ -77,8 +77,8 @@ test_that("pecan_version without sessioninfo", {
   mockery::stub(pecan_version, 'requireNamespace', FALSE)
   without_sessinfo <- pecan_version()
 
-  expect_length(with_sessinfo, 4)
-  expect_length(without_sessinfo, 3)
+  expect_length(with_sessinfo, 5)
+  expect_length(without_sessinfo, 4)
   expect_equal(
     with_sessinfo[, colnames(with_sessinfo) != "source"],
     without_sessinfo)
