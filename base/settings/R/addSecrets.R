@@ -11,7 +11,7 @@
 #' Copies certains sections from ~/.pecan.xml to the settings. This allows
 #' a user to have their own unique parameters also when sharing the
 #' pecan.xml file we don't expose these secrets.
-#' Currently this will copy the database and browndog sections
+#' Currently this will copy the database sections
 #'
 #' @title Add Users secrets
 #' @param settings settings file
