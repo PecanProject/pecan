@@ -46,7 +46,7 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     )
     version <- unique(unlist(version))
   }
-  cols_to_return <- c("package", version, "installed")
+  cols_to_return <- c("package", version, "installed", "build_hash")
 
 
   if (requireNamespace("sessioninfo", quietly = TRUE)) {
@@ -94,14 +94,16 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     our_pkgs <- our_pkgs[!duplicated(our_pkgs),]
   }
 
+  our_pkgs$build_hash <- sapply(our_pkgs$package, get_buildhash)
 
   res <- merge(
     x = our_pkgs,
     y = PEcAn.all::pecan_version_history,
     all = TRUE)
-  res <- res[, cols_to_return]
+  res <- drop_na_version_rows(res[, cols_to_return])
+  class(res) <- c("pecan_version_report", class(res))
 
-  drop_na_version_rows(res)
+  res
 }
 
 # Remove rows where all versions are missing
@@ -109,4 +111,36 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
 drop_na_version_rows <- function(df) {
   stopifnot(colnames(df)[[1]] == "package")
   df[rowSums(is.na(df[, -1])) < ncol(df[, -1]), ]
+}
+
+
+# Look up git revision, if recorded, from an installed PEcAn package
+get_buildhash <- function(pkg) {
+  if (!length(find.package(pkg))) {
+    return(NA_character_)
+  }
+  # Set if installed from r-universe or via install_github()
+  desc_sha <- packageDescription(pkg)$RemoteSha
+  if (!is.null(desc_sha)) {
+    return(substr(desc_sha, 1, 10))
+  }
+  # Set if PECAN_GIT_REV was set during install (includes `make install`)
+  get0(".build_hash", envir = asNamespace(pkg), ifnotfound = NA_character_)
+}
+
+
+# print method for version
+# (Just to help it display more compactly)
+#' @export
+print.pecan_version_report <- function(x, ...) {
+  xx <- as.data.frame(x)
+  xx$build_hash[is.na(xx$build_hash)] <- ""
+  xx$installed <- paste0(
+    xx$installed,
+    sub("(.+)", " (\\1)", xx$build_hash))
+  xx$build_hash <- NULL
+  if (!is.null(xx$source)) {
+    xx$source <- paste0(substr(xx$source, 1, 17), "...")
+  }
+  print(xx)
 }
