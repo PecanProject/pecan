@@ -52,19 +52,6 @@ addSecrets <- function(settings, force = FALSE) {
     }
   }
 
-  # only copy these sections if tag exists
-  for (key in c("browndog")) {
-    if (! key %in% names(settings)) next
-
-    for (section in names(pecan[[key]])) {
-      if (section %in% names(settings[section])) {
-        PEcAn.logger::logger.info("Already have a section for", section)
-      } else {
-        PEcAn.logger::logger.info("Imported section for", section)
-        settings[[key]][section] <- pecan[[key]][section]
-      }
-    }
-  }
 
   return(invisible(settings))
 }

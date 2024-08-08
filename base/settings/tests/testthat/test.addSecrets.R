@@ -35,32 +35,3 @@ test_that("`addSecrets` adds secret settings when force is TRUE and secrets have
   expect_equal(updated_settings$database$section$name, "pecan")
   expect_equal(updated_settings$database$section$password, "pecan")  
 })
-
-test_that("`addSecrets` adds secret settings when force is FALSE and secrets have not been added", {
-  settings <- list(
-    settings.info = list(
-      secrets.added = FALSE
-    ),
-    browndog = list()
-  )
-
-  mocked_xmlToList_result <- list(
-    database = list(
-      section = list(
-        name = "pecan",
-        password = "pecan"
-      )
-    ),
-    browndog = list(
-      section = list(
-        name = "pecan"
-      )
-    )
-  )
-  mockery::stub(addSecrets, 'file.exists', TRUE)
-  mockery::stub(addSecrets, 'xmlToList', mocked_xmlToList_result)
-  updated_settings <- addSecrets(settings, force = FALSE)
-  expect_equal(updated_settings$database$section$name, "pecan")
-  expect_equal(updated_settings$database$section$password, "pecan")
-  expect_equal(updated_settings$browndog$section$name, "pecan")
-})
