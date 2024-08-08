@@ -35,7 +35,6 @@ jobs:
         docker compose up -d postgres
         sleep 30
         docker run --rm --network pecan_pecan pecan/db:ci
-        docker compose run --rm bety user carya illinois "Carya Demo User" carya@example.com 1 1
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
     
     - name: Run required containers
