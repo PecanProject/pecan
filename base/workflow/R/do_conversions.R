@@ -9,6 +9,7 @@
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do_conversions))
   }
@@ -52,7 +53,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
     if (ic.flag) {
-      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic)
+      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic, site = settings$run$site)
       needsave <- TRUE
     }
     
