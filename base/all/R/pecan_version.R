@@ -94,7 +94,10 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     our_pkgs <- our_pkgs[!duplicated(our_pkgs),]
   }
 
-  our_pkgs$build_hash <- sapply(our_pkgs$package, get_buildhash)
+  want_hash <- !is.na(our_pkgs$installed)
+  our_pkgs$build_hash[want_hash] <- sapply(
+    our_pkgs$package[want_hash],
+    get_buildhash)
 
   res <- merge(
     x = our_pkgs,
@@ -116,12 +119,9 @@ drop_na_version_rows <- function(df) {
 
 # Look up git revision, if recorded, from an installed PEcAn package
 get_buildhash <- function(pkg) {
-  if (!length(find.package(pkg))) {
-    return(NA_character_)
-  }
   # Set if installed from r-universe or via install_github()
-  desc_sha <- packageDescription(pkg)$RemoteSha
-  if (!is.null(desc_sha)) {
+  desc_sha <- utils::packageDescription(pkg, fields = "RemoteSha")
+  if (!is.na(desc_sha)) {
     return(substr(desc_sha, 1, 10))
   }
   # Set if PECAN_GIT_REV was set during install (includes `make install`)
