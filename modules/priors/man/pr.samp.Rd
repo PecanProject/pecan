@@ -7,11 +7,11 @@
 pr.samp(distn, parama, paramb, n)
 }
 \arguments{
-\item{distn}{}
+\item{distn}{name of distribution, e.g. "norm", "pois"}
 
-\item{parama}{}
+\item{parama}{first parameter for distn call}
 
-\item{paramb}{}
+\item{paramb}{second parameter for distn call}
 
 \item{n}{number of samples to return}
 }
@@ -22,5 +22,5 @@ vector with n random samples from prior
 Take n random samples from prior
 }
 \seealso{
-\{code{\link{get.sample}}
+\code{\link{get.sample}}
 }

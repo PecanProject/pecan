@@ -4,7 +4,7 @@
 \alias{[[<-.spectra}
 \title{Assign values to spectra by wavelength}
 \usage{
-\method{[[}{spectra}(spectra, wavelength, j, values) <- value
+\method{[[}{spectra}(spectra, wavelength, j) <- value
 }
 \arguments{
 \item{spectra}{Object of class \code{spectra}}
@@ -14,7 +14,7 @@
 \item{j}{index specifying elements to extract or replace.
 See \code{\link[base:Extract]{base::Extract}} for details.}
 
-\item{values}{Vector or matrix of values to assign}
+\item{value}{Vector or matrix of values to assign}
 }
 \description{
 Assign values to spectra by wavelength

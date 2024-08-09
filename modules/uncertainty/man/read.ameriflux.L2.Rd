@@ -6,6 +6,11 @@
 \usage{
 read.ameriflux.L2(file.name, year)
 }
+\arguments{
+\item{file.name}{path to file}
+
+\item{year}{currently ignored}
+}
 \value{
 Ameriflux L2 data read from file
 }

@@ -8,6 +8,8 @@ neff(x, ...)
 }
 \arguments{
 \item{x}{A vector or time series}
+
+\item{...}{additional arguments passed to methods}
 }
 \description{
 Calculate effective sample size of vector based on its autocorrelation.

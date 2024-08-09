@@ -6,6 +6,11 @@
 \usage{
 estimate_mode(x, adjust = 0.1)
 }
+\arguments{
+\item{x}{numeric values}
+
+\item{adjust}{passed to stats::density}
+}
 \description{
 estimate_mode
 }

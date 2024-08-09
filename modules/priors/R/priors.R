@@ -12,7 +12,10 @@
 ##'
 ##' @title Fit distribution to data  
 ##' @param trait.data data for distribution
+##' @param trait name of trait to fit.
+##'  One of "tt", "sla", "rrr", "q"
 ##' @param dists list of distribution names
+##' @param n only used in return value
 ##' @return best fit distribution
 ##' @export
 ##' @author David LeBauer
@@ -49,11 +52,16 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
                                              start = list(shape1 = 2, shape2 = 1)))
   }
   aicvalues <- lapply(a, AIC)
-  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
+  result <- t(sapply(
+    dists,
+    function(x) cbind(
+      t(PEcAn.utils::tabnum(a[[x]]$estimate)),
+      signif(aicvalues[[x]]))
+  ))
   colnames(result) <- c("a", "b", "AIC")
   print(result)
   bestfitdist <- names(which.min(aicvalues))
-  parms <- tabnum(a[[bestfitdist]]$estimate)
+  parms <- PEcAn.utils::tabnum(a[[bestfitdist]]$estimate)
   dist  <- ifelse(bestfitdist == "normal", "norm", bestfitdist)
   return(data.frame(distribution = dist,
                     a = as.numeric(parms[1]),
@@ -65,7 +73,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 #--------------------------------------------------------------------------------------------------#
 ##' Prior fitting function for optimization
 ##'
-##' This function is used within \code{\link{DEoptim}} to parameterize a distribution to the 
+##' This function is used within `DEoptim` to parameterize a distribution to the 
 ##' central tendency and confidence interval of a parameter. 
 ##' This function is not very robust; currently it needs to be tweaked when distributions
 ##' require starting values (e.g. beta, f)
@@ -167,13 +175,13 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' Take n random samples from prior
 ##'
 ##' @title Sample from prior 
-##' @param distn 
-##' @param parama 
-##' @param paramb 
+##' @param distn name of distribution, e.g. "norm", "pois"
+##' @param parama first parameter for distn call
+##' @param paramb second parameter for distn call
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @export
-##' @seealso \{code{\link{get.sample}}
+##' @seealso \code{\link{get.sample}}
 pr.samp <- function(distn, parama, paramb, n) {
   return(do.call(paste0("r", distn), list(n, parama, paramb)))
 } # pr.samp
@@ -250,14 +258,18 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 
 
 ##--------------------------------------------------------------------------------------------------#
-##' Returns a data frame from \link{stats::density} function 
+##' Create Density Data Frame from Sample
 ##'
-##' @name create.density.df
-##' @title Create Density Data Frame from Sample
+##' Returns a data frame from `stats::density` function 
+##'
 ##' @param samps a vector of samples from a distribution
-##' @param zero.bounded 
+##' @param zero.bounded logical: Restrict density distribution to nonnegative values?
 ##' @param distribution list with elements distn, parama, paramb,
 ##' e.g. \code{list('norm', 0, 1)}
+##' @param n number of points at which to estimate density
+##' @param ... additional arguments, passed on to `stats::density`
+##'
+##' @md
 ##' @author David LeBauer
 ##' @export
 ##' @return data frame with x and y = dens(x)
@@ -278,9 +290,9 @@ create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution =
   }
   if (samp.exists) {
     if (zero.bounded) {
-      new.density <- zero.bounded.density(samps, n = 1000, ...)
+      new.density <- PEcAn.utils::zero.bounded.density(samps, n = 1000, ...)
     } else {
-      new.density <- density(samps, n = 1000, ...)
+      new.density <- stats::density(samps, n = 1000, ...)
     }
     density.df <- with(new.density, data.frame(x = x, y = y))
   }

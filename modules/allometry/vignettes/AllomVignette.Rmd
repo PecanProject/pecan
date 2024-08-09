@@ -2,7 +2,7 @@
 title: "PEcAn.allometry Vignette"
 author: "Mike Dietze"
 date: "April 23, 2015"
-output: html_document
+output: html_vignette
 vignette: >
   %\VignetteIndexEntry{PEcAn.allometry Vignette}
   %\VignetteEngine{knitr::rmarkdown}

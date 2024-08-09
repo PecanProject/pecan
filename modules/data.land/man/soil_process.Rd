@@ -14,6 +14,9 @@ soil_process(settings, input, dbfiles, overwrite = FALSE, run.local = TRUE)
 \item{dbfiles}{directory to write database files}
 
 \item{overwrite}{overwrite previous results (boolean)}
+
+\item{run.local}{logical: Run only on the current machine?
+If FALSE, runs on `settings$host` (which might turn out to be the current machine)}
 }
 \value{
 path to soil file

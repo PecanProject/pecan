@@ -4,6 +4,8 @@
 #' @param input     PEcAn input list
 #' @param dbfiles   directory to write database files
 #' @param overwrite overwrite previous results (boolean)
+#' @param run.local logical: Run only on the current machine?
+#'  If FALSE, runs on `settings$host` (which might turn out to be the current machine)
 #'
 #' @return path to soil file
 #' @export

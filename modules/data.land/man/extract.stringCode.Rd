@@ -2,10 +2,15 @@
 % Please edit documentation in R/extract.stringCode.R
 \name{extract.stringCode}
 \alias{extract.stringCode}
-\title{extract.string.code}
+\title{extract.stringCode}
 \usage{
 extract.stringCode(x, extractor = from.TreeCode)
 }
+\arguments{
+\item{x}{string to decode}
+
+\item{extractor}{function to apply}
+}
 \description{
-extract.string.code
+extract.stringCode
 }

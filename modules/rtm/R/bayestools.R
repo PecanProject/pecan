@@ -1,4 +1,12 @@
 #' Generic log-likelihood generator for RTMs
+#'
+#' @param nparams number of parameters in model
+#' @param model function to minimize
+#' @param observed vector of observations
+#' @param lag.max passed to [neff()]
+#' @param verbose logical: print extra diagnostics during run?
+#' @param ... additional arguments passed to model function
+#'
 rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE, ...) {
   fail_ll <- -1e10
   stopifnot(nparams >= 1, nparams %% 1 == 0, is.function(model), is.numeric(observed))
@@ -34,7 +42,7 @@ rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE
   return(out)
 }
 
-#' Check convergence of BayesianTools output
+# Check convergence of BayesianTools output
 bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mpsrf = TRUE) {
   i <- ifelse(use_CI, 2, 1)
   gelman <- try(BayesianTools::gelmanDiagnostics(samples))
@@ -123,7 +131,7 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
 #' if `loglike` is not `NULL`.
 #' @param prior BayesianTools prior object.
 #' @param custom_settings Nested settings list. See Details.
-#' @param loglike Custom log likelihood function. If `NULL`, use [rtm_loglike] 
+#' @param loglike Custom log likelihood function. If `NULL`, use [rtm_loglike()] 
 #' with provided `observed` and `model`.
 #' @export
 invert_bt <- function(observed, model, prior, custom_settings = list(), loglike = NULL) {

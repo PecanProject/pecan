@@ -80,11 +80,14 @@ plot_variance_decomposition <- function(plot.inputs,
 ##' @param sa.sample trait quantiles used in sensitivity analysis 
 ##' @param sa.spline spline function estimated from sensitivity analysis
 ##' @param trait trait name for title
-##' @param y.range 
+##' @param y.range limits for y axis of plot
 ##' @param median.i index of median value in sa.sample; \code{median.i == which(as.numeric(rownames(sa.sample)) == 50) }
 ##' @param prior.sa.sample similar to sa.sample, but for prior distribution. If given, plots sensitivity for prior run
 ##' @param prior.sa.spline similar to sa.spline, but for prior trait distribution. 
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
+##' @param linesize passed to ggplot to set line thickness
+##' @param dotsize passed to ggplot to set point size
+##'
 ##' @export
 ##' @return object of class ggplot
 plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), median.i = 4, 
@@ -140,12 +143,10 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
 ##' Plot functions and quantiles used in sensitivity analysis
 ##'
 ##' Generates a plot using \code{\link{plot_sensitivity}} for multiple traits.
-##' @name plot_sensitivities 
-##' @title Plot Sensitivities
+##'
 ##' @param sensitivity.plot.inputs inputs
 ##' @param prior.sensitivity.plot.inputs priors
 ##' @param ... arguments passed to \code{\link{plot_sensitivity}}
-##' @param sensitivity.results list containing sa.samples and sa.splines
 ##' @export
 ##' @return list of plots, one per trait
 plot_sensitivities <- function(sensitivity.plot.inputs, 

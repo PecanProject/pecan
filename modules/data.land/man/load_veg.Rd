@@ -19,6 +19,29 @@ load_veg(
   ...
 )
 }
+\arguments{
+\item{new_site}{list passed to `load_data`}
+
+\item{start_date, end_date}{date range to look up}
+
+\item{source_id}{input id to look up in DB}
+
+\item{source}{name of data source (used in file naming)}
+
+\item{icmeta}{metadata for initial conditions}
+
+\item{format_name}{file format to look for}
+
+\item{machine_host}{hostname of machine where the data lives}
+
+\item{dbparms}{parameters to use when opening connection to database}
+
+\item{outfolder}{path to write results}
+
+\item{overwrite}{Logical: replace existing files? NOTE: Currently ignored!}
+
+\item{...}{Additional arguments, currently ignored}
+}
 \description{
 uses `PEcAn.benchmark::load_data()` to get veg data
 }

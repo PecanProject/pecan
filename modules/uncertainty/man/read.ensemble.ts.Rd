@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.ensemble.analysis.R
 \name{read.ensemble.ts}
 \alias{read.ensemble.ts}
-\title{Reads an ensemble time-series from PEcAn for the selected target variable}
+\title{Reads ensemble time-series from PEcAn for the selected target variable}
 \usage{
 read.ensemble.ts(
   settings,
@@ -11,6 +11,15 @@ read.ensemble.ts(
   start.year = NULL,
   end.year = NULL
 )
+}
+\arguments{
+\item{settings}{PEcAn settings object}
+
+\item{ensemble.id}{database ID, taken from settings if not specified}
+
+\item{variable}{variable name to process. Required}
+
+\item{start.year, end.year}{taken from settings if not specified}
 }
 \value{
 list

@@ -114,11 +114,13 @@ Licor_QC <- function(dat, curve = c("ACi", "AQ"), tol = 0.05) {
   return(invisible(dat))
 } # Licor_QC
 
-##' @name estimate_mode
-##' @title estimate_mode
-##' @author Mike Dietze
-##' @author Xiaohui Feng
-##' @export
+#' estimate_mode
+#'
+#' @param x numeric values
+#' @param adjust passed to stats::density
+#' @author Mike Dietze
+#' @author Xiaohui Feng
+#' @export
 estimate_mode <- function(x, adjust = 0.1) {
   d <- stats::density(x, na.rm = TRUE, adjust = adjust)
   return(d$x[which.max(d$y)])

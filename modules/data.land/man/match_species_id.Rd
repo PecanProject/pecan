@@ -20,6 +20,8 @@ match_species_id(
 \item{bety}{BETY connection object}
 
 \item{translation_table}{Data frame with custom translation table (see details).}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 \code{data.frame} containing the following columns:

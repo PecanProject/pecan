@@ -69,14 +69,7 @@ The Date field is over a month old.
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Alexey Shiklomanov, Shawn Serbin, Mike Dietze’
-  Authors@R: ‘Mike Dietze [aut], Shawn Serbin [aut], Alexey Shiklomanov [aut, cre], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘Alexey Shiklomanov <ashiklom@bu.edu>’
-  Authors@R:  ‘Alexey Shiklomanov <alexey.shiklomanov@pnnl.gov>’
-
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -120,10 +113,7 @@ str.spectra:
 
 See section ‘Generic functions and methods’ in the ‘Writing R
 Extensions’ manual.
-* checking replacement functions ... WARNING
-  ‘[[<-.spectra’
-The argument of a replacement function which corresponds to the right
-hand side must be named ‘value’.
+* checking replacement functions ... OK
 * checking foreign function calls ... WARNING
 Foreign function call to a base package:
   .Call(stats:::C_acf, ...)
@@ -220,74 +210,13 @@ Undocumented data sets:
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking for code/documentation mismatches ... WARNING
-Codoc mismatches from documentation object '[[<-.spectra':
-[[<-.spectra
-  Code: function(spectra, wavelength, j, values)
-  Docs: function(spectra, wavelength, j, values, value)
-  Argument names in docs not in code:
-    value
-
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'EDR.preprocess.history'
-  ‘output.path’
-
-Undocumented arguments in documentation object 'bt_check_convergence'
-  ‘samples’ ‘threshold’ ‘use_CI’ ‘use_mpsrf’
-
-Undocumented arguments in documentation object 'corr_max_lag'
-  ‘nx’ ‘r’ ‘sig.level’ ‘power’ ‘...’
-
-Undocumented arguments in documentation object 'generate.rsr.all'
-  ‘path.to.licor’
-
-Undocumented arguments in documentation object 'invert.lsq'
-  ‘upper’
-Documented arguments not in \usage in documentation object 'invert.lsq':
-  ‘uppper’
-
-Undocumented arguments in documentation object 'matplot'
-  ‘...’
-
-Undocumented arguments in documentation object 'matplot.default'
-  ‘...’
-
-Undocumented arguments in documentation object 'neff'
-  ‘...’
-
-Undocumented arguments in documentation object 'plot.spectra'
-  ‘type’
-
-Undocumented arguments in documentation object 'rtm_loglike'
-  ‘nparams’ ‘model’ ‘observed’ ‘lag.max’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'setup_edr'
-  ‘...’
-
-Undocumented arguments in documentation object 'str.spectra'
-  ‘...’
-
-Undocumented arguments in documentation object '[[<-.spectra'
-  ‘value’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
-* checking data for ASCII and uncompressed saves ... WARNING
-  
-  Note: significantly better compression could be obtained
-        by using R CMD build --resave-data
-                           old_size new_size compress
-  dataSpec_prospectd.RData     36Kb     22Kb       xz
-  raw.sensor.data.RData       109Kb     80Kb       xz
-  sensor.rsr.RData            2.3Mb    1.9Mb       xz
-  testspec.RData              1.2Mb    956Kb       xz
+* checking data for ASCII and uncompressed saves ... OK
 * checking line endings in C/C++/Fortran sources/headers ... OK
 * checking line endings in Makefiles ... OK
 * checking compilation flags in Makevars ... OK
@@ -305,13 +234,7 @@ It is good practice to register native routines and to disable symbol
 search.
 
 See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘edr.sensitivity.R’, ‘invert.edr.R’, ‘pecanrtm.vignette.Rmd’,
-    ‘test.edr.R’
-Files named as vignettes but with no recognized vignette engine:
-   ‘vignettes/pecanrtm.vignette.Rmd’
-(Is a VignetteBuilder field missing?)
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK

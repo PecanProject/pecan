@@ -1,8 +1,21 @@
-##' load_veg
-##'
-##' uses `PEcAn.benchmark::load_data()` to get veg data
-##' @export
-##' @author Istem Fer
+#' load_veg
+#'
+#' uses `PEcAn.benchmark::load_data()` to get veg data
+#'
+#' @param new_site list passed to `load_data`
+#' @param start_date,end_date date range to look up
+#' @param source_id input id to look up in DB
+#' @param source name of data source (used in file naming)
+#' @param icmeta metadata for initial conditions
+#' @param format_name file format to look for
+#' @param machine_host hostname of machine where the data lives
+#' @param dbparms parameters to use when opening connection to database
+#' @param outfolder path to write results
+#' @param overwrite Logical: replace existing files? NOTE: Currently ignored!
+#' @param ... Additional arguments, currently ignored
+#'
+#' @export
+#' @author Istem Fer
 load_veg <- function(new_site, start_date, end_date,
                      source_id, source, icmeta = NULL, format_name = NULL,
                      machine_host, dbparms, outfolder, overwrite = FALSE, ...){

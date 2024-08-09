@@ -15,7 +15,17 @@ run.ensemble.analysis(
 )
 }
 \arguments{
+\item{settings}{PEcAn settings object}
+
 \item{plot.timeseries}{if TRUE plots a modeled timeseries of target variable(s) with CIs}
+
+\item{ensemble.id}{database ID, taken from settings if not specified}
+
+\item{variable}{variable name to process, taken from settings if not specified}
+
+\item{start.year, end.year}{taken from settings if not specified}
+
+\item{...}{additional arguments passed to [ensemble.ts()]}
 }
 \value{
 nothing, creates ensemble plots as ensemble.analysis.pdf

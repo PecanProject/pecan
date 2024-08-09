@@ -208,6 +208,7 @@ download.LandTrendr.AGB <- function(outdir, target_dataset = "biomass", product_
 ##' (product_dates = NULL) is to extract data from all availible years in BETYdb or data_dir
 ##' @param output_file Path to save LandTrendr_AGB_output.RData file containing the 
 ##' output extraction list (see return)
+##' @param ... Additional arguments, currently ignored
 ##' 
 ##' @return list of two containing the median AGB values per pixel and the corresponding 
 ##' standard deviation values (uncertainties)

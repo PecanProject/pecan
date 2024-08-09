@@ -7,13 +7,44 @@
 soil.units(varname = NA)
 }
 \arguments{
-\item{varname}{}
+\item{varname}{character vector. See details}
 }
 \value{
-character
+character matrix with columns \code{var} and \code{unit}
 }
 \description{
-Get standard units for a soil variable
+Given SSURGO names for soil properties, looks up their standard units.
+Note that names must match exactly.
+}
+\details{
+Supported variables are:
+\itemize{
+\item \code{soil_depth}
+\item \code{soil_cec}
+\item \code{fraction_of_clay_in_soil}
+\item \code{fraction_of_sand_in_soil}
+\item \code{fraction_of_silt_in_soil}
+\item \code{fraction_of_gravel_in_soil}
+\item \code{volume_fraction_of_water_in_soil_at_saturation}
+\item \code{volume_fraction_of_water_in_soil_at_field_capacity}
+\item \code{volume_fraction_of_condensed_water_in_dry_soil}
+\item \code{volume_fraction_of_condensed_water_in_soil_at_wilting_point}
+\item \code{soilC}
+\item \code{soil_ph}
+\item \code{soil_bulk_density}
+\item \code{soil_type}
+\item \code{soil_hydraulic_b}
+\item \code{soil_water_potential_at_saturation}
+\item \code{soil_hydraulic_conductivity_at_saturation}
+\item \code{thcond0}
+\item \code{thcond1}
+\item \code{thcond2}
+\item \code{thcond3}
+\item \code{soil_thermal_conductivity}
+\item \code{soil_thermal_conductivity_at_saturation}
+\item \code{soil_thermal_capacity}
+\item \code{soil_albedo}
+}
 }
 \examples{
 soil.units("soil_albedo")

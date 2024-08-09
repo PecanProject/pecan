@@ -13,6 +13,8 @@ plot2AGB(combined, out, outfolder, allom.stats, unit.conv = 0.02)
 
 \item{outfolder}{output folder for graphs & data}
 
+\item{allom.stats}{Allometry statistics computed by `AllomAve`}
+
 \item{unit.conv}{area conversion from sum(kg/tree) to kg/area}
 }
 \description{

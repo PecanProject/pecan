@@ -31,6 +31,8 @@ extract.LandTrendr.AGB(
 
 \item{output_file}{Path to save LandTrendr_AGB_output.RData file containing the 
 output extraction list (see return)}
+
+\item{...}{Additional arguments, currently ignored}
 }
 \value{
 list of two containing the median AGB values per pixel and the corresponding 

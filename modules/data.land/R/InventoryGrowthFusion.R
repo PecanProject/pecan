@@ -1,18 +1,47 @@
-##' @name InventoryGrowthFusion
-##' @title InventoryGrowthFusion
-##' @description this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
-##' for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
-##' 
-##' @param data  list of data inputs
-##' @param random = whether or not to include random effects
-##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from
-##' @param n.burn  number of steps to automatically discard as burn-in
-##' @param save.state whether or not to include inferred DBH in output (can be large). Enter numeric value to save.state periodically (in terms of n.chunk)
-##' @param restart  final mcmc.list from previous execution. NULL for new run. TRUE to save final state for new run.
-##' @note Requires JAGS
-##' @return an mcmc.list object
-##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE,restart = NULL) {
+#' InventoryGrowthFusion
+#'
+#' this code fuses forest inventory data with tree growth data (tree ring or
+#' dendrometer band) for the same plots. Code is a rewrite of Clark et al 2007
+#' Ecol Appl into JAGS
+#' 
+#' @note Requires JAGS
+#'
+#' @param data list of data inputs
+#' @param cov.data covariate data
+#' @param time_data required if time_varying is provided
+#' @param n.iter total number of iterations across all chunks
+#' @param n.chunk number of MCMC steps to evaluate at a time. Will only return
+#'  LAST. If restarting, second number in vector is chunk to start from
+#' @param n.burn number of steps to automatically discard as burn-in
+#' @param random whether or not to include random effects
+#' @param fixed formula for fixed effects
+#' @param time_varying formula for time-varying effects
+#' @param burnin_plot logical: display a plot of the burnin steps?
+#' @param save.jags logical: Save the generated JAGS script?
+#' @param z0 initial conditions for state variable
+#' @param save.state whether or not to include inferred DBH in output (can be
+#'  large). Enter numeric value to save.state periodically (in terms of
+#'  n.chunk)
+#' @param restart final mcmc.list from previous execution. NULL for new run.
+#'  TRUE to save final state for new run.
+#'
+#' @return an mcmc.list object
+#' @export
+InventoryGrowthFusion <- function(
+                                  data,
+                                  cov.data = NULL,
+                                  time_data = NULL,
+                                  n.iter = 5000,
+                                  n.chunk = n.iter,
+                                  n.burn = min(n.chunk, 2000),
+                                  random = NULL,
+                                  fixed = NULL,
+                                  time_varying = NULL,
+                                  burnin_plot = FALSE,
+                                  save.jags = "IGF.txt",
+                                  z0 = NULL,
+                                  save.state = TRUE,
+                                  restart = NULL) {
   
   # baseline variables to monitor
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept

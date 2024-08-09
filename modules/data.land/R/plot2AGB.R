@@ -14,7 +14,8 @@
 ##' 
 ##' @param combined   data frame merging plot inventory and tree ring data
 ##' @param out        MCMC samples for diameter (sample x tree)
-##' @param outfolder  output folder for graphs & data 
+##' @param outfolder  output folder for graphs & data
+##' @param allom.stats Allometry statistics computed by `AllomAve`
 ##' @param unit.conv  area conversion from sum(kg/tree) to kg/area
 ##' 
 ##' @author Mike Dietze \email{dietze@@bu.edu}

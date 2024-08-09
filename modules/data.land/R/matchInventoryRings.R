@@ -1,5 +1,11 @@
-##' @name matchInventoryRings
-##' @title matchInventoryRings
+#' matchInventoryRings
+#'
+#' @param trees,rings codes from which to extract IDs
+#' @param extractor function to call, specified without its initial `to.`
+#'  e.g. "TreeCode" calls `to.TreeCode`
+#' @param nyears number of years to extract
+#' @param coredOnly logical: Only include trees with data from 2000?
+#'
 ##' @export
 matchInventoryRings <- function(trees, rings, extractor = "TreeCode", nyears = 30, coredOnly = TRUE) {
   

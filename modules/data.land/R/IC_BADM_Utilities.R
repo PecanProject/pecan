@@ -181,6 +181,7 @@ entries <- entries[-which(ind),]
 #' @param long numeric longitude
 #' @param siteid site id as a string
 #' @param outdir output dir which you want to store the IC netcdf file
+#' @param ens ensemble members, passed on to `pool_ic_list2netcdf`
 #'
 #' @return a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns
 #' @export

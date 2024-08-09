@@ -2,7 +2,7 @@
 #'
 #' @param id "The identifier of a package, package metadata or other package member" -- dataone r
 #' @param filepath path to where files will be stored
-#' @param CNode 
+#' @param CNode character, passed to `dataone::CNode`
 #' @param lazyLoad "A logical value. If TRUE, then only package member system metadata is downloaded and not data. The default is FALSE." -- dataone R 
 #' @param quiet "A 'logical'. If TRUE (the default) then informational messages will not be printed." -- dataone R
 #' 

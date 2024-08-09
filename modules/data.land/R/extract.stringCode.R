@@ -1,13 +1,16 @@
-##' @name extract.stringCode
-##' @title extract.string.code
-##' @export
+#' extract.stringCode
+#'
+#' @param x string to decode
+#' @param extractor function to apply
+#'
+#' @export
 extract.stringCode <- function(x, extractor = from.TreeCode) {
   return(extractor(x))
 } # extract.stringCode
 
-##' @name from.TreeCode
-##' @title from.TreeCode
-##' @export
+#' from.TreeCode
+#' @param x string to decode
+#' @export
 from.TreeCode <- function(x) {
   SITE <- substr(x, 1, 1)
   PLOT <- substr(x, 2, 2)
@@ -16,9 +19,9 @@ from.TreeCode <- function(x) {
   return(data.frame(SITE, PLOT, SUBPLOT, TAG))
 } # from.TreeCode
 
-##' @name to.TreeCode
-##' @title to.TreeCode
-##' @export
+#' to.TreeCode
+#' @param SITE,PLOT,SUBPLOT,TAG strings (or coercible to)
+#' @export
 to.TreeCode <- function(SITE, PLOT, SUBPLOT, TAG = NULL) {
   SITE <- as.character(SITE)
   PLOT <- as.character(PLOT)
@@ -31,17 +34,18 @@ to.TreeCode <- function(SITE, PLOT, SUBPLOT, TAG = NULL) {
   return(x)
 } # to.TreeCode
 
-##' @name from.Tag
-##' @title from.Tag
-##' @export
+#' from.Tag
+#' @param x string to decode
+#' @export
 from.Tag <- function(x) {
   miss <- rep(NA, length(x))
   return(data.frame(SITE = miss, PLOT = miss, SUBPLOT = miss, TAG = x))
 } # from.Tag
 
-##' @name to.Tag
-##' @title to.Tag
-##' @export
+#' to.Tag
+#' @param SITE,PLOT,SUBPLOT ignored
+#' @param TAG string (or coercible to)
+#' @export
 to.Tag <- function(SITE, PLOT, SUBPLOT, TAG = NULL) {
   SITE <- as.character(SITE)
   PLOT <- as.character(PLOT)

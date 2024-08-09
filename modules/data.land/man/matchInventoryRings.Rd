@@ -12,6 +12,16 @@ matchInventoryRings(
   coredOnly = TRUE
 )
 }
+\arguments{
+\item{trees, rings}{codes from which to extract IDs}
+
+\item{extractor}{function to call, specified without its initial `to.`
+e.g. "TreeCode" calls `to.TreeCode`}
+
+\item{nyears}{number of years to extract}
+
+\item{coredOnly}{logical: Only include trees with data from 2000?}
+}
 \description{
 matchInventoryRings
 }

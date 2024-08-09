@@ -14,6 +14,7 @@
 #' @param format_name Species code format name (see details)
 #' @param bety BETY connection object
 #' @param translation_table Data frame with custom translation table (see details).
+#' @param ... additional arguments, currently ignored
 #' @return \code{data.frame} containing the following columns:
 #' \describe{
 #'  \item{\code{input_code}}{Character provided as input}

@@ -14,6 +14,8 @@ netcdf.writer.BADM(lat, long, siteid, outdir, ens)
 \item{siteid}{site id as a string}
 
 \item{outdir}{output dir which you want to store the IC netcdf file}
+
+\item{ens}{ensemble members, passed on to `pool_ic_list2netcdf`}
 }
 \value{
 a dataframe with file, host, mimetype, formatname, startdate, enddate and dbfile.name columns

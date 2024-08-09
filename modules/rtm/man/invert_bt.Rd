@@ -17,7 +17,7 @@ if \code{loglike} is not \code{NULL}.}
 
 \item{custom_settings}{Nested settings list. See Details.}
 
-\item{loglike}{Custom log likelihood function. If \code{NULL}, use \link{rtm_loglike}
+\item{loglike}{Custom log likelihood function. If \code{NULL}, use \code{\link[=rtm_loglike]{rtm_loglike()}}
 with provided \code{observed} and \code{model}.}
 }
 \description{

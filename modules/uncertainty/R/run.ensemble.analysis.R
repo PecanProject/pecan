@@ -7,14 +7,18 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' run ensemble.analysis
-##' 
-##' @name run.ensemble.analysis
-##' @title run ensemble.analysis
-##' @return nothing, creates ensemble plots as ensemble.analysis.pdf
-##' @param plot.timeseries if TRUE plots a modeled timeseries of target variable(s) with CIs
-##' @export
-##' @author David LeBauer, Shawn Serbin, Ryan Kelly
+#' run ensemble.analysis
+#' 
+#' @param settings PEcAn settings object
+#' @param plot.timeseries if TRUE plots a modeled timeseries of target variable(s) with CIs
+#' @param ensemble.id database ID, taken from settings if not specified
+#' @param variable variable name to process, taken from settings if not specified
+#' @param start.year,end.year taken from settings if not specified
+#' @param ... additional arguments passed to [ensemble.ts()]
+#'
+#' @return nothing, creates ensemble plots as ensemble.analysis.pdf
+#' @export
+#' @author David LeBauer, Shawn Serbin, Ryan Kelly
 run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = NULL, 
                                   variable = NULL, start.year = NULL, end.year = NULL, ...) {
   
@@ -162,16 +166,18 @@ runModule.run.ensemble.analysis <- function(settings, ...) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##'
-##' Reads ensemble time-series from PEcAn for the selected target variable
-##'
-##' @name read.ensemble.ts
-##' @title Reads an ensemble time-series from PEcAn for the selected target variable
-##' @return list
-##'
-##' @export
-##'
-##' @author Michael Dietze, Ryan Kelly
+#' Reads ensemble time-series from PEcAn for the selected target variable
+#'
+#' @param settings PEcAn settings object
+#' @param ensemble.id database ID, taken from settings if not specified
+#' @param variable variable name to process. Required
+#' @param start.year,end.year taken from settings if not specified
+#'
+#' @return list
+#'
+#' @export
+#'
+#' @author Michael Dietze, Ryan Kelly
 read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL, 
                              start.year = NULL, end.year = NULL) {
   
@@ -295,17 +301,19 @@ filterNA <- function(x, w) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##'
-##' Plots an ensemble time-series from PEcAn for the selected target variable
-##'
-##' @name ensemble.ts
-##' @title Plots an ensemble time-series from PEcAn for the selected target variable
-##' @return nothing, generates an ensemble time-series plot
-##'
-##' @export
-##'
-##' @author Michael Dietze, Ryan Kelly
-##'
+#' Plots an ensemble time-series from PEcAn for the selected target variable
+#'
+#' @param ensemble.ts ensemble timeseries to be plotted, as returned by [read.ensemble.ts()]
+#' @param observations observed data to plot over timeseries predictions
+#' @param window number of timepoints to average across
+#' @param ... additional arguments, currently ignored
+#'
+#' @return nothing, generates an ensemble time-series plot
+#'
+#' @export
+#'
+#' @author Michael Dietze, Ryan Kelly
+#'
 ensemble.ts <- function(ensemble.ts, observations = NULL, window = 1, ...) {
   print("------ Generating ensemble time-series plot ------")
   variable <- names(ensemble.ts)

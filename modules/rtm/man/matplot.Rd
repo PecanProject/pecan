@@ -6,6 +6,9 @@
 \usage{
 matplot(...)
 }
+\arguments{
+\item{...}{arguments passed to methods}
+}
 \description{
 Matplot generic method
 }

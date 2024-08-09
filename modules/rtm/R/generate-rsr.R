@@ -32,10 +32,10 @@ trim.rsr <- function(rsr, wl.min = 400, wl.max = 2500) {
 } # trim.rsr
 
 
-#' Generate RSR matrices for all sensors and return as list
-#' 
-#' Only needs to be called when updating these funcitons with new 
-#' data
+# Generate RSR matrices for all sensors and return as list
+# 
+# Only needs to be called when updating these funcitons with new 
+# data
 generate.rsr.all <- function(path.to.licor = NULL) {
   data(raw.sensor.data)
   rsr.aviris.ng      <- with(fwhm.aviris.ng, rsr.from.fwhm(Wavelength, fwhm))

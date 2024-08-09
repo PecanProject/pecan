@@ -24,7 +24,7 @@ plot_sensitivity(
 
 \item{trait}{trait name for title}
 
-\item{y.range}{}
+\item{y.range}{limits for y axis of plot}
 
 \item{median.i}{index of median value in sa.sample; \code{median.i == which(as.numeric(rownames(sa.sample)) == 50) }}
 
@@ -33,6 +33,10 @@ plot_sensitivity(
 \item{prior.sa.spline}{similar to sa.spline, but for prior trait distribution.}
 
 \item{fontsize}{(optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots}
+
+\item{linesize}{passed to ggplot to set line thickness}
+
+\item{dotsize}{passed to ggplot to set point size}
 }
 \value{
 object of class ggplot

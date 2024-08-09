@@ -1,6 +1,7 @@
 #' Plot spectra vs. wavelength
 #'
 #' @inheritParams is_spectra
+#' @param type plot style, e.g. "l" for lines, "b" for lines and points
 #' @param ... Additional arguments to `plot`
 #' @export
 plot.spectra <- function(spectra, type = "l", ...) {
