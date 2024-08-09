@@ -45,7 +45,6 @@
 ##' @param host Named list identifying the machine where conversion should be performed.
 ##'   Currently only \code{host$name} and \code{host$Rbinary} are used by \code{convert_input},
 ##'    but the whole list is passed to other functions
-##' @param browndog List of information related to browndog conversion.  NULL if browndog is not to be used for conversion
 ##' @param write Logical: Write new file records to the database?
 ##' @param format.vars Passed on as arguments to \code{fcn}
 ##' @param overwrite Logical: If a file already exists, create a fresh copy? Passed along to fcn.
@@ -77,7 +76,6 @@ convert_input <-
            fcn,
            con = con,
            host,
-           browndog,
            write = TRUE,
            format.vars,
            overwrite = FALSE,
@@ -580,105 +578,7 @@ convert_input <-
  
   conversion <- "local.remote"  #default
   
-  if (!is.null(browndog) && host$name == "localhost") {
-    # perform conversions with Brown Dog - only works locally right now
-    
-    # Determine outputtype using formatname and mimetype of output file Add issue to
-    # github that extension of formats table to include outputtype Convert to netcdf
-    # - only using localhost
-    if (mimetype == "application/x-netcdf") {
-      outputtype <- "pecan.zip"
-    } else {
-      # Convert to model specific format
-      if (formatname == "ed.met_driver_header_files_format" || formatname == 
-          "ed.met_driver_header files format") {
-        outputtype <- "ed.zip"
-      } else if (formatname == "Sipnet.climna") {
-        outputtype <- "clim"
-      } else if (formatname == "DALEC meteorology") {
-        outputtype <- "dalec.dat"
-      } else if (formatname == "LINKAGES met") {
-        outputtype <- "linkages.dat"
-      } else {
-        PEcAn.logger::logger.severe(paste("Unknown formatname", formatname))
-      }
-    }
-    
-    # create curl options
-    curloptions <- list(followlocation = TRUE)
-    if (!is.null(browndog$username) && !is.null(browndog$password)) {
-      curloptions$userpwd = paste(
-        browndog$username, browndog$password, sep = ":")
-      curloptions$httpauth = 1L
-    }
-    
-    # check if we can do conversion
-    h <- curl::new_handle()
-    curl::handle_setopt(h, .list = curloptions)
-    out.html <- readLines(
-      curl::curl(
-        url = paste0(
-          "http://dap-dev.ncsa.illinois.edu:8184/inputs/",
-          browndog$inputtype),
-        handle = h))
-    if (outputtype %in% out.html) {
-      PEcAn.logger::logger.info(
-        "Conversion from", browndog$inputtype,
-        "to", outputtype,
-        "through Brown Dog")
-      conversion <- "browndog"
-    }
-  }
-  
-  if (conversion == "browndog") {
-    url <- file.path(browndog$url, outputtype)
-    
-    # loop over files in localhost and zip to send to Brown Dog
-    files <- list.files(dbfile$file_path, pattern = dbfile$file_name)
-    files <- grep(dbfile$file_name, files, value = TRUE)
-    zipfile <- paste0(dbfile$file_name, ".", browndog$inputtype)
-    system(paste("cd", dbfile$file_path, "; zip", zipfile, paste(files, collapse = " ")))
-    zipfile <- file.path(dbfile$file_path, zipfile)
-    
-    # check for and create output folder
-    if (!file.exists(outfolder)) {
-      dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-    }
-    
-    # post zipped file to Brown Dog
-    h <- curl::new_handle()
-    curl::handle_setopt(handle = h, .list = curloptions)
-    curl::handle_setform(handle = h, fileData = curl::form_file(zipfile))
-    html <- readLines(curl::curl(url = url, handle = h))
-    link <- XML::getHTMLLinks(html)
-    file.remove(zipfile)
-    
-    # download converted file
-    outfile <- file.path(outfolder, unlist(strsplit(basename(link), "_"))[2])
-    PEcAn.utils::download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry = TRUE)
-    
-    # unzip downloaded file if necessary
-    if (file.exists(outfile)) {
-      if (utils::tail(unlist(strsplit(outfile, "[.]")), 1) == "zip") {
-        fname <- utils::unzip(outfile, list = TRUE)$Name
-        utils::unzip(outfile, files = fname, exdir = outfolder, overwrite = TRUE)
-        file.remove(outfile)
-      } else {
-        fname <- list.files(outfolder)
-      }
-    }
-
-    result <- data.frame(
-      # contains one row for each file in fname
-      file = file.path(outfolder, fname),
-      host = PEcAn.remote::fqdn(),
-      mimetype = mimetype,
-      formatname = formatname,
-      startdate = paste(input$start_date, "00:00:00"),
-      enddate = paste(input$end_date, "23:59:59"),
-      stringsAsFactors = FALSE)
-
-  } else if (conversion == "local.remote") {
+  if (conversion == "local.remote") {
     # perform conversion on local or remote host
     
     fcn.args <- input.args

@@ -70,7 +70,6 @@ PEcAn.data.atmosphere::met.process(
   host       = settings$host,
   dbparms    = settings$database$bety, 
   dir        = settings$database$dbfiles,
-  browndog   = settings$browndog,
   spin       = settings$spin,
   overwrite  = list(download = TRUE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE))
 

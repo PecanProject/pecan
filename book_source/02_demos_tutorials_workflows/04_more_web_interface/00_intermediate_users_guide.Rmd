@@ -3,7 +3,6 @@
 This section will provide information to those wanting to take advantage of PEcAn's customizations from the web interface.
 
 * [Additional web configuration] - Advanced options available from the web interface
-    - [Brown Dog](#browndog)
     - [Sensitivity and ensemble analyses][Advanced Setup][TODO: Under construction...]
     - [Editing model configurations][TODO: Under construction...]
 * [Settings-configured analyses] - Analyses only available by manually editing `pecan.xml`

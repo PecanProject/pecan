@@ -13,7 +13,6 @@ met.process(
   host = "localhost",
   dbparms,
   dir,
-  browndog = NULL,
   spin = NULL,
   overwrite = FALSE
 )
@@ -35,9 +34,6 @@ met.process(
 
 \item{dir}{directory to write outputs to}
 
-\item{browndog}{login info for the Browndog conversion service, if used.
-List of `url`, `username`, `password`}
-
 \item{spin}{spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)}
 
 \item{overwrite}{Whether to force met.process to proceed.
@@ -49,7 +45,8 @@ List of `url`, `username`, `password`}
        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
        *except* raw met downloads. I.e., it corresponds to:
 
-       list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+       list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+ List of `url`, `username`, `password`}
 }
 \description{
 met.process

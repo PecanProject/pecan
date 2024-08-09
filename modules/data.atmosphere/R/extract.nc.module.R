@@ -31,7 +31,7 @@ if (exists(paste0("extract.nc.", met))) fcn <- paste0("extract.nc.", met)
                             end_date = end_date,
                             pkg = pkg, 
                             fcn = fcn, 
-                            con = con, host = host, browndog = NULL, 
+                            con = con, host = host,
                             write = TRUE, 
                             slat = new.site$lat, slon = new.site$lon,
                             newsite = new.site$id, 

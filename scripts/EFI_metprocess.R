@@ -56,7 +56,6 @@ dbparms = list()
                 host = host, 
                 dbparms = dbparms, 
                 dir = outfolder, 
-                browndog = NULL, 
                 spin = NULL,
                 overwrite = FALSE)
     

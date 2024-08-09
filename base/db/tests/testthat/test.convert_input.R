@@ -18,7 +18,6 @@ test_that("`convert_input()` able to call the respective download function for a
     fcn = 'download.AmerifluxLBL',
     con = NULL,
     host = data.frame(name = "localhost"),
-    browndog = NULL,
     write = FALSE,
     lat.in = 40,
     lon.in = -88

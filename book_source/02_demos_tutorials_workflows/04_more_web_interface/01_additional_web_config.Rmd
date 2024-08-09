@@ -3,7 +3,6 @@
 Additional settings for web configuration:
 
 - [Web interface setup]{#intermediate-web-setup}
-- [Brown Dog]{#browndog}
 - [Advanced setup]{#intermediate-advanced-setup}
     - [Sensitivity analysis] (TODO)
     - [Uncertainty analysis] (TODO)
@@ -19,25 +18,15 @@ The list of configuration available
 
 1. **Database configuration** : BETYdb(Biofuel Ecophysiological Traits and Yields database) configuration details, can be edited according to need.
 
-2. **Browndog configuration** : Browndog configuration details, Used to connect browndog. Its included by default in VM.
+2. **FIA Database** : FIA(Forest Inventory and Analysis) Database configuration details, Can be used to add additional data to models.
 
-3. **FIA Database** : FIA(Forest Inventory and Analysis) Database configuration details, Can be used to add additional data to models.
+3. **Google MapKey** : Google Map key, used to access the google map by PEcAn.
 
-4. **Google MapKey** : Google Map key, used to access the google map by PEcAn.
+4. **Change Password** : A small infomation to change the VM user password. (if using Docker image it won't work)
 
-5. **Change Password** : A small infomation to change the VM user password. (if using Docker image it won't work)
-
-6. **Automatic Sync** : If ON then it will sync the database between local machine and the remote servers. **Still unders testing part might be buggy**.
+5. **Automatic Sync** : If ON then it will sync the database between local machine and the remote servers. **Still unders testing part might be buggy**.
 
 Still work on the adding other editing feature going on, this page will be updated as new configuration will be available. 
-
-### Brown Dog {#browndog}
-
-The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs. By clicking the checkbox you will be using the Browndog Service to process data.
-
-For more information regarding meteorological data check out [Available Meteorological Drivers](#met-drivers).
-
-More information can be found at the [Browndog website](http://browndog.ncsa.illinois.edu/).
 
 ### Advanced Setup {#intermediate-advanced-setup}
 

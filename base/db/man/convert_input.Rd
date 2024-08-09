@@ -16,7 +16,6 @@ convert_input(
   fcn,
   con = con,
   host,
-  browndog,
   write = TRUE,
   format.vars,
   overwrite = FALSE,
@@ -55,8 +54,6 @@ convert_input(
 \item{host}{Named list identifying the machine where conversion should be performed.
 Currently only \code{host$name} and \code{host$Rbinary} are used by \code{convert_input},
  but the whole list is passed to other functions}
-
-\item{browndog}{List of information related to browndog conversion.  NULL if browndog is not to be used for conversion}
 
 \item{write}{Logical: Write new file records to the database?}
 
