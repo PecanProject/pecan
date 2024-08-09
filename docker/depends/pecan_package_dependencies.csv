@@ -123,6 +123,7 @@
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
 "jsonlite","*","modules/data.remote","Suggests",FALSE
+"keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr","*","modules/priors","Suggests",FALSE
