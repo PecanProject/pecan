@@ -166,6 +166,13 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
         metrics = c('mean_absolute_error')
       )
+
+      # Early stopping callback
+      early_stopping <- keras3::callback_early_stopping(
+        monitor = 'val_loss',
+        patience = 10,
+        restore_best_weights = TRUE
+      )
       
       model |> keras3::fit(
         x = x_train,
@@ -173,6 +180,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         epochs = 100,
         batch_size = 32,
         validation_split = 0.2,
+        callbacks = list(early_stopping),
         verbose = 0
       )
       
