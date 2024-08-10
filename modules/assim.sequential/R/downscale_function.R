@@ -146,8 +146,10 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     for (i in seq_along(carbon_data)) {
       model <- keras3::keras_model_sequential() |>
         keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
+        keras3::layer_batch_normalization() |>
         keras3::layer_flatten() |>
         keras3::layer_dense(units = 64, activation = 'relu') |>
+        keras3::layer_batch_normalization() |>
         keras3::layer_dense(units = 1)
       
       model |> keras3::compile(
