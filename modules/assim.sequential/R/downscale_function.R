@@ -154,9 +154,16 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         keras3::layer_dropout(rate = 0.3) |>
         keras3::layer_dense(units = 1)
       
+      # Learning rate scheduler
+      lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
+        initial_learning_rate = 0.001,
+        decay_steps = 1000,
+        decay_rate = 0.9
+      )
+      
       model |> keras3::compile(
         loss = 'mean_squared_error',
-        optimizer = keras3::optimizer_adam(),
+        optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
         metrics = c('mean_absolute_error')
       )
       
