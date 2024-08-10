@@ -177,7 +177,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       model |> keras3::fit(
         x = x_train,
         y = y_train[, i],
-        epochs = 100,
+        epochs = 500,  # Increased max epochs
         batch_size = 32,
         validation_split = 0.2,
         callbacks = list(early_stopping),
