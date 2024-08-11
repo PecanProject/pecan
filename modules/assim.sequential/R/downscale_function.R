@@ -195,7 +195,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       )
       
       models[[i]] <- model
-      
+
+      #CNN predictions
       cnn_predict <- function(model, newdata, scaling_params) {
         newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
         newdata <- keras3::array_reshape(newdata, c(nrow(newdata), 1, ncol(newdata)))
