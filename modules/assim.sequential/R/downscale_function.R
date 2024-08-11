@@ -140,18 +140,28 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
+    # Reshape input data for CNN
     x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
     x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
     
     for (i in seq_along(carbon_data)) {
+      # Define the CNN model architecture
       model <- keras3::keras_model_sequential() |>
+        # 1D Convolutional layer: Extracts local features from input data
         keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
+        # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
         keras3::layer_batch_normalization() |>
+        # Dropout: Randomly sets 30% of inputs to 0, reducing overfitting and improving generalization
         keras3::layer_dropout(rate = 0.3) |>
+        # Flatten: Converts 3D output to 1D for dense layer input
         keras3::layer_flatten() |>
+        # Dense layer: Learns complex combinations of features
         keras3::layer_dense(units = 64, activation = 'relu') |>
+        # Second batch normalization: Further stabilizes learning in deeper layers
         keras3::layer_batch_normalization() |>
+        # Second dropout: Additional regularization to prevent overfitting in final layers
         keras3::layer_dropout(rate = 0.3) |>
+        # Output layer: Single neuron for regression prediction
         keras3::layer_dense(units = 1)
       
       # Learning rate scheduler
