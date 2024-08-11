@@ -171,7 +171,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         decay_steps = 1000,
         decay_rate = 0.9
       )
-      
+
+      # Compile the model
       model |> keras3::compile(
         loss = 'mean_squared_error',
         optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
@@ -184,7 +185,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         patience = 10,
         restore_best_weights = TRUE
       )
-      
+
+      # Train the model
       model |> keras3::fit(
         x = x_train,
         y = y_train[, i],
@@ -194,7 +196,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         callbacks = list(early_stopping),
         verbose = 0
       )
-      
+
+      # Store the trained model
       models[[i]] <- model
 
       #CNN predictions
@@ -204,12 +207,16 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         predictions <- stats::predict(model, newdata)
         return(as.vector(predictions))
       }
-      
+
+      # Create a prediction raster from covariates
       prediction_rast <- terra::rast(covariates)
+      
+      # Generate spatial predictions using the trained model
       maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
                                   fun = cnn_predict,
                                   scaling_params = scaling_params)
-      
+
+      # Make predictions on held-out test data
       predictions[[i]] <- cnn_predict(models[[i]], x_data[-sample, ], scaling_params)
     }
   } else {
