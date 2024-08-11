@@ -146,12 +146,13 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     
     for (i in seq_along(carbon_data)) {
       # Define the CNN model architecture
+      # Used dual batch normalization and dropout as the first set of batch normalization and dropout operates on the lower-level features extracted by the convolutional layer, the second set works on the higher-level features learned by the dense layer.
       model <- keras3::keras_model_sequential() |>
         # 1D Convolutional layer: Extracts local features from input data
         keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
         # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
         keras3::layer_batch_normalization() |>
-        # Dropout: Randomly sets 30% of inputs to 0, reducing overfitting and improving generalization
+        # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
         keras3::layer_dropout(rate = 0.3) |>
         # Flatten: Converts 3D output to 1D for dense layer input
         keras3::layer_flatten() |>
