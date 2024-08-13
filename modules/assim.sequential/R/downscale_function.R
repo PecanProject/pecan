@@ -140,9 +140,15 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
+    # Define k_folds within the function
+    k_folds <- 5
+    
     # Reshape input data for CNN
     x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
     x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+
+    # Create k-fold indices for cross-validation (only on training data)
+    fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
     
     for (i in seq_along(carbon_data)) {
       # L2 regularization factor
