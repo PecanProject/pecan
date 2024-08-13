@@ -140,45 +140,83 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
+    # Reshape input data for CNN
     x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
     x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
     
     for (i in seq_along(carbon_data)) {
+      # Define the CNN model architecture
+      # Used dual batch normalization and dropout as the first set of batch normalization and dropout operates on the lower-level features extracted by the convolutional layer, the second set works on the higher-level features learned by the dense layer.
       model <- keras3::keras_model_sequential() |>
+        # 1D Convolutional layer: Extracts local features from input data
         keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
+        # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
+        keras3::layer_batch_normalization() |>
+        # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
+        keras3::layer_dropout(rate = 0.3) |>
+        # Flatten: Converts 3D output to 1D for dense layer input
         keras3::layer_flatten() |>
+        # Dense layer: Learns complex combinations of features
         keras3::layer_dense(units = 64, activation = 'relu') |>
+        # Second batch normalization: Further stabilizes learning in deeper layers
+        keras3::layer_batch_normalization() |>
+        # Second dropout: Additional regularization to prevent overfitting in final layers
+        keras3::layer_dropout(rate = 0.3) |>
+        # Output layer: Single neuron for regression prediction
         keras3::layer_dense(units = 1)
       
+      # Learning rate scheduler
+      lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
+        initial_learning_rate = 0.001,
+        decay_steps = 1000,
+        decay_rate = 0.9
+      )
+
+      # Compile the model
       model |> keras3::compile(
         loss = 'mean_squared_error',
-        optimizer = keras3::optimizer_adam(),
+        optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
         metrics = c('mean_absolute_error')
       )
       
+      # Early stopping callback
+      early_stopping <- keras3::callback_early_stopping(
+        monitor = 'val_loss',
+        patience = 10,
+        restore_best_weights = TRUE
+      )
+
+      # Train the model
       model |> keras3::fit(
         x = x_train,
         y = y_train[, i],
-        epochs = 100,
+        epochs = 500,  # Increased max epochs
         batch_size = 32,
         validation_split = 0.2,
+        callbacks = list(early_stopping),
         verbose = 0
       )
-      
+
+      # Store the trained model
       models[[i]] <- model
-      
+
+      #CNN predictions
       cnn_predict <- function(model, newdata, scaling_params) {
         newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
         newdata <- keras3::array_reshape(newdata, c(nrow(newdata), 1, ncol(newdata)))
         predictions <- stats::predict(model, newdata)
         return(as.vector(predictions))
       }
-      
+
+      # Create a prediction raster from covariates
       prediction_rast <- terra::rast(covariates)
+      
+      # Generate spatial predictions using the trained model
       maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
                                   fun = cnn_predict,
                                   scaling_params = scaling_params)
-      
+
+      # Make predictions on held-out test data
       predictions[[i]] <- cnn_predict(models[[i]], x_data[-sample, ], scaling_params)
     }
   } else {
