@@ -142,6 +142,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
   } else if (model_type == "cnn") {
     # Define k_folds within the function
     k_folds <- 5
+    #Number of bags 
+    num_bags <- 5
     
     # Reshape input data for CNN
     x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
