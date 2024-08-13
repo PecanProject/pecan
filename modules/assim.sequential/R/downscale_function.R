@@ -140,16 +140,21 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
-        # Define k_folds and num_bags
+    # Define k_folds and num_bags
     k_folds <- 5
     num_bags <- 5
-    
+
+    # Reshape input data for CNN
+    x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
+    x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
+
     for (i in seq_along(carbon_data)) {
       all_models <- list()
       
       # Create k-fold indices
       fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
-      
+
+      #initialise operations for each fold
       for (fold in 1:k_folds) {
         cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
         
@@ -170,30 +175,41 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
           x_train_bag <- x_train_fold[bootstrap_indices, ]
           y_train_bag <- y_train_fold[bootstrap_indices]
           
-          # Create and train model
+          # Define the CNN model architecture
+          # Used dual batch normalization and dropout as the first set of batch normalization and 
           model <- keras3::keras_model_sequential() |>
+            # Layer Reshape : Reshape to fit target shape for the convolutional layer
             keras3::layer_reshape(target_shape = c(ncol(x_train), 1, 1), input_shape = ncol(x_train)) |>
+            # 1D Convolutional layer: Extracts local features from input data
             keras3::layer_conv_2d(
               filters = 32,
               kernel_size = c(3, 1),
               activation = 'relu',
               padding = 'same'
             ) |>
+            # Flatten: Converts 3D output to 1D for dense layer input
             keras3::layer_flatten() |>
+            # Dense layer: Learns complex combinations of features
             keras3::layer_dense(
               units = 64, 
               activation = 'relu',
               kernel_regularizer = keras3::regularizer_l2(0.01)
             ) |>
+            # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
             keras3::layer_batch_normalization() |>
+            # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
             keras3::layer_dropout(rate = 0.3) |>
+            # Dense layer: Learns complex combinations of features
             keras3::layer_dense(
               units = 32, 
               activation = 'relu',
               kernel_regularizer = keras3::regularizer_l2(0.01)
             ) |>
+            # Batch normalization: Further stabilizes learning in deeper layers
             keras3::layer_batch_normalization() |>
+            # Dropout: Additional regularization to prevent overfitting in final layer
             keras3::layer_dropout(rate = 0.3) |>
+            # Output layer: Single neuron for regression prediction
             keras3::layer_dense(
               units = 1,
               kernel_regularizer = keras3::regularizer_l2(0.01)
@@ -212,13 +228,15 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
             patience = 10,
             restore_best_weights = TRUE
           )
-          
+
+          # Compile the model
           model |> keras3::compile(
             loss = 'mean_squared_error',
             optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
             metrics = c('mean_absolute_error')
           )
-          
+
+          # Train the model
           model |> keras3::fit(
             x = x_train_bag,
             y = y_train_bag,
@@ -227,7 +245,8 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
             callbacks = list(early_stopping),
             verbose = 0
           )
-          
+
+          # Store the trained model for this bag in the fold_models list
           fold_models[[bag]] <- model
         }
         
@@ -251,12 +270,16 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         predictions <- sapply(models, function(m) stats::predict(m, newdata))
         return(rowMeans(predictions))
       }
-      
+
+      # Create a prediction raster from covariates
       prediction_rast <- terra::rast(covariates)
+
+      # Generate spatial predictions using the trained model
       maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
                                   fun = cnn_ensemble_predict,
                                   scaling_params = scaling_params)
-      
+
+      # Make predictions on held-out test data
       predictions[[i]] <- cnn_ensemble_predict(models[[i]], x_data[-sample, ], scaling_params)
       
       # Evaluate final ensemble on test set
