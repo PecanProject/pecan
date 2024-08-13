@@ -227,6 +227,12 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         })
       }
 
+      # Calculate average performance across folds
+      mean_mse <- mean(sapply(cv_results, function(x) x[1]), na.rm = TRUE)
+      mean_mae <- mean(sapply(cv_results, function(x) x[2]), na.rm = TRUE)
+      
+      cat(sprintf("Ensemble %d - Mean MSE: %.4f, Mean MAE: %.4f\n", i, mean_mse, mean_mae))
+
       # Store the trained model
       models[[i]] <- model
 
