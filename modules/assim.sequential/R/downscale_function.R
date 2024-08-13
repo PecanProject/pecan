@@ -256,12 +256,18 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       prediction_rast <- terra::rast(covariates)
       
       # Generate spatial predictions using the trained model
-      maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
+      maps[[i]] <- terra::predict(prediction_rast, model = final_bagged_models,
                                   fun = cnn_predict,
                                   scaling_params = scaling_params)
 
       # Make predictions on held-out test data
-      predictions[[i]] <- cnn_predict(models[[i]], x_data[-sample, ], scaling_params)
+      predictions[[i]] <- cnn_predict(final_bagged_models, x_data[-sample, ], scaling_params)
+
+      # Evaluate final bagged ensemble on test set
+      test_predictions <- cnn_predict(final_bagged_models, x_test, scaling_params)
+      test_mse <- mean((test_predictions - y_test[, i])^2)
+      test_mae <- mean(abs(test_predictions - y_test[, i]))
+      cat(sprintf("Ensemble %d - Test MSE: %.4f, Test MAE: %.4f\n", i, test_mse, test_mae))
     }
   } else {
     stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
