@@ -208,16 +208,24 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         restore_best_weights = TRUE
       )
 
-      # Train the model
-      model |> keras3::fit(
-        x = x_train,
-        y = y_train[, i],
-        epochs = 500,  # Increased max epochs
-        batch_size = 32,
-        validation_split = 0.2,
-        callbacks = list(early_stopping),
-        verbose = 0
-      )
+      tryCatch({
+          model |> keras3::fit(
+            x = x_train_fold,
+            y = y_train_fold,
+            epochs = 500,
+            batch_size = 32,
+            callbacks = list(early_stopping),
+            verbose = 0
+          )
+          
+          # Evaluate model on validation set
+          val_results <- model |> keras3::evaluate(x_val_fold, y_val_fold, verbose = 0)
+          cv_results[[fold]] <- val_results
+        }, error = function(e) {
+          cat("Error in fold", fold, ":", conditionMessage(e), "\n")
+          cv_results[[fold]] <- c(NA, NA)
+        })
+      }
 
       # Store the trained model
       models[[i]] <- model
