@@ -140,133 +140,127 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
-    # Define k_folds within the function
+        # Define k_folds and num_bags
     k_folds <- 5
-    #Number of bags 
     num_bags <- 5
     
-    # Reshape input data for CNN
-    x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
-    x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
-
-    # Create k-fold indices for cross-validation (only on training data)
-    fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
-    
     for (i in seq_along(carbon_data)) {
-
-    cv_results <- list()
-    
-    for (fold in 1:k_folds) {
-      cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
+      all_models <- list()
       
-      # Split training data into training and validation sets for this fold
-      val_indices <- fold_indices[[fold]]
-      train_indices <- setdiff(1:nrow(x_train), val_indices)
+      # Create k-fold indices
+      fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
       
-      x_train_fold <- x_train[train_indices, , drop = FALSE]
-      y_train_fold <- y_train[train_indices, i]
-      x_val_fold <- x_train[val_indices, , drop = FALSE]
-      y_val_fold <- y_train[val_indices, i]
-      # L2 regularization factor
-      l2_factor <- 0.01
-      # Train final bagged models on all training data
-      final_bagged_models <- list()
-      for (bag in 1:num_bags) {
-        bootstrap_indices <- sample(1:nrow(x_train), size = nrow(x_train), replace = TRUE)
-        x_train_bag <- x_train[bootstrap_indices, ]
-        y_train_bag <- y_train[bootstrap_indices, i]
-        # Define the CNN model architecture
-        # Used dual batch normalization and dropout as the first set of batch normalization and dropout operates on the lower-level features extracted by the convolutional layer, the second set works on the higher-level features learned by the dense layer.
-        model <- keras3::keras_model_sequential() |>
-          # 1D Convolutional layer: Extracts local features from input data
-          keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names)) , kernel_regularizer = keras3::regularizer_l2(l2_factor)) |>
-          # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
-          keras3::layer_batch_normalization() |>
-          # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
-          keras3::layer_dropout(rate = 0.3) |>
-          # Flatten: Converts 3D output to 1D for dense layer input
-          keras3::layer_flatten() |>
-          # Dense layer: Learns complex combinations of features
-          keras3::layer_dense(units = 64, activation = 'relu' , kernel_regularizer = keras3::regularizer_l2(l2_factor) ) |>
-          # Second batch normalization: Further stabilizes learning in deeper layers
-          keras3::layer_batch_normalization() |>
-          # Second dropout: Additional regularization to prevent overfitting in final layers
-          keras3::layer_dropout(rate = 0.3) |>
-          # Output layer: Single neuron for regression prediction
-          keras3::layer_dense(units = 1 , kernel_regularizer = keras3::regularizer_l2(l2_factor) )
+      for (fold in 1:k_folds) {
+        cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
         
-        # Learning rate scheduler
-        lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
-          initial_learning_rate = 0.001,
-          decay_steps = 1000,
-          decay_rate = 0.9
-        )
-  
-        # Compile the model
-        model |> keras3::compile(
-          loss = 'mean_squared_error',
-          optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
-          metrics = c('mean_absolute_error')
-        )
+        # Split data into training and validation sets for this fold
+        train_indices <- setdiff(1:nrow(x_train), fold_indices[[fold]])
+        val_indices <- fold_indices[[fold]]
         
-        # Early stopping callback
-        early_stopping <- keras3::callback_early_stopping(
-          monitor = 'val_loss',
-          patience = 10,
-          restore_best_weights = TRUE
-        )
-  
-        tryCatch({
-            model |> keras3::fit(
-              x = x_train_fold,
-              y = y_train_fold,
-              epochs = 500,
-              batch_size = 32,
-              callbacks = list(early_stopping),
-              verbose = 0
+        x_train_fold <- x_train[train_indices, , drop = FALSE]
+        y_train_fold <- y_train[train_indices, i]
+        x_val_fold <- x_train[val_indices, , drop = FALSE]
+        y_val_fold <- y_train[val_indices, i]
+        
+        # Create bagged models for this fold
+        fold_models <- list()
+        for (bag in 1:num_bags) {
+          # Create bootstrap sample
+          bootstrap_indices <- sample(1:nrow(x_train_fold), size = nrow(x_train_fold), replace = TRUE)
+          x_train_bag <- x_train_fold[bootstrap_indices, ]
+          y_train_bag <- y_train_fold[bootstrap_indices]
+          
+          # Create and train model
+          model <- keras3::keras_model_sequential() |>
+            keras3::layer_reshape(target_shape = c(ncol(x_train), 1, 1), input_shape = ncol(x_train)) |>
+            keras3::layer_conv_2d(
+              filters = 32,
+              kernel_size = c(3, 1),
+              activation = 'relu',
+              padding = 'same'
+            ) |>
+            keras3::layer_flatten() |>
+            keras3::layer_dense(
+              units = 64, 
+              activation = 'relu',
+              kernel_regularizer = keras3::regularizer_l2(0.01)
+            ) |>
+            keras3::layer_batch_normalization() |>
+            keras3::layer_dropout(rate = 0.3) |>
+            keras3::layer_dense(
+              units = 32, 
+              activation = 'relu',
+              kernel_regularizer = keras3::regularizer_l2(0.01)
+            ) |>
+            keras3::layer_batch_normalization() |>
+            keras3::layer_dropout(rate = 0.3) |>
+            keras3::layer_dense(
+              units = 1,
+              kernel_regularizer = keras3::regularizer_l2(0.01)
             )
-        final_bagged_models[[bag]] <- final_model
-            
-            # Evaluate model on validation set
-            val_results <- model |> keras3::evaluate(x_val_fold, y_val_fold, verbose = 0)
-            cv_results[[fold]] <- val_results
-          }, error = function(e) {
-            cat("Error in fold", fold, ":", conditionMessage(e), "\n")
-            cv_results[[fold]] <- c(NA, NA)
-          })
+          
+          # Learning rate scheduler
+          lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
+            initial_learning_rate = 0.001,
+            decay_steps = 1000,
+            decay_rate = 0.9
+          )
+          
+          # Early stopping callback
+          early_stopping <- keras3::callback_early_stopping(
+            monitor = 'loss',
+            patience = 10,
+            restore_best_weights = TRUE
+          )
+          
+          model |> keras3::compile(
+            loss = 'mean_squared_error',
+            optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
+            metrics = c('mean_absolute_error')
+          )
+          
+          model |> keras3::fit(
+            x = x_train_bag,
+            y = y_train_bag,
+            epochs = 500,
+            batch_size = 32,
+            callbacks = list(early_stopping),
+            verbose = 0
+          )
+          
+          fold_models[[bag]] <- model
         }
-  
-        # Calculate average performance across folds
-        mean_mse <- mean(sapply(cv_results, function(x) x[1]), na.rm = TRUE)
-        mean_mae <- mean(sapply(cv_results, function(x) x[2]), na.rm = TRUE)
         
-        cat(sprintf("Ensemble %d - Mean MSE: %.4f, Mean MAE: %.4f\n", i, mean_mse, mean_mae))
+        # Add fold models to all_models list
+        all_models <- c(all_models, fold_models)
+        
+        # Evaluate fold performance
+        val_predictions <- sapply(fold_models, function(m) stats::predict(m, x_val_fold))
+        val_predictions_mean <- rowMeans(val_predictions)
+        val_mse <- mean((val_predictions_mean - y_val_fold)^2)
+        val_mae <- mean(abs(val_predictions_mean - y_val_fold))
+        cat(sprintf("Fold %d - MSE: %.4f, MAE: %.4f\n", fold, val_mse, val_mae))
       }
-
-      # Store the trained model
-      models[[i]] <- final_bagged_models
-
-      #CNN predictions
-      cnn_predict <- function(model, newdata, scaling_params) {
-        newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
-        newdata <- keras3::array_reshape(newdata, c(nrow(newdata), 1, ncol(newdata)))
-        predictions <- stats::predict(model, newdata)
-        return(as.vector(predictions))
-      }
-
-      # Create a prediction raster from covariates
-      prediction_rast <- terra::rast(covariates)
       
-      # Generate spatial predictions using the trained model
-      maps[[i]] <- terra::predict(prediction_rast, model = final_bagged_models,
-                                  fun = cnn_predict,
+      # Store all models for this ensemble
+      models[[i]] <- all_models
+      
+      # Use all models for predictions
+      cnn_ensemble_predict <- function(models, newdata, scaling_params) {
+        newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
+        predictions <- sapply(models, function(m) stats::predict(m, newdata))
+        return(rowMeans(predictions))
+      }
+      
+      prediction_rast <- terra::rast(covariates)
+      maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
+                                  fun = cnn_ensemble_predict,
                                   scaling_params = scaling_params)
-
-      # Make predictions on held-out test data
-      predictions[[i]] <- cnn_predict(final_bagged_models, x_data[-sample, ], scaling_params)
-
-      # Evaluate final bagged ensemble on test set
-      test_predictions <- cnn_predict(final_bagged_models, x_test, scaling_params)
+      
+      predictions[[i]] <- cnn_ensemble_predict(models[[i]], x_data[-sample, ], scaling_params)
+      
+      # Evaluate final ensemble on test set
+      test_predictions <- cnn_ensemble_predict(models[[i]], x_test, scaling_params)
       test_mse <- mean((test_predictions - y_test[, i])^2)
       test_mae <- mean(abs(test_predictions - y_test[, i]))
       cat(sprintf("Ensemble %d - Test MSE: %.4f, Test MAE: %.4f\n", i, test_mse, test_mae))
