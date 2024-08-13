@@ -252,13 +252,6 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         
         # Add fold models to all_models list
         all_models <- c(all_models, fold_models)
-        
-        # Evaluate fold performance
-        val_predictions <- sapply(fold_models, function(m) stats::predict(m, x_val_fold))
-        val_predictions_mean <- rowMeans(val_predictions)
-        val_mse <- mean((val_predictions_mean - y_val_fold)^2)
-        val_mae <- mean(abs(val_predictions_mean - y_val_fold))
-        cat(sprintf("Fold %d - MSE: %.4f, MAE: %.4f\n", fold, val_mse, val_mae))
       }
       
       # Store all models for this ensemble
@@ -282,11 +275,6 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       # Make predictions on held-out test data
       predictions[[i]] <- cnn_ensemble_predict(models[[i]], x_data[-sample, ], scaling_params)
       
-      # Evaluate final ensemble on test set
-      test_predictions <- cnn_ensemble_predict(models[[i]], x_test, scaling_params)
-      test_mse <- mean((test_predictions - y_test[, i])^2)
-      test_mae <- mean(abs(test_predictions - y_test[, i]))
-      cat(sprintf("Ensemble %d - Test MSE: %.4f, Test MAE: %.4f\n", i, test_mse, test_mae))
     }
   } else {
     stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
