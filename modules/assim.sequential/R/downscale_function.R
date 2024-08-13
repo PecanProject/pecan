@@ -145,11 +145,13 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
     
     for (i in seq_along(carbon_data)) {
+      # L2 regularization factor
+      l2_factor <- 0.01
       # Define the CNN model architecture
       # Used dual batch normalization and dropout as the first set of batch normalization and dropout operates on the lower-level features extracted by the convolutional layer, the second set works on the higher-level features learned by the dense layer.
       model <- keras3::keras_model_sequential() |>
         # 1D Convolutional layer: Extracts local features from input data
-        keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
+        keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names)) , kernel_regularizer = keras3::regularizer_l2(l2_factor)) |>
         # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
         keras3::layer_batch_normalization() |>
         # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
@@ -157,13 +159,13 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
         # Flatten: Converts 3D output to 1D for dense layer input
         keras3::layer_flatten() |>
         # Dense layer: Learns complex combinations of features
-        keras3::layer_dense(units = 64, activation = 'relu') |>
+        keras3::layer_dense(units = 64, activation = 'relu' , kernel_regularizer = keras3::regularizer_l2(l2_factor) ) |>
         # Second batch normalization: Further stabilizes learning in deeper layers
         keras3::layer_batch_normalization() |>
         # Second dropout: Additional regularization to prevent overfitting in final layers
         keras3::layer_dropout(rate = 0.3) |>
         # Output layer: Single neuron for regression prediction
-        keras3::layer_dense(units = 1)
+        keras3::layer_dense(units = 1 , kernel_regularizer = keras3::regularizer_l2(l2_factor) )
       
       # Learning rate scheduler
       lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
