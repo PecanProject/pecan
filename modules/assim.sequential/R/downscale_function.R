@@ -151,6 +151,20 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
     fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
     
     for (i in seq_along(carbon_data)) {
+
+    cv_results <- list()
+    
+    for (fold in 1:k_folds) {
+      cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
+      
+      # Split training data into training and validation sets for this fold
+      val_indices <- fold_indices[[fold]]
+      train_indices <- setdiff(1:nrow(x_train), val_indices)
+      
+      x_train_fold <- x_train[train_indices, , drop = FALSE]
+      y_train_fold <- y_train[train_indices, i]
+      x_val_fold <- x_train[val_indices, , drop = FALSE]
+      y_val_fold <- y_train[val_indices, i]
       # L2 regularization factor
       l2_factor <- 0.01
       # Define the CNN model architecture
