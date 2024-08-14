@@ -26,7 +26,6 @@
 
   switch ($key) {
     case 'all': $pattern = '/^\$/i'; break; // not working properly
-    case 'browndog': $pattern = '/\$browndog*/i'; break;
     case 'database': $pattern = '/\$db_bety_*/i'; break;
     case 'fiadb': $pattern = '/\$db_fia_*/i'; break;
     case 'client_sceret': $pattern = '/\$client_sceret*/i'; break;
