@@ -40,7 +40,7 @@ test_that("`addSecrets` adds secret settings when force is FALSE and secrets hav
   settings <- list(
     settings.info = list(
       secrets.added = FALSE
-    ),
+    )
   )
 
   mocked_xmlToList_result <- list(
