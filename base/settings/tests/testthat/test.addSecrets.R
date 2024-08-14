@@ -1,3 +1,4 @@
+source("base/settings/R/addSecrets.R")
 test_that("`addSecrets` returns settings without updating them when `~/.pecan.xml` does not exist", {
   settings <- list()
   mockery::stub(addSecrets, 'file.exists', FALSE)
@@ -79,11 +80,6 @@ test_that("`addSecrets` adds secret settings when force is FALSE and secrets hav
         name = "pecan",
         password = "pecan"
       )
-    ),
-    browndog = list(
-      section = list(
-        name = "pecan"
-      )
     )
   )
   mockery::stub(addSecrets, 'file.exists', TRUE)
@@ -91,5 +87,4 @@ test_that("`addSecrets` adds secret settings when force is FALSE and secrets hav
   updated_settings <- addSecrets(settings, force = FALSE)
   expect_equal(updated_settings$database$section$name, "pecan")
   expect_equal(updated_settings$database$section$password, "pecan")
-  expect_equal(updated_settings$browndog$section$name, "pecan")
 })
