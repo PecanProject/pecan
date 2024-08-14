@@ -166,7 +166,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
 ##'
-##' This will use the following items from setings:
+##' This will use the following items from settings:
 ##' - settings$pfts
 ##' - settings$database$bety
 ##' - settings$database$dbfiles

@@ -1,9 +1,10 @@
 #' Split wind_speed into eastward_wind and northward_wind
 #'
+#' Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
+#'
 #' @param in.path     path to original data
 #' @param in.prefix   prefix of original data
-#' @param start_date  
-#' @param end_date 
+#' @param start_date,end_date date (or character in a standard date format). Only year component is used.
 #' @param overwrite logical: replace output file if it already exists? 
 #' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run? 
 #' @param ... other arguments, currently ignored
@@ -11,7 +12,6 @@
 #' @return nothing. TODO: Return data frame summarizing results
 #' @export
 #'
-#' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #'
 #' @examples
 #' \dontrun{

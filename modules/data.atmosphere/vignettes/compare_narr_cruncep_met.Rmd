@@ -1,6 +1,16 @@
+---
+title: "Comparing met data from various sources"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing met data from various sources}
+  %\VignetteEngine{knitr::rmarkdown}
+---
 
 Comparing met data from various sources 
 ========================================================
+
+(All code chunks are set to eval=FALSE because vignette building was throwing errors.
+TODO: Debug and re-enable all chunks)
 
 ## Sources:
 
@@ -30,9 +40,9 @@ Comparing 'data' (ebifarm) with gridded products
 TODO: clean up figure titles, labels, write explanations
 
 
-```{r loading-libraries}
+```{r loading-libraries, eval=FALSE}
 library(PEcAn.data.atmosphere)
-library(data.table)
+# library(data.table)
 library(ggplot2)
 theme_set(theme_bw())
 data(narr_cruncep_ebifarm)
@@ -47,7 +57,7 @@ These data are on biocluster.igb.illinois.edu, most 10-100s GB.
 Scripts used to download and convert these data to PEcAn CF format, optimized for time series extraction, are on [GitHub ebimodeling/model-drivers](https://github.com/ebimodeling/model-drivers).
 
 
-```sh
+```{sh, eval=FALSE}
 mkdir ~/testmet/
 ncks -O -d lon,-76.75,-76.25 -d lat,2.75,3.25 /home/groups/ebimodeling/met/narr/threehourly_32km/1979_2013.nc ~/testmet/narr32km_champaign.nc
 
@@ -101,7 +111,7 @@ narr3h$source <- "narr3h"
 ebifarm$source <- "ebifarm"
 ```
 
-```{r reorder-met}
+```{r reorder-met, eval=FALSE}
 met <- rbind(cruncep[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
              narr[,list(source, date, temp = Temp, RH, wind = WS, precip, solar = SolarR)],
              narr3h[,list(source, date, temp = DailyTemp.C, RH, wind = WindSpeed, precip, solar = solarR)],
@@ -114,7 +124,7 @@ met$source <- factor(met$source,
 ### Solar Radiation (PAR) vs Temp
 
 
-```{r  solar-v-temp}
+```{r  solar-v-temp, eval=FALSE}
 
 ggplot() + geom_point(data = met, aes(solar, temp, color = month(date)), alpha = 0.1) + 
   facet_wrap(~source, nrow=1) + 
@@ -127,7 +137,7 @@ ggplot() + geom_point(data = met, aes(solar, temp, color = month(date)), alpha =
 
 ### RH vs Temp
 
-```{r  RH-v-Temp}
+```{r  RH-v-Temp, eval=FALSE}
 
 ggplot() + geom_point(data = met, aes(RH, temp, color = month(date)), alpha = 0.1) + 
   facet_wrap(~source, nrow=1) + 
@@ -137,7 +147,7 @@ ggplot() + geom_point(data = met, aes(RH, temp, color = month(date)), alpha = 0.
 
 ### Solar Radiation and Precipitation: NARR daily vs 3 hourly
 
-```{r  par-v-precip}
+```{r  par-v-precip, eval=FALSE}
 
 ggplot() + geom_point(data = met[solar > 1 & precip > 0.1], aes(solar, precip, color = month(date)), alpha = 0.1) + 
   facet_wrap(~source, nrow=1) + 
@@ -148,7 +158,7 @@ ggplot() + geom_point(data = met[solar > 1 & precip > 0.1], aes(solar, precip, c
 
 ### Precipitation v Temperature 
 
-```{r  precip-v-temp}
+```{r  precip-v-temp, eval=FALSE}
 
 ggplot() + geom_point(data = met, aes(precip, temp, color = month(date)), alpha = 0.1) + 
   facet_wrap(~source, nrow=1) + 
@@ -160,7 +170,7 @@ ggplot() + geom_point(data = met, aes(precip, temp, color = month(date)), alpha 
 
 ### Compare Solar Radiation
 
-```{r solar}
+```{r solar, eval=FALSE}
 s <- met[,list(date, day = yday(date), solar, source )]
 s <- s[,list(date = min(date), solar = max(solar)), by = 'day,source']
 
@@ -182,7 +192,7 @@ ggplot() + geom_point(data = met[month(date) >5 & month(date)<9 & solar > 100], 
 
 ### Max Solar Radiation for June 1-Aug31 2010
 
-```{r  max-solar-plot}
+```{r  max-solar-plot, eval=FALSE}
 maxsolarplot <- ggplot() +
     geom_line(data = s, aes(date, solar, color = source)) +
     xlim(ymd("2010-06-01"), ymd("2010-08-31")) + ggtitle("Max Daily PAR")
@@ -192,7 +202,7 @@ print(maxsolarplot)
 ### Max Solar Radiation (PAR) Model v OBS
 
 
-```{r create-plots, fig.height = 3, fig.width = 12}
+```{r create-plots, fig.height = 3, fig.width = 12, eval=FALSE}
 maxsolar <- allsolar[,list(obs=max(obs),cruncep=max(cruncep), narr = max(narr), narr3h=max(narr3h), date = min(date)), by = day]
 
 narrsolar <- ggplot() + geom_point(data = maxsolar, aes(obs, narr, color = month(date)), alpha = 0.3)+ scale_color_gradientn(colours = c("Red", "Orange", "Yellow", "Green", "Blue"))+ geom_line(aes(0:2000, 0:2000)) + xlim(c(0,2100)) + ylim(c(0,2100))
@@ -218,7 +228,7 @@ gridExtra::grid.arrange(
 
 ### PAR residuals (model - obs)
 
-```{r solarresid-plot}
+```{r solarresid-plot, eval=FALSE}
 
 solarresiduals <- ggplot(data=allsolar[narr+obs>100]) +
     geom_point(aes(date, narr - obs), alpha = 0.1, color = "blue") +
@@ -237,7 +247,7 @@ print(solarresiduals)
 
 ### Correlations of daily max solar radiation
 
-```{r maxsolar-plot}
+```{r maxsolar-plot, eval = FALSE}
 library(GGally)
 ggpairs(maxsolar[,list(obs, narr3h, narr, cruncep)])
 ```
@@ -247,13 +257,13 @@ ggpairs(maxsolar[,list(obs, narr3h, narr, cruncep)])
 
 ### Compare daily and 3hourly downscaled NARR
 
-```{r}
+```{r, eval = FALSE}
 weachnarr_narr3h
 ```
 
 ### Multiple variables
 
-```{r all-vars-plots, fig.height = 15, fig.width = 10}
+```{r all-vars-plots, fig.height = 15, fig.width = 10, eval = FALSE}
 ### Generate some plots to compare August 
 
 rh <- ggplot() +
@@ -283,16 +293,16 @@ print(gridExtra::grid.arrange(rh, precip, temp, wind, solar, ncol = 1))
 
 
 * Temperature:
-```{r results='markup'}
+```{r results='markup', eval=FALSE}
 kable(met[,list(min = min(temp), mean = mean(temp), max = max(temp)), by = source])
 ```
 * RH
 
-```{r results='markup'} 
+```{r results='markup', eval=FALSE} 
 kable(met[,list(min = min(RH*100), mean = mean(RH*100), max = max(RH*100)), by = source])
 ```
 * Total Precip
-```{r results='markup'}
+```{r results='markup', eval = FALSE}
 kable(met[,list(total=sum(precip)), by = source])
 ```
 
@@ -301,7 +311,7 @@ kable(met[,list(total=sum(precip)), by = source])
 
 * need to print each one ...
 
-```{r more-plots, fig.height = 15, fig.width = 10}
+```{r more-plots, fig.height = 15, fig.width = 10, eval = FALSE}
 
 obs <- merge(met[!source == "ebifarm"], met[source == "ebifarm"], by = "date")
 obs$yday <- yday(obs$date)

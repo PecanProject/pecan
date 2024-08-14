@@ -35,6 +35,8 @@ extract.nc(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should ouput of function be extra verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Given latitude and longitude coordinates, extract site data from NARR file

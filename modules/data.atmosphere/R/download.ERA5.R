@@ -30,6 +30,8 @@
 #' @return Character vector of file names containing raw, downloaded
 #'   data (invisibly)
 #' @author Alexey Shiklomanov
+#' @md 
+    # ^ tells Roxygen to interpret this fn's doc block as Markdown
 #' @export
 #' @examples
 #' \dontrun{
