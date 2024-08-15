@@ -62,6 +62,20 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
   return(list(input_data = input_data, site_coordinates = site_coordinates, carbon_data = carbon_data))
 }
 
+##' @title Create folds function
+##' @name create_folds
+##' @author Sambhav Dixit
+##'
+##' @param y Vector. A vector of outcome data or indices.
+##' @param k Numeric. The number of folds to create.
+##' @param list Logical. If TRUE, returns a list of fold indices. If FALSE, returns a vector.
+##' @param returnTrain Logical. If TRUE, returns indices for training sets. If FALSE, returns indices for test sets.
+##' @details This function creates k-fold indices for cross-validation. It can return either training or test set indices, and the output can be in list or vector format.
+##'
+##' @description This function generates k-fold indices for cross-validation, allowing for flexible output formats.
+##'
+##' @return A list of k elements (if list = TRUE), each containing indices for a fold, or a vector of indices (if list = FALSE).
+
 create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
   n <- length(y)
   indices <- seq_len(n)
