@@ -62,6 +62,24 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
   return(list(input_data = input_data, site_coordinates = site_coordinates, carbon_data = carbon_data))
 }
 
+create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
+  n <- length(y)
+  indices <- seq_len(n)
+  folds <- split(indices, cut(seq_len(n), breaks = k, labels = FALSE))
+  
+  if (!returnTrain) {
+    folds <- folds  # Test indices are already what we want
+  } else {
+    folds <- lapply(folds, function(x) indices[-x])  # Return training indices
+  }
+  
+  if (!list) {
+    folds <- unlist(folds)
+  }
+  
+  return(folds)
+}
+
 ##' @title SDA Downscale Function
 ##' @name SDA_downscale
 ##' @author Joshua Ploshay, Sambhav Dixit
