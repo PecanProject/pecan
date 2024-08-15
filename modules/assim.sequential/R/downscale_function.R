@@ -184,7 +184,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       all_models <- list()
       
       # Create k-fold indices
-      fold_indices <- caret::createFolds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
+      fold_indices <- create_folds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
 
       #initialise operations for each fold
       for (fold in 1:k_folds) {
