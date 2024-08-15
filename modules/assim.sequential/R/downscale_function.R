@@ -152,14 +152,14 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       all_models <- list()
       
       # Create k-fold indices
-      fold_indices <- caret::createFolds(y = 1:nrow(x_train), k = k_folds, list = TRUE, returnTrain = FALSE)
+      fold_indices <- caret::createFolds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
 
       #initialise operations for each fold
       for (fold in 1:k_folds) {
         cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
         
         # Split data into training and validation sets for this fold
-        train_indices <- setdiff(1:nrow(x_train), fold_indices[[fold]])
+        train_indices <- setdiff(seq_len(nrow(x_train)), fold_indices[[fold]])
         val_indices <- fold_indices[[fold]]
         
         x_train_fold <- x_train[train_indices, , drop = FALSE]
