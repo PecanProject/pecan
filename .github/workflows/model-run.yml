@@ -40,6 +40,7 @@ jobs:
         sleep 30
         docker run --rm --network pecan_pecan pecan/db:ci
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+        docker image rm pecan/db:ci pecan/data:develop
     
     - name: Run required containers
       run: |
