@@ -60,6 +60,7 @@ jobs:
     
     - name: Run required containers
       run: |
+        docker volume rm pecan_R_library
         docker compose up -d sipnet rstudio
 
     - name: Check if containers are running # This will be updated soon to a loop
@@ -69,5 +70,4 @@ jobs:
 
     - name: Run SIPNET
       run: |
-        docker volume rm pecan_R_library
         docker compose exec --workdir /pecan/tests rstudio R CMD ../web/workflow.R --settings test.xml
