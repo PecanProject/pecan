@@ -69,4 +69,5 @@ jobs:
 
     - name: Run SIPNET
       run: |
+        docker volume rm pecan_R_library
         docker compose exec --workdir /pecan/tests rstudio R CMD ../web/workflow.R --settings test.xml
