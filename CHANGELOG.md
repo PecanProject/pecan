@@ -45,6 +45,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added new feature of preparing initial conditions for MODIS LAI, AGB, ISCN SOC, and soil moisture across NA anchor sites.
 - Added GEDI AGB preparation workflow.
 - Added new feature of downloading datasets from the NASA DAAC ORNL database.
+- Extended downscale function and created 'downscale_hrly' so that it handles more frequent data
+- Added 'aggregate' as a new feature for downscaled data
 
 ### Fixed
 

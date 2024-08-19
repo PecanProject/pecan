@@ -38,9 +38,11 @@ Imports:
     stringr(>= 1.1.0)
 Suggests:
     grid,
+    knitr,
     mockery,
     png,
     raster,
+    rmarkdown,
     sp,
     testthat (>= 1.0.2),
     withr
@@ -49,5 +51,6 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
+VignetteBuilder: knitr
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

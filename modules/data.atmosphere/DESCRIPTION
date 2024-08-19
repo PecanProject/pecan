@@ -63,6 +63,7 @@ Suggests:
     foreach,
     furrr,
     future,
+    knitr,
     mockery,
     parallel,
     PEcAn.settings,
@@ -79,5 +80,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+VignetteBuilder: knitr
 Encoding: UTF-8
 RoxygenNote: 7.3.2
