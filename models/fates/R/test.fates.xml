@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+  <rundir>/pecan/models/fates/data</rundir>
+  <host>
+    <rundir>/pecan/models/fates</rundir>
+    <ourdir>/pecan/models/fates/out</outdir>
+  </host>
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+  <pfts>
+    <pft>
+      <name>temperate.coniferous</name> ## 
+    </pft>
+  </pfts>
+
+  <model>
+    <binary>/pecan/models/fates/test_oneyear</binary> #
+    <type>FATES</type>
+    <prerun>?</prerun>
+    <postrun>?</postrun>
+  </model>
+
+  <run>
+    <site>
+      <id>SOD1</id> #772
+      <lat>26.6385</lat>
+      <lon>67.3623</lon>
+    </site>
+    <inputs>
+      <met>/data/sites/niwot/niwot.clim</met> #
+    </inputs>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>
