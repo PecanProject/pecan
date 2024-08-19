@@ -40,7 +40,7 @@ cd "@RUNDIR@"
   
 ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
 ## create folders and symbolic links. Links will later be deleted when non-default files are specified
-mkdir input
+mkdir input ## ??? 16.08
 echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
 
 cd "@CASEDIR@"
@@ -63,12 +63,11 @@ echo "*** Modify XMLs ***"
 ## ---
 
 # Modifying : env_build.xml
-./xmlchange --file env_build.xml --id GMAKE --val make
-./xmlchange --file env_build.xml --id DEBUG --val FALSE
+./xmlchange --file env_build.xml --id DEBUG --val FALSE 
 # Modifying : env_run.xml
 ./xmlchange --file env_run.xml --id REST_N --val 1
 ./xmlchange --file env_run.xml --id REST_OPTION --val nyears
-./xmlchange --file env_run.xml --id DATM_CLMNCEP_YR_START --val 1974 #Long term, may not want to have these set with a large range. Will require download
+./xmlchange --file env_run.xml --id DATM_CLMNCEP_YR_START --val 2004 #Long term, may not want to have these set with a large range. Will require download
 ./xmlchange --file env_run.xml --id DATM_CLMNCEP_YR_END --val 2004 #Long term, may not want to have these set with a large range. Will require download
 ./xmlchange --file env_run.xml --id DIN_LOC_ROOT --val '@INDIR@'
 ./xmlchange --file env_run.xml --id DIN_LOC_ROOT_CLMFORC --val '@INDIR@/atm/datm7' # updated, needed?
