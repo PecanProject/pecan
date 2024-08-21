@@ -176,16 +176,14 @@ convert_input <-
         # Date/time processing for existing input
         existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$start_date), "UTC")
         existing.input[[i]]$end_date   <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$end_date), "UTC")
-        
+
         ## Obtain machine information
+        machine.host.info <- get.machine.host(host, con = con)
+        machine.host <- machine.host.info$machine.host
+        machine <- machine.host.info$machine
         #Grab machine info of file that exists
         existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                                       existing.dbfile[[i]]$machine_id, "'"), con)
-        
-        #Grab machine info of host machine
-        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                             machine.host, "'"), con)
         
         
         # If the files aren't on the machine, we have to download them, so "overwrite" is meaningless.
@@ -353,9 +351,9 @@ convert_input <-
                                           existing.dbfile$machine_id, "'"), con)
       
       #Grab machine info of host machine
-      machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-      machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                 machine.host, "'"), con)
+      machine.host.info <- get.machine.host(host, con = con)
+      machine.host <- machine.host.info$machine.host
+      machine <- machine.host.info$machine
       
       if (existing.machine$id != machine$id) {
         
@@ -475,11 +473,11 @@ convert_input <-
         existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                             existing.dbfile$machine_id, "'"), con)
         
-        #Grab machine info of 
-        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                   machine.host, "'"), con)
-        
+        #Grab machine info of host machine
+        machine.host.info <- get.machine.host(host, con = con)
+        machine.host <- machine.host.info$machine.host
+        machine <- machine.host.info$machine
+
         if(existing.machine$id != machine$id){
           PEcAn.logger::logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
           PEcAn.logger::logger.info("Downloading all years of Valid input to ensure consistency")
