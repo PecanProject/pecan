@@ -62,6 +62,38 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
   return(list(input_data = input_data, site_coordinates = site_coordinates, carbon_data = carbon_data))
 }
 
+##' @title Create folds function
+##' @name create_folds
+##' @author Sambhav Dixit
+##'
+##' @param y Vector. A vector of outcome data or indices.
+##' @param k Numeric. The number of folds to create.
+##' @param list Logical. If TRUE, returns a list of fold indices. If FALSE, returns a vector.
+##' @param returnTrain Logical. If TRUE, returns indices for training sets. If FALSE, returns indices for test sets.
+##' @details This function creates k-fold indices for cross-validation. It can return either training or test set indices, and the output can be in list or vector format.
+##'
+##' @description This function generates k-fold indices for cross-validation, allowing for flexible output formats.
+##'
+##' @return A list of k elements (if list = TRUE), each containing indices for a fold, or a vector of indices (if list = FALSE).
+
+create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
+  n <- length(y)
+  indices <- seq_len(n)
+  folds <- split(indices, cut(seq_len(n), breaks = k, labels = FALSE))
+  
+  if (!returnTrain) {
+    folds <- folds  # Test indices are already what we want
+  } else {
+    folds <- lapply(folds, function(x) indices[-x])  # Return training indices
+  }
+  
+  if (!list) {
+    folds <- unlist(folds)
+  }
+  
+  return(folds)
+}
+
 ##' @title SDA Downscale Function
 ##' @name SDA_downscale
 ##' @author Joshua Ploshay, Sambhav Dixit
@@ -140,46 +172,141 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
   } else if (model_type == "cnn") {
+    # Define k_folds and num_bags
+    k_folds <- 5
+    num_bags <- 5
+
+    # Reshape input data for CNN
     x_train <- keras3::array_reshape(x_train, c(nrow(x_train), 1, ncol(x_train)))
     x_test <- keras3::array_reshape(x_test, c(nrow(x_test), 1, ncol(x_test)))
-    
+
     for (i in seq_along(carbon_data)) {
-      model <- keras3::keras_model_sequential() |>
-        keras3::layer_conv_1d(filters = 64, kernel_size = 1, activation = 'relu', input_shape = c(1, length(covariate_names))) |>
-        keras3::layer_flatten() |>
-        keras3::layer_dense(units = 64, activation = 'relu') |>
-        keras3::layer_dense(units = 1)
+      all_models <- list()
       
-      model |> keras3::compile(
-        loss = 'mean_squared_error',
-        optimizer = keras3::optimizer_adam(),
-        metrics = c('mean_absolute_error')
-      )
-      
-      model |> keras3::fit(
-        x = x_train,
-        y = y_train[, i],
-        epochs = 100,
-        batch_size = 32,
-        validation_split = 0.2,
-        verbose = 0
-      )
-      
-      models[[i]] <- model
-      
-      cnn_predict <- function(model, newdata, scaling_params) {
-        newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
-        newdata <- keras3::array_reshape(newdata, c(nrow(newdata), 1, ncol(newdata)))
-        predictions <- stats::predict(model, newdata)
-        return(as.vector(predictions))
+      # Create k-fold indices
+      fold_indices <- create_folds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
+
+      #initialise operations for each fold
+      for (fold in 1:k_folds) {
+        cat(sprintf("Processing ensemble %d, fold %d of %d\n", i, fold, k_folds))
+        
+        # Split data into training and validation sets for this fold
+        train_indices <- setdiff(seq_len(nrow(x_train)), fold_indices[[fold]])
+        val_indices <- fold_indices[[fold]]
+        
+        x_train_fold <- x_train[train_indices, , drop = FALSE]
+        y_train_fold <- y_train[train_indices, i]
+        x_val_fold <- x_train[val_indices, , drop = FALSE]
+        y_val_fold <- y_train[val_indices, i]
+        
+        # Create bagged models for this fold
+        fold_models <- list()
+        for (bag in 1:num_bags) {
+          # Create bootstrap sample
+          bootstrap_indices <- sample(1:nrow(x_train_fold), size = nrow(x_train_fold), replace = TRUE)
+          x_train_bag <- x_train_fold[bootstrap_indices, ]
+          y_train_bag <- y_train_fold[bootstrap_indices]
+          
+          # Define the CNN model architecture
+          # Used dual batch normalization and dropout as the first set of batch normalization and 
+          model <- keras3::keras_model_sequential() |>
+            # Layer Reshape : Reshape to fit target shape for the convolutional layer
+            keras3::layer_reshape(target_shape = c(ncol(x_train), 1, 1), input_shape = ncol(x_train)) |>
+            # 1D Convolutional layer: Extracts local features from input data
+            keras3::layer_conv_2d(
+              filters = 32,
+              kernel_size = c(3, 1),
+              activation = 'relu',
+              padding = 'same'
+            ) |>
+            # Flatten: Converts 3D output to 1D for dense layer input
+            keras3::layer_flatten() |>
+            # Dense layer: Learns complex combinations of features
+            keras3::layer_dense(
+              units = 64, 
+              activation = 'relu',
+              kernel_regularizer = keras3::regularizer_l2(0.01)
+            ) |>
+            # Batch normalization: Normalizes layer inputs, stabilizes learning, reduces internal covariate shift
+            keras3::layer_batch_normalization() |>
+            # Dropout: Randomly sets some of inputs to 0, reducing overfitting and improving generalization
+            keras3::layer_dropout(rate = 0.3) |>
+            # Dense layer: Learns complex combinations of features
+            keras3::layer_dense(
+              units = 32, 
+              activation = 'relu',
+              kernel_regularizer = keras3::regularizer_l2(0.01)
+            ) |>
+            # Batch normalization: Further stabilizes learning in deeper layers
+            keras3::layer_batch_normalization() |>
+            # Dropout: Additional regularization to prevent overfitting in final layer
+            keras3::layer_dropout(rate = 0.3) |>
+            # Output layer: Single neuron for regression prediction
+            keras3::layer_dense(
+              units = 1,
+              kernel_regularizer = keras3::regularizer_l2(0.01)
+            )
+          
+          # Learning rate scheduler
+          lr_schedule <- keras3::learning_rate_schedule_exponential_decay(
+            initial_learning_rate = 0.001,
+            decay_steps = 1000,
+            decay_rate = 0.9
+          )
+          
+          # Early stopping callback
+          early_stopping <- keras3::callback_early_stopping(
+            monitor = 'loss',
+            patience = 10,
+            restore_best_weights = TRUE
+          )
+
+          # Compile the model
+          model |> keras3::compile(
+            loss = 'mean_squared_error',
+            optimizer = keras3::optimizer_adam(learning_rate = lr_schedule),
+            metrics = c('mean_absolute_error')
+          )
+
+          # Train the model
+          model |> keras3::fit(
+            x = x_train_bag,
+            y = y_train_bag,
+            epochs = 500,
+            batch_size = 32,
+            callbacks = list(early_stopping),
+            verbose = 0
+          )
+
+          # Store the trained model for this bag in the fold_models list
+          fold_models[[bag]] <- model
+        }
+        
+        # Add fold models to all_models list
+        all_models <- c(all_models, fold_models)
       }
       
-      prediction_rast <- terra::rast(covariates)
-      maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
-                                  fun = cnn_predict,
-                                  scaling_params = scaling_params)
+      # Store all models for this ensemble
+      models[[i]] <- all_models
       
-      predictions[[i]] <- cnn_predict(models[[i]], x_data[-sample, ], scaling_params)
+      # Use all models for predictions
+      cnn_ensemble_predict <- function(models, newdata, scaling_params) {
+        newdata <- scale(newdata, center = scaling_params$mean, scale = scaling_params$sd)
+        predictions <- sapply(models, function(m) stats::predict(m, newdata))
+        return(rowMeans(predictions))
+      }
+
+      # Create a prediction raster from covariates
+      prediction_rast <- terra::rast(covariates)
+
+      # Generate spatial predictions using the trained model
+      maps[[i]] <- terra::predict(prediction_rast, model = models[[i]],
+                                  fun = cnn_ensemble_predict,
+                                  scaling_params = scaling_params)
+
+      # Make predictions on held-out test data
+      predictions[[i]] <- cnn_ensemble_predict(models[[i]], x_data[-sample, ], scaling_params)
+      
     }
   } else {
     stop("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
