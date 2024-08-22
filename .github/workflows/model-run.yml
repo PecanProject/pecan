@@ -43,6 +43,7 @@ jobs:
     - name: Add Volumes to Executor
       run: |
           cp docker-compose.dev.yml docker-compose.override.yml
+          sed -i '' '/R_library/d' docker-compose.override.yml
 
     - name: Build Containers
       run: |
@@ -60,7 +61,6 @@ jobs:
     
     - name: Run required containers
       run: |
-        docker volume rm pecan_R_library
         docker compose up -d sipnet rstudio
 
     - name: Check if containers are running # This will be updated soon to a loop
