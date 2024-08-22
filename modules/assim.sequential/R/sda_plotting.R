@@ -334,6 +334,7 @@ postana.bias.plotting.sda<-function(settings, t, obs.times, obs.mean, obs.cov, o
 }
 
 ##' @rdname interactive.plotting.sda
+#' @param aqq,bqq shape parameters estimated over time for the process covariance
 ##' @export
 postana.bias.plotting.sda.corr<-function(t, obs.times, X, aqq, bqq){
   
@@ -569,6 +570,8 @@ post.analysis.ggplot.violin <- function(settings, t, obs.times, obs.mean, obs.co
 }
 
 ##' @rdname interactive.plotting.sda
+#' @param facetg logical: Create a subpanel for each variable?
+#' @param readsFF optional forward forecast
 ##' @export
 post.analysis.multisite.ggplot <- function(settings, t, obs.times, obs.mean, obs.cov, FORECAST, ANALYSIS, plot.title=NULL, facetg=FALSE, readsFF=NULL, Add_Map=FALSE){
 

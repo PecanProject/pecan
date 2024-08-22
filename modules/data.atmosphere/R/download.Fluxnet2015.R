@@ -10,6 +10,8 @@
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param username login name for Ameriflux
+##' @param ... further arguments, currently ignored
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, 

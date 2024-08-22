@@ -13,6 +13,8 @@
 #' @param model Which GFDL model to run (options are CM3, ESM2M, ESM2G)
 #' @param scenario Which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
 #' @param ensemble_member Which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
+#' @param ... further arguments, currently ignored
+#'
 #' @author James Simkins, Alexey Shiklomanov, Ankur Desai
 download.GFDL <- function(outfolder, start_date, end_date, lat.in, lon.in,
                           overwrite = FALSE, verbose = FALSE,

@@ -2,7 +2,10 @@
 title: "PEcAn: Importing Met data from Bondville, IL Ameriflux station"
 author: "David LeBauer"
 date: "4/28/2015"
-output: html_document
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{PEcAn: Importing Met data from Bondville, IL Ameriflux station}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 
@@ -19,7 +22,7 @@ The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://
 ```{r}
 library(knitr)
 library(ggplot2)
-library(ggthemes)
+# library(ggthemes)
 library(PEcAn.data.atmosphere)
 
 ```
@@ -35,7 +38,7 @@ knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
 
 ## Download Ameriflux data for Bondville
 
-```{r download}
+```{r download,eval=FALSE}
 
 download.Ameriflux(sitename = "US-Bo1", outfolder = "/tmp/", 
                    start_date = "1996-01-01", end_date = "2008-04-10")
@@ -43,7 +46,7 @@ download.Ameriflux(sitename = "US-Bo1", outfolder = "/tmp/",
 
 ## Convert to PEcAn-CF format
 
-```{r met2cf}
+```{r met2cf, eval=FALSE}
 met2CF.Ameriflux(in.path = "/tmp/", in.prefix = "US-Bo1", outfolder = "/tmp/out/", 
                  start_date = "1996-01-01", end_date = "2008-04-10")
 
@@ -63,14 +66,14 @@ system("ncrcat -O -h /tmp/out/US-Bo1.199[6789].nc /tmp/out/US-Bo1.200[12348678].
 Using the `load.cfmet` convenience function. Ameriflux is provided at 30 min intervals. If needed at a finer resolution, see `?cfmet.downscale.time` (which works with subdaily and daily data). There is no `cfmet.upscale.time` function, but would be straightforward to implement if needed.
 
 
-```{r load-data}
+```{r load-data, eval=FALSE}
 
 bondville.nc <- nc_open("/tmp/out/US-Bo11996-2008.nc")
 bondville.cfmet <- load.cfmet(bondville.nc, lat = 40.0061988830566, lon = -88.290397644043, start.date = "1996-08-25", end.date = "2008-04-10")[!is.na(air_pressure)]
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 
 theme_set(theme_tufte())
 p1 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = surface_downwelling_shortwave_flux_in_air)) + ylab(paste(bondville.nc$var$surface_downwelling_shortwave_flux_in_air$longname, bondville.nc$var$surface_downwelling_shortwave_flux_in_air$units))
@@ -110,13 +113,13 @@ plots <- list(p1, p2, p3, p4, p5, p6, p7, p8, p9)
 
 ## Plot entire time series
 
-```{r long-time, echo=FALSE}
+```{r long-time, echo=FALSE, eval=FALSE}
 lapply(plots, print)
 ```
 
 ## Plot 8-26-1996 to 10-14-1996
 
-```{r two-months, echo=FALSE}
+```{r two-months, echo=FALSE, eval=FALSE}
 lapply(plots, function(x) x + xlim(ymd_hms(c("1996-08-26 18:29:00 UTC", "1996-10-14 18:29:00 UTC"))))
 ```
 

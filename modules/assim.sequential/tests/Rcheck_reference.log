@@ -20,17 +20,13 @@
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
-* checking R files for non-ASCII characters ... WARNING
-Found the following file with non-ASCII characters:
-  load_data_paleon_sda.R
-Portable packages must use only ASCII characters in their R code,
-except perhaps in comments.
-Use \uxxxx escapes for other characters.
+* checking R files for non-ASCII characters ... OK
 * checking R files for syntax errors ... OK
 * checking whether the package can be loaded ... OK
 * checking whether the package can be loaded with stated dependencies ... OK

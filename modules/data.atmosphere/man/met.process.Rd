@@ -35,6 +35,9 @@ met.process(
 
 \item{dir}{directory to write outputs to}
 
+\item{browndog}{login info for the Browndog conversion service, if used.
+List of `url`, `username`, `password`}
+
 \item{spin}{spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)}
 
 \item{overwrite}{Whether to force met.process to proceed.
