@@ -61,7 +61,7 @@ jobs:
     
     - name: Run required containers
       run: |
-        docker compose up -d sipnet rstudio
+        docker compose up -d sipnet executor
 
     - name: Check if containers are running # This will be updated soon to a loop
       run: |
