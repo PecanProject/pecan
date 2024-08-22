@@ -70,4 +70,4 @@ jobs:
 
     - name: Run SIPNET
       run: |
-        docker compose exec --workdir /pecan/tests rstudio R CMD ../web/workflow.R --settings test.xml
+        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings test.xml
