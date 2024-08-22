@@ -43,7 +43,7 @@ jobs:
     - name: Add Volumes to Executor
       run: |
           cp docker-compose.dev.yml docker-compose.override.yml
-          sed -i '' '/R_library/d' docker-compose.override.yml
+          sed -i'' '/R_library/d' docker-compose.override.yml
 
     - name: Build Containers
       run: |
