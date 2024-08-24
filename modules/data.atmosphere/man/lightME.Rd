@@ -21,7 +21,7 @@ lightME(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05, alpha = 0.85)
 }
 \value{
 a \code{\link{list}} structure with components:
-\itemize{
+\describe{
  \item{'I.dir'}{Direct radiation (\eqn{\mu} mol \eqn{m^{-2}s^{-1}}}
  \item{'I.diff'}{Indirect (diffuse) radiation (\eqn{\mu} mol\eqn{m^{-2}s^{-1}}}
  \item{'cos.th'}{cosine of \eqn{\theta}, solar zenith angle.}

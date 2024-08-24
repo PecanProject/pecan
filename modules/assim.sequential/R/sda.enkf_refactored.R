@@ -1,25 +1,37 @@
-#' @title sda.enkf
-#' @name  sda.enkf
+#' State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
+#'
+#' Restart mode:  Basic idea is that during a restart (primary case
+#'  envisioned as an iterative forecast), a new workflow folder is created and
+#'  the previous forecast for the start_time is copied over. During restart the
+#'  initial run before the loop is skipped, with the info being populated from
+#'  the previous run. The function then dives right into the first Analysis,
+#'  then continues on like normal.
+#'
 #' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
-#' @param obs.mean  List of dataframe of observation means, named with observation datetime.
-#' @param obs.cov   List of covariance matrices of state variables , named with observation datetime.
-#' @param Q         Process covariance matrix given if there is no data to estimate it.
-#' @param restart   Used for iterative updating previous forecasts. When the restart is TRUE it read the object in SDA folder written from previous SDA.
-#' @param control   List of flags controlling the behaviour of the SDA. trace for reporting back the SDA outcomes, interactivePlot for plotting the outcomes after each step, 
-#' TimeseriesPlot for post analysis examination, BiasPlot for plotting the correlation between state variables, plot.title is the title of post analysis plots and debug mode allows for pausing the code and examining the variables inside the function.
+#' @param obs.mean  List of dataframe of observation means, named with
+#'  observation datetime.
+#' @param obs.cov   List of covariance matrices of state variables , named with
+#'  observation datetime.
+#' @param Q         Process covariance matrix given if there is no data to
+#'  estimate it.
+#' @param restart   Used for iterative updating previous forecasts. When the
+#'  restart is TRUE it read the object in SDA folder written from previous
+#'  SDA.
+#' @param control   List of flags controlling the behaviour of the SDA. trace
+#'  for reporting back the SDA outcomes, interactivePlot for plotting the
+#'  outcomes after each step, TimeseriesPlot for post analysis examination,
+#'  BiasPlot for plotting the correlation between state variables, plot.title
+#'  is the title of post analysis plots and debug mode allows for pausing the
+#'  code and examining the variables inside the function.
+#' @param ...       Additional arguments, currently ignored
 #'
-#’ @details
-#’ Restart mode:  Basic idea is that during a restart (primary case envisioned as an iterative forecast), a new workflow folder is created and the previous forecast for the start_time is copied over. During restart the initial run before the loop is skipped, with the info being populated from the previous run. The function then dives right into the first Analysis, then continues on like normal.
-#' 
-#' @description State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter
 #' 
 #' @return NONE
 #' @import nimble
 #' @export
 #' 
-
 sda.enkf <- function(settings,
                      obs.mean,
                      obs.cov,

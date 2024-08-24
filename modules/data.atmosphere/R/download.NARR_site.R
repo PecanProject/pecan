@@ -7,9 +7,12 @@
 #' @param lon.in Site longitude coordinate
 #' @param overwrite Overwrite existing files?  Default=FALSE
 #' @param verbose Turn on verbose output? Default=FALSE
+#' @param progress Whether or not to show a progress bar.
+#' Requires the `progress` package to be installed.
 #' @param parallel Download in parallel? Default = TRUE
 #' @param ncores Number of cores for parallel download. Default is
 #' `parallel::detectCores()`
+#' @param ... further arguments, currently ignored
 #'
 #' @examples
 #'
@@ -345,7 +348,7 @@ generate_narr_url <- function(dates, flx) {
     dplyr::select("startdate", "url")
 }
 
-#' Assign daygroup tag for a given date
+# Assign daygroup tag for a given date
 daygroup <- function(date, flx) {
   mday <- lubridate::mday(date)
   mmax <- lubridate::days_in_month(date)

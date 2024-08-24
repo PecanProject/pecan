@@ -12,6 +12,8 @@
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose makes the function output more text
+##' @param ... further arguments, currently ignored
+##'
 ##' @examples 
 ##' \dontrun{
 ##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
