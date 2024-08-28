@@ -11,7 +11,6 @@
 "BayesianTools","*","modules/rtm","Imports",FALSE
 "BioCro","*","models/biocro","Suggests",FALSE
 "bit64","*","base/db","Suggests",FALSE
-"BrownDog","*","modules/benchmark","Suggests",FALSE
 "coda","*","models/maespa","Suggests",FALSE
 "coda","*","models/sipnet","Suggests",FALSE
 "coda","*","modules/assim.sequential","Imports",FALSE
