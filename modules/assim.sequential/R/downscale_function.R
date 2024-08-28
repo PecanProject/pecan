@@ -63,7 +63,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 }
 
 ##' @title Create folds function
-##' @name create_folds
+##' @name .create_folds
 ##' @author Sambhav Dixit
 ##'
 ##' @param y Vector. A vector of outcome data or indices.
@@ -76,7 +76,7 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
 ##'
 ##' @return A list of k elements (if list = TRUE), each containing indices for a fold, or a vector of indices (if list = FALSE).
 
-create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
+.create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
   n <- length(y)
   indices <- seq_len(n)
   folds <- split(indices, cut(seq_len(n), breaks = k, labels = FALSE))
@@ -184,7 +184,7 @@ SDA_downscale <- function(preprocessed, date, carbon_pool, covariates, model_typ
       all_models <- list()
       
       # Create k-fold indices
-      fold_indices <- create_folds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
+      fold_indices <- .create_folds(y = seq_len(nrow(x_train)), k = k_folds, list = TRUE, returnTrain = FALSE)
 
       #initialise operations for each fold
       for (fold in 1:k_folds) {
