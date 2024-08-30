@@ -283,14 +283,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
-    standardize_result <- list()
+    id_stdized <- list()
     ready.id <- list(input.id = NULL, dbfile.id = NULL)
 
     for (i in seq_along(cf.id[[1]])) {
 
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+        id_stdized <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
                                                                    dbfile.id = cf.id$id[i]), 
                                        register = register, 
                                        dir = dir, 
