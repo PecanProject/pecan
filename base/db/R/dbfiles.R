@@ -647,7 +647,7 @@ dbfile.file <- function(type, id, con, hostname = PEcAn.remote::fqdn()) {
 
   if (nrow(files) > 1) {
     PEcAn.logger::logger.warn("multiple files found for", id, "returned; using the first one found")
-    (invisible(file.path(files[1, "file_path"], files[1, "file_name"])))
+    return(invisible(file.path(files[1, "file_path"], files[1, "file_name"])))
   } else if (nrow(files) == 1) {
     (invisible(file.path(files[1, "file_path"], files[1, "file_name"])))
   } else {
