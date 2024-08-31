@@ -202,6 +202,8 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
+            FROM_IMAGE=pecan/depends
+            IMAGE_VERSION=${{ steps.meta.outputs.version }}
             GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
             PECAN_VERSION=${{ steps.meta.outputs.version }}
             PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }} 
