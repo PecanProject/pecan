@@ -13,9 +13,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - The following components have changed their licensing. With approval of all their contributors, we now provide them under a BSD 3-clause license rather than the previously used NCSA Open Source license. As a reminder, we intend to relicense the entire system and this list will expand as we gather permission from the relevant copyright owners.
-    * Shiny apps `dbsync`, `Data-Ingest`, and `Elicitation`
-    * Base packages `PEcAn.all` and `PEcAn.QAQC`
-    * Model packages `PEcAn.LDNDC`, `PEcAn.SIBCASA`, and `PEcAn.STICS`
+    * `apps/api`
+    * Shiny apps `dbsync`, `Data-Ingest`, `Elicitation`, `ForecastingDashboard`, `global-sensitivity`, and `Pecan.depend`
+    * Base packages `PEcAn.all`, `PEcAn.QAQC`, `PEcAn.remote`, and `PEcAn.workflow`
+    * Model packages `PEcAn.BASGRA`, `PEcAn.dvmdostem`, `PEcAn.FATES`, `PEcAn.GDAY`, `PEcAn.LDNDC`, `PEcAn.MAAT`, `PEcAn.MAESPA`, `PEcAn.SIBCASA`, `PEcAn.STICS`, and the new model package template.
+    * Modules `PEcAn.data.mining`, `PEcAn.emulator`, amd `PEcAn.RTM`.
 
 ### Removed
 
