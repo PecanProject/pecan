@@ -39,7 +39,9 @@ jobs:
           - depends
         include:
           - name: depends
-            PLATFORM: "linux/amd64,linux/arm64"
+            # no arm images for tidyverse, see 
+            # https://github.com/rocker-org/rocker-versioned2/issues/830
+            PLATFORM: "linux/amd64"
             DOCKERFILE: docker/web/Dockerfile
             IMAGE: depends
   
