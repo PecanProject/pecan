@@ -99,7 +99,7 @@ jobs:
           cache-to: type=registry,ref=pecan/depends:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,dest=/tmp/depends.tar
+          outputs: type=docker,dest=/tmp/depends.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
@@ -108,6 +108,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: depends
           path: /tmp/depends.tar
 
