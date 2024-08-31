@@ -1,13 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015 Boston University, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
-# NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-##-------------------------------------------------------------------------------------------------#
 ##' Writes a config file for GDAY
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,

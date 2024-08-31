@@ -18,8 +18,8 @@ info:
   contact:
     email: "pecanproj@gmail.com"
   license:
-    name: University of Illinois/NCSA Open Source License
-    url: https://opensource.org/licenses/NCSA
+    name: BSD-3
+    url: https://opensource.org/license/bsd-3-clause
 externalDocs:
   description: Find out more about PEcAn Project
   url: https://pecanproject.github.io/
