@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-    strategy:
+   strategy:
       fail-fast: false
       matrix:
         name:
