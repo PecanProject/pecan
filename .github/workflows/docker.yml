@@ -179,7 +179,7 @@ jobs:
 
       # build the docker images
       - name: Build and push base
-        uses: docker/build-base-action@v6
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/base/Dockerfile
