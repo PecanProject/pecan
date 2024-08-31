@@ -1,4 +1,4 @@
-test_that("'met.proces' able to call .download.raw.met.module based on met process stage params", {
+test_that("'met.process' able to call .download.raw.met.module based on met process stage params", {
   input_met <- list(source = 'CRUNCEP', id = '1')
 
   mockery::stub(met.process, 'PEcAn.DB::db.open', 1)

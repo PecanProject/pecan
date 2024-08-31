@@ -1,4 +1,3 @@
-
 ##' Get new site info using provided site information
 ##'
 ##' @title Get New Site Info
@@ -18,10 +17,10 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
         # No DB connection present. Generate a new ID using one of below steps:
 
         if (is.null(site$id) | is.na(site$id)) {
-            if ((!is.null(site$lat) && !is.null(site$lon)) |
+            if ((!is.null(site$lat) && !is.null(site$lon)) &&
                 (!is.na(site$lat) && !is.na(site$lon))
             ) {
-                site.id <- generate_siteID(site$lat, site$lon)
+                site.id <- paste0(lat, "_", lon)
                 new.site <- data.frame(
                     id = as.numeric(site.id),
                     lat = site$lat,
@@ -47,7 +46,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
             # Return a WARN as we will be unable to identify such an instance due to lack of information.
             # We'll try to Generate a new ID similar to previous ones.
         } else {
-            if ((!is.null(site$lat) && !is.null(site$lon)) |
+            if ((!is.null(site$lat) && !is.null(site$lon)) &&
                 (!is.na(site$lat) && !is.na(site$lon))
             ) {
                 new.site <- data.frame(
@@ -118,24 +117,6 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
     return(site.info)
 }
 
-# Function to generate a normalized site ID using lat / lon
-# Example usage
-# siteID <- generate_siteID(-34.9284989, 138.6007456)
-generate_siteID <- function(lat, lon) {
-    # Normalize latitude and longitude
-    norm_lat <- lat + 90 # Shift range to [0, 180]
-    norm_lon <- lon + 180 # Shift range to [0, 360]
-
-    # Scale normalized values (Assuming 4 digits each for lat and lon)
-    scaled_lat <- as.integer((norm_lat / 180) * 9999) # Scaled latitude
-    scaled_lon <- as.integer((norm_lon / 360) * 9999) # Scaled longitude
-
-    # Create a unique ID by concatenating scaled values
-    siteID <- as.integer(paste0(scaled_lat, scaled_lon))
-
-    # Return the siteID
-    return(siteID)
-}
 
 # Function to generate a new siteID (db-less runs ONLY)
 generate_new_siteID <- function() {

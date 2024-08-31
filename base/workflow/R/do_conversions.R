@@ -53,7 +53,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # IC conversion : for now for ED only, hence the css/pss/site check
     # <useic>TRUE</useic>
     if (ic.flag) {
-      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic, site = settings$run$site)
+      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic)
       needsave <- TRUE
     }
     

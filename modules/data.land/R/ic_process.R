@@ -9,11 +9,12 @@
 ##' @param site Current site information
 ##'
 ##' @author Istem Fer, Hamze Dokoohaki
-ic_process <- function(settings, input, dir, overwrite = FALSE, site = settings$run$site){
+ic_process <- function(settings, input, dir, overwrite = FALSE){
 
 
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
+  site <- settings$run$site
   model <- list()
     model$type <- settings$model$type
     model$id <- settings$model$id

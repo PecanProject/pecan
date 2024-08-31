@@ -4,7 +4,7 @@
 \alias{ic_process}
 \title{ic_process}
 \usage{
-ic_process(settings, input, dir, overwrite = FALSE, site = settings$run$site)
+ic_process(settings, input, dir, overwrite = FALSE)
 }
 \arguments{
 \item{settings}{pecan settings list}
