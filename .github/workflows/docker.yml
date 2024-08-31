@@ -28,6 +28,8 @@ on:
 jobs:
   depends:
     runs-on: ubuntu-latest
+    env:
+      R_VERSION: ${{ github.event.inputs.r_version || '4.1' }}
     permissions:
       packages: write
     strategy:
@@ -107,7 +109,7 @@ jobs:
           outputs: type=image,dest=/tmp/${{ matrix.IMAGE }}.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ github.event.inputs.r_version}}
+            R_VERSION=${{ env.R_VERSION }}
 
       # so depends image can be used in other steps
       - name: Upload artifact
