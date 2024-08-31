@@ -34,19 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - depends
-        include:
-          - name: depends
-            CONTEXT: docker/depends
-            DOCKERFILE: Dockerfile
-            # no arm images for tidyverse, see 
-            # https://github.com/rocker-org/rocker-versioned2/issues/830
-            PLATFORM: "linux/amd64"
-            IMAGE: depends
 
     steps:
       - uses: actions/checkout@v4
@@ -58,8 +45,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            pecan/${{ matrix.IMAGE }}
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.IMAGE }}
+            pecan/depends
+            ghcr.io/${{ github.repository_owner }}/depends
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -103,16 +90,16 @@ jobs:
       - name: Build and push depends
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.CONTEXT }}
-          file: ${{ matrix.DOCKERFILE }}
+          context: docker/depends
+          file: Dockerfile
           #push: ${{ github.event_name != 'pull_request' }}
           #push: true
-          platforms: ${{ matrix.PLATFORM }}
-          cache-from: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache
-          cache-to: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache,mode=max
+          platforms: "linux/amd64"
+          cache-from: type=registry,ref=pecan/depends:buildcache
+          cache-to: type=registry,ref=pecan/depends:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,dest=/tmp/${{ matrix.IMAGE }}.tar
+          outputs: type=image,dest=/tmp/depends.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
@@ -121,10 +108,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.IMAGE }}
-          path: /tmp/${{ matrix.IMAGE }}.tar
+          name: depends
+          path: /tmp/depends.tar
 
-  web:
+  extras:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -134,6 +121,9 @@ jobs:
         name:
           - web
           - dbsync
+          - data 
+          - monitor 
+          - rstudio-nginx
         include:
           - name: web
             CONTEXT: .
@@ -145,6 +135,21 @@ jobs:
             DOCKERFILE: shiny/dbsync/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
             IMAGE: shiny-dbsync
+          - name: data
+            CONTEXT: docker/data
+            DOCKERFILE: Dockerfile
+            PLATFORM: "linux/amd64,linux/arm64"
+            IMAGE: data
+          - name: monitor
+            CONTEXT: docker/monitor
+            DOCKERFILE: Dockerfile
+            PLATFORM: "linux/amd64,linux/arm64"
+            IMAGE: monitor
+          - name: rstudio-nginx
+            CONTEXT: docker/rstudio-nginx
+            DOCKERFILE: Dockerfile
+            PLATFORM: "linux/amd64,linux/arm64"
+            IMAGE: rstudio-nginx
 
     steps:
       - uses: actions/checkout@v4
