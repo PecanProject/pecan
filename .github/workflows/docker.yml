@@ -190,7 +190,7 @@ jobs:
           cache-to: type=registry,ref=pecan/base:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,dest=/tmp/base.tar
+          outputs: type=docker,dest=/tmp/base.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
@@ -199,6 +199,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: base
           path: /tmp/base.tar
 
