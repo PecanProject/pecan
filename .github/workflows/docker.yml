@@ -30,102 +30,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            #pecan/${{ matrix.IMAGE }}
-            ghcr.io/${{ github.repository_owner }}/depends
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      # - name: Login to DockerHub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # - name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v3
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push depends
-        uses: docker/build-push-action@v5
-        with:
-          context: docker/depends
-          #push: ${{ github.event_name != 'pull_request' }}
-          #push: true
-          platforms: "linux/amd64,linux/arm64"
-          # cache-from: type=registry,ref=classtranscribe/frontend-pipeline:buildcache
-          # cache-to: type=registry,ref=classtranscribe/frontend:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,dest=/tmp/depends.tar
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ github.event.inputs.r_version}}
-
-      # so depends image can be used in other steps
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: myimage
-          path: /tmp/depends.tar
-
-  misc:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
     strategy:
       fail-fast: false
       matrix:
         name:
-          - web
-          - dbsync
+          - depends
         include:
-          - name: web
+          - name: depends
             PLATFORM: "linux/amd64,linux/arm64"
             DOCKERFILE: docker/web/Dockerfile
-            IMAGE: web
-          - name: dbsync
-            PLATFORM: "linux/amd64,linux/arm64"
-            DOCKERFILE: docker/web/Dockerfile
-            IMAGE: shiny-dbsync
-
+            IMAGE: depends
+  
     steps:
       - uses: actions/checkout@v4
 
@@ -179,20 +94,115 @@ jobs:
 
       # build the docker images
       - name: Build and push depends
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ${{ matrix.DOCKERFILE }}
+          context: docker/depends
           #push: ${{ github.event_name != 'pull_request' }}
           #push: true
           platforms: ${{ matrix.PLATFORM }}
-          # cache-from: type=registry,ref=classtranscribe/frontend-pipeline:buildcache
-          # cache-to: type=registry,ref=classtranscribe/frontend:buildcache,mode=max
+          cache-from: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache
+          cache-to: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,dest=/tmp/${{ matrix.IMAGE }}.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ github.event.inputs.r_version}}
+
+      # so depends image can be used in other steps
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.IMAGE }}
+          path: /tmp/${{ matrix.IMAGE }}.tar
+
+  # misc:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     packages: write
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       name:
+  #         - web
+  #         - dbsync
+  #       include:
+  #         - name: web
+  #           PLATFORM: "linux/amd64,linux/arm64"
+  #           DOCKERFILE: docker/web/Dockerfile
+  #           IMAGE: web
+  #         - name: dbsync
+  #           PLATFORM: "linux/amd64,linux/arm64"
+  #           DOCKERFILE: docker/web/Dockerfile
+  #           IMAGE: shiny-dbsync
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     # create metadata for image
+  #     - name: Docker meta
+  #       id: meta
+  #       uses: docker/metadata-action@v5
+  #       with:
+  #         # list of Docker images to use as base name for tags
+  #         images: |
+  #           #pecan/${{ matrix.IMAGE }}
+  #           ghcr.io/${{ github.repository_owner }}/${{ matrix.IMAGE }}
+  #         # generate Docker tags based on the following events/attributes
+  #         tags: |
+  #           type=schedule
+  #           type=ref,event=branch
+  #           type=ref,event=pr
+  #           type=semver,pattern={{version}}
+  #           type=semver,pattern={{major}}.{{minor}}
+  #           type=semver,pattern={{major}}
+
+  #     # setup docker build
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+
+  #     - name: Set up Docker Buildx
+  #       id: buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Inspect Builder
+  #       run: |
+  #         echo "Name:      ${{ steps.buildx.outputs.name }}"
+  #         echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+  #         echo "Status:    ${{ steps.buildx.outputs.status }}"
+  #         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+  #         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+  #     # login to registries
+  #     # - name: Login to DockerHub
+  #     #   uses: docker/login-action@v3
+  #     #   with:
+  #     #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #     #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  #     # - name: Login to GitHub Container Registry
+  #     #   uses: docker/login-action@v3
+  #     #   with:
+  #     #     registry: ghcr.io
+  #     #     username: ${{ github.actor }}
+  #     #     password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     # build the docker images
+  #     - name: Build and push depends
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ${{ matrix.DOCKERFILE }}
+  #         #push: ${{ github.event_name != 'pull_request' }}
+  #         #push: true
+  #         platforms: ${{ matrix.PLATFORM }}
+  #         # cache-from: type=registry,ref=classtranscribe/frontend-pipeline:buildcache
+  #         # cache-to: type=registry,ref=classtranscribe/frontend:buildcache,mode=max
+  #         tags: ${{ steps.meta.outputs.tags }}
+  #         labels: ${{ steps.meta.outputs.labels }}
+  #         build-args: |
+  #           VERSION=${{ steps.meta.outputs.version }}
+  #           R_VERSION=${{ github.event.inputs.r_version}}
   #   depends:
 # name: Docker
 
