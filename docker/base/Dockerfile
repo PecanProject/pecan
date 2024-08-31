@@ -2,7 +2,6 @@
 ARG IMAGE_VERSION="latest"
 ARG FROM_IMAGE="depends"
 FROM pecan/${FROM_IMAGE}:${IMAGE_VERSION}
-MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # ----------------------------------------------------------------------
 # PEcAn version information

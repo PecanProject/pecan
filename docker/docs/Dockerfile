@@ -27,7 +27,6 @@ RUN make build
 # copy html pages to container
 # ----------------------------------------------------------------------
 FROM httpd
-MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 COPY docker/docs/index.html /usr/local/apache2/htdocs/
 COPY --from=pecandocs /src/book_source/_book/ /usr/local/apache2/htdocs/docs/pecan/

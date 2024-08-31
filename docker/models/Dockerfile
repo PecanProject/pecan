@@ -5,7 +5,6 @@ ARG IMAGE_VERSION="latest"
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
 FROM pecan/base:${IMAGE_VERSION}
-MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 # ----------------------------------------------------------------------
 # SETUP FOR PYTHON CODE

@@ -5,8 +5,6 @@ ARG FROM_IMAGE="rocker/tidyverse"
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
 FROM ${FROM_IMAGE}:${R_VERSION}
-MAINTAINER Rob Kooper <kooper@illinois.edu>
-
 
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES
