@@ -91,7 +91,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: docker/depends
-          file: Dockerfile
+          file: docker/depends/Dockerfile
           #push: ${{ github.event_name != 'pull_request' }}
           #push: true
           platforms: "linux/amd64"
@@ -133,21 +133,21 @@ jobs:
           - name: dbsync
             CONTEXT: .
             DOCKERFILE: shiny/dbsync/Dockerfile
-            PLATFORM: "linux/amd64,linux/arm64"
+            PLATFORM: "linux/amd64"
             IMAGE: shiny-dbsync
           - name: data
             CONTEXT: docker/data
-            DOCKERFILE: Dockerfile
+            DOCKERFILE: docker/data/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
             IMAGE: data
           - name: monitor
             CONTEXT: docker/monitor
-            DOCKERFILE: Dockerfile
+            DOCKERFILE: docker/monitor/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
             IMAGE: monitor
           - name: rstudio-nginx
             CONTEXT: docker/rstudio-nginx
-            DOCKERFILE: Dockerfile
+            DOCKERFILE: docker/rstudio-nginx/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
             IMAGE: rstudio-nginx
 
