@@ -354,6 +354,7 @@ jobs:
             PLATFORM: "linux/amd64"
             MODEL: basgra
             VERSION: BASGRA_N_v1
+            VERSION_LOWER: basgra_n_v1
           - CONTEXT: models/biocro
             DOCKERFILE: models/biocro/Dockerfile
             PLATFORM: "linux/amd64"
@@ -400,7 +401,7 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/model-${{ matrix.MODEL }}-${{ matrix.VERSION_LOWER || matrix.VERSION }}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -439,6 +440,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: docker image ls
+        run: docker image ls
 
       # build the docker images
       - name: Build and push ${{ matrix.MODEL }} ${{ matrix.VERSION }}
