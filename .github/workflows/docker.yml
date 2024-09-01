@@ -216,6 +216,233 @@ jobs:
           name: base
           path: /tmp/base.tar
 
+# ----------------------------------------------------------------------
+# models image has some python installed to run models, depends on base
+# ----------------------------------------------------------------------
+  models:
+    runs-on: ubuntu-latest
+    needs: base
+    permissions:
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # load cached image
+      - name: Retrieve compiled binary
+        uses: actions/download-artifact@v4
+        with:
+          name: base
+          path: /tmp
+      - name: Load image
+        run: docker load --input /tmp/base.tar
+
+      # create metadata for image
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as models name for tags
+          images: |
+            pecan/models
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/models
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      # setup docker build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Inspect Builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+      # login to registries
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # build the docker images
+      - name: Build and push models
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/models
+          file: docker/models/Dockerfile
+          push: true
+          platforms: "linux/amd64"
+          cache-from: type=registry,ref=pecan/models:buildcache
+          cache-to: type=registry,ref=pecan/models:buildcache,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=docker,dest=/tmp/models.tar
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            R_VERSION=${{ env.R_VERSION }}
+            FROM_IMAGE=depends
+            IMAGE_VERSION=${{ steps.meta.outputs.version }}
+            GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
+            PECAN_VERSION=${{ steps.meta.outputs.version }}
+            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }} 
+            PECAN_GIT_CHECKSUM=${{ github.sha }}
+            PECAN_GIT_DATE=${{ github.event.repository.updated_at }}
+    
+      # upload models image to be used in other steps
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: models
+          path: /tmp/models.tar
+  
+# ----------------------------------------------------------------------
+# Next are images that have models installed
+# ----------------------------------------------------------------------
+  modelsbinary:
+    runs-on: ubuntu-latest
+    needs: models
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - CONTEXT: models/basgra
+            DOCKERFILE: models/basgra/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: basgra
+            VERSION: BASGRA_N_v1
+            VERSION_LOWER: basgra_n_v1
+          - CONTEXT: models/biocro
+            DOCKERFILE: models/biocro/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: biocro
+            VERSION: "0.95"
+          - CONTEXT: models/ed
+            DOCKERFILE: models/ed/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: ed2
+            VERSION: "2.2.0"
+          - CONTEXT: models/ed
+            DOCKERFILE: models/ed/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: ed2
+            VERSION: "git"
+          - CONTEXT: models/maespa
+            DOCKERFILE: models/maespa/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: maespa
+            VERSION: "git"
+          - CONTEXT: models/sipnet
+            DOCKERFILE: models/sipnet/Dockerfile
+            PLATFORM: "linux/amd64"
+            MODEL: sipnet
+            VERSION: "git"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # load cached image
+      - name: Retrieve compiled binary
+        uses: actions/download-artifact@v4
+        with:
+          name: models
+          path: /tmp
+      - name: Load image
+        run: docker load --input /tmp/models.tar
+    
+      # create metadata for image
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION_LOWER || matrix.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/model-${{ matrix.MODEL }}-${{ matrix.VERSION_LOWER || matrix.VERSION }}
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      # setup docker build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Inspect Builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+      # login to registries
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: docker image ls
+        run: docker image ls
+
+      # build the docker images
+      - name: Build and push ${{ matrix.MODEL }} ${{ matrix.VERSION }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.CONTEXT }}
+          file: ${{ matrix.DOCKERFILE }}
+          push: true
+          platforms: ${{ matrix.PLATFORM }}
+          cache-from: type=registry,ref=pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}:buildcache
+          cache-to: type=registry,ref=pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}:buildcache,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            R_VERSION=${{ env.R_VERSION }}
+            MODEL_VERSION=${{ matrix.VERSION }}
+            IMAGE_VERSION=${{ steps.meta.outputs.version }}
+            BINARY_VERSION="2.2"
+
   # ----------------------------------------------------------------------
   # Next are images that depend on base image
   # ----------------------------------------------------------------------
@@ -229,7 +456,6 @@ jobs:
       matrix:
         name:
           - docs
-          - models
           - executor
         include:
           - name: docs
@@ -237,11 +463,6 @@ jobs:
             DOCKERFILE: docker/docs/Dockerfile
             PLATFORM: "linux/amd64"
             IMAGE: docs
-          - name: models
-            CONTEXT: docker/models
-            DOCKERFILE: docker/models/Dockerfile
-            PLATFORM: "linux/amd64"
-            IMAGE: models
           - name: executor
             CONTEXT: docker/executor
             DOCKERFILE: docker/executor/Dockerfile
@@ -334,132 +555,6 @@ jobs:
           name: models
           path: /tmp/models.tar
 
-# ----------------------------------------------------------------------
-# Next are images that have models installed
-# ----------------------------------------------------------------------
-  models:
-    runs-on: ubuntu-latest
-    needs: baseplus
-    permissions:
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - CONTEXT: models/basgra
-            DOCKERFILE: models/basgra/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: basgra
-            VERSION: BASGRA_N_v1
-            VERSION_LOWER: basgra_n_v1
-          - CONTEXT: models/biocro
-            DOCKERFILE: models/biocro/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: biocro
-            VERSION: "0.95"
-          - CONTEXT: models/ed
-            DOCKERFILE: models/ed/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: ed2
-            VERSION: "2.2.0"
-          - CONTEXT: models/ed
-            DOCKERFILE: models/ed/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: ed2
-            VERSION: "git"
-          - CONTEXT: models/maespa
-            DOCKERFILE: models/maespa/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: maespa
-            VERSION: "git"
-          - CONTEXT: models/sipnet
-            DOCKERFILE: models/sipnet/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: sipnet
-            VERSION: "git"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # load cached image
-      - name: Retrieve compiled binary
-        uses: actions/download-artifact@v4
-        with:
-          name: models
-          path: /tmp
-      - name: Load image
-        run: docker load --input /tmp/models.tar
-    
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/model-${{ matrix.MODEL }}-${{ matrix.VERSION_LOWER || matrix.VERSION }}
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: docker image ls
-        run: docker image ls
-
-      # build the docker images
-      - name: Build and push ${{ matrix.MODEL }} ${{ matrix.VERSION }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.CONTEXT }}
-          file: ${{ matrix.DOCKERFILE }}
-          push: true
-          platforms: ${{ matrix.PLATFORM }}
-          cache-from: type=registry,ref=pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}:buildcache
-          cache-to: type=registry,ref=pecan/model-${{ matrix.MODEL }}-${{ matrix.VERSION }}:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            MODEL_VERSION=${{ matrix.VERSION }}
-            IMAGE_VERSION=${{ steps.meta.outputs.version }}
-            BINARY_VERSION="2.2"
-    
   # ----------------------------------------------------------------------
   # Next are images that do not depend on either depends or base image
   # ----------------------------------------------------------------------
