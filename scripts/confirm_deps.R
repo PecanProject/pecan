@@ -78,7 +78,7 @@ confirm_deps <- function(pkg,
     return(
       remotes::install_deps(
         pkg = pkg,
-        dependencies = dependencies,
+        dependencies = NA,
         ...
       )
     )
