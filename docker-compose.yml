@@ -52,6 +52,11 @@ services:
       - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.pecan.localhost`)"
     volumes:
       - rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmqctl ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ----------------------------------------------------------------------
   # Database to hold the data from PEcAn and BETY.
@@ -65,6 +70,11 @@ services:
       - pecan
     volumes:
       - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ----------------------------------------------------------------------
   # BETY rails frontend to the database
@@ -82,11 +92,17 @@ services:
     volumes:
       - bety:/home/bety/log
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.bety.loadbalancer.server.port=8000"
       - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
+    healthcheck:
+      test: "curl --silent --fail http://localhost:8000/${RAILS_RELATIVE_URL_ROOT} > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ----------------------------------------------------------------------
   # RStudio
@@ -98,8 +114,10 @@ services:
     networks:
       - pecan
     depends_on:
-      - rabbitmq
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       - KEEP_ENV=RABBITMQ_URI RABBITMQ_PREFIX RABBITMQ_PORT FQDN NAME
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
@@ -141,6 +159,11 @@ services:
       - "traefik.enable=true"
       - "traefik.http.services.docs.loadbalancer.server.port=80"
       - "traefik.http.routers.docs.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/`)"
+    healthcheck:
+      test: "curl --silent --fail http://localhost/ > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PEcAn web front end, this is just the PHP code
   pecan:
@@ -155,8 +178,10 @@ services:
       - NAME=${PECAN_NAME:-docker}
       - SECRET_KEY_BASE=${BETY_SECRET_KEY:-thisisnotasecret}
     depends_on:
-       - postgres
-       - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.pecan.loadbalancer.server.port=8080"
@@ -164,6 +189,11 @@ services:
     volumes:
       - pecan:/data
       - pecan:/var/www/html/pecan/data
+    healthcheck:
+      test: "curl --silent --fail http://localhost/pecan/ > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PEcAn model monitor
   monitor:
@@ -176,7 +206,10 @@ services:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
-       - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.monitor.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/monitor/`)"
@@ -184,6 +217,11 @@ services:
       - "traefik.http.middlewares.monitor-stripprefix.stripprefix.prefixes=/monitor"
     volumes:
       - pecan:/data
+    healthcheck:
+      test: "curl --silent --fail http://localhost:9999/monitor/ > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
@@ -198,8 +236,10 @@ services:
       - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
     depends_on:
-       - postgres
-       - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -216,7 +256,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -230,7 +271,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -244,7 +286,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -258,7 +301,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -272,7 +316,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -286,7 +331,8 @@ services:
     environment:
       - RABBITMQ_URI=${RABBITMQ_URI:-amqp://guest:guest@rabbitmq/%2F}
     depends_on:
-       - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - pecan:/data
 
@@ -300,12 +346,18 @@ services:
     networks:
       - pecan
     depends_on:
-       - postgres
+      postgres:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dbsync.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/dbsync/`)"
       - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
       - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/monitor"
+    healthcheck:
+      test: "curl --silent --fail http://localhost/dbsync/ > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ----------------------------------------------------------------------
   # PEcAn API
@@ -329,9 +381,15 @@ services:
       - "traefik.http.routers.api.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/api/`)"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - pecan:/data/
+    healthcheck:
+      test: "curl --silent --fail http://localhost/api/ping > /dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 # ----------------------------------------------------------------------
 # Name of network to be used by all containers
