@@ -404,7 +404,6 @@ jobs:
             R_VERSION=${{ env.R_VERSION }}
             MODEL_VERSION=${{ matrix.VERSION }}
             IMAGE_VERSION=${{ steps.meta.outputs.version }}
-            BINARY_VERSION="2.2"
 
   # ----------------------------------------------------------------------
   # Next are images that depend on base image
