@@ -101,19 +101,10 @@ jobs:
           cache-to: type=registry,ref=pecan/depends:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # outputs: type=docker,dest=/tmp/depends.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
             GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
-
-      # # upload depends image to be used in other steps
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     if-no-files-found: error
-      #     name: depends
-      #     path: /tmp/depends.tar
 
   # ----------------------------------------------------------------------
   # base image has PEcAn compiled and installed, and depends on depends
@@ -126,15 +117,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      # # load cached image
-      # - name: Retrieve compiled binary
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: depends
-      #     path: /tmp
-      # - name: Load image
-      #   run: docker load --input /tmp/depends.tar
 
       # create metadata for image
       - name: Docker meta
@@ -196,7 +178,6 @@ jobs:
           cache-to: type=registry,ref=pecan/base:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # outputs: type=docker,dest=/tmp/base.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
@@ -204,17 +185,9 @@ jobs:
             IMAGE_VERSION=${{ steps.meta.outputs.version }}
             GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
             PECAN_VERSION=${{ steps.meta.outputs.version }}
-            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }} 
+            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }}
             PECAN_GIT_CHECKSUM=${{ github.sha }}
             PECAN_GIT_DATE=${{ github.event.repository.updated_at }}
-    
-      # # upload base image to be used in other steps
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     if-no-files-found: error
-      #     name: base
-      #     path: /tmp/base.tar
 
 # ----------------------------------------------------------------------
 # models image has some python installed to run models, depends on base
@@ -227,15 +200,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      # # load cached image
-      # - name: Retrieve compiled binary
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: base
-      #     path: /tmp
-      # - name: Load image
-      #   run: docker load --input /tmp/base.tar
 
       # create metadata for image
       - name: Docker meta
@@ -297,7 +261,6 @@ jobs:
           cache-to: type=registry,ref=pecan/models:buildcache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # outputs: type=docker,dest=/tmp/models.tar
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
@@ -305,18 +268,10 @@ jobs:
             IMAGE_VERSION=${{ steps.meta.outputs.version }}
             GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
             PECAN_VERSION=${{ steps.meta.outputs.version }}
-            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }} 
+            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }}
             PECAN_GIT_CHECKSUM=${{ github.sha }}
             PECAN_GIT_DATE=${{ github.event.repository.updated_at }}
-    
-      # # upload models image to be used in other steps
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     if-no-files-found: error
-      #     name: models
-      #     path: /tmp/models.tar
-  
+
 # ----------------------------------------------------------------------
 # Next are images that have models installed
 # ----------------------------------------------------------------------
@@ -333,8 +288,8 @@ jobs:
           - biocro
           - ed2_2.2.0
           - ed2_git
-          - maespa_git
-          - sipnet_git
+          - maespa
+          - sipnet
         include:
           - name: basgra
             CONTEXT: models/basgra
@@ -376,20 +331,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # # load cached image
-      # - name: Retrieve compiled binary
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: models
-      #     path: /tmp
-      # - name: Load image
-      #   run: docker load --input /tmp/models.tar
-
       # lower case name for docker
       - name: docker image name
         id: lower
         run: echo "image_name=$(echo model-${{ matrix.MODEL }}-${{ matrix.VERSION }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-    
+
       # create metadata for image
       - name: Docker meta
         id: meta
@@ -489,15 +435,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # # load cached image
-      # - name: Retrieve compiled binary
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: base
-      #     path: /tmp
-      # - name: Load image
-      #   run: docker load --input /tmp/base.tar
-    
       # create metadata for image
       - name: Docker meta
         id: meta
@@ -575,8 +512,8 @@ jobs:
         name:
           - web
           - dbsync
-          - data 
-          - monitor 
+          - data
+          - monitor
           - rstudio-nginx
         include:
           - name: web
