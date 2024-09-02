@@ -419,6 +419,7 @@ jobs:
         name:
           - docs
           - executor
+          - api
         include:
           - name: docs
             CONTEXT: .
@@ -430,6 +431,11 @@ jobs:
             DOCKERFILE: docker/executor/Dockerfile
             PLATFORM: "linux/amd64"
             IMAGE: executor
+          - name: api
+            CONTEXT: apps/api
+            DOCKERFILE: apps/api/Dockerfile
+            PLATFORM: "linux/amd64"
+            IMAGE: api
 
     steps:
       - uses: actions/checkout@v4
