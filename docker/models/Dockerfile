@@ -22,4 +22,4 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
 
 # actual application that will be executed
 COPY model.py /work/
-CMD python3 /work/model.py
+CMD ["python3", "/work/model.py"]

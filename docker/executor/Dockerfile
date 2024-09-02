@@ -23,4 +23,4 @@ ENV RABBITMQ_URI="amqp://guest:guest@rabbitmq/%2F" \
 
 # actual application that will be executed
 COPY executor.py /work/
-CMD python3 /work/executor.py
+CMD ["python3", "/work/executor.py"]
