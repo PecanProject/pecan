@@ -47,7 +47,8 @@ FROM pecan/models:${IMAGE_VERSION}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       libhdf5-openmpi \
+       libhdf5-openmpi-103 \
+       libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # INSTALL PEcAn.ED2
