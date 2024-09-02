@@ -32,11 +32,6 @@ RUN cd ED2/ED/build \
 ########################################################################
 
 # ----------------------------------------------------------------------
-# ED MODEL
-# ----------------------------------------------------------------------
-#FROM edmodel/ed2:gnu AS model-binary
-
-# ----------------------------------------------------------------------
 # BUILD PECAN FOR MODEL
 # ----------------------------------------------------------------------
 FROM pecan/models:${IMAGE_VERSION}
@@ -68,5 +63,4 @@ RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/ed.${MODEL_VERSION}#g" /work/model.json
 
 # COPY model binary
-# COPY --from=model-binary /src/ED2/ED/build/ed /usr/local/bin/ed.${MODEL_VERSION}
-COPY --from=model-binary /usr/bin/ed2 /usr/local/bin/ed.${MODEL_VERSION}
+COPY --from=model-binary /src/ED2/ED/build/ed /usr/local/bin/ed.${MODEL_VERSION}
