@@ -286,7 +286,7 @@ jobs:
         name:
           - basgra
           - biocro
-          - ed2_2.2.0
+          # - ed2_2.2.0
           - ed2_git
           - maespa
           - sipnet
@@ -303,12 +303,12 @@ jobs:
             PLATFORM: "linux/amd64"
             MODEL: biocro
             VERSION: "0.95"
-          - name: ed2_2.2.0
-            CONTEXT: models/ed
-            DOCKERFILE: models/ed/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: ed2
-            VERSION: "2.2.0"
+          # - name: ed2_2.2.0
+          #   CONTEXT: models/ed
+          #   DOCKERFILE: models/ed/Dockerfile
+          #   PLATFORM: "linux/amd64"
+          #   MODEL: ed2
+          #   VERSION: "2.2.0"
           - name: ed2_git
             CONTEXT: models/ed
             DOCKERFILE: models/ed/Dockerfile
