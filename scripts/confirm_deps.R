@@ -37,16 +37,23 @@ confirm_deps <- function(pkg,
                          install = TRUE,
                          dependencies = NA,
                          ...) {
+
+  # Q: "Why a separate variable instead of overwriting `dependencies`?"
+  # A: As a quick workaround for https://github.com/r-lib/remotes/issues/809:
+  # remotes::install_deps(pkgdir, `dependencies = TRUE`) correctly installs
+  # optional deps of `pkgdir` but only hard deps of its dependencies,
+  # whereas `dependencies = c(..., "Suggests")` installs the whole
+  # recursive chain of Suggests of Suggests of Suggests.
   if (all(is.na(dependencies)) || all(dependencies == "hard")) {
-    dependencies <- c("Depends", "Imports", "LinkingTo")
+    dependency_types <- c("Depends", "Imports", "LinkingTo")
   } else if (isTRUE(dependencies) || all(dependencies == "soft")) {
-    dependencies <- c("Depends", "Imports", "LinkingTo", "Suggests")
+    dependency_types <- c("Depends", "Imports", "LinkingTo", "Suggests")
   } else if (isFALSE(dependencies)) {
     return() # for compatibility with remotes::install_deps
   }
 
   deps <- desc::desc_get_deps(pkg)
-  deps <- deps[deps$type %in% dependencies, ]
+  deps <- deps[deps$type %in% dependency_types, ]
 
   pkgs <- as.data.frame(installed.packages(), stringsAsFactors = FALSE)[, c("Package", "Version")]
   colnames(pkgs) <- c("package", "installed_version")
