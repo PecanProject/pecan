@@ -62,6 +62,8 @@ SDA_downscale_preprocess <- function(data_path, coords_path, date, carbon_pool) 
   return(list(input_data = input_data, site_coordinates = site_coordinates, carbon_data = carbon_data))
 }
 
+##' @noRd
+##'
 ##' @title Create folds function
 ##' @name .create_folds
 ##' @author Sambhav Dixit
