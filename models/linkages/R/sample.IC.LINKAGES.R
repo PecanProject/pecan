@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 sample.IC.LINKAGES <- function(ne, state, year = NULL) {
   ## g C * m-2 ground area in wood (above-ground + roots)
   biomass_tsca = ifelse(rep("biomass_tsca" %in% names(state), ne),
