@@ -19,7 +19,6 @@ RUN apt-get update \
   &&  rm -rf /var/lib/apt/lists/* \
   &&  Rscript -e "devtools::install_version('promises', '1.1.0')" \
   &&  Rscript -e "devtools::install_version('webutils', '1.1')" \
-  &&  Rscript -e "devtools::install_version('sodium', '>= 1.2.0', repos='https://p3m.dev/')" \
   &&  Rscript -e "install.packages('pool')" \
   &&  Rscript -e "devtools::install_github('rstudio/swagger')" \
   &&  Rscript -e "devtools::install_github('rstudio/plumber')"
