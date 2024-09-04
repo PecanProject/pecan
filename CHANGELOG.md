@@ -17,7 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     * Shiny apps `dbsync`, `Data-Ingest`, `Elicitation`, `ForecastingDashboard`, `global-sensitivity`, `Pecan.depend`, and `SDAdashboard`
     * Base packages `PEcAn.all`, `PEcAn.DB`, `PEcAn.QAQC`, `PEcAn.remote`, `PEcAn.settings`, `PEcAn.visualization`, and `PEcAn.workflow`
     * Model packages `PEcAn.BASGRA`, `PEcAn.dvmdostem`, `PEcAn.FATES`, `PEcAn.GDAY`, `PEcAn.LDNDC`, `PEcAn.MAAT`, `PEcAn.MAESPA`, `PEcAn.SIBCASA`, `PEcAn.STICS`, and the new model package template.
-    * Modules `PEcAn.allometry`, PEcAn.data.mining`, `PEcAn.emulator`, amd `PEcAn.RTM`.
+    * Modules `PEcAn.allometry`, `PEcAn.assim.batch`, `PEcAn.data.mining`, `PEcAn.emulator`, `PEcAn.MA`, and `PEcAn.RTM`.
 
 ### Removed
 
