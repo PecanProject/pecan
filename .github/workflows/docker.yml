@@ -503,6 +503,7 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ env.R_VERSION }}
+            IMAGE_VERSION=${{ steps.meta.outputs.version }}
 
   # ----------------------------------------------------------------------
   # Next are images that do not depend on either depends or base image
