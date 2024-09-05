@@ -112,10 +112,12 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
 }
 
 
-# Function to generate a new siteID (db-less runs ONLY)
+# Function to generate a new siteID using hashing (db-less runs ONLY)
 generate_new_siteID <- function(lat, lon) {
-    latlon_str <- paste0(round(lat, 8), "_", round(lon, 8))
-    hash <- digest::digest(latlon_str, algo = "sha256")
-    uid <- substr(hash, 1, 10)
+    latlon_str <- paste0(round(lat, 8), round(lon, 8))
+    hash <- openssl::sha256(latlon_str)
+    
+    # Extracting first 10 characters of hash as a UID
+    uid <- substr(as.character(hash), 1, 10)
     return(uid)
 }

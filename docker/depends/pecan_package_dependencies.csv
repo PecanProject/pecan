@@ -241,6 +241,7 @@
 "neonUtilities","*","modules/data.land","Imports",FALSE
 "nimble","*","modules/assim.sequential","Imports",FALSE
 "nneo","*","modules/data.atmosphere","Imports",FALSE
+"openssl","*","base/db","Suggests",FALSE
 "optparse","*","base/settings","Imports",FALSE
 "parallel","*","modules/assim.batch","Imports",FALSE
 "parallel","*","modules/data.atmosphere","Suggests",FALSE

@@ -73,7 +73,8 @@ Suggests:
     rmarkdown (>= 2.19),
     testthat (>= 2.0.0),
     tidyverse,
-    withr
+    withr,
+    openssl
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr
 Copyright: Authors
