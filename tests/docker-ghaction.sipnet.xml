@@ -33,15 +33,13 @@
    </parameters>
    <met>
     <method>sampling</method>
- 	</met>
+ 	 </met>
    </samplingspace>
   </ensemble>
   <model>
-    <id>1000000014</id>
+    <type>SIPNET</type>
+    <revision>git</revision>
   </model>
-  <workflow>
-    <id>99000000029</id>
-  </workflow>
   <run>
     <site>
       <id>2000001297</id>

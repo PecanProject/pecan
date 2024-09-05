@@ -63,7 +63,6 @@ jobs:
         docker ps
         sleep 50
 
-
     - name: Run SIPNET
       run: |
         docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml
