@@ -40,7 +40,7 @@ jobs:
           cp docker-compose.dev.yml docker-compose.override.yml
           sed -i'' '/R_library/d' docker-compose.override.yml
 
-    - name: Build Containers
+    - name: Build Containers #sleep should be removed once we merge #3354
       run: |
         cp docker/env.example .env
         echo "COMPOSE_PROJECT_NAME=pecan" >> .env
@@ -57,6 +57,12 @@ jobs:
     - name: Run required containers
       run: |
         docker compose up --wait -d sipnet executor
+
+    - name: Check if containers are running #should be removed once we merge #3354
+      run: |
+        docker ps
+        sleep 50
+
 
     - name: Run SIPNET
       run: |
