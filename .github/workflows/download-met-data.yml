@@ -56,4 +56,4 @@ jobs:
 
     - name: CRUNCEP
       run: |
-        Rscript ./tests/test_met_download.R --settings ./tests/met_download_settings/docker.CRUNCEP.xml
+        Rscript ./tests/test_met_downloads.R --settings ./tests/met_download_settings/docker.CRUNCEP.xml
