@@ -17,11 +17,6 @@ Strong dependencies not in mainstream repositories:
 Suggests or Enhances not in mainstream repositories:
   PEcAn.utils, PEcAn.ED2
 
-Package has a VignetteBuilder field but no prebuilt vignette index.
-
-The Description field should not start with the package name,
-  'This package' or similar.
-
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
