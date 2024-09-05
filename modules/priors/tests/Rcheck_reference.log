@@ -88,29 +88,16 @@ License stub is invalid DCF.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-fit.dist: no visible binding for global variable ‘AIC’
 plot_densities: no visible global function definition for
   ‘plot_density’
 plot_posterior.density: no visible binding for global variable ‘x’
 plot_posterior.density: no visible binding for global variable ‘y’
 plot_prior.density: no visible binding for global variable ‘x’
 plot_prior.density: no visible binding for global variable ‘y’
-plot_trait: no visible global function definition for ‘last’
-prior.fn: no visible global function definition for ‘qnorm’
-prior.fn: no visible global function definition for ‘qlnorm’
-prior.fn: no visible global function definition for ‘qgamma’
-prior.fn: no visible global function definition for ‘qweibull’
-prior.fn: no visible global function definition for ‘qbeta’
 priorfig: no visible binding for global variable ‘x’
-priorfig: no visible global function definition for ‘runif’
 priorfig: no visible binding for global variable ‘y’
 Undefined global functions or variables:
-  AIC last plot_density qbeta qgamma qlnorm qnorm qweibull
-  runif x y
-Consider adding
-  importFrom("stats", "AIC", "density", "qbeta", "qgamma", "qlnorm",
-             "qnorm", "qweibull", "runif")
-to your NAMESPACE file.
+  plot_density x y
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

@@ -83,7 +83,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = NA, xlim = "auto
     priordata   <- subset(priordata, subset = !is.na(x))
     dx          <- with(priordata, min(abs(diff(x)[diff(x) != 0])))
     ## add jitter to separate equal values
-    priordata$x <- priordata$x + runif(length(priordata$x), -dx / 2, dx / 2)
+    priordata$x <- priordata$x + stats::runif(length(priordata$x), -dx / 2, dx / 2)
     rug         <- geom_rug(data = priordata, aes(x))
     priorfigure <- priorfigure + rug
   }
@@ -186,7 +186,7 @@ plot_trait <- function(trait,
   }
 
   trait.plot <- base.plot +
-    geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) +
+    geom_segment(aes(x = min(x.ticks), xend = max(x.ticks), y = 0, yend = 0)) +
     scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, name = trait$units) +
     labs(title = trait$figid) +
     theme(axis.text.x = element_text(size = fontsize$axis),

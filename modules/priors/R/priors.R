@@ -51,7 +51,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
     a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta", 
                                              start = list(shape1 = 2, shape2 = 1)))
   }
-  aicvalues <- lapply(a, AIC)
+  aicvalues <- lapply(a, stats::AIC)
   result <- t(sapply(
     dists,
     function(x) cbind(
@@ -104,26 +104,26 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   if (distn == "lnorm") {
     mu <- parms[1]
     sigma <- parms[2]
-    lcl <- mu + qnorm(alpha / 2) * sigma
-    ucl <- mu + qnorm(1 - alpha / 2) * sigma
+    lcl <- mu + stats::qnorm(alpha / 2) * sigma
+    ucl <- mu + stats::qnorm(1 - alpha / 2) * sigma
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "mean") {
       ct <- mu - sigma^2
     } else if (central.tendency == "median") {
-      ct <- qlnorm(0.5, parms[1], parms[2])
+      ct <- stats::qlnorm(0.5, parms[1], parms[2])
     } else {
       PEcAn.logger::logger.severe(paste(central.tendency, "not supported!"))
     }
     x <- log(x)
   }
   if (distn == "gamma") {
-    lcl <- qgamma(alpha / 2, parms[1], parms[2])
-    ucl <- qgamma(1 - alpha / 2, parms[1], parms[2])
+    lcl <- stats::qgamma(alpha / 2, parms[1], parms[2])
+    ucl <- stats::qgamma(1 - alpha / 2, parms[1], parms[2])
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "median") {
-      ct <- qgamma(0.5, parms[1], parms[2])
+      ct <- stats::qgamma(0.5, parms[1], parms[2])
     } else if (central.tendency == "mean") {
       ct <- parms[1] / parms[2]
     } else if (central.tendency == "mode") {
@@ -133,8 +133,8 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     }
   }
   if (distn == "weibull") {
-    lcl <- qweibull(alpha / 2, parms[1], parms[2])
-    ucl <- qweibull(1 - alpha / 2, parms[1], parms[2])
+    lcl <- stats::qweibull(alpha / 2, parms[1], parms[2])
+    ucl <- stats::qweibull(1 - alpha / 2, parms[1], parms[2])
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "median") {
@@ -155,14 +155,14 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     } else {
       b <- parms[2]
     }
-    lcl <- qbeta(alpha / 2, a, b)
-    ucl <- qbeta(1 - alpha / 2, a, b)
+    lcl <- stats::qbeta(alpha / 2, a, b)
+    ucl <- stats::qbeta(1 - alpha / 2, a, b)
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "mean") {
       ct <- a / (a + b)
     } else if (central.tendency == "median") {
-      ct <- qbeta(0.5, a, b)  ## median
+      ct <- stats::qbeta(0.5, a, b)  ## median
     } else if (central.tendency == "mode") {
       ct <- ifelse(a > 1 & b > 1, (a - 1) / (a + b - 2), 0)  ## mode
     }
