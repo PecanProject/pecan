@@ -1,4 +1,4 @@
-name : Sipnet Model Run
+name : Docker Stack Test
 on :
   pull_request:
 
@@ -9,7 +9,7 @@ on :
     # run Thursday 4:30 AM UTC
   - cron: '30 4 * * 4'    
 jobs:
-  test:
+  sipnet:
     runs-on: ubuntu-latest
 
     env:
@@ -19,12 +19,7 @@ jobs:
     - name: Free Disk Space (Ubuntu)
       uses: jlumbroso/free-disk-space@main
       with:
-        # this might remove tools that are actually needed,
-        # if set to "true" but frees about 6 GB
         tool-cache: false
-        
-        # all of these default to true, but feel free to set to
-        # "false" if necessary for your workflow
         android: true
         dotnet: true
         haskell: true
@@ -63,11 +58,11 @@ jobs:
       run: |
         docker compose up -d sipnet executor
 
-    - name: Check if containers are running # This will be updated soon to a loop
+    - name: Check if containers are running
       run: |
         docker ps
         sleep 50
 
     - name: Run SIPNET
       run: |
-        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings test.xml
+        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml
