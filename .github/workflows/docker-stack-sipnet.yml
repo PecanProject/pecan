@@ -1,4 +1,4 @@
-name : Docker Stack Test
+name : Docker Stack Model Test
 on :
   pull_request:
 
