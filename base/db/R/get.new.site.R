@@ -26,7 +26,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                     lat = site$lat,
                     lon = site$lon
                 )
-                str_ns <- paste0(new.site$lat, "-", new.site$lon)
+                str_ns <- paste0(new.site$lat, "_", new.site$lon)
             } # lat/lon present but ID is absent
             # Use Pre-existing normalised lat/lon
             else {
@@ -39,7 +39,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                     lat = NULL,
                     lon = NULL
                 )
-                str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+                str_ns <- paste0(new.site$id %/% 1e+09, "_", new.site$id %% 1e+09)
                 # We used a different str_ns as identifier here due to absence of lat/lon
             }
             # ID as well as lat/lon absent.
@@ -69,11 +69,11 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
         # Check if site dataframe has an id column
         if (is.null(site$id) | is.na(site$id)) {
             PEcAn.logger::logger.warn("Site dataframe does not have an id column. Generating a unique ID")
-            site.id <- generate_new_siteID()
-            PEcAn.logger::logger.info(paste0("Generated siteID:", site.id))
-            if ((!is.null(site$lat) && !is.null(site$lon)) |
+            if ((!is.null(site$lat) && !is.null(site$lon)) &&
                 (!is.na(site$lat) && !is.na(site$lon))
             ) {
+                PEcAn.logger::logger.info(paste0("Generated siteID using lat and lon:", site.id))
+                site.id <- generate_new_siteID(site$lat, site$lon)
                 new.site <- data.frame(
                     id = as.numeric(site.id),
                     lat = site$lat,
@@ -81,13 +81,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                 )
                 str_ns <- paste0(site$lat, "-", site$lon)
             } else {
-                new.site <- data.frame(
-                    id = site.id,
-                    lat = NULL,
-                    lon = NULL
-                )
-                str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-                # We used a different str_ns as identifier here due to absence of lat/lon
+                PEcAn.logger::logger.severe("Missing site-id, site lat & site-lon. Stopping the process due to lack of information")
             }
         } else {
             # setup site database number, lat, lon and name and copy for format.vars if new input
@@ -99,7 +93,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                     lat = site$lat,
                     lon = site$lon
                 )
-                str_ns <- paste0(site$lat, "-", site$lon)
+                str_ns <- paste0(site$lat, "_", site$lon)
             } else {
                 latlon <- query.site(site$id, con = con)[c("lat", "lon")]
                 new.site <- data.frame(
@@ -107,7 +101,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                     lat = latlon$lat,
                     lon = latlon$lon
                 )
-                str_ns <- paste0(new.site$lat, "-", new.site$lon)
+                str_ns <- paste0(new.site$lat, "_", new.site$lon)
             }
         }
     }
@@ -119,8 +113,9 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
 
 
 # Function to generate a new siteID (db-less runs ONLY)
-generate_new_siteID <- function() {
-    # Generate a random number. Assuming higher order integers to increase randomness in IDs
-    random_id <- sample(10000:99999999, 1)
-    return(as.numeric(random_id))
+generate_new_siteID <- function(lat, lon) {
+    latlon_str <- paste0(round(lat, 8), "_", round(lon, 8))
+    hash <- digest::digest(latlon_str, algo = "sha256")
+    uid <- substr(hash, 1, 10)
+    return(uid)
 }
