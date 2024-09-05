@@ -1,7 +1,5 @@
 name : Test Data Download
 on :
-  pull_request:
-
   # allow manual triggering
   workflow_dispatch:
 
