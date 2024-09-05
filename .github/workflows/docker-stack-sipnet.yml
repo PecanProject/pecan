@@ -48,7 +48,7 @@ jobs:
         echo "UID=$(id -u)" >> .env
         echo "GID=$(id -g)" >> .env
         
-        docker compose up -d postgres
+        docker compose up --wait -d postgres
         sleep 30
         docker run --rm --network pecan_pecan pecan/db:ci
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
@@ -56,12 +56,7 @@ jobs:
     
     - name: Run required containers
       run: |
-        docker compose up -d sipnet executor
-
-    - name: Check if containers are running
-      run: |
-        docker ps
-        sleep 50
+        docker compose up --wait -d sipnet executor
 
     - name: Run SIPNET
       run: |
