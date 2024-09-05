@@ -15,7 +15,7 @@ extract_NLCD(buffer, coords, data_dir = NULL, con = NULL, year = 2011)
 
 \item{con}{connection to PEcAn database. Can be NULL if data_dir is specified}
 
-\item{year}{one of 2001 or 2011}
+\item{year}{which NLCD year to extract. If data_dir not provided, must be one of `2001` or `2011`}
 }
 \value{
 dataframe of fractional cover of different cover classes
