@@ -40,7 +40,8 @@ Imports:
     zoo 
 Suggests:
     PEcAn.data.land,
-    testthat (>= 2.0.0)
+    testthat (>= 2.0.0),
+    BrownDog
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
