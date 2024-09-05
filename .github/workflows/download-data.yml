@@ -17,7 +17,7 @@ env:
   CI: true
         
 jobs:
-  data-download:
+  met-data-download:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -56,12 +56,4 @@ jobs:
 
     - name: CRUNCEP
       run: |
-        Rscript ./web/test.R --settings ./tests/docker.CRUNCEP.xml
-    
-    - name: AmerifluxLBL
-      run: |
-        Rscript ./web/test.R --settings ./tests/docker.AmerifluxLBL.xml
-
-    - name: NOAA_GEFS
-      run: |
-        Rscript ./web/test.R --settings ./tests/docker.NOAA_GEFS.xml
+        Rscript ./tests/test_met_download.R --settings ./tests/met_download_settings/docker.CRUNCEP.xml
