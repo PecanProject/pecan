@@ -25,6 +25,13 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode
   if (inherits(test, "try-error")) {
     PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
   }
+  if (!requireNamespace("dataone", quietly = TRUE)
+      || !requireNamespace("datapack", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Could not find one or more of packages `dataone`  and `datapack`,",
+      "which are needed by `dataone_download()`.",
+      "Please install them to use this functionality.")
+  }
 
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
