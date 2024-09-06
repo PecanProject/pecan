@@ -33,7 +33,7 @@
 "data.table","*","models/biocro","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
-"datapack","*","modules/data.land","Imports",FALSE
+"datapack","*","modules/data.land","Suggests",FALSE
 "DBI","*","base/db","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
