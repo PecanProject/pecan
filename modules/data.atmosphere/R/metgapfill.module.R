@@ -1,6 +1,6 @@
 .metgapfill.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE, ensemble_name = NULL) {
-  PEcAn.logger::logger.info("Gapfilling")  # Does NOT take place on browndog!
+  PEcAn.logger::logger.info("Gapfilling")
   
   input.id   <- cf.id[1]
   outfolder  <- file.path(dir, paste0(met, "_CF_gapfill_site_", str_ns))
@@ -29,7 +29,7 @@
                             mimetype =  mimetype, 
                             site.id = site$id, 
                             start_date = start_date, end_date = end_date, 
-                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
+                            pkg = pkg, fcn = fcn, con = con, host = host,
                             write = TRUE, 
                             lst = lst, 
                             overwrite = overwrite,

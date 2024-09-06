@@ -61,7 +61,7 @@ put_veg_module <- function(getveg.id, dbparms,
                                          site.id = new_site$id, 
                                          start_date = start_date, end_date = end_date, 
                                          pkg = pkg, fcn = fcn, 
-                                         con = con, host = host, browndog = NULL, 
+                                         con = con, host = host,
                                          write = TRUE, 
                                          overwrite = overwrite,
                                          # fcn specific args 
