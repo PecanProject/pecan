@@ -1,6 +1,6 @@
 # PEcAn.data.land 1.8.0.9000
 
-
+- move datapack from Depends to Suggests #3373
 
 # PEcAn.data.land 1.8.0
 
