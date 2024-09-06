@@ -123,6 +123,7 @@
 "jsonlite","*","modules/data.remote","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
+"knitr","*","models/biocro","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr","*","modules/priors","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
@@ -488,6 +489,7 @@
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
 "rmarkdown","*","base/visualization","Suggests",FALSE
+"rmarkdown","*","models/biocro","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE
 "rmarkdown","*","modules/rtm","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE
