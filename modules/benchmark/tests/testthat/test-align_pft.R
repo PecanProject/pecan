@@ -10,7 +10,7 @@ teardown(PEcAn.DB::db.close(con))
 observation_one <- c("AMCA3", "AMCA3", "AMCA3", "AMCA3")
 observation_two <- c("a", "b", "a", "a")
 format_one <- "species_USDA_symbol"
-format_two <- "plant_funtional_type"
+format_two <- "plant_functional_type"
 
 table <- data.frame(
   plant_functional_type_one = c("AMCA3", "AMCA3", "ARHY", "ARHY"),

@@ -24,22 +24,43 @@ InventoryGrowthFusion(
 \arguments{
 \item{data}{list of data inputs}
 
-\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from}
+\item{cov.data}{covariate data}
+
+\item{time_data}{required if time_varying is provided}
+
+\item{n.iter}{total number of iterations across all chunks}
+
+\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return
+LAST. If restarting, second number in vector is chunk to start from}
 
 \item{n.burn}{number of steps to automatically discard as burn-in}
 
-\item{random}{= whether or not to include random effects}
+\item{random}{whether or not to include random effects}
 
-\item{save.state}{whether or not to include inferred DBH in output (can be large). Enter numeric value to save.state periodically (in terms of n.chunk)}
+\item{fixed}{formula for fixed effects}
 
-\item{restart}{final mcmc.list from previous execution. NULL for new run. TRUE to save final state for new run.}
+\item{time_varying}{formula for time-varying effects}
+
+\item{burnin_plot}{logical: display a plot of the burnin steps?}
+
+\item{save.jags}{logical: Save the generated JAGS script?}
+
+\item{z0}{initial conditions for state variable}
+
+\item{save.state}{whether or not to include inferred DBH in output (can be
+large). Enter numeric value to save.state periodically (in terms of
+n.chunk)}
+
+\item{restart}{final mcmc.list from previous execution. NULL for new run.
+TRUE to save final state for new run.}
 }
 \value{
 an mcmc.list object
 }
 \description{
-this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
-for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
+this code fuses forest inventory data with tree growth data (tree ring or
+dendrometer band) for the same plots. Code is a rewrite of Clark et al 2007
+Ecol Appl into JAGS
 }
 \note{
 Requires JAGS

@@ -6,6 +6,9 @@
 \usage{
 Clean_Tucson(file)
 }
+\arguments{
+\item{file}{WinDendro output}
+}
 \description{
 tree core QAQC
 }

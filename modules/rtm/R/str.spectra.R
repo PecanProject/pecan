@@ -1,6 +1,7 @@
 #' Structure of `spectra` object
 #'
 #' @inheritParams wavelengths
+#' @param ... additional arguments, currently ignored
 #' @export
 str.spectra <- function(spectra, ...) {
   wl <- wavelengths(spectra)
