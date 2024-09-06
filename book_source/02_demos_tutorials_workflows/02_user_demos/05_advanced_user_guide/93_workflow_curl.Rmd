@@ -33,8 +33,6 @@ sensitivity=-1,1
 pecan_edit=on
 # redirect to edit the model configuration files
 model_edit=on
-# use browndog
-browndog=on
 ```
 
 For example the following will run the above workflow. Using -v in curl will show verbose output (needed) and the grep will make sure it only shows the redirect. This will show the actual workflowid:
