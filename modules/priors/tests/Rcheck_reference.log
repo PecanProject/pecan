@@ -69,14 +69,7 @@ The Date field is over a month old.
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘David LeBauer’
-  Authors@R: ‘David LeBauer [aut, cre], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
-  Authors@R:  ‘David LeBauer <dlebauer@email.arizona.edu>’
-
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -95,83 +88,26 @@ Maintainer field differs from that derived from Authors@R
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-create.density.df: no visible global function definition for
-  ‘zero.bounded.density’
-create.density.df: no visible global function definition for ‘density’
-fit.dist: no visible binding for global variable ‘AIC’
-fit.dist : <anonymous>: no visible global function definition for
-  ‘tabnum’
-fit.dist: no visible global function definition for ‘tabnum’
 plot_densities: no visible global function definition for
   ‘plot_density’
 plot_posterior.density: no visible binding for global variable ‘x’
 plot_posterior.density: no visible binding for global variable ‘y’
 plot_prior.density: no visible binding for global variable ‘x’
 plot_prior.density: no visible binding for global variable ‘y’
-plot_trait: no visible global function definition for ‘last’
-prior.fn: no visible global function definition for ‘qnorm’
-prior.fn: no visible global function definition for ‘qlnorm’
-prior.fn: no visible global function definition for ‘qgamma’
-prior.fn: no visible global function definition for ‘qweibull’
-prior.fn: no visible global function definition for ‘qbeta’
 priorfig: no visible binding for global variable ‘x’
-priorfig: no visible global function definition for ‘runif’
 priorfig: no visible binding for global variable ‘y’
 Undefined global functions or variables:
-  AIC density last plot_density qbeta qgamma qlnorm qnorm qweibull
-  runif tabnum x y zero.bounded.density
-Consider adding
-  importFrom("stats", "AIC", "density", "qbeta", "qgamma", "qlnorm",
-             "qnorm", "qweibull", "runif")
-to your NAMESPACE file.
+  plot_density x y
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... WARNING
-Missing link or links in documentation object 'create.density.df.Rd':
-  ‘stats::density’
-
-Missing link or links in documentation object 'prior.fn.Rd':
-  ‘DEoptim’
-
-Missing link or links in documentation object 'priorfig.Rd':
-  ‘prior.density’
-
-See section 'Cross-references' in the 'Writing R Extensions' manual.
+* checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'create.density.df'
-  ‘n’ ‘...’
-
-Undocumented arguments in documentation object 'fit.dist'
-  ‘trait’ ‘n’
-
-Undocumented arguments in documentation object 'get.quantiles.from.density'
-  ‘density.df’
-Documented arguments not in \usage in documentation object 'get.quantiles.from.density':
-  ‘priordensity’
-
-Undocumented arguments in documentation object 'priorfig'
-  ‘fontsize’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'create.density.df':
-  ‘zero.bounded’
-
-Argument items with no description in Rd object 'pr.samp':
-  ‘distn’ ‘parama’ ‘paramb’
-
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘priors_demo.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... SKIPPED

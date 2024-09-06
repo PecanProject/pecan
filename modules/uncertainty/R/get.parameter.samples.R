@@ -1,9 +1,9 @@
 
 ##' Convert priors / MCMC samples to chains that can be sampled for model parameters 
 ##' 
-##' @name get.parameter.samples
-##' @title Sample from priors or posteriors
-##' @param pfts the pfts node of the list of pecan settings
+##' @param settings PEcAn settings object
+##' @param posterior.files list of filenames to read from
+##' @param ens.sample.method one of "halton", "sobol", "torus", "lhc", "uniform"
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin, Istem Fer

@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{spectra}{Object of class \code{spectra}}
+
+\item{...}{additional arguments, currently ignored}
 }
 \description{
 Structure of \code{spectra} object

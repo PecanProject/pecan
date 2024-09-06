@@ -6,6 +6,15 @@
 \usage{
 ensemble.ts(ensemble.ts, observations = NULL, window = 1, ...)
 }
+\arguments{
+\item{ensemble.ts}{ensemble timeseries to be plotted, as returned by [read.ensemble.ts()]}
+
+\item{observations}{observed data to plot over timeseries predictions}
+
+\item{window}{number of timepoints to average across}
+
+\item{...}{additional arguments, currently ignored}
+}
 \value{
 nothing, generates an ensemble time-series plot
 }

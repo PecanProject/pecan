@@ -213,12 +213,13 @@ extract_soil_gssurgo<-function(outdir, lat, lon, size=1, radius=500, depths=c(0.
 
 
 
-#' Extract soil data
+#' Extract soil data from the gridpoint closest to a location
 #'
-#' @param in.file 
-#' @param outdir 
-#' @param lat 
-#' @param lon 
+#' @param in.file path to netcdf file containing soil data
+#' @param outdir directory in which to write netcdf file of extracted data.
+#'  Output filename will be the same as input filename.
+#' @param lat,lon location in decimal degrees.
+#'  Data will be extracted from the point in `in.file` that is nearest this
 #'
 #' @return path to netCDF file containing extracted data
 #' @export
@@ -318,9 +319,40 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
 
 #' Get standard units for a soil variable
 #'
-#' @param varname 
+#' Given SSURGO names for soil properties, looks up their standard units.
+#' Note that names must match exactly.
 #'
-#' @return character
+#' Supported variables are:
+#'  * `soil_depth`
+#'  * `soil_cec`
+#'  * `fraction_of_clay_in_soil`
+#'  * `fraction_of_sand_in_soil`
+#'  * `fraction_of_silt_in_soil`
+#'  * `fraction_of_gravel_in_soil`
+#'  * `volume_fraction_of_water_in_soil_at_saturation`
+#'  * `volume_fraction_of_water_in_soil_at_field_capacity`
+#'  * `volume_fraction_of_condensed_water_in_dry_soil`
+#'  * `volume_fraction_of_condensed_water_in_soil_at_wilting_point`
+#'  * `soilC`
+#'  * `soil_ph`
+#'  * `soil_bulk_density`
+#'  * `soil_type`
+#'  * `soil_hydraulic_b`
+#'  * `soil_water_potential_at_saturation`
+#'  * `soil_hydraulic_conductivity_at_saturation`
+#'  * `thcond0`
+#'  * `thcond1`
+#'  * `thcond2`
+#'  * `thcond3`
+#'  * `soil_thermal_conductivity`
+#'  * `soil_thermal_conductivity_at_saturation`
+#'  * `soil_thermal_capacity`
+#'  * `soil_albedo`
+#'
+#' @param varname character vector. See details
+#'
+#' @return character matrix with columns `var` and `unit`
+#' @md
 #' @export
 #'
 #' @examples
