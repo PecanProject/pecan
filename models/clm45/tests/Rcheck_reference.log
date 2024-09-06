@@ -62,10 +62,7 @@ The Date field is over a month old.
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Mike Dietze’
-  Authors@R: ‘Mike Dietze [aut, cre], University of Illinois, NCSA [cph]’
-
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
