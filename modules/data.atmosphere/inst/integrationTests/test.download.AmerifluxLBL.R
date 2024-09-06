@@ -26,7 +26,6 @@ test_download_AmerifluxLBL <- function(start_date, end_date, sitename, lat.in, l
       fcn = 'download.AmerifluxLBL',
       con = NULL,
       host = data.frame(name = "localhost"),
-      browndog = NULL,
       write = FALSE,
       lat.in = lat.in,
       lon.in = lon.in,

@@ -42,7 +42,6 @@
       <p>This is the Admin Pages.
         <h1>List of available configurations</h1>
         <a href="edit.php?key=database" >Database</a> <br>
-        <a href="edit.php?key=browndog" >Browndog</a> <br>
         <a href="edit.php?key=fiadb" >FIA Database</a> <br>
         <a href="chpasswd.php" >Change Password</a> <br>
       </p>
