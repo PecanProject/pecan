@@ -1,6 +1,6 @@
 # PEcAn.data.land 1.8.0.9000
 
-
+- Dependency `datapack` is now optional. It is only used by `dataone_download()` (#3373).
 
 # PEcAn.data.land 1.8.0
 

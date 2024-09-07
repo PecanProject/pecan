@@ -5,8 +5,6 @@ Version: 1.7.3.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: David LeBauer
-Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: Functions to estimate priors from data.
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
@@ -15,10 +13,16 @@ LazyData: FALSE
 Imports:
     PEcAn.logger,
     PEcAn.MA,
+    PEcAn.utils,
     ggplot2,
     MASS
 Suggests:
+    dplyr,
+    knitr,
     PEcAn.visualization,
+    rjags,
+    rmarkdown,
     testthat
 Encoding: UTF-8
+VignetteBuilder: knitr
 RoxygenNote: 7.3.2
