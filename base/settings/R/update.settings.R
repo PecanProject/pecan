@@ -1,11 +1,3 @@
-##-----------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-##-----------------------------------------------------------------------------
 #' Updates a pecan.xml file to match new layout. This will take care of the
 #' conversion to the latest pecan.xml file.
 #'

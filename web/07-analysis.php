@@ -33,7 +33,6 @@ $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
-$browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 $ensemble_analysis = (isset($_REQUEST['ensemble_analsysis'])) ? "checked" : "";
 $sensitivity_analysis = (isset($_REQUEST['sensitivity'])) ? "checked" : "";
 
@@ -263,16 +262,6 @@ if (isset($modelinfo['revision'])) {
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 
-<script type="text/javascript" src="js/browndog.js"></script>
-<script type="text/javascript">
-  $('#browndog').click(function(){
-    if($(this).is(':checked')){
-      browndog_add();
-    } else {
-      browndog_del();      
-    }
-  });
-</script>
 </body>
 </html>
 

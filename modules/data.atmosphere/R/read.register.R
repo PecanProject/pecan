@@ -23,7 +23,7 @@ read.register <- function(register.xml, con) {
   if (is.null(register$format)) {
    PEcAn.logger::logger.error("Format is not defined")
   } else if (is.null(register$format$inputtype)) {
-   PEcAn.logger::logger.error("Browndog input type is not defined")  #Ultimatly can get this from the format table in betydb
+   PEcAn.logger::logger.error("Input type is not defined")  #Ultimatly can get this from the format table in betydb
   } else {
     # format is defined
     if ((is.null(register$format$id) & is.null(register$format$name) & is.null(register$format$mimetype))

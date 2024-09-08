@@ -1,5 +1,6 @@
 #' Matplot generic method
 #'
+#' @param ... arguments passed to methods
 #' @export
 matplot <- function(...) {
   UseMethod("matplot")
@@ -7,6 +8,7 @@ matplot <- function(...) {
 
 #' Matplot default method
 #'
+#' @param ... arguments passed to `matplot`
 #' @export
 matplot.default <- function(...) graphics::matplot(...)
 

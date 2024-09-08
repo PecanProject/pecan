@@ -2,7 +2,7 @@
 % Please edit documentation in R/fia2ED.R
 \name{fia.to.psscss}
 \alias{fia.to.psscss}
-\title{fia.to.psscss}
+\title{Create pss/css files based on data in the fia database}
 \usage{
 fia.to.psscss(
   settings,
@@ -16,13 +16,24 @@ fia.to.psscss(
 )
 }
 \arguments{
-\item{create}{pss/css files based on data in the fia database}
+\item{settings}{PEcAn settings object}
+
+\item{lat, lon}{site location in decimal degrees.
+Defults to values passed in `settings`.}
+
+\item{year}{defaults to year of start date passed in settings}
+
+\item{gridres}{grid resolution in degrees}
+
+\item{min.year, max.year}{limits on years of FIA data to look for}
+
+\item{overwrite}{logical: regenerate files already in the database?}
 }
 \value{
-nothing
+modified settings, invisibly
 }
 \description{
-convert x into a table
+Create pss/css files based on data in the fia database
 }
 \author{
 Mike Dietze, Rob Kooper, Ryan Kelly

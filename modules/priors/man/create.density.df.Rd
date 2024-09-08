@@ -15,16 +15,20 @@ create.density.df(
 \arguments{
 \item{samps}{a vector of samples from a distribution}
 
-\item{zero.bounded}{}
+\item{zero.bounded}{logical: Restrict density distribution to nonnegative values?}
 
 \item{distribution}{list with elements distn, parama, paramb,
 e.g. \code{list('norm', 0, 1)}}
+
+\item{n}{number of points at which to estimate density}
+
+\item{...}{additional arguments, passed on to \code{stats::density}}
 }
 \value{
 data frame with x and y = dens(x)
 }
 \description{
-Returns a data frame from \link{stats::density} function
+Returns a data frame from \code{stats::density} function
 }
 \examples{
 prior.df <- create.density.df(distribution = list('norm',0,1))

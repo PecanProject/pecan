@@ -186,6 +186,7 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=N
 ##' @return data frame with back-transformed log density estimate
 ##' @author \href{https://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
+##' @export
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
   y     <- log(x)
   g     <- stats::density(y, bw = bw, n = n)
