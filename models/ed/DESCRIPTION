@@ -31,7 +31,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation. This package provides functions to
     link the Ecosystem Demography Model, version 2, to PEcAn.
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 Imports:
     abind (>= 1.4.5),
     assertthat,
@@ -57,11 +57,13 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     devtools,
+    knitr,
+    rmarkdown,
     withr
 Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-LazyLoad: yes
+VignetteBuilder: knitr
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.3.2

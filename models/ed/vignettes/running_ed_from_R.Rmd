@@ -1,6 +1,10 @@
 ---
 title: "Running ED from R"
 author: "Alexey Shiklomanov"
+output_format: rmarkdown::html_vignette
+vignette: |
+  %\VignetteIndexEntry{Running ED from R}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 # Introduction
@@ -17,13 +21,15 @@ This tutorial describes these utilites and provides examples of common use cases
 
 The `PEcAn.ED2` package and its PEcAn dependencies can be installed from GitHub as follows (all CRAN package dependencies should be installed automatically):
 
-```{r install, eval = -(1:5)}
+```{r install, eval = FALSE}
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
 devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/ed")
+```
 
+```{r library}
 library(PEcAn.ED2)
 ```
 
@@ -46,8 +52,7 @@ These can be customized to some extent, but this package provides a version of t
 These inputs, stored in an "EDI" directory, can be downloaded via the `download_edi` function:
 
 ```{r get_edi}
-library(here)
-rundir <- here("vignettes", "ed_run_data")
+rundir <- file.path(tempdir(), "ed_run_data")
 dir.create(rundir, showWarnings = FALSE)
 
 edi_dir <- file.path(rundir, "EDI")
@@ -164,6 +169,7 @@ ed2in <- modify_ed2in(
   run_dir = file.path(rundir, "run"),
   output_dir = file.path(rundir, "out"),
   runtype = "INITIAL",
+  pecan_defaults = TRUE,
   EXPNME = "ED test run"
 )
 ```

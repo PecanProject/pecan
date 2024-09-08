@@ -23,7 +23,8 @@ use conditionally.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -46,25 +47,10 @@ File ‘PEcAn.ED2/R/model2netcdf.ED2.R’:
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
-* checking Rd cross-references ... WARNING
-Missing link or links in documentation object 'read_ed_metheader.Rd':
-  ‘https://github.com/EDmodel/ED2/wiki/Drivers’
-
-See section 'Cross-references' in the 'Writing R Extensions' manual.
+* checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'modify_ed2in'
-  ‘ed2in’
-
-Undocumented arguments in documentation object 'remove.config.ED2'
-  ‘main.outdir’ ‘settings’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
@@ -72,10 +58,7 @@ Extensions’ manual.
 * checking LazyData ... OK
 * checking data for ASCII and uncompressed saves ... OK
 * checking R/sysdata.rda ... OK
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘running_ed_from_R.Rmd’
-Package has no Sweave vignette sources and no VignetteBuilder field.
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ...
