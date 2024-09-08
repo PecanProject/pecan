@@ -7,13 +7,19 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' convert x into a table
-##'
-##' @title fia.to.psscss
-##' @param create pss/css files based on data in the fia database
-##' @return nothing
-##' @export
-##' @author Mike Dietze, Rob Kooper, Ryan Kelly
+#' Create pss/css files based on data in the fia database
+#'
+#' @param settings PEcAn settings object
+#' @param lat,lon site location in decimal degrees.
+#'  Defults to values passed in `settings`.
+#' @param year defaults to year of start date passed in settings
+#' @param gridres grid resolution in degrees
+#' @param min.year,max.year limits on years of FIA data to look for
+#' @param overwrite logical: regenerate files already in the database?
+#'
+#' @return modified settings, invisibly
+#' @export
+#' @author Mike Dietze, Rob Kooper, Ryan Kelly
 fia.to.psscss <- function(settings, 
                           lat = as.numeric(settings$run$site$lat),
                           lon = as.numeric(settings$run$site$lon),

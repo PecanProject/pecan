@@ -3,8 +3,8 @@
 #'@details
 #' Aligns vectors of Plant Fucntional Typed and species.
 #' Can align: 
-#' - two vectors of plant fucntional types (pft's) if a custom map is provided
-#' - a list of species (usda, fia, or latin_name format) to a plant fucntional type
+#' - two vectors of plant functional types (pft's) if a custom map is provided
+#' - a list of species (usda, fia, or latin_name format) to a plant functional type
 #' - a list of species in a custom format, with a table mapping it to bety_species_id's
 #' 
 #'  Will return a list of what was originally provided, bety_species_codes if possible, 
@@ -107,7 +107,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
         
         
       }else{
-        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
+        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_functional_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant functional types.")
       } 
     }
     
@@ -127,7 +127,7 @@ align_data_to_data_pft<-function(con, observation_one, observation_two, custom_t
         aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
       }else{
-        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
+        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_functional_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant functional types.")
       } 
     }
   

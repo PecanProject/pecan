@@ -16,7 +16,7 @@ minimized. Be sure to include constants here.}
 
 \item{lower}{Lower bounds on parameters (default=NULL, which means -Inf).}
 
-\item{uppper}{Upper bounds on parameters (default=NULL, which means +Inf).}
+\item{upper}{Upper bounds on parameters (default=NULL, which means +Inf).}
 }
 \description{
 Performs a least-squares inversion of an arbitrary radiative transfer model

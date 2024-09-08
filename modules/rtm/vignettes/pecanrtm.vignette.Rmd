@@ -1,8 +1,15 @@
 ---
 title: "The PEcAn RTM package"
 author: Alexey Shiklomanov
-output_format: pdf_document
+output_format: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The PEcAn RTM package}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 6, fig.height = 4.5, out.width = '100%', dpi=60)
+```
 
 # Introduction
 
@@ -108,7 +115,7 @@ The model to be inverted is, in this case, just a one-line call to the PROSPECT 
 invert.options$model
 ```
 
-The recommended way to set settings is to start with a default object and modify it. For example, in the following block, we reduce the length of the run to make it go a little faster.
+The recommended way to set settings is to start with a default object and modify it. For example, in the following block, we reduce the length of the run to make it go a little faster. `threshold = ...` sets the maximum value of the multivariate Gelman Diagnostic used to assess convergence -- it defaults to 1.1, but we set it higher here for demonstrative purposes).
 
 ```{r}
 invert.options$n.tries <- 1      # Number of attempts
@@ -116,6 +123,7 @@ invert.options$nchains <- 2      # Number of MCMC chains
 invert.options$ngibbs <- 5000    # Number of iterations per chain
 invert.options$burnin <- 1000    # Length of burnin period
 invert.options$do.lsq.first <- TRUE # Initialize with results from a fast least-squares optimization algorithm
+invert.options$threshold <- 1.3  # Maximum value for Gelman diagnostic
 ```
 
 The full list of inversion options is below. See the documentation for `invert.auto` for a full description of each of these.
@@ -132,7 +140,7 @@ observed <- testspec_ACRU[,1]
 plot(wl, observed, xlab="Wavelength", ylab="Reflectance", type='l')
 ```
 
-To perform an inversion, just pass the observation matrix and the inversion settings into `invert.auto` (NOTE: `quiet = TRUE` suppresses the progress bar, which is done here to clean up the knitted document. `threshold = ...` sets the maximum value of the multivariate Gelman Diagnostic used to assess convergence -- it defaults to 1.1, but we set it higher here for demosntrative purposes).
+To perform an inversion, just pass the observation matrix and the inversion settings into `invert.auto`. `quiet = TRUE` suppresses the progress bar, which is done here to clean up the knitted document. We also set `parallel = FALSE` here because this vignette is rebuilt on shared hardware where only one processor might be available; for runs on your own machine, you will probably want to set it TRUE to use all the cores on your machine.
 
 ```{r}
 if(file.exists("inversion.output.rds")){
@@ -141,7 +149,7 @@ if(file.exists("inversion.output.rds")){
     inversion.output <- invert.auto(observed = observed,
                                     invert.options = invert.options,
                                     quiet = TRUE,
-                                    threshold = 1.3)
+                                    parallel = FALSE)
     saveRDS(inversion.output, "inversion.output.rds")
 }
 ```
@@ -149,7 +157,7 @@ if(file.exists("inversion.output.rds")){
 The output of `invert.auto` is a list of two objects: A list of summary statistics for each parameter and an `mcmc.list` object of the samples for diagnostic purposes or calculation of other summary statistics. 
 
 ```{r}
-par(mfrow=c(2,1))
+par(mfrow=c(2,2))
 plot(inversion.output$samples, auto.layout=FALSE)
 
 par(mfrow=c(1,1))
