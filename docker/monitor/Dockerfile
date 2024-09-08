@@ -17,4 +17,4 @@ COPY requirements.txt /src/
 RUN pip3 install -r /src/requirements.txt
 
 COPY . /src/
-CMD python3 monitor.py
+CMD ["python3", "./monitor.py"]

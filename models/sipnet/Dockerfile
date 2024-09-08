@@ -4,7 +4,7 @@ ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 # BUILD SIPNET BINARY
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} as model-binary
+FROM pecan/models:${IMAGE_VERSION} AS model-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git

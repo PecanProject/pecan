@@ -18,4 +18,4 @@ ADD https://raw.githubusercontent.com/rocker-org/shiny/master/shiny-server.sh /u
 RUN chmod +x /usr/bin/shiny-server.sh
 
 # special script to start shiny server and preserve env variable
-CMD /srv/shiny-server/save-env-shiny.sh
+CMD ["/srv/shiny-server/save-env-shiny.sh"]
