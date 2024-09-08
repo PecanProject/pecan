@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 
 ### Fixed
+- updated github action to build docker images
 
 ### Changed
 
