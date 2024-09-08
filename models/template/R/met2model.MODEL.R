@@ -15,7 +15,7 @@ met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/master/coding-style.html
+  # https://pecanproject.github.io/pecan-documentation/latest/coding-style.html
   
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".

@@ -48,7 +48,7 @@ We follow branch organization laid out on [this page](http://nvie.com/posts/a-su
 In short, there are three main branches you must be aware of:
 
 * **develop** - Main Branch containing the latest code. This is the main branch you will make changes to. 
-* **master** - Branch containing the latest stable code. DO NOT MAKE CHANGES TO THIS BRANCH. 
+* **main** - Branch containing the latest stable code. DO NOT MAKE CHANGES TO THIS BRANCH. 
 * **release/vX.X.X** - Named branches containing code specific to a release. Only make changes to this branch if you are fixing a bug on a release branch.
 
 #### Milestones, Issues, Tasks
@@ -121,7 +121,7 @@ git remote add upstream git@github.com:PecanProject/pecan.git
 
 ##### Hint: Keeping your fork in sync
 
-If you have used the instructions above, you can use the helper script called [`scripts/syncgit.sh`](https://github.com/PecanProject/pecan/blob/master/scripts/syncgit.sh) to keep the master and develop branches of your own fork in sync with the PEcAnProject/pecan repository.
+If you have used the instructions above, you can use the helper script called [`scripts/syncgit.sh`](https://github.com/PecanProject/pecan/blob/main/scripts/syncgit.sh) to keep the main and develop branches of your own fork in sync with the PEcAnProject/pecan repository.
 
 After following the above, your .git/config file will include the following:
 
@@ -144,7 +144,7 @@ Then, you can run:
 ./scripts/syncgit.sh
 ```
 
-Now the master and develop branches on your fork will be up to date. 
+Now the main and develop branches on your fork will be up to date. 
 
 #### Using Branching
 
@@ -199,7 +199,7 @@ git push origin <branchname>
 
 #### After pull request is merged
 
-1. Make sure you start in master 
+1. Make sure you start in main 
 
 ```sh
 git checkout develop`

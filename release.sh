@@ -13,7 +13,7 @@ VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
 # check for branch and set IMAGE_VERSION
 PECAN_GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+if [ "${PECAN_GIT_BRANCH}" == "main" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
@@ -23,7 +23,7 @@ fi
 
 # check branch and set tags
 if [ "${TAGS}" == "" ]; then
-    if [ "${PECAN_GIT_BRANCH}" = "master" ]; then
+    if [ "${PECAN_GIT_BRANCH}" = "main" ]; then
         TAGS="latest"
         TMPVERSION="${VERSION}"
         OLDVERSION=""
@@ -56,7 +56,7 @@ docker.sh script to create the actual images. And will push them to
 the docker repo.
 
 To specify the tags to push, use the TAGS environment option, or use
-the -t option. If this is the master branch it will tag all versions
+the -t option. If this is the main branch it will tag all versions
 specified in the base/all/DESCRIPTION file as well as latest. For
 example for version 1.7.1 it would tag latest, 1, 1.7 and 1.7.1. In 
 case of the develop branch it will push the image with the tag

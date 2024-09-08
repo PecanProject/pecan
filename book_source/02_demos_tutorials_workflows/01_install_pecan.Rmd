@@ -81,7 +81,7 @@ This will not go into much detail about about how to use Docker -- for more deta
 
     This should print the current version of docker-compose. We have tested the instruction below with versions of docker compose 1.22 and above.
    
-3. **Download the PEcAn docker compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/master/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
+3. **Download the PEcAn docker compose file**. It is located in the root directory of the [PEcAn source code](https://github.com/pecanproject/pecan). For reference, here are direct links to the [latest stable version](https://raw.githubusercontent.com/PecanProject/pecan/main/docker-compose.yml) and the [bleeding edge development version](https://raw.githubusercontent.com/PecanProject/pecan/develop/docker-compose.yml). (To download the files, you should be able to right click the link and select "Save link as".) Make sure the file is saved as `docker-compose.yml` in a directory called `pecan`.
 
 4. **Initialize the PEcAn database and data images**. The following `docker compose` commands are used to download all the data PEcAn needs to start working. For more on how they work, see our [Docker topical pages](#pecan-docker-quickstart-init).
 

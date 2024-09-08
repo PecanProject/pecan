@@ -1,6 +1,6 @@
 # PEcAn Development
 
-This is a minimal guide to getting started with PEcAn development under Docker. You can find more information about docker in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+This is a minimal guide to getting started with PEcAn development under Docker. You can find more information about docker in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html).
 
 ## Requirements and Recommendations
 
@@ -29,7 +29,7 @@ cd pecan
 
 ## Developing in Docker
 
-The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html). This is intended as a quick start.
+The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html). This is intended as a quick start.
 
 ### Installing Docker
 
@@ -61,7 +61,7 @@ You can now use the command `docker compose` to work with the containers setup f
 
 ### First time setup
 
-The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html).
 
 - setup .env file
 - create folders to hold the data
