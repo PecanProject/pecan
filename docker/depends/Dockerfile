@@ -31,9 +31,7 @@ RUN apt-get update \
 # INSTALL DEPENDENCIES
 # ----------------------------------------------------------------------
 COPY pecan.depends.R pecan_package_dependencies.csv pecan_deps_from_github.txt /
-RUN  --mount=type=secret,id=github_token \
-  export GITHUB_PAT=`cat /run/secrets/github_token` \
-  && Rscript -e "install.packages(c('desc', 'remotes'))" \
+RUN Rscript -e "install.packages(c('desc', 'remotes'))" \
   && R_LIBS_USER='/usr/local/lib/R/site-library' Rscript /pecan.depends.R \
   && rm -rf /tmp/*
 

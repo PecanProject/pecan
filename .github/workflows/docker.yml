@@ -23,6 +23,8 @@ on:
           - 4.1
           - 4.2
           - 4.3
+          - 4.4
+          - devel
 
 # set up the environment, either input or default
 env:
