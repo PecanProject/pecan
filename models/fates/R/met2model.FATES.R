@@ -11,8 +11,10 @@
 ##' @param start_date the start date of the data to be downloaded
 ##' @param end_date the end date of the data to be downloaded
 ##' @param lst timezone offset to GMT in hours
+##' @param lat,lon latitude and longitude of site in decimal degrees
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose for(year in start_year:end_year)
+##' @param ... additional arguments, currently ignored
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_put
 
 met2model.FATES <- function(in.path,in.prefix,outfolder,start_date,end_date,lst=0,lat, lon, overwrite = FALSE, verbose = FALSE, ...) { 
