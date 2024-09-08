@@ -1,31 +1,33 @@
 #' Save soil texture & parameters in PEcAn standard netCDF CF
 #'
-#' @param soil.data List of soil variables in standard names & units. Minimum is soil_depth and two of [sand, silt, clay]. Bulk density encouraged.
-#' @param new.file 
-#'
-#' @return none
-#' @export
-#'
-#' @details 
+#' A table of standard names and units can be displayed by running
+#'  soil.units() without any arguements
 #' 
-#' A table of standard names and units can be displayed by running soil.units() without any arguements
-#' 
-#' soil_params is called internally to estimate additional soil physical parameters from sand/silt/clay & bulk density. Will not overwrite any provided values
+#' soil_params is called internally to estimate additional soil physical
+#' parameters from sand/silt/clay & bulk density. Will not overwrite any
+#' provided values
 #'
 #' Need to expand to alternatively take soil_type (texture class) as an input
 #' 
-#' On output, soil_type named class is converted to a number because netCDF is a pain for storing strings.
-#' Conversion back can be done by load(system.file("data/soil_class.RData",package = "PEcAn.data.land")) and then soil.name[soil_n]
+#' On output, soil_type named class is converted to a number because netCDF is a
+#' pain for storing strings. Conversion back can be done by
+#'  load(system.file ("data/soil_class.RData",package = "PEcAn.data.land"))
+#'  and then soil.name[soil_n]
 #'
+#' @param soil.data List of soil variables in standard names & units. Minimum is
+#'  soil_depth and two of [sand, silt, clay]. Bulk density encouraged.
+#' @param new.file filename (including path) for output
+#'
+#' @return none
+#' @export
+#' 
 #' @examples
-#' \dontrun{
-#' soil.data <- list(fraction_of_sand_in_soil = c(0.3,0.4,0.5),
-#'                   fraction_of_clay_in_soil = c(0.3,0.3,0.3),
-#'                   soil_depth = c(0.2,0.5,1.0))
+#' \dontrun{ soil.data <- list(fraction_of_sand_in_soil = c
+#'  (0.3,0.4,0.5), fraction_of_clay_in_soil = c(0.3,0.3,0.3), soil_depth = c
+#'  (0.2,0.5,1.0))
 #'                         
-#' soil2netcdf(soil.data,"soil.nc")
-#' }
-soil2netcdf <- function(soil.data,new.file){
+#' soil2netcdf(soil.data,"soil.nc") }
+soil2netcdf <- function(soil.data, new.file){
   soil.data <- as.list(soil.data)
 
   ## convert soil type to parameters via look-up-table / equations

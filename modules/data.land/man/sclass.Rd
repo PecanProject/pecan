@@ -7,9 +7,8 @@
 sclass(sandfrac, clayfrac)
 }
 \arguments{
-\item{sandfrac}{}
-
-\item{clayfrac}{}
+\item{sandfrac, clayfrac}{numeric vectors with values in range 0 to 1.
+Silt fraction is assumed to be the difference between (sand+clay) and 1}
 }
 \value{
 vector of integers identifying textural class of each input layer.

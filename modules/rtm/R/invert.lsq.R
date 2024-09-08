@@ -11,7 +11,7 @@
 #' @param model An R function that calls the RTM and returns the error to be 
 #' minimized. Be sure to include constants here.
 #' @param lower Lower bounds on parameters (default=NULL, which means -Inf).
-#' @param uppper Upper bounds on parameters (default=NULL, which means +Inf).
+#' @param upper Upper bounds on parameters (default=NULL, which means +Inf).
 #' @export
 
 invert.lsq <- function(observed, inits, model, lower = NULL, upper = NULL) {

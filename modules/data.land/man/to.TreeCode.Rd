@@ -6,6 +6,9 @@
 \usage{
 to.TreeCode(SITE, PLOT, SUBPLOT, TAG = NULL)
 }
+\arguments{
+\item{SITE, PLOT, SUBPLOT, TAG}{strings (or coercible to)}
+}
 \description{
 to.TreeCode
 }

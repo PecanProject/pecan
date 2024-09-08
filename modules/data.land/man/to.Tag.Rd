@@ -6,6 +6,11 @@
 \usage{
 to.Tag(SITE, PLOT, SUBPLOT, TAG = NULL)
 }
+\arguments{
+\item{SITE, PLOT, SUBPLOT}{ignored}
+
+\item{TAG}{string (or coercible to)}
+}
 \description{
 to.Tag
 }
