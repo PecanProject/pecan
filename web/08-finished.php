@@ -546,7 +546,7 @@ foreach ($status as $line) {
     <div class="spacer"></div>
 <?php whoami(); ?>
 <p>
-  <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/latest/" target="_blank">Documentation</a>
   <br>
   <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
   <br>
