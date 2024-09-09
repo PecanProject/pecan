@@ -1,18 +1,25 @@
-##' Writes a LINKAGES config file.
-##'
-##' Requires a pft xml object, a list of trait values for a single model run,
-##' and the name of the file to create
-##'
-##' @name write.config.LINKAGES
-##' @title Write LINKAGES configuration files
-##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
-##' @param settings list of settings from pecan settings file
-##' @param run.id id of run
-##' @return configuration file for LINKAGES for given run
-##' @export
-##' @author Ann Raiho, Betsy Cowdery
-##-------------------------------------------------------------------------------------------------#
+#' Writes a LINKAGES config file.
+#'
+#' Requires a pft xml object, a list of trait values for a single model run,
+#' and the name of the file to create
+#'
+#' @param defaults list of defaults to process
+#' @param trait.values vector of samples for a given trait
+#' @param settings list of settings from pecan settings file
+#' @param run.id id of run
+#' @param restart logical: Write a restart file?
+#'  If NULL (default), treated as FALSE
+#' @param spinup logical: perform spinup using `spinup.LINKAGES()`?
+#'  If NULL (default), treated as FALSE
+#' @param inputs inputs section of a PEcAn settings object.
+#'  Currently only used for climate file (inputs$met$path),
+#'  which is taken from `settings$input$met$path` if `inputs` is NULL.
+#' @param IC TODO currently ignored
+#'
+#' @return configuration file for LINKAGES for given run
+#' @export
+#' @author Ann Raiho, Betsy Cowdery
+#'
 write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.id, 
                                   restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL) {
 
@@ -25,9 +32,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   }
   
   ##TO DO add restart file as IC for HF
-  
-  library(linkages)
-  
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   if (!file.exists(rundir)) {  # why not use `dir.exists`?
@@ -52,10 +57,10 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   bgs <- 120
   egs <- 273
   
-  texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
+  texture <- utils::read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
-  dbcon <- db.open(settings$database$bety)
-  on.exit(db.close(dbcon), add = TRUE)
+  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
   
   if("soil" %in% names(settings$run$inputs)){
     ## open soil file
@@ -68,11 +73,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     if(length(fc) > 1) fc <- mean(fc)
     if(length(dry) > 1) dry <- mean(dry)
     ncdf4::nc_close(nc.soil)
-    
+
   }else{
-    soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
+    soils <- PEcAn.DB::db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id),
                       con = dbcon)
-    
+
     soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100, silt = 100 - soils$sand_pct - soils$clay_pct)
     
     fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
@@ -81,11 +86,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     if(is.na(fc)) fc = 5
     if(is.na(dry)) dry = 5
   }
-  
-  fdat <- read.csv(system.file("fdat.csv", package = "linkages"), header = FALSE)  #litter quality parameters
-  clat <- read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
+
+  fdat <- utils::read.csv(system.file("fdat.csv", package = "linkages"), header = FALSE)  #litter quality parameters
+  clat <- utils::read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
-  
+
   if(!is.null(inputs)){
     climate_file <- inputs$met$path
     load(climate_file)
@@ -99,8 +104,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   basesc <- 74
   basesn <- 1.64
-  
-  spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  # default spp.params
+
+  spp.params.default <- utils::read.csv(system.file("spp_matrix.csv", package = "linkages"))  # default spp.params
   nspec <- length(settings$pfts)
   spp.params.save <- numeric(nspec)
   for (i in seq_len(nspec)) {

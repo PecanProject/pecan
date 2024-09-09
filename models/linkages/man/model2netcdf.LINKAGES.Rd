@@ -2,7 +2,7 @@
 % Please edit documentation in R/model2netcdf.LINKAGES.R
 \name{model2netcdf.LINKAGES}
 \alias{model2netcdf.LINKAGES}
-\title{Code to convert LINKAGES's output into netCDF format}
+\title{Convert LINKAGES's output into netCDF format}
 \usage{
 model2netcdf.LINKAGES(
   outdir,
@@ -23,6 +23,8 @@ model2netcdf.LINKAGES(
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
+
+\item{pft_names}{names of PFTs to use in output labels}
 }
 \description{
 Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
