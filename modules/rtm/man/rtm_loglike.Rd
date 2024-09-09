@@ -6,6 +6,19 @@
 \usage{
 rtm_loglike(nparams, model, observed, lag.max = NULL, verbose = TRUE, ...)
 }
+\arguments{
+\item{nparams}{number of parameters in model}
+
+\item{model}{function to minimize}
+
+\item{observed}{vector of observations}
+
+\item{lag.max}{passed to \code{\link[=neff]{neff()}}}
+
+\item{verbose}{logical: print extra diagnostics during run?}
+
+\item{...}{additional arguments passed to model function}
+}
 \description{
 Generic log-likelihood generator for RTMs
 }

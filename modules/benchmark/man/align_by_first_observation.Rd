@@ -7,9 +7,9 @@
 align_by_first_observation(observation_one, observation_two, custom_table)
 }
 \arguments{
-\item{observation_one}{a vector of plant fucntional types, or species. Provides species/pft names.}
+\item{observation_one}{a vector of plant functional types, or species. Provides species/pft names.}
 
-\item{observation_two}{another vector of plant fucntional types, or species. Provides the order.}
+\item{observation_two}{another vector of plant functional types, or species. Provides the order.}
 
 \item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}

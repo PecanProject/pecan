@@ -1,13 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-##-------------------------------------------------------------------------------------------------#
 ##' Converts a met CF file to a model specific met file. The input
 ##' files are calld <in.path>/<in.prefix>.YYYY.cf
 ##'
@@ -25,7 +15,7 @@ met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/master/coding-style.html
+  # https://pecanproject.github.io/pecan-documentation/latest/coding-style.html
   
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".

@@ -19,6 +19,8 @@ setup_edr(
 
 \item{datetime}{Date time object (or compliant string) at which to run EDR.
 Defaults to 12 noon on start date in ED2IN.}
+
+\item{...}{Additional arguments passed on to \code{PEcAn.ED2::modify_ed2in}}
 }
 \value{
 Path to EDR-configured ED2IN file.

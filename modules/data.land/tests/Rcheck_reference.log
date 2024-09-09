@@ -13,7 +13,7 @@
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... NOTE
-Imports includes 34 non-default packages.
+Imports includes 33 non-default packages.
 Importing from so many packages makes the package vulnerable to any of
 them becoming unavailable.  Move as many as possible to Suggests and
 use conditionally.
@@ -27,7 +27,8 @@ use conditionally.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -68,84 +69,8 @@ to your NAMESPACE file.
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'Clean_Tucson'
-  ‘file’
-
-Undocumented arguments in documentation object 'InventoryGrowthFusion'
-  ‘cov.data’ ‘time_data’ ‘n.iter’ ‘fixed’ ‘time_varying’ ‘burnin_plot’
-  ‘save.jags’ ‘z0’
-
-Undocumented arguments in documentation object 'Read_Tucson'
-  ‘folder’
-
-Undocumented arguments in documentation object 'extract.stringCode'
-  ‘x’ ‘extractor’
-
-Undocumented arguments in documentation object 'fia.to.psscss'
-  ‘settings’ ‘lat’ ‘lon’ ‘year’ ‘gridres’ ‘min.year’ ‘max.year’
-  ‘overwrite’
-Documented arguments not in \usage in documentation object 'fia.to.psscss':
-  ‘create’
-
-Undocumented arguments in documentation object 'from.Tag'
-  ‘x’
-
-Undocumented arguments in documentation object 'from.TreeCode'
-  ‘x’
-
-Undocumented arguments in documentation object 'load_veg'
-  ‘new_site’ ‘start_date’ ‘end_date’ ‘source_id’ ‘source’ ‘icmeta’
-  ‘format_name’ ‘machine_host’ ‘dbparms’ ‘outfolder’ ‘overwrite’ ‘...’
-
-Undocumented arguments in documentation object 'matchInventoryRings'
-  ‘trees’ ‘rings’ ‘extractor’ ‘nyears’ ‘coredOnly’
-
-Undocumented arguments in documentation object 'match_species_id'
-  ‘...’
-
-Undocumented arguments in documentation object 'mpot2smoist'
-  ‘soil_water_potential_at_saturation’ ‘soil_hydraulic_b’
-  ‘volume_fraction_of_water_in_soil_at_saturation’
-Documented arguments not in \usage in documentation object 'mpot2smoist':
-  ‘mysoil’
-
-Undocumented arguments in documentation object 'netcdf.writer.BADM'
-  ‘ens’
-
-Undocumented arguments in documentation object 'plot2AGB'
-  ‘allom.stats’
-
-Undocumented arguments in documentation object 'soil_process'
-  ‘run.local’
-
-Undocumented arguments in documentation object 'to.Tag'
-  ‘SITE’ ‘PLOT’ ‘SUBPLOT’ ‘TAG’
-
-Undocumented arguments in documentation object 'to.TreeCode'
-  ‘SITE’ ‘PLOT’ ‘SUBPLOT’ ‘TAG’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'dataone_download':
-  ‘CNode’
-
-Argument items with no description in Rd object 'extract_soil_nc':
-  ‘in.file’ ‘outdir’ ‘lat’ ‘lon’
-
-Argument items with no description in Rd object 'sclass':
-  ‘sandfrac’ ‘clayfrac’
-
-Argument items with no description in Rd object 'soil.units':
-  ‘varname’
-
-Argument items with no description in Rd object 'soil2netcdf':
-  ‘new.file’
-
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK

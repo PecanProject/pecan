@@ -24,7 +24,8 @@
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License stub is invalid DCF.
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -92,16 +93,7 @@ entries, and all their arguments documented.
 The \usage entries must correspond to syntactically valid R code.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking Rd contents ... WARNING
-Argument items with no description in Rd object 'get.sensitivity':
-  ‘trait.samples’ ‘sa.splinefun’
-
-Argument items with no description in Rd object 'plot_sensitivity':
-  ‘y.range’
-
-Argument items with no description in Rd object 'sa.splinefun':
-  ‘quantiles.input’ ‘quantiles.output’
-
+* checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK

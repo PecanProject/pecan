@@ -12,9 +12,13 @@ mpot2smoist(
 )
 }
 \arguments{
-\item{mpot}{water potential}
+\item{mpot}{water potential (cm H2O)}
 
-\item{mysoil}{soil property list}
+\item{soil_water_potential_at_saturation}{water potential when soil is saturated (cm H2O)}
+
+\item{soil_hydraulic_b}{pore-size distribution parameter for Campbell (1974) water content model}
+
+\item{volume_fraction_of_water_in_soil_at_saturation}{VSWC when soil is saturated (numeric in range 0-1)}
 }
 \value{
 volumetric soil water content

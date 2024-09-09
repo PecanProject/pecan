@@ -1,5 +1,6 @@
 # PEcAn.workflow 1.8.0.9000
 
+* PEcAn.workflow is now distributed under the BSD 3-clause license instead of the NCSA Open Source license.
 
 
 # PEcAn.workflow 1.8.0

@@ -1,18 +1,11 @@
-##-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------------------------#
 ##' Fit a distribution to data
 ##'
 ##' @title Fit distribution to data  
 ##' @param trait.data data for distribution
+##' @param trait name of trait to fit.
+##'  One of "tt", "sla", "rrr", "q"
 ##' @param dists list of distribution names
+##' @param n only used in return value
 ##' @return best fit distribution
 ##' @export
 ##' @author David LeBauer
@@ -48,12 +41,17 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
     a[["beta"]] <- suppressWarnings(MASS::fitdistr(trait.data, "beta", 
                                              start = list(shape1 = 2, shape2 = 1)))
   }
-  aicvalues <- lapply(a, AIC)
-  result <- t(sapply(dists, function(x) cbind(t(tabnum(a[[x]]$estimate)), signif(aicvalues[[x]]))))
+  aicvalues <- lapply(a, stats::AIC)
+  result <- t(sapply(
+    dists,
+    function(x) cbind(
+      t(PEcAn.utils::tabnum(a[[x]]$estimate)),
+      signif(aicvalues[[x]]))
+  ))
   colnames(result) <- c("a", "b", "AIC")
   print(result)
   bestfitdist <- names(which.min(aicvalues))
-  parms <- tabnum(a[[bestfitdist]]$estimate)
+  parms <- PEcAn.utils::tabnum(a[[bestfitdist]]$estimate)
   dist  <- ifelse(bestfitdist == "normal", "norm", bestfitdist)
   return(data.frame(distribution = dist,
                     a = as.numeric(parms[1]),
@@ -65,7 +63,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
 #--------------------------------------------------------------------------------------------------#
 ##' Prior fitting function for optimization
 ##'
-##' This function is used within \code{\link{DEoptim}} to parameterize a distribution to the 
+##' This function is used within `DEoptim` to parameterize a distribution to the 
 ##' central tendency and confidence interval of a parameter. 
 ##' This function is not very robust; currently it needs to be tweaked when distributions
 ##' require starting values (e.g. beta, f)
@@ -96,26 +94,26 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
   if (distn == "lnorm") {
     mu <- parms[1]
     sigma <- parms[2]
-    lcl <- mu + qnorm(alpha / 2) * sigma
-    ucl <- mu + qnorm(1 - alpha / 2) * sigma
+    lcl <- mu + stats::qnorm(alpha / 2) * sigma
+    ucl <- mu + stats::qnorm(1 - alpha / 2) * sigma
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "mean") {
       ct <- mu - sigma^2
     } else if (central.tendency == "median") {
-      ct <- qlnorm(0.5, parms[1], parms[2])
+      ct <- stats::qlnorm(0.5, parms[1], parms[2])
     } else {
       PEcAn.logger::logger.severe(paste(central.tendency, "not supported!"))
     }
     x <- log(x)
   }
   if (distn == "gamma") {
-    lcl <- qgamma(alpha / 2, parms[1], parms[2])
-    ucl <- qgamma(1 - alpha / 2, parms[1], parms[2])
+    lcl <- stats::qgamma(alpha / 2, parms[1], parms[2])
+    ucl <- stats::qgamma(1 - alpha / 2, parms[1], parms[2])
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "median") {
-      ct <- qgamma(0.5, parms[1], parms[2])
+      ct <- stats::qgamma(0.5, parms[1], parms[2])
     } else if (central.tendency == "mean") {
       ct <- parms[1] / parms[2]
     } else if (central.tendency == "mode") {
@@ -125,8 +123,8 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     }
   }
   if (distn == "weibull") {
-    lcl <- qweibull(alpha / 2, parms[1], parms[2])
-    ucl <- qweibull(1 - alpha / 2, parms[1], parms[2])
+    lcl <- stats::qweibull(alpha / 2, parms[1], parms[2])
+    ucl <- stats::qweibull(1 - alpha / 2, parms[1], parms[2])
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "median") {
@@ -147,14 +145,14 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     } else {
       b <- parms[2]
     }
-    lcl <- qbeta(alpha / 2, a, b)
-    ucl <- qbeta(1 - alpha / 2, a, b)
+    lcl <- stats::qbeta(alpha / 2, a, b)
+    ucl <- stats::qbeta(1 - alpha / 2, a, b)
     if (is.null(central.tendency)) {
       ct <- x[3]
     } else if (central.tendency == "mean") {
       ct <- a / (a + b)
     } else if (central.tendency == "median") {
-      ct <- qbeta(0.5, a, b)  ## median
+      ct <- stats::qbeta(0.5, a, b)  ## median
     } else if (central.tendency == "mode") {
       ct <- ifelse(a > 1 & b > 1, (a - 1) / (a + b - 2), 0)  ## mode
     }
@@ -167,13 +165,13 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' Take n random samples from prior
 ##'
 ##' @title Sample from prior 
-##' @param distn 
-##' @param parama 
-##' @param paramb 
+##' @param distn name of distribution, e.g. "norm", "pois"
+##' @param parama first parameter for distn call
+##' @param paramb second parameter for distn call
 ##' @param n number of samples to return
 ##' @return vector with n random samples from prior
 ##' @export
-##' @seealso \{code{\link{get.sample}}
+##' @seealso \code{\link{get.sample}}
 pr.samp <- function(distn, parama, paramb, n) {
   return(do.call(paste0("r", distn), list(n, parama, paramb)))
 } # pr.samp
@@ -250,14 +248,18 @@ pr.dens <- function(distn, parama, paramb, n = 1000, alpha = 0.001) {
 
 
 ##--------------------------------------------------------------------------------------------------#
-##' Returns a data frame from \link{stats::density} function 
+##' Create Density Data Frame from Sample
 ##'
-##' @name create.density.df
-##' @title Create Density Data Frame from Sample
+##' Returns a data frame from `stats::density` function 
+##'
 ##' @param samps a vector of samples from a distribution
-##' @param zero.bounded 
+##' @param zero.bounded logical: Restrict density distribution to nonnegative values?
 ##' @param distribution list with elements distn, parama, paramb,
 ##' e.g. \code{list('norm', 0, 1)}
+##' @param n number of points at which to estimate density
+##' @param ... additional arguments, passed on to `stats::density`
+##'
+##' @md
 ##' @author David LeBauer
 ##' @export
 ##' @return data frame with x and y = dens(x)
@@ -278,9 +280,9 @@ create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution =
   }
   if (samp.exists) {
     if (zero.bounded) {
-      new.density <- zero.bounded.density(samps, n = 1000, ...)
+      new.density <- PEcAn.utils::zero.bounded.density(samps, n = 1000, ...)
     } else {
-      new.density <- density(samps, n = 1000, ...)
+      new.density <- stats::density(samps, n = 1000, ...)
     }
     density.df <- with(new.density, data.frame(x = x, y = y))
   }

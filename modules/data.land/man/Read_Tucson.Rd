@@ -6,6 +6,10 @@
 \usage{
 Read_Tucson(folder)
 }
+\arguments{
+\item{folder}{path to read files from.
+Will read all files at this path matching "TXT", "rwl", or "rw"}
+}
 \description{
 wrapper around read.tucson that loads a whole directory of tree ring files 
 and calls a 'clean' function that removes redundant records 

@@ -3,11 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
       - develop
-
     tags:
-      - '*'
+      - "v*.*.*"
   pull_request:
   merge_group:
   issue_comment:

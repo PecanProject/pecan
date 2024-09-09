@@ -97,12 +97,12 @@ The [next set of tutorials](#demo-table) will focus on the process of data assim
 
 #### Assimilation 'by hand'
 
-[Explore](https://github.com/PecanProject/pecan/blob/master/documentation/tutorials/sensitivity/PEcAn_sensitivity_tutorial_v1.0.Rmd) how model error changes as a function of parameter value (i.e. data assimilation ‘by hand’)
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/sensitivity/PEcAn_sensitivity_tutorial_v1.0.Rmd) how model error changes as a function of parameter value (i.e. data assimilation ‘by hand’)
 
 
 #### MCMC Concepts
 
-[Explore](https://github.com/PecanProject/pecan/blob/master/documentation/tutorials/MCMC/MCMC_Concepts.Rmd) Bayesian MCMC concepts using the photosynthesis module
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/MCMC/MCMC_Concepts.Rmd) Bayesian MCMC concepts using the photosynthesis module
 
 
 #### More info about tools, analyses, and specific tasks…

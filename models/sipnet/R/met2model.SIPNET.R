@@ -1,13 +1,3 @@
-
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 # R Code to convert NetCDF CF met files into SIPNET met files
 
 ## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only

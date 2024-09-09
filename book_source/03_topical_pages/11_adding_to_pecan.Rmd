@@ -149,7 +149,7 @@ The new variable can be used to create a prior distribution for it as in the "Cr
 
 #### Setting up the module directory (required)
 
-PEcAn assumes that the interface modules are available as an R package in the models directory named after the model in question. The simplest way to get started on that R package is to make a copy the [_template_](https://github.com/PecanProject/pecan/tree/master/models/template) directory in the pecan/models folder and re-name it to the name of your model. In the code, filenames, and examples below you will want to substitute the word **MODEL** for the name of your model (note: R is case-sensitive). 
+PEcAn assumes that the interface modules are available as an R package in the models directory named after the model in question. The simplest way to get started on that R package is to make a copy the [_template_](https://github.com/PecanProject/pecan/tree/main/models/template) directory in the pecan/models folder and re-name it to the name of your model. In the code, filenames, and examples below you will want to substitute the word **MODEL** for the name of your model (note: R is case-sensitive). 
 
 If you do not want to write the interface modules in R then it is fairly simple to set up the R functions describe below to just call the script you want to run using R's _system_ command. Scripts that are not R functions should be placed in the _inst_ folder and R can look up the location of these files using the function _system.file_ which takes as arguments the _local_ path of the file within the package folder and the name of the package (typically PEcAn.MODEL). For example
 
@@ -697,9 +697,7 @@ This information is stored in a Format record in the bety database. Make sure to
 If the Format you are looking for is not available, you will need to create a new record. Before entering information into the database, you need to be able to answer the following questions about your data:
 
 - What is the file MIME type? 
-     - We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc. 
-     - PEcAn has partnered with the [NCSA BrownDog project](http://browndog.ncsa.illinois.edu/) to create a service that can read and convert as many data formats as possible. If your file type is less common or a proprietary type, you can use the [BrownDog DAP](http://dap.ncsa.illinois.edu/) to convert it to a format that can be used with PEcAn. 
-     - If BrownDog cannot convert your data, you will need to contact us about writing a data specific load function.
+     - We have a suit of functions for loading in data in open formats such as CSV, txt, netCDF, etc.
   
 - What variables does the file contain?
      - What are the variables named?
