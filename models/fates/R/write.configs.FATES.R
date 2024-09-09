@@ -10,20 +10,6 @@
 ##' @export
 ##' @author Mike Dietze, Shawn Serbin
 ##-------------------------------------------------------------------------------------------------# # nolint
-
-# example trait.values list
-trait.values <- list()
-trait.values$temperate.coniferous <- list()
-trait.values$env <- list()
-
-tc_traits <- as.data.frame(matrix(c(9999, 8888), nrow=1, ncol=2))
-colnames(tc_traits) <- c("leaf_turnover_rate", "veg_respiration_Q10")
-# Fates names for these params are "fates_leaf_long", "q10_mr"
-
-trait.values$temperate.coniferous <- tc_traits
-settings <- './test.fates.xml'
-run.id <- 'test_oneyear'
-
 # example trait.values list
 
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
@@ -49,7 +35,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## this needs to be generalized to fractional years, but accounting for 365 day year
    start_date <- as.Date(settings$run$start.date)
    end_date   <- as.Date(settings$run$end.date)
-   stop_n     <- as.numeric(end_date - start_date, units="days") - PEcAn.utils::n_leap_day(start_date,end_date) + 1  
+   stop_n     <- as.numeric(end_date - start_date, units="days") #- PEcAn.utils::n_leap_day(start_date,end_date) + 1  
    
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
@@ -104,7 +90,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      #met <- gsub('@MET_FILES@',paste(met.files,collapse = "\n"), met)
      #writeLines(met, con=file.path(local.rundir, "datm.streams.txt.PEcAn_met"))
      
-   }
+   #}
 #   ... need to set this up so that if MET is blank it can run with default CLM met
 #   ... fill in this template, the met template, and then have jobs.sh put them in the right place. 
 #   ... Test, then adjust DB to have met required
@@ -120,7 +106,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
      jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
    } else {
-     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
+     jobsh <- readLines("/Users/mac/Documents/pecan/models/fates/R/template.job")
+     #jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
    }
    
  # create host specific settings
@@ -190,11 +177,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## MET --> DATM
 #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
    ## FOR FIRST STEP, CAN USE DEFAULT
-   
-   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+   writeLines(jobsh, file.path(settings$rundir, run.id, "job.sh"))
    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
-write.config.FATES(default, trait.values, test.fates.xml, run.id)
 #   ## Write PARAMETER file
    
    ## COPY AND OPEN DEFAULT PARAMETER FILES
@@ -385,6 +370,6 @@ write.config.FATES(default, trait.values, test.fates.xml, run.id)
    
 #   ## Write SETTINGS file
 #     
-#}
+}
 #---------------------------------------------------------------------------------------------------------------------#
 ### EOF
