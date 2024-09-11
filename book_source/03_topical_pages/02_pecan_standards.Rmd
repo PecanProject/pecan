@@ -12,7 +12,7 @@ To aid in the conversion between PEcAn internal ISO_8601 standard and CF convent
 
 ## Input Standards
 
-### Meterology Standards 
+### Meteorology Standards 
 
 #### Dimensions:
 
