@@ -99,7 +99,7 @@ services:
       - "traefik.http.services.bety.loadbalancer.server.port=8000"
       - "traefik.http.routers.bety.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/bety/`)"
     healthcheck:
-      test: "curl --silent --fail http://localhost:8000/${RAILS_RELATIVE_URL_ROOT} > /dev/null || exit 1"
+      test: "curl --silent --fail http://localhost:8000/$${RAILS_RELATIVE_URL_ROOT} > /dev/null || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -190,7 +190,7 @@ services:
       - pecan:/data
       - pecan:/var/www/html/pecan/data
     healthcheck:
-      test: "curl --silent --fail http://localhost/pecan/ > /dev/null || exit 1"
+      test: "curl --silent --fail http://localhost:8080/pecan > /dev/null || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -218,7 +218,7 @@ services:
     volumes:
       - pecan:/data
     healthcheck:
-      test: "curl --silent --fail http://localhost:9999/monitor/ > /dev/null || exit 1"
+      test: "curl --silent --fail http://localhost:9999 > /dev/null || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -354,7 +354,7 @@ services:
       - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
       - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/monitor"
     healthcheck:
-      test: "curl --silent --fail http://localhost/dbsync/ > /dev/null || exit 1"
+      test: "curl --silent --fail http://localhost:3838 > /dev/null || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -386,7 +386,7 @@ services:
     volumes:
       - pecan:/data/
     healthcheck:
-      test: "curl --silent --fail http://localhost/api/ping > /dev/null || exit 1"
+      test: "curl --silent --fail http://localhost:8000/api/ping > /dev/null || exit 1"
       interval: 10s
       timeout: 5s
       retries: 5
