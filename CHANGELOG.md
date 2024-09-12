@@ -20,6 +20,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     * Base packages `PEcAn.all`, `PEcAn.DB`, `PEcAn.QAQC`, `PEcAn.remote`, `PEcAn.settings`, `PEcAn.visualization`, and `PEcAn.workflow`
     * Model packages `PEcAn.BASGRA`, `PEcAn.CLM45`, `PEcAn.DALEC`, `PEcAn.dvmdostem`, `PEcAn.FATES`, `PEcAn.GDAY`, `PEcAn.JULES`, `PEcAn.LDNDC`, `PEcAn.LINKAGES`, `PEcAn.LPJGUESS`, `PEcAn.MAAT`, `PEcAn.MAESPA`, `PEcAn.PRELES`, `PEcAn.SIBCASA`, `PEcAn.SIPNET`, `PEcAn.STICS`, and the new model package template.
     * Modules `PEcAn.allometry`, `PEcAn.assim.batch`, `PEcAn.data.mining`, `PEcAn.emulator`, `PEcAn.MA`, `PEcAn.photosynthesis`, `PEcAn.priors`, and `PEcAn.RTM`.
+- Renamed master branch to main
 
 ### Removed
 

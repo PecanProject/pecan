@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - master
       - develop
     tags:
       - "v*.*.*"
   pull_request:
+  merge_group:
   workflow_dispatch:
     inputs:
       r_version:

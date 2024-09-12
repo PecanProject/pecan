@@ -43,7 +43,7 @@ To load the Ameriflux data for the Harvard Forest (US-Ha1) site.
 bety = PEcAn.DB::betyConnect(php.config = "pecan/web/config.php")
 ```
 
-   where the complete path to the `config.php` is specified. See [here](https://github.com/PecanProject/pecan/blob/master/web/config.example.php) for an example `config.php` file. 
+   where the complete path to the `config.php` is specified. See [here](https://github.com/PecanProject/pecan/blob/main/web/config.example.php) for an example `config.php` file. 
 
 2. Look up the inputs record for the data in BETY. 
 

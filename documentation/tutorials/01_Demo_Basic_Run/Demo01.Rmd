@@ -155,7 +155,7 @@ The entire PEcAn team welcomes any questions you may have!
 
 **If the Finished Stage has a Status of “DONE”, congratulations!** If you got this far, you have managed to run an ecosystem model without ever touching a line of code! Now it’s time to look at the results **click Finished**.
 
-FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/master/adding-an-ecosystem-model.html) to PEcAn does not require modification of the model’s code, just the implementation of a wrapper function.
+FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/latest/adding-an-ecosystem-model.html) to PEcAn does not require modification of the model’s code, just the implementation of a wrapper function.
 
 
 #### Output and Visualization

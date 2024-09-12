@@ -21,7 +21,7 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult documentation of the PEcAn Project; either the [latest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/master/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
+Consult documentation of the PEcAn Project; either the [latest stable development](https://pecanproject.github.io/pecan-documentation/develop/) branch, the latest [release](https://pecanproject.github.io/pecan-documentation/latest/). Documentation from [earlier releases is here](https://pecanproject.github.io/documentation.html).
 
 ## Getting Started
 

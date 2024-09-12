@@ -45,7 +45,7 @@ Switch pecan to your fork
 git remote set-url origin https://github.com/<your username>/pecan.git
 ```
 
-Setup pecan to be able to fetch from the master/develop
+Setup pecan to be able to fetch from the main/develop
 
 ```bash
 git remote add upstream https://github.com/PecanProject/pecan.git
@@ -53,13 +53,13 @@ git remote add upstream https://github.com/PecanProject/pecan.git
 
 ## PEcAn Branches
 
-PEcAn uses two protected branches, the master branch and the develop branch. The master branch will match the official releases, but all work will be done on the develop branch. Make sure that you create branches from the develop branch. This should be the default branch in your git repository.
+PEcAn uses two protected branches, the main branch and the develop branch. The main branch will match the official releases, but all work will be done on the develop branch. Make sure that you create branches from the develop branch. This should be the default branch in your git repository.
 
 ## Adding Features
 
 When you add a new feature always create an issue first, this allows others to comment and give you tips. It will also help us keep track of what people are adding and with new releases helps us to write new release notes and give you credit for your work.
 
-Secondly always work in a  branch, never work on the master or develop branch. Keep your master and develop branch in sync with the master and develop of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
+Secondly always work in a  branch, never work on the main or develop branch. Keep your main and develop branch in sync with the main and develop of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
 
 Finally try to keep your branches focused on fixing/adding only one feature and try not fall in the trap of doing a lot of things in a  single branch. This will not only make it harder for us to process your pull request but makes it take longer before you can submit your pull request. Small pull requests are more likely to be looked at faster and pulled into the develop branch faster.
 
@@ -112,7 +112,7 @@ git push -u origin GH-issuenumber-title-of-issue
 
 ## Additional Resources
 
-- [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/master/adding-an-ecosystem-model.html)
-- [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/master/pecan-xml-configuration.html)
-- [Development help](https://pecanproject.github.io/pecan-documentation/master/developer-guide.html)
-- [PEcAn Code of Conduct](https://pecanproject.github.io/pecan-documentation/master/contributor-covenant-code-of-conduct.html)
+- [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/latest/adding-an-ecosystem-model.html)
+- [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/latest/pecan-xml-configuration.html)
+- [Development help](https://pecanproject.github.io/pecan-documentation/latest/developer-guide.html)
+- [PEcAn Code of Conduct](CODE_OF_CONDUCT.md)

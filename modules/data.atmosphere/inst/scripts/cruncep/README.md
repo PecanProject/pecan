@@ -18,7 +18,7 @@ ionice -c2 -n7 rsync --rsync-path="ionice -c2 -n7 rsync" -routi --progress ./* e
 
 _note_ these are i/o and memory-intensive (need at least 16GB RAM; works better with 64!)
 
-* [`gunzipall.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/cruncep/gunzipall.sh) unzips files nicely
+* [`gunzipall.sh`](https://github.com/PecanProject/pecan/blob/main/modules/data.atmosphere/inst/scripts/cruncep/gunzipall.sh) unzips files nicely
 
 ## CRUNCEP - Rechunking the files
 

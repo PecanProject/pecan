@@ -36,7 +36,7 @@ The next step is to add `debugonce(<broken.function.name>)` before running the t
 
 This allows you can step through the function and evaluate the different objects as they are created and/or transformed.
 
-See [tests README](https://github.com/PecanProject/pecan/blob/master/tests/README.md) for more information.
+See [tests README](https://github.com/PecanProject/pecan/blob/main/tests/README.md) for more information.
 
 
 
@@ -44,7 +44,7 @@ See [tests README](https://github.com/PecanProject/pecan/blob/master/tests/READM
 
 The following scripts (in `qaqc/vignettes` identify, respectively:
 
-1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/function_relationships.Rmd)
-2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/master/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
+1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/main/qaqc/vignettes/function_relationships.Rmd)
+2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/main/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
 
 

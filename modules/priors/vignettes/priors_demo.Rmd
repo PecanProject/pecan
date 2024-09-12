@@ -33,7 +33,7 @@ inits <- list(list(.RNG.seed = 1,
 
 ### MLE Fit to glopnet Specific Leaf Area data  
 
-The [`PEcAn.priors::fit.dist`](https://github.com/PecanProject/pecan/blob/master/modules/priors/R/priors.R) helps to choose the best fit parameter distribution given some sample datasets.
+The [`PEcAn.priors::fit.dist`](https://github.com/PecanProject/pecan/blob/main/modules/priors/R/priors.R) helps to choose the best fit parameter distribution given some sample datasets.
 
 
 ```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE, fig.width=8}
@@ -337,7 +337,7 @@ Fitting priors to expert constraint.
 
 ### Examples
 
-* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/master/models/dalec/inst/DALEC_priors.R)
+* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/main/models/dalec/inst/DALEC_priors.R)
 
 ### Package `rriskDistributions`
 
