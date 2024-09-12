@@ -65,7 +65,7 @@ jobs:
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
         export VERSION=$(echo $GITHUB_REF | sed 's,.*/,,' )
-        if [ "$VERSION" == "main" ]; then
+        if [ "$VERSION" = "main" ]; then
           export VERSION=latest
         fi
         cd pecan-documentation
