@@ -10,11 +10,11 @@ Internal PEcAn standard time follows ISO_8601 format for dates and time (https:/
 
 To aid in the conversion between PEcAn internal ISO_8601 standard and CF convention used in all met drivers and PEcAn standard output you can utilize the functions: "cf2datetime","datetime2doy","cf2doy", and for SIPNET "sipnet2datetime"
 
-### Input Standards
+## Input Standards
 
-#### Meterology Standards 
+### Meteorology Standards 
 
-##### Dimensions:
+#### Dimensions:
 
 
 |CF standard-name | units |
@@ -26,7 +26,8 @@ To aid in the conversion between PEcAn internal ISO_8601 standard and CF convent
 General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
 
 
-##### The variable names should be `standard_name`
+#### Variable names should be `standard_name`
+
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 names<-c("<b>air_temperature</b>", "air_temperature_max", "air_temperature_min", "<b>air_pressure</b>", 
          "mole_fraction_of_carbon_dioxide_in_air", "moisture_content_of_soil_layer", "soil_temperature ",
@@ -75,15 +76,15 @@ The key is to process each type of met data (site, reanalysis, forecast, climate
 
 ### Soils and Vegetation Inputs
 
-##### Soil Data 
+#### Soil Data 
 
 See the [Soil Data] section on more into on creating a standard soil data file.
 
-##### Vegetation Data
+#### Vegetation Data
 
 See the [Vegetation Data] section on more info on creating a standard vegetation data file
 
-### Output Standards {#OutputStandards}
+## Output Standards {#OutputStandards}
 
 * created by `model2netcdf` functions
 * based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)

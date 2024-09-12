@@ -4,7 +4,7 @@ ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} as model-binary
+FROM pecan/models:${IMAGE_VERSION} AS model-binary
 
 # download, unzip and build ed2
 WORKDIR /src

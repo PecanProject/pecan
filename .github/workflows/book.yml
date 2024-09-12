@@ -3,7 +3,7 @@ name: renderbook
 on:
   push:
     branches:
-      - master
+      - main
       - develop
     tags:
       - '*'
@@ -65,9 +65,12 @@ jobs:
         git config --global user.email "pecanproj@gmail.com"
         git config --global user.name "GitHub Documentation Robot"
         export VERSION=$(echo $GITHUB_REF | sed 's,.*/,,' )
+        if [ "$VERSION" == "main" ]; then
+          export VERSION=latest
+        fi
         cd pecan-documentation
         mkdir -p $VERSION
         rsync -a --delete ../book_source/_book/ ${VERSION}/
         git add --all *
         git commit -m "Build book from pecan revision ${GITHUB_SHA}" || true
-        git push -q origin master
+        git push -q origin main

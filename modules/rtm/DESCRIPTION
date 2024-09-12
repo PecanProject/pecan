@@ -9,12 +9,11 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut"),
              person("Alexey", "Shiklomanov", role = c("aut", "cre"),
                      email = "alexey.shiklomanov@pnnl.gov"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
-Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
-Description: This package contains functions for performing forward runs and
-    inversions of radiative transfer models (RTMs). Inversions can be performed
-    using maximum likelihood, or more complex hierarchical Bayesian methods.
+Description: Functions for performing forward runs and inversions of radiative
+    transfer models (RTMs). Inversions can be performed using maximum
+    likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
+Depends: R (>= 2.10)
 Imports:
     PEcAn.logger,
     MASS,
@@ -28,6 +27,7 @@ Suggests:
     PEcAn.utils,
     PEcAn.ED2,
     XML,
+    rmarkdown,
     testthat (>= 1.0.2),
     knitr (>= 1.42),
     pwr

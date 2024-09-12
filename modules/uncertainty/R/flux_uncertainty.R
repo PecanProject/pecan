@@ -8,13 +8,13 @@
 #-------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------#
-##' Read Ameriflux L2 Data
-##' 
-##' @name read.ameriflux.L2
-##' @title Read Ameriflux L2 Data
-##' @return Ameriflux L2 data read from file
-##' @export
-##' @author Mike Dietze, Carl Davidson
+#' Read Ameriflux L2 Data
+#' 
+#' @param file.name path to file
+#' @param year currently ignored
+#' @return Ameriflux L2 data read from file
+#' @export
+#' @author Mike Dietze, Carl Davidson
 read.ameriflux.L2 <- function(file.name, year) {
   data <- as.data.frame(utils::read.table(file.name, header = TRUE, sep = ",", 
                                    na.strings = c("-9999", "-6999"), 
@@ -26,8 +26,7 @@ read.ameriflux.L2 <- function(file.name, year) {
 
 ##' Get delta between sequential flux datapoints
 ##' 
-##' @name get.change
-##' @title Get delta between sequential flux datapoints
+##' @param measurement numeric vector
 ##' @return Difference between consecutive measurements
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
@@ -53,6 +52,7 @@ get.change <- function(measurement) {
 ##' @param bin.num = number of bins (default = 10)
 ##' @param transform = transformation of magnitude (default = identity)
 ##' @param minBin = minimum number of points allowed in a bin
+##' @param ... additional arguments, currently ignored
 ##' @return return.list List of parameters from the fitted uncertainty model
 ##' @export
 ##' @author Mike Dietze, Carl Davidson

@@ -6,6 +6,9 @@
 \usage{
 from.Tag(x)
 }
+\arguments{
+\item{x}{string to decode}
+}
 \description{
 from.Tag
 }

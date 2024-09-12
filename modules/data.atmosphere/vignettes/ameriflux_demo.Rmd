@@ -11,11 +11,11 @@ vignette: >
 
 # Overview
 
-This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/master/met-data.html).
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/latest/met-data.html).
 
 In this example we will download 12 years of met data from the [Bondville Ameriflux site](http://ameriflux.ornl.gov/fullsiteinfo.php?sid=44). It has an Ameriflux `SITE_ID` of `US-Bo1`
 
-The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/master/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/main/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
 
 
 

@@ -40,4 +40,4 @@ done < buildfiles
 cd book_hosted
 git add --all  *
 git commit -m "Update tutorials `date`" || true
-git push -q origin master
+git push -q origin latest

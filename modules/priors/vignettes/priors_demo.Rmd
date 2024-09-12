@@ -1,6 +1,10 @@
-Generating Priors based on Data and / or Expert knowledge:
-========================================================
-
+---
+title: "Generating Priors based on Data and / or Expert knowledge"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Generating Priors based on Data and / or Expert knowledge}
+  %\VignetteEngine{knitr::rmarkdown}
+---
 
 Fitting priors to data (point estimates, all grass species in GLOPNET). 
 -------------------------
@@ -11,7 +15,7 @@ First we are going to set up initial values.
 
 ```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE}
 library(PEcAn.priors)
-library(DEoptim)
+# library(DEoptim)
 library(dplyr)
 
 set.seed(1)
@@ -29,11 +33,7 @@ inits <- list(list(.RNG.seed = 1,
 
 ### MLE Fit to glopnet Specific Leaf Area data  
 
-The [`PEcAn.priors::fit.dist`](https://github.com/PecanProject/pecan/blob/master/modules/priors/R/priors.R) helps to choose the best fit parameter distribution given some sample datasets.
-
-```r
-devtools::install_github("pecanproject/pecan/modules/priors")
-```
+The [`PEcAn.priors::fit.dist`](https://github.com/PecanProject/pecan/blob/main/modules/priors/R/priors.R) helps to choose the best fit parameter distribution given some sample datasets.
 
 
 ```{r echo=FALSE, warning=FALSE, results='hide', message=FALSE, cache=TRUE, fig.width=8}
@@ -71,7 +71,6 @@ The `fit.dist` function takes a vector of point estimates (in this case 125 obse
 First, it prints out the fits of a subset of distributions (the 'f' distribution could not be fit). Second, it prints the 
 ```{r}
 dists <-  c('gamma', 'lognormal','weibull', 'f')
-library(fitdistrplus)
 fit.dist(sladata, dists )
 ```
 
@@ -90,12 +89,14 @@ The `priorfig` function visualizes the chosen prior (line), with its mean and 95
 ```{r}
 
 prior.figures <- list()
-prior.figures[['SLA']]                <- priorfig(priordata = sladata, 
-                                                  priordensity = slaprior, 
-                                                  trait = 'SLA')
-prior.figures[['leaf_turnover_rate']] <- priorfig(priordata = ttdata, 
-                                                  priordensity = ttprior, 
-                                                  trait = 'leaf_turnover_rate')
+prior.figures[['SLA']] <- priorfig(
+  priordata = sladata, 
+  priordensity = slaprior, 
+  trait = data.frame(id = "SLA", figid = "SLA", units="1"))
+prior.figures[['leaf_turnover_rate']] <- priorfig(
+  priordata = ttdata, 
+  priordensity = ttprior, 
+  trait = data.frame(id = "leaf_turnover_rate", figid = "left_turnover_rate", units="yr-1"))
 
 prior.figures
 ```
@@ -165,9 +166,10 @@ for(i in seq(species)){
 } 
 
 ############# Scale values to 25C ##################################
-wullschleger.data$corrected.vcmax <- arrhenius.scaling(wullschleger.data$vcmax, 
-                                     old.temp = wullschleger.data$temp, 
-                                     new.temp = 25)
+wullschleger.data$corrected.vcmax <- PEcAn.utils::arrhenius.scaling(
+  wullschleger.data$vcmax, 
+  old.temp = wullschleger.data$temp, 
+  new.temp = 25)
 
 ############# Create data.frame for JAGS model ##################################
 wullschleger.data <- data.frame(Y  = wullschleger.data$corrected.vcmax,
@@ -219,9 +221,13 @@ data from fig 6a
 ```{r}
 massad.vcmax.data <- data.frame(vcmax = c(17.1, 17.2, 17.6, 18, 18.3, 18.5, 20.4, 22.9, 22.9, 21.9, 21.8, 22.7, 22.3, 25.3, 24.4, 25.5, 25.5, 24.9, 31.2, 30.8, 31.6, 31.7, 32.5, 34.1, 34.2, 33.9, 35.4, 36, 36, 37.5, 38.2, 38.1, 37.4, 37.7, 25.2, 25.5), 
                                 temp = c(20.5, 24.6, 21, 19, 21.9, 15, 19.6, 14.3, 20.8, 23.4, 24.8, 25.9, 24.1, 22.8, 27.9, 31.7, 35.5, 39.3, 37.9, 42.4, 41.5, 48.7, 33.3, 33.3, 31.5, 39.1, 38.8, 43.3, 50, 38.4, 35.7, 34.4, 31.9, 33.9, 32.1, 33.7))
-massad.vcmax <- with(massad.vcmax.data, arrhenius.scaling(old.temp = temp, 
-                                                          new.temp = 25, 
-                                                          observed.value = vcmax))
+massad.vcmax <- with(
+  massad.vcmax.data,
+  PEcAn.utils::arrhenius.scaling(
+    old.temp = temp, 
+    new.temp = 25, 
+    observed.value = vcmax)
+)
 
 massad.vcmax <- data.frame(Y  = mean(massad.vcmax),
                            obs.prec = 1/(sd(massad.vcmax)),
@@ -247,6 +253,7 @@ ggplot(data = all.vcmax.data, aes(factor(ft), Y)) +
   ylab('Vcmax') +
   theme_bw()
 ```
+
 ##### Add unobserved C4 species so JAGS calculates posterior predictive distribution
 ```{r}
 vcmax.data <- rbind(all.vcmax.data, 
@@ -296,16 +303,15 @@ vcmax.density <- with(vcmax.dist, pr.dens(distribution, a, b), xlim = c(0,50))
 vcmax.c4 <- all.vcmax.data$ft == 2
 vcmax.data <- all.vcmax.data[,c('ft', 'Y')]
 vcmax.data$mean <- vcmax.data$Y
-vcmax.data$se <- 1/(sqrt(vcmax.data$n) * vcmax.data$obs.prec)
+vcmax.data$se <- 1/(sqrt(all.vcmax.data$n) * all.vcmax.data$obs.prec)
 vcmax.data <- vcmax.data[,c('ft', 'mean', 'se')]
 #vcmax.mean <- all.vcmax.data$Y[!c4,]
 #vcmax.se   <- with(all.vcmax.data[!c4,], 1/(sqrt(n) * obs.prec))#[reorder]
 #c4.mean <- all.vcmax.data$Y)[c4]
 #c4.se   <- with(all.vcmax.data, 1 / (sqrt(n) * obs.prec) )[c4]
 
-prior.figures[['Vcmax']] <- 
-  priorfig(priordensity = vcmax.density, 
-                                     trait = dataframe(id = 'Vcmax', figid = 'Vcmax', units = 'umol CO2 m-2 s-1'), 
+prior.figures[['Vcmax']] <- priorfig(priordensity = vcmax.density, 
+                                     trait = data.frame(id = 'Vcmax', figid = 'Vcmax', units = 'umol CO2 m-2 s-1'), 
                                      xlim = range(c(0, max(vcmax.data$mean)))) + 
   geom_point(data = subset(vcmax.data, ft != 2), 
              aes(x=mean, y = (sum(vcmax.c4) + 1:sum(!vcmax.c4))/3000), color = 'grey60') +
@@ -331,7 +337,7 @@ Fitting priors to expert constraint.
 
 ### Examples
 
-* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/master/models/dalec/inst/DALEC_priors.R)
+* Estimating priors for the DALEC model in [models/dalec/inst/DALEC_priors.R](https://github.com/PecanProject/pecan/blob/main/models/dalec/inst/DALEC_priors.R)
 
 ### Package `rriskDistributions`
 
@@ -339,7 +345,7 @@ The [rriskDistributions](http://cran.r-project.org/web/packages/rriskDistributio
 
 as well as individual functions for each distribution such as `get.<somedist>.par` that provide nice diagnostic plots (e.g. compare chosen points to cdf) for example, to compute the parameters of a Gamma distribution that fits a median of 2.5 and has a 95%CI of [1, 10]:  
 
-```{r}
+```{r eval=FALSE}
 library(rriskDistributions)
 get.gamma.par(p = c(0.025, 0.50, 0.975), q = c(1, 2.5, 10), tol = 0.1)
 ```
