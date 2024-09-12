@@ -28,6 +28,11 @@ RUN make build
 # ----------------------------------------------------------------------
 FROM httpd
 
+# need curl for health checks
+RUN apt-get update \
+    && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY docker/docs/index.html /usr/local/apache2/htdocs/
 COPY --from=pecandocs /src/book_source/_book/ /usr/local/apache2/htdocs/docs/pecan/
 

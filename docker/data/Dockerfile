@@ -18,4 +18,4 @@ RUN apk --no-cache add bash curl rsync postgresql-client unzip \
     && curl -s -o create_met_driver.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/create_met_driver.tar.gz
 
 COPY add-data.sh add.util.sh /work/
-CMD ["bash", "-c", "/work/add-data.sh"]
+CMD ["bash", "/work/add-data.sh"]
