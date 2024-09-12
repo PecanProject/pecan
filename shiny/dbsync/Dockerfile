@@ -7,7 +7,7 @@ ENV PGHOST=postgres \
     GEOCACHE=/srv/shiny-server/geoip.json
 
 RUN apt-get update \
-    && apt-get -y install libpq-dev libssl-dev \
+    && apt-get -y install curl libpq-dev libssl-dev \
     && install2.r -e -s -n -1 curl dbplyr DT leaflet RPostgreSQL \
     && rm -rf /srv/shiny-server/* \
     && rm -rf /var/lib/apt/lists/*
