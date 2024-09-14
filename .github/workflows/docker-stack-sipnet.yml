@@ -59,6 +59,7 @@ jobs:
 
     - name: List running containers
       run: |
+        sleep 50
         docker ps
 
     - name: Run SIPNET
