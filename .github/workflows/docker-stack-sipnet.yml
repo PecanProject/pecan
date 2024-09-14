@@ -40,7 +40,7 @@ jobs:
           cp docker-compose.dev.yml docker-compose.override.yml
           sed -i'' '/R_library/d' docker-compose.override.yml
 
-    - name: Build Containers #sleep should be removed once we merge #3354
+    - name: Build Containers
       run: |
         cp docker/env.example .env
         echo "COMPOSE_PROJECT_NAME=pecan" >> .env
@@ -49,7 +49,6 @@ jobs:
         echo "GID=$(id -g)" >> .env
         
         docker compose up --wait -d postgres
-        sleep 30
         docker run --rm --network pecan_pecan pecan/db:ci
         docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
         docker image rm pecan/db:ci pecan/data:develop
@@ -58,10 +57,9 @@ jobs:
       run: |
         docker compose up --wait -d sipnet executor
 
-    - name: Check if containers are running #should be removed once we merge #3354
+    - name: List running containers
       run: |
         docker ps
-        sleep 50
 
     - name: Run SIPNET
       run: |
