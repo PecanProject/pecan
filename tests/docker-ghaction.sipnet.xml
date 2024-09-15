@@ -37,7 +37,7 @@
    </samplingspace>
   </ensemble>
   <model>
-    <type>SIPNET</type>
+    <name>SIPNET</name>
     <revision>git</revision>
   </model>
   <run>
