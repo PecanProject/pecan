@@ -2,24 +2,24 @@
 % Please edit documentation in R/extract_soil_nc.R
 \name{extract_soil_nc}
 \alias{extract_soil_nc}
-\title{Extract soil data}
+\title{Extract soil data from the gridpoint closest to a location}
 \usage{
 extract_soil_nc(in.file, outdir, lat, lon)
 }
 \arguments{
-\item{in.file}{}
+\item{in.file}{path to netcdf file containing soil data}
 
-\item{outdir}{}
+\item{outdir}{directory in which to write netcdf file of extracted data.
+Output filename will be the same as input filename.}
 
-\item{lat}{}
-
-\item{lon}{}
+\item{lat, lon}{location in decimal degrees.
+Data will be extracted from the point in `in.file` that is nearest this}
 }
 \value{
 path to netCDF file containing extracted data
 }
 \description{
-Extract soil data
+Extract soil data from the gridpoint closest to a location
 }
 \examples{
 \dontrun{

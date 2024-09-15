@@ -17,7 +17,7 @@ dataone_download(
 
 \item{filepath}{path to where files will be stored}
 
-\item{CNode}{}
+\item{CNode}{character, passed to `dataone::CNode`}
 
 \item{lazyLoad}{"A logical value. If TRUE, then only package member system metadata is downloaded and not data. The default is FALSE." -- dataone R}
 

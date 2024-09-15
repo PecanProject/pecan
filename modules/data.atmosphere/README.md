@@ -32,7 +32,7 @@ The PEcAn.data.atmosphere package is 'standalone'.
 
 ## PEcAn variable names
 
-See https://pecanproject.github.io/pecan-documentation/master/met-data.html
+For the most updated list, see https://pecanproject.github.io/pecan-documentation/latest/time-standard.html#input-standards
 
 General Note: dates in the database should be datatime (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXlt.
 

@@ -12,49 +12,11 @@ Maintainer: ‘Alexey Shiklomanov <ashiklom@bu.edu>’
 
 New submission
 
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
 Strong dependencies not in mainstream repositories:
   PEcAn.logger, PEcAn.assim.batch
 Suggests or Enhances not in mainstream repositories:
   PEcAn.utils, PEcAn.ED2
 
-Package has a VignetteBuilder field but no prebuilt vignette index.
-
-The Description field should not start with the package name,
-  'This package' or similar.
-
-The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -68,15 +30,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Alexey Shiklomanov, Shawn Serbin, Mike Dietze’
-  Authors@R: ‘Mike Dietze [aut], Shawn Serbin [aut], Alexey Shiklomanov [aut, cre], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘Alexey Shiklomanov <ashiklom@bu.edu>’
-  Authors@R:  ‘Alexey Shiklomanov <alexey.shiklomanov@pnnl.gov>’
-
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -120,10 +74,7 @@ str.spectra:
 
 See section ‘Generic functions and methods’ in the ‘Writing R
 Extensions’ manual.
-* checking replacement functions ... WARNING
-  ‘[[<-.spectra’
-The argument of a replacement function which corresponds to the right
-hand side must be named ‘value’.
+* checking replacement functions ... OK
 * checking foreign function calls ... WARNING
 Foreign function call to a base package:
   .Call(stats:::C_acf, ...)
@@ -220,74 +171,13 @@ Undocumented data sets:
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking for code/documentation mismatches ... WARNING
-Codoc mismatches from documentation object '[[<-.spectra':
-[[<-.spectra
-  Code: function(spectra, wavelength, j, values)
-  Docs: function(spectra, wavelength, j, values, value)
-  Argument names in docs not in code:
-    value
-
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'EDR.preprocess.history'
-  ‘output.path’
-
-Undocumented arguments in documentation object 'bt_check_convergence'
-  ‘samples’ ‘threshold’ ‘use_CI’ ‘use_mpsrf’
-
-Undocumented arguments in documentation object 'corr_max_lag'
-  ‘nx’ ‘r’ ‘sig.level’ ‘power’ ‘...’
-
-Undocumented arguments in documentation object 'generate.rsr.all'
-  ‘path.to.licor’
-
-Undocumented arguments in documentation object 'invert.lsq'
-  ‘upper’
-Documented arguments not in \usage in documentation object 'invert.lsq':
-  ‘uppper’
-
-Undocumented arguments in documentation object 'matplot'
-  ‘...’
-
-Undocumented arguments in documentation object 'matplot.default'
-  ‘...’
-
-Undocumented arguments in documentation object 'neff'
-  ‘...’
-
-Undocumented arguments in documentation object 'plot.spectra'
-  ‘type’
-
-Undocumented arguments in documentation object 'rtm_loglike'
-  ‘nparams’ ‘model’ ‘observed’ ‘lag.max’ ‘verbose’ ‘...’
-
-Undocumented arguments in documentation object 'setup_edr'
-  ‘...’
-
-Undocumented arguments in documentation object 'str.spectra'
-  ‘...’
-
-Undocumented arguments in documentation object '[[<-.spectra'
-  ‘value’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
-* checking data for ASCII and uncompressed saves ... WARNING
-  
-  Note: significantly better compression could be obtained
-        by using R CMD build --resave-data
-                           old_size new_size compress
-  dataSpec_prospectd.RData     36Kb     22Kb       xz
-  raw.sensor.data.RData       109Kb     80Kb       xz
-  sensor.rsr.RData            2.3Mb    1.9Mb       xz
-  testspec.RData              1.2Mb    956Kb       xz
+* checking data for ASCII and uncompressed saves ... OK
 * checking line endings in C/C++/Fortran sources/headers ... OK
 * checking line endings in Makefiles ... OK
 * checking compilation flags in Makevars ... OK
@@ -305,13 +195,7 @@ It is good practice to register native routines and to disable symbol
 search.
 
 See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
-* checking files in ‘vignettes’ ... WARNING
-Files in the 'vignettes' directory but no files in 'inst/doc':
-  ‘edr.sensitivity.R’, ‘invert.edr.R’, ‘pecanrtm.vignette.Rmd’,
-    ‘test.edr.R’
-Files named as vignettes but with no recognized vignette engine:
-   ‘vignettes/pecanrtm.vignette.Rmd’
-(Is a VignetteBuilder field missing?)
+* checking files in ‘vignettes’ ... OK
 * checking examples ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK

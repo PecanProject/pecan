@@ -38,5 +38,5 @@ Session 4: Integrating Forest Data Into Ecosystem Models
 
 ## Selected Publications
 
-1. Dietze, M.C., D.S LeBauer, R. Kooper (2013) [On improving the communication between models and data](https://github.com/PecanProject/pecan/blob/master/documentation/dietze2013oic.pdf?raw=true). Plant, Cell, & Environment doi:10.1111/pce.12043
-2. LeBauer, D.S., D. Wang, K. Richter, C. Davidson, & M.C. Dietze. (2013). [Facilitating feedbacks between field measurements and ecosystem models](https://github.com/PecanProject/pecan/blob/master/documentation/lebauer2013ffb.pdf?raw=true). Ecological Monographs. doi:10.1890/12-0137.1
+1. Dietze, M.C., D.S LeBauer, R. Kooper (2013) [On improving the communication between models and data](https://github.com/PecanProject/pecan/blob/main/documentation/dietze2013oic.pdf?raw=true). Plant, Cell, & Environment doi:10.1111/pce.12043
+2. LeBauer, D.S., D. Wang, K. Richter, C. Davidson, & M.C. Dietze. (2013). [Facilitating feedbacks between field measurements and ecosystem models](https://github.com/PecanProject/pecan/blob/main/documentation/lebauer2013ffb.pdf?raw=true). Ecological Monographs. doi:10.1890/12-0137.1

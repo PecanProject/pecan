@@ -18,7 +18,7 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
   if(!require("Maeswrap")){
     logger.severe("The Maeswrap package is not installed. 
                   Please consult PEcAn documentation for install notes:
-                  https://pecanproject.github.io/pecan-documentation/master/pecan-models.html#maespa")
+                  https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html#maespa")
   }
   
   # find out where to write run/ouput

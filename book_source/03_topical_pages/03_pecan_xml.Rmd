@@ -19,7 +19,6 @@ It contains the following major sections ("nodes"):
 	- [`parameter.data.assimilation`](#xml-parameter-data-assimilation) -- Parameter data assimilation
 	- [`multi.settings`](#xml-multi-settings) -- Multi Site Settings
 	- (experimental) [`state.data.assimilation`](#xml-state-data-assimilation) -- State data assimilation
-	- (experimental) [`browndog`](#xml-browndog) -- Brown Dog configuration
 	- (experimental) [`benchmarking`](#xml-benchmarking) -- Benchmarking
 	- [`remote_process`](#xml-remote_process) -- Remote data module 
 	
@@ -474,7 +473,7 @@ PEcAn tries to detect and throw informative errors when dates are out of bounds 
 
 The following tags are optional run settings that apply to any model: 
 
-* `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/master/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
+* `jobtemplate`: the template used when creating a `job.sh` file, which is used to launch the actual model. Each model has its own default template  in the `inst` folder of the corresponding R package (for instance, here is the one for [ED2](https://github.com/PecanProject/pecan/blob/main/models/ed/inst/template.job)). The following variables can be used: `@SITE_LAT@`, `@SITE_LON@`, `@SITE_MET@`, `@START_DATE@`, `@END_DATE@`, `@OUTDIR@`, `@RUNDIR@` which all come variables in the `pecan.xml` file. The following two command can be used to copy and clean the results from a scratch folder (specified as scratch in the run section below, for example local disk vs network disk) : `@SCRATCH_COPY@`, `@SCRATCH_CLEAR@`.
 
 * `stop_on_error`: (logical) Whether the workflow should immediately terminate if _any_ of the model runs fail. If unset, this defaults to `TRUE` unless you are running an ensemble simulation (and ensemble size is greater than 1).
 
@@ -971,27 +970,6 @@ For the MODIS LAI and SMAP soil moisture observations, the `search_window` speci
 * **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself. The default value is FALSE.
 * **run_parallel** : [optional] This tag defines if you want to proceed the MODIS LAI function parallely, the default value is FALSE.
 
-
-### (experimental) Brown Dog {#xml-browndog}
-
-This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This facilitates processing and conversions of data.
-
-```xml
-  <browndog>
-	<url>...</url>
-	<username>...</username>
-	<password>...</password>
-  </browndog>
-```
-
-* `url`: (required) endpoint for Brown Dog to be used.
-* `username`: (optional) username to be used with the endpoint for Brown Dog.
-* `password`: (optional) password to be used with the endpoint for Brown Dog.
-
-This information is currently used by the following R functions:
-
-- `PEcAn.data.atmosphere::met.process` -- Generic function for processing meteorological input data.
-- `PEcAn.benchmark::load_data` -- Generic, versatile function for loading data in various formats.
 
 ### (experimental) Benchmarking {#xml-benchmarking}
 

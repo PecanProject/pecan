@@ -203,9 +203,10 @@ get.EDR.output <- function(path = getwd()) {
 #' Locate history file based on path and prefix, copy to specified output
 #' directory, and rename to correct time.
 #' @param history.path Path to directory containing history file.
+#' @param output.path Directory in which to execute the run.
+#' @param datetime POSIX date and time for run
 #' @param history.prefix String describing the history file prefix in
 #' `history.path`. Default = 'history'
-#' @param datetime POSIX date and time for run
 #' @export
 EDR.preprocess.history <- function(history.path, output.path, datetime, history.prefix = "history") {
   # Check inputs

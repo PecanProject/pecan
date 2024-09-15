@@ -2,7 +2,7 @@
 #'
 #' @param id "The identifier of a package, package metadata or other package member" -- dataone r
 #' @param filepath path to where files will be stored
-#' @param CNode 
+#' @param CNode character, passed to `dataone::CNode`
 #' @param lazyLoad "A logical value. If TRUE, then only package member system metadata is downloaded and not data. The default is FALSE." -- dataone R 
 #' @param quiet "A 'logical'. If TRUE (the default) then informational messages will not be printed." -- dataone R
 #' 
@@ -24,6 +24,13 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles", CNode
   test <- try(system2("wget", "--version", stderr = TRUE))
   if (inherits(test, "try-error")) {
     PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
+  }
+  if (!requireNamespace("dataone", quietly = TRUE)
+      || !requireNamespace("datapack", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Could not find one or more of packages `dataone`  and `datapack`,",
+      "which are needed by `dataone_download()`.",
+      "Please install them to use this functionality.")
   }
 
   ### automatically retrieve mnId

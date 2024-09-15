@@ -27,6 +27,8 @@ time series, TRUE = use).}
 \item{transform}{= transformation of magnitude (default = identity)}
 
 \item{minBin}{= minimum number of points allowed in a bin}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 return.list List of parameters from the fitted uncertainty model

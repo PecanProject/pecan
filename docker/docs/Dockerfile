@@ -5,7 +5,6 @@ ARG IMAGE_VERSION="latest"
 # compile bookdown to html
 # ----------------------------------------------------------------------
 FROM pecan/base:${IMAGE_VERSION} AS pecandocs
-MAINTAINER Rob Kooper <kooper@illinois.edu>
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \
@@ -28,7 +27,11 @@ RUN make build
 # copy html pages to container
 # ----------------------------------------------------------------------
 FROM httpd
-MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+# need curl for health checks
+RUN apt-get update \
+    && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY docker/docs/index.html /usr/local/apache2/htdocs/
 COPY --from=pecandocs /src/book_source/_book/ /usr/local/apache2/htdocs/docs/pecan/

@@ -1,0 +1,38 @@
+#Makefile include include.mk.opt.ubuntu
+############################################################################
+
+# Define make (gnu make works best).
+MAKE=/usr/bin/make
+
+# libraries.
+BASE=$(ED_ROOT)/build/
+
+# HDF 5  Libraries
+HDF5_INCS=-I/usr/include/hdf5/openmpi
+HDF5_LIBS= -L/usr/lib/$(shell uname -m)-linux-gnu/hdf5/openmpi -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -lm
+USE_COLLECTIVE_MPIO=0
+
+# interface
+USE_INTERF=1
+
+# gfortran
+CMACH=PC_LINUX1
+FC_TYPE=GNU
+F_COMP=mpif90.openmpi
+F_OPTS=-O3 -ffree-line-length-none -frecursive -fopenmp -static
+C_COMP=mpicc.openmpi
+C_OPTS=-O0 -DLITTLE  -g  -static
+LOADER=mpif90.openmpi
+LOADER_OPTS=-O3 -ffree-line-length-none -frecursive  -fopenmp
+C_LOADER==mpicc.openmpi
+LIBS=
+MOD_EXT=mod
+
+# using MPI libraries:
+MPI_PATH=
+PAR_INCS=
+PAR_LIBS=
+PAR_DEFS=
+
+# For IBM,HP,SGI,ALPHA,LINUX use these:
+ARCHIVE=ar rs

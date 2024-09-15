@@ -9,6 +9,8 @@ input.ens.gen(settings, input, method = "sampling", parent_ids = NULL)
 \arguments{
 \item{settings}{list of PEcAn settings}
 
+\item{input}{name of input to sample, e.g. "met", "veg", "pss"}
+
 \item{method}{Method for sampling - For now looping or sampling with replacement is implemented}
 
 \item{parent_ids}{This is basically the order of the paths that the parent is sampled.See Details.}

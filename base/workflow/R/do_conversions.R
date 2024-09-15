@@ -84,7 +84,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # met conversion
     
     if (input.tag == "met") {
-      name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
+      name <- "MET Process"
       if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
         PEcAn.logger::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]] <- 
@@ -97,7 +97,6 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             host       = settings$host,
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
-            browndog   = settings$browndog,
             spin       = settings$spin,
             overwrite  = overwrite.met)
         PEcAn.logger::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
