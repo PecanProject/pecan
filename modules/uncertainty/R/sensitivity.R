@@ -28,7 +28,6 @@
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
-##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "", 
                            start.year, end.year, variable, sa.run.ids = NULL, per.pft = FALSE) {
   
