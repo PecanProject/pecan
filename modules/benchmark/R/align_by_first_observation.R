@@ -1,8 +1,8 @@
 #################################################################
 #'
 #' align_first_observation
-#' @param observation_one a vector of plant fucntional types, or species. Provides species/pft names.
-#' @param observation_two another vector of plant fucntional types, or species. Provides the order. 
+#' @param observation_one a vector of plant functional types, or species. Provides species/pft names.
+#' @param observation_two another vector of plant functional types, or species. Provides the order.
 #' @param custom_table a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 #' In the second case, must be passable to match_species_id. 
 #' @return \code{vector} Returns a vector of PFT's/species from observation_one that matches the order of observation_two  

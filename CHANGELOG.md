@@ -13,17 +13,21 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Refactor `convert_input` to Perform tasks via helper function. Subtask of [#3307](https://github.com/PecanProject/pecan/issues/3307)
 
 ### Fixed
+- updated github action to build docker images
 
 ### Changed
+
 - The following components have changed their licensing. With approval of all their contributors, we now provide them under a BSD 3-clause license rather than the previously used NCSA Open Source license. As a reminder, we intend to relicense the entire system and this list will expand as we gather permission from the relevant copyright owners.
     * `apps/api`
-    * Shiny apps `dbsync`, `Data-Ingest`, `Elicitation`, `ForecastingDashboard`, `global-sensitivity`, `Pecan.depend`, and `SDAdashboard`
-    * Base packages `PEcAn.all`, `PEcAn.QAQC`, `PEcAn.remote`, `PEcAn.settings`, and `PEcAn.workflow`
-    * Model packages `PEcAn.BASGRA`, `PEcAn.dvmdostem`, `PEcAn.FATES`, `PEcAn.GDAY`, `PEcAn.LDNDC`, `PEcAn.MAAT`, `PEcAn.MAESPA`, `PEcAn.SIBCASA`, `PEcAn.STICS`, and the new model package template.
-    * Modules `PEcAn.data.mining`, `PEcAn.emulator`, amd `PEcAn.RTM`.
+    * Shiny apps `dbsync`, `BenchmarkReport`, `Data-Ingest`, `Elicitation`, `ForecastingDashboard`, `global-sensitivity`, `Pecan.depend`, `SDAdashboard`, and `ViewMet`
+    * Base packages `PEcAn.all`, `PEcAn.DB`, `PEcAn.QAQC`, `PEcAn.remote`, `PEcAn.settings`, `PEcAn.visualization`, and `PEcAn.workflow`
+    * Model packages `PEcAn.BASGRA`, `PEcAn.CLM45`, `PEcAn.DALEC`, `PEcAn.dvmdostem`, `PEcAn.FATES`, `PEcAn.GDAY`, `PEcAn.JULES`, `PEcAn.LDNDC`, `PEcAn.LINKAGES`, `PEcAn.LPJGUESS`, `PEcAn.MAAT`, `PEcAn.MAESPA`, `PEcAn.PRELES`, `PEcAn.SIBCASA`, `PEcAn.SIPNET`, `PEcAn.STICS`, and the new model package template.
+    * Modules `PEcAn.allometry`, `PEcAn.assim.batch`, `PEcAn.data.mining`, `PEcAn.emulator`, `PEcAn.MA`, `PEcAn.photosynthesis`, `PEcAn.priors`, and `PEcAn.RTM`.
+- Renamed master branch to main
 
 ### Removed
 
+- Remove Browndog support for conversions (#3348, @Sweetdevil144).
 
 ## [1.8.0] - 2024-07-12
 

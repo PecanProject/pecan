@@ -8,7 +8,7 @@ If you would like to install the Docker Version of BETY, please consult the [PEc
 
 #### Install Database + Data
 
-* _note_ To install BETYdb without PEcAn, first download the [`load.bety.sh` script](https://raw.githubusercontent.com/PecanProject/pecan/master/scripts/load.bety.sh)
+* _note_ To install BETYdb without PEcAn, first download the [`load.bety.sh` script](https://raw.githubusercontent.com/PecanProject/pecan/main/scripts/load.bety.sh)
 
 ```sh
 # install database (code assumes password is bety)

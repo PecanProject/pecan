@@ -6,6 +6,9 @@
 \usage{
 \method{matplot}{default}(...)
 }
+\arguments{
+\item{...}{arguments passed to \code{matplot}}
+}
 \description{
 Matplot default method
 }

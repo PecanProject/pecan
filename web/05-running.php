@@ -184,12 +184,7 @@ if (!$finished) {
 foreach ($status as $line) {
   $data = explode("\t", $line);
   echo "    <tr>\n";
-  if ($data[0] == "BrownDog") {
-    echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
-    echo "{$data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
-  } else {
-    echo "      <td>{$data[0]}</td>\n";    
-  }
+  echo "      <td>{$data[0]}</td>\n";    
   if (count($data) >= 2) {
     echo "      <td>{$data[1]}</td>\n";
   } else {

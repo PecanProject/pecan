@@ -33,7 +33,6 @@ $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
-$browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 $ensemble_analysis = (isset($_REQUEST['ensemble_analsysis'])) ? "checked" : "";
 $sensitivity_analysis = (isset($_REQUEST['sensitivity'])) ? "checked" : "";
 
@@ -228,7 +227,7 @@ if (isset($modelinfo['revision'])) {
       <label>Runs<sup>*</sup></label></span>
       <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <a href="https://pecanproject.github.io/pecan-documentation/master/model-output-variables.html" title="Model output variables to run analyses on. Link opens variable name table">
+      <a href="https://pecanproject.github.io/pecan-documentation/latest/model-output-variables.html" title="Model output variables to run analyses on. Link opens variable name table">
       <label>Variables<sup>*</sup></label></a>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
@@ -263,16 +262,6 @@ if (isset($modelinfo['revision'])) {
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 
-<script type="text/javascript" src="js/browndog.js"></script>
-<script type="text/javascript">
-  $('#browndog').click(function(){
-    if($(this).is(':checked')){
-      browndog_add();
-    } else {
-      browndog_del();      
-    }
-  });
-</script>
 </body>
 </html>
 

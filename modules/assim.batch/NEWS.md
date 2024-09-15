@@ -1,5 +1,7 @@
 # PEcAn.assim.batch 1.8.0.9000
 
+## License change
+* PEcAn.assim.batch is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
 
 
 # PEcAn.assim.batch 1.8.0

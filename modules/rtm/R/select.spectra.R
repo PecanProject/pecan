@@ -35,12 +35,12 @@
 #' Assign values to spectra by wavelength
 #'
 #' @inheritParams [[.spectra
-#' @param values Vector or matrix of values to assign
+#' @param value Vector or matrix of values to assign
 #' @export
-"[[<-.spectra" <- function(spectra, wavelength, j, values) {
+"[[<-.spectra" <- function(spectra, wavelength, j, value) {
   spec_wl <- wavelengths(spectra)
   i <- which(spec_wl %in% wavelength)
-  spectra[i, j] <- values
+  spectra[i, j] <- value
   spectra
 }
 

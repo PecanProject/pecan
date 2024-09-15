@@ -19,13 +19,12 @@
 ##'        *except* raw met downloads. I.e., it corresponds to:
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
-##' @param browndog login info for the Browndog conversion service, if used.
 ##'  List of `url`, `username`, `password`
 ##' @importFrom rlang .data .env
 ##' @export
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
-                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
+                        host = "localhost", dbparms, dir, spin=NULL,
                         overwrite = FALSE) {
 
  
@@ -96,29 +95,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
-  # special case Brown Dog
-  if (!is.null(browndog)) {
-    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username, con)
-    
-    if (is.data.frame(result)) {
-      dbentry = PEcAn.DB::dbfile.input.insert(in.path = dirname(result$file),
-                          in.prefix = result$dbfile.name,
-                          siteid = site$id, 
-                          startdate = start_date, enddate = end_date,
-                          mimetype = result$mimetype,
-                          formatname = result$formatname, 
-                          parentid = NA, 
-                          con = con, hostname = result$host)
-      
-      # Additonal list depth added for consistancy with other return statements.
-      input_met$path <- list()
-      input_met$path$path1 <- result$file
-      input_met$id <- list()
-      input_met$id$id1 <- dbentry$input.id
-      
-      return(invisible(input_met))
-    }
-  }
 
   # read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
@@ -155,10 +131,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
     stage$model <- FALSE
   }
   
-  # setup additional browndog arguments
-  if (!is.null(browndog)) {
-    browndog$inputtype <- register$format$inputtype
-  }
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
@@ -350,7 +322,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     site = site, 
                                     start_date = start_date,
                                     end_date = end_date, 
-                                    browndog = browndog, 
                                     new.site = new.site,
                                     overwrite = overwrite$met2model,
                                     exact.dates = reg.model$exact.dates,
@@ -405,135 +376,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
 } # met.process
 
 
-################################################################################################################################# 
-
-
-##' Use browndog to get the met data for a specific model
-##'
-##' @export
-##' @param browndog list with url, username and password to connect to browndog
-##' @param source the source of the met data, currently only NARR an Ameriflux is supported
-##' @param site site information should have id, lat, lon and name (ameriflux id)
-##' @param start_date start date for result
-##' @param end_date end date for result
-##' @param model model to convert the met data to
-##' @param dir folder where results are stored (in subfolder)
-##' @param username used when downloading data from Ameriflux like sites
-##' @param con database connection
-##'
-##' @author Rob Kooper
-browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username, con) {
-  folder <- tempfile("BD-", dir)
-  dir.create(folder, showWarnings = FALSE, recursive = TRUE)
-  
-  if (source == "Ameriflux") {
-    sitename <- sub(".*\\((.+)\\)", "\\1", site$name)
-  } else if (source == "NARR") {
-    sitename <- gsub("[\\s/()]", "-", site$name, perl = TRUE)
-  } else {
-   PEcAn.logger::logger.warn("Could not process source", source)
-    return(invisible(NA))
-  }
-  
-  # this logic should live somewhere else, maybe the registry?
-  if (model == "SIPNET") {
-    formatname <- "clim"
-    outputfile <- file.path(folder, "sipnet.clim")
-    results <- data.frame(file = outputfile, 
-                          host = PEcAn.remote::fqdn(), 
-                          mimetype = "text/csv",
-                          formatname = "Sipnet.climna", 
-                          startdate = start_date, enddate = end_date, 
-                          dbfile.name = basename(outputfile), 
-                          stringsAsFactors = FALSE)
-  } else if (model == "ED2") {
-    formatname <- "ed.zip"
-    outputfile <- file.path(folder, "ed.zip")
-    results <- data.frame(file = file.path(folder, "ED_MET_DRIVER_HEADER"), 
-                          host = PEcAn.remote::fqdn(), 
-                          mimetype = "text/plain", 
-                          formatname = "ed.met_driver_header files format",
-                          startdate = start_date, enddate = end_date, 
-                          dbfile.name = "ED_MET_DRIVER_HEADER", 
-                          stringsAsFactors = FALSE)
-  } else if (model == "DALEC") {
-    formatname <- "dalec"
-    outputfile <- file.path(folder, "dalec.dat")
-    results <- data.frame(file = outputfile, 
-                          host = PEcAn.remote::fqdn(), 
-                          mimetype = "text/plain", 
-                          formatname = "DALEC meteorology", 
-                          startdate = start_date, enddate = end_date, 
-                          dbfile.name = basename(outputfile), 
-                          stringsAsFactors = FALSE)
-  } else if (model == "LINKAGES") {
-    formatname <- "linkages"
-    outputfile <- file.path(folder, "climate.txt")
-    results <- data.frame(file = outputfile, 
-                          host = PEcAn.remote::fqdn(), 
-                          mimetype = "text/plain", 
-                          formatname = "LINKAGES meteorology", 
-                          startdate = start_date, enddate = end_date,
-                          dbfile.name = basename(outputfile), 
-                          stringsAsFactors = FALSE)
-  } else if (model == "BIOCRO") {
-    metinfo <- PEcAn.DB::db.query(paste0("select mimetypes.type_string, formats.name from mimetypes, formats, modeltypes, modeltypes_formats",
-                               " where modeltype_id=modeltypes.id and format_id=formats.id and formats.mimetype_id=mimetypes.id",
-                               " and tag='met' and modeltypes.name='", model, "'"), con)
-
-    formatname <- tolower(paste0("met.", model))
-    outputfile <- file.path(folder, "browndog_generated.out") # TODO is there a better name?
-    results <- data.frame(file = outputfile, 
-                          host = PEcAn.remote::fqdn(), 
-                          mimetype = metinfo$type_string,
-                          formatname = metinfo$name,
-                          startdate = start_date, enddate = end_date,
-                          dbfile.name = basename(outputfile), 
-                          stringsAsFactors = FALSE)
-  } else {
-    PEcAn.logger::logger.warn("Could not process model", model)
-    return(invisible(NA))
-  }
-  
-  xmldata <- paste0("<input>", 
-                    "<type>", source, "</type>", 
-                    "<site>", sitename, "</site>",
-                    "<lat>", site$lat, "</lat>", 
-                    "<lon>", site$lon, "</lon>",
-                    "<start_date>", start_date, "</start_date>", 
-                    "<end_date>", end_date, "</end_date>", 
-                    "<username>", username, "</username>",
-                    "<model>", model, "</model>", 
-                    "</input>")
-  
-  userpass <- paste(browndog$username, browndog$password, sep = ":")
-  curloptions <- list(userpwd = userpass, httpauth = 1L, followlocation = TRUE)
-  
-  result <- httr::POST(
-    url = paste0(browndog$url, formatname, "/"),
-    config = do.call(httr::config, curloptions),
-    httr::content_type("text/xml"),
-    body = xmldata)
-  httr::warn_for_status(result)
-  result_txt <- httr::content(result, "text")
-  url <- gsub(".*<a.*>(.*)</a>.*", "\\1", result)
-  PEcAn.logger::logger.info("browndog download url :", url)
-  downloadedfile <- PEcAn.utils::download.url(url, outputfile, 600, curloptions)
-  
-  # fix returned data
-  if (model == "ED2") {
-    utils::unzip(downloadedfile, exdir = folder)
-    # fix ED_MET_DRIVER_HEADER
-    x <- readLines(results$file)
-    x[3] <- ifelse(grepl("/$", folder), folder, paste0(folder, "/"))
-    writeLines(x, results$file)
-  } else {
-    results$file <- downloadedfile
-    results$dbfile.name <- basename(downloadedfile)
-  }
-  
-  return(invisible(results))
-} # browndog.met
 
 ################################################################################################################################# 
 

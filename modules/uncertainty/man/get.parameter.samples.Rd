@@ -2,7 +2,7 @@
 % Please edit documentation in R/get.parameter.samples.R
 \name{get.parameter.samples}
 \alias{get.parameter.samples}
-\title{Sample from priors or posteriors}
+\title{Convert priors / MCMC samples to chains that can be sampled for model parameters}
 \usage{
 get.parameter.samples(
   settings,
@@ -11,7 +11,11 @@ get.parameter.samples(
 )
 }
 \arguments{
-\item{pfts}{the pfts node of the list of pecan settings}
+\item{settings}{PEcAn settings object}
+
+\item{posterior.files}{list of filenames to read from}
+
+\item{ens.sample.method}{one of "halton", "sobol", "torus", "lhc", "uniform"}
 }
 \description{
 Convert priors / MCMC samples to chains that can be sampled for model parameters

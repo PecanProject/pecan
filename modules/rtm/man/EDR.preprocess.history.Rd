@@ -14,6 +14,8 @@ EDR.preprocess.history(
 \arguments{
 \item{history.path}{Path to directory containing history file.}
 
+\item{output.path}{Directory in which to execute the run.}
+
 \item{datetime}{POSIX date and time for run}
 
 \item{history.prefix}{String describing the history file prefix in

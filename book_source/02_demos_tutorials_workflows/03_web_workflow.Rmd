@@ -200,7 +200,7 @@ At the moment, what is functional is a prototype workflow that works for invento
 This tool works with an internal copy of the FIA that is uploaded to a postGRES database along side BETY, however for space reasons this database does not ship with the PEcAn VM. To turn this feature on:
 
 1. Download and Install the FIA database. Instructions in [Installing data for PEcAn]
-2. For web-base runs, specify the database settings in the [config.php](https://github.com/PecanProject/pecan/blob/master/web/config.example.php)
+2. For web-base runs, specify the database settings in the [config.php](https://github.com/PecanProject/pecan/blob/main/web/config.example.php)
 3. For R-based runs, specify the database settings in the [THE PEcAn XML]
 
 More detailed information on how PEcAn processes inputs can be found on our [Input Conversion]page.

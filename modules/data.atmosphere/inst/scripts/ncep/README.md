@@ -4,7 +4,7 @@
 
 one big netCDF file to take advantage of parallel IO
 
-[concatenate inputs across variables and years `concatenate_ncep.sh`](https://github.com/PecanProject/pecan/blob/master/modules/data.atmosphere/inst/scripts/ncep/concatenate_ncep.sh)
+[concatenate inputs across variables and years `concatenate_ncep.sh`](https://github.com/PecanProject/pecan/blob/main/modules/data.atmosphere/inst/scripts/ncep/concatenate_ncep.sh)
 
 
 ## _Old method_ 

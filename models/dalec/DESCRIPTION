@@ -5,7 +5,8 @@ Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Tristan", "Quaife", role = c("aut")),
-             person("University of Illinois, NCSA", role = c("cph")))
+             person("University of Illinois, NCSA", role = c("cph")),
+             person("Boston University", role = c("cph")))
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
