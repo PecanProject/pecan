@@ -62,6 +62,10 @@ jobs:
         sleep 50
         docker ps
 
+    - name: Add models
+      run: |
+        docker compose exec --workdir /pecan/scripts executor sh add.models.sh
+
     - name: Run SIPNET
       run: |
         docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml
