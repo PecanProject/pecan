@@ -16,7 +16,6 @@ Imports:
     ncdf4 (>= 1.15),
     XML
 Suggests:
-    ggplot2,
     knitr,
     rmarkdown,
     testthat (>= 1.0.2)

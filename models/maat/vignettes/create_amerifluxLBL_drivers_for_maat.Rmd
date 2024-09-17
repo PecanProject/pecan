@@ -22,9 +22,6 @@ install.packages("PEcAn.data.atmosphere")
 ```
 
 ```{r}
-library(knitr)
-library(ggplot2)
-library(ggthemes)
 library(PEcAn.data.atmosphere)
 
 ```
