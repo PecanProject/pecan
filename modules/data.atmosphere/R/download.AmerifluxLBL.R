@@ -52,7 +52,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   }
 
   version <- amerifluxr::amf_var_info()
-  version <- version[version$Site_ID == site,]$BASE_Version
+  version <- unique(version[version$Site_ID == site,]$BASE_Version)
   if (length(version) != 1) {
     PEcAn.logger::logger.error("Could not find AmerifluxLBL version info for site", site)
   }
