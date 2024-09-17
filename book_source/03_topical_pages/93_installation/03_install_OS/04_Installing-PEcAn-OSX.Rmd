@@ -7,6 +7,26 @@ This document also contains information on how to install the Rstudio server edi
 
 #### Install build environment
 
+##### Option 1: Homebrew
+
+```bash
+# R
+brew install r
+# gfortran
+brew install gcc
+# OpenMPI
+brew install open-mpi
+# szip
+brew install szip
+# HDF5
+brew install hdf5 
+## homebrew should configure hdf5 with fortran and cxx, otherwise:
+## brew install hdf5 --with-fortran --with-cxx
+```
+
+
+##### Option 2: Download and install
+
 ```bash
 # install R
 # download from http://cran.r-project.org/bin/macosx/
@@ -42,14 +62,42 @@ sudo make install
 cd ..
 ```
 
-#### Install Postgres
+#### Install Postgres and PostGIS
 
-For those on a Mac I use the following app for postgresql which has
-postgis already installed (http://postgresapp.com/)
+##### Option 1: 
 
-To get postgis run the following commands in psql:
+For MacOS, the Postgres.app provides Postgres with PostGIS
+already installed (http://postgresapp.com/).
+
+To run Postgres:
+*	Open Postgres.app.
+* In the menu bar, click the elephant icon and select “Open psql”.
+
+##### Option 2: install using homebrew:
 
 ```bash
+# optional: remove existing postgres installations with:
+# brew uninstall --force postgresql
+
+# install postgres and postgis:
+brew install postgres
+brew install postgis
+
+# to run Postgres:
+brew services start postgresql
+```
+
+#### Enable PostGIS
+
+To enable PostGIS, you should start Postgres:
+
+```bash
+psql postgres
+```
+
+And then run the following commands:
+
+```sql
 ##### Enable PostGIS (includes raster)
 CREATE EXTENSION postgis;
 ##### Enable Topology
@@ -60,22 +108,41 @@ CREATE EXTENSION fuzzystrmatch;
 CREATE EXTENSION postgis_tiger_geocoder;
 ```
 
-To check your postgis run the following command again in psql: `SELECT PostGIS_full_version();`
+To check your postgis run the following command again in psql: 
+
+```sql
+SELECT PostGIS_full_version();`
+```
 
 #### Additional installs
 
 
 ##### Install JAGS
 
-Download JAGS from http://sourceforge.net/projects/mcmc-jags/files/JAGS/3.x/Mac%20OS%20X/JAGS-Mavericks-3.4.0.dmg/download
+
+##### Option 1: using homebrew
+
+```bash
+brew install jags
+```
+
+##### Option 2: Download 
+
+Download JAGS from http://sourceforge.net/projects/mcmc-jags/files/JAGS/3.x/Mac%20OS%20X/JAGS-Mavericks-3.4.0.dmg/download.
+
 
 ##### Install udunits
 
-Installing udunits-2 on MacOSX is done from source.
+##### Option 1: Install using homebrew:
+
+```bash
+brew install udunits
+```
+
+##### Option 2: Install udunits-2 on MacOSX is done from source.
 
 * download most recent [version of Udunits here](http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
 * instructions for [compiling from source](http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html#Obtain)
-
 
 ```bash
 curl -o udunits-2.1.24.tar.gz ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz
@@ -85,6 +152,19 @@ cd udunits-2.1.24
 make
 sudo make install
 ```
+
+#### Install DuckDB
+
+##### Option 1: Install using homebrew
+
+```bash
+brew install duckdb
+```
+
+##### Option 2: Download and install:
+
+For manual installation instructions, see [DuckDB installation instructions](https://duckdb.org/docs/installation/?version=stable&environment=cli&platform=macos&download_method=direct).
+
 
 #### Apache Configuration
 
@@ -104,8 +184,18 @@ EOF
 
 #### Ruby
 
-The default version of ruby should work. Or use [JewelryBox](https://jewelrybox.unfiniti.com/).
+The default version of Ruby should work. Or use [JewelryBox](https://jewelrybox.unfiniti.com/).
+
+```bash
+brew install ruby
+```
 
 #### Rstudio Server
 
-For the mac you can download [Rstudio Desktop](http://www.rstudio.com/).
+For MacOS, you can download [Rstudio Desktop](http://www.rstudio.com/).
+
+Or using homebrew:
+
+```bash
+brew install --cask rstudio
+```
