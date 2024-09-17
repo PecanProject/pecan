@@ -49,6 +49,7 @@
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
+"dplyr","*","models/sipnet","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
@@ -268,13 +269,14 @@
 "PEcAn.data.atmosphere","*","models/maat","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/maespa","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/preles","Imports",TRUE
-"PEcAn.data.atmosphere","*","models/sipnet","Depends",TRUE
+"PEcAn.data.atmosphere","*","models/sipnet","Imports",TRUE
 "PEcAn.data.land","*","base/all","Depends",TRUE
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE
 "PEcAn.data.land","*","models/ed","Imports",TRUE
 "PEcAn.data.land","*","models/ldndc","Imports",TRUE
 "PEcAn.data.land","*","models/linkages","Imports",TRUE
+"PEcAn.data.land","*","models/sipnet","Imports",TRUE
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
@@ -561,6 +563,7 @@
 "sp","*","modules/data.land","Imports",FALSE
 "sp","*","modules/data.remote","Imports",FALSE
 "stats","*","base/qaqc","Imports",FALSE
+"stats","*","models/sipnet","Imports",FALSE
 "stats","*","modules/allometry","Imports",FALSE
 "stats","*","modules/assim.batch","Imports",FALSE
 "stats","*","modules/assim.sequential","Suggests",FALSE
