@@ -1,9 +1,10 @@
 ### Mac OSX {#macosx}
 
-These are specific notes for installing PEcAn on Mac OSX and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
+These are specific notes for installing PEcAn on Mac OSX and referenced from the [installing PEcAn](Installing-PEcAn) page. 
 
-This document also contains information on how to install the Rstudio server edition as well as any other packages that can be helpful.
+Build environment and Postgres sections are required to install and use PEcAn.
 
+Optional software includes Apache, Rails, and Rstudio. Apache is required to run the BETYdb UI and the web-based version of PEcAn - both are optional. Rails is requred to use the BETYdb web interface. Rstudio is a commonly used IDE for R.
 
 #### Install build environment
 
@@ -166,7 +167,7 @@ brew install duckdb
 For manual installation instructions, see [DuckDB installation instructions](https://duckdb.org/docs/installation/?version=stable&environment=cli&platform=macos&download_method=direct).
 
 
-#### Apache Configuration
+#### Apache Configuration  (Optional)
 
 Mac does not support pdo/postgresql by default. The easiest way to install is use: http://php-osx.liip.ch/
 
@@ -182,15 +183,19 @@ Alias /pecan ${PWD}/pecan/web
 EOF
 ```
 
-#### Ruby
+#### Ruby  (Optional)
 
-The default version of Ruby should work. Or use [JewelryBox](https://jewelrybox.unfiniti.com/).
+_Note: it is recommended that BETYdb be run using Docker because the application uses unsupported versions of Ruby and Rails._
+  
+The BETYdb application requires Ruby version 2.7.7, as specified in [PecanProject/bety/.ruby-version](https://github.com/PecanProject/bety/blob/develop/.ruby-version). 
 
 ```bash
-brew install ruby
+brew install rbenv
+rbenv init
+rbenv install 2.7.7 
 ```
 
-#### Rstudio Server
+#### Rstudio (Optional)
 
 For MacOS, you can download [Rstudio Desktop](http://www.rstudio.com/).
 
