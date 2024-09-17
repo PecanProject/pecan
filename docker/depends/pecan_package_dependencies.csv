@@ -419,7 +419,6 @@
 "PEcAn.utils",">= 1.4.8","models/cable","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/dvmdostem","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/ldndc","Imports",TRUE
-"PEcAn.utils",">= 1.4.8","models/sibcasa","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/stics","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/template","Imports",TRUE
 "PEcAn.visualization","*","modules/assim.sequential","Suggests",TRUE
