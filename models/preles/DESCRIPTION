@@ -7,8 +7,6 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut"),
              person("Tony", "Gardella", role = c("aut", "cre"),
                      email = "tonygard@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Tony Gardella, Mike Dietze
-Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to run the PREdict Light use
     efficiency Evapotranspiration and Soil moisture (PRELES) model on the PEcAn
     project. The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -16,8 +14,6 @@ Description: This module provides functions to run the PREdict Light use
     parameterization,execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends:
-    PEcAn.utils
 Imports:
     PEcAn.logger,
     lubridate (>= 1.6.0),
@@ -32,7 +28,5 @@ Remotes:
 OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-LazyLoad: yes
-LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2

@@ -12,43 +12,6 @@ Maintainer: ‘Tony Gardella <tonygard@bu.edu>’
 
 New submission
 
-License components with restrictions and base license permitting such:
-  BSD_3_clause + file LICENSE
-File 'LICENSE':
-  ## This is the master copy of the PEcAn License
-
-  University of Illinois/NCSA Open Source License
-
-  Copyright (c) 2012, University of Illinois, NCSA.  All rights reserved.
-
-  PEcAn project
-  www.pecanproject.org
-
-  Permission is hereby granted, free of charge, to any person obtaining
-  a copy of this software and associated documentation files (the
-  "Software"), to deal with the Software without restriction, including
-  without limitation the rights to use, copy, modify, merge, publish,
-  distribute, sublicense, and/or sell copies of the Software, and to
-  permit persons to whom the Software is furnished to do so, subject to
-  the following conditions:
-
-  - Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimers.
-  - Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimers in the
-    documentation and/or other materials provided with the distribution.
-  - Neither the names of University of Illinois, NCSA, nor the names
-    of its contributors may be used to endorse or promote products
-    derived from this Software without specific prior written permission.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-  IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
-
 Unknown, possibly misspelled, fields in DESCRIPTION:
   ‘Remotes’
 
@@ -56,8 +19,6 @@ Strong dependencies not in mainstream repositories:
   PEcAn.utils, PEcAn.logger, PEcAn.data.atmosphere
 Suggests or Enhances not in mainstream repositories:
   Rpreles
-
-The Date field is over a month old.
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -71,14 +32,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘Tony Gardella, Mike Dietze’
-  Authors@R: ‘Mike Dietze [aut], Tony Gardella [aut, cre], University of Illinois, NCSA [cph]’
-
-Package listed in more than one of Depends, Imports, Suggests, Enhances:
-  ‘PEcAn.utils’
-A package should be listed in only one of these fields.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -92,44 +46,18 @@ A package should be listed in only one of these fields.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
-* checking dependencies in R code ... NOTE
-'library' or 'require' call to ‘Rpreles’ in package code.
-  Please use :: or requireNamespace() instead.
-  See section 'Suggested packages' in the 'Writing R Extensions' manual.
-Package in Depends field not imported from: ‘PEcAn.utils’
-  These packages need to be imported from (in the NAMESPACE file)
-  for when this namespace is loaded but not attached.
+* checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-runPRELES.jobsh: no visible global function definition for
-  ‘logger.severe’
-runPRELES.jobsh: no visible binding for global variable ‘trait.values’
-Undefined global functions or variables:
-  logger.severe trait.values
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'runPRELES.jobsh'
-  ‘met.file’ ‘parameters’ ‘sitelat’ ‘sitelon’ ‘start.date’ ‘end.date’
-Documented arguments not in \usage in documentation object 'runPRELES.jobsh':
-  ‘in.path’ ‘in.prefix’ ‘start_date’ ‘end_date’
-
-Undocumented arguments in documentation object 'write.config.PRELES'
-  ‘trait.values’
-Documented arguments not in \usage in documentation object 'write.config.PRELES':
-  ‘trait.samples’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
@@ -139,4 +67,4 @@ Extensions’ manual.
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 2 WARNINGs, 3 NOTEs
+Status: 1 WARNING, 0 NOTEs
