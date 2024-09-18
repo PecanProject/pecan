@@ -13,7 +13,6 @@ met.process(
   host = "localhost",
   dbparms,
   dir,
-  browndog = NULL,
   spin = NULL,
   overwrite = FALSE
 )
@@ -46,7 +45,8 @@ met.process(
        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
        *except* raw met downloads. I.e., it corresponds to:
 
-       list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)}
+       list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+ List of `url`, `username`, `password`}
 }
 \description{
 met.process

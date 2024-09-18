@@ -200,7 +200,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
-##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/master/pecan-models.html}
+##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
 ##' new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
 ##' State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
 ##' The units for the state variables need to be in the PEcAn standard units which can be found in \link{standard_vars}.
@@ -477,6 +477,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
 #' Function for generating samples based on sampling method, parent or etc
 #'
 #' @param settings list of PEcAn settings
+#' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
 #'

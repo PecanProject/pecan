@@ -1,5 +1,10 @@
-Temporally Downscale Meteorology
-===============
+---
+title: "Temporally Downscale Meteorology"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Temporally Downscale Meteorology}
+  %\VignetteEngine{knitr::rmarkdown}
+---
 
 
 ### Subdaily Training Data
@@ -11,7 +16,7 @@ Examples:
 
 ### Extract Training Data and Merge All Years Into 1 File
 
-```{r}
+```{r, eval=FALSE}
 library(PEcAn.data.atmosphere)
 library(PEcAn.DB)
 
@@ -41,7 +46,7 @@ nc.merge(outfolder = file.path(outfolder, "training_data"), in.path = file.path(
 ### Generate Linear Regression Models From Training Data
 
 Note: This requires ~ 120 GB of space if using the entire training dataset
-```{r}
+```{r, eval=FALSE}
 in.prefix      <- "US-NR1"
 dat.train.file <- "~/Example/training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train.nc"
 n.beta         <- 10 # Number of betas for the linear regression model to create, we'll choose 10 for time's sake
@@ -58,7 +63,7 @@ Examples:
 
 ### Extract Data We Want To Downscale
 
-```{r}
+```{r, eval=FALSE}
 start_date      <- "2020-01-01"
 end_date        <- "2020-12-31"
 site_id         <- 772
@@ -71,7 +76,7 @@ download.MACA(outfolder, start_date, end_date, site_id, model, scenario, ensembl
 
 ### Predict Subdaily Data Using Statistics From Training Data
 
-```{r}
+```{r, eval=FALSE}
 in.path        <- "~/Example/MACA_site_0-772"
 in.prefix      <- "MACA.BNU-ESM.rcp85.r1i1p1" # this is the data we are going to downscale
 lm.models.base <- "~/Example/lm_model_output" # where we stored the lm models

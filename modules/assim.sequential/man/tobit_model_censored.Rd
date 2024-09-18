@@ -16,6 +16,11 @@ tobit_model_censored(settings, X, var.names, mu.f, Pf, t)
 \item{mu.f}{(numeric) forecast mean values.}
 
 \item{Pf}{(numeric) forecast covariance matrix.}
+
+\item{t}{(numeric) timestep. If t=1, initial values are imputed for zero values in mu.f}
+}
+\value{
+list with updated mu.f, pf, X, and indication of which y values are censored
 }
 \description{
 tobit_model_censored

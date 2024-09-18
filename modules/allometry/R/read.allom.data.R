@@ -1,19 +1,13 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2015 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
-#' @title read.allom.data
-#' @name  read.allom.data
+#' read.allom.data
 #' 
-#' @description Extracts PFT- and component-specific data and allometeric equations from the specified files.
+#' Extracts PFT- and component-specific data and allometeric equations from the specified files.
 #' 
+#' This code also estimates the standard error from R-squared, 
+#' which is required to simulate pseudodata from the allometric eqns.
+#'
 #' @param pft.data   PFT dataframe
-#' \itemize{
+#' \describe{
 #'   \item{acronym}{USDA species acronyms, used with FIELD data (vector)}
 #'   \item{spcd}{USFS species codes, use with TALLY data (vector)}
 #' }
@@ -23,8 +17,6 @@
 #' @param nsim       number of Monte Carlo draws in numerical transforms
 #' @return \item{field}{PFT-filtered field Data}
 #'         \item{parm}{Component- and PFT-filtered Allometric Equations}
-#' @details This code also estimates the standard error from R-squared, 
-#' which is required to simulate pseudodata from the allometric eqns.
 read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
   
   allom <- list(parm = NULL, field = NULL)

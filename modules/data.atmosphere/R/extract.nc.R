@@ -11,6 +11,8 @@
 ##' @param slon the longitude of the site
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should ouput of function be extra verbose
+##' @param ... further arguments, currently ignored
+##'
 ##' @export
 ##' @author Betsy Cowdery
 extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat, slon,

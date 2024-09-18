@@ -546,7 +546,7 @@ foreach ($status as $line) {
     <div class="spacer"></div>
 <?php whoami(); ?>
 <p>
-  <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/latest/" target="_blank">Documentation</a>
   <br>
   <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
   <br>
@@ -571,12 +571,7 @@ foreach ($status as $line) {
 foreach ($status as $line) {
   $data = explode("\t", $line);
   echo "    <tr>\n";
-  if ($data[0] == "BrownDog") {
-    echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
-    echo "{$data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
-  } else {
-    echo "      <td>{$data[0]}</td>\n";
-  }
+  echo "      <td>{$data[0]}</td>\n";
   if (count($data) >= 2) {
     echo "      <td>{$data[1]}</td>\n";
   } else {

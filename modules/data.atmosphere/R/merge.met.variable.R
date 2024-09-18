@@ -1,22 +1,21 @@
 #' Merge a new met variable from an external file (e.g. CO2) into existing met files
 #'
+#' Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
+#' Currently unit and name checking only implemented for CO2. 
+#' Currently does not yet support merge data that has lat/lon
+#' New variable only has time dimension and thus MIGHT break downstream code....
+#'
 #' @param in.path     path to original data
 #' @param in.prefix   prefix of original data
-#' @param start_date  
-#' @param end_date 
+#' @param start_date,end_date date (or character in a standard date format). Only year component is used.
 #' @param merge.file  path of file to be merged in
 #' @param overwrite logical: replace output file if it already exists? 
 #' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
 #'   print debugging information as they run? 
-#' @param ... 
+#' @param ... other arguments, currently ignored
 #'
 #' @return Currently nothing. TODO: Return a data frame summarizing the merged files.
 #' @export
-#'
-#' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
-#' Currently unit and name checking only implemented for CO2. 
-#' Currently does not yet support merge data that has lat/lon
-#' New variable only has time dimension and thus MIGHT break downstream code....
 #'
 #' @examples
 #' \dontrun{

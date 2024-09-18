@@ -9,7 +9,7 @@ download.NLCD(outdir, year = 2011, con = NULL)
 \arguments{
 \item{outdir}{Directory to download NLCD to}
 
-\item{year}{which NLCD year to download}
+\item{year}{which NLCD year to download. Only 2001 and 2011 are currently supported.}
 
 \item{con}{Optional database connection. If specified then the code will check to see if the file already exists in PEcAn before downloading, and will also create a database entry for new downloads}
 }

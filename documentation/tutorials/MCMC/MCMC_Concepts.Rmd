@@ -78,7 +78,7 @@ plot(dat$Ci[aci],dat$Photo[aci],main="ACi")
 plot(dat$PARi[!aci],dat$Photo[!aci],main="AQ")
 ```
 
-In PEcAn we've written a wrapper function, $fitA$, around the statistical model discussed above, which has a number of other bells and whistles discussed in the [PEcAn Photosynthesis Vignette](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd). For today we'll just use the most basic version, which takes as arguments the data and the number of MCMC iterations we want to run.
+In PEcAn we've written a wrapper function, $fitA$, around the statistical model discussed above, which has a number of other bells and whistles discussed in the [PEcAn Photosynthesis Vignette](https://github.com/PecanProject/pecan/blob/main/modules/photosynthesis/vignettes/ResponseCurves.Rmd). For today we'll just use the most basic version, which takes as arguments the data and the number of MCMC iterations we want to run.
 
 ```{r echo=TRUE, eval=FALSE}
 fit <- fitA(dat,model=list(n.iter=10000))
@@ -179,7 +179,7 @@ Note: on the last figure you will get warnings about "No ACi" and "No AQ" which 
 
 #### Additional information
 
-There is a more detailed R Vignette on the use of the PEcAn photosynthesis module available in the [PEcAn Repository](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd).
+There is a more detailed R Vignette on the use of the PEcAn photosynthesis module available in the [PEcAn Repository](https://github.com/PecanProject/pecan/blob/main/modules/photosynthesis/vignettes/ResponseCurves.Rmd).
 
 #### Citations
 

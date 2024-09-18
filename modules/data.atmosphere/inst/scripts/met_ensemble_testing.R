@@ -8,5 +8,4 @@ model <- "SIPNET"
 host = "localhost"
 dbparms = list(user=bety,password = bety,host=localhost, dbname=bety,driver=PostgreSQL,write=TRUE)
 dir = "/home/carya/outdir/dbfiles"
-browndog = NULL
 overwrite = FALSE

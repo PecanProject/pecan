@@ -6,6 +6,9 @@
 \usage{
 get.change(measurement)
 }
+\arguments{
+\item{measurement}{numeric vector}
+}
 \value{
 Difference between consecutive measurements
 }

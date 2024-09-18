@@ -25,15 +25,15 @@ met2model.FATES(
 
 \item{outfolder}{location on disk where outputs will be stored}
 
-\item{start_date}{the start date of the data to be downloaded (will only use the year part of the date)}
+\item{start_date}{the start date of the data to be downloaded}
 
-\item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
+\item{end_date}{the end date of the data to be downloaded}
 
 \item{lst}{timezone offset to GMT in hours}
 
 \item{overwrite}{should existing files be overwritten}
 
-\item{verbose}{should the function be very verbosefor(year in start_year:end_year)}
+\item{verbose}{should the function be very verbose for(year in start_year:end_year)}
 }
 \description{
 met2model wrapper for FATES

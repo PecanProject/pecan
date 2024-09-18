@@ -1,5 +1,7 @@
 # PEcAn.DB 1.8.0.9000
 
+## License change
+* PEcAn.DB is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
 
 
 # PEcAn.DB 1.8.0

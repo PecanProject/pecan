@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 ##' Variable-width (diagonally cut) histogram
 ##'
 ##' When constructing a histogram, it is common to make all bars the same width.
@@ -263,7 +254,7 @@ plot_data <- function(trait.data, base.plot = NULL, ymax) {
 ##' 
 ##' @return adds borders to ggplot as a side effect
 ##' @author Rudolf Cardinal
-##' @author \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
+##' @author [ggplot2 google group](https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE)
 ##' @examples
 ##' \dontrun{
 ##' df = data.frame( x=c(1,2,3), y=c(4,5,6) )

@@ -1,20 +1,13 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
-#' @title query.allom.data
-#' @name  query.allom.data
-#' @description
+#' query.allom.data
+#'
 #' Module to grab allometric information from the raw data table
 #' Will grab both original field data and tallied equations
 #'
 #' Tallied equation format based on Jenkins et al 2004 USFS
 #' General Technical Report NE-319
+#'
+#' database is assumed to conform to the PEcAn Schema
 #'
 #' @author Michael Dietze
 #'
@@ -23,7 +16,6 @@
 #' @param con        open database connection
 #' @param nsim       number of pseudo-data simulations for estimating SE
 #'
-#' @details database is assumed to conform to the PEcAn Schema
 query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   
   ## check validity of inputs
@@ -80,21 +72,22 @@ query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   return(allom)
 } # query.allom.data
 
-#' @title nu
-#' @name  nu
+#' nu
+#'
+#' converts factors to numeric
+#'
 #' @param x  data
-#' @description  converts factors to numeric
 nu <- function(x) {
   as.numeric(as.character(x))
 } # nu
 
-#' @title AllomUnitCoef
-#' @name  AllomUnitCoef
-#' @param x   units: mm, cm, cm2, m, in, g, kg, lb, Mg
-#' @param tp  diameter type, leave NULL if DBH. Options: 'd.b.h.^2','cbh','crc'
-#' @description
+#' AllomUnitCoef
+#'
 #'  converts length units FROM cm TO specified units
 #'  converts mass units TO kg FROM specificed units
+#'
+#' @param x   units: mm, cm, cm2, m, in, g, kg, lb, Mg
+#' @param tp  diameter type, leave NULL if DBH. Options: 'd.b.h.^2','cbh','crc'
 AllomUnitCoef <- function(x, tp = NULL) {
   
   y <- rep(1, length(x))

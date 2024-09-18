@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{priorfig}
 \alias{priorfig}
-\title{Prior Figure}
+\title{Plot prior density and data}
 \usage{
 priorfig(
   priordata = NA,
@@ -15,11 +15,13 @@ priorfig(
 \arguments{
 \item{priordata}{observations to be plotted as points}
 
-\item{priordensity}{density of prior distribution, calculated by \code{\link{prior.density}}}
+\item{priordensity}{density of prior distribution, calculated by \code{prior.density}}
 
 \item{trait}{dataframe with id, figid and units of the trait}
 
 \item{xlim}{limits for x axis}
+
+\item{fontsize}{passed to ggplot to set text size}
 }
 \value{
 plot / grob of prior distribution with data used to inform the distribution

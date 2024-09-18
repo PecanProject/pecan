@@ -11,7 +11,6 @@ and for the DTS:
 
 ------------------------------------------------------------------------------------------------------
 
-To excute browndog.R, you need to change the parameters such as type, browndog, userpass. 
 
 To excute PEcAn.R, you need to install PEcAn.data.atmosphere. Please refer to https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html
 (Use install.packages("devtools") if you don't have this library. 

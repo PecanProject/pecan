@@ -1,6 +1,6 @@
 # PEcAn Development
 
-This is a minimal guide to getting started with PEcAn development under Docker. You can find more information about docker in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+This is a minimal guide to getting started with PEcAn development under Docker. You can find more information about docker in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html).
 
 ## Requirements and Recommendations
 
@@ -29,7 +29,7 @@ cd pecan
 
 ## Developing in Docker
 
-The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html). This is intended as a quick start.
+The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html). This is intended as a quick start.
 
 ### Installing Docker
 
@@ -61,7 +61,7 @@ You can now use the command `docker compose` to work with the containers setup f
 
 ### First time setup
 
-The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/master/docker-index.html).
+The steps in this section only need to be done the first time you start working with the stack in docker. After this is done you can skip these steps. You can find more detail about the docker commands in the [pecan documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html).
 
 - setup .env file
 - create folders to hold the data
@@ -77,7 +77,6 @@ You can copy the [`docker/env.example`](docker/env.example) file as .env in your
 ```sh
 cp docker/env.example .env
 ```
-
 
 The variables we want to modify are:
 
@@ -181,13 +180,13 @@ Next copy the R packages from a container to volume `pecan_lib`. This is not rea
 
 You can copy all the data using the following command. This will copy all compiled packages to your local machine.
 
-```
+```bash
 docker run -ti --rm -v pecan_R_library:/rlib pecan/base:develop cp -a /usr/local/lib/R/site-library/. /rlib/
 ```
 
 If you have set a custom UID or GID in your `.env`, change ownership of these files as described above for the data volume. E.g. if you use the same UID in the containers as on your host machine, run:
 
-```
+```bash
 docker run -ti --rm -v pecan_R_library:/rlib pecan/base:develop chown -R "$(id -u):$(id -g)" /rlib/
 ```
 
@@ -210,7 +209,7 @@ For Windows
 copy docker\web\config.docker.php web\config.php
 ```
 
-## PEcAn Development
+## PEcAn Development Setup
 
 To begin development we first have to bring up the full PEcAn stack. This assumes you have done once the steps above. You don\'t need to stop any running containers, you can use the following command to start all containers. At this point you have PEcAn running in docker.
 
@@ -239,13 +238,13 @@ R CMD ../web/workflow.R --settings docker.sipnet.xml
 
 A better way of doing this is developed as part of GSOC, in which case you can leverage of the restful interface defined, or using the new R PEcAn API package.
 
-# PEcAn URLs
+## PEcAn URLs
 
 You can check the RabbitMQ server used by pecan using <https://rabbitmq.pecan.localhost> on the same server that the docker stack is running on. You can use rstudio either with <http://server/rstudio> or at <http://rstudio.pecan.localhost>. To check the traefik dashboard you can use <http://traefik.pecan.localhost>.
 
 If the stack is running on a remote machine, you can use ssh and port forwarding to connect to the server. For example `ssh -L 8000:localhost:80` will allow you to use <http://rabbitmq.pecan.localhost:8000/> in your browser to connect to the remote PEcAn server RabbitMQ.
 
-# Directory Structure
+## Directory Structure
 
 Following are the main folders inside the pecan repository.
 
@@ -281,9 +280,9 @@ Some of the docker build files. The Dockerfiles for each model are placed in the
 
 Small scripts that are used as part of the development and installation of PEcAn.
 
-# Advanced Development Options
+## Advanced Development Options
 
-## Reset all containers/database
+### Reset all containers/database
 
 If you want to start from scratch and remove all old data, but keep your pecan checked out folder, you can remove the folders where you have written the data (see `folders` below). You will also need to remove any of the docker managed volumes. To see all volumes you can do `docker volume ls -q -f name=pecan`. If you are sure, you can either remove them one by one, or remove them all at once using the command below. **THIS DESTROYS ALL DATA IN DOCKER MANAGED VOLUMES.**.
 

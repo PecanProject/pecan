@@ -14,7 +14,12 @@ fit.dist(
 \arguments{
 \item{trait.data}{data for distribution}
 
+\item{trait}{name of trait to fit.
+One of "tt", "sla", "rrr", "q"}
+
 \item{dists}{list of distribution names}
+
+\item{n}{only used in return value}
 }
 \value{
 best fit distribution

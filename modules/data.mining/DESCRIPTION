@@ -1,7 +1,7 @@
 Package: PEcAn.data.mining
 Type: Package
 Title: PEcAn Functions Used for Exploring Model Residuals and Structures
-Description: (Temporary description) PEcAn functions used for exploring model residuals and structures
+Description: (Temporary description) PEcAn functions used for exploring model residuals and structures.
 Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
@@ -20,4 +20,4 @@ LazyLoad: yes
 LazyData: FALSE
 Collate:
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

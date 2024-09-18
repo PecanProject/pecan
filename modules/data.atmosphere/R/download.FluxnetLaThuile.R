@@ -18,6 +18,7 @@ download.FluxnetLaThuile.site <- function(site_id) {
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param username should be the registered Fluxnet username, else defaults to pecan
+##' @param ... further arguments, currently ignored
 ##' 
 ##' @author Ankur Desai
 download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date, 

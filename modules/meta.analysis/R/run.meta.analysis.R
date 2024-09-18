@@ -1,11 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update = FALSE) {
   # check to see if get.trait was executed
@@ -166,7 +158,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
 ##'
-##' This will use the following items from setings:
+##' This will use the following items from settings:
 ##' - settings$pfts
 ##' - settings$database$bety
 ##' - settings$database$dbfiles

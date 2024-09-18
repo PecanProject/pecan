@@ -1,12 +1,3 @@
-##-----------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-##-----------------------------------------------------------------------------
-
 #' check to see if inputs are specified - this should be part of the model code
 #' @title Check Inputs
 #' @param settings settings file
@@ -936,9 +927,10 @@ check.model.settings <- function(settings, dbcon = NULL) {
   return(settings)
 }
 
-#' @title Check Workflow Settings
+#' Check Workflow Settings
 #' @param settings settings file
-#' @export check.workflow.settings
+#' @param dbcon database connection
+#' @export
 check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE

@@ -26,7 +26,6 @@ Description: The Predictive Ecosystem Carbon Analyzer
     PECAn is to streamline the interaction between data and
     models, and to improve the efficacy of scientific
     investigation.
-Depends:
 Imports:
     dplyr,
     ggplot2,

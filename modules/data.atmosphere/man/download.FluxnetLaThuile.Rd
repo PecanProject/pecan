@@ -30,6 +30,8 @@ The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20
 \item{verbose}{should the function be very verbose}
 
 \item{username}{should be the registered Fluxnet username, else defaults to pecan}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 Download Flxunet LaThuile CSV files

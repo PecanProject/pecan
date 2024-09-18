@@ -10,11 +10,11 @@ Internal PEcAn standard time follows ISO_8601 format for dates and time (https:/
 
 To aid in the conversion between PEcAn internal ISO_8601 standard and CF convention used in all met drivers and PEcAn standard output you can utilize the functions: "cf2datetime","datetime2doy","cf2doy", and for SIPNET "sipnet2datetime"
 
-### Input Standards
+## Input Standards
 
-#### Meterology Standards 
+### Meteorology Standards 
 
-##### Dimensions:
+#### Dimensions:
 
 
 |CF standard-name | units |
@@ -26,13 +26,14 @@ To aid in the conversion between PEcAn internal ISO_8601 standard and CF convent
 General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
 
 
-##### The variable names should be `standard_name`
+#### Variable names should be `standard_name`
+
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 names<-c("<b>air_temperature</b>", "air_temperature_max", "air_temperature_min", "<b>air_pressure</b>", 
          "mole_fraction_of_carbon_dioxide_in_air", "moisture_content_of_soil_layer", "soil_temperature ",
-         "relative_humidity", "<b>specific_humidity</b>", "water_vapor_saturation_deficit","<b>surface_downwelling_longwave_flux_in_air</b>",
+         "relative_humidity", "<b>specific_humidity</b>", "water_vapor_saturation_deficit", "<b>surface_downwelling_longwave_flux_in_air</b>",
          "<b>surface_downwelling_shortwave_flux_in_air</b>", "surface_downwelling_photosynthetic_photon_flux_in_air",
-         "<b>precipitation_flux</b>", "  ","wind_speed","<b>eastward_wind</b>", "<b>northward_wind</b>")
+         "<b>precipitation_flux</b>", "  ", "wind_speed", "<b>eastward_wind</b>", "<b>northward_wind</b>")
 
 units <-c("K","K","K","Pa","mol/mol","kg m-2","K","%","1","Pa","W m-2","W m-2","mol m-2 s-1", "kg m-2 s-1", "degrees", "m/s", "m/s", "m/s")
 
@@ -45,7 +46,7 @@ narr <- c("air","tmax","tmin","","","","","rhum","shum","","dlwrf","dswrf","","a
 ameriflux <- c("TA(C)","" ,"" , "PRESS (KPa)","CO2","","TS1(NOT DONE)",
                "RH","CALC(RH)","VPD(NOT DONE)","Rgl","Rg","PAR(NOT DONE)","PREC","WD","WS","CALC(WS+WD)","CALC(WS+WD)")
 
-in_tab<-cbind(names,units,bety,isimip,cruncep,narr,ameriflux)
+in_tab <- cbind(names, units, bety, isimip, cruncep, narr, ameriflux)
 colnames(in_tab)<- c("CF standard-name","units","BETY","Isimip","CRUNCEP","NARR", "Ameriflux")
 if (require("DT")){
 datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
@@ -53,10 +54,10 @@ datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
             dom = 'Bfrtip',
             scrollX = TRUE,
             fixedColumns = TRUE,
-            buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
-            
+            buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+            escape = FALSE
           )
-          )
+     )
 }
 
 ```
@@ -66,8 +67,7 @@ datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
 * standard_name is CF-convention standard names
 * units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
 * soil moisture for the full column, rather than a layer, is soil_moisture_content
-* A full list of PEcAn standard variable names, units and dimensions can be found here: https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv
-
+* The list of PEcAn standard variable names, units and dimensions are provided in a table in the [Output Standards]{#OutputStandards} section and maintained in the file: [base/utils/data/standard_vars.csv](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
 
 For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
 We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
@@ -76,17 +76,15 @@ The key is to process each type of met data (site, reanalysis, forecast, climate
 
 ### Soils and Vegetation Inputs
 
-##### Soil Data 
+#### Soil Data 
 
-Check out the [Soil Data] section on more into on creating a standard soil data file.
+See the [Soil Data] section on more into on creating a standard soil data file.
 
-##### Vegetation Data
+#### Vegetation Data
 
-Check Out the [Vegetation Data] section on more info on creating a standard vegetation data file
+See the [Vegetation Data] section on more info on creating a standard vegetation data file
 
-
-
-### Output Standards
+## Output Standards {#OutputStandards}
 
 * created by `model2netcdf` functions
 * based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)

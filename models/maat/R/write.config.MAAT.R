@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 ##-------------------------------------------------------------------------------------------------#
 ## Functions to prepare and write out MAAT model xml files for MA, SA, and Ensemble runs
 PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
