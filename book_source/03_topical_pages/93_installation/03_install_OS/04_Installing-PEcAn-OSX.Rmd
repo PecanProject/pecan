@@ -8,33 +8,17 @@ Optional software includes Apache, Rails, and Rstudio. Apache is required to run
 
 #### Install build environment
 
-##### Option 1: Homebrew
+##### Step 1: Install R
+
+Download from 
+
+##### Option 1: Download and install
+
+R: download from http://cran.r-project.org/bin/macosx/
+
+gfortran: download from http://cran.r-project.org/bin/macosx/tools/
 
 ```bash
-# R
-brew install r
-# gfortran
-brew install gcc
-# OpenMPI
-brew install open-mpi
-# szip
-brew install szip
-# HDF5
-brew install hdf5 
-## homebrew should configure hdf5 with fortran and cxx, otherwise:
-## brew install hdf5 --with-fortran --with-cxx
-```
-
-
-##### Option 2: Download and install
-
-```bash
-# install R
-# download from http://cran.r-project.org/bin/macosx/
-
-# install gfortran 
-# download from http://cran.r-project.org/bin/macosx/tools/
-
 # install OpenMPI
 curl -o openmpi-1.6.3.tar.gz http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz
 tar zxf openmpi-1.6.3.tar.gz
@@ -63,6 +47,24 @@ sudo make install
 cd ..
 ```
 
+##### Option 2: Homebrew
+
+```bash
+# R
+brew install --cask r
+# gfortran
+brew install gcc
+# OpenMPI
+brew install open-mpi
+# szip
+brew install szip
+# HDF5
+brew install hdf5 
+## homebrew should configure hdf5 with fortran and cxx, otherwise:
+## brew install hdf5 --with-fortran --with-cxx
+```
+
+
 #### Install Postgres and PostGIS
 
 ##### Option 1: 
@@ -80,8 +82,11 @@ To run Postgres:
 # optional: remove existing postgres installations with:
 # brew uninstall --force postgresql
 
-# install postgres and postgis:
-brew install postgres
+# install Postgres, fixed at v12 (officially supported by BETYdb):
+brew install postgres@12
+brew pin postgres@12
+
+# PostGIS
 brew install postgis
 
 # to run Postgres:
