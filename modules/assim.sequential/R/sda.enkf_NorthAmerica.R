@@ -1,5 +1,5 @@
-#' @title sda.enkf.multisite
-#' @name  sda.enkf.multisite
+#' @title sda.enkf_NorthAmerica
+#' @name  sda.enkf_NorthAmerica
 #' @author Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@@bu.edu}
 #' 
 #' @param settings  PEcAn settings object
@@ -25,19 +25,19 @@
 #' @import nimble
 #' @export
 #' 
-sda.enkf.multisite <- function(settings, 
-                               obs.mean, 
-                               obs.cov, 
-                               Q = NULL, 
-                               pre_enkf_params = NULL,
-                               ensemble.samples = NULL,
-                               control=list(TimeseriesPlot = FALSE,
-                                            OutlierDetection=FALSE,
-                                            send_email = NULL,
-                                            keepNC = TRUE,
-                                            forceRun = TRUE,
-                                            MCMC.args = NULL),
-                               ...) {
+sda.enkf_NorthAmerica <- function(settings, 
+                                  obs.mean, 
+                                  obs.cov, 
+                                  Q = NULL, 
+                                  pre_enkf_params = NULL,
+                                  ensemble.samples = NULL,
+                                  control=list(TimeseriesPlot = FALSE,
+                                               OutlierDetection=FALSE,
+                                               send_email = NULL,
+                                               keepNC = TRUE,
+                                               forceRun = TRUE,
+                                               MCMC.args = NULL),
+                                  ...) {
   # foreach.
   cores <- parallel::detectCores()
   cl <- parallel::makeCluster(cores)
@@ -246,46 +246,31 @@ sda.enkf.multisite <- function(settings,
     } else { ## t == 1
       restart.list <- vector("list", length(conf.settings))
     }
-    ############################################################
+    # release memory.
     parallel::stopCluster(cl)
     foreach::registerDoSEQ()
     gc()
-    # foreach.
+    # initialize foreach.
     cores <- parallel::detectCores()-1
     cl <- parallel::makeCluster(cores)
     doSNOW::registerDoSNOW(cl)
-    #progress bar
+    # progress bar
     pb <- utils::txtProgressBar(min=1, max=length(settings), style=3)
     progress <- function(n) utils::setTxtProgressBar(pb, n)
     opts <- list(progress=progress)
-    ############################################################
+    # submit jobs for writing configs.
     out.configs <- parallel.write.configs(settings, ensemble.samples, restart.list) %>%
       purrr::set_names(site.ids)
-    ############################################################
-    parallel::stopCluster(cl)
-    foreach::registerDoSEQ()
-    gc()
-    # foreach.
-    cores <- parallel::detectCores()-1
-    cl <- parallel::makeCluster(cores)
-    doSNOW::registerDoSNOW(cl)
-    #progress bar
-    pb <- utils::txtProgressBar(min=1, max=length(settings), style=3)
-    progress <- function(n) utils::setTxtProgressBar(pb, n)
-    opts <- list(progress=progress)
-    ############################################################
-    #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
+    # collect run info.
     runs.tmp <- list.files(rundir, full.names = F)
     runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
     writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
+    # submit jobs for model executions.
     job.sub(settings, F, F)
-    #------------- Reading - every iteration and for SDA
-    #put building of X into a function that gets called
+    # submit jobs for reading sda outputs.
     reads <- parallel.read.sda(settings, my.read_restart, settings$outdir, out.configs, read_restart_times[t+1], var.names, new.params)
     #let's read the parameters of each site/ens
     params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
-    # Now let's read the state variables of site/ens
-    #don't need to build X when t=1
     X <- foreach::foreach(r = reads, 
                           .packages=c("Kendall", "purrr"), 
                           .options.snow=opts) %dopar% {
@@ -296,7 +281,7 @@ sda.enkf.multisite <- function(settings,
     if (control$OutlierDetection){
       X <- outlier.detector.boxplot(X)
       PEcAn.logger::logger.info("Outlier Detection.")
-    } 
+    }
     X <- foreach::foreach(i = seq_along(X), 
                           .packages=c("Kendall", "purrr"), 
                           .options.snow=opts) %dopar% {
@@ -308,7 +293,10 @@ sda.enkf.multisite <- function(settings,
       `colnames<-`(c(rep(var.names, length(X)))) %>%
       `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
     FORECAST[[obs.t]] <- X
-    
+    # release memory.
+    parallel::stopCluster(cl)
+    foreach::registerDoSEQ()
+    gc()
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
     ###-------------------------------------------------------------------###---- 
@@ -358,7 +346,6 @@ sda.enkf.multisite <- function(settings,
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------###---- 
-    # Viz.output <- list(settings, obs.mean[[t]], obs.cov[[t]]) #keeping obs data and settings for later visualization in Dashboard
     sda.outputs <- list(obs.mean = obs.mean[[t]],
                         obs.cov = obs.cov[[t]],
                         forecast = FORECAST[[obs.t]],
@@ -390,8 +377,5 @@ sda.enkf.multisite <- function(settings,
       system2(sendmail, c("-f", paste0("\"", control$send_email$from, "\""), paste0("\"", control$send_email$to, "\""), "<", mailfile))
       unlink(mailfile)
     }
-    parallel::stopCluster(cl)
-    foreach::registerDoSEQ()
-    gc()
   }
 } # sda.enkf
