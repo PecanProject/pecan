@@ -192,7 +192,6 @@ sda.enkf.multisite <- function(settings,
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
-    source("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA/batch_script.R")
     # initialize dat for saving memory usage.
     sda.outputs <- FORECAST <- enkf.params <- ANALYSIS <- ens_weights <- list()
     ############################################################
