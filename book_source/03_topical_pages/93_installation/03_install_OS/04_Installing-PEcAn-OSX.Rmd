@@ -154,11 +154,6 @@ make
 sudo make install
 ```
 
-##### Option 2: Download and install:
-
-For manual installation instructions, see [DuckDB installation instructions](https://duckdb.org/docs/installation/?version=stable&environment=cli&platform=macos&download_method=direct).
-
-
 #### Apache Configuration  (Optional)
 
 Mac does not support pdo/postgresql by default. The easiest way to install is use: http://php-osx.liip.ch/
