@@ -154,14 +154,6 @@ make
 sudo make install
 ```
 
-#### Install DuckDB
-
-##### Option 1: Install using homebrew
-
-```bash
-brew install duckdb
-```
-
 ##### Option 2: Download and install:
 
 For manual installation instructions, see [DuckDB installation instructions](https://duckdb.org/docs/installation/?version=stable&environment=cli&platform=macos&download_method=direct).
