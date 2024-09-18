@@ -9,14 +9,14 @@ start_date <- "2012/01/01"
 end_date <- "2021/12/31"
 
 #setup working space
-outdir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/"
-SDA_run_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/run/"
-SDA_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/out/"
+outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA/"
+SDA_run_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA/run/"
+SDA_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA/out/"
 
-ERA5_dir <- "/projectnb/dietzelab/dongchen/anchorSites/ERA5_2012_2021/"
-XML_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml"
+ERA5_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/ERA5_2012_2021/"
+XML_out_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA/pecan.xml"
 
-pft_csv_dir <- "/projectnb/dietzelab/dongchen/anchorSites/site_pft.csv"
+pft_csv_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/site_pft.csv"
 modis_phenology_dir <- "/projectnb/dietzelab/Cherry/pft_files/leaf_phenology.csv"
 
 #Obs_prep part
@@ -45,11 +45,23 @@ SoilC_export_csv <- TRUE
 #Obs Date
 obs_start_date <- "2012-07-15"
 obs_end_date <- "2021-07-15"
-obs_outdir <- "/projectnb/dietzelab/dongchen/anchorSites/Obs"
+obs_outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/Obs"
 timestep <- list(unit="year", num=1)
 
+#sda batch settings (cores, number of folders)
+#write configs.
+write.config <- list(cores = 28, folder.num = 1)
+#analysis.
+analysis <- list(cores = 28, folder.num = 16)
+#split met.
+met.split <- list(cores = 28, folder.num = 16)
+#read sda
+sda.read <- list(cores = 28, folder.num = 16)
+#general job settings (model execution, remove files)
+general.job <- list(cores = 28, folder.num = 16)
+
 #specify model binary
-model_binary <- "/usr2/postdoc/istfer/SIPNET/trunk//sipnet_if"
+model_binary <- "/projectnb/dietzelab/dongchen/SIPNET/sipnet"
 
 #specify host section
 host.flag <- "local"
@@ -125,7 +137,7 @@ template <- PEcAn.settings::Settings(list(
     forecast.time.step = "year",
     start.date = start_date,
     end.date = end_date,
-    
+    # Obs prep part.
     Obs_Prep = structure(list(
       Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
       MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
@@ -135,6 +147,14 @@ template <- PEcAn.settings::Settings(list(
       end.date = obs_end_date,
       outdir = obs_outdir,
       timestep = timestep
+    )),
+    # sda batch part.
+    batch.settings = structure(list(
+      write.config = write.config,
+      analysis = analysis,
+      met.split = met.split,
+      sda.read = sda.read,
+      general.job = general.job
     ))
   )),
   
