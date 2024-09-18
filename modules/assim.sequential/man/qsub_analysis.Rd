@@ -4,7 +4,7 @@
 \alias{qsub_analysis}
 \title{qsub_analysis}
 \usage{
-qsub_analysis(folder.path, cores = NULL)
+qsub_analysis(folder.path, cores)
 }
 \arguments{
 \item{folder.path}{character: path where the `block.Rdata` file is stored.}

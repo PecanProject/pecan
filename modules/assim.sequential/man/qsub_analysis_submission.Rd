@@ -4,19 +4,14 @@
 \alias{qsub_analysis_submission}
 \title{qsub_analysis_submission}
 \usage{
-qsub_analysis_submission(
-  block.list,
-  outdir,
-  job.per.folder = 200,
-  cores = NULL
-)
+qsub_analysis_submission(block.list, outdir, folder.num, cores = NULL)
 }
 \arguments{
 \item{block.list}{list: MCMC configuration lists for the block SDA analysis.}
 
 \item{outdir}{character: SDA output path.}
 
-\item{job.per.folder}{numeric: number of jobs per folder.}
+\item{folder.num}{numeric: number of folders for each job to be running.}
 
 \item{cores}{numeric: number of cpus used for parallel computaion. Default is NULL.}
 }
