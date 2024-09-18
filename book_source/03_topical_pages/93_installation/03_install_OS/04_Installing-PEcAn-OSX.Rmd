@@ -8,10 +8,6 @@ Optional software includes Apache, Rails, and Rstudio. Apache is required to run
 
 #### Install build environment
 
-##### Step 1: Install R
-
-Download from 
-
 ##### Option 1: Download and install
 
 R: download from http://cran.r-project.org/bin/macosx/
