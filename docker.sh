@@ -26,7 +26,7 @@ PECAN_GIT_DATE="$(git log --pretty=format:%ad -1)"
 VERSION=${VERSION:-"$(awk '/Version:/ { print $2 }' base/all/DESCRIPTION)"}
 
 # check for branch and set IMAGE_VERSION
-if [ "${PECAN_GIT_BRANCH}" == "master" ]; then
+if [ "${PECAN_GIT_BRANCH}" == "main" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"latest"}
 elif [ "${PECAN_GIT_BRANCH}" == "develop" ]; then
     IMAGE_VERSION=${IMAGE_VERSION:-"develop"}
@@ -49,7 +49,7 @@ $0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION]
 
 The following script can be used to create all docker images. Without any
 options this will build all images and tag them based on the branch you
-are on. The master branch will be tagged with latest, develop branch will
+are on. The main branch will be tagged with latest, develop branch will
 be tagged with develop and any other branch will be tagged with testing.
 Most options can be set using either an environment variable or using
 command line options. If both are set, the command line options will
@@ -141,7 +141,7 @@ elif [ "${UPDATE_DEPENDS_FROM_TAG}" != "" ]; then
         docker/depends
 else
     if [ "$( docker image ls -q pecan/depends:${IMAGE_VERSION} )" == "" ]; then
-        if [ "${PECAN_GIT_BRANCH}" != "master" ]; then
+        if [ "${PECAN_GIT_BRANCH}" != "main" ]; then
             ${DEBUG} docker pull pecan/depends:R${R_VERSION}
             if [ "${IMAGE_VERSION}" != "develop" ]; then
                 ${DEBUG} docker tag pecan/depends:R${R_VERSION} pecan/depends:${IMAGE_VERSION}

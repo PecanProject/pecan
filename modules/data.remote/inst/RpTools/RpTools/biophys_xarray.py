@@ -9,7 +9,7 @@ Olli's python implementation of ESA SNAP s2toolbox biophysical processor and
 computation of vegetation indices.
 See ATBD at https://step.esa.int/docs/extra/ATBD_S2ToolBox_L2B_V1.1.pdf
 And java source code at
-https://github.com/senbox-org/s2tbx/tree/master/s2tbx-biophysical/src/main/java/org/esa/s2tbx/biophysical
+https://github.com/senbox-org/s2tbx/tree/main/s2tbx-biophysical/src/main/java/org/esa/s2tbx/biophysical
 
 Caveats
 Currently changes out of bounds inputs and outputs to nan (or min or max value
@@ -29,7 +29,7 @@ import xarray as xr
 
 # url to Sentinel 2 Toolbox's auxdata
 # This base_url points towards the original toolbox(not the one created by Olli)
-base_url = "https://raw.githubusercontent.com/senbox-org/s2tbx/master/s2tbx-biophysical/src/main/resources/auxdata/2_1/{}/{}"
+base_url = "https://raw.githubusercontent.com/senbox-org/s2tbx/main/s2tbx-biophysical/src/main/resources/auxdata/2_1/{}/{}"
 
 
 def get_fromurl(var, pattern):
