@@ -41,7 +41,6 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
-"doSNOW","*","modules/assim.sequential","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
 "dplyr","*","base/remote","Imports",FALSE
@@ -63,13 +62,12 @@
 "emdbook","*","modules/assim.sequential","Suggests",FALSE
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
-"foreach","*","modules/assim.sequential","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Suggests",FALSE
 "foreach","*","modules/data.remote","Imports",FALSE
 "fs","*","base/db","Imports",FALSE
 "fs","*","modules/data.land","Imports",FALSE
 "furrr","*","base/remote","Imports",FALSE
-"furrr","*","modules/assim.sequential","Suggests",FALSE
+"furrr","*","modules/assim.sequential","Imports",FALSE
 "furrr","*","modules/data.atmosphere","Suggests",FALSE
 "furrr","*","modules/data.land","Imports",FALSE
 "furrr","*","modules/data.remote","Imports",FALSE
