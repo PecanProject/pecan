@@ -360,7 +360,7 @@ job.sub <- function(settings, rm.file, only.nc) {
   num.per.folder <- ceiling(L/num.folder)
   outdir <- settings$outdir
   # read run.txt table for different run ids.
-  run.lists <- read.table(file.path(outdir, "run/runs.txt"))
+  run.lists <- readLines(file.path(outdir, "run/runs.txt"))
   # create folder for storing job outputs.
   batch.folder <- file.path(outdir, "batch")
   # delete the whole folder if it's not empty.
