@@ -77,7 +77,8 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
       if (PEcAn.remote::qsub_run_finished(
         run = id,
         host = host,
-        qstat = qstat)) {
+        qstat = qstat,
+        verbose = FALSE)) {
         return(id)
       }
     }) %>% unlist()
@@ -190,7 +191,8 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
       if (PEcAn.remote::qsub_run_finished(
         run = id,
         host = host,
-        qstat = qstat)) {
+        qstat = qstat,
+        verbose = FALSE)) {
         return(id)
       }
     }) %>% unlist()
@@ -305,7 +307,8 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
       if (PEcAn.remote::qsub_run_finished(
         run = id,
         host = host,
-        qstat = qstat)) {
+        qstat = qstat,
+        verbose = FALSE)) {
         return(id)
       }
     }) %>% unlist()
@@ -436,7 +439,8 @@ job.sub <- function(settings, rm.file = T, only.nc = T) {
       if (PEcAn.remote::qsub_run_finished(
         run = id,
         host = host,
-        qstat = qstat)) {
+        qstat = qstat,
+        verbose = FALSE)) {
         return(id)
       }
     }) %>% unlist()

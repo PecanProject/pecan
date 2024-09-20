@@ -2,11 +2,12 @@
 #'
 #' @param run run ID, as an integer
 #' @param qstat (string) qstat command for checking job status
+#' @param verbose Boolean: determine if you want to print out the progress, default is TRUE.
 #' @inheritParams remote.execute.cmd
 #'
 #' @return `TRUE` if run is marked as DONE, otherwise FALSE.
 #' @export
-qsub_run_finished <- function(run, host, qstat) {
+qsub_run_finished <- function(run, host, qstat, verbose = TRUE) {
   if (is.na(run)) {
     PEcAn.logger::logger.warn("Job", run, "encountered an error during submission.",
                               "NOTE that the job will be stamped as 'finished' in BETY.")
@@ -25,7 +26,9 @@ qsub_run_finished <- function(run, host, qstat) {
   }
 
   if (length(out) > 0 && substring(out, nchar(out) - 3) == "DONE") {
-    PEcAn.logger::logger.debug("Job", run, "for run", run_id_string, "finished")
+    if (verbose) {
+      PEcAn.logger::logger.debug("Job", run, "for run", run_id_string, "finished")
+    }
     return(TRUE)
   } else {
     return(FALSE)
