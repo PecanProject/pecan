@@ -6,15 +6,18 @@
 #' @author Dongchen Zhang.
 parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
   L <- length(settings)
-  batch.folder <- file.path(settings$outdir, "batch")
-  if (file.exists(batch.folder)){
-    unlink(batch.folder, recursive = T)
-  } 
-  dir.create(batch.folder)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$write.config$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$write.config$cores)
   num.per.folder <- ceiling(L/num.folder)
+  outdir <- settings$outdir
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
   folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
@@ -117,15 +120,18 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
 #' @author Dongchen Zhang.
 parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings.before.split, start.time, stop.time, inputs) {
   L <- length(settings)
-  batch.folder <- file.path(outdir, "batch")
-  if (file.exists(batch.folder)){
-    unlink(batch.folder, recursive = T)
-  } 
-  dir.create(batch.folder)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$met.split$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$met.split$cores)
   num.per.folder <- ceiling(L/num.folder)
+  outdir <- settings$outdir
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
   folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
@@ -233,15 +239,18 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
 #' @author Dongchen Zhang.
 parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, stop.time, var.names, new.params) {
   L <- length(settings)
-  batch.folder <- file.path(outdir, "batch")
-  if (file.exists(batch.folder)){
-    unlink(batch.folder, recursive = T)
-  } 
-  dir.create(batch.folder)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$sda.read$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$sda.read$cores)
   num.per.folder <- ceiling(L/num.folder)
+  outdir <- settings$outdir
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
   folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
@@ -345,18 +354,20 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
 #' the model execution will be submitted if it's `FALSE`.
 #' @param only.nc Boolean: if we want to only delete NC files.
 #' @author Dongchen Zhang.
-job.sub <- function(settings, rm.file = T, only.nc = T) {
-  outdir <- settings$outdir
+job.sub <- function(settings, rm.file, only.nc) {
   L <- length(settings)
-  batch.folder <- file.path(outdir, "batch")
-  if (file.exists(batch.folder)){
-    unlink(batch.folder, recursive = T)
-  } 
-  dir.create(batch.folder)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   num.per.folder <- ceiling(L/num.folder)
+  outdir <- settings$outdir
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
   job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
@@ -457,4 +468,111 @@ job.sub <- function(settings, rm.file = T, only.nc = T) {
     return(0)
   }
   Sys.sleep(10)
+}
+
+##' This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
+##' Including job creation, submission, and assemble.
+##' @title qsub_analysis_submission
+##' @param settings  PEcAn settings object.
+##' @param block.list list: MCMC configuration lists for the block SDA analysis.
+##' 
+qsub_analysis_submission <- function(settings, block.list) {
+  L <- length(block.list)
+  # grab info from settings.
+  num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$analysis$folder.num)
+  cores <- as.numeric(settings$state.data.assimilation$batch.settings$analysis$cores)
+  num.per.folder <- ceiling(L/num.folder)
+  outdir <- settings$outdir
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
+  # loop over sub-folders.
+  folder.paths <- job.ids <- c()
+  PEcAn.logger::logger.info(paste("Submitting", num.folder, "jobs."))
+  for (i in 1:num.folder) {
+    # create folder for each set of job runs.
+    # calculate start and end index for the current folder.
+    head.num <- (i-1)*job.per.folder + 1
+    if (i*job.per.folder > L) {
+      tail.num <- L
+    } else {
+      tail.num <- i*job.per.folder
+    }
+    # naming and creating folder.
+    folder.name <- paste0("From_", head.num, "_to_", tail.num)
+    folder.path <- file.path(batch.folder, folder.name)
+    folder.paths <- c(folder.paths, folder.path)
+    dir.create(folder.path)
+    # save corresponding block list to the folder.
+    blocks <- block.list[head.num:tail.num]
+    save(blocks, file = file.path(folder.path, "block.Rdata"))
+    # create job file.
+    jobsh <- c("#!/bin/bash -l", 
+               "module load R/4.1.2", 
+               "echo \"require (PEcAnAssimSequential)", 
+               "      require (foreach)", 
+               "      qsub_analysis('@FOLDER_PATH@', '@CORES@')", 
+               "    \" | R --no-save")
+    jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
+    jobsh <- gsub("@CORES@", cores, jobsh)
+    writeLines(jobsh, con = file.path(folder.path, "job.sh"))
+    # qsub command.
+    qsub <- "qsub -l h_rt=48:00:00 -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+    qsub <- gsub("@NAME@", paste0("Job-", i), qsub)
+    qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
+    qsub <- gsub("@STDERR@", file.path(folder.path, "stderr.log"), qsub)
+    qsub <- gsub("@CORES@", cores, qsub)
+    qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
+    cmd <- qsub[[1]]
+    out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
+  }
+  # checking results.
+  PEcAn.logger::logger.info("Checking results.")
+  # check outputs.
+  l <- length(list.files(batch.folder, pattern = "result.txt", recursive = T))
+  while(l < num.folder) {
+    Sys.sleep(60)
+    # grab completed job ids from server.
+    host <- settings$host
+    qstat <- host$qstat
+    completed_jobs <- job.ids %>% furrr::future_map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat,
+        verbose = FALSE)) {
+        return(id)
+      }
+    }) %>% unlist()
+    l <- length(list.files(batch.folder, pattern = "result.txt", recursive = T))
+    utils::setTxtProgressBar(pb, l)
+    # if all jobs are finished.
+    if (length(completed_jobs) == length(job.ids)) {
+      break
+    }
+  }
+  # if there is any job that is terminated by error.
+  if (l < num.folder) {
+    PEcAn.logger::logger.info(paste0("Something goes wrong within ", as.character(match.call()[[1]]), " job execution."))
+    return(0)
+  }
+  # assemble results.
+  PEcAn.logger::logger.info("Assembling results.")
+  analysis <- c()
+  for (path in folder.paths) {
+    res_env <- new.env()
+    load(file.path(path, "results.Rdata"), envir = res_env)
+    analysis <- c(analysis, res_env$results)
+  }
+  names(analysis) <- names(block.list)
+  return(analysis)
 }

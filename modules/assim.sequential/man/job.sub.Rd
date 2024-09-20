@@ -4,7 +4,7 @@
 \alias{job.sub}
 \title{job.sub}
 \usage{
-job.sub(settings, rm.file = T, only.nc = T)
+job.sub(settings, rm.file, only.nc)
 }
 \arguments{
 \item{settings}{PEcAn settings object.}

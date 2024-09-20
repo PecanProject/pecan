@@ -59,10 +59,8 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   if (!is.null(settings$state.data.assimilation$batch.settings$analysis)) {
-    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(block.list = block.list.all[[t]], 
-                                                                                   outdir = settings$outdir,
-                                                                                   folder.num = as.numeric(settings$state.data.assimilation$batch.settings$analysis$folder.num),
-                                                                                   cores = as.numeric(settings$state.data.assimilation$batch.settings$analysis$cores))))) {
+    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(settings = settings,
+                                                                                   block.list = block.list.all[[t]])))) {
       PEcAn.logger::logger.severe("Something wrong within the qsub_analysis_submission function.")
       return(0)
     }
@@ -652,116 +650,4 @@ block.2.vector <- function (block.list, X, H) {
               mu.a = mu.a,
               Pa = Pa,
               analysis = analysis))
-}
-
-##' This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
-##' Including job creation, submission, and assemble.
-##' @title qsub_analysis_submission
-##' @param block.list list: MCMC configuration lists for the block SDA analysis.
-##' @param outdir character: SDA output path.
-##' @param folder.num numeric: number of folders for each job to be running.
-##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
-##' @export
-##' 
-qsub_analysis_submission <- function(block.list, outdir, folder.num, cores = NULL) {
-  L <- length(block.list)
-  # create folder.
-  # if we have previous outputs, remove them.
-  if (file.exists(file.path(outdir, "qsub_analysis"))) {
-    unlink(file.path(outdir, "qsub_analysis"), recursive = T)
-  }
-  # create new folder.
-  dir.create(file.path(outdir, "qsub_analysis"))
-  # loop over sub-folders.
-  folder.paths <- c()
-  PEcAn.logger::logger.info(paste("Submitting", folder.num, "jobs."))
-  job.per.folder <- ceiling(L/num.folder)
-  for (i in 1:folder.num) {
-    # create folder for each set of job runs.
-    # calculate start and end index for the current folder.
-    head.num <- (i-1)*job.per.folder + 1
-    if (i*job.per.folder > L) {
-      tail.num <- L
-    } else {
-      tail.num <- i*job.per.folder
-    }
-    # naming and creating folder.
-    folder.name <- paste0("From_", head.num, "_to_", tail.num)
-    folder.path <- file.path(outdir, "qsub_analysis", folder.name)
-    folder.paths <- c(folder.paths, folder.path)
-    dir.create(folder.path)
-    # save corresponding block list to the folder.
-    blocks <- block.list[head.num:tail.num]
-    save(blocks, file = file.path(folder.path, "block.Rdata"))
-    # create job file.
-    jobsh <- c("#!/bin/bash -l", 
-               "module load R/4.1.2", 
-               "echo \"require (PEcAnAssimSequential)", 
-               "      require (foreach)", 
-               "      qsub_analysis('@FOLDER_PATH@', '@CORES@')", 
-               "    \" | R --no-save")
-    jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
-    jobsh <- gsub("@CORES@", cores, jobsh)
-    writeLines(jobsh, con = file.path(folder.path, "job.sh"))
-    # qsub command.
-    qsub <- "qsub -l h_rt=48:00:00 -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
-    qsub <- gsub("@NAME@", paste0("Job-", i), qsub)
-    qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
-    qsub <- gsub("@STDERR@", file.path(folder.path, "stderr.log"), qsub)
-    qsub <- gsub("@CORES@", cores, qsub)
-    qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
-    cmd <- qsub[[1]]
-    out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
-  }
-  # checking results.
-  PEcAn.logger::logger.info("Checking results.")
-  # check outputs.
-  l <- length(list.files(folder.paths, pattern = "result.txt", recursive = T))
-  while(l < folder.num) {
-    Sys.sleep(60)
-    l <- length(list.files(folder.paths, pattern = "result.txt", recursive = T))
-    print(l/folder.num)
-  }
-  PEcAn.logger::logger.info("Finished.")
-  # assemble results.
-  PEcAn.logger::logger.info("Assembling results.")
-  analysis <- c()
-  for (path in folder.paths) {
-    res_env <- new.env()
-    load(file.path(path, "results.Rdata"), envir = res_env)
-    analysis <- c(analysis, res_env$results)
-  }
-  names(analysis) <- names(block.list)
-  return(analysis)
-}
-
-##' This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
-##' @title qsub_analysis
-##' @param folder.path character: path where the `block.Rdata` file is stored.
-##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
-##' @export
-qsub_analysis <- function(folder.path, cores) {
-  # load file.
-  load(file.path(folder.path, "block.Rdata"))
-  # initialize parallel.
-  cl <- parallel::makeCluster(as.numeric(cores))
-  doSNOW::registerDoSNOW(cl)
-  # progress bar
-  pb <- utils::txtProgressBar(min=1, max=length(blocks), style=3)
-  progress <- function(n) utils::setTxtProgressBar(pb, n)
-  opts <- list(progress=progress)
-  # parallel computation.
-  l <- NULL # fix GitHub check issue.
-  results <- foreach::foreach(l = blocks, 
-                              .packages=c("Kendall", 
-                                          "purrr", 
-                                          "nimble",
-                                          "PEcAnAssimSequential"), 
-                              .options.snow=opts) %dopar% {
-                                MCMC_block_function(l)
-                              }
-  # wrap results.
-  parallel::stopCluster(cl)
-  writeLines("finished",con = file.path(folder.path, "result.txt"))
-  save(results, file = file.path(folder.path, "results.Rdata"))
 }

@@ -166,3 +166,33 @@ parallel.job.execution <- function(folder.path, cores) {
   foreach::registerDoSEQ()
   writeLines("finished",con = file.path(folder.path, "result.txt"))
 }
+
+##' This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
+##' @title qsub_analysis
+##' @param folder.path character: path where the `block.Rdata` file is stored.
+##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
+qsub_analysis <- function(folder.path, cores) {
+  # load file.
+  load(file.path(folder.path, "block.Rdata"))
+  # initialize parallel.
+  cl <- parallel::makeCluster(as.numeric(cores))
+  doSNOW::registerDoSNOW(cl)
+  # progress bar
+  pb <- utils::txtProgressBar(min=1, max=length(blocks), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
+  # parallel computation.
+  l <- NULL # fix GitHub check issue.
+  results <- foreach::foreach(l = blocks, 
+                              .packages=c("Kendall", 
+                                          "purrr", 
+                                          "nimble",
+                                          "PEcAnAssimSequential"), 
+                              .options.snow=opts) %dopar% {
+                                MCMC_block_function(l)
+                              }
+  # wrap results.
+  parallel::stopCluster(cl)
+  writeLines("finished",con = file.path(folder.path, "result.txt"))
+  save(results, file = file.path(folder.path, "results.Rdata"))
+}
