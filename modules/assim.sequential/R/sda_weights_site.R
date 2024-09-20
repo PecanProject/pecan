@@ -31,7 +31,7 @@ sda_weights_site <- function(FORECAST, ANALYSIS, t, ens){
         #calculate analysis variance
         Pa <- stats::sd(ANALYSIS[[t]][,site.ind])
         #calculate weights
-        w <- stats::dnorm(FORECAST.r[,site.ind], mu.a, Pa, TRUE)
+        w <- stats::dnorm(FORECAST[[t]][,site.ind], mu.a, Pa, TRUE)
       }else{
         #calculate analysis mean value
         mu.a <- apply(ANALYSIS[[t]][,site.ind],2 ,mean)

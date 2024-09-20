@@ -4,12 +4,14 @@
 \alias{rm.files}
 \title{rm.files}
 \usage{
-rm.files(folder.path, cores, only.nc = T)
+rm.files(folder.path, cores, only.nc)
 }
 \arguments{
 \item{folder.path}{Character: physical path to which the job file is located.}
 
-\item{cores}{numeric: number of requested CPUs.}
+\item{cores}{Numeric: number of requested CPUs.}
+
+\item{only.nc}{Boolean: determine if we just want to remove NC files.}
 }
 \description{
 This function realizes the parallel `unlink` function.

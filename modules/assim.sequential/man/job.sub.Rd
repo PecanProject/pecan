@@ -13,8 +13,6 @@ job.sub(settings, rm.file, only.nc)
 the model execution will be submitted if it's `FALSE`.}
 
 \item{only.nc}{Boolean: if we want to only delete NC files.}
-
-\item{outdir}{Character: physical path to which model outputs are stored.}
 }
 \description{
 This function provides an option for executing model or removing files using cluster.

@@ -40,7 +40,7 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
                       outdir = file.path(settings$outdir, "out"),
                       ensemble.samples = ensemble.samples,
                       restart.list = restart.list[head.num:tail.num])
-      save(configs, file = file.path(folder.path, "configs.Rdata"))
+      saveRDS(configs, file = file.path(folder.path, "configs.rds"))
     }
     jobsh <- c("#!/bin/bash -l", 
                "module load R/4.1.2", 
@@ -118,7 +118,7 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
 #' @param stop.time Character: stop time for cut met files.
 #' @param inputs List: physical paths to met files for each site.
 #' @author Dongchen Zhang.
-parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings.before.split, start.time, stop.time, inputs) {
+parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.split, start.time, stop.time, inputs) {
   L <- length(settings)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$met.split$folder.num)
@@ -157,7 +157,7 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
                       stop.time = stop.time,
                       inputs = inputs[head.num:tail.num],
                       nens = as.numeric(conf.settings.before.split[[1]]$ensemble$size))
-      save(configs, file = file.path(folder.path, "configs.Rdata"))
+      saveRDS(configs, file = file.path(folder.path, "configs.rds"))
     }
     jobsh <- c("#!/bin/bash -l", 
                "module load R/4.1.2", 
@@ -276,7 +276,7 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
                       var.names = var.names,
                       new.params = new.params[head.num:tail.num],
                       nens = dim(out.configs[[1]]$runs)[1])
-      save(configs, file = file.path(folder.path, "configs.Rdata"))
+      saveRDS(configs, file = file.path(folder.path, "configs.rds"))
     }
     jobsh <- c("#!/bin/bash -l", 
                "module load R/4.1.2", 
@@ -349,7 +349,6 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
 #' @description This function provides an option for executing model or removing files using cluster.
 #' @title job.sub
 #' @param settings  PEcAn settings object.
-#' @param outdir Character: physical path to which model outputs are stored.
 #' @param rm.file Boolean: if we want to delete files.
 #' the model execution will be submitted if it's `FALSE`.
 #' @param only.nc Boolean: if we want to only delete NC files.
@@ -361,6 +360,8 @@ job.sub <- function(settings, rm.file, only.nc) {
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   num.per.folder <- ceiling(L/num.folder)
   outdir <- settings$outdir
+  # read run.txt table for different run ids.
+  run.lists <- read.table(file.path(outdir, "run/runs.txt"))
   # create folder for storing job outputs.
   batch.folder <- file.path(outdir, "batch")
   # delete the whole folder if it's not empty.
@@ -385,14 +386,13 @@ job.sub <- function(settings, rm.file, only.nc) {
     } else {
       dir.create(folder.path)
       # write parameters.
-      # iteration, sza, vza, psi, observed, wavelengths.
       folder.runs <- run.lists[head.num:tail.num,]
       if (rm.file) {
         folder.runs <- file.path(outdir, "out", folder.runs)
       } else {
         folder.runs <- file.path(outdir, "run", folder.runs)
       }
-      save(folder.runs, file = file.path(folder.path, "runs.Rdata"))
+      saveRDS(folder.runs, file = file.path(folder.path, "runs.rds"))
     }
     # create job file.
     if (rm.file) {
@@ -401,7 +401,7 @@ job.sub <- function(settings, rm.file, only.nc) {
                    "module load R/4.1.2", 
                    "echo \"require (PEcAnAssimSequential)", 
                    "      require (foreach)",
-                   "      rm.files('@FOLDER_PATH@', '@CORES@')", 
+                   "      rm.files('@FOLDER_PATH@', '@CORES@', 'TRUE')", 
                    "    \" | R --no-save")
       } else {
         jobsh <- c("#!/bin/bash -l", 
@@ -497,11 +497,11 @@ qsub_analysis_submission <- function(settings, block.list) {
   for (i in 1:num.folder) {
     # create folder for each set of job runs.
     # calculate start and end index for the current folder.
-    head.num <- (i-1)*job.per.folder + 1
-    if (i*job.per.folder > L) {
+    head.num <- (i-1)*num.per.folder + 1
+    if (i*num.per.folder > L) {
       tail.num <- L
     } else {
-      tail.num <- i*job.per.folder
+      tail.num <- i*num.per.folder
     }
     # naming and creating folder.
     folder.name <- paste0("From_", head.num, "_to_", tail.num)
@@ -510,7 +510,7 @@ qsub_analysis_submission <- function(settings, block.list) {
     dir.create(folder.path)
     # save corresponding block list to the folder.
     blocks <- block.list[head.num:tail.num]
-    save(blocks, file = file.path(folder.path, "block.Rdata"))
+    saveRDS(blocks, file = file.path(folder.path, "block.rds"))
     # create job file.
     jobsh <- c("#!/bin/bash -l", 
                "module load R/4.1.2", 
@@ -540,6 +540,7 @@ qsub_analysis_submission <- function(settings, block.list) {
   PEcAn.logger::logger.info("Checking results.")
   # check outputs.
   l <- length(list.files(batch.folder, pattern = "result.txt", recursive = T))
+  pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
   while(l < num.folder) {
     Sys.sleep(60)
     # grab completed job ids from server.

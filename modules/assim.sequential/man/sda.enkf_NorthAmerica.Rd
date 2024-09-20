@@ -12,8 +12,7 @@ sda.enkf_NorthAmerica(
   pre_enkf_params = NULL,
   ensemble.samples = NULL,
   control = list(TimeseriesPlot = FALSE, OutlierDetection = FALSE, send_email = NULL,
-    keepNC = TRUE, forceRun = TRUE, MCMC.args = NULL),
-  ...
+    keepNC = TRUE, forceRun = TRUE, MCMC.args = NULL)
 )
 }
 \arguments{

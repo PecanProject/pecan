@@ -36,8 +36,7 @@ sda.enkf_NorthAmerica <- function(settings,
                                                send_email = NULL,
                                                keepNC = TRUE,
                                                forceRun = TRUE,
-                                               MCMC.args = NULL),
-                                  ...) {
+                                               MCMC.args = NULL)) {
   # foreach.
   cores <- parallel::detectCores()
   cl <- parallel::makeCluster(cores)
@@ -271,6 +270,8 @@ sda.enkf_NorthAmerica <- function(settings,
     reads <- parallel.read.sda(settings, my.read_restart, settings$outdir, out.configs, read_restart_times[t+1], var.names, new.params)
     #let's read the parameters of each site/ens
     params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
+    # add namespace for variables inside the foreach.
+    r <- NULL
     X <- foreach::foreach(r = reads, 
                           .packages=c("Kendall", "purrr"), 
                           .options.snow=opts) %dopar% {

@@ -7,7 +7,6 @@
 parallel.split.met(
   settings,
   my.split_inputs,
-  outdir,
   conf.settings.before.split,
   start.time,
   stop.time,

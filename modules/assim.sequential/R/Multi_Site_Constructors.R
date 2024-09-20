@@ -95,6 +95,8 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   #
   nvariable <- length(var.names)
   Y<-c()
+  # fix GitHub checks.
+  site <- NULL
   res <- foreach::foreach(site = site.ids, 
                           .packages=c("Kendall", "purrr"), 
                           .options.snow=opts) %dopar% {

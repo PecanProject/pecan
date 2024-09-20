@@ -6,7 +6,7 @@
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 write.configs.fun <- function(folder.path, cores, lib) {
-  load(file.path(folder.path, "configs.Rdata"))
+  configs <- readRDS(file.path(folder.path, "configs.rds"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
@@ -14,6 +14,8 @@ write.configs.fun <- function(folder.path, cores, lib) {
   pb <- utils::txtProgressBar(min=1, max=length(configs$setting), style=3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
+  # add namespace for variables inside the foreach.
+  i <- NULL
   out.configs <- foreach::foreach(i = seq_along(configs$setting), 
                                   .packages=c("Kendall", "purrr", lib), 
                                   .options.snow=opts) %dopar% {
@@ -43,7 +45,7 @@ write.configs.fun <- function(folder.path, cores, lib) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 met.split.fun <- function(folder.path, cores, lib) {
-  load(file.path(folder.path, "configs.Rdata"))
+  configs <- readRDS(file.path(folder.path, "configs.rds"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
@@ -51,6 +53,8 @@ met.split.fun <- function(folder.path, cores, lib) {
   pb <- utils::txtProgressBar(min=1, max=length(configs$config.settings), style=3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
+  # add namespace for variables inside the foreach.
+  k <- NULL
   splits <- foreach::foreach(k = seq_along(configs$config.settings), 
                              .packages=c("Kendall", "purrr", "lubridate", lib), 
                              .options.snow=opts) %dopar% {
@@ -79,7 +83,7 @@ met.split.fun <- function(folder.path, cores, lib) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 read.fun <- function(folder.path, cores, lib) {
-  load(file.path(folder.path, "configs.Rdata"))
+  configs <- readRDS(file.path(folder.path, "configs.rds"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
@@ -87,6 +91,8 @@ read.fun <- function(folder.path, cores, lib) {
   pb <- utils::txtProgressBar(min=1, max=length(configs$out.configs), style=3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
+  # add namespace for variables inside the foreach.
+  k <- NULL
   reads <- foreach::foreach(k = seq_along(configs$out.configs), 
                             .packages=c("Kendall", "purrr", lib), 
                             .options.snow=opts) %dopar% {
@@ -110,12 +116,13 @@ read.fun <- function(folder.path, cores, lib) {
 #' @description This function realizes the parallel `unlink` function.
 #' @title rm.files
 #' @param folder.path Character: physical path to which the job file is located.
-#' @param cores numeric: number of requested CPUs.
+#' @param cores Numeric: number of requested CPUs.
+#' @param only.nc Boolean: determine if we just want to remove NC files.
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
-rm.files <- function(folder.path, cores, only.nc = T) {
+rm.files <- function(folder.path, cores, only.nc) {
   only.nc <- as.logical(only.nc)
-  load(file.path(folder.path, "runs.Rdata"))
+  folder.runs <- readRDS(file.path(folder.path, "runs.rds"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
@@ -123,6 +130,8 @@ rm.files <- function(folder.path, cores, only.nc = T) {
   pb <- utils::txtProgressBar(min=1, max=length(folder.runs), style=3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
+  # add namespace for variables inside the foreach.
+  file <- NULL
   if (only.nc) {
     test = foreach::foreach(file = folder.runs, 
                             .packages=c("Kendall"), 
@@ -147,13 +156,15 @@ rm.files <- function(folder.path, cores, only.nc = T) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 parallel.job.execution <- function(folder.path, cores) {
-  load(file.path(folder.path, "runs.Rdata"))
+  folder.runs <- readRDS(file.path(folder.path, "runs.rds"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
   pb <- utils::txtProgressBar(min=1, max=length(folder.runs), style=3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
+  # add namespace for variables inside the foreach.
+  folder <- NULL
   verb <- foreach::foreach(folder = folder.runs, 
                            .packages=c("Kendall"), 
                            .options.snow=opts) %dopar% {
@@ -175,7 +186,7 @@ parallel.job.execution <- function(folder.path, cores) {
 ##' @importFrom foreach %dopar%
 qsub_analysis <- function(folder.path, cores) {
   # load file.
-  load(file.path(folder.path, "block.Rdata"))
+  blocks <- readRDS(file.path(folder.path, "block.rds"))
   # initialize parallel.
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
@@ -184,7 +195,8 @@ qsub_analysis <- function(folder.path, cores) {
   progress <- function(n) utils::setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
   # parallel computation.
-  l <- NULL # fix GitHub check issue.
+  # add namespace for variables inside the foreach.
+  l <- NULL
   results <- foreach::foreach(l = blocks, 
                               .packages=c("Kendall", 
                                           "purrr", 
