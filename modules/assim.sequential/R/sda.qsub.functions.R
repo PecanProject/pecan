@@ -15,7 +15,7 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$write.config$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$write.config$cores)
   num.per.folder <- ceiling(L/num.folder)
-  folder.paths <- c()
+  folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
     head.num <- (i-1)*num.per.folder + 1
@@ -58,6 +58,11 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
     qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
     cmd <- qsub[[1]]
     out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
   }
   # check outputs.
   PEcAn.logger::logger.info("Checking outputs.")
@@ -65,8 +70,28 @@ parallel.write.configs <- function (settings, ensemble.samples, restart.list) {
   pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
   while(l < num.folder) {
     Sys.sleep(60)
+    # grab completed job ids from server.
+    host <- settings$host
+    qstat <- host$qstat
+    completed_jobs <- job.ids %>% furrr::future_map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat)) {
+        return(id)
+      }
+    }) %>% unlist()
     l <- length(list.files(batch.folder, pattern = "out.configs.Rdata", recursive = T))
     utils::setTxtProgressBar(pb, l)
+    # if all jobs are finished.
+    if (length(completed_jobs) == length(job.ids)) {
+      break
+    }
+  }
+  # if there is any job that is terminated by error.
+  if (l < num.folder) {
+    PEcAn.logger::logger.info(paste0("Something goes wrong within ", as.character(match.call()[[1]]), " job execution."))
+    return(0)
   }
   Sys.sleep(10)
   # assemble results.
@@ -100,7 +125,7 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$met.split$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$met.split$cores)
   num.per.folder <- ceiling(L/num.folder)
-  folder.paths <- c()
+  folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
     head.num <- (i-1)*num.per.folder + 1
@@ -146,6 +171,11 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
     qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
     cmd <- qsub[[1]]
     out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
   }
   # check outputs.
   PEcAn.logger::logger.info("Checking outputs.")
@@ -153,8 +183,28 @@ parallel.split.met <- function (settings, my.split_inputs, outdir, conf.settings
   pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
   while(l < num.folder) {
     Sys.sleep(60)
+    # grab completed job ids from server.
+    host <- settings$host
+    qstat <- host$qstat
+    completed_jobs <- job.ids %>% furrr::future_map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat)) {
+        return(id)
+      }
+    }) %>% unlist()
     l <- length(list.files(batch.folder, pattern = "splits.Rdata", recursive = T))
     utils::setTxtProgressBar(pb, l)
+    # if all jobs are finished.
+    if (length(completed_jobs) == length(job.ids)) {
+      break
+    }
+  }
+  # if there is any job that is terminated by error.
+  if (l < num.folder) {
+    PEcAn.logger::logger.info(paste0("Something goes wrong within ", as.character(match.call()[[1]]), " job execution."))
+    return(0)
   }
   Sys.sleep(10)
   # assemble results.
@@ -190,7 +240,7 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$sda.read$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$sda.read$cores)
   num.per.folder <- ceiling(L/num.folder)
-  folder.paths <- c()
+  folder.paths <- job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
     head.num <- (i-1)*num.per.folder + 1
@@ -236,6 +286,11 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
     qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
     cmd <- qsub[[1]]
     out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
   }
   # check outputs.
   PEcAn.logger::logger.info("Checking outputs.")
@@ -243,8 +298,28 @@ parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, st
   pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
   while(l < num.folder) {
     Sys.sleep(60)
+    # grab completed job ids from server.
+    host <- settings$host
+    qstat <- host$qstat
+    completed_jobs <- job.ids %>% furrr::future_map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat)) {
+        return(id)
+      }
+    }) %>% unlist()
     l <- length(list.files(batch.folder, pattern = "reads.Rdata", recursive = T))
     utils::setTxtProgressBar(pb, l)
+    # if all jobs are finished.
+    if (length(completed_jobs) == length(job.ids)) {
+      break
+    }
+  }
+  # if there is any job that is terminated by error.
+  if (l < num.folder) {
+    PEcAn.logger::logger.info(paste0("Something goes wrong within ", as.character(match.call()[[1]]), " job execution."))
+    return(0)
   }
   Sys.sleep(10)
   # assemble results.
@@ -279,6 +354,7 @@ job.sub <- function(settings, rm.file = T, only.nc = T) {
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$folder.num)
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   num.per.folder <- ceiling(L/num.folder)
+  job.ids <- c()
   for (i in 1:num.folder) {
     # create folder for each set of pixels.
     head.num <- (i-1)*num.per.folder + 1
@@ -341,6 +417,11 @@ job.sub <- function(settings, rm.file = T, only.nc = T) {
     qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
     cmd <- qsub[[1]]
     out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # grab job ids for future job completion detection.
+    job.ids <- c(job.ids, PEcAn.remote::qsub_get_jobid(
+      out = out[length(out)],
+      qsub.jobid = settings$host$qsub.jobid,
+      stop.on.error = TRUE))
   }
   # check outputs.
   PEcAn.logger::logger.info("Checking outputs.")
@@ -348,8 +429,28 @@ job.sub <- function(settings, rm.file = T, only.nc = T) {
   pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
   while(l < num.folder) {
     Sys.sleep(60)
+    # grab completed job ids from server.
+    host <- settings$host
+    qstat <- host$qstat
+    completed_jobs <- job.ids %>% furrr::future_map(function(id) {
+      if (PEcAn.remote::qsub_run_finished(
+        run = id,
+        host = host,
+        qstat = qstat)) {
+        return(id)
+      }
+    }) %>% unlist()
     l <- length(list.files(batch.folder, pattern = "result.txt", recursive = T))
     utils::setTxtProgressBar(pb, l)
+    # if all jobs are finished.
+    if (length(completed_jobs) == length(job.ids)) {
+      break
+    }
+  }
+  # if there is any job that is terminated by error.
+  if (l < num.folder) {
+    PEcAn.logger::logger.info(paste0("Something goes wrong within ", as.character(match.call()[[1]]), " job execution."))
+    return(0)
   }
   Sys.sleep(10)
 }
