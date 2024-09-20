@@ -145,6 +145,8 @@ parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.
     folder.name <- paste0("From_", head.num, "_to_", tail.num)
     folder.path <- file.path(batch.folder, folder.name)
     folder.paths <- c(folder.paths, folder.path)
+    # pass inputs by folder to a temperate variable.
+    folder.inputs <- inputs[head.num:tail.num]
     if (dir.exists(folder.path)) {
       unlink(x = file.path(folder.path, c("stderr.log", "stdout.log")))
     } else {
@@ -155,7 +157,7 @@ parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.
                       config.settings = conf.settings.before.split[head.num:tail.num],
                       start.time = start.time,
                       stop.time = stop.time,
-                      inputs = inputs[head.num:tail.num],
+                      inputs = folder.inputs,
                       nens = as.numeric(conf.settings.before.split[[1]]$ensemble$size))
       saveRDS(configs, file = file.path(folder.path, "configs.rds"))
     }
