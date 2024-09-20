@@ -59,8 +59,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   if (!is.null(settings$state.data.assimilation$batch.settings$analysis)) {
-    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(settings = settings,
-                                                                                   block.list = block.list.all[[t]])))) {
+    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(settings = settings, block.list = block.list.all[[t]])))) {
       PEcAn.logger::logger.severe("Something wrong within the qsub_analysis_submission function.")
       return(0)
     }

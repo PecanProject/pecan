@@ -7,7 +7,6 @@
 parallel.read.sda(
   settings,
   my.read_restart,
-  outdir,
   out.configs,
   stop.time,
   var.names,
@@ -18,8 +17,6 @@ parallel.read.sda(
 \item{settings}{PEcAn settings object.}
 
 \item{my.read_restart}{Character: Function to be called for reading sda outputs.}
-
-\item{outdir}{Character: physical path to which model outputs are stored.}
 
 \item{out.configs}{Lists: outputs returned by `parallel.write.configs` function.}
 

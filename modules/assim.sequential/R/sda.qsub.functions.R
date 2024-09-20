@@ -145,8 +145,6 @@ parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.
     folder.name <- paste0("From_", head.num, "_to_", tail.num)
     folder.path <- file.path(batch.folder, folder.name)
     folder.paths <- c(folder.paths, folder.path)
-    # pass inputs by folder to a temperate variable.
-    folder.inputs <- inputs[head.num:tail.num]
     if (dir.exists(folder.path)) {
       unlink(x = file.path(folder.path, c("stderr.log", "stdout.log")))
     } else {
@@ -157,7 +155,7 @@ parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.
                       config.settings = conf.settings.before.split[head.num:tail.num],
                       start.time = start.time,
                       stop.time = stop.time,
-                      inputs = folder.inputs,
+                      inputs = inputs[head.num:tail.num],
                       nens = as.numeric(conf.settings.before.split[[1]]$ensemble$size))
       saveRDS(configs, file = file.path(folder.path, "configs.rds"))
     }
@@ -233,13 +231,12 @@ parallel.split.met <- function (settings, my.split_inputs, conf.settings.before.
 #' @title parallel.read.sda
 #' @param settings  PEcAn settings object.
 #' @param my.read_restart Character: Function to be called for reading sda outputs.
-#' @param outdir Character: physical path to which model outputs are stored.
 #' @param out.configs Lists: outputs returned by `parallel.write.configs` function.
 #' @param stop.time Character: stop time for reading NC files.
 #' @param var.names Character: names of variables to be read.
 #' @param new.params Lists: outputs returned by `sda_matchparam` function.
 #' @author Dongchen Zhang.
-parallel.read.sda <- function(settings, my.read_restart, outdir, out.configs, stop.time, var.names, new.params) {
+parallel.read.sda <- function(settings, my.read_restart, out.configs, stop.time, var.names, new.params) {
   L <- length(settings)
   # grab info from settings.
   num.folder <- as.numeric(settings$state.data.assimilation$batch.settings$sda.read$folder.num)

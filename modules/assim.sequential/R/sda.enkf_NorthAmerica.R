@@ -215,7 +215,6 @@ sda.enkf_NorthAmerica <- function(settings,
       conf.settings.before.split <- conf.settings %>% `class<-`(c("list"))
       inputs.split <- parallel.split.met(settings,
                                          my.split_inputs, 
-                                         settings$outdir, 
                                          conf.settings.before.split, 
                                          (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + 
                                             lubridate::second(lubridate::hms("00:00:01"))), 
@@ -267,7 +266,7 @@ sda.enkf_NorthAmerica <- function(settings,
     # submit jobs for model executions.
     job.sub(settings, F, F)
     # submit jobs for reading sda outputs.
-    reads <- parallel.read.sda(settings, my.read_restart, settings$outdir, out.configs, read_restart_times[t+1], var.names, new.params)
+    reads <- parallel.read.sda(settings, my.read_restart, out.configs, read_restart_times[t+1], var.names, new.params)
     #let's read the parameters of each site/ens
     params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
     # add namespace for variables inside the foreach.
