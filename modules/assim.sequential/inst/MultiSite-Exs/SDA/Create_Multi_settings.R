@@ -85,7 +85,9 @@ if (host.flag == "remote") {
     name = "localhost",
     folder = SDA_out_dir,
     outdir = SDA_out_dir,
-    rundir = SDA_run_dir
+    rundir = SDA_run_dir,
+    qsub.jobid = "Your job ([0-9]+) .*",
+    qstat = "qstat -j @JOBID@ || echo DONE"
   ))
 } else if (host.flag == "rabbitmq") {
   host = structure(list(
