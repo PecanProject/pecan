@@ -41,6 +41,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","modules/assim.sequential","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
 "dplyr","*","base/remote","Imports",FALSE
