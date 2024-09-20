@@ -15,3 +15,6 @@ qsub_analysis_submission(settings, block.list)
 This function provides means to split large SDA analysis (MCMC) runs into separate `qsub` jobs.
 Including job creation, submission, and assemble.
 }
+\author{
+Dongchen Zhang
+}

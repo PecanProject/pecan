@@ -171,6 +171,8 @@ parallel.job.execution <- function(folder.path, cores) {
 ##' @title qsub_analysis
 ##' @param folder.path character: path where the `block.Rdata` file is stored.
 ##' @param cores numeric: number of cpus used for parallel computaion. Default is NULL.
+##' @author Dongchen Zhang.
+##' @importFrom foreach %dopar%
 qsub_analysis <- function(folder.path, cores) {
   # load file.
   load(file.path(folder.path, "block.Rdata"))

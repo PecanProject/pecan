@@ -475,6 +475,7 @@ job.sub <- function(settings, rm.file, only.nc) {
 ##' @title qsub_analysis_submission
 ##' @param settings  PEcAn settings object.
 ##' @param block.list list: MCMC configuration lists for the block SDA analysis.
+##' @author Dongchen Zhang
 ##' 
 qsub_analysis_submission <- function(settings, block.list) {
   L <- length(block.list)

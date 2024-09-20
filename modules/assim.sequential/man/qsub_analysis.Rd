@@ -14,3 +14,6 @@ qsub_analysis(folder.path, cores)
 \description{
 This function can help to execute `foreach` parallel MCMC sampling given generated MCMC configuration lists.
 }
+\author{
+Dongchen Zhang.
+}
