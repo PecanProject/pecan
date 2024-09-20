@@ -79,7 +79,6 @@ met.split.fun <- function(folder.path, cores, lib) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 read.fun <- function(folder.path, cores, lib) {
-  library(foreach)
   load(file.path(folder.path, "configs.Rdata"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
@@ -115,7 +114,6 @@ read.fun <- function(folder.path, cores, lib) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 rm.files <- function(folder.path, cores, only.nc = T) {
-  library(foreach)
   only.nc <- as.logical(only.nc)
   load(file.path(folder.path, "runs.Rdata"))
   # foreach.
@@ -149,7 +147,6 @@ rm.files <- function(folder.path, cores, only.nc = T) {
 #' @author Dongchen Zhang.
 #' @importFrom foreach %dopar%
 parallel.job.execution <- function(folder.path, cores) {
-  library(foreach)
   load(file.path(folder.path, "runs.Rdata"))
   # foreach.
   cl <- parallel::makeCluster(as.numeric(cores))
