@@ -439,7 +439,6 @@ MCMC_block_function <- function(block) {
   conf$addSampler(target = samplerLists[[X.mod.ind]]$target, type = "ess",
                   control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
                                  latents = "X", pfOptimizeNparticles = TRUE))
-  
   #add toggle Y sampler.
   for (i in 1:block$constant$YN) {
     conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
