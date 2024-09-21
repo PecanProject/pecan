@@ -1,19 +1,20 @@
 ### Mac OSX {#macosx}
 
-These are specific notes for installing PEcAn on Mac OSX and will be referenced from the main [installing PEcAn](Installing-PEcAn) page. You will at least need to install the build environment and Postgres sections. If you want to access the database/PEcAn using a web browser you will need to install Apache. To access the database using the BETY interface, you will need to have Ruby installed.
+These are specific notes for installing PEcAn on Mac OSX and referenced from the [installing PEcAn](Installing-PEcAn) page. 
 
-This document also contains information on how to install the Rstudio server edition as well as any other packages that can be helpful.
+Build environment and Postgres sections are required to install and use PEcAn.
 
+Optional software includes Apache, Rails, and Rstudio. Apache is required to run the BETYdb UI and the web-based version of PEcAn - both are optional. Rails is requred to use the BETYdb web interface. Rstudio is a commonly used IDE for R.
 
 #### Install build environment
 
+##### Option 1: Download and install
+
+R: download from http://cran.r-project.org/bin/macosx/
+
+gfortran: download from http://cran.r-project.org/bin/macosx/tools/
+
 ```bash
-# install R
-# download from http://cran.r-project.org/bin/macosx/
-
-# install gfortran 
-# download from http://cran.r-project.org/bin/macosx/tools/
-
 # install OpenMPI
 curl -o openmpi-1.6.3.tar.gz http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz
 tar zxf openmpi-1.6.3.tar.gz
@@ -42,14 +43,63 @@ sudo make install
 cd ..
 ```
 
-#### Install Postgres
-
-For those on a Mac I use the following app for postgresql which has
-postgis already installed (http://postgresapp.com/)
-
-To get postgis run the following commands in psql:
+##### Option 2: Homebrew
 
 ```bash
+# R
+brew install --cask r
+# gfortran
+brew install gcc
+# OpenMPI
+brew install open-mpi
+# szip
+brew install szip
+# HDF5
+brew install hdf5 
+## homebrew should configure hdf5 with fortran and cxx, otherwise:
+## brew install hdf5 --with-fortran --with-cxx
+```
+
+
+#### Install Postgres and PostGIS
+
+##### Option 1: 
+
+For MacOS, the Postgres.app provides Postgres with PostGIS
+already installed (http://postgresapp.com/).
+
+To run Postgres:
+*	Open Postgres.app.
+* In the menu bar, click the elephant icon and select “Open psql”.
+
+##### Option 2: install using homebrew:
+
+```bash
+# optional: remove existing postgres installations with:
+# brew uninstall --force postgresql
+
+# install Postgres, fixed at v12 (officially supported by BETYdb):
+brew install postgres@12
+brew pin postgres@12
+
+# PostGIS
+brew install postgis
+
+# to run Postgres:
+brew services start postgresql
+```
+
+#### Enable PostGIS
+
+To enable PostGIS, you should start Postgres:
+
+```bash
+psql postgres
+```
+
+And then run the following commands:
+
+```sql
 ##### Enable PostGIS (includes raster)
 CREATE EXTENSION postgis;
 ##### Enable Topology
@@ -60,22 +110,41 @@ CREATE EXTENSION fuzzystrmatch;
 CREATE EXTENSION postgis_tiger_geocoder;
 ```
 
-To check your postgis run the following command again in psql: `SELECT PostGIS_full_version();`
+To check your postgis run the following command again in psql: 
+
+```sql
+SELECT PostGIS_full_version();`
+```
 
 #### Additional installs
 
 
 ##### Install JAGS
 
-Download JAGS from http://sourceforge.net/projects/mcmc-jags/files/JAGS/3.x/Mac%20OS%20X/JAGS-Mavericks-3.4.0.dmg/download
+
+##### Option 1: using homebrew
+
+```bash
+brew install jags
+```
+
+##### Option 2: Download 
+
+Download JAGS from http://sourceforge.net/projects/mcmc-jags/files/JAGS/3.x/Mac%20OS%20X/JAGS-Mavericks-3.4.0.dmg/download.
+
 
 ##### Install udunits
 
-Installing udunits-2 on MacOSX is done from source.
+##### Option 1: Install using homebrew:
+
+```bash
+brew install udunits
+```
+
+##### Option 2: Install udunits-2 on MacOSX is done from source.
 
 * download most recent [version of Udunits here](http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
 * instructions for [compiling from source](http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html#Obtain)
-
 
 ```bash
 curl -o udunits-2.1.24.tar.gz ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz
@@ -86,7 +155,7 @@ make
 sudo make install
 ```
 
-#### Apache Configuration
+#### Apache Configuration  (Optional)
 
 Mac does not support pdo/postgresql by default. The easiest way to install is use: http://php-osx.liip.ch/
 
@@ -102,10 +171,24 @@ Alias /pecan ${PWD}/pecan/web
 EOF
 ```
 
-#### Ruby
+#### Ruby  (Optional)
 
-The default version of ruby should work. Or use [JewelryBox](https://jewelrybox.unfiniti.com/).
+_Note: it is recommended that BETYdb be run using Docker because the application uses unsupported versions of Ruby and Rails._
+  
+The BETYdb application requires Ruby version 2.7.7, as specified in [PecanProject/bety/.ruby-version](https://github.com/PecanProject/bety/blob/develop/.ruby-version). 
 
-#### Rstudio Server
+```bash
+brew install rbenv
+rbenv init
+rbenv install 2.7.7 
+```
 
-For the mac you can download [Rstudio Desktop](http://www.rstudio.com/).
+#### Rstudio (Optional)
+
+For MacOS, you can download [Rstudio Desktop](http://www.rstudio.com/).
+
+Or using homebrew:
+
+```bash
+brew install --cask rstudio
+```
