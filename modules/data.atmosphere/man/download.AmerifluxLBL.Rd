@@ -20,7 +20,7 @@ download.AmerifluxLBL(
 )
 }
 \arguments{
-\item{sitename}{the Ameriflux ID of the site to be downloaded, used as file name prefix. 
+\item{sitename}{the Ameriflux ID of the site to be downloaded, used as file name prefix.
 The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 
 \item{outfolder}{location on disk where outputs will be stored}

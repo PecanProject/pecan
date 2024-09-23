@@ -115,4 +115,4 @@ git push -u origin GH-issuenumber-title-of-issue
 - [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/latest/adding-an-ecosystem-model.html)
 - [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/latest/pecan-xml-configuration.html)
 - [Development help](https://pecanproject.github.io/pecan-documentation/latest/developer-guide.html)
-- [PEcAn Code of Conduct](https://pecanproject.github.io/pecan-documentation/latest/contributor-covenant-code-of-conduct.html)
+- [PEcAn Code of Conduct](CODE_OF_CONDUCT.md)
