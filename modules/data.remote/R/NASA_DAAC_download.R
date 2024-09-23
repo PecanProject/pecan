@@ -1,4 +1,4 @@
-#' Parallel download data from the NASA ORNL DAAC server given period, spatial bounding box, and data DOI.
+#' Parallel download data from the NASA ORNL DAAC server given the period, spatial bounding box, and data DOI.
 #'
 #' @param ul_lat Numeric: upper left latitude.
 #' @param lr_lat Numeric: lower right latitude.
