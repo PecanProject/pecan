@@ -119,40 +119,11 @@ File ‘PEcAnAssimSequential/R/Analysis_sda_multiSite.R’:
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'Contruct.Pf'
-  ‘t’ ‘blocked.dis’ ‘...’
-
-Undocumented arguments in documentation object 'GEF'
-  ‘H’
-
-Undocumented arguments in documentation object 'SDA_remote_launcher'
-  ‘run.bash.args’
-
-Undocumented arguments in documentation object 'hop_test'
-  ‘ens.runid’
-
-Undocumented arguments in documentation object 'interactive.plotting.sda'
-  ‘aqq’ ‘bqq’ ‘facetg’ ‘readsFF’
-
-Undocumented arguments in documentation object 'sda.enkf'
-  ‘...’
-
-Undocumented arguments in documentation object 'sda.enkf.multisite'
-  ‘...’
-
-Undocumented arguments in documentation object 'tobit_model_censored'
-  ‘t’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 WARNINGs, 1 NOTE
+Status: 2 NOTEs

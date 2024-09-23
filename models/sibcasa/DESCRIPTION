@@ -14,8 +14,7 @@ Description: This module provides functions to link (SiBCASA) to PEcAn.
     It is a work in progress and is not yet fully functional.
 Imports:
     ncdf4,
-    PEcAn.logger,
-    PEcAn.utils (>= 1.4.8)
+    PEcAn.logger
 Suggests:
     testthat (>= 3.0.0),
     withr

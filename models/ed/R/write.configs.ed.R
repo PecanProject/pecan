@@ -399,13 +399,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
 # ==================================================================================================#
 
 ##-------------------------------------------------------------------------------------------------#
-##' Clear out old config and ED model run files.
-##'
-##' @name remove.config.ED2
-##' @title Clear out old config and ED model run files.
-##' @return nothing, removes config files as side effect
-##' @export
-##' @author Shawn Serbin, David LeBauer, Alexey Shikomanov
+#' Clear out old config and ED model run files.
+#'
+#' @param main.outdir ignored
+#' @param settings PEcAn settings object
+#' @return nothing, removes config files as side effect
+#' @export
+#' @author Shawn Serbin, David LeBauer, Alexey Shikomanov
 remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
   
   print(" ")

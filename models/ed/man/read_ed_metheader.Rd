@@ -48,7 +48,7 @@ Starred columns are required for writing. This table is left joined with
 }
 }
 
-The formatting of a meteorology header file is as follows (from the \link[=https://github.com/EDmodel/ED2/wiki/Drivers]{ED GitHub Wiki}):
+The formatting of a meteorology header file is as follows (from the \href{https://github.com/EDmodel/ED2/wiki/Drivers}{ED GitHub Wiki}):
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{<number of file formats>    # Repeat lines below this number of times
 <path and prefix of files>

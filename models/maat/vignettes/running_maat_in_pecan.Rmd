@@ -1,8 +1,10 @@
 ---
 title: "Running MAAT in PEcAn"
 author: "Shawn Serbin"
-date: "2018-08-28"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: |
+  %\VignetteIndexEntry{Running MAAT in PEcAn}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r echo=FALSE}
@@ -23,21 +25,19 @@ Follow the instructions found here: https://github.com/walkeranthonyp/MAAT/blob/
 
 ## Installing the R packages
 
-```{r install, eval = -(1:6)}
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/logger")
-devtools::install_github("PecanProject/pecan", ref = "develop", subdir= "base/remote")
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/utils")
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "base/settings")
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "models/maat")
+```{r install, eval = FALSE}
+options(repos = c(getOption("repos"), PEcAn = "pecanproject.r-universe.dev"))
+install.packages("PEcAn.MAAT")
+```
 
+```{r load-pkg}
 library(PEcAn.MAAT)
 ```
 
 ## MAAT XML configuration
 
 ### E.g. Running without met drivers and using user-specified met conditions
-```{xml maat_nomet}
+```{cat maat_nomet}
 <config>
   <mod_obj>leaf</mod_obj>
   <leaf>
@@ -65,7 +65,7 @@ library(PEcAn.MAAT)
 ```
 
 ### E.g. Running with met drivers
-```{xml maat_met}
+```{cat maat_met}
 <config>
   <mod_obj>leaf</mod_obj>
   <leaf>
@@ -85,7 +85,7 @@ library(PEcAn.MAAT)
 ### E.g. pecan.xml file with MAAT configuration options.
 In this example the MAAT model is configured for a temperate deciduous forest based on the temperate.deciduous PFT in the BETYdb database (https://www.betydb.org/pfts/2000000044).
 
-```{xml pecan_xml}
+```{cat pecan_xml}
 <?xml version="1.0"?>
 <pecan>
   <outdir>~/scratch/maat_pecan_test_run/</outdir>
@@ -187,13 +187,14 @@ In this example the MAAT model is configured for a temperate deciduous forest ba
 ## Simple MAAT run in PEcAn
 In this example we will run ten MAAT model ensembles in serial based on parameter values derived from the temperate.deciduous PFT in the BETYdb database (https://www.betydb.org/pfts/2000000044) and the PEcAn meta analysis step
 
-```{r run_maat}
-library(PEcAn.all)
-library(PEcAn.utils)
+This chunk is shown but is not currently executed at vignette build time, because running it requires a connection to the PEcAn database.
 
-setwd("~")
-getwd()
+```{r run_maat, eval = FALSE}
+rundir <- tempfile("maat_pecan_test_run")
+dir.create(rundir)
+setwd(rundir)
 settings <- PEcAn.settings::read.settings(system.file("pecan.maat.xml", package="PEcAn.MAAT", mustWork = TRUE))
+settings$outdir <- rundir
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 PEcAn.logger::logger.info(paste0("Main output directory: ",settings$outdir))
 

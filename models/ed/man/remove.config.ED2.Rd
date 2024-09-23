@@ -6,6 +6,11 @@
 \usage{
 remove.config.ED2(main.outdir = settings$outdir, settings)
 }
+\arguments{
+\item{main.outdir}{ignored}
+
+\item{settings}{PEcAn settings object}
+}
 \value{
 nothing, removes config files as side effect
 }

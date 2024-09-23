@@ -22,6 +22,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @param verbose should the function be very verbose
 ##' @param leap_year Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. 
 ##' If set to false, will require all years to have 365 days. Default = TRUE.
+##' @param ... additional arguments, currently ignored
 ##' @export
 ##' @author Shawn P. Serbin
 ##'

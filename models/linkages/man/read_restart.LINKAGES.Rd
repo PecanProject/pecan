@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_restart.LINKAGES.R
 \name{read_restart.LINKAGES}
 \alias{read_restart.LINKAGES}
-\title{read_restart.LINKAGES}
+\title{Read Restart for LINKAGES}
 \usage{
 read_restart.LINKAGES(
   outdir,
@@ -20,9 +20,11 @@ read_restart.LINKAGES(
 
 \item{stop.time}{year that is being read}
 
+\item{settings}{PEcAn settings object}
+
 \item{var.names}{var.names to be extracted}
 
-\item{multi.settings}{PEcAn settings object}
+\item{params}{passed on to return value}
 }
 \value{
 X.vec      vector of forecasts

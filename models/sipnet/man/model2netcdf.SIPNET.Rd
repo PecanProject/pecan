@@ -2,7 +2,7 @@
 % Please edit documentation in R/model2netcdf.SIPNET.R
 \name{model2netcdf.SIPNET}
 \alias{model2netcdf.SIPNET}
-\title{Function to convert SIPNET model output to standard netCDF format}
+\title{Convert SIPNET output to netCDF}
 \usage{
 model2netcdf.SIPNET(
   outdir,
@@ -28,7 +28,7 @@ model2netcdf.SIPNET(
 
 \item{end_date}{End time of the simulation}
 
-\item{delete.raw}{Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files}
+\item{delete.raw}{logical: remove sipnet.out files after converting?}
 
 \item{revision}{model revision}
 
@@ -39,9 +39,6 @@ model2netcdf.SIPNET(
 \item{conflict}{Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.}
 }
 \description{
-Convert SIPNET output to netCDF
-}
-\details{
 Converts all output contained in a folder to netCDF.
 }
 \author{
