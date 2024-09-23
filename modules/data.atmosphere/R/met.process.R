@@ -255,13 +255,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
-    standardize_result <- list()
-    
+    id_stdized <- list()
+    ready.id <- list(input.id = NULL, dbfile.id = NULL)
+
     for (i in seq_along(cf.id[[1]])) {
 
       if (register$scale == "regional") {
         #### Site extraction
-        standardize_result[[i]] <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
+        id_stdized <- .extract.nc.module(cf.id = list(input.id = cf.id$container_id[i],
                                                                    dbfile.id = cf.id$id[i]), 
                                        register = register, 
                                        dir = dir, 
@@ -277,7 +278,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        # Expand to support ensemble names in the future
       } else if (register$scale == "site") {
         ##### Site Level Processing
-        standardize_result[[i]] <- .metgapfill.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
+        id_stdized <- .metgapfill.module(cf.id = list(input.id = cf.id$input.id[i], dbfile.id = cf.id$dbfile.id[i]), 
                                        register = register,
                                        dir = dir,
                                        met = met, 
@@ -288,15 +289,15 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$standardize,
                                        ensemble_name = i)
+      } else {
+        # No action taken. These ids will be dropped from ready.id
+        id_stdized <- NULL
       }
+
+      ready.id$input.id <- c(ready.id$input.id, id_stdized$input.id)
+      ready.id$dbfile.id <- c(ready.id$dbfile.id, id_stdized$dbfile.id)
       
     } # End for loop
-    ready.id <- list(input.id = NULL, dbfile.id = NULL)
-
-    for (i in seq_along(standardize_result)) {
-      ready.id$input.id <- c(ready.id$input.id, standardize_result[[i]]$input.id)
-      ready.id$dbfile.id <- c(ready.id$dbfile.id, standardize_result[[i]]$dbfile.id)
-    }
     
   } else {
     ready.id <- input_met$id
