@@ -6,11 +6,21 @@
 \usage{
 split_inputs.LINKAGES(settings, start.time, stop.time, inputs)
 }
+\arguments{
+\item{settings}{ignored}
+
+\item{start.time, stop.time}{ignored}
+
+\item{inputs}{returned}
+}
 \value{
 files split up climate files
 }
 \description{
 Splits climate met for LINKAGES
+}
+\details{
+Stub implementation -- currently returns `inputs` and ignores all other arguments
 }
 \author{
 Ann Raiho

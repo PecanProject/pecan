@@ -30,7 +30,7 @@
 #'  - "restart" -- Restart file for HISTORY runs. (`ISOUTPUT`)
 #'  - "all" -- All output types
 #'
-#' @inheritParams read_ed2in
+#' @param ed2in list to modify
 #' @param ... Namelist arguments (see Description and Details)
 #' @param veg_prefix Vegetation file prefix (`SFILIN`). If `lat` and `lon` are part of the prefix, 
 #' @param latitude Run latitude coordinate. If `veg_prefix` is also provided, 

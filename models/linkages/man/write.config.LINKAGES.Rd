@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.config.LINKAGES.R
 \name{write.config.LINKAGES}
 \alias{write.config.LINKAGES}
-\title{Write LINKAGES configuration files}
+\title{Writes a LINKAGES config file.}
 \usage{
 write.config.LINKAGES(
   defaults = NULL,
@@ -18,19 +18,28 @@ write.config.LINKAGES(
 \arguments{
 \item{defaults}{list of defaults to process}
 
+\item{trait.values}{vector of samples for a given trait}
+
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
 
-\item{trait.samples}{vector of samples for a given trait}
+\item{restart}{logical: Write a restart file?
+If NULL (default), treated as FALSE}
+
+\item{spinup}{logical: perform spinup using `spinup.LINKAGES()`?
+If NULL (default), treated as FALSE}
+
+\item{inputs}{inputs section of a PEcAn settings object.
+Currently only used for climate file (inputs$met$path),
+which is taken from `settings$input$met$path` if `inputs` is NULL.}
+
+\item{IC}{TODO currently ignored}
 }
 \value{
 configuration file for LINKAGES for given run
 }
 \description{
-Writes a LINKAGES config file.
-}
-\details{
 Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }

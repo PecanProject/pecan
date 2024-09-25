@@ -5,8 +5,6 @@ Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Mike Dietze
-Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
 Imports:
     PEcAn.data.atmosphere,

@@ -7,7 +7,7 @@
 convert.samples.dvmdostem(trait_values)
 }
 \arguments{
-\item{trait_samples}{a matrix or dataframe of samples from the trait distribution}
+\item{trait_values}{a matrix or dataframe of samples from the trait distribution}
 }
 \value{
 matrix or dataframe with values transformed

@@ -3,10 +3,8 @@
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.JULES
-##' @title Write JULES configuration files
 ##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
+##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for JULES for given run
@@ -581,14 +579,15 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 
 #' Detect timestep of JULES met files
 #'
-#' @param met.dir
-#' @param met.regexp
-#' @param start_date
+#' @param met.dir path to directory containing met files
+#' @param met.regexp pattern to match to find a met file in met.dir.
+#'  If more than one file matches, only the first will be used.
+#' @param start_date When in file to start checking deltas.
+#'  Not used if timestep can be detected from the CDF header.
 #'
 #' @return a difftime object
 #' @export
 #'
-#' @examples
 detect.timestep <- function(met.dir,met.regexp,start_date){
   met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
   PEcAn.logger::logger.info("Detect timestep:",met.dir,met.regexp)

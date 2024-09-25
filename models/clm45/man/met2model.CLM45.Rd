@@ -31,6 +31,10 @@ met2model.CLM45(
 
 \item{lst}{timezone offset to GMT in hours}
 
+\item{lat, lon}{site coordinates}
+
+\item{...}{other arguments, currently ignored}
+
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbosefor(year in start_year:end_year)}

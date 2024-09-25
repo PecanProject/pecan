@@ -32,6 +32,11 @@ met2model.DALEC(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{spin_nyear, spin_nsample, spin_resample}{passed on to
+`PEcAn.data.atmosphere::spin.met()`}
+
+\item{...}{additional arguments, currently ignored}
 }
 \description{
 met2model for DALEC

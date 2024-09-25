@@ -2,7 +2,7 @@
 % Please edit documentation in R/sample.IC.SIPNET.R
 \name{sample.IC.SIPNET}
 \alias{sample.IC.SIPNET}
-\title{sample.IC.SIPNET}
+\title{Sample initial conditions for SIPNET}
 \usage{
 sample.IC.SIPNET(ne, state, year = 1)
 }
@@ -10,12 +10,14 @@ sample.IC.SIPNET(ne, state, year = 1)
 \item{ne}{number of ensembles}
 
 \item{state}{state variables you want to pull}
+
+\item{year}{year to pull from}
 }
 \value{
 IC matrix of initial conditions
 }
 \description{
-samples intial conditions for SIPNET
+Sample initial conditions for SIPNET
 }
 \author{
 Mike Dietze and Ann Raiho

@@ -15,6 +15,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param ... additional arguments, currently ignored
 ##' @author Istem Fer
 ##' @importFrom ncdf4 ncvar_get ncvar_def ncdim_def ncatt_get ncatt_put nc_close
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date,

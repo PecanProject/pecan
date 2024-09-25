@@ -6,6 +6,16 @@
 \usage{
 write.config.DALEC(defaults, trait.values, settings, run.id)
 }
+\arguments{
+\item{defaults}{ignored}
+
+\item{trait.values}{vector of samples for a given trait}
+
+\item{settings}{a PEcAn settings object}
+
+\item{run.id}{Unique identifier for the run,
+used here to construct output directories and filenames.}
+}
 \value{
 configuration files
 }
