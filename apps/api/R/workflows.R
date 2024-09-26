@@ -244,3 +244,82 @@ getWorkflowFile <- function(req, id, filename, res){
     return(bin)
   }
 }
+
+
+#################################################################################################
+#' Get the list of files in a workflow specified by the id
+#' @param id Workflow id (character)
+#' @return List of files
+#' @author Nihar Sanda
+#* @serializer contentType list(type="application/octet-stream")
+#* @get /<id>/files
+
+getWorkflowFileDetails <- function(req, id, res){
+  Workflow <- tbl(global_db_pool, "workflows") %>%
+    select(id, user_id) %>%
+    filter(id == !!id)
+  
+  qry_res <- Workflow %>% collect()
+  
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return(list(error="Workflow with specified ID was not found"))
+  }
+  else {
+    file_names <- list()
+    file_names <- list.files(paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", id))
+     
+    return(list(workflow_id = id))
+  }
+}
+
+#################################################################################################
+#' Get the zip of specified files of the workflow specified by the id
+#' @param id Workflow id (character)
+#' @return Details of requested workflow
+#' @author Nihar Sanda
+#* @serializer contentType list(type="application/octet-stream")
+#* @post /<id>/file-multiple/
+
+getWorkflowFilesAsZip <- function(req, id, filenames, res){
+  if(req$HTTP_CONTENT_TYPE == "application/json") {
+    filenames_req <- req$postBody
+  }
+  
+  filenamesList <- jsonlite::fromJSON(filenames_req)
+  filenames <- filenamesList$files
+  
+  Workflow <- tbl(global_db_pool, "workflows") %>%
+    select(id, user_id) %>%
+    filter(id == !!id)
+  
+  qry_res <- Workflow %>% collect()
+  
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return()
+  }
+  else {
+    full_files <- vector(mode = "character", length = length(filenames))
+    for (i in 1:length(filenames)) {
+      
+      # Check if the requested file exists on the host
+      filepath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", id, "/", filenames[i])
+      if(! file.exists(filepath)){
+        res$status <- 404
+        return()
+      }
+      
+      if(Sys.getenv("AUTH_REQ") == TRUE){
+        if(qry_res$user_id != req$user$userid) {
+          res$status <- 403
+          return()
+        } 
+      }
+      
+      full_files[i] <- filepath
+    }
+    zip_file <- zip::zipr("output.zip", full_files)
+    return(zip_file)
+  }
+}
