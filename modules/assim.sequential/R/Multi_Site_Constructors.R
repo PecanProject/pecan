@@ -6,6 +6,9 @@
 ##' @param var.names vector names of state variable names.
 ##' @param X a matrix of state variables. In this matrix rows represent ensembles, while columns show the variables for different sites.
 ##' @param localization.FUN This is the function that performs the localization of the Pf matrix and it returns a localized matrix with the same dimensions.
+##' @param t not used
+##' @param blocked.dis passed to `localization.FUN`
+##' @param ... passed to `localization.FUN`
 ##' @description The argument X needs to have an attribute pointing the state variables to their corresponding site. This attribute needs to be called `Site`.
 ##' At the moment, the cov between state variables at blocks defining the cov between two sites are assumed zero.
 ##' @return It returns the var-cov matrix of state variables at multiple sites.
