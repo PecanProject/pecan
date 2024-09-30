@@ -58,9 +58,16 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
-  if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
-    PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
-    return(0)
+  if (!is.null(settings$state.data.assimilation$batch.settings$analysis)) {
+    if ("try-error" %in% class(try(block.list.all[[t]] <- qsub_analysis_submission(settings = settings, block.list = block.list.all[[t]])))) {
+      PEcAn.logger::logger.severe("Something wrong within the qsub_analysis_submission function.")
+      return(0)
+    }
+  } else {
+    if ("try-error" %in% class(try(block.list.all[[t]] <- furrr::future_map(block.list.all[[t]], MCMC_block_function, .progress = T)))) {
+      PEcAn.logger::logger.severe("Something wrong within the MCMC_block_function function.")
+      return(0)
+    }
   }
   PEcAn.logger::logger.info("Completed!")
   
@@ -77,7 +84,8 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
               mu.a = V$mu.a,
               Pa = V$Pa,
               Y = Y,
-              R = R))
+              R = R,
+              analysis = V$analysis))
 }
 
 ##' @title build.block.xy
@@ -104,7 +112,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   }
   #grab basic arguments based on X.
   site.ids <- unique(attributes(X)$Site)
-  var.names <- unique(attributes(X)$dimnames[[2]])
+  var.names <- unique(colnames(X))
   mu.f <- colMeans(X)
   Pf <- stats::cov(X)
   if (length(diag(Pf)[which(diag(Pf)==0)]) > 0) {
@@ -120,7 +128,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
     `rownames<-`(site.ids)
   #Finding the distance between the sites
   dis.matrix <- sp::spDists(site.locs, longlat = TRUE)
-  if (!is.null(settings$state.data.assimilation$Localization.FUN)) {
+  if (!is.null(settings$state.data.assimilation$Localization.FUN) && 
+      ! as.numeric(settings$state.data.assimilation$scalef) == 0) {
     Localization.FUN <- get(settings$state.data.assimilation$Localization.FUN)
     #turn that into a blocked matrix format
     blocked.dis <- block_matrix(dis.matrix %>% as.numeric(), rep(length(var.names), length(site.ids)))
@@ -430,7 +439,6 @@ MCMC_block_function <- function(block) {
   conf$addSampler(target = samplerLists[[X.mod.ind]]$target, type = "ess",
                   control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
                                  latents = "X", pfOptimizeNparticles = TRUE))
-
   #add toggle Y sampler.
   for (i in 1:block$constant$YN) {
     conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
@@ -615,6 +623,7 @@ block.2.vector <- function (block.list, X, H) {
   site.ids <- attributes(X)$Site
   mu.f <- mu.a <- c()
   Pf <- Pa <- matrix(0, length(site.ids), length(site.ids))
+  analysis <- X
   for (L in block.list) {
     ind <- c()
     for (id in L$site.ids) {
@@ -623,6 +632,12 @@ block.2.vector <- function (block.list, X, H) {
     #convert mu.f and pf
     mu.a[ind] <- mu.f[ind] <- L$update$mufa
     Pa[ind, ind] <- Pf[ind, ind] <- L$update$pfa
+    # MVN sample based on block.
+    sample <- as.data.frame(mvtnorm::rmvnorm(nrow(X), 
+                                             L$update$mufa, 
+                                             L$update$pfa, 
+                                             method = "svd"))
+    analysis[,ind] <- sample
     #convert mu.a and pa
     ind <- intersect(ind, H$H.ind)
     mu.a[ind] <- L$update$mua
@@ -631,5 +646,6 @@ block.2.vector <- function (block.list, X, H) {
   return(list(mu.f = mu.f,
               Pf = Pf,
               mu.a = mu.a,
-              Pa = Pa))
+              Pa = Pa,
+              analysis = analysis))
 }

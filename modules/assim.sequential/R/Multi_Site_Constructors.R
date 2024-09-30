@@ -27,7 +27,7 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   for (site in site.ids){
     #let's find out where this cov (for the current site needs to go in the main cov matrix)
     pos.in.matrix <- which(attr(X,"Site") %in% site)
-   #foreach site let's get the Xs
+    #foreach site let's get the Xs
     pf.matrix [pos.in.matrix, pos.in.matrix] <- stats::cov( X [, pos.in.matrix] ,use="complete.obs")
   }
   
@@ -35,7 +35,6 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   #I put this into a sperate loop so we can have more control over it
   site.cov.orders <- expand.grid(site.ids,site.ids) %>%
     dplyr::filter( .data$Var1 != .data$Var2)
-
   for (i in seq_len(nrow(site.cov.orders))){
     # first we need to find out where to put it in the big matrix
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
@@ -57,13 +56,12 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   
   # adding labels to rownames and colnames
   labelss <- paste0(rep(var.names, length(site.ids)) %>% as.character(),"(",
-         rep(site.ids, each=length(var.names)),")") 
+                    rep(site.ids, each=length(var.names)),")") 
   
   colnames(pf.matrix.out ) <-labelss
   rownames(pf.matrix.out ) <-labelss
   
   return(pf.matrix.out)
-
 }
 
 ##' @title Construct.R
@@ -82,7 +80,15 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
 ##' @export
 
 Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
-
+  # foreach.
+  cores <- parallel::detectCores()
+  cl <- parallel::makeCluster(cores)
+  doSNOW::registerDoSNOW(cl)
+  #progress bar
+  pb <- utils::txtProgressBar(min=1, max=length(site.ids), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
+  
   # keeps Hs of sites
   site.specific.Rs <-list()
   #
@@ -90,26 +96,43 @@ Construct.R<-function(site.ids, var.names, obs.t.mean, obs.t.cov){
   #
   nvariable <- length(var.names)
   Y<-c()
-  
-  for (site in site.ids){
-    choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = FALSE) %>% unlist
-    # if there is no obs for this site
-    if(length(choose) == 0){
-      next;
-    }else{
-      Y <- c(Y, unlist(obs.t.mean[[site]][choose]))
-      #collecting them
-      if (ncol(obs.t.mean[[site]]) > 1)
-      {
-        site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose,choose])))
-      } else {
-        site.specific.Rs <- c(site.specific.Rs, list(as.matrix(obs.t.cov[[site]][choose])))
-      }
+  # fix GitHub checks.
+  site <- NULL
+  res <- foreach::foreach(site = site.ids, 
+                          .packages=c("Kendall", "purrr"), 
+                          .options.snow=opts) %dopar% {
+                            choose <- sapply(var.names, agrep, x=names(obs.t.mean[[site]]), max=1, USE.NAMES = FALSE) %>% unlist
+                            # if there is no obs for this site
+                            if(length(choose) == 0){
+                              return(NA);
+                            }else{
+                              Y <- unlist(obs.t.mean[[site]][choose])
+                              #collecting them
+                              if (ncol(obs.t.mean[[site]]) > 1)
+                              {
+                                site.R <- list(as.matrix(obs.t.cov[[site]][choose,choose]))
+                              } else {
+                                site.R <- list(as.matrix(obs.t.cov[[site]][choose]))
+                              }
+                            }
+                            return(list(site.R = site.R, 
+                                        site.Y = Y,
+                                        choose = choose))
+                          }
+  for (i in seq_along(site.ids)){
+    temp <- res[[i]]
+    if (is.na(temp)) {
+      next
+    } else {
+      Y <- c(Y, unlist(obs.t.mean[[site.ids[i]]][temp$choose]))
+      site.specific.Rs <- c(site.specific.Rs, temp$site.R)
     }
+  }
   #make block matrix out of our collection
   R <- Matrix::bdiag(site.specific.Rs) %>% as.matrix()
-    }
-
+  # stop parallel.
+  parallel::stopCluster(cl)
+  foreach::registerDoSEQ()
   return(list(Y=Y, R=R))
 }
 

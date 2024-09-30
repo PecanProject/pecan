@@ -187,14 +187,12 @@ GEF.MultiSite.Nimble <-  nimbleCode({
       # Sorting out qs
       q[1:YN, 1:YN] ~ dwish(R = aq[1:YN, 1:YN], df = bq) ## aq and bq are estimated over time
     }
-
     for (i in 1:nH) {
       tmpX[i]  <- X.mod[H[i]]
       Xs[i] <- tmpX[i]
     }
     ## add process error to x model but just for the state variables that we have data and H knows who
     X[1:YN]  ~ dmnorm(Xs[1:YN], prec = q[1:YN, 1:YN])
-
     ## Likelihood
     y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN, 1:YN])
     
@@ -213,7 +211,7 @@ GEF.MultiSite.Nimble <-  nimbleCode({
       if (length(H) == 1) {
         X[i]  ~ dnorm(X.mod[H], sd = 1/sqrt(q[i]))
         #likelihood
-        y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i]))
+        y.censored[i] ~ dnorm(X[i], sd = 1/sqrt(r[i, i]))
       } else {
         #sample latent variable X.
         X[i]  ~ dnorm(X.mod[H[i]], sd = 1/sqrt(q[i]))
