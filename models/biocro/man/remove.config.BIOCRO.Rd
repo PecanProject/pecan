@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.BIOCRO.R
 \name{remove.config.BIOCRO}
 \alias{remove.config.BIOCRO}
-\title{Clear out previous biocro config and parameter files.}
+\title{Clear out previous config and parameter files.}
 \usage{
 remove.config.BIOCRO(main.outdir, settings)
 }

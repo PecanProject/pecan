@@ -2,7 +2,7 @@
 % Please edit documentation in R/full.path.R
 \name{full.path}
 \alias{full.path}
-\title{Creates an absolute path to a folder}
+\title{Creates an absolute path to a folder.}
 \usage{
 full.path(folder)
 }
@@ -13,9 +13,6 @@ full.path(folder)
 absolute path
 }
 \description{
-Creates an absolute path to a folder.
-}
-\details{
 This will take a folder and make it into an absolute folder name. It
 will normalize the path and prepend it with the current working folder
 if needed to get an absolute path name.

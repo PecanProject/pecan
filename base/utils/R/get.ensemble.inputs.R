@@ -1,14 +1,16 @@
 ## split clim file into smaller time units to use in KF
-##' @title get.ensemble.inputs
-##' @name  get.ensemble.inputs
-##' @author Mike Dietze and Ann Raiho
-##' 
-##' @param settings PEcAn settings list
-##' @param ens ensemble number. default = 1
-##' @description Splits climate met for SIPNET
-##' 
-##' @return find correct ensemble inputs
-##' @export
+
+#' get.ensemble.inputs
+#'
+#' Splits climate met for SIPNET
+#'
+#' @author Mike Dietze and Ann Raiho
+#'
+#' @param settings PEcAn settings list
+#' @param ens ensemble number. default = 1
+#'
+#' @return find correct ensemble inputs
+#' @export
 
 get.ensemble.inputs <- function(settings, ens = 1){
   

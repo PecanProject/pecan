@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get.stats.mcmc}
 \alias{get.stats.mcmc}
-\title{Get stats for parameters in MCMC output}
+\title{Further summarizes output from summary.mcmc}
 \usage{
 get.stats.mcmc(mcmc.summary, sample.size)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{mstmipvar}
 \alias{mstmipvar}
-\title{MstMIP variable}
+\title{return MstMIP variable as ncvar}
 \usage{
 mstmipvar(
   name,
@@ -30,9 +30,6 @@ mstmipvar(
 ncvar based on MstMIP definition
 }
 \description{
-return MstMIP variable as ncvar
-}
-\details{
 returns a MstMIP variable as a ncvar based on name and other parameters
 passed in.
 }

@@ -17,10 +17,7 @@ bibtexify(author, year, title)
 bibtex citation
 }
 \description{
-Convert author, year, title to bibtex citation format
-}
-\details{
-Converts author year title to author1999abc format
+Converts author year title to bibtex \code{author1999abc} format
 }
 \author{
 unknown

@@ -110,6 +110,10 @@ git push -u origin GH-issuenumber-title-of-issue
 
  When finished create a pull request from your branch to the main pecan repository.
 
+ When submitting a pull request, you retain authorship of the code you contribute. However, you are giving the PEcAn Project permission to distribute your contributions under either or both, at our discretion, of:
+  - The license listed at PR opening time for the code you are contributing to,
+  - and/or the BSD 3-clause license.
+
 ## Additional Resources
 
 - [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/latest/adding-an-ecosystem-model.html)

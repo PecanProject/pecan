@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{as.sequence}
 \alias{as.sequence}
-\title{as.sequence}
+\title{Convert categorical variable into sequential integers}
 \usage{
 as.sequence(x, na.rm = TRUE)
 }
@@ -15,9 +15,6 @@ as.sequence(x, na.rm = TRUE)
 sequence from 1:length(unique(x))
 }
 \description{
-Convert categorical variable into sequential integers
-}
-\details{
 Turns any categorical variable into a sequential integer.
 This transformation is required for using data in BUGS/JAGS
 }

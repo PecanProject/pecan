@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.BIOCRO.R
 \name{write.config.BIOCRO}
 \alias{write.config.BIOCRO}
-\title{Write configuration files for the biocro model}
+\title{Writes a configuration files for the biocro model}
 \usage{
 write.config.BIOCRO(defaults = NULL, trait.values, settings, run.id)
 }

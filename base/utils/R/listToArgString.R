@@ -1,11 +1,11 @@
-##' format a list of arguments as one comma-separated string
-##'
-##' @export
-##'
-##' @param l a named list of function arguments
-##' @return A string containing named argument/value pairs separated by commas
-##'
-##' @author Ryan Kelly
+#' format a list of arguments as one comma-separated string
+#'
+#' @export
+#'
+#' @param l a named list of function arguments
+#' @return A string containing named argument/value pairs separated by commas
+#'
+#' @author Ryan Kelly
 ## This little utility is used in a few places in data.atmosphere.
 listToArgString <- function(l) {
   arg.string <- ""

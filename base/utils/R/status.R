@@ -7,8 +7,7 @@
 #' Records the progress of a PEcAn workflow by writing statuses and timestamps
 #'   to a STATUS file. Use these each time a module starts, finishes,
 #'   or is skipped.
-
-#' @details
+#'
 #' All of these functions write to or read from a STATUS file in your run's
 #'   output directory. If the file is not specified in the call, they will look
 #'   for a `settings` object in the global environment and use
