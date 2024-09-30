@@ -2,26 +2,23 @@
 % Please edit documentation in R/write.config.MAAT.R
 \name{write.config.MAAT}
 \alias{write.config.MAAT}
-\title{Write MAAT model configuration files}
+\title{Writes a MAAT config file.}
 \usage{
 write.config.MAAT(defaults = NULL, trait.values, settings, run.id)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
 
+\item{trait.values}{vector of samples for a given trait}
+
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
-
-\item{trait.samples}{vector of samples for a given trait}
 }
 \value{
 configuration file for MAAT for given run
 }
 \description{
-Writes a MAAT config file.
-}
-\details{
 Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }

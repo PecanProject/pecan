@@ -12,6 +12,8 @@
 ##' @description Splits climate met for SIPNET
 ##' 
 ##' @return file split up climate file
+##'
+##' @importFrom dplyr %>%
 ##' @export
 split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
   #### Get met paths

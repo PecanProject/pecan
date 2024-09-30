@@ -32,7 +32,6 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   #I put this into a sperate loop so we can have more control over it
   site.cov.orders <- expand.grid(site.ids,site.ids) %>%
     dplyr::filter( .data$Var1 != .data$Var2)
-  
   for (i in seq_len(nrow(site.cov.orders))){
     # first we need to find out where to put it in the big matrix
     rows.in.matrix <- which(attr(X,"Site") %in% site.cov.orders[i,1])
@@ -60,7 +59,6 @@ Contruct.Pf <- function(site.ids, var.names, X, localization.FUN=NULL, t=1, bloc
   rownames(pf.matrix.out ) <-labelss
   
   return(pf.matrix.out)
-  
 }
 
 ##' @title Construct.R

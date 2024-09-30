@@ -1,6 +1,13 @@
+---
+title: "Sensitivity analysis on C4 grass model"
+output: html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sensitivity analysis on C4 grass model}
+  %\VignetteEngine{knitr::rmarkdown}
+---
 
 
-```{r}
+```{r eval=FALSE}
 library(PEcAn.all)
 logger.setQuitOnSevere(FALSE)
 

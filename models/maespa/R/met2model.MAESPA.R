@@ -16,6 +16,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param ... further arguments, currently ignored
 ##'
 ##' @author Tony Gardella
 met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, 

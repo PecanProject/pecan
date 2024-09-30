@@ -31,6 +31,8 @@ the year part of the date)}
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{...}{additional arguments, currently ignored}
 }
 \value{
 generates GDAY formatted met file as a side affect, returns file metadata

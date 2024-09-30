@@ -29,6 +29,8 @@ met2model.LPJGUESS(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{...}{additional arguments, currently ignored}
 }
 \description{
 met2model wrapper for LPJ-GUESS

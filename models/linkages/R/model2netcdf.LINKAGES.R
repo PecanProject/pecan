@@ -1,23 +1,21 @@
-##' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
-##'
-##' @name model2netcdf.LINKAGES
-##' @title Code to convert LINKAGES's output into netCDF format
-##'
-##' @param outdir Location of model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @export
-##'
-##' @author Ann Raiho, Betsy Cowdery
-##' @importFrom ncdf4 ncdim_def ncvar_def
+#' Convert LINKAGES's output into netCDF format
+#'
+#' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
+#'
+#' @param outdir Location of model output
+#' @param sitelat Latitude of the site
+#' @param sitelon Longitude of the site
+#' @param start_date Start time of the simulation
+#' @param end_date End time of the simulation
+#' @param pft_names names of PFTs to use in output labels
+#' @export
+#'
+#' @author Ann Raiho, Betsy Cowdery
+#'
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
                                   end_date = NULL, pft_names = NULL) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
-  library(PEcAn.utils)
-
   ### Read in model output in linkages format
   load(file.path(outdir, "linkages.out.Rdata"))
   # linkages.output.dims <- dim(linkages.output)

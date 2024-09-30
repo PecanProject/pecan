@@ -7,17 +7,16 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut"),
              person("Ann", "Raiho", role = c("aut", "cre"),
                      email = "araiho@nd.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Ann Raiho, Mike Dietze
-Maintainer: Ann Raiho <araiho@nd.edu>
 Description: This module provides functions to link the (LINKAGES) to PEcAn.
-Depends:
-    PEcAn.utils
 Imports:
-    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
+    utils
 Suggests:
     testthat (>= 1.0.2),
     linkages

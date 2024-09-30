@@ -1,16 +1,22 @@
-##' @title Function to process ncdf file, run PRELES model, and convert output .nc file in CF standard
-##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input and output files
-##' @param outdir Location of PRELES model output
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @export
-##' @author Tony Gardella, Michael Dietze
+#' Process ncdf file, run PRELES model, and convert output .nc file in CF standard
+#'
+#' @param met.file base name for yearly nc files containing met data.
+#'   Example: `met.file="somefile"` matches somefile.2004.nc, somefile.2005.nc, etc.
+#' @param outdir Location of PRELES model output
+#' @param parameters An R data file containing parameter values.
+#'  Must be an Rda file written via `save()`, and must define an object named
+#'  `trait.values`
+#' @param sitelat,sitelon Latitude and longitude of site in decimal degrees
+#' @param start.date,end.date Start and end time of the simulation
+#'
+#' @export
+#' @author Tony Gardella, Michael Dietze
 runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, start.date, end.date) {
   
-  if(!require("Rpreles")){
-    logger.severe("The Rpreles package is not installed. 
-                  Please execute- devtools::install_github('MikkoPeltoniemi/Rpreles')")
+  if (!requireNamespace("Rpreles", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "The Rpreles package is not installed.
+      Please execute- devtools::install_github('MikkoPeltoniemi/Rpreles')")
   }
   
   # Process start and end dates
@@ -110,10 +116,10 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   #30.tsumcrit -999 fPheno_budburst_Tsum, 134 birch
   
   ## Replace default with sampled parameters
-  load(parameters)
-  params <- data.frame(trait.values)
-  colnames <- c(names(trait.values[[1]]))
-  colnames(params) <- colnames
+  param_objs <- new.env()
+  load(parameters, envir = param_objs)
+  params <- data.frame(param_objs$trait.values)
+  colnames(params) <- names(param_objs$trait.values[[1]])
   
   param.def[5] <- as.numeric(params["bGPP"])
   param.def[9] <- as.numeric(params["kGPP"])

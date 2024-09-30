@@ -7,8 +7,6 @@ Authors@R: c(person("Istem", "Fer", role = c("aut", "cre"),
              person("Tony", "Gardella", role = c("aut"),
                      email = "tonygard@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Istem Fer, Tony Gardella
-Maintainer: Istem Fer <fer.istem@gmail.com>
 Description: This module provides functions to link LPJ-GUESS to PEcAn.
 Imports:
     PEcAn.logger,
