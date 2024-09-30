@@ -2,11 +2,9 @@ Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn Package for Integration of the MAAT Model
 Version: 1.7.3.9000
-Authors@R: as.person(c(
-    "Shawn Serbin <sserbin@bnl.gov> [aut, cre]", 
-    "Anthony Walker <walkerap@ornl.gov> [aut]"
-     ))
-Maintainer: Shawn Serbin <sserbin@bnl.gov>
+Authors@R: c(
+    person("Shawn", "Serbin", role = c("aut", "cre"), email="sserbin@bnl.gov"),
+    person("Anthony", "Walker", role = "aut", email="walkerap@ornl.gov"))
 Description: This module provides functions to wrap the MAAT model into the PEcAn workflows.
 Imports:
     PEcAn.data.atmosphere,
@@ -18,11 +16,14 @@ Imports:
     ncdf4 (>= 1.15),
     XML
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 1.0.2)
 SystemRequirements: MAAT
 OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
+VignetteBuilder: knitr
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8

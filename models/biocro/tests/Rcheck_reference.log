@@ -73,17 +73,8 @@ The Date field is over a month old.
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... NOTE
-Author field differs from that derived from Authors@R
-  Author:    ‘David LeBauer, Deepak Jaiswal, Christopher Black’
-  Authors@R: ‘David LeBauer [aut, cre], Chris Black [aut], Deepak Jaiswal [aut], University of Illinois, NCSA [cph]’
-
-Maintainer field differs from that derived from Authors@R
-  Maintainer: ‘David LeBauer <dlebauer@illinois.edu>’
-  Authors@R:  ‘David LeBauer <dlebauer@email.arizona.edu>’
-
-* checking top-level files ... NOTE
-Non-standard files/directories found at top level:
-  ‘Dockerfile’ ‘model_info.json’
+License stub is invalid DCF.
+* checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK

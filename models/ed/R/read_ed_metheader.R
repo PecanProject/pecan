@@ -25,7 +25,7 @@
 #'    - `flag_description` -- Description of variable flag
 #'
 #' The formatting of a meteorology header file is as follows (from the [ED
-#' GitHub Wiki][https://github.com/EDmodel/ED2/wiki/Drivers]):
+#' GitHub Wiki](https://github.com/EDmodel/ED2/wiki/Drivers)):
 #'
 #' ```
 #' <number of file formats>    # Repeat lines below this number of times

@@ -27,6 +27,8 @@ modify_ed2in(
 )
 }
 \arguments{
+\item{ed2in}{list to modify}
+
 \item{...}{Namelist arguments (see Description and Details)}
 
 \item{veg_prefix}{Vegetation file prefix (\code{SFILIN}). If \code{lat} and \code{lon} are part of the prefix,}

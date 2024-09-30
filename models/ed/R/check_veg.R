@@ -9,12 +9,13 @@
 #' @return `NULL` (invisibly)
 #' @export
 check_css <- function(css, pss = NULL) {
-  if(!inherits(css, "data.frame") | nrow(css) == 0) {
+  if(!inherits(css, "data.frame") || nrow(css) == 0) {
     stop("css file should be a data frame")
   }
   
-  if(colnames(css) != c("time", "patch", "cohort", "dbh", "hite", "pft",
-                        "n", "bdead", "balive", "lai")) {
+  expected_colnames <- c("time", "patch", "cohort", "dbh", "hite", "pft",
+    "n", "bdead", "balive", "lai")
+  if (!identical(colnames(css), expected_colnames)) {
     stop("css file is formatted incorrectly")
   }
   
@@ -29,7 +30,7 @@ check_css <- function(css, pss = NULL) {
 #' @rdname check_css
 #' @export
 check_pss <- function(pss, site = NULL) {
-  if(!inherits(pss, "data.frame") | nrow(pss) == 0) {
+  if (!inherits(pss, "data.frame") || nrow(pss) == 0) {
     stop("css file should be a data frame")
   }
   if (!is.null(site)) {
@@ -43,8 +44,9 @@ check_pss <- function(pss, site = NULL) {
 #' @rdname check_css
 #' @export
 check_site <- function(site) {
-      stopifnot(nrow(site) >= 1)
-      stopifnot(!is.null(attributes(site)))
-      stopifnot(attr(site, "nsite") == "numeric")
-      stopifnot(attr(site, "file_format") %in% c(1, 2, 3))
+      stopifnot(
+        nrow(site) >= 1,
+        !is.null(attributes(site)),
+        is.numeric(attr(site, "nsite")),
+        attr(site, "file_format") %in% c(1, 2, 3))
 }

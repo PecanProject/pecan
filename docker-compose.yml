@@ -2,6 +2,7 @@ services:
 
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
+    hostname: traefik
     image: "traefik:v2.9"
     command:
       - --log.level=INFO
@@ -38,6 +39,7 @@ services:
 
   # rabbitmq to connect to extractors
   rabbitmq:
+    hostname: rabbitmq
     image: rabbitmq:3.8-management
     restart: unless-stopped
     networks:
@@ -64,6 +66,7 @@ services:
 
   # postgresql + postgis to hold all the data
   postgres:
+    hostname: postgres
     image: mdillon/postgis:9.5
     restart: unless-stopped
     networks:
@@ -80,6 +83,7 @@ services:
   # BETY rails frontend to the database
   # ----------------------------------------------------------------------
   bety:
+    hostname: bety
     image: pecan/bety:${BETY_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -108,6 +112,7 @@ services:
   # RStudio
   # ----------------------------------------------------------------------
   rstudio:
+    hostname: rstudio
     image: pecan/base:${PECAN_VERSION:-latest}
     command: /work/rstudio.sh
     restart: unless-stopped
@@ -151,6 +156,7 @@ services:
 
   # PEcAn documentation as well as PEcAn home page
   docs:
+    hostname: docs
     image: pecan/docs:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -167,6 +173,7 @@ services:
 
   # PEcAn web front end, this is just the PHP code
   pecan:
+    hostname: pecan-web
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -197,6 +204,7 @@ services:
 
   # PEcAn model monitor
   monitor:
+    hostname: monitor
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -225,6 +233,7 @@ services:
 
   # PEcAn executor, executes jobs. Does not the actual models
   executor:
+    hostname: executor
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -248,6 +257,7 @@ services:
   # ----------------------------------------------------------------------
   # PEcAn FATES model runner
   fates:
+    hostname: fates
     user: "${UID:-1001}:${GID:-1001}"
     image: ghcr.io/noresmhub/ctsm-api:latest
     restart: unless-stopped
@@ -263,6 +273,7 @@ services:
 
   # PEcAn basgra model runner
   basgra:
+    hostname: basgra
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -278,6 +289,7 @@ services:
 
   # PEcAn sipnet model runner
   sipnet:
+    hostname: sipnet-git
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -293,6 +305,7 @@ services:
 
   # PEcAn ED model runner
   ed2:
+    hostname: ed2-2_2_0
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -308,6 +321,7 @@ services:
 
   # PEcAn MAESPA model runner
   maespa:
+    hostname: maespa-git
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -323,6 +337,7 @@ services:
 
   # PEcAn BioCro model runner
   biocro:
+    hostname: biocro-0_95
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
     restart: unless-stopped
@@ -341,6 +356,7 @@ services:
   # ----------------------------------------------------------------------
   # PEcAn DB Sync visualization
   dbsync:
+    hostname: dbsync
     image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
     restart: unless-stopped
     networks:
@@ -363,6 +379,7 @@ services:
   # PEcAn API
   # ----------------------------------------------------------------------
   api:
+    hostname: api
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/api:${PECAN_VERSION:-latest}
     restart: unless-stopped

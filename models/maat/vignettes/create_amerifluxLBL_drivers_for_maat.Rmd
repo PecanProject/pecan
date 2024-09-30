@@ -2,7 +2,10 @@
 title: "PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations"
 author: "Shawn Serbin"
 date: "2018-08-28"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: |
+  %\VignetteIndexEntry{PEcAn: Generating met drivers for the MAAT model using AmerifluxLBL tower observations}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 # Overview
@@ -13,27 +16,25 @@ In this example we will download 6 years of met data from the [Willow Creek Eddy
 The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
 
 First make sure you have the nescessary PEcAn package for processing met data
-```{r install}
-devtools::install_github("pecanproject/pecan", ref = "develop", subdir = "modules/data.atmosphere")
+```{r install, eval=FALSE}
+options(repos = c(getOption("repos"), PEcAn = "pecanproject.r-universe.dev"))
+install.packages("PEcAn.data.atmosphere")
 ```
 
 ```{r}
-library(knitr)
-library(ggplot2)
-library(ggthemes)
 library(PEcAn.data.atmosphere)
 
 ```
 
 ```{r echo=FALSE}
 
-knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE, 
+knitr::opts_chunk$set(message = FALSE, warnings = FALSE,  cache = FALSE,
                       fig.height= 3, fig.width = 8)
 
 ```
 
 ## Connect to BETY database and retrieve appropriate format for AmerifluxLBL datasets [TODO: Update to work with R-OpenSci traits BETY]
-```{r bety}
+```{r bety, eval = FALSE}
 
 con <- PEcAn.DB::db.open(
    list(user='bety', password='bety', host='localhost',
@@ -42,30 +43,94 @@ format.id <- 5000000002
 format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = con)
 format$time_zone <- "America/Chicago"
 ```
+(Note: To avoid needing a database connection at vignette build time, we use code that does not display in the compiled vignette to construct a static version of the `format` object. When running this document interactively, with a live database connention, you can use the result from `query.format.vars` directly.)
+
+```{r dummy-format, show = FALSE}
+# copy-pasted from `dput(format)` after evaluating the `bety` chunk above
+# using Chris Black's development version of BeTY on 2024-09-16
+format <- list(
+   file_name = "AMERIFLUX_BASE_HH",
+   mimetype = "csv",
+   vars = structure(
+      list(
+         bety_name = c("air_pressure", "airT", "co2atm", "datetime", "FC", "H",
+            "LE", "NEE", "PAR", "precipitation_flux", "relative_humidity",
+            "soilM", "soilT", "solar_radiation", "specific_humidity",
+            "surface_downwelling_longwave_flux_in_air", "TotalResp", "UST",
+            "VPD", "wind_direction", "Wspd"),
+         variable_id = c(554, 86, 135, 5000000001, 1000000042, 299, 298, 297,
+            136, 555, 556, 391, 379, 547, 557, 561, 1000000206, 1000000041, 387,
+            560, 390),
+         input_name = c("PA", "TA", "CO2_1", "TIMESTAMP_START", "FC", "H", "LE",
+            "NEE_PI", "PPFD_IN", "P", "RH", "SWC_1", "TS_1", "SW_IN", "H2O",
+            "LW_IN", "RECO_PI", "USTAR", "VPD", "WD", "WS"),
+         input_units = c("kPa", "celsius", "umol mol-1", "ymd_hms",
+            "umol C m-2 s-1", "W m-2","W m-2", "umol C m-2 s-1", "umol m-2 s-1",
+            "kg m-2 (30 minute)-1", "percent", "%", "celsius", "W m-2",
+            "g kg-1", "W m-2", "umol C m-2 s-1", "m s-1", "hPa", "degrees",
+            "m s-1"),
+         storage_type = c("", "", "", "%Y%m%d%H%M", "", "", "", "", "", "", "",
+            "", "", "", "", "", "", "", "", "", ""),
+         column_number = c(19L, 4L, 20L, 1L, 8L, 10L, 12L, 7L, 26L, 17L, 18L,
+            23L, 15L, 27L, 33L, 31L, NA, 3L, NA, 5L, 6L),
+         bety_units = c("Pa", "degrees C", "ppm (= umol mol-1)", "ymd_hms",
+            "umol C m-2 s-1", "W m-2", "W m-2", "umol C m-2 s-1",
+            "umol m-2 s-1", "Kg/m2/s", "%", "%", "degrees C", "W/m^2", "g g-1",
+            "W m-2", "kg C m-2 s-1", "m s-1", "Pa", "degrees", "m s-1"),
+         mstmip_name = c("Psurf", "Tair", "CO2air", NA, "FC", "Qh", "Qle",
+            "NEE", NA, "Rainf", NA, "SoilMoistFrac", "SoilTemp", "SWdown",
+            "Qair", "LWdown", "TotalResp", NA, NA, NA, NA),
+         mstmip_units = c("Pa", "K", "micromol mol-1", NA, "kg C m-2 s-1",
+            "W m-2", "W m-2", "kg C m-2 s-1", NA, "kg m-2 s-1", NA, "1", "K",
+            "W/m^2", "kg kg-1", "W/m2", "kg C m-2 s-1", NA, NA, NA, NA),
+         pecan_name = c("Psurf", "Tair", "CO2air", "datetime", "FC", "Qh",
+            "Qle", "NEE", "PAR", "Rainf", "relative_humidity", "SoilMoistFrac",
+            "SoilTemp", "SWdown", "Qair", "LWdown", "TotalResp", "UST", "VPD",
+            "wind_direction", "Wspd"),
+         pecan_units = c("Pa", "K", "micromol mol-1", "ymd_hms", "kg C m-2 s-1",
+            "W m-2", "W m-2", "kg C m-2 s-1", "umol m-2 s-1", "kg m-2 s-1", "%",
+            "1", "K", "W/m^2", "kg kg-1", "W/m2", "kg C m-2 s-1", "m s-1", "Pa",
+            "degrees", "m s-1")),
+      row.names = c(NA, -21L),
+      class = "data.frame"),
+   skip = 2,
+   header = 1,
+   na.strings = c("-9999", "-6999", "9999", "NA"),
+   time.row = 4L,
+   site = NULL,
+   lat = NULL,
+   lon = NULL,
+   time_zone = "America/Chicago")
+```
+
 
 ## Download AmerifluxLBL data for selected site and dates (US-WCr, 2000 to 2005)
 ```{r download}
-download.AmerifluxLBL(sitename = "US-WCr", outfolder = "~/scratch/met2model_testing", 
+m2mdir <- tempfile("met2model_testing")
+dir.create(m2mdir)
+download.AmerifluxLBL(sitename = "US-WCr", outfolder = m2mdir,
                    start_date = "2000-01-01", end_date = "2005-12-31", overwrite = TRUE, verbose = TRUE)
 ```
 
 ## Convert downloaded AmerifluxLBL data to CF format
 ```{r met2cf}
-met2CF.AmerifluxLBL(in.path = "~/scratch/met2model_testing/", in.prefix = "AMF_US-WCr", outfolder = "~/scratch/met2model_testing/CF/", 
+cfdir <- file.path(m2mdir, "CF")
+met2CF.AmerifluxLBL(in.path = m2mdir, in.prefix = "AMF_US-WCr", outfolder = cfdir,
                  start_date = "2000-01-01", end_date = "2005-12-31",format=format)
 ```
 
 ## Gapfill CF met drivers
 ```{r metgapfill}
-metgapfill(in.path = "~/scratch/met2model_testing/CF/", in.prefix = "AMF_US-WCr_BASE_HH_14-5", 
-           outfolder = "~/scratch/met2model_testing/CF/gapfill/", start_date = "2000-01-01", end_date = "2005-12-31")
+gapfilldir <- file.path(cfdir, "gapfill")
+metgapfill(in.path = cfdir, in.prefix = "AMF_US-WCr_BASE_HH_14-5",
+           outfolder = gapfilldir, start_date = "2000-01-01", end_date = "2005-12-31")
 ```
 
 ## Create MAAT model-specific met drivers
 ```{r met2model}
-in.path <- "~/scratch/met2model_testing/CF/gapfill/"
+in.path <- gapfilldir
 in.prefix <- "AMF_US-WCr_BASE_HH_14-5"
-outfolder <- "~/scratch/met2model_testing/CF/gapfill/maat_drivers/"
+outfolder <- file.path(gapfilldir, "maat_drivers")
 start_date <- "2000-01-01"
 end_date <- "2005-12-31"
 overwrite <- TRUE

@@ -23,6 +23,7 @@
 ##'        the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param ... additional arguments, currently ignored
 ##' @return generates GDAY formatted met file as a side affect, returns file metadata
 ##' that will be inserted into database
 ##' @author Martin De Kauwe, Tony Gardella

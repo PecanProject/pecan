@@ -107,37 +107,37 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' @name cf2biocro
 ##' @title Convert CF-formatted met data to BioCro met
 ##' @param met data.table object  with met for a single site; output from \code{\link{load.cfmet}}
-##' \itemize{
-##' \item {year} {int}
-##' \item {month} {int}
-##' \item {day} {int: day of month (1-31)}
-##' \item {doy} {int: day of year (1-366)}
-##' \item {hour} {int (0-23)}
-##' \item {date} {YYYY-MM-DD HH:MM:SS POSIXct}
-##' \item {wind_speed} {num m/s}
-##' \item {northward_wind}
-##' \item {eastward_wind}
-##' \item {ppfd} {optional; if missing, requires surface_downwelling_shortwave_flux_in_air}
-##' \item {surface_downwelling_shortwave_flux_in_air}
-##' \item {air_pressure (Pa)} {optional; if missing, requires relative_humidity}
-##' \item {specific_humidity} {optional; if missing, requires relative_humidity}
-##' \item {relative_humidity} {optional; if missing, requires air_pressure and specific_humidity}
-##' \item {precipitation_flux}
-##' \item {air_temperature}
+##' \describe{
+##' \item{year}{int}
+##' \item{month}{int}
+##' \item{day}{int: day of month (1-31)}
+##' \item{doy}{int: day of year (1-366)}
+##' \item{hour}{int (0-23)}
+##' \item{date}{YYYY-MM-DD HH:MM:SS POSIXct}
+##' \item{wind_speed}{num m/s}
+##' \item{northward_wind}{}
+##' \item{eastward_wind}{}
+##' \item{ppfd}{optional; if missing, requires surface_downwelling_shortwave_flux_in_air}
+##' \item{surface_downwelling_shortwave_flux_in_air}{}
+##' \item{air_pressure (Pa)}{optional; if missing, requires relative_humidity}
+##' \item{specific_humidity}{optional; if missing, requires relative_humidity}
+##' \item{relative_humidity}{optional; if missing, requires air_pressure and specific_humidity}
+##' \item{precipitation_flux}{}
+##' \item{air_temperature}{}
 ##' }
 ##' @param longitude in degrees east, used for calculating solar noon
 ##' @param zulu2solarnoon logical; if TRUE, convert time from GMT to local solar time.
 ##' @return data.table / data.frame with fields
-##' \itemize{
-##' \item {doy} {day of year}
-##' \item {hr} {hour}
-##' \item {solar} {solar radiation (PPFD)}
-##' \item {temp} {temperature, degrees celsius}
-##' \item {rh} {relative humidity, as fraction (0-1)}
-##' \item {windspeed} {m/s}
-##' \item {precip} {cm/h}
+##' \describe{
+##' \item{doy}{day of year}
+##' \item{hr}{hour}
+##' \item{solar}{solar radiation (PPFD)}
+##' \item{temp}{temperature, degrees celsius}
+##' \item{rh}{relative humidity, as fraction (0-1)}
+##' \item{windspeed}{m/s}
+##' \item{precip}{cm/h}
 ##' }
-##' @export cf2biocro
+##' @export
 ##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {

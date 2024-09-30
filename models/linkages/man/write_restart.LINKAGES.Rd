@@ -21,15 +21,17 @@ write_restart.LINKAGES(
 
 \item{runid}{run ID}
 
+\item{start.time, stop.time}{year that is being read}
+
 \item{settings}{PEcAn settings object}
 
 \item{new.state}{analysis vector}
 
 \item{RENAME}{flag to either rename output file or not}
 
-\item{time}{year that is being read}
+\item{new.params}{updated parameter values to write.}
 
-\item{trait.values}{}
+\item{inputs}{passed on to `write.config.LINKAGES()`}
 }
 \value{
 NONE

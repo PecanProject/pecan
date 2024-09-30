@@ -4,12 +4,13 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##-------------------------------------------------------------------------------------------------#
 
 ##------------------------------------------------------------------------------------------------#
+##' Convert samples for MAAT
+##'
 ##' convert parameters and parameter names from PEcAn database default units/names with MAAT
 ##'
 ##' Performs model specific unit conversions on a a list of trait values,
 ##' such as those provided to write.config
-##' @name convert.samples.MAAT
-##' @title Convert samples for MAAT
+##'
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
 ##' @param runid optional parameter for debugging
 ##' @return matrix or dataframe with values transformed
@@ -94,10 +95,8 @@ convert.samples.MAAT <- function(trait.samples, runid) {
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.MAAT
-##' @title Write MAAT model configuration files
 ##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
+##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for MAAT for given run
