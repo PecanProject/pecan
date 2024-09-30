@@ -23,3 +23,8 @@ for (col in colnames(pecan_version_history)) {
       strict = strict)
   }
 }
+
+# Now remove local vars
+# Yes, this really is needed: _all_ objects left defined at end of script
+# will be added to the package data list!
+rm(strict, na_version, col)
