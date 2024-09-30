@@ -40,8 +40,9 @@ sda.enkf_NorthAmerica(
 NONE
 }
 \description{
-State Variable Data Assimilation: Ensemble Kalman Filter and Generalized ensemble filter. Check out SDA_control function for more details on the control arguments.
+This function provides complete support for the multi-core and multi-node computation on the general HPC system.
+Thus, this script will be more computationally efficient, making it possible to run SDA over thousands of locations.
 }
 \author{
-Michael Dietze, Ann Raiho and Alexis Helgeson \email{dietze@bu.edu}
+Dongchen Zhang \email{zhangdc@bu.edu}
 }
