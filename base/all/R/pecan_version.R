@@ -133,14 +133,23 @@ get_buildhash <- function(pkg) {
 # (Just to help it display more compactly)
 #' @export
 print.pecan_version_report <- function(x, ...) {
+
+  dots <- list(...)
+  if (is.null(dots$row.names)) { dots$row.names <- FALSE }
+  if (is.null(dots$right)) { dots$right <- FALSE }
+
   xx <- as.data.frame(x)
   xx$build_hash[is.na(xx$build_hash)] <- ""
+  xx$build_hash <- sub(".{5}\\+mods$", "+mods", xx$build_hash)
   xx$installed <- paste0(
     xx$installed,
     sub("(.+)", " (\\1)", xx$build_hash))
   xx$build_hash <- NULL
   if (!is.null(xx$source)) {
-    xx$source <- paste0(substr(xx$source, 1, 17), "...")
+    xx$source <- paste0(
+      strtrim(xx$source, 17),
+      ifelse(nchar(xx$source, type="width") <= 17, "", "..."))
   }
-  print(xx)
+  dots$x <- xx
+  do.call("print", dots)
 }
