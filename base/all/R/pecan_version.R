@@ -152,4 +152,6 @@ print.pecan_version_report <- function(x, ...) {
   }
   dots$x <- xx
   do.call("print", dots)
+
+  invisible(x)
 }

@@ -91,3 +91,37 @@ test_that("pecan_version without sessioninfo", {
 # The approach that failed just before I wrote this note:
 # No, the version of PEcAn.all (1.8.1.9000 today) is not reliably in sync with
 # the PEcAn version last tagged as a release (1.7.2 today).
+
+
+test_that("printing", {
+  ver <- structure(
+    data.frame(
+      package = "PEcAnFake",
+      v0.0 = package_version("1.2.3"),
+      installed = package_version("1.2.3.9000"),
+      build_hash = "01234567ab",
+      source = "13 characters"),
+    class = c("pecan_version_report", "data.frame")
+  )
+
+  long_ver <- ver
+  long_ver$build_hash = "01234567ab+mod"
+  long_ver$source =  "twenty-two characters"
+
+  # hash truncated to fit "+mod" if present
+  expect_output(print(ver), "01234567ab", fixed = TRUE)
+  expect_output(print(long_ver), "012345+mod", fixed = TRUE)
+
+  # source truncated to total of 20 chars
+  expect_output(print(ver), "13 characters$")
+  expect_output(print(long_ver), "twenty-two charac...", fixed = TRUE)
+
+  # source truncation works on width not glyph count
+  long_ver$source <- gsub("tw", "\U{1F197}\U{1F192}", long_ver$source)
+  expect_output(print(long_ver), "\U{1F192}o ch...", fixed = TRUE)
+
+  # dots passed on
+  expect_output(print(ver), "\n PEcAnFake")
+  expect_output(print(ver, row.names = TRUE), "\n1 PEcAnFake", fixed = TRUE)
+  expect_output(print(ver, quote = TRUE), "\n \"PEcAnFake\"", fixed = TRUE)
+})
