@@ -140,7 +140,7 @@ print.pecan_version_report <- function(x, ...) {
 
   xx <- as.data.frame(x)
   xx$build_hash[is.na(xx$build_hash)] <- ""
-  xx$build_hash <- sub(".{5}\\+mods$", "+mods", xx$build_hash)
+  xx$build_hash <- sub(".{4}\\+mod$", "+mod", xx$build_hash)
   xx$installed <- paste0(
     xx$installed,
     sub("(.+)", " (\\1)", xx$build_hash))

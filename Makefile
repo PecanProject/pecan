@@ -69,7 +69,7 @@ files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
 # Git hash + clean status for this directory
 git_rev = $(shell \
-	CLEAN=$$([[ -n $$(git status -s $1) ]] && echo "+mods"); \
+	CLEAN=$$([[ -n $$(git status -s $1) ]] && echo "+mod"); \
 	echo $$(git rev-parse --short=10 HEAD)"$$CLEAN")
 
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
