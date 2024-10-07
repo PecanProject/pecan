@@ -20,7 +20,16 @@ met2model.LINKAGES(
 
 \item{in.prefix}{prefix for each file}
 
-\item{outfolder}{location where model specific output is written.}
+\item{outfolder}{location where model specific output is written}
+
+\item{start_date, end_date}{when to start and end conversion.
+Only year portion is used}
+
+\item{overwrite}{Force replacement of an existing output file?}
+
+\item{verbose}{ignored}
+
+\item{...}{Additional arguments, currently ignored}
 }
 \value{
 OK if everything was succesful.

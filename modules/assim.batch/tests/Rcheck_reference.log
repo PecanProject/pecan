@@ -25,8 +25,7 @@ use conditionally.
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking ‘build’ directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License stub is invalid DCF.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK

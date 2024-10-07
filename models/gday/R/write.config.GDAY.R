@@ -6,7 +6,7 @@
 ##' @name write.config.GDAY
 ##' @title Write GDAY configuration files
 ##' @param defaults list of defaults to process
-##' @param trait.samples vector of samples for a given trait
+##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for GDAY for given run

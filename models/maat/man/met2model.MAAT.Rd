@@ -33,6 +33,8 @@ met2model.MAAT(
 
 \item{leap_year}{Enforce Leap-years? If set to TRUE, will require leap years to have 366 days. 
 If set to false, will require all years to have 365 days. Default = TRUE.}
+
+\item{...}{additional arguments, currently ignored}
 }
 \description{
 met2model wrapper for MAAT

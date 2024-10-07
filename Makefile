@@ -132,12 +132,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 ### Order-only dependencies
 # (i.e. prerequisites must exist before building target, but
 # target need not be rebuilt when a prerequisite changes)
-
-.doc/base/all: | $(ALL_PKGS_D)
-.install/base/all: | $(ALL_PKGS_I)
-.check/base/all: | $(ALL_PKGS_C)
-.test/base/all: | $(ALL_PKGS_T)
-
 include Makefile.depends
 
 clean:

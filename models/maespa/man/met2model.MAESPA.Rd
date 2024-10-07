@@ -29,6 +29,8 @@ met2model.MAESPA(
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
+
+\item{...}{further arguments, currently ignored}
 }
 \description{
 met2model wrapper for MAESPA

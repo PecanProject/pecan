@@ -1,7 +1,6 @@
 Package: PEcAn.all
 Type: Package
-Title: PEcAn functions used for ecological forecasts and
-    reanalysis
+Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
 Version: 1.8.0.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),

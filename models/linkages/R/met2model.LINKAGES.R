@@ -1,18 +1,22 @@
-##' Converts a met CF file to a model specific met file. The input
-##' files are calld <in.path>/<in.prefix>.YYYY.cf
-##'
-##' @name met2model.LINKAGES
-##' @title Write LINKAGES met files
-##' @param in.path path on disk where CF file lives
-##' @param in.prefix prefix for each file
-##' @param outfolder location where model specific output is written.
-##' @return OK if everything was succesful.
-##' @export
-##' @author Ann Raiho, Betsy Cowdery
-##-------------------------------------------------------------------------------------------------#
+#' Write LINKAGES met files
+#'
+#' Converts a met CF file to a model specific met file. The input
+#' files are calld <in.path>/<in.prefix>.YYYY.cf
+#'
+#' @param in.path path on disk where CF file lives
+#' @param in.prefix prefix for each file
+#' @param outfolder location where model specific output is written
+#' @param start_date,end_date when to start and end conversion.
+#'  Only year portion is used
+#' @param overwrite Force replacement of an existing output file?
+#' @param verbose ignored
+#' @param ... Additional arguments, currently ignored
+#' @return OK if everything was succesful.
+#' @export
+#' @author Ann Raiho, Betsy Cowdery
+#'
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
 
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
@@ -50,8 +54,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     }
   }
 
-  library(PEcAn.data.atmosphere)
-
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
@@ -88,7 +90,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
       month_matrix_precip[i, m] <- (sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m + 1] - 1)]) * dt / 10)
     }
     ncdf4::nc_close(ncin)
-    # if(i%%100==0) cat(i,' '); flush.console()
+    # if(i%%100==0) cat(i,' '); utils::flush.console()
   }
 
   month_matrix_temp_mean <- matrix(NA, nyear, 12)
@@ -110,7 +112,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     if (i %% 100 == 0) {
       cat(i, " ")
     }
-    flush.console()
+    utils::flush.console()
   }
 
   precip.mat <- month_matrix_precip

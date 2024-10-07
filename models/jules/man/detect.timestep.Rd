@@ -7,7 +7,13 @@
 detect.timestep(met.dir, met.regexp, start_date)
 }
 \arguments{
-\item{start_date}{}
+\item{met.dir}{path to directory containing met files}
+
+\item{met.regexp}{pattern to match to find a met file in met.dir.
+If more than one file matches, only the first will be used.}
+
+\item{start_date}{When in file to start checking deltas.
+Not used if timestep can be detected from the CDF header.}
 }
 \value{
 a difftime object

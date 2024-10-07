@@ -30,6 +30,11 @@ library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/maespa")
 ```
 
+When writing configurations files PEcAn.MAESPA uses the `Maeswrap` package.
+We recommend Maeswrap 1.8.0 or later, which you can install from GitHub with `remotes::install_github("RemkoDuursma/Maeswrap")`.
+An older version of Maeswrap (1.7 at this writing in September 2024) is also available from CRAN and does provide the functionality PEcAn.MAESPA needs, but this version has a strong dependency on the `rgl` package, which can be hard to install and are not needed by PEcAn. If you have trouble installing the extra dependencies or if you are annoyed by an unwanted plot window opening every time you use PEcAn.MAESPA, try upgrading Maeswrap to 1.8 or later.
+
+
 ## Example
 
 This is a basic example which shows you how to solve a common problem:

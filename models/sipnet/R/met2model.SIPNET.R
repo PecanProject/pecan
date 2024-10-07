@@ -16,6 +16,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
+##' @param ... Additional arguments, currently ignored
 ##' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...) {
@@ -154,7 +155,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         tau <- 15 * tstep
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
-        soilT <- convolve(Tair, filt)
+        soilT <- stats::convolve(Tair, filt)
         soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {

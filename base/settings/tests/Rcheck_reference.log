@@ -73,8 +73,7 @@ The Date field is over a month old.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... NOTE
-License stub is invalid DCF.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... NOTE
 Non-standard file/directory found at top level:
   ‘examples’
