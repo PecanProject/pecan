@@ -32,6 +32,8 @@ met2model.SIPNET(
 \item{verbose}{should the function be very verbose}
 
 \item{year.fragment}{the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).}
+
+\item{...}{Additional arguments, currently ignored}
 }
 \description{
 met2model wrapper for SIPNET

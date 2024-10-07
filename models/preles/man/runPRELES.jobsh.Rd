@@ -2,7 +2,7 @@
 % Please edit documentation in R/runPRELES.jobsh.R
 \name{runPRELES.jobsh}
 \alias{runPRELES.jobsh}
-\title{Function to process ncdf file, run PRELES model, and convert output .nc file in CF standard}
+\title{Process ncdf file, run PRELES model, and convert output .nc file in CF standard}
 \usage{
 runPRELES.jobsh(
   met.file,
@@ -15,18 +15,21 @@ runPRELES.jobsh(
 )
 }
 \arguments{
+\item{met.file}{base name for yearly nc files containing met data.
+Example: `met.file="somefile"` matches somefile.2004.nc, somefile.2005.nc, etc.}
+
 \item{outdir}{Location of PRELES model output}
 
-\item{in.path}{location on disk where inputs are stored}
+\item{parameters}{An R data file containing parameter values.
+Must be an Rda file written via `save()`, and must define an object named
+`trait.values`}
 
-\item{in.prefix}{prefix of input and output files}
+\item{sitelat, sitelon}{Latitude and longitude of site in decimal degrees}
 
-\item{start_date}{Start time of the simulation}
-
-\item{end_date}{End time of the simulation}
+\item{start.date, end.date}{Start and end time of the simulation}
 }
 \description{
-Function to process ncdf file, run PRELES model, and convert output .nc file in CF standard
+Process ncdf file, run PRELES model, and convert output .nc file in CF standard
 }
 \author{
 Tony Gardella, Michael Dietze

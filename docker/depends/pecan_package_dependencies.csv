@@ -49,6 +49,7 @@
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
+"dplyr","*","models/sipnet","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
 "dplyr","*","modules/benchmark","Imports",FALSE
@@ -123,6 +124,9 @@
 "jsonlite","*","modules/data.remote","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
+"knitr","*","models/biocro","Suggests",FALSE
+"knitr","*","models/ed","Suggests",FALSE
+"knitr","*","models/maat","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr","*","modules/priors","Suggests",FALSE
 "knitr",">= 1.42","base/db","Suggests",FALSE
@@ -262,16 +266,17 @@
 "PEcAn.data.atmosphere","*","models/ed","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/jules","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/ldndc","Imports",TRUE
-"PEcAn.data.atmosphere","*","models/linkages","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/maat","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/maespa","Imports",TRUE
 "PEcAn.data.atmosphere","*","models/preles","Imports",TRUE
-"PEcAn.data.atmosphere","*","models/sipnet","Depends",TRUE
+"PEcAn.data.atmosphere","*","models/sipnet","Imports",TRUE
 "PEcAn.data.land","*","base/all","Depends",TRUE
 "PEcAn.data.land","*","base/workflow","Imports",TRUE
 "PEcAn.data.land","*","models/biocro","Imports",TRUE
 "PEcAn.data.land","*","models/ed","Imports",TRUE
 "PEcAn.data.land","*","models/ldndc","Imports",TRUE
+"PEcAn.data.land","*","models/linkages","Imports",TRUE
+"PEcAn.data.land","*","models/sipnet","Imports",TRUE
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
@@ -281,6 +286,7 @@
 "PEcAn.DB","*","base/settings","Imports",TRUE
 "PEcAn.DB","*","base/workflow","Imports",TRUE
 "PEcAn.DB","*","models/biocro","Suggests",TRUE
+"PEcAn.DB","*","models/linkages","Imports",TRUE
 "PEcAn.DB","*","models/template","Imports",TRUE
 "PEcAn.DB","*","modules/allometry","Imports",TRUE
 "PEcAn.DB","*","modules/assim.batch","Imports",TRUE
@@ -395,11 +401,10 @@
 "PEcAn.utils","*","models/fates","Imports",TRUE
 "PEcAn.utils","*","models/gday","Depends",TRUE
 "PEcAn.utils","*","models/jules","Imports",TRUE
-"PEcAn.utils","*","models/linkages","Depends",TRUE
+"PEcAn.utils","*","models/linkages","Imports",TRUE
 "PEcAn.utils","*","models/lpjguess","Imports",TRUE
 "PEcAn.utils","*","models/maat","Imports",TRUE
 "PEcAn.utils","*","models/maespa","Imports",TRUE
-"PEcAn.utils","*","models/preles","Depends",TRUE
 "PEcAn.utils","*","models/preles","Imports",TRUE
 "PEcAn.utils","*","models/sipnet","Imports",TRUE
 "PEcAn.utils","*","modules/assim.batch","Imports",TRUE
@@ -416,7 +421,6 @@
 "PEcAn.utils",">= 1.4.8","models/cable","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/dvmdostem","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/ldndc","Imports",TRUE
-"PEcAn.utils",">= 1.4.8","models/sibcasa","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/stics","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/template","Imports",TRUE
 "PEcAn.visualization","*","modules/assim.sequential","Suggests",TRUE
@@ -488,6 +492,9 @@
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
 "rmarkdown","*","base/visualization","Suggests",FALSE
+"rmarkdown","*","models/biocro","Suggests",FALSE
+"rmarkdown","*","models/ed","Suggests",FALSE
+"rmarkdown","*","models/maat","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE
 "rmarkdown","*","modules/rtm","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE
@@ -556,6 +563,7 @@
 "sp","*","modules/data.land","Imports",FALSE
 "sp","*","modules/data.remote","Imports",FALSE
 "stats","*","base/qaqc","Imports",FALSE
+"stats","*","models/sipnet","Imports",FALSE
 "stats","*","modules/allometry","Imports",FALSE
 "stats","*","modules/assim.batch","Imports",FALSE
 "stats","*","modules/assim.sequential","Suggests",FALSE
@@ -613,9 +621,9 @@
 "testthat",">= 2.0.0","base/utils","Suggests",FALSE
 "testthat",">= 2.0.0","models/biocro","Suggests",FALSE
 "testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
-"testthat",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
+"testthat",">= 3.1.7","modules/data.atmosphere","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
 "tibble","*","models/ed","Imports",FALSE
 "tibble","*","models/fates","Imports",FALSE
@@ -645,6 +653,7 @@
 "utils","*","base/all","Imports",FALSE
 "utils","*","base/logger","Imports",FALSE
 "utils","*","models/ed","Imports",FALSE
+"utils","*","models/linkages","Imports",FALSE
 "utils","*","modules/allometry","Imports",FALSE
 "utils","*","modules/assim.batch","Imports",FALSE
 "utils","*","modules/assim.sequential","Suggests",FALSE

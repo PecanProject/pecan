@@ -31,9 +31,13 @@ met2model.FATES(
 
 \item{lst}{timezone offset to GMT in hours}
 
+\item{lat, lon}{latitude and longitude of site in decimal degrees}
+
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose for(year in start_year:end_year)}
+
+\item{...}{additional arguments, currently ignored}
 }
 \description{
 met2model wrapper for FATES

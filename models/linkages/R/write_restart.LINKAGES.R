@@ -4,23 +4,19 @@
 ##' 
 ##' @param outdir      output directory
 ##' @param runid       run ID
-##' @param time        year that is being read
+##' @param start.time,stop.time year that is being read
 ##' @param settings    PEcAn settings object
 ##' @param new.state    analysis vector
 ##' @param RENAME      flag to either rename output file or not
-##' @param variables
-##' @param sample_parameters
-##' @param trait.values
+##' @param new.params updated parameter values to write.
+##    Format is named list with each entry matching a PFT
+##' @param inputs passed on to `write.config.LINKAGES()`
 ##' 
 ##' @description Write restart files for LINKAGES
 ##' 
 ##' @return NONE
 ##' @export
 ##' 
-
-# outdir, runid, time, settings, new.state, variables, sample_parameters = FALSE, trait.values =
-# NA,met=NULL,RENAME = TRUE
-
 write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                                    settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
@@ -81,7 +77,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   #distance.matrix <- rbind(c(0,3,1,2), c(3,0,2,1), c(1,2,0,3), c(2,1,3,0))
   
   ## HACK
-  spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
+  spp.params.default <- utils::read.csv(system.file("spp_matrix.csv", package = "linkages"))  #default spp.params
   nspec <- length(settings$pfts)
   spp.params.save <- numeric(nspec)
   for (i in seq_len(nspec)) {
@@ -133,7 +129,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   if (!file.exists(outfile)) {
     outfile <- file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata"))
     if (!file.exists(outfile)) {
-      logger.severe(paste0("missing outfile ens #", runid))
+      PEcAn.logger::logger.severe(paste0("missing outfile ens #", runid))
     }
   }
   print(paste0("runid = ", runid))
@@ -208,7 +204,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   data2 <- data.frame(ind.biomass = ind.biomass,
                       n.index = n.index)
-  mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
+  mean.biomass.spp <- stats::aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
   #browser()
   # calculate number of individuals needed to match new.state
   for (s in seq_along(settings$pfts)) {
@@ -233,7 +229,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
   #someday we could think about estimating this parameter from data
-  if(sum(new.ntrees,na.rm = T) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,195,198))
+  if(sum(new.ntrees,na.rm = T) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * stats::runif(1,195,198))
   
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -310,10 +306,13 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                                      spp.biomass.params = spp.biomass.params) * as.numeric(bcorr[s])
     bMax <- 200
     for (j in nl:nu) {
-      dbh.temp[j] <- optimize(merit, c(1, bMax), b_obs = b_obs[j], 
-                              spp.biomass.params = spp.biomass.params)$minimum
+      dbh.temp[j] <- stats::optimize(
+        merit,
+        c(1, bMax),
+        b_obs = b_obs[j],
+        spp.biomass.params = spp.biomass.params)$minimum
     }
-    
+
     b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu],
                                        spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48
     nl <- nu + 1
@@ -366,14 +365,18 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   save(dbh, tyl, ntrees, nogro, ksprt, iage, C.mat, ncohrt, file = restart.file)
   
   # make a new settings with the right years min start date and end date - fail in informative way
-  
-  settings$run$start.date <- paste0(formatC(year(start.time + 1), width = 4, format = "d", flag = "0"), "/01/01")
-  settings$run$end.date <- paste0(formatC(year(stop.time), width = 4, format = "d", flag = "0"), "/12/31")
-  
-  do.call(write.config.LINKAGES, 
-          args = list(trait.values = new.params, settings = settings, run.id = runid, 
+
+  settings$run$start.date <- paste0(
+    formatC(lubridate::year(start.time + 1), width = 4, format = "d", flag = "0"),
+    "/01/01")
+  settings$run$end.date <- paste0(
+    formatC(lubridate::year(stop.time), width = 4, format = "d", flag = "0"),
+    "/12/31")
+
+  do.call(write.config.LINKAGES,
+          args = list(trait.values = new.params, settings = settings, run.id = runid,
                       restart = TRUE, spinup = FALSE, inputs = inputs))
-  
+
   # save original output
   if (RENAME) {
     file.rename(file.path(outdir, runid, "linkages.out.Rdata"), 
