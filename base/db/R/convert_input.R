@@ -380,7 +380,7 @@ convert_input <-
     if (!is.null(ensemble) && ensemble) {
       return.all <-TRUE
       
-    } else{
+    } else {
       return.all <- FALSE
     }
       existing.dbfile <- dbfile.input.check(siteid = site.id,
@@ -518,6 +518,10 @@ convert_input <-
   # Get machine information
   machine.info <- get.machine.info(host, input.args = input.args, input.id = input.id)
 
+  if (any(sapply(machine.info, is.null))) {
+    PEcAn.logger::logger.error("failed lookup of inputs or dbfiles")
+    return(NULL)  
+  }
   machine <- machine.info$machine
   input <- machine.info$input
   dbfile <- machine.info$dbfile

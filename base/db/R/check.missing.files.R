@@ -1,7 +1,6 @@
 #' Function to check if result has empty or missing files
 #'
 #' @param result A list of dataframes with file paths
-#' @param outname Name of the output file
 #' @param existing.input Existing input records
 #' @param existing.dbfile Existing dbfile records
 #' @return A list of dataframes with file paths, a list of strings with the output file name, a list of existing input records, and a list of existing dbfile records

@@ -18,7 +18,7 @@ get_machine_info <- function(host, input.args, input.id = NULL, con = NULL) {
     return(NULL)
   }
 
-  if (missing(input.id) || is.na(input.id) || is.null(input.id)) {
+  if (is.na(input.id) || is.null(input.id)) {
     input <- dbfile <- NULL
   } else {
     input <- db.query(paste("SELECT * from inputs where id =", input.id), con)
@@ -71,7 +71,7 @@ get_machine_info <- function(host, input.args, input.id = NULL, con = NULL) {
 #' @param con database connection
 #' @return list of machine host and machine information
 #' @author Abhinav Pandey
-get.machine.host <- function(host, con = NULL) {
+get_machine_host <- function(host, con) {
   #Grab machine info of host machine
   machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0(
