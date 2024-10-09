@@ -8,7 +8,7 @@
 #'
 #' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-check_missing_files <- function(result, outname, existing.input = NULL, existing.dbfile = NULL) {
+check_missing_files <- function(result, existing.input = NULL, existing.dbfile = NULL) {
   result_sizes <- purrr::map_dfr(
     result,
     ~ dplyr::mutate(
@@ -35,12 +35,12 @@ check_missing_files <- function(result, outname, existing.input = NULL, existing
   }
 
 
-  # Wrap in a list for consistant processing later
-  if (exists("existing.input") && is.data.frame(existing.input)) {
+  # Wrap in a list for consistent processing later
+  if (is.data.frame(existing.input)) {
     existing.input <- list(existing.input)
   }
 
-  if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
+  if (is.data.frame(existing.dbfile)) {
     existing.dbfile <- list(existing.dbfile)
   }
   return(list(existing.input, existing.dbfile))

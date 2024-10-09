@@ -583,7 +583,7 @@ convert_input <-
   #--------------------------------------------------------------------------------------------------#
   # Check if result has empty or missing files
 
-  checked.missing.files <- check_missing_files(result, outname, existing.input, existing.dbfile)
+  checked.missing.files <- check_missing_files(result, existing.input, existing.dbfile)
 
   # Unwrap parameters after performing checks for missing files
   existing.input <- checked.missing.files$existing.input

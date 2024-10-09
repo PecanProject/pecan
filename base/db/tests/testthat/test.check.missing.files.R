@@ -5,7 +5,6 @@ test_that("`check_missing_files()` able to return correct missing files", {
 
     res <- check_missing_files(
         result = list(data.frame(file = c("A", "B"))),
-        outname = "test",
         existing.input = data.frame(),
         existing.dbfile = data.frame()
     )
