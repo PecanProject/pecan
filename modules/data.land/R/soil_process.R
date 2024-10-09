@@ -30,6 +30,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   # set up bety connection
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
+  
   # get site info
   latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
   new.site <- data.frame(id = as.numeric(site$id),

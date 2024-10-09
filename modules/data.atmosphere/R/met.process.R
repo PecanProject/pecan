@@ -133,11 +133,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
-  new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = latlon$lat, 
-                         lon = latlon$lon)
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  latlon <- NULL
+  site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
+
+  # extract new.site and str_ns from site.info
+  new.site <- site.info$new.site
+  str_ns <- site.info$str_ns
   
   if (is.null(format.vars$lat)) {
     format.vars$lat <- new.site$lat

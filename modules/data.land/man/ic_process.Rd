@@ -14,6 +14,8 @@ ic_process(settings, input, dir, overwrite = FALSE)
 \item{dir}{settings$database$dbfiles}
 
 \item{overwrite}{Default = FALSE. whether to force ic_process to proceed}
+
+\item{site}{Current site information}
 }
 \description{
 ic_process
