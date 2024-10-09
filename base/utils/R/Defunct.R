@@ -1,5 +1,6 @@
-#' @title Defunct functions in PEcAn.utils
-#' @description The functions listed below are defunct and have been removed from the package.
+#' Defunct functions in PEcAn.utils
+#'
+#' The functions listed below are defunct and have been removed from the package.
 #'  Calling them will produce a message indicating what function, if any, has replaced it.
 #'
 #' @name PEcAn.utils-defunct

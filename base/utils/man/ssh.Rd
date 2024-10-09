@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{ssh}
 \alias{ssh}
-\title{SSH}
+\title{R implementation of SSH}
 \usage{
 ssh(host, ..., args = "")
 }

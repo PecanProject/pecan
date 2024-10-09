@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{tryl}
 \alias{tryl}
-\title{tryl}
+\title{Test if function gives an error}
 \usage{
 tryl(FUN)
 }
@@ -13,9 +13,6 @@ tryl(FUN)
 FALSE if function returns error; else TRUE
 }
 \description{
-Test if function gives an error
-}
-\details{
 adaptation of try that returns a logical value (FALSE if error)
 }
 \examples{

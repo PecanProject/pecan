@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.url.R
 \name{download.url}
 \alias{download.url}
-\title{Download file from the url.}
+\title{Try and download a file.}
 \usage{
 download.url(url, file, timeout = 600, .opts = list(), retry = TRUE)
 }
@@ -22,9 +22,6 @@ protected site use list(userpwd=userpass, httpauth = 1L)}
 returns name of file if successful or NA if not.
 }
 \description{
-Try and download a file.
-}
-\details{
 This will download a file, if retry is set and 404 is returned it will
 wait until the file is available. If the file is still not available
 after timeout tries, it will return NA. If the file is downloaded

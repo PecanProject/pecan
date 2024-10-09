@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{vecpaste}
 \alias{vecpaste}
-\title{vecpaste}
+\title{Convert vector to comma delimited string}
 \usage{
 vecpaste(x)
 }
@@ -13,8 +13,5 @@ vecpaste(x)
 comma delimited string
 }
 \description{
-Convert vector to comma delimited string
-}
-\details{
 vecpaste, turns vector into comma delimited string fit for SQL statements.
 }

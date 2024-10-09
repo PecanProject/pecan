@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2model.BIOCRO.R
 \name{cf2biocro}
 \alias{cf2biocro}
-\title{Convert CF-formatted met data to BioCro met}
+\title{Converts a CF data frame into a BioCro met input}
 \usage{
 cf2biocro(met, longitude = NULL, zulu2solarnoon = FALSE)
 }

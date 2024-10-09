@@ -1,26 +1,17 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-##' convert R parameterizations to BUGS paramaterizations
-##'
-##' R and BUGS have different parameterizations for some distributions. This function transforms the distributions from R defaults to BUGS defaults. BUGS is an implementation of the BUGS language, and these transformations are expected to work for bugs.
-##' @title convert R parameterizations to BUGS paramaterizations
-##' @param priors data.frame with columns distn = distribution name, parama, paramb using R default parameterizations.
-##' @param direction One of "r2bugs" or "bugs2r"
-##' @return priors dataframe using JAGS default parameterizations
-##' @author David LeBauer, Ben Bolker
-##' @export
-##' @examples
-##' priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
-##'                      parama = c(1, 1, 1, 1),
-##'                      paramb = c(2, 2, 2, 2))
-##' r2bugs.distributions(priors)
+#' convert R parameterizations to BUGS paramaterizations
+#'
+#' R and BUGS have different parameterizations for some distributions. This function transforms the distributions from R defaults to BUGS defaults. BUGS is an implementation of the BUGS language, and these transformations are expected to work for bugs.
+#'
+#' @param priors data.frame with columns distn = distribution name, parama, paramb using R default parameterizations.
+#' @param direction One of "r2bugs" or "bugs2r"
+#' @return priors dataframe using JAGS default parameterizations
+#' @author David LeBauer, Ben Bolker
+#' @export
+#' @examples
+#' priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
+#'                      parama = c(1, 1, 1, 1),
+#'                      paramb = c(2, 2, 2, 2))
+#' r2bugs.distributions(priors)
 r2bugs.distributions <- function(priors, direction = "r2bugs") {
 
   priors$distn  <- as.character(priors$distn)
@@ -76,19 +67,19 @@ bugs2r.distributions <- function(..., direction = "bugs2r") {
 } # bugs2r.distributions
 
 
-##' Sample from an R distribution using JAGS
-##'
-##' Takes a distribution with R parameterization, converts it to a
-##' BUGS parameterization, and then samples from the distribution using
-##' JAGS
-##' @title bugs.rdist
-##' @param prior dataframe with distribution name and parameters
-##' @param n.iter number of MCMC samples. Output will have n.iter/4 samples
-##' @param n number of randomly chosen samples to return.
+#' Sample from an R distribution using JAGS
+#'
+#' Takes a distribution with R parameterization, converts it to a
+#' BUGS parameterization, and then samples from the distribution using
+#' JAGS
+#'
+#' @param prior dataframe with distribution name and parameters
+#' @param n.iter number of MCMC samples. Output will have n.iter/4 samples
+#' @param n number of randomly chosen samples to return.
 ##    If NULL, returns all n.iter/4 of them
-##' @return vector of samples
-##' @export
-##' @author David LeBauer
+#' @return vector of samples
+#' @export
+#' @author David LeBauer
 bugs.rdist <- function(prior = data.frame(distn = "norm", parama = 0, paramb = 1),
                        n.iter = 1e+05, n = NULL) {
   need_packages("rjags")

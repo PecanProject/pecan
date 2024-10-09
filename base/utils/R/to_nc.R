@@ -1,12 +1,12 @@
-##' Make some values into an NCDF dimension variable
-##'
-##' Units and longnames are looked up from the \code{\link{standard_vars}} table
-##' @export
-##'
-##' @param dimname character vector, standard dimension name (must be in PEcAn.utils::standard_vars)
-##' @param vals values of dimension; can be single value or vector
-##' @return ncdim defined according to standard_vars
-##' @author Anne Thomas
+#' Make some values into an NCDF dimension variable
+#'
+#' Units and longnames are looked up from the \code{\link{standard_vars}} table
+#' @export
+#'
+#' @param dimname character vector, standard dimension name (must be in PEcAn.utils::standard_vars)
+#' @param vals values of dimension; can be single value or vector
+#' @return ncdim defined according to standard_vars
+#' @author Anne Thomas
 to_ncdim <- function(dimname,vals){
   dim <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == dimname),]
   #check dim exists
@@ -30,14 +30,14 @@ to_ncdim <- function(dimname,vals){
 } #to_ncdim
 
 
-##' Define an NCDF variable
-##'
-##' @export
-##'
-##' @param varname character vector, standard variable name (must be in PEcAn.utils::standard_vars)
-##' @param dims list of previously defined ncdims (function will match subset of dims for this variable in standard_vars; can include other dims--enables lapply.)
-##' @return ncvar defined according to standard_vars
-##' @author Anne Thomas
+#' Define an NCDF variable
+#'
+#' @export
+#'
+#' @param varname character vector, standard variable name (must be in PEcAn.utils::standard_vars)
+#' @param dims list of previously defined ncdims (function will match subset of dims for this variable in standard_vars; can include other dims--enables lapply.)
+#' @return ncvar defined according to standard_vars
+#' @author Anne Thomas
 to_ncvar <- function(varname,dims){
   nc_var <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == varname),]
   #check nc_var exists

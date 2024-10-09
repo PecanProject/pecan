@@ -1,22 +1,22 @@
 
-##' Transform misc. statistics to SE
-##'
-##' Automates transformations of SD, MSE, LSD, 95%CI, HSD, and MSD
-##'   to conservative estimates of SE.
-##' Method details and assumptions described in
-##' LeBauer 2020 Transforming ANOVA and Regression statistics for Meta-analysis. 
-##' Authorea. DOI: https://doi.org/10.22541/au.158359749.96662550
-##' @param data data frame with columns for mean, statistic, n,
-##'   and statistic name
-##' @return data frame with statistics transformed to SE
-##' @author David LeBauer
-##' @export
-##' @examples
-##' statdf <- data.frame(Y=rep(1,5),
-##'                      stat=rep(1,5),
-##'                      n=rep(4,5),
-##'                      statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
-##' transformstats(statdf)
+#' Transform misc. statistics to SE
+#'
+#' Automates transformations of SD, MSE, LSD, 95%CI, HSD, and MSD
+#'   to conservative estimates of SE.
+#' Method details and assumptions described in
+#' LeBauer 2020 Transforming ANOVA and Regression statistics for Meta-analysis.
+#' Authorea. DOI: https://doi.org/10.22541/au.158359749.96662550
+#' @param data data frame with columns for mean, statistic, n,
+#'   and statistic name
+#' @return data frame with statistics transformed to SE
+#' @author David LeBauer
+#' @export
+#' @examples
+#' statdf <- data.frame(Y=rep(1,5),
+#'                      stat=rep(1,5),
+#'                      n=rep(4,5),
+#'                      statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
+#' transformstats(statdf)
 transformstats <- function(data) {
   if (is.factor(data$statname) && !"SE" %in% levels(data$statname)) {
     data$statname <- factor(

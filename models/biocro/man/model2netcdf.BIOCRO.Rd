@@ -2,7 +2,7 @@
 % Please edit documentation in R/model2netcdf.BIOCRO.R
 \name{model2netcdf.BIOCRO}
 \alias{model2netcdf.BIOCRO}
-\title{Function to convert biocro model output to standard netCDF format}
+\title{Convert BioCro output to standard netCDF format}
 \usage{
 model2netcdf.BIOCRO(result, genus = NULL, outdir, lat = -9999, lon = -9999)
 }
@@ -20,10 +20,6 @@ Eventually that will be handled inside BioCro and this argument will be removed.
 \item{lon}{Longitude of the site}
 }
 \description{
-Convert BioCro output to netCDF
-}
-\details{
-Converts BioCro output to netCDF.
 Modified from on model2netcdf.SIPNET and model2netcdf.ED2 by
 }
 \author{

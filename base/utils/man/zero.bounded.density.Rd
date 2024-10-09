@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{zero.bounded.density}
 \alias{zero.bounded.density}
-\title{Zero Bounded Density}
+\title{Zero bounded density using log density transform}
 \usage{
 zero.bounded.density(x, bw = "SJ", n = 1001)
 }
@@ -17,9 +17,6 @@ zero.bounded.density(x, bw = "SJ", n = 1001)
 data frame with back-transformed log density estimate
 }
 \description{
-Zero bounded density using log density transform
-}
-\details{
 Provides a zero bounded density estimate of a parameter.
 Kernel Density Estimation used by the \code{\link[stats]{density}} function will cause problems
 at the left hand end because it will put some weight on negative values.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{newxtable}
 \alias{newxtable}
-\title{newxtable}
+\title{New xtable}
 \usage{
 newxtable(
   x,
@@ -25,9 +25,6 @@ newxtable(
 Latex version of table, with percentages properly formatted
 }
 \description{
-New xtable
-}
-\details{
 utility to properly escape the '\%' sign for latex
 }
 \author{
