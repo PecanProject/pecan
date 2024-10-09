@@ -208,22 +208,26 @@ runModule.run.meta.analysis <- function(settings) {
     PEcAn.logger::logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ", 
                        paste(pft.names, collapse = ", ")))
     
-    iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects$on
-    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
-    threshold  <- settings$meta.analysis$threshold
-    dbfiles    <- settings$database$dbfiles
-    database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs)
+    run.meta.analysis(
+      pfts,
+      settings$meta.analysis$iter,
+      settings$meta.analysis$random.effects$on,
+      settings$meta.analysis$threshold,
+      settings$database$dbfiles,
+      settings$database$bety,
+      settings$meta.analysis$random.effects$use_ghs
+    )
   } else if (PEcAn.settings::is.Settings(settings)) {
-    pfts       <- settings$pfts
-    iterations <- settings$meta.analysis$iter
-    random     <- settings$meta.analysis$random.effects$on
-    use_ghs    <- settings$meta.analysis$random.effects$use_ghs
-    threshold  <- settings$meta.analysis$threshold
-    dbfiles    <- settings$database$dbfiles
-    database   <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database, use_ghs, update = settings$meta.analysis$update)
+      run.meta.analysis(
+        settings$pfts,
+        settings$meta.analysis$iter,
+        settings$meta.analysis$random.effects$on,
+        settings$meta.analysis$threshold,
+        settings$database$dbfiles,
+        settings$database$bety,
+        settings$meta.analysis$random.effects$use_ghs,
+        update = settings$meta.analysis$update
+      )
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }

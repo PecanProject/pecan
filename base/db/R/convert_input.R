@@ -174,16 +174,14 @@ convert_input <-
         # Date/time processing for existing input
         existing.input[[i]]$start_date <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$start_date), "UTC")
         existing.input[[i]]$end_date   <- lubridate::force_tz(lubridate::as_datetime(existing.input[[i]]$end_date), "UTC")
-        
+
         ## Obtain machine information
+        machine.host.info <- get.machine.host(host, con = con)
+        machine.host <- machine.host.info$machine.host
+        machine <- machine.host.info$machine
         #Grab machine info of file that exists
         existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                                       existing.dbfile[[i]]$machine_id, "'"), con)
-        
-        #Grab machine info of host machine
-        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                             machine.host, "'"), con)
         
         
         # If the files aren't on the machine, we have to download them, so "overwrite" is meaningless.
@@ -351,9 +349,9 @@ convert_input <-
                                           existing.dbfile$machine_id, "'"), con)
       
       #Grab machine info of host machine
-      machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-      machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                 machine.host, "'"), con)
+      machine.host.info <- get.machine.host(host, con = con)
+      machine.host <- machine.host.info$machine.host
+      machine <- machine.host.info$machine
       
       if (existing.machine$id != machine$id) {
         
@@ -382,7 +380,7 @@ convert_input <-
     if (!is.null(ensemble) && ensemble) {
       return.all <-TRUE
       
-    }else{
+    } else {
       return.all <- FALSE
     }
       existing.dbfile <- dbfile.input.check(siteid = site.id,
@@ -473,11 +471,11 @@ convert_input <-
         existing.machine <- db.query(paste0("SELECT * from machines where id  = '",
                                             existing.dbfile$machine_id, "'"), con)
         
-        #Grab machine info of 
-        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-        machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                                   machine.host, "'"), con)
-        
+        #Grab machine info of host machine
+        machine.host.info <- get.machine.host(host, con = con)
+        machine.host <- machine.host.info$machine.host
+        machine <- machine.host.info$machine
+
         if(existing.machine$id != machine$id){
           PEcAn.logger::logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
           PEcAn.logger::logger.info("Downloading all years of Valid input to ensure consistency")
@@ -512,66 +510,21 @@ convert_input <-
         # we'll need to update its start/end dates .
       } 
     } else {
-      # No existing record found. Should be good to go.
+      PEcAn.logger::logger.debug("No existing record found. Should be good to go.")
     }
   }
   
   #---------------------------------------------------------------------------------------------------------------#
   # Get machine information
+  machine.info <- get.machine.info(host, input.args = input.args, input.id = input.id)
 
-  machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
-  machine <- db.query(paste0("SELECT * from machines where hostname = '",
-                             machine.host, "'"), con)
-  
-  if (nrow(machine) == 0) {
-    PEcAn.logger::logger.error("machine not found", host$name)
-    return(NULL)
+  if (any(sapply(machine.info, is.null))) {
+    PEcAn.logger::logger.error("failed lookup of inputs or dbfiles")
+    return(NULL)  
   }
-  
-  if (missing(input.id) || is.na(input.id) || is.null(input.id)) {
-    input <- dbfile <- NULL
-  } else {
-    input <- db.query(paste("SELECT * from inputs where id =", input.id), con)
-    if (nrow(input) == 0) {
-      PEcAn.logger::logger.error("input not found", input.id)
-      return(NULL)
-    }
-    
-    if(!is.null(input.args$dbfile.id)){
-      dbfile <-
-        db.query(
-          paste(
-            "SELECT * from dbfiles where id=",input.args$dbfile.id," and container_id =",
-            input.id,
-            " and container_type = 'Input' and machine_id =",
-            machine$id
-          ),
-          con
-        )  
-    }else{
-      dbfile <-
-        db.query(
-          paste(
-            "SELECT * from dbfiles where container_id =",
-            input.id,
-            " and container_type = 'Input' and machine_id =",
-            machine$id
-          ),
-          con
-        )  
-    }
-    
-
-    
-    if (nrow(dbfile) == 0) {
-      PEcAn.logger::logger.error("dbfile not found", input.id)
-      return(NULL)
-    }
-    if (nrow(dbfile) > 1) {
-      PEcAn.logger::logger.warn("multiple dbfile records, using last", dbfile)
-      dbfile <- dbfile[nrow(dbfile), ]
-    }
-  }
+  machine <- machine.info$machine
+  input <- machine.info$input
+  dbfile <- machine.info$dbfile
   
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion
@@ -634,143 +587,29 @@ convert_input <-
   #--------------------------------------------------------------------------------------------------#
   # Check if result has empty or missing files
 
-  result_sizes <- purrr::map_dfr(
-    result,
-    ~ dplyr::mutate(
-      .,
-      file_size = purrr::map_dbl(file, file.size),
-      missing = is.na(file_size),
-      empty = file_size == 0
-    )
-  )
-  
-  if (any(result_sizes$missing) || any(result_sizes$empty)){
-    log_format_df = function(df){
-        rbind(colnames(df), format(df))
-        purrr::reduce( paste, sep=" ") %>%
-        paste(collapse="\n")
-    }
-    
-    PEcAn.logger::logger.severe(
-      "Requested Processing produced empty files or Nonexistant files :\n",
-      log_format_df(result_sizes[,c(1,8,9,10)]),
-      "\n Table of results printed above.",
-      wrap = FALSE)
-  }
-  
-  # Insert into Database
-  outlist <- unlist(strsplit(outname, "_"))
-  
-  # Wrap in a list for consistant processing later
-  if (exists("existing.input") && is.data.frame(existing.input)) {
-    existing.input <- list(existing.input)
-  }
-  
-  if (exists("existing.dbfile") && is.data.frame(existing.dbfile)) {
-    existing.dbfile <- list(existing.dbfile)
-  }
+  checked.missing.files <- check_missing_files(result, existing.input, existing.dbfile)
+
+  # Unwrap parameters after performing checks for missing files
+  existing.input <- checked.missing.files$existing.input
+  existing.dbfile <- checked.missing.files$existing.dbfile
   
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
-  if (write) {
-
-    # Setup newinput.  This list will contain two variables: a vector of input IDs and a vector of DB IDs for each entry in result.
-    # This list will be returned.
-    newinput = list(input.id = NULL, dbfile.id = NULL) #Blank vectors are null.
-    for(i in 1:length(result)) {  # Master for loop
-      id_not_added <- TRUE
-      
-      if (exists("existing.input") && nrow(existing.input[[i]]) > 0 && 
-          (existing.input[[i]]$start_date != start_date || existing.input[[i]]$end_date != end_date)) {
-        
-        # Updating record with new dates
-        db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='",
-                                  end_date, "'  WHERE id=", existing.input[[i]]$id), 
-                           con)
-        id_not_added = FALSE
-        
-        # The overall structure of this loop has been set up so that exactly one input.id and one dbfile.id will be written to newinput every interation.
-        newinput$input.id = c(newinput$input.id, existing.input[[i]]$id)
-        newinput$dbfile.id = c(newinput$dbfile.id, existing.dbfile[[i]]$id)
-      }
-      
-      if (overwrite) {
-        # A bit hacky, but need to make sure that all fields are updated to expected
-        # values (i.e., what they'd be if convert_input was creating a new record)
-        if (exists("existing.input") && nrow(existing.input[[i]]) > 0) {
-            db.query(paste0("UPDATE inputs SET name='", basename(dirname(result[[i]]$file[1])),
-                                      "' WHERE id=", existing.input[[i]]$id), con)
-          
-        }
-        
-        if (exists("existing.dbfile") && nrow(existing.dbfile[[i]]) > 0) {
-            db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result[[i]]$file[1]),
-                                      "', ", "file_name='", result[[i]]$dbfile.name[1], 
-                                      "' WHERE id=", existing.dbfile[[i]]$id), con)
-          
-        }
-      }
-      
-      # If there is no ensemble then for each record there should be one parent
-      #But when you have ensembles, all of the members have one parent !!
-      if (is.numeric(ensemble)){
-        parent.id <- ifelse(is.null(input[i]), NA, input[1]$id)
-      }else{
-        parent.id <- ifelse(is.null(input[i]), NA, input[i]$id)  
-      }
-      
-      
-      
-      if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
-        site.id <- input.args$newsite
-      }
-      
-      if (insert.new.file && id_not_added) {
-        dbfile.id <- dbfile.insert(in.path = dirname(result[[i]]$file[1]),
-                                             in.prefix = result[[i]]$dbfile.name[1], 
-                                             'Input', existing.input[[i]]$id, 
-                                             con, reuse=TRUE, hostname = machine$hostname)
-        newinput$input.id  <- c(newinput$input.id, existing.input[[i]]$id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, dbfile.id)
-      } else if (id_not_added) {
-
-      # This is to tell input.insert if we are wrting ensembles
-      # Why does it need it ? bc it checks for inputs with the same time period, site and machine
-      # and if it returns somethings it does not insert anymore, but for ensembles it needs to bypass this condition
-      if (!is.null(ensemble) | is.null(ensemble_name)){
-        ens.flag <- TRUE
-      }else{
-        ens.flag <- FALSE
-      }
-       
-        new_entry <- dbfile.input.insert(in.path = dirname(result[[i]]$file[1]),
-                                                   in.prefix = result[[i]]$dbfile.name[1], 
-                                                   siteid = site.id, 
-                                                   startdate = start_date,
-                                                   enddate = end_date, 
-                                                   mimetype, 
-                                                   formatname, 
-                                                   parentid = parent.id,
-                                                   con = con, 
-                                                   hostname = machine$hostname,
-                                                   allow.conflicting.dates = allow.conflicting.dates, 
-                                                   ens=ens.flag
-                                                   )
-        
-        
-        newinput$input.id <- c(newinput$input.id, new_entry$input.id)
-        newinput$dbfile.id <- c(newinput$dbfile.id, new_entry$dbfile.id)
-      }
-      
-    } #End for loop
-    
+    if(write) {
+      add_entries_result <- return (add.database.entries(result, con, start_date,
+      end_date, overwrite,
+      insert.new.file, input.args,
+      machine, mimetype, formatname,
+      allow.conflicting.dates, ensemble,
+      ensemble_name, existing.input,
+      existing.dbfile, input))
+    } else {
+      PEcAn.logger::logger.warn("Input was not added to the database")
+      successful <- TRUE
+      return(NULL)
+    }
     successful <- TRUE
-    return(newinput)
-  } else {
-    PEcAn.logger::logger.warn("Input was not added to the database")
-    successful <- TRUE
-    return(NULL)
-  }
+    return (add_entries_result)
 } # convert_input
 
 

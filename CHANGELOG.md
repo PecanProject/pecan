@@ -1,4 +1,5 @@
 # Change Log
+
 All notable changes are kept in this file. All changes made should be added to the section called
 `Unreleased`. Once a new release is made this file will be updated to create a new `Unreleased`
 section for the next release.
@@ -8,6 +9,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Added
+
+- Refactor `convert_input` to Perform tasks via helper function. Subtask of [#3307](https://github.com/PecanProject/pecan/issues/3307)
 
 ### Fixed
 - updated github action to build docker images
