@@ -591,13 +591,21 @@ convert_input <-
   
   #---------------------------------------------------------------#
   # New arrangement of database adding code to deal with ensembles.
-  return (add.database.entries(result, con, start_date,
-    end_date, write, overwrite,
-    insert.new.file, input.args,
-    machine, mimetype, formatname,
-    allow.conflicting.dates, ensemble,
-    ensemble_name, existing.input,
-    existing.dbfile, input))
+    if(write) {
+      add_entries_result <- return (add.database.entries(result, con, start_date,
+      end_date, overwrite,
+      insert.new.file, input.args,
+      machine, mimetype, formatname,
+      allow.conflicting.dates, ensemble,
+      ensemble_name, existing.input,
+      existing.dbfile, input))
+    } else {
+      PEcAn.logger::logger.warn("Input was not added to the database")
+      successful <- TRUE
+      return(NULL)
+    }
+    successful <- TRUE
+    return (add_entries_result)
 } # convert_input
 
 
