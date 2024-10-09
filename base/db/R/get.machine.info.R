@@ -7,7 +7,7 @@
 #' @return list of machine, input, and dbfile records
 #' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella, Luke Dramko
 
-get.machine.info <- function(host, input.args, input.id = NULL, con = NULL) {
+get_machine_info <- function(host, input.args, input.id = NULL, con = NULL) {
 
   machine.host.info <- get.machine.host(host, con = con)
   machine.host <- machine.host.info$machine.host
