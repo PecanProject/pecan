@@ -14,9 +14,9 @@ or all tags that have it as a substring?}
 }
 \value{
 data frame with columns for package name, expected version(s),
-and installed version.
-If the \code{sessioninfo} package is installed, a fourth column reports where
-each package was installed from: local, github, CRAN, etc.
+installed version, and Git hash (if known).
+If the \code{sessioninfo} package is installed, an additional column reports
+where each package was installed from: local, github, CRAN, etc.
 }
 \description{
 Reports the currently installed or loaded version(s) of each PEcAn package,

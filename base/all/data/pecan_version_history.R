@@ -1,30 +1,34 @@
 
+# Read and format a list of pecan versions
 
-pecan_version_history <- utils::read.csv(
-  "pecan_version_history.csv",
-  colClasses = "character",
-  check.names = FALSE)
+# The local() wrapper is to avoid adding objects to the package data:
+# Any extra vars defined at the top level of this file would be loaded
+# into the global environment by `data("pecan_version_history")`
 
-# We'd like to parse strictly to catch invalid versions (probably typos).
-# But we _need_ to allow NAs... and in R < 4.4, package_version did not
-# accept NAs unless strict=FALSE.
-strict <- TRUE
-na_version <- try(
-  package_version(NA_character_, strict = strict),
-  silent = TRUE)
-if (inherits(na_version, "try-error")) {
-  strict <- FALSE
-}
+pecan_version_history <- local({
+  pvh <- utils::read.csv(
+    "pecan_version_history.csv",
+    colClasses = "character",
+    check.names = FALSE)
 
-for (col in colnames(pecan_version_history)) {
-  if (col != "package") {
-    pecan_version_history[[col]] <- package_version(
-      pecan_version_history[[col]],
-      strict = strict)
+  # We'd like to parse strictly to catch invalid versions (probably typos).
+  # But we _need_ to allow NAs... and in R < 4.4, package_version did not
+  # accept NAs unless strict=FALSE.
+  strict <- TRUE
+  na_version <- try(
+    package_version(NA_character_, strict = strict),
+    silent = TRUE)
+  if (inherits(na_version, "try-error")) {
+    strict <- FALSE
   }
-}
 
-# Now remove local vars
-# Yes, this really is needed: _all_ objects left defined at end of script
-# will be added to the package data list!
-rm(strict, na_version, col)
+  for (col in colnames(pvh)) {
+    if (col != "package") {
+      pvh[[col]] <- package_version(
+        pvh[[col]],
+        strict = strict)
+    }
+  }
+
+  pvh
+})

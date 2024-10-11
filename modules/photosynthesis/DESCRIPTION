@@ -34,10 +34,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Collate:
-    fitA.R
-    Licor.QC.R
-    plots.R
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
