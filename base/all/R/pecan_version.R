@@ -104,6 +104,7 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     y = PEcAn.all::pecan_version_history,
     all = TRUE)
   res <- drop_na_version_rows(res[, cols_to_return])
+  rownames(res) <- res$package
   class(res) <- c("pecan_version_report", class(res))
 
   res
@@ -119,7 +120,7 @@ drop_na_version_rows <- function(df) {
 
 # Look up git revision, if recorded, from an installed PEcAn package
 get_buildhash <- function(pkg) {
-  # Set if installed from r-universe or via install_github()
+  # Set if pkg was installed from r-universe or via install_github()
   desc_sha <- utils::packageDescription(pkg, fields = "RemoteSha")
   if (!is.na(desc_sha)) {
     return(substr(desc_sha, 1, 10))
@@ -139,7 +140,10 @@ print.pecan_version_report <- function(x, ...) {
   if (is.null(dots$right)) { dots$right <- FALSE }
 
   xx <- as.data.frame(x)
-  xx$build_hash[is.na(xx$build_hash)] <- ""
+  # only print hash for dev versions
+  # (typically x.y.z.9000, but we'll use anything with a 4th version component)
+  skip_hash <- is.na(xx$installed[,4]) | is.na(xx$build_hash)
+  xx$build_hash[skip_hash] <- ""
   xx$build_hash <- sub(".{4}\\+mod$", "+mod", xx$build_hash)
   xx$installed <- paste0(
     xx$installed,
