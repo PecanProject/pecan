@@ -3,6 +3,12 @@
 ## Fixed
 
 * `download.AmerifluxLBL` no longer wrongly re-fetches raw zipfiles when `overwrite = FALSE`
+* `download.NOAA_GEFS` is updated to work again with GEFS v12.3,
+	the current release as of this writing in July 2024 (#3349).
+
+## Changed
+* Removed `sitename` and `username` from the formal arguments of `download.NOAA_GEFS`.
+	Before they were silently ignored, now they're treated as part of `...` (which is also ignored!).
 
 # PEcAn.data.atmosphere 1.8.0
 

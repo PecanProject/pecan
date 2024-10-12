@@ -17,21 +17,11 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
   
   
   download_grid <- function(ens_index, location, directory, hours_char, cycle, base_filename1, vars,working_directory){
-    #for(j in 1:31){
-    if(ens_index == 1){
-      base_filename2 <- paste0("gec00",".t",cycle,"z.pgrb2a.0p50.f")
-      curr_hours <- hours_char[hours <= 384]
-    }else{
-      if((ens_index-1) < 10){
-        ens_name <- paste0("0",ens_index - 1)
-      }else{
-        ens_name <- as.character(ens_index -1)
-      }
-      base_filename2 <- paste0("gep",ens_name,".t",cycle,"z.pgrb2a.0p50.f")
-      curr_hours <- hours_char
-    }
-    
-    
+    member_type <- if (ens_index == 1) { "gec" } else { "gep" } # "_c_ontrol", "_p_erturbed"
+    ens_idxname <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
+    base_filename2 <- paste0(member_type,ens_idxname,".t",cycle,"z.pgrb2a.0p50.f")
+    curr_hours <- hours_char
+
     for(i in 1:length(curr_hours)){
       file_name <- paste0(base_filename2, curr_hours[i])
       
@@ -73,37 +63,12 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
   
   model_dir <- file.path(output_directory, model_name_raw)
   
+  #Availability: most recent 4 days
   curr_time <- lubridate::with_tz(Sys.time(), tzone = "UTC")
   curr_date <- lubridate::as_date(curr_time)
-  
-  noaa_page <- readLines('https://nomads.ncep.noaa.gov/pub/data/nccf/com/gens/prod/')
-  
-  potential_dates <- NULL
-  for(i in 1:length(noaa_page)){
-    if(stringr::str_detect(noaa_page[i], ">gefs.")){
-      end <- stringr::str_locate(noaa_page[i], ">gefs.")[2]
-      dates <- stringr::str_sub(noaa_page[i], start = end+1, end = end+8)
-      potential_dates <- c(potential_dates, dates)
-    }
-  }
-  
-  
-  last_cycle_page <- readLines(paste0('https://nomads.ncep.noaa.gov/pub/data/nccf/com/gens/prod/gefs.', dplyr::last(potential_dates)))
-  
-  potential_cycle <- NULL
-  for(i in 1:length(last_cycle_page)){
-    if(stringr::str_detect(last_cycle_page[i], 'href=\"')){
-      end <- stringr::str_locate(last_cycle_page[i], 'href=\"')[2]
-      cycles <- stringr::str_sub(last_cycle_page[i], start = end+1, end = end+2)
-      if(cycles %in% c("00","06", "12", "18")){
-        potential_cycle <- c(potential_cycle, cycles)
-      }
-    }
-  }
-  
-  potential_dates <- lubridate::as_date(potential_dates)
-  
-  potential_dates = potential_dates[which(potential_dates == forecast_date)]
+  potential_dates <- curr_date - lubridate::days(3:0)
+
+  potential_dates <- potential_dates[which(potential_dates == forecast_date)]
   
   if(length(potential_dates) == 0){PEcAn.logger::logger.error("Forecast Date not available")}
   
@@ -118,7 +83,10 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
                      floor(min(lat_list)))
   
   base_filename1 <- "https://nomads.ncep.noaa.gov/cgi-bin/filter_gefs_atmos_0p50a.pl?file="
-  vars <- "&lev_10_m_above_ground=on&lev_2_m_above_ground=on&lev_surface=on&lev_entire_atmosphere=on&var_APCP=on&var_DLWRF=on&var_DSWRF=on&var_PRES=on&var_RH=on&var_TMP=on&var_UGRD=on&var_VGRD=on&var_TCDC=on"
+  vars <- paste0(
+    "&lev_10_m_above_ground=on&lev_2_m_above_ground=on&lev_surface=on&lev_entire_atmosphere=on",
+    "&var_APCP=on&var_DLWRF=on&var_DSWRF=on&var_PRES=on&var_RH=on&var_TMP=on",
+    "&var_UGRD=on&var_VGRD=on&var_TCDC=on")
   
   for(i in 1:length(potential_dates)){
     
@@ -143,11 +111,11 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
         print(paste("Downloading", forecast_date, cycle))
         
         if(cycle == "00"){
-          hours <- c(seq(0, 240, 3),seq(246, 384, 6))
-          hours <- hours[hours<=end_hr]
+          hours <- c(seq(0, 240, 3),seq(246, 840, 6))
         }else{
-          hours <- c(seq(0, 240, 3),seq(246, min(end_hr, 840) , 6))
+          hours <- c(seq(0, 240, 3),seq(246, 384 , 6))
         }
+        hours <- hours[hours<=end_hr]
         hours_char <- hours
         hours_char[which(hours < 100)] <- paste0("0",hours[which(hours < 100)])
         hours_char[which(hours < 10)] <- paste0("0",hours_char[which(hours < 10)])
@@ -163,12 +131,12 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
         
         parallel::mclapply(X = ens_index,
                            FUN = download_grid,
-                           location,
-                           directory,
-                           hours_char,
-                           cycle,
-                           base_filename1,
-                           vars,
+                           location = location,
+                           directory = directory,
+                           hours_char = hours_char,
+                           cycle = cycle,
+                           base_filename1 = base_filename1,
+                           vars = vars,
                            working_directory = model_date_hour_dir,
                            mc.cores = 1)
       }else{
@@ -177,6 +145,9 @@ noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date,
     }
   }
 }
+
+
+
 #' Extract and temporally downscale points from downloaded grid files
 #'
 #' @param lat_list lat for site
@@ -222,23 +193,13 @@ process_gridded_noaa_download <- function(lat_list,
     dlwrfsfc <- array(NA, dim = c(site_length, length(hours_char)))
     dswrfsfc <- array(NA, dim = c(site_length, length(hours_char)))
     
-    if(ens_index == 1){
-      base_filename2 <- paste0("gec00",".t",cycle,"z.pgrb2a.0p50.f")
-    }else{
-      if(ens_index-1 < 10){
-        ens_name <- paste0("0",ens_index-1)
-      }else{
-        ens_name <- as.character(ens_index-1)
-      }
-      base_filename2 <- paste0("gep",ens_name,".t",cycle,"z.pgrb2a.0p50.f")
-    }
+    member_type <- if (ens_index == 1) { "gec" } else { "gep" } # "_c_ontrol", "_p_erturbed"
+    ens_idxname <- stringr::str_pad(ens_index - 1, width = 2, pad = "0")
+    base_filename2 <- paste0(member_type,ens_idxname,".t",cycle,"z.pgrb2a.0p50.f")
     
     lats <- round(lat_list/.5)*.5
     lons <- round(lon_list/.5)*.5
     
-    if(lons < 0){
-      lons <- 360 + lons
-    }
     curr_hours <- hours_char
     
     for(hr in 1:length(curr_hours)){
@@ -263,8 +224,13 @@ process_gridded_noaa_download <- function(lat_list,
           vgrd10m[s, hr]  <- grib_data_df$`10[m] HTGL=Specified height level above ground; v-component of wind [m/s]`[index]
           
           if(curr_hours[hr] != "000"){
-            apcpsfc[s, hr]  <- grib_data_df$`SFC=Ground or water surface; 03 hr Total precipitation [kg/(m^2)]`[index]
-            tcdcclm[s, hr]  <- grib_data_df$`RESERVED(10) (Reserved); Total cloud cover [%]`[index]
+            # total precip alternates being named as 3 or 6 hr total
+            # TODO: not sure if the contents actually differ or if this is a labeling bug in the grib files
+            precip_hr <- if ((as.numeric(curr_hours[hr]) %% 2) == 1) { "03" } else { "06" }
+            precip_name <- paste("SFC=Ground or water surface;", precip_hr, "hr Total precipitation [kg/(m^2)]")
+            apcpsfc[s, hr]  <- grib_data_df[[precip_name]][index]
+
+            tcdcclm[s, hr]  <- grib_data_df$`EATM=Entire Atmosphere; Total cloud cover [%]`[index]
             dswrfsfc[s, hr] <- grib_data_df$`SFC=Ground or water surface; Downward Short-Wave Rad. Flux [W/(m^2)]`[index]
             dlwrfsfc[s, hr] <- grib_data_df$`SFC=Ground or water surface; Downward Long-Wave Rad. Flux [W/(m^2)]`[index]
           }
@@ -301,17 +267,15 @@ process_gridded_noaa_download <- function(lat_list,
   
   
   
-  cycle <-forecast_time
+  cycle <- forecast_time
   curr_forecast_time <- forecast_date + lubridate::hours(cycle)
-  if(cycle < 10) cycle <- paste0("0",cycle)
-  if(cycle == "00"){
-    hours <- c(seq(0, 240, 3),seq(246, 840 , 6))
-  }else{
-    hours <- c(seq(0, 240, 3),seq(246, 384 , 6))
+  cycle <- stringr::str_pad(cycle, width = 2, pad = "0")
+  if (cycle == "00") {
+    hours <- c(seq(0, 240, 3),seq(246, 840, 6))
+  } else {
+    hours <- c(seq(0, 240, 3),seq(246, 384, 6))
   }
-  hours_char <- hours
-  hours_char[which(hours < 100)] <- paste0("0",hours[which(hours < 100)])
-  hours_char[which(hours < 10)] <- paste0("0",hours_char[which(hours < 10)])
+  hours_char <- stringr::str_pad(hours, width = 3, pad = "0") # 3->"003", 384->"384"
   
   raw_files <- list.files(file.path(model_name_raw_dir,forecast_date,cycle))
   hours_present <- as.numeric(stringr::str_sub(raw_files, start = 25, end = 27))
@@ -341,19 +305,21 @@ process_gridded_noaa_download <- function(lat_list,
                                  FUN = extract_sites,
                                  hours_char = hours_char,
                                  hours = hours,
-                                 cycle,
-                                 site_id,
-                                 lat_list,
-                                 lon_list,
+                                 cycle = cycle,
+                                 site_id = site_id,
+                                 lat_list = lat_list,
+                                 lon_list = lon_list,
                                  working_directory = file.path(model_name_raw_dir,forecast_date,cycle),
                                  mc.cores = 1)
     
     
-    forecast_times <- lubridate::as_datetime(forecast_date) + lubridate::hours(as.numeric(cycle)) + lubridate::hours(as.numeric(hours_char))
+    forecast_times <- lubridate::as_datetime(forecast_date) +
+      lubridate::hours(as.numeric(cycle)) +
+      lubridate::hours(as.numeric(hours_char))
     
     
     
-    #Convert negetive longitudes to degrees east
+    #Convert negative longitudes to degrees east
     if(lon_list < 0){
       lon_east <- 360 + lon_list
     }else{
@@ -425,17 +391,18 @@ process_gridded_noaa_download <- function(lat_list,
     #Calculate wind speed from east and north components
     wind_speed <- sqrt(noaa_data$eastward_wind$value^2 + noaa_data$northward_wind$value^2)
     
-    forecast_noaa <- tibble::tibble(time = noaa_data$air_temperature$forecast.date,
-                                    NOAA.member = noaa_data$air_temperature$ensembles,
-                                    air_temperature = noaa_data$air_temperature$value,
-                                    air_pressure= noaa_data$air_pressure$value,
-                                    relative_humidity = noaa_data$relative_humidity$value,
-                                    surface_downwelling_longwave_flux_in_air = noaa_data$surface_downwelling_longwave_flux_in_air$value,
-                                    surface_downwelling_shortwave_flux_in_air = noaa_data$surface_downwelling_shortwave_flux_in_air$value,
-                                    precipitation_flux = noaa_data$precipitation_flux$value,
-                                    specific_humidity = specific_humidity,
-                                    cloud_area_fraction = noaa_data$cloud_area_fraction$value,
-                                    wind_speed = wind_speed)
+    forecast_noaa <- tibble::tibble(
+      time = noaa_data$air_temperature$forecast.date,
+      NOAA.member = noaa_data$air_temperature$ensembles,
+      air_temperature = noaa_data$air_temperature$value,
+      air_pressure= noaa_data$air_pressure$value,
+      relative_humidity = noaa_data$relative_humidity$value,
+      surface_downwelling_longwave_flux_in_air = noaa_data$surface_downwelling_longwave_flux_in_air$value,
+      surface_downwelling_shortwave_flux_in_air = noaa_data$surface_downwelling_shortwave_flux_in_air$value,
+      precipitation_flux = noaa_data$precipitation_flux$value,
+      specific_humidity = specific_humidity,
+      cloud_area_fraction = noaa_data$cloud_area_fraction$value,
+      wind_speed = wind_speed)
     
     forecast_noaa$cloud_area_fraction <- forecast_noaa$cloud_area_fraction / 100 #Convert from % to proportion
     
@@ -455,14 +422,10 @@ process_gridded_noaa_download <- function(lat_list,
     for (ens in 1:31) { # i is the ensemble number
       
       #Turn the ensemble number into a string
-      if(ens-1< 10){
-        ens_name <- paste0("0",ens-1)
-      }else{
-        ens_name <- ens - 1
-      }
+      ens_name <- stringr::str_pad(ens - 1, width = 2, pad = "0")
       
       forecast_noaa_ens <- forecast_noaa %>%
-        dplyr::filter(NOAA.member == ens) %>%
+        dplyr::filter(.data$NOAA.member == ens) %>%
         dplyr::filter(!is.na(.data$air_temperature))
       
       end_date <- forecast_noaa_ens %>%
@@ -524,6 +487,15 @@ process_gridded_noaa_download <- function(lat_list,
   results_list <- results_list[!sapply(results_list, is.null)]
   return(results_list)
 } #process_gridded_noaa_download
+
+
+
+
+
+
+
+
+
 
 #' @title Downscale NOAA GEFS from 6hr to 1hr
 #' @return None
@@ -642,6 +614,14 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
                          overwrite = overwrite)
   
 } #temporal_downscale
+
+
+
+
+
+
+
+
 
 
 
