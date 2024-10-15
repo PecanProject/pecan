@@ -2,9 +2,9 @@
 ARG IMAGE_VERSION="latest"
 
 # ----------------------------------------------------------------------
-# BUILD SIPNET BINARY
+# BUILD PECAN FOR FATES
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} as model-binary 
+FROM pecan/models:${IMAGE_VERSION} 
 
 # Command from pecan/models image
 RUN apt update && apt upgrade -y
@@ -26,6 +26,14 @@ RUN apt install -y \
     diffutils \
     rsync
 
+RUN update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-9 100
+
+RUN echo '/usr/local/lib' > /etc/ld.so.conf.d/local.conf && ldconfig
+
+RUN mkdir /tmp/sources
+
+WORKDIR /tmp/sources
+
 RUN wget -q http://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz && \
     tar zxf mpich-3.3.2.tar.gz && \
     cd mpich-3.3.2 && \
@@ -38,22 +46,21 @@ RUN  wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.
      ./configure --prefix=/usr/local && \
      make -j 2 install
 
-## no response!
-RUN  wget -q ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-c-4.7.4.tar.gz  && \
-     tar zxf netcdf-c-4.7.4.tar.gz && \
+RUN  wget -q https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.7.4.tar.gz && \
+     tar zxf v4.7.4.tar.gz && \
      cd netcdf-c-4.7.4 && \
      ./configure --prefix=/usr/local && \
      make -j 2 install && \
      ldconfig
 
-RUN  wget -q ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.5.3.tar.gz && \
-     tar zxf netcdf-fortran-4.5.3.tar.gz && \
+RUN  wget -q https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.5.3.tar.gz && \
+     tar zxf v4.5.3.tar.gz && \
      cd netcdf-fortran-4.5.3 && \
-     ./configure --prefix=/usr/local && \
+     ## original netcdf(version=4.7.3): /usr,  ; fates netcdf(version>=4.7.4): /usr/local; --enable-fortran to ensure netcdf.mod
+     ./configure --prefix=/usr/local LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" --enable-fortran && \ 
      make -j 2 install && \
      ldconfig
 
-## get response
 RUN  wget -q https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz && \
      tar zxf pnetcdf-1.12.1.tar.gz && \
      cd pnetcdf-1.12.1 && \
@@ -61,6 +68,7 @@ RUN  wget -q https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz && 
      make -j 2 install && \
      ldconfig
 
+    # cd  /tmp/sources
 RUN wget -q https://github.com/esmf-org/esmf/archive/refs/tags/ESMF_8_2_0.tar.gz && \
     tar zxf ESMF_8_2_0.tar.gz && \
     cd esmf-ESMF_8_2_0 && \
@@ -68,33 +76,24 @@ RUN wget -q https://github.com/esmf-org/esmf/archive/refs/tags/ESMF_8_2_0.tar.gz
     export ESMF_INSTALL_PREFIX='/usr/local' && \
     export ESMF_LAPACK="netlib" && \
     export ESMF_LAPACK_LIBS="-llapack -lblas" && \
-    export ESMF_LAPACK_LIBPATH="/usr/lib" && \
-    export ESMF_NETCDF="nc-config" && \
-    gmake && \
-    gmake install && \
+    ## 
+    export ESMF_LAPACK_LIBPATH="/usr/lib/x86_64-linux-gnu" && \
+    export ESMF_NETCDF="/usr/local/include" && \
+    make && \
+    make install && \
     ldconfig
-
-
-
-
-
-
+    
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git
 
 # download, unzip and build sipnet
 WORKDIR /src
 RUN git clone https://github.com/PecanProject/fates.git \
-    && cd sipnet \
+    && cd fates \
     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
     && make
 
 ########################################################################
-
-# ----------------------------------------------------------------------
-# BUILD PECAN FOR FATES
-# ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} 
 
 
 # ----------------------------------------------------------------------
