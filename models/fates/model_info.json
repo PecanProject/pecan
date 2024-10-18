@@ -1,0 +1,16 @@
+{
+  "name": "FATES",
+  "type": "FATES",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "FATES is a numerical terrestrial ecosystem model, which is an external module running in the given “Host Land Model”, such as CLM-CTSM, E3SM and ELM.",
+  "creator": "Rob Kooper <kooper@illinois.edu>",
+  "contributors": [],
+  "links": {
+    "source": "https://github.com/NGEET/fates",
+    "issues": "https://github.com/NGEET/fates/issues",
+    "documentation": "https://fates-users-guide.readthedocs.io/en/latest/"
+  },
+  "inputs": {},
+  "bibtex": []
+}
