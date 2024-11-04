@@ -43,6 +43,8 @@ jobs:
   # depends image has all the dependencies installed
   # ----------------------------------------------------------------------
   depends:
+    permissions:
+      packages: write
     needs: rversion
     uses: ./.github/workflows/docker-build-image.yml
     with:
