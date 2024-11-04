@@ -67,7 +67,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/${{ github.repository }}/${{ steps.name.outputs.image_name }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image_name }}
           # pecan/${{ steps.name.outputs.image_name }}
           # generate Docker tags based on the following events/attributes
           tags: |
