@@ -29,7 +29,7 @@ on:
         type: string
 
 jobs:
- build:
+  build:
     runs-on: ubuntu-latest
     permissions:
       packages: write
