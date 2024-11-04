@@ -6,7 +6,7 @@ ARG IMAGE_VERSION="latest"
 # ----------------------------------------------------------------------
 FROM pecan/models:${IMAGE_VERSION} 
 
-# Command from pecan/models image
+# load packages before adding CTSM
 RUN apt update && apt upgrade -y
 RUN apt install -y \
     sudo \
@@ -68,37 +68,72 @@ RUN  wget -q https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz && 
      make -j 2 install && \
      ldconfig
 
-    # cd  /tmp/sources
-RUN wget -q https://github.com/esmf-org/esmf/archive/refs/tags/ESMF_8_2_0.tar.gz && \
+RUN cd  /tmp/sources \
+    wget -q https://github.com/esmf-org/esmf/archive/refs/tags/ESMF_8_2_0.tar.gz && \
     tar zxf ESMF_8_2_0.tar.gz && \
     cd esmf-ESMF_8_2_0 && \
     export ESMF_DIR='/tmp/sources/esmf-ESMF_8_2_0' && \
     export ESMF_INSTALL_PREFIX='/usr/local' && \
     export ESMF_LAPACK="netlib" && \
     export ESMF_LAPACK_LIBS="-llapack -lblas" && \
-    ## 
     export ESMF_LAPACK_LIBPATH="/usr/lib/x86_64-linux-gnu" && \
-    export ESMF_NETCDF="/usr/local/include" && \
+    export ESMF_NETCDF="nc-config" && \
     make && \
     make install && \
     ldconfig
-    
-# Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=git
 
-# download, unzip and build sipnet
-WORKDIR /src
-RUN git clone https://github.com/PecanProject/fates.git \
-    && cd fates \
-    && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
-    && make
+RUN rm -rf /tmp/sources
+RUN pip install --upgrade pip setuptools
+
+## Above has been tested in the pecan/model container
 
 ########################################################################
 
+## Below needs further discussion.
 
-# ----------------------------------------------------------------------
-# SETUP FOR SPECIFIC SIPNET VERSION
-# ----------------------------------------------------------------------
+## Load CTSM from https://github.com/NorESMhub/noresm-land-sites-platform/blob/main/docker/api/entrypoint_api.sh
+    ## 1. Standard address of /ctsm-api/resources/model in pecan ??
+RUN if [ ! -d /ctsm-api/resources/model ]; then && \ 
+        mkdir -p /ctsm-api/resources && \
+    fi && \
+    ## go to the folder for CTSM
+    cd /ctsm-api/resources/ && \
+    ## download CTSM
+    git clone https://github.com/ESCOMP/CTSM.git && \
+    ## go to model folder
+    cd model && \
+    ## Checkout specific CTSM version, which has been tested in the container, more recent version than this needs to be tested in the future.
+    git checkout ctsm5.1.dev108 && \ 
+    ## Download fates (tag = sci.1.58.1_api.24.1.0), the version can be modified in Externals_CLM.cfg 
+    ./manage_externals/checkout_externals
+
+RUN set -e && \
+    ## set home folder for running CTSM-fates. 2. what does 'HOME' should be in pecan?
+    USER=root && \
+    HOME=/root && \
+    ## create .bashrc file for setting basic compiling parameters for CTSM-fates
+    export USER="$USER" && \
+    export PYTHONPATH=/ctsm-api && \
+    export CIME_MACHINE=container && \
+    export MPICC=mpicc && \
+    export MPIFC=mpif90 && \
+    export MPIF90=mpif90 && \
+    export MPIF77=mpif77 && \
+    ## 3. What is data folder for CTSM-fates in pecan?
+    export CESMDATAROOT=${CESMDATAROOT:?} && \
+    ln -fs /ctsm-api/docker/dotcime "$HOME"/.cime
+
+## Copy dotcime and entrypoints from ctsm-api to fates
+## Dotcime is a key file for setting the compiling environment for CTSM-fates 
+## Dotcime (https://github.com/NorESMhub/ctsm-api/tree/main/docker/dotcime) SHOULD be kept in the home directory as '.cime'
+RUN COPY docker/dotcime /<home folder>/.cime
+
+## 3. Download inputdata in dockerfile?
+## 4. Build CTSM-fates here or in write.config file?
+
+########################################################################
+
+## 5. Is the following part (copied from sipnet) necessary for fates?
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git
@@ -108,7 +143,6 @@ COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/fates.${MODEL_VERSION}#g" /work/model.json
 
-# COPY sipnet binary
+# Is it needed to move binary to sepcific folder?
 COPY --from=model-binary /src/CESM/fates /usr/local/bin/fates.${MODEL_VERSION} 
 
-# /src/CESM/fates?
