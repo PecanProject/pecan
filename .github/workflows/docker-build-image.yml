@@ -46,7 +46,7 @@ jobs:
         run: |
           REGISTRY=$(
             [[ ${{ github.event_name }} == 'pull_request' ]] &&
-            echo "ghcr.io/${{ github.repository_owner }}" ||
+            echo "ghcr.io/${{ github.actor }}/${{ github.repository }}" ||
             echo "docker.io/pecan")
           echo "PARENT_IMAGE_IF_SET=$(
             [[ -n '${{ inputs.parent-image }}' ]] &&
@@ -71,7 +71,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            name=ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image_name }}
+            name=ghcr.io/${{ github.actor }}/${{ github.repository }}/${{ steps.name.outputs.image_name }}
             name=pecan/${{ steps.name.outputs.image_name }},enable=${{ github.event_name != 'pull_request' }}
           # generate Docker tags based on the following events/attributes
           tags: |
