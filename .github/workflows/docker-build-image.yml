@@ -121,8 +121,6 @@ jobs:
           file: ${{ inputs.dockerfile }}
           push: true
           platforms: ${{ inputs.platforms }}
-          # cache-from: type=registry,ref=pecan/${{ steps.name.outputs.image_name }}:buildcache
-          # cache-to: type=registry,ref=pecan/${{ steps.name.outputs.image_name }}:buildcache,mode=max
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
