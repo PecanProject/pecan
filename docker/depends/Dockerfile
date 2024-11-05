@@ -1,10 +1,10 @@
 ARG R_VERSION="4.1"
-ARG FROM_IMAGE="rocker/tidyverse"
+ARG PARENT_IMAGE="rocker/tidyverse"
 
 # ----------------------------------------------------------------------
 # PECAN FOR MODEL BASE IMAGE
 # ----------------------------------------------------------------------
-FROM ${FROM_IMAGE}:${R_VERSION}
+FROM ${PARENT_IMAGE}:${R_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL BINARY/LIBRARY DEPENDENCIES

@@ -15,7 +15,7 @@ on:
       r-version:
         required: true
         type: string
-      from-image:
+      parent-image:
         required: false
         default: ''
         type: string
@@ -40,13 +40,17 @@ jobs:
         id: name
         run: echo "image_name=$(echo ${{ inputs.image-name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: set FROM_IMAGE only if specified
-        id: from
+      - name: set PARENT_IMAGE only if specified
+        id: parent
         shell: bash
         run: |
-          echo "FROM_IMAGE_IF_SET=$(
-            [[ -n '${{ inputs.from-image }}' ]] &&
-            echo 'FROM_IMAGE=${{ inputs.from-image }}'
+          REGISTRY=$(
+            [[ ${{ github.event_name }} == 'pull_request' ]] &&
+            echo "ghcr.io/${{ github.repository_owner }}" ||
+            echo "docker.io/pecan")
+          echo "PARENT_IMAGE_IF_SET=$(
+            [[ -n '${{ inputs.parent-image }}' ]] &&
+            echo "PARENT_IMAGE=${REGISTRY}/"'${{ inputs.parent-image }}'
             )" >> $GITHUB_OUTPUT
 
       - name: set MODEL_VERSION only if specified
@@ -67,8 +71,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image_name }}
-          # pecan/${{ steps.name.outputs.image_name }}
+            name=ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image_name }}
+            name=pecan/${{ steps.name.outputs.image_name }},enable={{is_default_branch}}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -95,11 +99,12 @@ jobs:
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
       # login to registries
-      # - name: Login to DockerHub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -127,7 +132,7 @@ jobs:
             IMAGE_VERSION=${{ steps.meta.outputs.version }}
             PECAN_VERSION=${{ steps.meta.outputs.version }}
             R_VERSION=${{ inputs.r-version }}
-            ${{ steps.from.outputs.FROM_IMAGE_IF_SET }}
+            ${{ steps.parent.outputs.PARENT_IMAGE_IF_SET }}
             ${{ steps.modelver.outputs.MODEL_VERSION_IF_SET }}
             GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
             PECAN_GIT_BRANCH=${{ github.head_ref || github.ref_name }}

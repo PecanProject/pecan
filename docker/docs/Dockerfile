@@ -1,10 +1,11 @@
 # this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
+ARG PARENT_IMAGE="pecan/base"
 
 # ----------------------------------------------------------------------
 # compile bookdown to html
 # ----------------------------------------------------------------------
-FROM pecan/base:${IMAGE_VERSION} AS pecandocs
+FROM ${PARENT_IMAGE}:${IMAGE_VERSION} AS pecandocs
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pandoc \

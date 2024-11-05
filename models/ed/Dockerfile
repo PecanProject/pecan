@@ -1,10 +1,11 @@
 # this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
+ARG PARENT_IMAGE="pecan/models"
 
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} AS model-binary
+FROM ${PARENT_IMAGE}:${IMAGE_VERSION} AS model-binary
 
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION="2.2.0"
@@ -34,7 +35,7 @@ RUN cd ED2/ED/build \
 # ----------------------------------------------------------------------
 # BUILD PECAN FOR MODEL
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION}
+FROM ${PARENT_IMAGE}:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL MODEL SPECIFIC PIECES
