@@ -66,7 +66,7 @@ jobs:
       build-context: .
       dockerfile: docker/base/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "pecan/depends"
+      parent-image: "depends"
       platforms: "linux/amd64"
     secrets: inherit
 
@@ -81,7 +81,7 @@ jobs:
       build-context: docker/models
       dockerfile: docker/models/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "pecan/base"
+      parent-image: "base"
     secrets: inherit
 
 # ----------------------------------------------------------------------
@@ -142,7 +142,7 @@ jobs:
       build-context: ${{ matrix.CONTEXT }}
       dockerfile: ${{ matrix.DOCKERFILE }}
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "pecan/models"
+      parent-image: "models"
       model-version: ${{ matrix.VERSION }}
       platforms: ${{ matrix.PLATFORM }}
     secrets: inherit
