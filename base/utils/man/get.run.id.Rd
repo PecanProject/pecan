@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get.run.id}
 \alias{get.run.id}
-\title{Get Run ID}
+\title{returns an id representing a model run}
 \usage{
 get.run.id(run.type, index, trait = NULL, pft.name = NULL, site.id = NULL)
 }
@@ -22,9 +22,6 @@ ensemble or a quantile used to which a trait has been perturbed for sensitivity 
 id representing a model run
 }
 \description{
-returns an id representing a model run
-}
-\details{
 Provides a consistent method of naming runs; for use in model input files and indices
 }
 \examples{

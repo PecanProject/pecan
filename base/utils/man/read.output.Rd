@@ -73,6 +73,7 @@ Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
 DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 and Water fluxes: Evaporation (Evap), Transpiration (TVeg),
 surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
+
 For more details, see the \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
 documentation.
 }

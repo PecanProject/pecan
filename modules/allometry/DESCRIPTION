@@ -30,4 +30,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown

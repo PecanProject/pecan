@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{misc.are.convertible}
 \alias{misc.are.convertible}
-\title{misc.are.convertible}
+\title{function to check whether units are convertible by misc.convert function}
 \usage{
 misc.are.convertible(u1, u2)
 }

@@ -1,24 +1,14 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
 
-##' Removes previous model run output from worker node local scratch directories on EBI-CLUSTER 
-##'
-##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
-##' @name clear.scratch
-##' @author Shawn Serbin
-##' @param settings list of PEcAn settings. Only \code{settings$host$name} is used
-##' @return nothing
-##' @export
-##' @examples
-##' \dontrun{
-##' clear.scratch(settings)
-##' }
+#' Removes previous model run output from worker node local scratch directories on EBI-CLUSTER
+#'
+#' @author Shawn Serbin
+#' @param settings list of PEcAn settings. Only \code{settings$host$name} is used
+#' @return nothing
+#' @export
+#' @examples
+#' \dontrun{
+#' clear.scratch(settings)
+#' }
 clear.scratch <- function(settings) {
   
   ### Setup script

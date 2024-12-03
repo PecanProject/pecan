@@ -67,6 +67,11 @@ drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 # Generates a list of regular files at any depth inside its argument
 files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
 
+# Git hash + clean status for this directory
+git_rev = $(shell \
+	CLEAN=$$([[ -n $$(git status -s $1) ]] && echo "+mod"); \
+	echo $$(git rev-parse --short=10 HEAD)"$$CLEAN")
+
 # HACK: NA vs TRUE switch on dependencies argument is an ugly workaround for
 # a circular dependency between benchmark and data.land.
 # When this is fixed, can go back to simple `dependencies = TRUE`
@@ -74,6 +79,7 @@ depends_R_pkg = ./scripts/time.sh "depends ${1}" ./scripts/confirm_deps.R ${1} \
 	$(if $(findstring modules/benchmark,$(1)),NA,TRUE)
 install_R_pkg = ./scripts/time.sh "install ${1}" Rscript \
 	-e ${SETROPTIONS} \
+	-e "Sys.setenv(PECAN_GIT_REV='$(call git_rev,$1)')" \
 	-e "remotes::install_local('$(strip $(1))', force=TRUE, dependencies=FALSE, upgrade=FALSE)"
 check_R_pkg = ./scripts/time.sh "check ${1}" Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = ./scripts/time.sh "test ${1}" Rscript \

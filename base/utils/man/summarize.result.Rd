@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{summarize.result}
 \alias{summarize.result}
-\title{Summarize Results}
+\title{Summarize results of replicate observations in trait data query}
 \usage{
 summarize.result(result)
 }

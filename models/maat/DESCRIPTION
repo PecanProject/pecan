@@ -23,7 +23,7 @@ SystemRequirements: MAAT
 OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8

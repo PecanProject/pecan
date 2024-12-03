@@ -1,14 +1,14 @@
-##' @name timezone_hour
-##' @title timezone_hour
-##' @description return the number of hours offset to UTC for a timezone.
-##' @author Rob Kooper
-##' @param timezone to be converted
-##' @return hours offset of the timezone
-##' @examples 
-##' \dontrun{
-##' timezone_hour('America/New_York')
-##' }
-##' @export
+#' Timezone Hour
+#'
+#' Returns the number of hours offset to UTC for a timezone.
+#' @author Rob Kooper
+#' @param timezone to be converted
+#' @return hours offset of the timezone
+#' @examples
+#' \dontrun{
+#' timezone_hour('America/New_York')
+#' }
+#' @export
 timezone_hour <- function(timezone) {
   if (is.numeric(timezone)) {
     return(timezone)

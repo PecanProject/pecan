@@ -26,6 +26,9 @@
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 - [ ] My change requires a change to the documentation.
 - [ ] My name is in the list of CITATION.cff
+- [ ] I agree that PEcAn Project may distribute my contribution under any or all of
+	- the same license as the existing code,
+	- and/or the BSD 3-clause license.
 - [ ] I have updated the CHANGELOG.md.
 - [ ] I have updated the documentation accordingly.
 - [ ] I have read the **CONTRIBUTING** document.

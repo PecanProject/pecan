@@ -495,6 +495,7 @@
 "rmarkdown","*","models/biocro","Suggests",FALSE
 "rmarkdown","*","models/ed","Suggests",FALSE
 "rmarkdown","*","models/maat","Suggests",FALSE
+"rmarkdown","*","modules/data.atmosphere","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE
 "rmarkdown","*","modules/rtm","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE

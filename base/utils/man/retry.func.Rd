@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{retry.func}
 \alias{retry.func}
-\title{retry.func}
+\title{Retry function X times before stopping in error}
 \usage{
 retry.func(
   expr,
@@ -28,13 +28,10 @@ retval returns the results of the function call
 \description{
 Retry function X times before stopping in error
 }
-\details{
-Retry function X times before stopping in error
-}
 \examples{
 \dontrun{
-  file_url <- paste0("https://thredds.daac.ornl.gov/", 
-      "thredds/dodsC/ornldaac/1220", 
+  file_url <- paste0("https://thredds.daac.ornl.gov/",
+      "thredds/dodsC/ornldaac/1220",
       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
 dap <- retry.func(
   ncdf4::nc_open(file_url),

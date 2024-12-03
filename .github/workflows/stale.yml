@@ -8,10 +8,15 @@ jobs:
   stale:
     if: github.repository == 'PecanProject/pecan'
 
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/stale@v6
+    - uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue is stale because it has been open 365 days with no activity.'

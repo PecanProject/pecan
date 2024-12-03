@@ -1,5 +1,8 @@
 # PEcAn.utils 1.8.0.9000
 
+## License change
+* PEcAn.utils is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
+
 ## Added
 * utility function `zero.bounded.density` is now exported.
 

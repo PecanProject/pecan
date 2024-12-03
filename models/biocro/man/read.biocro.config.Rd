@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.biocro.config.R
 \name{read.biocro.config}
 \alias{read.biocro.config}
-\title{Read BioCro Config}
+\title{Read BioCro config file}
 \usage{
 read.biocro.config(config.file = "config.xml")
 }

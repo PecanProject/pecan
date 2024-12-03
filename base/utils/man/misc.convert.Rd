@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{misc.convert}
 \alias{misc.convert}
-\title{misc.convert}
+\title{conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations}
 \usage{
 misc.convert(x, u1, u2)
 }

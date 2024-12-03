@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{download_file}
 \alias{download_file}
-\title{download_file}
+\title{Simple function to use ncftpget for FTP downloads behind a firewall.}
 \usage{
 download_file(url, filename, method)
 }
@@ -15,7 +15,6 @@ download_file(url, filename, method)
 example options(download.ftp.method="ncftpget")}
 }
 \description{
-Simple function to use ncftpget for FTP downloads behind a firewall.
 Requires ncftpget and a properly formatted config file in the users
 home directory
 }

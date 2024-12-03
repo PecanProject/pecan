@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{rsync}
 \alias{rsync}
-\title{rsync}
+\title{R implementation of rsync}
 \usage{
 rsync(args, from, to, pattern = "")
 }
@@ -19,9 +19,6 @@ rsync(args, from, to, pattern = "")
 nothing, transfers files as a side effect
 }
 \description{
-R implementation of rsync
-}
-\details{
 rsync is a file copying tool in bash
 }
 \author{

@@ -1,15 +1,16 @@
-##' Implementation of standard equations used to calculate mean and sd for a variety of 
-##' named distributions different
-##' 
-##' @title Distribution Stats
-##' @param distn named distribution, one of 'beta', 'exp', 'f', 'gamma', 'lnorm', 'norm', 't', 
-##' @param a numeric; first parameter of \code{distn} 
-##' @param b numeric; second parameter of \code{distn}
-##' @return vector with mean and standard deviation
-##' @export
-##' @author David LeBauer
-##' @examples
-##' distn.stats('norm', 0, 1)
+#' Distribution Stats
+#'
+#' Implementation of standard equations used to calculate mean and sd for a variety of
+#' named distributions different
+#'
+#' @param distn named distribution, one of 'beta', 'exp', 'f', 'gamma', 'lnorm', 'norm', 't',
+#' @param a numeric; first parameter of \code{distn}
+#' @param b numeric; second parameter of \code{distn}
+#' @return vector with mean and standard deviation
+#' @export
+#' @author David LeBauer
+#' @examples
+#' distn.stats('norm', 0, 1)
 distn.stats <- function(distn, a, b) {
   mean <- sd <- NULL
   if (distn == "beta") {
@@ -44,14 +45,15 @@ distn.stats <- function(distn, a, b) {
 } # distn.stats
 
 
-##' a helper function for computing summary statistics of a parametric distribution
-##' 
-##' @title return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c('distn', 'a', 'b')},
-##'  e.g. in a table of priors
-##' @param distns table of distributions; see examples 
-##' @return named vector of mean and SD
-##' @export
-##' @author David LeBauer
+#' Helper function for computing summary statistics of a parametric distribution
+#'
+#' return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c('distn', 'a', 'b')},
+#'  e.g. in a table of priors
+#'
+#' @param distns table of distributions; see examples
+#' @return named vector of mean and SD
+#' @export
+#' @author David LeBauer
 distn.table.stats <- function(distns) {
   y <- as.data.frame(matrix(NA, nrow(distns), 2))
   for (i in seq_len(nrow(distns))) {

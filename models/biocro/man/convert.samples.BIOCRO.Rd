@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.configs.BIOCRO.R
 \name{convert.samples.BIOCRO}
 \alias{convert.samples.BIOCRO}
-\title{Convert samples for biocro}
+\title{convert parameters from PEcAn database default units to biocro defaults}
 \usage{
 convert.samples.BIOCRO(trait.samples, biocro_version = 1)
 }
@@ -15,9 +15,6 @@ convert.samples.BIOCRO(trait.samples, biocro_version = 1)
 dataframe with values transformed
 }
 \description{
-convert parameters from PEcAn database default units to biocro defaults
-}
-\details{
 Performs model specific unit conversions on a list of trait values,
 such as those provided to write.config
 }

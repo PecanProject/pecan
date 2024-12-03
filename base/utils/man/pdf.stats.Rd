@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{pdf.stats}
 \alias{pdf.stats}
-\title{Probability Distirbution Function Statistics}
+\title{Probability Distribution Function Statistics}
 \usage{
 pdf.stats(distn, A, B)
 }

@@ -42,7 +42,7 @@ Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: JAGS
 License: BSD_3_clause + file LICENSE
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8

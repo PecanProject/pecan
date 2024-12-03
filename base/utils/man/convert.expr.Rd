@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{convert.expr}
 \alias{convert.expr}
-\title{convert.expr}
+\title{Convert expression to variable names}
 \usage{
 convert.expr(expression)
 }

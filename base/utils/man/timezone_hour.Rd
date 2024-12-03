@@ -2,7 +2,7 @@
 % Please edit documentation in R/timezone_hour.R
 \name{timezone_hour}
 \alias{timezone_hour}
-\title{timezone_hour}
+\title{Timezone Hour}
 \usage{
 timezone_hour(timezone)
 }
@@ -13,7 +13,7 @@ timezone_hour(timezone)
 hours offset of the timezone
 }
 \description{
-return the number of hours offset to UTC for a timezone.
+Returns the number of hours offset to UTC for a timezone.
 }
 \examples{
 \dontrun{

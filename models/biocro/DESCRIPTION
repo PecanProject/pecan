@@ -38,5 +38,5 @@ Remotes:
 License: BSD_3_clause + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 Encoding: UTF-8
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 RoxygenNote: 7.3.2

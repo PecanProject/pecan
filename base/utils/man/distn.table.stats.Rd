@@ -2,8 +2,7 @@
 % Please edit documentation in R/distn.stats.R
 \name{distn.table.stats}
 \alias{distn.table.stats}
-\title{return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c('distn', 'a', 'b')},
-e.g. in a table of priors}
+\title{Helper function for computing summary statistics of a parametric distribution}
 \usage{
 distn.table.stats(distns)
 }
@@ -14,7 +13,8 @@ distn.table.stats(distns)
 named vector of mean and SD
 }
 \description{
-a helper function for computing summary statistics of a parametric distribution
+return mean and standard deviation of a distribution for each distribution in a table with \code{colnames = c('distn', 'a', 'b')},
+e.g. in a table of priors
 }
 \author{
 David LeBauer

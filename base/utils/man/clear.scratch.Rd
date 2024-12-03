@@ -2,7 +2,7 @@
 % Please edit documentation in R/clear.scratch.R
 \name{clear.scratch}
 \alias{clear.scratch}
-\title{Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output}
+\title{Removes previous model run output from worker node local scratch directories on EBI-CLUSTER}
 \usage{
 clear.scratch(settings)
 }
