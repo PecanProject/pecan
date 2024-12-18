@@ -1,4 +1,4 @@
-#' download_NOAA_GEFS_EFI
+#' download.NOAA_GEFS_EFI
 #'
 #' @param start_date start date for met forecast
 #' @param sitename NEON site name
@@ -10,8 +10,10 @@
 #'
 #'
 #' @author Alexis Helgeson
+#' @author Mike Dietze
+#' @export
 #' 
-download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, site.lon){
+download.NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, site.lon){
   #using the stage2 fcn mean that the met as already been downscaled and gapfilled to 1 hr intervals
   met = PEcAn.data.atmosphere::noaa_stage2(cycle = 0, 
                     version = "v12", 
@@ -20,9 +22,9 @@ download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, si
                     start_date = start_date)
   
   weather = met %>% 
-    dplyr::filter(.data$reference_datetime == as.POSIXct(start_date,tz="UTC"), sitename == sitename) %>%
+    dplyr::filter(.data$reference_datetime == as.POSIXct(start_date,tz="UTC"), site_id == sitename) %>%
     dplyr::collect() %>%
-    dplyr::select(.data$sitename, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
+    dplyr::select(.data$site_id, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
   
   PEcAn.logger::logger.info("Met Aquired for", sitename, "on", as.character(start_date))
   #grab/calculate timestep, this might not be necessary b/c of the datetime column?
@@ -55,7 +57,7 @@ download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, si
   #adding in windspeed and specific humidity
   cf_var_names1 <- c("surface_downwelling_longwave_flux_in_air", "surface_downwelling_shortwave_flux_in_air", "precipitation_flux", "air_pressure", "relative_humidity", "air_temperature", "specific_humidity", "wind_speed")
   cf_var_units1 <- c("Wm-2", "Wm-2", "kgm-2s-1", "Pa", "1", "K", "1", "ms-1")
-  #calculate specific humdity using realtive humidity (no unit conversion requied as relative humidity is in range 0-1), air temperature (no unit conversion already in K), and air pressure (no unit conversion already in Pa)
+  #calculate specific humdity using relative humidity (no unit conversion requied as relative humidity is in range 0-1), air temperature (no unit conversion already in K), and air pressure (no unit conversion already in Pa)
   specific_humidity <- rep(NA, length(noaa_data$relative_humidity$value))
   specific_humidity[which(!is.na(noaa_data$relative_humidity$value))] <- PEcAn.data.atmosphere::rh2qair(rh = noaa_data$relative_humidity$value[which(!is.na(noaa_data$relative_humidity$value))],
                                                                                                         T = noaa_data$air_temperature$value[which(!is.na(noaa_data$relative_humidity$value))],

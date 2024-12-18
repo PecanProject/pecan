@@ -14,7 +14,7 @@ model2netcdf.SIPNET(
   revision,
   prefix = "sipnet.out",
   overwrite = FALSE,
-  conflict = FALSE
+  conflict = TRUE
 )
 }
 \arguments{
