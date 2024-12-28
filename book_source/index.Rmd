@@ -42,11 +42,11 @@ knitr::include_graphics(rep("figures/PecanLogo.png"))
 
 
 
-[PEcAn Website](http://pecanproject.github.io/)
+[PEcAn Website](http://pecanproject.github.io/){target="_blank" rel="noopener noreferrer"}
 
-[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ)
+[Public Chat Room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ){target="_blank" rel="noopener noreferrer"}
 
-[Github Repository](https://github.com/PecanProject/pecan)
+[Github Repository](https://github.com/PecanProject/pecan){target="_blank" rel="noopener noreferrer"}
 
 <html>
 <head>
