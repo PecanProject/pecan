@@ -23,262 +23,72 @@ on:
           - 4.4
           - devel
 
-# set up the environment, either input or default
-env:
-  R_VERSION: ${{ github.event.inputs.r_version || '4.1' }}
 
-# there are 3 jobs to build different images
 jobs:
+  # ----------------------------------------------------------------------
+  # Set R version.
+  # This is a hack: We really just want a global env var here, but it seems
+  # `env:` values can't be passed into a `jobs.<jobid>.with` context
+  # (see https://github.com/actions/runner/issues/2372).
+  # As an ugly workaround, we assign it to a job output instead.
+  # ----------------------------------------------------------------------
+  rversion:
+    runs-on: ubuntu-latest
+    steps:
+       - run: echo "null"
+    outputs:
+      R_VERSION: ${{ github.event.inputs.r_version || '4.1' }}
+
   # ----------------------------------------------------------------------
   # depends image has all the dependencies installed
   # ----------------------------------------------------------------------
   depends:
-    runs-on: ubuntu-latest
     permissions:
       packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/depends
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/depends
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push depends
-        uses: docker/build-push-action@v6
-        with:
-          context: docker/depends
-          file: docker/depends/Dockerfile
-          push: true
-          platforms: "linux/amd64"
-          cache-from: type=registry,ref=pecan/depends:buildcache
-          cache-to: type=registry,ref=pecan/depends:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
+    needs: rversion
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: depends
+      build-context: docker/depends
+      dockerfile: docker/depends/Dockerfile
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      platforms: "linux/amd64"
+    secrets: inherit
 
   # ----------------------------------------------------------------------
   # base image has PEcAn compiled and installed, and depends on depends
   # ----------------------------------------------------------------------
   base:
-    runs-on: ubuntu-latest
-    needs: depends
-    permissions:
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/base
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/base
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push base
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/base/Dockerfile
-          push: true
-          platforms: "linux/amd64"
-          cache-from: type=registry,ref=pecan/base:buildcache
-          cache-to: type=registry,ref=pecan/base:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            FROM_IMAGE=depends
-            IMAGE_VERSION=${{ steps.meta.outputs.version }}
-            GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
-            PECAN_VERSION=${{ steps.meta.outputs.version }}
-            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }}
-            PECAN_GIT_CHECKSUM=${{ github.sha }}
-            PECAN_GIT_DATE=${{ github.event.repository.updated_at }}
+    needs: [rversion, depends]
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: base
+      build-context: .
+      dockerfile: docker/base/Dockerfile
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      parent-image: "depends"
+      platforms: "linux/amd64"
+    secrets: inherit
 
 # ----------------------------------------------------------------------
 # models image has some python installed to run models, depends on base
 # ----------------------------------------------------------------------
   models:
-    runs-on: ubuntu-latest
-    needs: base
-    permissions:
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as models name for tags
-          images: |
-            pecan/models
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/models
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push models
-        uses: docker/build-push-action@v6
-        with:
-          context: docker/models
-          file: docker/models/Dockerfile
-          push: true
-          platforms: "linux/amd64"
-          cache-from: type=registry,ref=pecan/models:buildcache
-          cache-to: type=registry,ref=pecan/models:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            FROM_IMAGE=depends
-            IMAGE_VERSION=${{ steps.meta.outputs.version }}
-            GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
-            PECAN_VERSION=${{ steps.meta.outputs.version }}
-            PECAN_GIT_BRANCH= ${{ github.head_ref || github.ref_name }}
-            PECAN_GIT_CHECKSUM=${{ github.sha }}
-            PECAN_GIT_DATE=${{ github.event.repository.updated_at }}
+    needs: [rversion, base]
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: models
+      build-context: docker/models
+      dockerfile: docker/models/Dockerfile
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      parent-image: "base"
+    secrets: inherit
 
 # ----------------------------------------------------------------------
 # Next are images that have models installed
 # ----------------------------------------------------------------------
   modelsbinary:
-    runs-on: ubuntu-latest
-    needs: models
-    permissions:
-      packages: write
+    needs: [rversion, models]
     strategy:
       fail-fast: false
       matrix:
@@ -326,92 +136,22 @@ jobs:
             PLATFORM: "linux/amd64"
             MODEL: sipnet
             VERSION: "git"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # lower case name for docker
-      - name: docker image name
-        id: lower
-        run: echo "image_name=$(echo model-${{ matrix.MODEL }}-${{ matrix.VERSION }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/${{ steps.lower.outputs.image_name }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/${{ steps.lower.outputs.image_name }}
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: docker image ls
-        run: docker image ls
-
-      # build the docker images
-      - name: Build and push ${{ matrix.MODEL }} ${{ matrix.VERSION }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.CONTEXT }}
-          file: ${{ matrix.DOCKERFILE }}
-          push: true
-          platforms: ${{ matrix.PLATFORM }}
-          cache-from: type=registry,ref=pecan/${{ steps.lower.outputs.image_name }}:buildcache
-          cache-to: type=registry,ref=pecan/${{ steps.lower.outputs.image_name }}:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            MODEL_VERSION=${{ matrix.VERSION }}
-            IMAGE_VERSION=${{ steps.meta.outputs.version }}
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
+      build-context: ${{ matrix.CONTEXT }}
+      dockerfile: ${{ matrix.DOCKERFILE }}
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      parent-image: "models"
+      model-version: ${{ matrix.VERSION }}
+      platforms: ${{ matrix.PLATFORM }}
+    secrets: inherit
 
   # ----------------------------------------------------------------------
   # Next are images that depend on base image
   # ----------------------------------------------------------------------
   baseplus:
-    runs-on: ubuntu-latest
-    needs: base
-    permissions:
-      packages: write
+    needs: [rversion, base]
     strategy:
       fail-fast: false
       matrix:
@@ -424,99 +164,34 @@ jobs:
             CONTEXT: .
             DOCKERFILE: docker/docs/Dockerfile
             PLATFORM: "linux/amd64"
-            IMAGE: docs
           - name: executor
             CONTEXT: docker/executor
             DOCKERFILE: docker/executor/Dockerfile
             PLATFORM: "linux/amd64"
-            IMAGE: executor
           - name: api
             CONTEXT: apps/api
             DOCKERFILE: apps/api/Dockerfile
             PLATFORM: "linux/amd64"
-            IMAGE: api
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/${{ matrix.IMAGE }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/${{ matrix.IMAGE }}
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push ${{ matrix.name }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.CONTEXT }}
-          file: ${{ matrix.DOCKERFILE }}
-          push: true
-          platforms: ${{ matrix.PLATFORM }}
-          cache-from: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache
-          cache-to: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
-            IMAGE_VERSION=${{ steps.meta.outputs.version }}
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: ${{ matrix.name }}
+      build-context: ${{ matrix.CONTEXT }}
+      dockerfile: ${{ matrix.DOCKERFILE }}
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      platforms: ${{ matrix.PLATFORM }}
+    secrets: inherit
 
   # ----------------------------------------------------------------------
   # Next are images that do not depend on either depends or base image
   # ----------------------------------------------------------------------
   extras:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
+    needs: rversion
     strategy:
       fail-fast: false
       matrix:
         name:
           - web
-          - dbsync
+          - shiny-dbsync
           - data
           - monitor
           - rstudio-nginx
@@ -525,91 +200,26 @@ jobs:
             CONTEXT: .
             DOCKERFILE: docker/web/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
-            IMAGE: web
-          - name: dbsync
+          - name: shiny-dbsync
             CONTEXT: .
             DOCKERFILE: shiny/dbsync/Dockerfile
             PLATFORM: "linux/amd64"
-            IMAGE: shiny-dbsync
           - name: data
             CONTEXT: docker/data
             DOCKERFILE: docker/data/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
-            IMAGE: data
           - name: monitor
             CONTEXT: docker/monitor
             DOCKERFILE: docker/monitor/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
-            IMAGE: monitor
           - name: rstudio-nginx
             CONTEXT: docker/rstudio-nginx
             DOCKERFILE: docker/rstudio-nginx/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
-            IMAGE: rstudio-nginx
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # create metadata for image
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            pecan/${{ matrix.IMAGE }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/${{ matrix.IMAGE }}
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-
-      # setup docker build
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Inspect Builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      # login to registries
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # build the docker images
-      - name: Build and push ${{ matrix.name }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.CONTEXT }}
-          file: ${{ matrix.DOCKERFILE }}
-          push: true
-          platforms: ${{ matrix.PLATFORM }}
-          cache-from: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache
-          cache-to: type=registry,ref=pecan/${{ matrix.IMAGE }}:buildcache,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            R_VERSION=${{ env.R_VERSION }}
+    uses: ./.github/workflows/docker-build-image.yml
+    with:
+      image-name: ${{ matrix.name }}
+      build-context: ${{ matrix.CONTEXT }}
+      dockerfile: ${{ matrix.DOCKERFILE }}
+      platforms: ${{ matrix.PLATFORM }}
+      r-version: ${{ needs.rversion.outputs.R_VERSION }}

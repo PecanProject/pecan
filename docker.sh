@@ -69,7 +69,7 @@ To set the version used of R when building the dependency image use
 the environment option R_VERSION (as well as DEPEND). You can also use
 the -r option which will make sure the dependency image is build.
 
-You can use the FROM_IMAGE environment variable to also specify what
+You can use the PARENT_IMAGE environment variable to also specify what
 image should be used when building the base image. You can for example
 use the previous base image which will speed up the compile process of
 PEcAn.
@@ -135,7 +135,7 @@ elif [ "${UPDATE_DEPENDS_FROM_TAG}" != "" ]; then
     ${DEBUG} docker build \
         --pull \
         --secret id=github_token,env=GITHUB_PAT \
-        --build-arg FROM_IMAGE="pecan/depends" \
+        --build-arg PARENT_IMAGE="pecan/depends" \
         --build-arg R_VERSION=${UPDATE_DEPENDS_FROM_TAG} ${GITHUB_WORKFLOW_ARG} \
         --tag pecan/depends:${IMAGE_VERSION} \
         docker/depends
@@ -163,7 +163,7 @@ for x in base web docs; do
     ${DEBUG} docker build \
         --secret id=github_token,env=GITHUB_PAT \
         --tag pecan/$x:${IMAGE_VERSION} \
-        --build-arg FROM_IMAGE="${FROM_IMAGE:-depends}" \
+        --build-arg PARENT_IMAGE="${PARENT_IMAGE:-depends}" \
         --build-arg IMAGE_VERSION="${IMAGE_VERSION}" ${GITHUB_WORKFLOW_ARG} \
         --build-arg PECAN_VERSION="${VERSION}" \
         --build-arg PECAN_GIT_BRANCH="${PECAN_GIT_BRANCH}" \
