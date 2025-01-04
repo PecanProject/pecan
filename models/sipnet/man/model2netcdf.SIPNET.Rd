@@ -36,7 +36,8 @@ model2netcdf.SIPNET(
 
 \item{overwrite}{Flag for overwriting nc files or not}
 
-\item{conflict}{Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.}
+\item{conflict}{Flag for dealing with conflicted nc files,
+if T we then will merge those, if F we will jump to the next.}
 }
 \description{
 Converts all output contained in a folder to netCDF.
