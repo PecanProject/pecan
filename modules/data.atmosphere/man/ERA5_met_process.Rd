@@ -18,7 +18,8 @@ ERA5_met_process(settings, in.path, out.path, write.db = FALSE, write = TRUE)
 \item{write}{if write the settings into pecan.xml file in the outdir of settings.}
 }
 \value{
-if write.db is True then return input IDs with physical paths; if write.db is False then return just physical paths of extracted ERA5 clim files.
+if write.db is True then return input IDs with physical paths;
+  if write.db is False then return just physical paths of extracted ERA5 clim files.
 }
 \description{
 Met Processes for ERA5 data
