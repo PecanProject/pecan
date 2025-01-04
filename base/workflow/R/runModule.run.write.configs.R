@@ -5,7 +5,6 @@
 #' @return A modified settings object, invisibly
 #' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
-
   if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
@@ -32,7 +31,8 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
       write = settings$database$bety$write,
       ens.sample.method = settings$ensemble$samplingspace$parameters$method,
       posterior.files = posterior.files,
-      overwrite = overwrite))
+      overwrite = overwrite
+    ))
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }

@@ -17,4 +17,3 @@ test_that("`start_model_runs` throws a warning if runs.txt is empty", {
     expect_output(start_model_runs(settings), "runs.txt found, but is empty")
   })
 })
-

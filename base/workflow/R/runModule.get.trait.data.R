@@ -4,7 +4,9 @@
 ##'   `MultiSettings`
 ##' @export
 runModule.get.trait.data <- function(settings) {
-  if (is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
+  if (is.null(settings$meta.analysis)) {
+    return(settings) # if there's no MA, there's no need for traits
+  }
   if (PEcAn.settings::is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
@@ -36,9 +38,11 @@ runModule.get.trait.data <- function(settings) {
     modeltype = settings$model$type,
     dbfiles = settings$database$dbfiles,
     database = settings$database$bety,
-    forceupdate = ifelse(is.null(settings$meta.analysis$update),
-                         FALSE,
-                         settings$meta.analysis$update),
+    forceupdate = ifelse(
+      is.null(settings$meta.analysis$update),
+      FALSE,
+      settings$meta.analysis$update
+    ),
     write = settings$database$bety$write
   )
 
