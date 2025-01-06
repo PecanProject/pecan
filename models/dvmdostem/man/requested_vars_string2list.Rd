@@ -15,8 +15,8 @@ requested_vars_string2list(req_v_str, outspec_path)
 a list of the requested variables
 }
 \description{
-Look up the "depends_on" in the output variable mapping, 
-accumulate a list of dvmdostem variables to turn on to support 
+Look up the "depends_on" in the output variable mapping,
+accumulate a list of dvmdostem variables to turn on to support
 the requested variables in the pecan.xml tag
 }
 \author{

@@ -19,7 +19,6 @@ model2netcdf.dvmdostem(outdir, runstart, runend, pecan_requested_vars)
 Code to convert dvmdostem netcdf output into into CF standard
 }
 \examples{
- 
 \dontrun{
 # example code here?
 }
