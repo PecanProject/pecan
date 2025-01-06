@@ -21,6 +21,8 @@ status.start <- function(name) {
     cat(paste(name, format(Sys.time(), "%F %T"), sep = "\t"), file = file.path(settings$outdir, "STATUS"), append = TRUE)
   }
 }
+
+
 status.end <- function(status = "DONE") {
   if (exists("settings")) {
     cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep = "\t"), file = file.path(settings$outdir, "STATUS"), append = TRUE)

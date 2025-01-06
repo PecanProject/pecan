@@ -8,13 +8,13 @@
 set -e
 
 # Function to check if an R package is installed
-is_r_package_installed() {
+styler_in() {
   local pkg="$1"
   Rscript -e "if (!requireNamespace('$pkg', quietly = TRUE)) { quit(status=1) }"
 }
 
 # Check if styler is installed; install it if not
-if is_r_package_installed "styler"; then
+if styler_in "styler"; then
   echo "The 'styler' package is already installed."
 else
   echo "The 'styler' package is not installed. Installing now..."
