@@ -9,13 +9,15 @@ settings <- PEcAn.settings::read.settings(settings_file)
 stop.time <- as.POSIXlt("2004-06-07", tz = "UTC")
 
 rred <- function(runid) {
-    fc <- read.restart.ED2(outdir = outdir, 
-                           runid = runid,
-                           stop.time = stop.time,
-                           settings = settings,
-                           var.names = "AGB",
-                           params = NULL)
-    return(fc)
+  fc <- read.restart.ED2(
+    outdir = outdir,
+    runid = runid,
+    stop.time = stop.time,
+    settings = settings,
+    var.names = "AGB",
+    params = NULL
+  )
+  return(fc)
 }
 
 forecast_list <- lapply(runid_vec, rred)

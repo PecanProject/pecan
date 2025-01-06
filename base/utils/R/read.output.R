@@ -58,7 +58,6 @@ read.output <- function(runid, outdir,
                         ncfiles = NULL,
                         verbose = FALSE,
                         print_summary = TRUE) {
-
   ## vars in units s-1 to be converted to y-1
   ## cflux = c('GPP', 'NPP', 'NEE', 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
   ## wflux = c('Evap', 'TVeg', 'Qs', 'Qsb', 'Rainf') # kgH20 m-2 d-1
@@ -237,7 +236,7 @@ read.output <- function(runid, outdir,
           # there might be other cases that are not covered here
           dim.check <- length(dim(newresult))
           if (any(pft.ind)) { # means pft.name passed, we want to read pft-specific outputs
-            if (dim.check == 1){
+            if (dim.check == 1) {
               newresult <- newresult[pft.ind]
             } else {
               newresult <- newresult[, pft.ind]
@@ -245,7 +244,7 @@ read.output <- function(runid, outdir,
           } else {
             # means this variable is available as per-pft, so written as such to standard ncdf files
             # but we still want to read as total
-            if (dim.check == 1){
+            if (dim.check == 1) {
               newresult <- sum(newresult)
             } else {
               newresult <- apply(newresult, 1, sum)
@@ -276,7 +275,9 @@ read.output <- function(runid, outdir,
     }
   }
 
-  if (!dataframe) return(result)
+  if (!dataframe) {
+    return(result)
+  }
 
   # Check if there are variables that have multiple dimensions for
   # example soil moisture at multiple levels. Currently we don't have

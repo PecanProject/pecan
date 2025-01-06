@@ -9,7 +9,7 @@
 ##' @param host list, host info as in settings$host, host$name forced to be "localhost" upstream
 ##' @param machine_host local machine hostname, e.g. "pecan2.bu.edu"
 ##' @param overwrite logical flag for convert_input
-##' 
+##'
 ##' @export
 ##'
 ##' @author Istem Fer
@@ -19,24 +19,22 @@ get_veg_module <- function(input_veg,
                            dbparms,
                            new_site,
                            host, machine_host,
-                           overwrite){
-  
+                           overwrite) {
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections
   # can be passed to convert_inputs now because process IC locally
 
-  lat       <- new_site$lat
-  lon       <- new_site$lon
-  site_id   <- new_site$id
+  lat <- new_site$lat
+  lon <- new_site$lon
+  site_id <- new_site$id
   site_name <- new_site$name
   ## Prepare to call convert_inputs
-  pkg  <- "PEcAn.data.land"
+  pkg <- "PEcAn.data.land"
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
-  
+
   # this check might change depending on what other sources that requires querying its own DB we will have
-  if(input_veg$source == "FIA" | input_veg$source == "NEON_veg"){ 
-    
+  if (input_veg$source == "FIA" | input_veg$source == "NEON_veg") {
     fcn <- "extract_veg"
 
     getveg.id <- PEcAn.DB::convert_input(
@@ -54,22 +52,21 @@ get_veg_module <- function(input_veg,
       new_site = new_site,
       gridres = input_veg$gridres, dbparms = dbparms,
       machine_host = machine_host, input_veg = input,
-      source = input_veg$source)
-  
-    
+      source = input_veg$source
+    )
+
+
     return(getveg.id)
-    
-  }else{
-    
+  } else {
     fcn <- "load_veg"
-    if(!is.null(input_veg$id)){
+    if (!is.null(input_veg$id)) {
       source.id <- input_veg$id
-    }else{
+    } else {
       PEcAn.logger::logger.error("Must specify input id")
     }
     getveg.id <- PEcAn.DB::convert_input(
       input.id = NA,
-      outfolder = outfolder, 
+      outfolder = outfolder,
       formatname = "spp.info",
       mimetype = "application/rds",
       site.id = site_id,
@@ -93,11 +90,9 @@ get_veg_module <- function(input_veg,
       ##   <age>70</age>
       ##  </metadata>
       ##
-      icmeta = input_veg$metadata)
+      icmeta = input_veg$metadata
+    )
 
     return(getveg.id)
-    
   }
-  
-  
 } # get.veg.module

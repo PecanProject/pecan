@@ -14,14 +14,15 @@
 #' @export
 query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
   pftres <- (dplyr::tbl(dbcon, "pfts")
-    %>% dplyr::filter(.data$name %in% !!pft_names))
+  %>% dplyr::filter(.data$name %in% !!pft_names))
   if (!is.null(modeltype)) {
     pftres <- (pftres %>% dplyr::semi_join(
-    (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(.data$name == !!modeltype)),
-    by = c("modeltype_id" = "id")))
+      (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(.data$name == !!modeltype)),
+      by = c("modeltype_id" = "id")
+    ))
   }
   result <- (pftres
-    %>% dplyr::select("id", "pft_type", "name")
+  %>% dplyr::select("id", "pft_type", "name")
     %>% dplyr::collect()
     # Arrange in order of inputs
     %>% dplyr::slice(match(.data$name, pft_names)))
@@ -35,7 +36,8 @@ query_pfts <- function(dbcon, pft_names, modeltype = NULL, strict = FALSE) {
     if (strict) {
       PEcAn.logger::logger.severe(
         "Strict matching requested, but failed with message:\n",
-        msg, wrap = FALSE
+        msg,
+        wrap = FALSE
       )
     } else {
       PEcAn.logger::logger.warn(msg, wrap = FALSE)

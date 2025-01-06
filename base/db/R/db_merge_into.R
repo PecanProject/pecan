@@ -7,8 +7,8 @@
 #' @export
 #' @examples
 #' irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-#' dplyr::copy_to(irisdb, iris[1:10,], name = "iris", overwrite = TRUE)
-#' db_merge_into(iris[1:12,], "iris", irisdb)
+#' dplyr::copy_to(irisdb, iris[1:10, ], name = "iris", overwrite = TRUE)
+#' db_merge_into(iris[1:12, ], "iris", irisdb)
 #' dplyr::tbl(irisdb, "iris") %>% dplyr::count()
 db_merge_into <- function(values, table, con, by = NULL, drop = FALSE, ...) {
   values_fixed <- match_dbcols(values, table, con, drop = FALSE)

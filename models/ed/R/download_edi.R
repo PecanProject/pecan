@@ -1,12 +1,12 @@
 #' Download ED inputs
 #'
-#' Download and unzip common ED inputs from a public Open Science Framework 
-#' (OSF) repository (https://osf.io/b6umf). Inputs include the Olson Global 
+#' Download and unzip common ED inputs from a public Open Science Framework
+#' (OSF) repository (https://osf.io/b6umf). Inputs include the Olson Global
 #' Ecosystems (OGE) database (`oge2OLD`) and the `chd` and `dgd` databases.
 #'
 #' The total download size around 28 MB.
 #'
-#' @param directory Target directory for unzipping files. Will be created if it 
+#' @param directory Target directory for unzipping files. Will be created if it
 #' doesn't exist.
 #' @return `TRUE`, invisibly
 #' @export

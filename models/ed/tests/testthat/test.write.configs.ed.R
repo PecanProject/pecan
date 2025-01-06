@@ -1,7 +1,7 @@
 ## #-------------------------------------------------------------------------------
 ## # Copyright (c) 2012 University of Illinois, NCSA.
 ## # All rights reserved. This program and the accompanying materials
-## # are made available under the terms of the 
+## # are made available under the terms of the
 ## # University of Illinois/NCSA Open Source License
 ## # which accompanies this distribution, and is available at
 ## # http://opensource.ncsa.illinois.edu/license.html
@@ -51,12 +51,15 @@ defaults <-
 
 test_that("convert.samples.ED works as expected", {
   testthat::local_edition(3)
-  expect_equal(convert.samples.ED(c("Vcmax" = 1))[["Vcmax"]],
-               0.7052557)
+  expect_equal(
+    convert.samples.ED(c("Vcmax" = 1))[["Vcmax"]],
+    0.7052557
+  )
   expect_equal(convert.samples.ED(c("plant_min_temp" = 0))[["plant_min_temp"]], 273.15)
   expect_equal(convert.samples.ED(c("root_respiration_rate" = 1))[["root_respiration_factor"]],
-               0.35263,
-               tolerance = 1e-5)
+    0.35263,
+    tolerance = 1e-5
+  )
 })
 
 testdir <- tempfile()
@@ -67,7 +70,7 @@ unzip("data/outdir.zip", exdir = testdir)
 outdir <- file.path(testdir, "outdir")
 
 test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
-  settings <- 
+  settings <-
     PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
   settings$outdir <- outdir
   job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
@@ -76,7 +79,7 @@ test_that("write.config.jobsh.ED2() writes correct model2netcdf.ED2() args", {
 })
 
 test_that("write.config.jobsh.ED2() works with long list of PFTs", {
-  settings <- 
+  settings <-
     PEcAn.settings::read.settings(file.path(outdir, "pecan_checked.xml"))
   more_pfts <- list(
     pft = list(name = "tempconif", ed2_pft_number = 7),
@@ -84,7 +87,7 @@ test_that("write.config.jobsh.ED2() works with long list of PFTs", {
     pft = list(name = "temperate.Early_Hardwood", ed2_pft_number = 9),
     pft = list(name = "temperate.North_Mid_Hardwood", ed2_pft_number = 10),
     pft = list(name = "temperate.Late_Hardwood", ed2_pft_number = 11)
-    )
+  )
   settings$pfts <- append(settings$pfts, more_pfts)
   job.sh <- write.config.jobsh.ED2(settings, run.id = "test_run")
   expect <- deparse1(dput(extract_pfts(settings$pfts)))
@@ -92,21 +95,21 @@ test_that("write.config.jobsh.ED2() works with long list of PFTs", {
 })
 
 test_that("New ED2IN tags get added at bottom of file", {
-  #1. read in pecan.xml in data/pecan_checked.xml
+  # 1. read in pecan.xml in data/pecan_checked.xml
   settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
-  #for debugging:
+  # for debugging:
   # settings <- PEcAn.settings::read.settings("models/ed/tests/testthat/data/pecan_checked.xml")
-  
-  #2. Set rundir to tempdir
+
+  # 2. Set rundir to tempdir
   rundir <- tempfile()
   dir.create(rundir)
   on.exit(unlink(rundir, recursive = TRUE))
   settings$rundir <- rundir
   run.id <- "ENS-00001-76"
   dir.create(file.path(rundir, run.id))
-  #3. add arbitrary ed2in_tag to settings list
+  # 3. add arbitrary ed2in_tag to settings list
   settings$model$ed2in_tags$NEW_TAG <- "0"
-  #4. run write.config.ED2 
+  # 4. run write.config.ED2
   trait.values <-
     list(
       SetariaWT = structure(
@@ -138,7 +141,7 @@ test_that("New ED2IN tags get added at bottom of file", {
         class = "data.frame"
       )
     )
-  
+
   defaults <-
     list(
       pft = list(
@@ -160,43 +163,43 @@ test_that("New ED2IN tags get added at bottom of file", {
     type = "message"
   )
   PEcAn.logger::logger.setLevel(old_level)
-  
-  
-  #5. check if new tag exists
+
+
+  # 5. check if new tag exists
   ed2in_out <- read_ed2in(file.path(rundir, run.id, "ED2IN"))
   expect_equal(ed2in_out$NEW_TAG, 0)
-  
-  #check that info is printed
+
+  # check that info is printed
 
   expect_true(any(stringr::str_detect(x, "NEW_TAG")))
-  
-  #check that last non-comment line of ED2IN is "$END"
-  #TODO someone better at regex could do this more efficiently
+
+  # check that last non-comment line of ED2IN is "$END"
+  # TODO someone better at regex could do this more efficiently
   lines <- trimws(readLines(file.path(rundir, run.id, "ED2IN")))
   not_comments <- lines[stringr::str_detect(lines, "^!", negate = TRUE)]
   not_spaces <- not_comments[stringr::str_detect(not_comments, ".+")]
   expect_equal(not_spaces[length(not_spaces)], "$END")
-  
-  #6. compare to template
+
+  # 6. compare to template
   # ed2in_template <- read_ed2in(system.file(settings$model$edin, package = "PEcAn.ED2"))
   # Not sure what to expect regarding tag names or number of tags relative to template
 })
 
 
 test_that("write.config.xml.ED2() uses correct history file", {
-  #1. read in pecan.xml in data/pecan_checked.xml
+  # 1. read in pecan.xml in data/pecan_checked.xml
   settings <- PEcAn.settings::read.settings("data/pecan_checked.xml")
-  #for debugging:
+  # for debugging:
   # settings <- PEcAn.settings::read.settings("models/ed/tests/testthat/data/pecan_checked.xml")
-  
-  #2. Set rundir to tempdir
+
+  # 2. Set rundir to tempdir
   rundir <- tempfile()
   dir.create(rundir)
   on.exit(unlink(rundir, recursive = TRUE))
   settings$rundir <- rundir
   run.id <- "ENS-00001-76"
   dir.create(file.path(rundir, run.id))
-  #3. set revision to 81
+  # 3. set revision to 81
   settings$model$revision <- "81"
 
   x <- capture.output(
@@ -207,9 +210,8 @@ test_that("write.config.xml.ED2() uses correct history file", {
     ),
     type = "message"
   )
-  
+
   expect_true(any(stringr::str_detect(x, "history.r81")))
-  
 })
 
 
@@ -218,7 +220,7 @@ test_that("write.config.xml.ED2() uses correct history file", {
 ##                    run = list(host = list(name = "ebi-cluster.igb.illinois.edu",
 ##                                 rundir = "/home/scratch/tmp/",
 ##                                 outdir = "/home/scratch/tmp/")))
-  
+
 ##   system("ssh ebi-cluster.igb.illinois.edu 'touch /home/scratch/tmp/c.foo'")
 ##   expect_output(remove.config.ED2(main.outdir = settings$outdir, settings = settings),
 ##                 "/home/scratch/tmp/c.foo")

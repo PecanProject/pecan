@@ -12,9 +12,9 @@
 source("ResidSpectra.R")
 
 ## Get site sel'n from cmd line
-sitenum <- as.numeric(system("echo $SITENUM", intern = TRUE))  ## site number
-nstart <- as.numeric(system("echo $NSTART", intern = TRUE))  ## first Monte Carlo to process
-n2proc <- 50  ## number of spectra to process
+sitenum <- as.numeric(system("echo $SITENUM", intern = TRUE)) ## site number
+nstart <- as.numeric(system("echo $NSTART", intern = TRUE)) ## first Monte Carlo to process
+n2proc <- 50 ## number of spectra to process
 
 ## Paths and prefixes
 path <- "/home/mdietze/stats/spectral/"
@@ -26,10 +26,11 @@ site.name <- site.files[sitenum]
 site.name <- sub("_NEE.txt", "", site.name)
 site.name <- sub("-", "", site.name)
 prefix <- paste0("NEE_", site.name, "-")
-field  <- paste0("NEEf/", site.name, "/FilledNEE/")
-dat    <- read.table(paste(model.dir, site.files[sitenum], sep = "/"),
-                     header = TRUE, na.string = "-999.000")
-day    <- 1 / diff(dat$FDOY[1:2])  ## number of observations per day
+field <- paste0("NEEf/", site.name, "/FilledNEE/")
+dat <- read.table(paste(model.dir, site.files[sitenum], sep = "/"),
+  header = TRUE, na.string = "-999.000"
+)
+day <- 1 / diff(dat$FDOY[1:2]) ## number of observations per day
 
 ##################################### load up the 'pseudo' data ##
 files <- dir(path, prefix)
@@ -59,8 +60,8 @@ save(dat, ylen, yrs, file = paste0(prefix, "pseudo.Rdata"))
 ####################################
 ## load up the 'true' data ##
 ffiles <- dir(paste0(path, field), "Moving")
-fdat   <- NULL
-fylen  <- rep(NA, length(yrs))
+fdat <- NULL
+fylen <- rep(NA, length(yrs))
 for (i in seq_along(yrs)) {
   print(yrs[i])
 
@@ -81,7 +82,6 @@ fdat[fdat == -9999] <- NA
 pspec <- matrix(NA, nrow(dat), ncol(dat))
 Pspec <- matrix(NA, 100, 1000)
 for (i in seq(nstart, length = n2proc, by = 1)) {
-
   print(i)
 
   ### Calculate the error
@@ -96,7 +96,7 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
   } else {
     NEEt.sd <- sqrt(stats::var(fdat[, 5], na.rm = TRUE))
   }
-  NEEt.norm <- (fdat[, 5] - NEEt.bar)/NEEt.sd
+  NEEt.norm <- (fdat[, 5] - NEEt.bar) / NEEt.sd
 
   ## normalize model
   NEEp.bar <- mean(dat[, i], na.rm = TRUE)
@@ -106,10 +106,10 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
   } else {
     NEEp.sd <- sqrt(stats::var(dat[, i], na.rm = TRUE))
   }
-  NEEp.norm <- (dat[, i] - NEEp.bar)/NEEp.sd  ###########
-  y <- NEEp.norm - NEEt.norm  ## calc residuals of normalized
+  NEEp.norm <- (dat[, i] - NEEp.bar) / NEEp.sd ###########
+  y <- NEEp.norm - NEEt.norm ## calc residuals of normalized
 
-  y[is.na(y)] <- 0  ## need to fill in missing values
+  y[is.na(y)] <- 0 ## need to fill in missing values
 
 
   ### Do the wavelet power spectrum
@@ -121,7 +121,7 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
   ### Also, do Fourier power spectra
   s <- spectrum(wv$y, plot = FALSE)
   pspec[seq_along(s$spec), i] <- s$spec
-  period <- 1 / s$freq/day
+  period <- 1 / s$freq / day
 
   save(wv, Power, day, file = paste0("pseudo.", sitenum, ".", i, ".Rdata"))
   save(i, Pspec, pspec, Period, period, file = paste0(site.name, ".", nstart, ".specCI.Rdata"))
@@ -129,25 +129,27 @@ for (i in seq(nstart, length = n2proc, by = 1)) {
 
 if (FALSE) {
   ## some diagnostics
-  period <- 1 / s$freq/48
-  pspec  <- pspec[seq_along(period), ]
+  period <- 1 / s$freq / 48
+  pspec <- pspec[seq_along(period), ]
 
   pbar <- apply(pspec, 1, mean, na.rm = TRUE)
-  pCI  <- apply(pspec, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
+  pCI <- apply(pspec, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
   plot(period, pbar, log = "xy", ylim = range(pCI), type = "l", ylab = "Power", xlab = "Period (days)")
   lines(period, pCI[1, ], col = 3)
   # lines(period,pCI[2,],col=2)
   lines(period, pCI[3, ], col = 4)
-  abline(v = c(0.5, 1, 365.25/2, 365.25), col = 2, lty = 2)
+  abline(v = c(0.5, 1, 365.25 / 2, 365.25), col = 2, lty = 2)
 
   sel <- which(period > 0.8 & period < 1.3)
 
-  plot(period[sel], pbar[sel], log = "xy", ylim = range(pCI), type = "l",
-       ylab = "Power", xlab = "Period (days)")
+  plot(period[sel], pbar[sel],
+    log = "xy", ylim = range(pCI), type = "l",
+    ylab = "Power", xlab = "Period (days)"
+  )
   lines(period[sel], pCI[1, sel], col = 3)
   # lines(period,pCI[2,],col=2)
   lines(period[sel], pCI[3, sel], col = 4)
-  abline(v = c(0.5, 1, 365.25/2, 365.25), col = 2, lty = 2)
+  abline(v = c(0.5, 1, 365.25 / 2, 365.25), col = 2, lty = 2)
 
   save.image("USHo1.specCI.Rdata")
 }

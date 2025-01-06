@@ -68,9 +68,9 @@ if (!all(c("./base", "./models", "./modules") %in% list.dirs())) {
 }
 
 tag <- args[[1]]
-date = as.Date(args[[2]])
-version = package_version(args[[3]])
- 
+date <- as.Date(args[[2]])
+version <- package_version(args[[3]])
+
 save_result <- FALSE
 if (length(args) == 4 && args[[4]] == "save") {
   save_result <- TRUE
@@ -112,11 +112,11 @@ load(release_file, envir = old_rel)
 pecan_releases <- data.frame(tag = tag, date = date, version = version) |>
   merge(old_rel$pecan_releases, all = TRUE) |>
   (\(.) .[order(.$date), ])()
-if(save_result) {
+if (save_result) {
   save(pecan_releases, file = release_file, version = 2)
 }
 
-if(!save_result) {
+if (!save_result) {
   print("PEcAn release info:")
   print(pecan_releases)
   print("PEcAn package versions:")

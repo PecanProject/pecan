@@ -2,7 +2,7 @@ testdir <- tempfile()
 dir.create(testdir)
 withr::defer(unlink(testdir, recursive = TRUE))
 unzip("data/outdir.zip", exdir = testdir)
-#for interactive use:
+# for interactive use:
 # unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
 
 e_file <- "analysis-E-2004-07-00-000000-g01.h5"
@@ -35,11 +35,13 @@ var_list_T <-
 sitelat <- settings$run$site$lat
 sitelon <- settings$run$site$lon
 lat <- ncdf4::ncdim_def("lat", "degrees_north",
-                        vals = as.numeric(sitelat),
-                        longname = "station_latitude")
+  vals = as.numeric(sitelat),
+  longname = "station_latitude"
+)
 lon <- ncdf4::ncdim_def("lon", "degrees_east",
-                        vals = as.numeric(sitelon),
-                        longname = "station_longitude")
+  vals = as.numeric(sitelon),
+  longname = "station_longitude"
+)
 
 
 test_that("put_E_values() runs", {
@@ -74,7 +76,7 @@ test_that("put_T_values() runs", {
 
 
 test_that("put_E_values() outputs match", {
-  e_list <- 
+  e_list <-
     put_E_values(
       yr = year,
       nc_var = list(),
@@ -87,6 +89,6 @@ test_that("put_E_values() outputs match", {
   expect_equal(names(e_list$out), c("AGB_PFT", "BSEEDS", "DBH", "NPP_PFT", "TRANSP_PFT", "DENS", "PFT", "dtime_bounds"))
 })
 
-#TODO: test if all vars are in output
-#TODO: test if dimensions are correct and consistent
-#TODO: test behavior when nc_var is not empty
+# TODO: test if all vars are in output
+# TODO: test if dimensions are correct and consistent
+# TODO: test behavior when nc_var is not empty

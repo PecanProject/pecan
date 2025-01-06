@@ -46,15 +46,14 @@ create_execute_test_xml <- function(model_id,
                                     db_bety_hostname = NULL,
                                     db_bety_port = NULL,
                                     db_bety_driver = "Postgres") {
-
   php_file <- file.path(pecan_path, "web", "config.php")
   config.list <- PEcAn.utils::read_web_config(php_file)
   if (is.null(db_bety_username)) db_bety_username <- config.list$db_bety_username
   if (is.null(db_bety_password)) db_bety_password <- config.list$db_bety_password
   if (is.null(db_bety_hostname)) db_bety_hostname <- config.list$db_bety_hostname
   if (is.null(db_bety_port)) db_bety_port <- config.list$db_bety_port
-  
-  #opening a connection to bety 
+
+  # opening a connection to bety
   con <- PEcAn.DB::db.open(list(
     user = db_bety_username,
     password = db_bety_password,
@@ -65,17 +64,19 @@ create_execute_test_xml <- function(model_id,
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
 
   settings <- list(
-    info = list(notes = "Test_Run",
-                userid = user_id,
-                username = "None",
-                dates = Sys.Date())
+    info = list(
+      notes = "Test_Run",
+      userid = user_id,
+      username = "None",
+      dates = Sys.Date()
+    )
   )
 
-  #Outdir
+  # Outdir
   model.new <- dplyr::tbl(con, "models") %>%
     dplyr::filter(.data$id == !!model_id) %>%
     dplyr::collect()
-  
+
   outdir_pre <- paste(
     model.new[["model_name"]],
     format(as.Date(start_date), "%Y-%m"),
@@ -90,75 +91,84 @@ create_execute_test_xml <- function(model_id,
   outdir <- normalizePath(outdir)
   settings$outdir <- outdir
 
-  #Database BETY
+  # Database BETY
   settings$database <- list(
-    bety = list(user = db_bety_username,
-                password = db_bety_password,
-                host = db_bety_hostname,
-                dbname = "bety",
-                driver = db_bety_driver,
-                write = FALSE),
+    bety = list(
+      user = db_bety_username,
+      password = db_bety_password,
+      host = db_bety_hostname,
+      dbname = "bety",
+      driver = db_bety_driver,
+      write = FALSE
+    ),
     dbfiles = dbfiles_folder
   )
 
-  #PFT
-  if (is.null(pft)){
+  # PFT
+  if (is.null(pft)) {
     # Select the first PFT in the model list.
     pft <- dplyr::tbl(con, "pfts") %>%
       dplyr::filter(.data$modeltype_id == !!model.new$modeltype_id) %>%
       dplyr::collect()
-    
+
     pft <- pft$name[[1]]
-    message("PFT is `NULL`. Defaulting to the following PFT: ",
-            pft)
+    message(
+      "PFT is `NULL`. Defaulting to the following PFT: ",
+      pft
+    )
   }
 
   ## Putting multiple PFTs separated by semicolon
   settings$pfts <- strsplit(pft, ";")[[1]] %>%
-    purrr::map( ~ list(name = .x,
-                       constants = list(num = 1)
-                       )
-                ) %>%
-    stats::setNames(rep("pft", length(.data))) 
+    purrr::map(~ list(
+      name = .x,
+      constants = list(num = 1)
+    )) %>%
+    stats::setNames(rep("pft", length(.data)))
 
-  #Meta Analysis
+  # Meta Analysis
   settings$meta.analysis <- list(iter = 3000, random.effects = FALSE)
 
-  #Ensemble
+  # Ensemble
   settings$ensemble <- list(
     size = ensemble_size,
     variable = sensitivity_variable,
-    samplingspace = list(met = list(method = "sampling"),
-                         parameters = list(method = "uniform"))
+    samplingspace = list(
+      met = list(method = "sampling"),
+      parameters = list(method = "uniform")
+    )
   )
 
-  #Sensitivity
+  # Sensitivity
   if (sensitivity) {
     settings$sensitivity.analysis <- list(
       quantiles = list(sigma1 = -2, sigma2 = -1, sigma3 = 1, sigma4 = 2)
     )
   }
 
-  #Model
+  # Model
   settings$model$id <- model.new[["id"]]
 
-  #Workflow
+  # Workflow
   settings$workflow$id
-  settings$workflow$id <- paste0("Test_run_","_",model.new$model_name)
+  settings$workflow$id <- paste0("Test_run_", "_", model.new$model_name)
   settings$run <- list(
     site = list(id = site_id, met.start = start_date, met.end = end_date),
-    inputs = list(met = list(source = met, output = model.new[["model_name"]],
-                             username = "pecan")),
+    inputs = list(met = list(
+      source = met, output = model.new[["model_name"]],
+      username = "pecan"
+    )),
     start.date = start_date, end.date = end_date
   )
   settings$host$name <- "localhost"
 
-  
+
   # Add model specific options
-  settings<-model_specific_tags(settings, model.new)
-  #create file and Run
+  settings <- model_specific_tags(settings, model.new)
+  # create file and Run
   XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"),
-	       file = file.path(outdir, "pecan.xml"))
+    file = file.path(outdir, "pecan.xml")
+  )
   file.copy(file.path(pecan_path, "web", "workflow.R"), outdir)
   cwd <- getwd()
   setwd(outdir)
@@ -180,14 +190,14 @@ create_execute_test_xml <- function(model_id,
 #' @return updated settings list
 #' @export
 #'
-model_specific_tags <- function(settings, model.info){
-  
-  #some extra settings for LPJ-GUESS
-  if(model.info$model_name=="LPJ-GUESS"){
-    settings$run$inputs <- c(settings$run$inputs ,
-                              list(soil=list(id=1000000903))
-                             )
+model_specific_tags <- function(settings, model.info) {
+  # some extra settings for LPJ-GUESS
+  if (model.info$model_name == "LPJ-GUESS") {
+    settings$run$inputs <- c(
+      settings$run$inputs,
+      list(soil = list(id = 1000000903))
+    )
   }
-  
+
   return(settings)
 }

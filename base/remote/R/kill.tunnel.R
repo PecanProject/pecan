@@ -5,7 +5,7 @@
 #' @param data Kill tunnel to data?
 #' @export
 #' @author Rob Kooper
-kill.tunnel <- function(settings,exe=TRUE,data=TRUE) {
+kill.tunnel <- function(settings, exe = TRUE, data = TRUE) {
   if (exe && !is.null(settings$host$tunnel)) {
     pidfile <- file.path(dirname(settings$host$tunnel), "pid")
     pid <- readLines(pidfile)

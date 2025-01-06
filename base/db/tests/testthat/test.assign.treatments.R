@@ -5,7 +5,7 @@ test_that("`assign.treatments` correctly assigns control treatment", {
     control = c(1, 0, 0, 1, 0, 0),
     trt_id = NA
   )
-  
+
   updated_data <- assign.treatments(data)
   expect_equal(updated_data$trt_id, c("control", NA, NA, "control", "control", "control"))
 })

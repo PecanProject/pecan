@@ -33,7 +33,6 @@
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                                   overwrite = FALSE, verbose = FALSE, username = "pecan", method,
                                   useremail = "@", data_product = "BASE-BADM", data_policy = "CCBY4.0", ...) {
-
   # Initial set-ups for amerifluxr packages
   # get start/end year code works on whole years only
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -52,7 +51,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   }
 
   version <- amerifluxr::amf_var_info()
-  version <- unique(version[version$Site_ID == site,]$BASE_Version)
+  version <- unique(version[version$Site_ID == site, ]$BASE_Version)
   if (length(version) != 1) {
     PEcAn.logger::logger.error("Could not find AmerifluxLBL version info for site", site)
   }
@@ -76,11 +75,12 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
           intended_use = "model",
           intended_use_text = "PEcAn download",
           verbose = verbose,
-          out_dir = outfolder)
+          out_dir = outfolder
+        )
       )
-      if (!inherits(zip_file, "try-error")){
+      if (!inherits(zip_file, "try-error")) {
         break
-      }else if(tout > 250 ){
+      } else if (tout > 250) {
         PEcAn.logger::logger.severe("Download takes too long, check your connection.")
         break
       }
@@ -91,7 +91,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
 
 
   # Path to created zip-file
-  if(!grepl(".zip", zip_file)){
+  if (!grepl(".zip", zip_file)) {
     PEcAn.logger::logger.error("Not able to download a zip-file. Check download.AmerifluxLBL inputs")
   }
 
@@ -101,7 +101,8 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   if (outfname != expected_filename) {
     PEcAn.logger::logger.info(
       "Downloaded a file named", sQuote(outfname),
-      "but download.AmerifluxLBL was expecting", sQuote(expected_filename), ". This may be a PEcAn bug.")
+      "but download.AmerifluxLBL was expecting", sQuote(expected_filename), ". This may be a PEcAn bug."
+    )
   }
 
   file_timestep_hh <- "HH"
@@ -121,18 +122,18 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   outcsvname_hr <- paste0(substr(outfname, 1, 15), "_", file_timestep_hr, "_", endname, ".csv")
   output_csv_file_hr <- file.path(outfolder, outcsvname_hr)
 
-  extract_file_flag      <- TRUE
+  extract_file_flag <- TRUE
   if (!overwrite && file.exists(output_csv_file)) {
     PEcAn.logger::logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
-    extract_file_flag    <- FALSE
-    file_timestep        <- "HH"
+    extract_file_flag <- FALSE
+    file_timestep <- "HH"
   } else {
     if (!overwrite && file.exists(output_csv_file_hr)) {
       PEcAn.logger::logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
-      extract_file_flag  <- FALSE
-      file_timestep      <- "HR"
-      outcsvname         <- outcsvname_hr
-      output_csv_file    <- output_csv_file_hr
+      extract_file_flag <- FALSE
+      file_timestep <- "HR"
+      outcsvname <- outcsvname_hr
+      output_csv_file <- output_csv_file_hr
     }
   }
 
@@ -162,17 +163,21 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   firstline <- firstline[4]
   lastline <- system(paste0("tail -1 ", output_csv_file), intern = TRUE)
 
-  firstdate_st <- paste0(substr(firstline, 1, 4), "-",
-                         substr(firstline, 5, 6), "-",
-                         substr(firstline, 7, 8), " ",
-                         substr(firstline, 9, 10), ":",
-                         substr(firstline, 11, 12))
+  firstdate_st <- paste0(
+    substr(firstline, 1, 4), "-",
+    substr(firstline, 5, 6), "-",
+    substr(firstline, 7, 8), " ",
+    substr(firstline, 9, 10), ":",
+    substr(firstline, 11, 12)
+  )
   firstdate <- as.POSIXlt(firstdate_st)
-  lastdate_st <- paste0(substr(lastline, 1, 4), "-",
-                        substr(lastline, 5, 6), "-",
-                        substr(lastline, 7, 8), " ",
-                        substr(lastline, 9, 10), ":",
-                        substr(lastline, 11, 12))
+  lastdate_st <- paste0(
+    substr(lastline, 1, 4), "-",
+    substr(lastline, 5, 6), "-",
+    substr(lastline, 7, 8), " ",
+    substr(lastline, 9, 10), ":",
+    substr(lastline, 11, 12)
+  )
   lastdate <- as.POSIXlt(lastdate_st)
 
   syear <- lubridate::year(firstdate)
@@ -185,21 +190,23 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
     PEcAn.logger::logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
   }
 
-  rows    <- 1
-  results <- data.frame(file = character(rows),
-                        host = character(rows),
-                        mimetype = character(rows),
-                        formatname = character(rows),
-                        startdate = character(rows),
-                        enddate = character(rows),
-                        dbfile.name = dbfilename,
-                        stringsAsFactors = FALSE)
+  rows <- 1
+  results <- data.frame(
+    file = character(rows),
+    host = character(rows),
+    mimetype = character(rows),
+    formatname = character(rows),
+    startdate = character(rows),
+    enddate = character(rows),
+    dbfile.name = dbfilename,
+    stringsAsFactors = FALSE
+  )
 
-  results$file[rows]       <- output_csv_file
-  results$host[rows]       <- PEcAn.remote::fqdn()
-  results$startdate[rows]  <- firstdate_st
-  results$enddate[rows]    <- lastdate_st
-  results$mimetype[rows]   <- "text/csv"
+  results$file[rows] <- output_csv_file
+  results$host[rows] <- PEcAn.remote::fqdn()
+  results$startdate[rows] <- firstdate_st
+  results$enddate[rows] <- lastdate_st
+  results$mimetype[rows] <- "text/csv"
   results$formatname[rows] <- "AMERIFLUX_BASE_HH"
 
   # return list of files downloaded

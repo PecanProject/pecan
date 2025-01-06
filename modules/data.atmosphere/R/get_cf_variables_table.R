@@ -13,7 +13,7 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
   entries_flat <- purrr::map(entries, unlist)
   entries_df <- purrr::map(entries, as.list) %>%
     purrr::transpose() %>%
-    purrr::map(~ifelse(purrr::map_lgl(.x, is.null), NA, .x)) %>%
+    purrr::map(~ ifelse(purrr::map_lgl(.x, is.null), NA, .x)) %>%
     purrr::map_dfc(unlist, recursive = TRUE)
   entries_df %>%
     dplyr::select(
@@ -43,6 +43,7 @@ build_cf_variables_table_url <- function(
       # which complain if any usage line is wider than 90 chars
       "http://cfconventions.org/",
       "Data/cf-standard-names/%d/src/",
-      "src-cf-standard-name-table.xml")) {
+      "src-cf-standard-name-table.xml"
+    )) {
   sprintf(url_format_string, version)
 }

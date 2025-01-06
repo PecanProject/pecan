@@ -16,7 +16,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   remote.execute.R('list.files()', host='localhost', verbose=FALSE)
+#' remote.execute.R("list.files()", host = "localhost", verbose = FALSE)
 #' }
 remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FALSE,
                              R = "R", scratchdir = tempdir()) {
@@ -25,14 +25,17 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
   }
   dir.create(scratchdir, showWarnings = FALSE, recursive = TRUE)
   uuid <- paste0("pecan-", paste(sample(c(letters[1:6], 0:9), 30, replace = TRUE),
-                                 collapse = ""))
+    collapse = ""
+  ))
   tmpfile <- file.path(scratchdir, uuid)
-  input <- c(paste0("remotefunc <- function() {", script, "}"),
-             "remoteout <- remotefunc()",
-             "print(remoteout)",
-             paste0("fp <- file('", tmpfile, "', 'w')"),
-             paste0("ign <- serialize(remoteout, fp)"),
-             "close(fp)")
+  input <- c(
+    paste0("remotefunc <- function() {", script, "}"),
+    "remoteout <- remotefunc()",
+    "print(remoteout)",
+    paste0("fp <- file('", tmpfile, "', 'w')"),
+    paste0("ign <- serialize(remoteout, fp)"),
+    "close(fp)"
+  )
   verbose <- ifelse(as.logical(verbose), "", FALSE)
   if (is.localhost(host)) {
     if (R == "R") {
@@ -41,8 +44,10 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
         R <- Rbinary
       }
     }
-    result <- try(system2(R, "--no-save","--no-restore", stdout = verbose, stderr = verbose,
-                          input = input))
+    result <- try(system2(R, "--no-save", "--no-restore",
+      stdout = verbose, stderr = verbose,
+      input = input
+    ))
     PEcAn.logger::logger.debug(result)
     if (!file.exists(tmpfile)) {
       fp <- file(tmpfile, "w")
@@ -56,7 +61,6 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
     file.remove(tmpfile)
     PEcAn.logger::logger.debug(result)
     return(invisible(result))
-
   } else {
     remote <- c(host$name)
     if (!is.null(host$tunnel)) {
@@ -68,8 +72,10 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
       remote <- c("-l", host$user, remote)
     }
     PEcAn.logger::logger.debug(paste(c("ssh", "-T", remote, R), collapse = " "))
-    result <- system2("ssh", c("-T", remote, R, "--no-save","--no-restore"), stdout = verbose,
-                      stderr = verbose, input = input)
+    result <- system2("ssh", c("-T", remote, R, "--no-save", "--no-restore"),
+      stdout = verbose,
+      stderr = verbose, input = input
+    )
     remote.copy.from(host, tmpfile, uuid)
     remote.execute.cmd(host, "rm", c("-f", tmpfile))
     # load result
@@ -79,7 +85,4 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
     file.remove(uuid)
     return(invisible(result))
   }
-
-
 } # remote.execute.R
-

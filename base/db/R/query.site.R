@@ -6,7 +6,7 @@
 ##'
 ##' @author Betsy Cowdery
 ##'
-query.site <- function(site.id,con){
+query.site <- function(site.id, con) {
   site <- db.query(
     query = paste(
       "SELECT *, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry))
@@ -14,8 +14,9 @@ query.site <- function(site.id,con){
     ),
     con = con
   )
-  if (nrow(site)==0) {
-    PEcAn.logger::logger.error("Site not found"); return(NULL)
+  if (nrow(site) == 0) {
+    PEcAn.logger::logger.error("Site not found")
+    return(NULL)
   }
   if (!(is.na(site$lon)) && !(is.na(site$lat))) {
     return(site)

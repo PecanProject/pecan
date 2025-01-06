@@ -1,5 +1,5 @@
 #' plots a confidence interval around an x-y plot (e.g. a timeseries)
-#' 
+#'
 #' @param x Vector defining CI center
 #' @param ylo Vector defining bottom of CI envelope
 #' @param yhi Vector defining top of CI envelope
@@ -8,7 +8,7 @@
 #' @export
 #' @author Michael Dietze, David LeBauer
 ciEnvelope <- function(x, ylo, yhi, ...) {
-  m   <- rbind(x, ylo, yhi)
+  m <- rbind(x, ylo, yhi)
   nas <- which(apply(is.na(m), 2, sum) > 0)
   if (length(nas) > 0) {
     ## break overall dataset into complete blocks
@@ -33,6 +33,8 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
     ylo <- sub.m[[i]]["ylo", ]
     yhi <- sub.m[[i]]["yhi", ]
     graphics::polygon(
-      cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])), border = NA, ...)
+      cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi), ylo[1])),
+      border = NA, ...
+    )
   }
 } # ciEnvelope

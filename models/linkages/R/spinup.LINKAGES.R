@@ -1,12 +1,12 @@
 spinup.LINKAGES <- function(start.year, end.year, temp.mat, precip.mat, paleon = NULL) {
   if (is.null(paleon)) {
-    paleon <- TRUE  # Why not just have `paleon = TRUE` above?
+    paleon <- TRUE # Why not just have `paleon = TRUE` above?
   }
   if (paleon) {
     spin.num <- 20
     spin.length <- 500
     start.year <- start.year - spin.length
-    
+
     temp.mat <- rbind(temp.mat[rep(1:spin.num, length = spin.length), ], temp.mat)
     precip.mat <- rbind(precip.mat[rep(1:spin.num, length = spin.length), ], precip.mat)
     nyear <- nrow(temp.mat)
@@ -15,15 +15,17 @@ spinup.LINKAGES <- function(start.year, end.year, temp.mat, precip.mat, paleon =
     start.year <- start.year - spin.num
     year <- seq(start.year, end.year, 1)
     nyear <- length(year)
-    
+
     temp.mat <- rbind(temp.mat[1:spin.num, ], temp.mat)
     precip.mat <- rbind(precip.mat[1:spin.num, ], precip.mat)
   }
-  
+
   ### Add some sort of test for steady state or not
-  
-  return(list(start.year = start.year, 
-              nyear = nyear,
-              temp.mat = temp.mat, 
-              precip.mat = precip.mat))
+
+  return(list(
+    start.year = start.year,
+    nyear = nyear,
+    temp.mat = temp.mat,
+    precip.mat = precip.mat
+  ))
 } # spinup.LINKAGES

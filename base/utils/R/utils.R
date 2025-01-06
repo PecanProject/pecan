@@ -1,4 +1,3 @@
-
 #--------------------------------------------------------------------------------------------------#
 # Small, miscellaneous functions for use throughout PEcAn
 #--------------------------------------------------------------------------------------------------#
@@ -20,7 +19,7 @@
 #' @author Rob Kooper
 mstmipvar <- function(name, lat = NULL, lon = NULL, time = NULL, nsoil = NULL, silent = FALSE) {
   nc_var <- PEcAn.utils::standard_vars[PEcAn.utils::standard_vars$Variable.Name == name, ]
-  
+
   if (nrow(nc_var) == 0) {
     if (!silent) {
       PEcAn.logger::logger.info("Don't know about variable", name, " in standard_vars in PEcAn.utils")
@@ -37,29 +36,29 @@ mstmipvar <- function(name, lat = NULL, lon = NULL, time = NULL, nsoil = NULL, s
     }
     return(ncdf4::ncvar_def(name, "", list(time), -999, name))
   }
-  
+
   var_dims <- nc_var[paste0("dim", 1:4)]
   pos_dims <- c("lon", "lat", "time", "nsoil")
-  
-  #check for missing dimensions
+
+  # check for missing dimensions
   no_dims <- pos_dims[!var_dims %in% pos_dims]
   if (!silent) {
     if (length(no_dims) > 0) {
       PEcAn.logger::logger.info("Don't know dimension(s)", no_dims, "for variable", name)
     }
   }
-  
-  #replace dim names with values
+
+  # replace dim names with values
   var_dims <- var_dims[var_dims %in% pos_dims]
-  var_dims <- lapply(var_dims, function(x) eval(str2lang(x))) #converts character values in `var_dims` to corresponding R objects
-  dims <- var_dims[!sapply(var_dims, is.null)] #get rid of NULL elements
-  
+  var_dims <- lapply(var_dims, function(x) eval(str2lang(x))) # converts character values in `var_dims` to corresponding R objects
+  dims <- var_dims[!sapply(var_dims, is.null)] # get rid of NULL elements
+
   ncvar <- ncdf4::ncvar_def(name, as.character(nc_var$Units), dims, -999)
   if (nc_var$Long.name != "na") {
     ncvar$longname <- as.character(nc_var$Long.name)
   }
   return(ncvar)
-} 
+}
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -153,10 +152,10 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 #' @return id representing a model run
 #' @export
 #' @examples
-#' get.run.id('ENS', left.pad.zeros(1, 5))
-#' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
+#' get.run.id("ENS", left.pad.zeros(1, 5))
+#' get.run.id("SA", round(qnorm(-3), 3), trait = "Vcmax")
 #' @author Carl Davidson, David LeBauer
-get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=NULL) {
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id = NULL) {
   result <- paste(c(run.type, pft.name, trait, index, site.id), collapse = "-")
   return(result)
 } # get.run.id
@@ -176,11 +175,11 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL, site.id=N
 #' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 #' @export
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
-  y     <- log(x)
-  g     <- stats::density(y, bw = bw, n = n)
+  y <- log(x)
+  g <- stats::density(y, bw = bw, n = n)
   xgrid <- exp(g$x)
-  g$y   <- c(0, g$y / xgrid)
-  g$x   <- c(0, xgrid)
+  g$y <- c(0, g$y / xgrid)
+  g$x <- c(0, xgrid)
   return(g)
 } # zero.bounded.density
 
@@ -197,9 +196,11 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 summarize.result <- function(result) {
   ans1 <- result %>%
     dplyr::filter(.data$n == 1) %>%
-    dplyr::group_by(.data$citation_id, .data$site_id, .data$trt_id,
-                    .data$control, .data$greenhouse, .data$date, .data$time,
-                    .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id) %>%
+    dplyr::group_by(
+      .data$citation_id, .data$site_id, .data$trt_id,
+      .data$control, .data$greenhouse, .data$date, .data$time,
+      .data$cultivar_id, .data$specie_id, .data$name, .data$treatment_id
+    ) %>%
     dplyr::summarize( # stat must be computed first, before n and mean
       statname = dplyr::if_else(length(.data$n) == 1, "none", "SE"),
       stat = stats::sd(.data$mean) / sqrt(length(.data$n)),
@@ -257,9 +258,11 @@ get.stats.mcmc <- function(mcmc.summary, sample.size) {
 #' paste.stats(3.333333, 5.00001, 6.22222, n = 3)
 #' # [1] "$3.33(5,6.22)$"
 paste.stats <- function(median, lcl, ucl, n = 2) {
-  paste0("$", tabnum(median, n),
-         "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")",
-         "$")
+  paste0(
+    "$", tabnum(median, n),
+    "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")",
+    "$"
+  )
 } # paste.stats
 
 
@@ -274,12 +277,16 @@ paste.stats <- function(median, lcl, ucl, n = 2) {
 #' @author David LeBauer
 #' @export
 #' @examples
-#' \dontrun{get.parameter.stat(mcmc.summaries[[1]], 'beta.o')}
+#' \dontrun{
+#' get.parameter.stat(mcmc.summaries[[1]], "beta.o")
+#' }
 get.parameter.stat <- function(mcmc.summary, parameter) {
-  paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
-              lcl = mcmc.summary$quantiles[parameter, c("2.5%")],
-              ucl = mcmc.summary$quantiles[parameter, c("97.5%")],
-              n = 2)
+  paste.stats(
+    median = mcmc.summary$quantiles[parameter, "50%"],
+    lcl = mcmc.summary$quantiles[parameter, c("2.5%")],
+    ucl = mcmc.summary$quantiles[parameter, c("97.5%")],
+    n = 2
+  )
 } # get.parameter.stat
 #--------------------------------------------------------------------------------------------------#
 
@@ -298,24 +305,28 @@ get.parameter.stat <- function(mcmc.summary, parameter) {
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
   mean <- switch(distn,
-                 gamma = A/B,
-                 lnorm = exp(A + 1/2 * B^2),
-                 beta = A/(A + B),
-                 weibull = B * gamma(1 + 1/A),
-                 norm = A,
-                 f = ifelse(B > 2,
-                            B/(B - 2),
-                            mean(stats::rf(10000, A, B))))
+    gamma = A / B,
+    lnorm = exp(A + 1 / 2 * B^2),
+    beta = A / (A + B),
+    weibull = B * gamma(1 + 1 / A),
+    norm = A,
+    f = ifelse(B > 2,
+      B / (B - 2),
+      mean(stats::rf(10000, A, B))
+    )
+  )
   var <- switch(distn,
-                gamma = A/B^2,
-                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
-                beta = A * B/((A + B) ^ 2 * (A + B + 1)),
-                weibull = B ^ 2 * (gamma(1 + 2 / A) -
-                                     gamma(1 + 1 / A) ^ 2),
-                norm = B ^ 2,
-                f = ifelse(B > 4,
-                           2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-                           stats::var(stats::rf(1e+05, A, B))))
+    gamma = A / B^2,
+    lnorm = exp(2 * A + B^2) * (exp(B^2) - 1),
+    beta = A * B / ((A + B)^2 * (A + B + 1)),
+    weibull = B^2 * (gamma(1 + 2 / A) -
+      gamma(1 + 1 / A)^2),
+    norm = B^2,
+    f = ifelse(B > 4,
+      2 * B^2 * (A + B - 2) / (A * (B - 2)^2 * (B - 4)),
+      stats::var(stats::rf(1e+05, A, B))
+    )
+  )
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -338,11 +349,11 @@ pdf.stats <- function(distn, A, B) {
 #' @examples
 #' # convert parameter name to a string appropriate for end-use plotting
 #' \dontrun{
-#' trait.lookup('growth_resp_factor')
-#' trait.lookup('growth_resp_factor')$figid
+#' trait.lookup("growth_resp_factor")
+#' trait.lookup("growth_resp_factor")$figid
 #'
 #' # get a list of all traits and units in dictionary
-#' trait.lookup()[,c('figid', 'units')]
+#' trait.lookup()[, c("figid", "units")]
 #' }
 trait.lookup <- function(traits = NULL) {
   if (is.null(traits)) {
@@ -419,11 +430,12 @@ newxtable <- function(x, environment = "table", table.placement = "ht", label = 
                       caption = NULL, caption.placement = NULL, align = NULL) {
   need_packages("xtable")
   print(xtable::xtable(x, label = label, caption = caption, align = align),
-        floating.environment = environment,
-        table.placement = table.placement,
-        caption.placement = caption.placement,
-        #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
-        sanitize.rownames.function = function(x) paste(''))
+    floating.environment = environment,
+    table.placement = table.placement,
+    caption.placement = caption.placement,
+    #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
+    sanitize.rownames.function = function(x) paste("")
+  )
 } # newxtable
 #--------------------------------------------------------------------------------------------------#
 
@@ -499,9 +511,9 @@ temp.settings <- function(settings.txt) {
 #' @return FALSE if function returns error; else TRUE
 #' @export
 #' @examples
-#' tryl(1+1)
+#' tryl(1 + 1)
 #' # TRUE
-#' tryl(sum('a'))
+#' tryl(sum("a"))
 #' # FALSE
 #' @author David LeBauer
 tryl <- function(FUN) {
@@ -519,7 +531,9 @@ tryl <- function(FUN) {
 #' @return FALSE if function returns error; else TRUE
 #' @export
 #' @examples
-#' \dontrun{require.modelpkg(BioCro)}
+#' \dontrun{
+#' require.modelpkg(BioCro)
+#' }
 #' @author David LeBauer
 load.modelpkg <- function(model) {
   pecan.modelpkg <- paste0("PEcAn.", model)
@@ -527,8 +541,10 @@ load.modelpkg <- function(model) {
     if (pecan.modelpkg %in% rownames(utils::installed.packages())) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
-      PEcAn.logger::logger.error("I can't find a package for the ", model,
-                                 "model; I expect it to be named ", pecan.modelpkg)
+      PEcAn.logger::logger.error(
+        "I can't find a package for the ", model,
+        "model; I expect it to be named ", pecan.modelpkg
+      )
     }
   }
 } # load.modelpkg
@@ -545,10 +561,9 @@ load.modelpkg <- function(model) {
 #' @return val converted values
 #' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
-  
-  amC   <- 12.0107  # atomic mass of carbon
+  amC <- 12.0107 # atomic mass of carbon
   mmH2O <- 18.01528 # molar mass of H2O, g/mol
-  
+
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
     val <- ud_convert(x, "ug", "kg") * amC
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
@@ -562,11 +577,11 @@ misc.convert <- function(x, u1, u2) {
   } else if (u1 == "kg C m-2" & u2 == "Mg ha-1") {
     val <- x * ud_convert(1, "kg", "Mg") * ud_convert(1, "m-2", "ha-1")
   } else {
-    u1 <- gsub("gC","g*12",u1)
-    u2 <- gsub("gC","g*12",u2)
-    val <- ud_convert(x,u1,u2)
-    
-    
+    u1 <- gsub("gC", "g*12", u1)
+    u2 <- gsub("gC", "g*12", u2)
+    val <- ud_convert(x, u1, u2)
+
+
     #    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
@@ -583,16 +598,19 @@ misc.convert <- function(x, u1, u2) {
 #' @return logical
 #' @author Istem Fer, Shawn Serbin
 misc.are.convertible <- function(u1, u2) {
-  
   # make sure the order of vectors match
-  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1",
-                  "mol H2O m-2 s-1", "kg H2O m-2 s-1",
-                  "Mg ha-1", "kg C m-2")
-  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1",
-                "kg H2O m-2 s-1", "mol H2O m-2 s-1",
-                "kg C m-2", "Mg ha-1")
-  
-  if(u1 %in% units.from & u2 %in% units.to) {
+  units.from <- c(
+    "umol C m-2 s-1", "kg C m-2 s-1",
+    "mol H2O m-2 s-1", "kg H2O m-2 s-1",
+    "Mg ha-1", "kg C m-2"
+  )
+  units.to <- c(
+    "kg C m-2 s-1", "umol C m-2 s-1",
+    "kg H2O m-2 s-1", "mol H2O m-2 s-1",
+    "kg C m-2", "Mg ha-1"
+  )
+
+  if (u1 %in% units.from & u2 %in% units.to) {
     if (which(units.from == u1) == which(units.to == u2)) {
       return(TRUE)
     } else {
@@ -616,17 +634,17 @@ convert.expr <- function(expression) {
   # split equation to LHS and RHS
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
-  
-  non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
+
+  non.match <- gregexpr("[^a-zA-Z_.]", deri.eqn) # match characters that are not "a-zA-Z_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
-  if(length(split.chars)!=0){
-    variables <- unlist(strsplit(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]")))
+  if (length(split.chars) != 0) {
+    variables <- unlist(strsplit(deri.eqn, paste0("[", noquote(paste0(split.chars, collapse = "")), "]")))
     variables <- variables[variables != ""] # Remove empty entries
   } else {
     variables <- deri.eqn
   }
-  
+
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 #--------------------------------------------------------------------------------------------------#
@@ -645,11 +663,13 @@ convert.expr <- function(expression) {
 #'
 #' @examples
 #' \dontrun{
-#' download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+#' download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt", "~/test.download.txt")
 #'
-#' download_file("
+#' download_file(
+#'   "
 #'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
-#'   "~/pres.sfc.2000.nc")
+#'   "~/pres.sfc.2000.nc"
+#' )
 #' }
 #'
 #' @export
@@ -659,9 +679,9 @@ download_file <- function(url, filename, method) {
   if (startsWith(url, "ftp://")) {
     if (missing(method)) method <- getOption("download.ftp.method", default = "auto")
     if (method == "ncftpget") {
-      PEcAn.logger::logger.debug(paste0("FTP Method: ",method))
-      #system2("ncftpget", c("-c", "url", ">", filename))
-      system(paste(method,"-c",url,">",filename,sep=" "))
+      PEcAn.logger::logger.debug(paste0("FTP Method: ", method))
+      # system2("ncftpget", c("-c", "url", ">", filename))
+      system(paste(method, "-c", url, ">", filename, sep = " "))
     } else {
       utils::download.file(url, filename, method)
     }
@@ -686,34 +706,39 @@ download_file <- function(url, filename, method) {
 #'
 #' @examples
 #' \dontrun{
-#'   file_url <- paste0("https://thredds.daac.ornl.gov/",
-#'       "thredds/dodsC/ornldaac/1220",
-#'       "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4")
+#' file_url <- paste0(
+#'   "https://thredds.daac.ornl.gov/",
+#'   "thredds/dodsC/ornldaac/1220",
+#'   "/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4"
+#' )
 #' dap <- retry.func(
 #'   ncdf4::nc_open(file_url),
-#'   maxErrors=10,
-#'   sleep=2)
+#'   maxErrors = 10,
+#'   sleep = 2
+#' )
 #' }
 #'
 #' @export
 #' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
 retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), maxErrors = 5, sleep = 0) {
-  attempts = 0
-  retval = try(eval(expr))
+  attempts <- 0
+  retval <- try(eval(expr))
   while (isError(retval)) {
-    attempts = attempts + 1
+    attempts <- attempts + 1
     if (attempts >= maxErrors) {
-      msg = sprintf("retry: too many retries [[%s]]", utils::capture.output(utils::str(retval)))
+      msg <- sprintf("retry: too many retries [[%s]]", utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       stop(msg)
     } else {
-      msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors,
-                    utils::capture.output(utils::str(retval)))
+      msg <- sprintf(
+        "retry: error in attempt %i/%i [[%s]]", attempts, maxErrors,
+        utils::capture.output(utils::str(retval))
+      )
       PEcAn.logger::logger.warn(msg)
-      #warning(msg)
+      # warning(msg)
     }
     if (sleep > 0) Sys.sleep(sleep)
-    retval = try(eval(expr))
+    retval <- try(eval(expr))
   }
   return(retval)
 }
@@ -732,12 +757,12 @@ retry.func <- function(expr, isError = function(x) inherits(x, "try-error"), max
 #' rlog <- robustly(log, timeout = 0.3)
 #' try(rlog("fail"))
 #' \dontrun{
-#'  nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
-#'  nc <- nc_openr(url)
-#'  # ...or just call the function directly
-#'  nc <- robustly(ncdf4::nc_open, n = 20)(url)
-#'  # Useful in `purrr` maps
-#'  many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
+#' nc_openr <- robustly(ncdf4::nc_open, n = 10, timeout = 0.5)
+#' nc <- nc_openr(url)
+#' # ...or just call the function directly
+#' nc <- robustly(ncdf4::nc_open, n = 20)(url)
+#' # Useful in `purrr` maps
+#' many_vars <- purrr::map(varnames, robustly(ncdf4::ncvar_get), nc = nc)
 #' }
 #' @export
 robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
@@ -746,7 +771,9 @@ robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
     attempt <- 1
     while (attempt <= n) {
       result <- try(.f(...), silent = silent)
-      if (!inherits(result, "try-error")) return(result)
+      if (!inherits(result, "try-error")) {
+        return(result)
+      }
       attempt <- attempt + 1
       if (!silent) PEcAn.logger::logger.info("Trying attempt ", attempt, " of ", n)
     }

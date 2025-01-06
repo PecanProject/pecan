@@ -1,4 +1,3 @@
-
 #' Standardized variable names and units for PEcAn
 #'
 #' A lookup table giving standard names, units and descriptions for variables in PEcAn input/output files.
@@ -22,6 +21,6 @@
 #'  \item{dim1,dim2,dim3,dim4}{Dimensions across which is this variable allowed to vary.
 #'    Dimension names are themselves standard vars and must be present in the table with category "Dimension"}
 #'  \item{Description}{Further details. For composite measures, list the variables it is calculated from}
-#'}
+#' }
 #'
 "standard_vars"

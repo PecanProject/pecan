@@ -55,8 +55,10 @@ model_df <- tbl(bety, "dbfiles") %>%
   dplyr::filter(machine_id == !!mach_id) %>%
   dplyr::filter(container_type == "Model") %>%
   dplyr::left_join(tbl(bety, "models"), c("container_id" = "id")) %>%
-  dplyr::select(model_id = container_id, model_name, revision,
-         file_name, file_path, dbfile_id = id, ) %>%
+  dplyr::select(
+    model_id = container_id, model_name, revision,
+    file_name, file_path, dbfile_id = id,
+  ) %>%
   dplyr::collect() %>%
   dplyr::mutate(exists = file.exists(file.path(file_path, file_name)))
 
@@ -64,8 +66,10 @@ message("Found the following models on the machine:")
 print(model_df)
 
 if (!all(model_df$exists)) {
-  message("WARNING: The following models are registered on the machine ",
-          "but their files do not exist:")
+  message(
+    "WARNING: The following models are registered on the machine ",
+    "but their files do not exist:"
+  )
   model_df %>%
     dplyr::filter(!exists) %>%
     print()
@@ -78,23 +82,25 @@ if (!all(model_df$exists)) {
 ## Site with no inputs from any machines that is part of Ameriflux site group and Fluxnet Site group
 site_id_noinput <- tbl(bety, "sites") %>%
   dplyr::anti_join(tbl(bety, "inputs")) %>%
-  dplyr::inner_join(tbl(bety, "sitegroups_sites") %>%
-               filter(sitegroup_id == 1),
-             by = c("id" = "site_id")) %>%
+  dplyr::inner_join(
+    tbl(bety, "sitegroups_sites") %>%
+      filter(sitegroup_id == 1),
+    by = c("id" = "site_id")
+  ) %>%
   dplyr::select("id.x", "notes", "sitename") %>%
   dplyr::filter(grepl("TOWER_BEGAN", notes)) %>%
   dplyr::collect() %>%
   dplyr::mutate(
     # Grab years from string within the notes
-    start_year = substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")),1,4),
-    #Empty tower end in the notes means that it goes until present day so if empty enter curent year.
+    start_year = substring(stringr::str_extract(notes, pattern = ("(?<=TOWER_BEGAN = ).*(?=  TOWER_END)")), 1, 4),
+    # Empty tower end in the notes means that it goes until present day so if empty enter curent year.
     end_year = dplyr::if_else(
-      substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4) == "",
+      substring(stringr::str_extract(notes, pattern = ("(?<=TOWER_END = ).*(?=)")), 1, 4) == "",
       as.character(lubridate::year(Sys.Date())),
-      substring(stringr::str_extract(notes,pattern = ("(?<=TOWER_END = ).*(?=)")),1,4)
+      substring(stringr::str_extract(notes, pattern = ("(?<=TOWER_END = ).*(?=)")), 1, 4)
     ),
-    #Check if startdate year is within the inerval of that is given
-    in_date = data.table::between(as.numeric(lubridate::year(startdate)),as.numeric(start_year),as.numeric(end_year))
+    # Check if startdate year is within the inerval of that is given
+    in_date = data.table::between(as.numeric(lubridate::year(startdate)), as.numeric(start_year), as.numeric(end_year))
   ) %>%
   dplyr::filter(
     in_date,

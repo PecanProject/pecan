@@ -1,4 +1,4 @@
-if (requireNamespace('PEcAn.logger')) {
+if (requireNamespace("PEcAn.logger")) {
   stop <- PEcAn.logger::logger.severe
   warning <- PEcAn.logger::logger.warn
   message <- PEcAn.logger::logger.info

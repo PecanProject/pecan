@@ -10,36 +10,36 @@
 #' @export
 #' @author David LeBauer
 #' @examples
-#' distn.stats('norm', 0, 1)
+#' distn.stats("norm", 0, 1)
 distn.stats <- function(distn, a, b) {
   mean <- sd <- NULL
   if (distn == "beta") {
     mean <- a / (a + b)
-    sd   <- sqrt(a * b / ((a + b) ^ 2 * (a + b + 1)))
+    sd <- sqrt(a * b / ((a + b)^2 * (a + b + 1)))
   } else if (distn == "exp") {
     mean <- 1 / a
-    sd   <- 1 / a
+    sd <- 1 / a
   } else if (distn == "f") {
     mean <- b / (b - 2)
-    sd   <- sqrt(2 * b * b * (a + b - 2) / (a * (b - 2) ^ 2 * (b - 4)))
+    sd <- sqrt(2 * b * b * (a + b - 2) / (a * (b - 2)^2 * (b - 4)))
   } else if (distn == "gamma") {
-    mean <- a/b
-    sd   <- sqrt(a / b ^ 2)
+    mean <- a / b
+    sd <- sqrt(a / b^2)
   } else if (distn == "lnorm") {
-    mean <- exp(a + 0.5 * b ^ 2)
-    sd   <- sqrt(exp(2 * a + b ^ 2) * (exp(b ^ 2) - 1))
+    mean <- exp(a + 0.5 * b^2)
+    sd <- sqrt(exp(2 * a + b^2) * (exp(b^2) - 1))
   } else if (distn == "norm") {
     mean <- a
-    sd   <- b
+    sd <- b
   } else if (distn == "t") {
     mean <- 0
-    sd   <- sqrt(a / (a - 2))
+    sd <- sqrt(a / (a - 2))
   } else if (distn == "unif") {
     mean <- 0.5 * (a + b)
-    sd   <- (b - a) / sqrt(12)
+    sd <- (b - a) / sqrt(12)
   } else if (distn == "weibull") {
     mean <- b * gamma(1 + 1 / a)
-    sd   <- b ^ 2 * (gamma(1 + 2 / a) - (gamma(1 + 1 / a)) ^ 2)
+    sd <- b^2 * (gamma(1 + 2 / a) - (gamma(1 + 1 / a))^2)
   }
   return(c(mean, sd))
 } # distn.stats

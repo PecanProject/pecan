@@ -18,4 +18,3 @@ test_that("Non-parseable unit", {
   #  we report it as unparseable.
   expect_false(unit_is_parseable(""))
 })
-

@@ -1,5 +1,5 @@
-#' Convert variables ICOS variables to CF format. 
-#' 
+#' Convert variables ICOS variables to CF format.
+#'
 #' Variables present in the output netCDF file:
 #' air_temperature, air_temperature, relative_humidity,
 #' specific_humidity, water_vapor_saturation_deficit,
@@ -43,11 +43,12 @@ met2CF.ICOS <-
            overwrite = FALSE, ...) {
     results <-
       PEcAn.data.atmosphere::met2CF.csv(in.path,
-                                        in.prefix,
-                                        outfolder,
-                                        start_date,
-                                        end_date,
-                                        format,
-                                        overwrite = overwrite)
+        in.prefix,
+        outfolder,
+        start_date,
+        end_date,
+        format,
+        overwrite = overwrite
+      )
     return(results)
   }

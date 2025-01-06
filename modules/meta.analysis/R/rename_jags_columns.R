@@ -6,7 +6,6 @@
 ##' @export
 ##' @author David LeBauer
 rename_jags_columns <- function(data) {
-  
   # Change variable names and calculate obs.prec within data frame
   # Swap column names; needed for downstream function pecan.ma()
   colnames(data)[colnames(data) %in% c("greenhouse", "ghs")] <- c("ghs", "greenhouse")
@@ -16,18 +15,21 @@ rename_jags_columns <- function(data) {
   n <- NULL
   trt_id <- NULL
   citation_id <- NULL
-  transformed <-  transform(data,
-                            Y        = mean,
-                            se       = stat,
-                            obs.prec = 1 / (sqrt(n) * stat) ^2,
-                            trt      = trt_id,
-                            cite     = citation_id)
-  
+  transformed <- transform(data,
+    Y        = mean,
+    se       = stat,
+    obs.prec = 1 / (sqrt(n) * stat)^2,
+    trt      = trt_id,
+    cite     = citation_id
+  )
+
   # Subset data frame
-  selected <- subset(transformed, select = c('Y', 'n', 'site', 'trt', 'ghs', 'obs.prec',
-                                             'se', 'cite',
-                                             "greenhouse", "site_id", "treatment_id", "trt_name", "trt_num")) # add original # original versions of greenhouse, site_id, treatment_id, trt_name
+  selected <- subset(transformed, select = c(
+    "Y", "n", "site", "trt", "ghs", "obs.prec",
+    "se", "cite",
+    "greenhouse", "site_id", "treatment_id", "trt_name", "trt_num"
+  )) # add original # original versions of greenhouse, site_id, treatment_id, trt_name
   # Return subset data frame
   return(selected)
 }
-##=============================================================================#
+## =============================================================================#

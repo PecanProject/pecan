@@ -17,9 +17,7 @@ check_met_input_file <- function(metfile,
                                  required_vars = variable_table %>%
                                    dplyr::filter(.data$is_required) %>%
                                    dplyr::pull("cf_standard_name"),
-                                 warn_unknown = TRUE
-                                 ) {
-
+                                 warn_unknown = TRUE) {
   metfile <- normalizePath(metfile, mustWork = FALSE)
 
   PEcAn.logger::severeifnot(
@@ -77,7 +75,9 @@ check_met_input_file <- function(metfile,
   )
 
   nonstring_to_missing <- function(x) {
-    if (is.character(x)) return(x)
+    if (is.character(x)) {
+      return(x)
+    }
     NA_character_
   }
 

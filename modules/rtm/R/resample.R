@@ -1,21 +1,21 @@
 #' Resample vector, matrix, or spectra
 #'
-#' Convenient wrapper around base R's `splinefun` and `approxfun`. See 
-#' [stats::splinefun()] and [stats::approxfun()] documentation for information 
+#' Convenient wrapper around base R's `splinefun` and `approxfun`. See
+#' [stats::splinefun()] and [stats::approxfun()] documentation for information
 #' on different spline methods and additional arguments.
 #'
-#' @param values Vector or matrix of values, or object of class [spectra()].  
-#' Length of vector, or `nrow` of matrix must match length of `from`. For 
-#' `spectra`, `from` argument is omitted because it is taken from 
+#' @param values Vector or matrix of values, or object of class [spectra()].
+#' Length of vector, or `nrow` of matrix must match length of `from`. For
+#' `spectra`, `from` argument is omitted because it is taken from
 #' `wavelengths`.
-#' @param from X values for interpolation (for `spectra` objects, this is 
+#' @param from X values for interpolation (for `spectra` objects, this is
 #' assumed to be the `wavelengths` attribute.)
-#' @param to Y values onto which to interpolate. For `spectra` objects, this 
+#' @param to Y values onto which to interpolate. For `spectra` objects, this
 #' should be new wavelengths.
-#' @param method One of the methods for [stats::splinefun()] (for polynomial 
-#' and periodic splines) or [stats::approxfun()] (for constant or linear). 
+#' @param method One of the methods for [stats::splinefun()] (for polynomial
+#' and periodic splines) or [stats::approxfun()] (for constant or linear).
 #' Default is `"fmm"` (same as splinefun).
-#' @param ... Additional arguments to [stats::splinefun()] or 
+#' @param ... Additional arguments to [stats::splinefun()] or
 #' [stats::approxfun()]
 #' @return Object of the same class as `values`, resampled to the `to` values.
 #' @export

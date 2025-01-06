@@ -15,12 +15,12 @@
 #'
 #' 1. acquisition of meteorological inputs
 #' 2. synthesis of physiological trait data as the posterior distribution of a
-#'	  Bayesian meta-analysis
+#' 	  Bayesian meta-analysis
 #' 3. sampling trait meta-analysis posterior distributions to parameterize
-#'	  ensembles of ED2 and other ecophysiological models
+#' 	  ensembles of ED2 and other ecophysiological models
 #' 4. probabilistic forecasts
 #' 5. postprocessing to constrain forecasts and model parameters with field,
-#'	  meterological, eddy flux, and spectral data, and
+#' 	  meterological, eddy flux, and spectral data, and
 #' 6. provenance tracking
 #'
 #' PECAn integrates available data into ecological forecasts by running

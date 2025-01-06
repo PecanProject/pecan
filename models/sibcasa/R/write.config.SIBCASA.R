@@ -1,4 +1,3 @@
-
 #-------------------------------------------------------------------------------------------------#
 #' Writes a SIBCASA config file.
 #'
@@ -13,8 +12,6 @@
 #' @export
 #' @author Anthony Gardella, Rob Kooper
 write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
-
-
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)

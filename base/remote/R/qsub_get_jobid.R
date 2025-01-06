@@ -18,8 +18,7 @@ qsub_get_jobid <- function(out, qsub.jobid, stop.on.error) {
     }
     jobid <- NA
   } else {
-    jobid <- sub(qsub.jobid, '\\1', out)
+    jobid <- sub(qsub.jobid, "\\1", out)
   }
   return(jobid)
 }
-

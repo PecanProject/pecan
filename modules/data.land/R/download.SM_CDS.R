@@ -1,5 +1,5 @@
 #' Download CDS soil moisture data for the SDA workflow.
-#' @details 
+#' @details
 #' Introduction on how to play with the CDS python API
 #' to correctly build the python environment with the cdsapi installed, you need to follow those steps.
 #' 1. Install miniconda.
@@ -38,43 +38,50 @@
 #'
 #' @return A vector containing file paths to the downloaded files.
 #' @export
-#' 
+#'
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom dplyr %>%
 download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.create.key = FALSE) {
-  #load cdsapi from python environment.
-  tryCatch({
-    cdsapi <- reticulate::import("cdsapi")
-  }, error = function(e) {
-    PEcAn.logger::logger.severe(
-      "Failed to load `cdsapi` Python library. ",
-      "Please make sure it is installed to a location accessible to `reticulate`.",
-      "You should be able to install it with the following command: ",
-      "`pip install --user cdsapi`.",
-      "The following error was thrown by `reticulate::import(\"cdsapi\")`: ",
-      conditionMessage(e)
-    )
-  })
-  #define function for building credential file.
-  #maybe as a helper function.
-  getnetrc <- function (dl_dir) {
+  # load cdsapi from python environment.
+  tryCatch(
+    {
+      cdsapi <- reticulate::import("cdsapi")
+    },
+    error = function(e) {
+      PEcAn.logger::logger.severe(
+        "Failed to load `cdsapi` Python library. ",
+        "Please make sure it is installed to a location accessible to `reticulate`.",
+        "You should be able to install it with the following command: ",
+        "`pip install --user cdsapi`.",
+        "The following error was thrown by `reticulate::import(\"cdsapi\")`: ",
+        conditionMessage(e)
+      )
+    }
+  )
+  # define function for building credential file.
+  # maybe as a helper function.
+  getnetrc <- function(dl_dir) {
     netrc <- file.path(dl_dir, ".cdsapirc")
     if (file.exists(netrc) == FALSE ||
-        any(grepl("https://cds.climate.copernicus.eu/api/v2",
-                  readLines(netrc))) == FALSE) {
+      any(grepl(
+        "https://cds.climate.copernicus.eu/api/v2",
+        readLines(netrc)
+      )) == FALSE) {
       netrc_conn <- file(netrc)
-      writeLines(c(
-        sprintf(
-          "url: %s",
-          getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+      writeLines(
+        c(
+          sprintf(
+            "url: %s",
+            getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+          ),
+          sprintf(
+            "key: %s",
+            getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+          )
         ),
-        sprintf(
-          "key: %s",
-          getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
-        )
-      ),
-      netrc_conn)
+        netrc_conn
+      )
       close(netrc_conn)
       message(
         "A netrc file with your CDS Login credentials was stored in the output directory "
@@ -82,7 +89,7 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
     }
     return(netrc)
   }
-  #check if the token exists for the cdsapi.
+  # check if the token exists for the cdsapi.
   if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")) & auto.create.key) {
     getnetrc(Sys.getenv("HOME"))
   } else if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")) & !auto.create.key) {
@@ -91,26 +98,29 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
       "https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key ."
     )
   }
-  #grab the client object.
-  tryCatch({
-    cclient <- cdsapi$Client()
-  }, error = function(e) {
-    PEcAn.logger::logger.severe(
-      "The following error was thrown by `cdsapi$Client()`: ",
-      conditionMessage(e)
-    )
-  })
-  #loop over each time point.
+  # grab the client object.
+  tryCatch(
+    {
+      cclient <- cdsapi$Client()
+    },
+    error = function(e) {
+      PEcAn.logger::logger.severe(
+        "The following error was thrown by `cdsapi$Client()`: ",
+        conditionMessage(e)
+      )
+    }
+  )
+  # loop over each time point.
   file.names <- c()
-  #setup progress bar.
+  # setup progress bar.
   pb <- utils::txtProgressBar(min = 0, max = length(time.points), style = 3)
   for (i in seq_along(time.points)) {
-    #name file.
-    fname <- file.path(outfolder, paste('surface_soil_moisture', time.points[i], "nc", sep = "."))
+    # name file.
+    fname <- file.path(outfolder, paste("surface_soil_moisture", time.points[i], "nc", sep = "."))
     fname.zip <- gsub(".nc", ".zip", fname, fixed = T)
-    #add new extracted file into vector.
+    # add new extracted file into vector.
     file.names <- c(file.names, fname)
-    #if we have already downloaded this file.
+    # if we have already downloaded this file.
     if (file.exists(fname) && !overwrite) {
       PEcAn.logger::logger.warn(glue::glue(
         "File `{fname}` already exists, and `overwrite` is FALSE. ",
@@ -118,33 +128,33 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
       ))
       next
     }
-    #prepare file through cds server.
+    # prepare file through cds server.
     while ("try-error" %in% class(try(do_next <- cclient$retrieve(
-      'satellite-soil-moisture',
+      "satellite-soil-moisture",
       list(
-        'variable'= 'surface_soil_moisture',
-        'type_of_sensor'= 'active',
-        'time_aggregation'= 'day_average',
-        'year'= sprintf("%04d", lubridate::year(time.points[i])),
-        'month'= sprintf("%02d", lubridate::month(time.points[i])),
-        'day'= sprintf("%02d", lubridate::day(time.points[i])),
-        'type_of_record'= 'cdr',
-        'version'= 'v202212'
+        "variable" = "surface_soil_moisture",
+        "type_of_sensor" = "active",
+        "time_aggregation" = "day_average",
+        "year" = sprintf("%04d", lubridate::year(time.points[i])),
+        "month" = sprintf("%02d", lubridate::month(time.points[i])),
+        "day" = sprintf("%02d", lubridate::day(time.points[i])),
+        "type_of_record" = "cdr",
+        "version" = "v202212"
       ),
-      'download.zip'
+      "download.zip"
     )))) {
       Sys.sleep(10)
       PEcAn.logger::logger.info("Encounter error! Will try download in 10 seconds.")
     }
-    #download file to local.
+    # download file to local.
     utils::download.file(do_next$reply$location, destfile = fname.zip)
-    #unzip file.
+    # unzip file.
     unzipPath <- utils::unzip(zipfile = fname.zip, exdir = outfolder)
-    #rename unziped file.
+    # rename unziped file.
     base::file.rename(unzipPath, fname)
-    #remove zip file.
+    # remove zip file.
     base::file.remove(fname.zip)
-    #update progress bar
+    # update progress bar
     pbi <- i
     utils::setTxtProgressBar(pb, pbi)
   }

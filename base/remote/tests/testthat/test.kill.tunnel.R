@@ -1,7 +1,7 @@
 test_that("`kill.tunnel()` able to read the correct files and log the correct messages to kill tunnel for exe and data", {
   withr::with_dir(tempdir(), {
-    mockery::stub(kill.tunnel, 'tools::pskill', TRUE)
-    mockery::stub(kill.tunnel, 'dirname', getwd())
+    mockery::stub(kill.tunnel, "tools::pskill", TRUE)
+    mockery::stub(kill.tunnel, "dirname", getwd())
 
     # Kill tunnel to executable
     settings <- list(host = list(tunnel = getwd()))

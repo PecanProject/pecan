@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-#* This is the entry point to the PEcAn API. 
+#* This is the entry point to the PEcAn API.
 #* All API endpoints (& filters) are mounted here
 #* @author Tezan Sahu
 
@@ -8,21 +8,21 @@ source("auth.R")
 source("general.R")
 
 # Set up the global database pool
-#.bety_params <- PEcAn.DB::get_postgres_envvars(
+# .bety_params <- PEcAn.DB::get_postgres_envvars(
 #  host = "localhost",
 #  dbname = "bety",
 #  user = "bety",
 #  password = "bety",
 #  driver = "Postgres"
-#)
+# )
 #
-#.bety_params$driver <- NULL
-#.bety_params$drv <- RPostgres::Postgres()
-#global_db_pool <- do.call(pool::dbPool, .bety_params)
+# .bety_params$driver <- NULL
+# .bety_params$drv <- RPostgres::Postgres()
+# global_db_pool <- do.call(pool::dbPool, .bety_params)
 global_db_pool <- PEcAn.DB::betyConnect()
 
 # redirect to trailing slash
-plumber::options_plumber(trailingSlash=TRUE)
+plumber::options_plumber(trailingSlash = TRUE)
 
 # root router
 root <- plumber::Plumber$new()
@@ -31,7 +31,7 @@ root$setSerializer(plumber::serializer_unboxed_json())
 # Filter for authenticating users trying to hit the API endpoints
 root$filter("require-auth", authenticate_user)
 
-# The /api/ping & /api/status are standalone API endpoints 
+# The /api/ping & /api/status are standalone API endpoints
 # implemented using handle() because of restrictions of plumber
 # to mount multiple endpoints on the same path (or subpath)
 root$handle("GET", "/api/ping", ping)
@@ -77,4 +77,4 @@ root$setDebug(TRUE)
 
 # The API server is bound to 0.0.0.0 on port 8000
 # The Swagger UI for the API draws its source from the pecanapi-spec.yml file
-root$run(host="0.0.0.0", port=8000)
+root$run(host = "0.0.0.0", port = 8000)

@@ -11,9 +11,9 @@
 
 #--------------------------------------------------------------------------------------------------#
 # Close all devices and delete all variables.
-rm(list=ls(all=TRUE))   # clear workspace
-graphics.off()          # close any open graphics
-closeAllConnections()   # close any open connections to files
+rm(list = ls(all = TRUE)) # clear workspace
+graphics.off() # close any open graphics
+closeAllConnections() # close any open connections to files
 #--------------------------------------------------------------------------------------------------#
 
 

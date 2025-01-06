@@ -1,10 +1,10 @@
 get.elevation <- function(lat, lon) {
   # http://stackoverflow.com/a/8974308/199217
 
-  url  <- paste("http://www.earthtools.org/height", lat, lon, sep = "/")
-  
+  url <- paste("http://www.earthtools.org/height", lat, lon, sep = "/")
+
   page <- paste0(readLines(curl::curl(url)), collapse = "\n")
-  ans  <- XML::xmlTreeParse(page, useInternalNodes = TRUE)
+  ans <- XML::xmlTreeParse(page, useInternalNodes = TRUE)
   heightNode <- XML::xpathApply(ans, "//meters")[[1]]
   return(as.numeric(XML::xmlValue(heightNode)))
 } # get.elevation
@@ -12,8 +12,8 @@ get.elevation <- function(lat, lon) {
 
 is.land <- function(lat, lon) {
   ncvar_get <- ncdf4::ncvar_get
-  Lat  <- ncvar_get(nc = met.nc, varid = "lat")
-  Lon  <- ncvar_get(nc = met.nc, varid = "lon")
+  Lat <- ncvar_get(nc = met.nc, varid = "lat")
+  Lon <- ncvar_get(nc = met.nc, varid = "lon")
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
   mask <- ncvar_get(nc = met.nc, varid = "mask", start = c(loni, lati), count = c(1, 1))

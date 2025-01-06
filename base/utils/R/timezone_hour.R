@@ -6,7 +6,7 @@
 #' @return hours offset of the timezone
 #' @examples
 #' \dontrun{
-#' timezone_hour('America/New_York')
+#' timezone_hour("America/New_York")
 #' }
 #' @export
 timezone_hour <- function(timezone) {
@@ -14,7 +14,7 @@ timezone_hour <- function(timezone) {
     return(timezone)
   } else {
     return(tryCatch(stringi::stri_timezone_info(timezone)$RawOffset,
-                    error=function(e) NaN))
+      error = function(e) NaN
+    ))
   }
 }
-

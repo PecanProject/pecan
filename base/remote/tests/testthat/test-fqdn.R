@@ -3,7 +3,6 @@ test_that("fqdn() returns exactly one result", {
 })
 
 test_that("`fqdn()` returns expected `FQDN` value", {
-  
   withr::with_envvar(c(FQDN = "pecan_host"), {
     expect_equal(fqdn(), "pecan_host")
   })

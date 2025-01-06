@@ -1,4 +1,3 @@
-
 #' Write SIBCASA met files
 #'
 #' Converts a met CF file to a sibcasa specific met file. The input

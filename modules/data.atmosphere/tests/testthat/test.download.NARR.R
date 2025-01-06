@@ -21,7 +21,8 @@ test_that("NARR download works as expected", {
     r <- download.NARR_site(
       outfolder = getwd(),
       start_date, end_date, lat.in, lon.in,
-      progress = TRUE, parallel = TRUE, ncores = 2)
+      progress = TRUE, parallel = TRUE, ncores = 2
+    )
     expect_equal(nrow(r), 1)
     expect_true(file.exists(r$file[1]))
     nc <- ncdf4::nc_open(r$file)

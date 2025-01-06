@@ -37,7 +37,8 @@ search_reference_single <- function(query, limit = 1, min_score = 85) {
   if (nrow(crdata) < 1) {
     PEcAn.logger::logger.info(
       "No matches found. ",
-      "Setting title to search string and leaving other fields blank.")
+      "Setting title to search string and leaving other fields blank."
+    )
     return(tibble::tibble(query = query))
   }
   keep_cols <- c(

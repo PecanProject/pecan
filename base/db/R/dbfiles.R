@@ -241,12 +241,12 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
 
   if (is.null(formatid)) {
-    return (invisible(data.frame()))
+    return(invisible(data.frame()))
   }
 
   # setup parent part of query if specified
   parent <- ""
-  
+
   if (!is.na(parentid)) {
     parent <- paste0(" AND parent_id=", parentid)
   }
@@ -277,12 +277,12 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
     }
   } else { # not exact dates
     inputs <- db.query(
-        query = paste0(
-          "SELECT * FROM inputs WHERE site_id=", siteid,
-          " AND format_id=", formatid,
-          parent
-        ),
-        con = con
+      query = paste0(
+        "SELECT * FROM inputs WHERE site_id=", siteid,
+        " AND format_id=", formatid,
+        parent
+      ),
+      con = con
     )
   }
 
@@ -329,7 +329,6 @@ dbfile.input.check <- function(siteid, startdate = NULL, enddate = NULL, mimetyp
 
       return(dbfile)
     } else if (length(inputs$id) == 0) {
-
       # need this third case here because prent check above can return an empty inputs
       return(data.frame())
     } else {
@@ -449,7 +448,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   # find appropriate pft
   pftid <- get.id(table = "pfts", values = "name", colnames = pft, con = con)
   if (is.null(pftid)) {
-    return (invisible(data.frame()))
+    return(invisible(data.frame()))
   }
 
   # find appropriate format
@@ -460,7 +459,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   formatid <- get.id(table = "formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
 
   if (is.null(formatid)) {
-    return (invisible(data.frame()))
+    return(invisible(data.frame()))
   }
 
   # find appropriate posterior
@@ -472,7 +471,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
     con = con
   )[["id"]]
   if (is.null(posteriorid)) {
-    return (invisible(data.frame()))
+    return(invisible(data.frame()))
   }
 
   invisible(dbfile.check(type = "Posterior", container.id = posteriorid, con = con, hostname = hostname))
@@ -662,7 +661,7 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
   hostid <- db.query(query = paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con = con)[["id"]]
   if (is.null(hostid)) {
     PEcAn.logger::logger.warn("hostid not found in database")
-    return (invisible(NA))
+    return(invisible(NA))
   }
 
   # find file
@@ -718,8 +717,6 @@ dbfile.id <- function(type, file, con, hostname = PEcAn.remote::fqdn()) {
 
 
 dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = FALSE) {
-
-
   # create nulls for file movement and error info
   error <- 0
   files.sym <- 0
@@ -774,10 +771,11 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
   con <- db.open(
     params = list(
       driver = "Postgres",
-      dbname   = "bety",
-      host     = "psql-pecan.bu.edu",
-      user     = "bety",
-      password = "bety")
+      dbname = "bety",
+      host = "psql-pecan.bu.edu",
+      user = "bety",
+      password = "bety"
+    )
   )
 
   # get matching dbfiles from BETY
@@ -790,7 +788,6 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
   # if there are matching db files
   if (dim(dbfiles)[1] > 0) {
-
     # Check to make sure files line up
     if (dim(dbfiles)[1] != length(full.old.file)) {
       PEcAn.logger::logger.warn("Files to be moved don't match up with BETY files, only moving the files that match")
@@ -831,7 +828,6 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
   # if there are files that are in the folder but not in BETY, we can either register them or not
   if (dim(dbfiles)[1] == 0 | files.changed > 0) {
-
     # Recheck what files are in the directory since others may have been moved above
     old.files <- list.files(path = old.dir, pattern = file.pattern)
 
@@ -853,7 +849,6 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
 
 
     if (error == 0 & register == TRUE) {
-
       # Record how many files are being registered to BETY
       files.reg <- length(full.old.file)
 
@@ -864,12 +859,10 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
         if (file.type == "nc") {
           mimetype <- "application/x-netcdf"
           formatname <- "CF Meteorology application"
-        }
-        else if (file.type == "clim") {
+        } else if (file.type == "clim") {
           mimetype <- "text/csv"
           formatname <- "Sipnet.climna"
-        }
-        else {
+        } else {
           PEcAn.logger::logger.error("File Type is currently not supported")
         }
 

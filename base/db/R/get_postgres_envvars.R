@@ -19,11 +19,11 @@
 #' @return list of connection parameters suitable for passing on to `db.open`
 #'
 #' @examples
-#'  host <- Sys.getenv("PGHOST") # to restore environment after demo
+#' host <- Sys.getenv("PGHOST") # to restore environment after demo
 #'
-#'  Sys.unsetenv("PGHOST")
-#'  get_postgres_envvars()$host # NULL
-#'  get_postgres_envvars(host = "default", port = 5432)$host # "default"
+#' Sys.unsetenv("PGHOST")
+#' get_postgres_envvars()$host # NULL
+#' get_postgres_envvars(host = "default", port = 5432)$host # "default"
 
 #'  # defaults are ignored for a variable that exists
 #'  Sys.setenv(PGHOST = "localhost")
@@ -62,7 +62,8 @@ get_postgres_envvars <- function(...) {
     gsslib = "PGGSSLIB",
     connect_timeout = "PGCONNECT_TIMEOUT",
     client_encoding = "PGCLIENTENCODING",
-    target_session_attrs = "PGTARGETSESSIONATTRS")
+    target_session_attrs = "PGTARGETSESSIONATTRS"
+  )
 
   vals <- Sys.getenv(pg_vars)
   names(vals) <- names(pg_vars)

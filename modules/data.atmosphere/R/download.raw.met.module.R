@@ -1,6 +1,6 @@
 #' @name download.raw.met.module
 #' @title download.raw.met.module
-#' 
+#'
 #' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
 #' data frame contains information about one file.
 #'
@@ -21,9 +21,9 @@
 #' @param username database username
 #' @param overwrite whether to force download.raw.met.module to proceed
 #' @param dbparms database settings from settings file
-#' @param Ens.Flag default set to FALSE 
+#' @param Ens.Flag default set to FALSE
 #'
-#' 
+#'
 #' @export
 #'
 #'
@@ -46,83 +46,80 @@
            username,
            overwrite = FALSE,
            dbparms,
-           Ens.Flag=FALSE) {
-    
-  outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
-  
-  pkg <- "PEcAn.data.atmosphere"
-  fcn <- paste0("download.", met)
-  
-  #Some data products can be forecasts instead of real time data.  Others can be ensembles of data instead of a single source.  Some can be both.
-  #Not all of the registration.xml files for each data source contains a <forecast> or <ensemble> tag; therefore, we must check for their 
-  #existence first.
-  forecast = FALSE
-  ensemble = FALSE
-  if (!is.null(register$forecast)) {
-    forecast = as.logical(register$forecast)
-  }
-  if (!is.null(register$ensemble) && !is.na(as.integer(register$ensemble)) && as.integer(register$ensemble) > 1) {
-    ensemble = as.integer(register$ensemble) #No ensembles is given by FALSE, while the presence of ensembles is given by the number of ensembles.
-    ifelse(is.na(ensemble), FALSE, ensemble) #If ensemble happens to be a character vector or something it can't convert, as.integer will evaluate to NA.
-  }
-  
-  if (register$scale == "regional") {
-    raw.id <- PEcAn.DB::convert_input(
-      input.id = NA,
-      outfolder = outfolder,
-      formatname = register$format$name,
-      mimetype = register$format$mimetype,
-      site.id = site.id,
-      start_date = start_date,
-      end_date = end_date,
-      pkg = pkg,
-      fcn = fcn,
-      con = con,
-      host = host,
-      write = TRUE,
-      overwrite = overwrite,
-      site_id = site.id,
-      lat.in = lat.in,
-      lon.in = lon.in,
-      model = input_met$model,
-      scenario = input_met$scenario,
-      ensemble_member = input_met$ensemble_member,
-      method = input_met$method,
-      pattern = met,
-      dbparms=dbparms,
-      ensemble = ensemble
-    )
-    
-  } else if (register$scale == "site") {
-    # Site-level met
-    raw.id <- PEcAn.DB::convert_input(
-      input.id = NA,
-      outfolder = outfolder,
-      formatname = register$format$name,
-      mimetype = register$format$mimetype,
-      site.id = site.id,
-      start_date = start_date,
-      end_date = end_date,
-      pkg = pkg,
-      fcn = fcn,
-      con = con,
-      host = host,
-      write = TRUE,
-      overwrite = overwrite,
-      forecast = forecast,
-      ensemble = ensemble,
-      sitename = site$name,
-      username = username,
-      lat.in = lat.in,
-      lon.in = lon.in,
-      pattern = met, 
-      site_id = site.id,
-      product = input_met$product
-    )
-    
-  } else {
-    PEcAn.logger::logger.severe("Unknown register$scale")
-  }
-  
-  return(raw.id)
-} # .download.raw.met.module
+           Ens.Flag = FALSE) {
+    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
+
+    pkg <- "PEcAn.data.atmosphere"
+    fcn <- paste0("download.", met)
+
+    # Some data products can be forecasts instead of real time data.  Others can be ensembles of data instead of a single source.  Some can be both.
+    # Not all of the registration.xml files for each data source contains a <forecast> or <ensemble> tag; therefore, we must check for their
+    # existence first.
+    forecast <- FALSE
+    ensemble <- FALSE
+    if (!is.null(register$forecast)) {
+      forecast <- as.logical(register$forecast)
+    }
+    if (!is.null(register$ensemble) && !is.na(as.integer(register$ensemble)) && as.integer(register$ensemble) > 1) {
+      ensemble <- as.integer(register$ensemble) # No ensembles is given by FALSE, while the presence of ensembles is given by the number of ensembles.
+      ifelse(is.na(ensemble), FALSE, ensemble) # If ensemble happens to be a character vector or something it can't convert, as.integer will evaluate to NA.
+    }
+
+    if (register$scale == "regional") {
+      raw.id <- PEcAn.DB::convert_input(
+        input.id = NA,
+        outfolder = outfolder,
+        formatname = register$format$name,
+        mimetype = register$format$mimetype,
+        site.id = site.id,
+        start_date = start_date,
+        end_date = end_date,
+        pkg = pkg,
+        fcn = fcn,
+        con = con,
+        host = host,
+        write = TRUE,
+        overwrite = overwrite,
+        site_id = site.id,
+        lat.in = lat.in,
+        lon.in = lon.in,
+        model = input_met$model,
+        scenario = input_met$scenario,
+        ensemble_member = input_met$ensemble_member,
+        method = input_met$method,
+        pattern = met,
+        dbparms = dbparms,
+        ensemble = ensemble
+      )
+    } else if (register$scale == "site") {
+      # Site-level met
+      raw.id <- PEcAn.DB::convert_input(
+        input.id = NA,
+        outfolder = outfolder,
+        formatname = register$format$name,
+        mimetype = register$format$mimetype,
+        site.id = site.id,
+        start_date = start_date,
+        end_date = end_date,
+        pkg = pkg,
+        fcn = fcn,
+        con = con,
+        host = host,
+        write = TRUE,
+        overwrite = overwrite,
+        forecast = forecast,
+        ensemble = ensemble,
+        sitename = site$name,
+        username = username,
+        lat.in = lat.in,
+        lon.in = lon.in,
+        pattern = met,
+        site_id = site.id,
+        product = input_met$product
+      )
+    } else {
+      PEcAn.logger::logger.severe("Unknown register$scale")
+    }
+
+    return(raw.id)
+  } # .download.raw.met.module

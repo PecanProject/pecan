@@ -13,8 +13,8 @@
 ##' ## return vector of length \code{sample.size} from N(mean,stat)
 ##' take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 ##'
-take.samples <- function(summary, sample.size = 10^6){
-  if(is.na(summary$stat)){
+take.samples <- function(summary, sample.size = 10^6) {
+  if (is.na(summary$stat)) {
     ans <- summary$mean
   } else {
     set.seed(0)
@@ -22,4 +22,4 @@ take.samples <- function(summary, sample.size = 10^6){
   }
   return(ans)
 }
-##=============================================================================#
+## =============================================================================#

@@ -1,6 +1,6 @@
 ##' TDM Save Models
 ##' Saves models that are created during gen.subdaily.models()
-# ----------------------------------- 
+# -----------------------------------
 # Description
 # -----------------------------------
 ##' @title save.model
@@ -8,7 +8,7 @@
 ##' @author Christy Rollinson, James Simkins
 ##' @description Function to save models as a .nc file. This is utilized in
 ##'              gen.subdaily.models() when linear regression models are created
-# ----------------------------------- 
+# -----------------------------------
 # Parameters
 # -----------------------------------
 ##' @param model.out list linear regression model output
@@ -20,12 +20,10 @@
 # Begin Function
 #----------------------------------------------------------------------
 save.model <- function(model.out, model, outfile) {
-
   mod.list <- list()
   for (v in names(model.out)) {
     mod.list[[v]] <- model.out[[v]][[model]]
   }
-  
+
   save(mod.list, file = outfile)
 }
-

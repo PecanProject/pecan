@@ -9,7 +9,7 @@
 ##' @return dataframe with trait data
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
-fetch.stats2se <- function(connection, query){
+fetch.stats2se <- function(connection, query) {
   transformed <- PEcAn.utils::transformstats(db.query(query = query, con = connection))
   return(transformed)
 }

@@ -16,11 +16,12 @@ addSecrets <- function(settings, force = FALSE) {
     return(invisible(settings))
   }
 
-  if (!force
-      && !is.null(settings$settings.info$secrets.added)
-      && settings$settings.info$secrets.added == TRUE) {
+  if (!force &&
+    !is.null(settings$settings.info$secrets.added) &&
+    settings$settings.info$secrets.added == TRUE) {
     PEcAn.logger::logger.info(
-      "Secret settings have been added already. Skipping.")
+      "Secret settings have been added already. Skipping."
+    )
     return(invisible(settings))
   } else {
     PEcAn.logger::logger.info("Adding secret settings...")

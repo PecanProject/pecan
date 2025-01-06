@@ -10,12 +10,12 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
 
 
   # mocking functions
-  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, "dbfile.input.check", data.frame())
+  mockery::stub(convert_input, "db.query", data.frame(id = 1))
 
   # additional mocks needed since download.ERA5 does not return data as other download functions
-  mockery::stub(convert_input, 'length', 2)
-  mockery::stub(convert_input, 'purrr::map_dfr', data.frame(missing = c(FALSE), empty = c(FALSE)))
+  mockery::stub(convert_input, "length", 2)
+  mockery::stub(convert_input, "purrr::map_dfr", data.frame(missing = c(FALSE), empty = c(FALSE)))
 
   withr::with_dir(tempdir(), {
     tmpdir <- getwd()
@@ -27,8 +27,8 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
       site.id = 1,
       start_date = start_date,
       end_date = end_date,
-      pkg = 'PEcAn.data.atmosphere',
-      fcn = 'download.ERA5.old',
+      pkg = "PEcAn.data.atmosphere",
+      fcn = "download.ERA5.old",
       con = NULL,
       host = data.frame(name = "localhost"),
       write = FALSE,
@@ -37,8 +37,8 @@ test_download_ERA5 <- function(start_date, end_date, lat.in, lon.in, product_typ
       product_types = product_types,
       reticulate_python = reticulate_python
     )
-    
-    test_that("All the required files are downloaded and stored at desired location", { 
+
+    test_that("All the required files are downloaded and stored at desired location", {
       expect_true(file.exists(paste0(tmpdir, "/era5.2m_dewpoint_temperature.nc")))
       expect_true(file.exists(paste0(tmpdir, "/era5.2m_temperature.nc")))
       expect_true(file.exists(paste0(tmpdir, "/era5.10m_u_component_of_wind.nc")))

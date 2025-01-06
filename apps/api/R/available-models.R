@@ -29,8 +29,10 @@ availableModels <- function(machine_name = "docker", machine_id = NA) {
     dplyr::select(modeltype_id = id, modeltype = name)
 
   modelfiles %>%
-    dplyr::select(dbfile_id = id, file_name, file_path,
-                  model_id = container_id) %>%
+    dplyr::select(
+      dbfile_id = id, file_name, file_path,
+      model_id = container_id
+    ) %>%
     dplyr::inner_join(models, c("model_id" = "id")) %>%
     dplyr::inner_join(modeltypes, "modeltype_id") %>%
     dplyr::collect()

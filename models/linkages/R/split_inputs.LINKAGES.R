@@ -14,7 +14,5 @@
 #' @export
 #'
 split_inputs.LINKAGES <- function(settings, start.time, stop.time, inputs) {
-
   return(inputs)
-
 } # split_inputs.LINKAGES

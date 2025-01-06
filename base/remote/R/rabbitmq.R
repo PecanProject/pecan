@@ -8,7 +8,7 @@
 #' @param port the port for rabbitmq managment interface
 #' @return a list that contains the url to the mangement interface, username
 #'    password and vhost.
-rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
+rabbitmq_parse_uri <- function(uri, prefix = "", port = 15672) {
   # save username/password
   if (!grepl("@", uri, fixed = TRUE)) {
     PEcAn.logger::logger.info("rabbitmq uri is not recognized, missing username and password, assuming guest/guest")
@@ -43,7 +43,7 @@ rabbitmq_parse_uri <- function(uri, prefix="", port=15672) {
 
   url <- urltools::url_compose(url_split)
 
-  return(list(url=url, vhost=vhost, username=upw[[1]], password=upw[[2]]))
+  return(list(url = url, vhost = vhost, username = upw[[1]], password = upw[[2]]))
 }
 
 #' Send a message to RabbitMQ rest API.
@@ -148,7 +148,7 @@ rabbitmq_create_queue <- function(url, auth, vhost, queue, auto_delete = FALSE, 
 #' @return the result of the post if message was send, or NA if it failed.
 #' @author Alexey Shiklomanov, Rob Kooper
 #' @export
-rabbitmq_post_message <- function(uri, queue, message, prefix="", port=15672) {
+rabbitmq_post_message <- function(uri, queue, message, prefix = "", port = 15672) {
   # parse rabbitmq URI
   rabbitmq <- rabbitmq_parse_uri(uri, prefix, port)
   if (length(rabbitmq) != 4) {
@@ -187,7 +187,7 @@ rabbitmq_post_message <- function(uri, queue, message, prefix="", port=15672) {
 #' @return NA if no message was retrieved, or a list of the messages payload.
 #' @author Alexey Shiklomanov, Rob Kooper
 #' @export
-rabbitmq_get_message <- function(uri, queue, count=1, prefix="", port=15672) {
+rabbitmq_get_message <- function(uri, queue, count = 1, prefix = "", port = 15672) {
   # parse rabbitmq URI
   rabbitmq <- rabbitmq_parse_uri(uri, prefix, port)
   if (length(rabbitmq) != 4) {
@@ -216,7 +216,11 @@ rabbitmq_get_message <- function(uri, queue, count=1, prefix="", port=15672) {
     if (length(result) == 1 && result == "") {
       return(c())
     } else {
-      return(lapply(result, function(x) { tryCatch(jsonlite::fromJSON(x$payload), error=function(e) { x$payload }) }))
+      return(lapply(result, function(x) {
+        tryCatch(jsonlite::fromJSON(x$payload), error = function(e) {
+          x$payload
+        })
+      }))
     }
   }
 }

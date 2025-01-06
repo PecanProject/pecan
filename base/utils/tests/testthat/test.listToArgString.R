@@ -1,13 +1,13 @@
 test_that("`listToArgString()` able to format list of named function args in a comma separated list", {
   expect_equal(
-    listToArgString(c(host = 'pecan', settings = 'test', id = 2020)),
+    listToArgString(c(host = "pecan", settings = "test", id = 2020)),
     "host='pecan', settings='test', id='2020'"
   )
 })
 
 test_that("`.parseArg()` works for all different types of entries in the list of function args passed to listToArgString", {
   # character
-  expect_equal(.parseArg('pecan'), "'pecan'")
+  expect_equal(.parseArg("pecan"), "'pecan'")
   # NULL
   expect_equal(.parseArg(NULL), "NULL")
   # list

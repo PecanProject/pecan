@@ -1,16 +1,15 @@
 ##' @name groupid
 ##' @title groupid
 ##' @export
-##' 
+##'
 ##' @param x matrix of parameter values
 ##' @author Michael Dietze
 groupid <- function(x) {
-  
   if (is.null(ncol(x))) {
     ## | ncol(x) == 1){
     return(seq_along(x))
   }
-  
+
   n <- nrow(x)
   v <- rep(NA, n)
   j <- 1

@@ -13,7 +13,8 @@ rtmat <- generalized_plate_model(k, refractive, N)
 prosp <- prospect(true_param, "D")
 
 test_that(
-  "Generalized plate model returns same values as PROSPECT", {
+  "Generalized plate model returns same values as PROSPECT",
+  {
     expect_lt(sum(rtmat - prosp), 1e-5)
   }
 )

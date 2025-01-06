@@ -1,7 +1,7 @@
 #' Check ED2IN
 #'
-#' Check the basic structure of `ed2in` object, as well as consistency among 
-#' arguments (e.g. run dates and coordinates are within the range of vegetation 
+#' Check the basic structure of `ed2in` object, as well as consistency among
+#' arguments (e.g. run dates and coordinates are within the range of vegetation
 #' and meteorology data).
 #'
 #' @inheritParams write_ed2in
@@ -17,7 +17,7 @@ check_ed2in <- function(ed2in) {
     "IPHENYFF"
   )
   unset <- !names(ed2in) %in% can_be_unset &
-    (purrr::map_lgl(ed2in, ~all(is.na(.))) | grepl("@.*?@", ed2in))
+    (purrr::map_lgl(ed2in, ~ all(is.na(.))) | grepl("@.*?@", ed2in))
   if (sum(unset) > 0) {
     PEcAn.logger::logger.severe(
       "The following required ED2IN tags are unset: ",

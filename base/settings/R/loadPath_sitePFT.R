@@ -12,17 +12,18 @@
 #'   the name of the PFT.
 #'
 loadPath.sitePFT <- function(settings, Path) {
-  #finding the file extension.
+  # finding the file extension.
   ext <- tools::file_ext(Path)
 
   if (ext == "csv" || ext == "txt") {
     # reading in the links
     links <- utils::read.table(file.path(Path), header = TRUE, sep = ",")
-    #check to make sure the input file is what we expect it.
+    # check to make sure the input file is what we expect it.
     if (nrow(links) == 0 || ncol(links) == 0 || ncol(links) != 2) {
       PEcAn.logger::logger.severe(
         "There is a problem with reading the file. Either row number,",
-        "column number is zero or your file does not have two columns.")
+        "column number is zero or your file does not have two columns."
+      )
     }
 
     return(`colnames<-`(links, c("site", "pft")))

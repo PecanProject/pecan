@@ -1,7 +1,7 @@
 ##' @name nderiv
 ##' @title nderiv
 ##' @export
-##' 
+##'
 ##' @param x Name of variable to plot on X axis
 ##' @param y Name of variable to plot on Y axis
 ##' @return der
@@ -19,7 +19,7 @@ nderiv <- function(x, y) {
     return(der)
   }
   for (i in 2:(n - 1)) {
-    der[i] <- (y[i + 1] - y[i - 1])/(x[i + 1] - x[i - 1])
+    der[i] <- (y[i + 1] - y[i - 1]) / (x[i + 1] - x[i - 1])
   }
   return(der)
 } # nderiv

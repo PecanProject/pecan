@@ -1,7 +1,6 @@
-
 context("Testing Logger Settings")
 
-test_that("`logger.getLevelNumber` returns correct level number",{
+test_that("`logger.getLevelNumber` returns correct level number", {
   expect_equal(logger.getLevelNumber("all"), 0)
   expect_equal(logger.getLevelNumber("debug"), 10)
   expect_equal(logger.getLevelNumber("info"), 20)
@@ -9,33 +8,37 @@ test_that("`logger.getLevelNumber` returns correct level number",{
   expect_equal(logger.getLevelNumber("error"), 40)
   expect_equal(logger.getLevelNumber("severe"), 40)
   expect_equal(logger.getLevelNumber("off"), 60)
-  
+
   old_settings <- logger.setLevel("ERROR")
   on.exit(logger.setLevel(old_settings), add = TRUE)
   expect_equal(logger.getLevelNumber("INVALID"), 20)
 })
 
-test_that("`setWidth` works for different specified number of chars per line",{
+test_that("`setWidth` works for different specified number of chars per line", {
   logger.setUseConsole(TRUE, FALSE)
   on.exit(logger.setUseConsole(TRUE, TRUE), add = TRUE)
-  
-  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
-                "INFO   \\[.*\\] : \\n   A long error message that helps us understand what the error in the \\n   function is ")
-  
+
+  expect_output(
+    logger.info("A long error message that helps us understand what the error in the function is"),
+    "INFO   \\[.*\\] : \\n   A long error message that helps us understand what the error in the \\n   function is "
+  )
+
   old_width <- .utils.logger$width
   logger.setWidth(10)
   on.exit(logger.setWidth(old_width), add = TRUE)
-  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
-                "INFO   \\[.*\\] : \\n   A long \\n   error \\n   message \\n   that \\n   helps \\n   us \\n   understand \\n   what \\n   the \\n   error \\n   in the \\n   function \\n   is ")
-  
+  expect_output(
+    logger.info("A long error message that helps us understand what the error in the function is"),
+    "INFO   \\[.*\\] : \\n   A long \\n   error \\n   message \\n   that \\n   helps \\n   us \\n   understand \\n   what \\n   the \\n   error \\n   in the \\n   function \\n   is "
+  )
+
   logger.setWidth(30)
-  expect_output(logger.info("A long error message that helps us understand what the error in the function is"),
-                "INFO   \\[.*\\] : \\n   A long error message that \\n   helps us understand what \\n   the error in the function \\n   is ")
-  
+  expect_output(
+    logger.info("A long error message that helps us understand what the error in the function is"),
+    "INFO   \\[.*\\] : \\n   A long error message that \\n   helps us understand what \\n   the error in the function \\n   is "
+  )
 })
 
-test_that("logger prints right messages, responds correctly to logger.setLevel",{
-
+test_that("logger prints right messages, responds correctly to logger.setLevel", {
   logger.setUseConsole(TRUE, FALSE)
   on.exit(logger.setUseConsole(TRUE, TRUE), add = TRUE)
 
@@ -43,29 +46,29 @@ test_that("logger prints right messages, responds correctly to logger.setLevel",
   on.exit(logger.setLevel(old_settings), add = TRUE)
   expect_equal(logger.getLevel(), "ALL")
   expect_output(logger.debug("message"), "DEBUG  \\[.*\\] : message")
-  expect_output(logger.info("message"),  "INFO   \\[.*\\] : message")
-  expect_output(logger.warn("message"),  "WARN   \\[.*\\] : message")
+  expect_output(logger.info("message"), "INFO   \\[.*\\] : message")
+  expect_output(logger.warn("message"), "WARN   \\[.*\\] : message")
   expect_output(logger.error("message"), "ERROR  \\[.*\\] : message")
 
   logger.setLevel("DEBUG")
   expect_equal(logger.getLevel(), "DEBUG")
   expect_output(logger.debug("message"), "DEBUG  \\[.*\\] : message")
-  expect_output(logger.info("message"),  "INFO   \\[.*\\] : message")
-  expect_output(logger.warn("message"),  "WARN   \\[.*\\] : message")
+  expect_output(logger.info("message"), "INFO   \\[.*\\] : message")
+  expect_output(logger.warn("message"), "WARN   \\[.*\\] : message")
   expect_output(logger.error("message"), "ERROR  \\[.*\\] : message")
 
   logger.setLevel("INFO")
   expect_equal(logger.getLevel(), "INFO")
   expect_silent(logger.debug("message"))
-  expect_output(logger.info("message"),  "INFO   \\[.*\\] : message")
-  expect_output(logger.warn("message"),  "WARN   \\[.*\\] : message")
+  expect_output(logger.info("message"), "INFO   \\[.*\\] : message")
+  expect_output(logger.warn("message"), "WARN   \\[.*\\] : message")
   expect_output(logger.error("message"), "ERROR  \\[.*\\] : message")
 
   logger.setLevel("WARN")
   expect_equal(logger.getLevel(), "WARN")
   expect_silent(logger.debug("message"))
   expect_silent(logger.info("message"))
-  expect_output(logger.warn("message"),  "WARN   \\[.*\\] : message")
+  expect_output(logger.warn("message"), "WARN   \\[.*\\] : message")
   expect_output(logger.error("message"), "ERROR  \\[.*\\] : message")
 
   logger.setLevel("ERROR")

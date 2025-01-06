@@ -53,13 +53,13 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     cols_to_return <- c(cols_to_return, "source")
 
     all_pkgs <- sessioninfo::package_info(pkgs = "installed", dependencies = FALSE)
-    our_pkgs <- all_pkgs[grepl("PEcAn", all_pkgs$package),]
+    our_pkgs <- all_pkgs[grepl("PEcAn", all_pkgs$package), ]
 
     # Why do we need this when `pkgs = "installed"` usually shows loaded too?
     # Because there are times a package is loaded but not installed
     # (e.g. notably during R CMD check)
     all_loaded <- sessioninfo::package_info(pkgs = "loaded", dependencies = FALSE)
-    our_loaded <- all_loaded[grepl("PEcAn", all_loaded$package),]
+    our_loaded <- all_loaded[grepl("PEcAn", all_loaded$package), ]
 
     # TODO: consider using package_info's callouts of packages where loaded and
     #   installed versions mismatch -- it's a more elegant version of what we
@@ -71,10 +71,10 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
       by.x = c("package", "ondiskversion", "source"),
       by.y = c("package", "loadedversion", "source"),
       all = TRUE,
-      sort = TRUE)
+      sort = TRUE
+    )
     colnames(our_pkgs) <- c("package", "installed", "source")
     our_pkgs$installed <- package_version(our_pkgs$installed)
-
   } else {
     all_pkgs <- as.data.frame(utils::installed.packages())
     our_pkgs <- all_pkgs[
@@ -88,21 +88,24 @@ pecan_version <- function(version = max(PEcAn.all::pecan_releases$version),
     our_loaded <- sess[grepl("PEcAn", names(sess))]
     our_loaded <- data.frame(
       package = names(our_loaded),
-      installed = sapply(our_loaded, `[[`, "Version"))
+      installed = sapply(our_loaded, `[[`, "Version")
+    )
     our_loaded$installed <- package_version(our_loaded$installed)
     our_pkgs <- merge(our_pkgs, our_loaded, all = TRUE, sort = TRUE)
-    our_pkgs <- our_pkgs[!duplicated(our_pkgs),]
+    our_pkgs <- our_pkgs[!duplicated(our_pkgs), ]
   }
 
   want_hash <- !is.na(our_pkgs$installed)
   our_pkgs$build_hash[want_hash] <- sapply(
     our_pkgs$package[want_hash],
-    get_buildhash)
+    get_buildhash
+  )
 
   res <- merge(
     x = our_pkgs,
     y = PEcAn.all::pecan_version_history,
-    all = TRUE)
+    all = TRUE
+  )
   res <- drop_na_version_rows(res[, cols_to_return])
   rownames(res) <- res$package
   class(res) <- c("pecan_version_report", class(res))
@@ -134,25 +137,30 @@ get_buildhash <- function(pkg) {
 # (Just to help it display more compactly)
 #' @export
 print.pecan_version_report <- function(x, ...) {
-
   dots <- list(...)
-  if (is.null(dots$row.names)) { dots$row.names <- FALSE }
-  if (is.null(dots$right)) { dots$right <- FALSE }
+  if (is.null(dots$row.names)) {
+    dots$row.names <- FALSE
+  }
+  if (is.null(dots$right)) {
+    dots$right <- FALSE
+  }
 
   xx <- as.data.frame(x)
   # only print hash for dev versions
   # (typically x.y.z.9000, but we'll use anything with a 4th version component)
-  skip_hash <- is.na(xx$installed[,4]) | is.na(xx$build_hash)
+  skip_hash <- is.na(xx$installed[, 4]) | is.na(xx$build_hash)
   xx$build_hash[skip_hash] <- ""
   xx$build_hash <- sub(".{4}\\+mod$", "+mod", xx$build_hash)
   xx$installed <- paste0(
     xx$installed,
-    sub("(.+)", " (\\1)", xx$build_hash))
+    sub("(.+)", " (\\1)", xx$build_hash)
+  )
   xx$build_hash <- NULL
   if (!is.null(xx$source)) {
     xx$source <- paste0(
       strtrim(xx$source, 17),
-      ifelse(nchar(xx$source, type="width") <= 17, "", "..."))
+      ifelse(nchar(xx$source, type = "width") <= 17, "", "...")
+    )
   }
   dots$x <- xx
   do.call("print", dots)

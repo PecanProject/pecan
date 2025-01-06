@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' download.url('http://localhost/', index.html)
+#' download.url("http://localhost/", index.html)
 #' }
 download.url <- function(url, file, timeout = 600, .opts = list(), retry = TRUE) {
   count <- 0
@@ -31,8 +31,9 @@ download.url <- function(url, file, timeout = 600, .opts = list(), retry = TRUE)
   res <- curl::curl_download(
     url = url,
     destfile = file,
-    handle = curl::new_handle(.list = .opts))
-  
+    handle = curl::new_handle(.list = .opts)
+  )
+
   res
 } # download.url
 

@@ -3,7 +3,7 @@
 ##' @export
 ##' @param metric_dat dataframe
 ##' @param ... ignored
-##' 
+##'
 ##' @author Betsy Cowdery
 
 metric_Frechet <- function(metric_dat, ...) {

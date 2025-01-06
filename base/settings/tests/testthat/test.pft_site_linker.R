@@ -7,7 +7,7 @@ test_that("`site.pft.linkage` gives error for empty or incomplete lookup-table(L
       " with site ids under site column and pft names under pft column."
     )
   )
-  
+
   LUT <- data.frame(h1 = c("1000025731", "1000025731"))
 
   expect_error(
@@ -50,7 +50,7 @@ test_that("`site.pft.linkage` able to add site pft name if id is specified and i
     site = c("1000025731", "1000025732"),
     pft = c("temperate.broadleaf.deciduous1", "temperate.needleleaf.evergreen")
   )
-  
+
   new_settings <- site.pft.linkage(settings, LUT)
   expect_equal(
     new_settings$run$site$site.pft$pft.name,

@@ -34,7 +34,7 @@ refs_proc_file <- file.path(data_dir, "refs_proc.rds")
 if (file.exists(refs_proc_file)) {
   refs_proc <- readRDS(refs_proc_file)
 } else {
-  logger.setLevel("DEBUG")    # To get status messages
+  logger.setLevel("DEBUG") # To get status messages
   refs_proc <- reference_dat %>%
     mutate(cr_df = map(Reference, search_references, min_score = 40)) %>%
     unnest()
@@ -57,7 +57,7 @@ refs_proc2 <- refs_proc %>%
   mutate(
     title = if_else(!is.na(title), title, paste0("TRY ReferenceID ", ReferenceID)),
     author = if_else(!is.na(author), author, "Unknown TRY data (see title)"),
-    author = substr(author, 0, 254),    # Trim author to 255 characters
+    author = substr(author, 0, 254), # Trim author to 255 characters
     journal = if_else(!is.na(journal), journal, "Unknown TRY data (see title)"),
     # Use the Kattge 2007 TRY paper's DOI as a placeholder
     doi = if_else(!is.na(doi), doi, "10.1111/j.1365-2486.2011.02451.x"),

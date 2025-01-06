@@ -12,7 +12,7 @@
 ##' @return configuration file for MODEL for given run
 ##' @export
 ##' @author Rob Kooper
-##-------------------------------------------------------------------------------------------------#
+## -------------------------------------------------------------------------------------------------#
 write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
   # Please follow the PEcAn style guide:
@@ -22,12 +22,12 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   # Calls to dependent packages should use a double colon, e.g.
   #    `packageName::functionName()`.
   # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-  
+  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION.
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
-  
+
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
@@ -35,7 +35,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   } else {
     jobsh <- readLines(con = system.file("template.job", package = "PEcAn.MODEL"), n = -1)
   }
-  
+
   # create host specific setttings
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
@@ -44,7 +44,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   if (!is.null(settings$host$prerun)) {
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
-  
+
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -52,26 +52,26 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
-  
+
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
-  
+
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
   jobsh <- gsub("@SITE_MET@", settings$run$site$met, jobsh)
-  
+
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
-  
+
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  
+
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  
+
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  
+
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
   if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
@@ -92,7 +92,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
     PEcAn.logger::logger.info("Using", filename, "as template")
     config.text <- readLines(con = filename, n = -1)
   }
-  
+
   config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
   config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
   config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
@@ -107,7 +107,7 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
   config.text <- gsub("@ENSNAME@", run.id, config.text)
   config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  
+
   #-----------------------------------------------------------------------
   config.file.name <- paste0("CONFIG.", run.id, ".txt")
   writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))

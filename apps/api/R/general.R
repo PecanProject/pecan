@@ -2,8 +2,8 @@
 #* If successful connection to API server is established, this function will return the "pong" message
 #* @return Mapping containing response as "pong"
 #* @author Tezan Sahu
-ping <- function(req){
-  res <- list(request="ping", response="pong")
+ping <- function(req) {
+  res <- list(request = "ping", response = "pong")
   res
 }
 
@@ -12,17 +12,17 @@ ping <- function(req){
 #* @author Tezan Sahu
 status <- function() {
   ## helper function to obtain environment variables
-  get_env_var = function (item, default = "unknown") {
-    value = Sys.getenv(item)
+  get_env_var <- function(item, default = "unknown") {
+    value <- Sys.getenv(item)
     if (value == "") default else value
   }
-  
+
   res <- list(host_details = PEcAn.DB::dbHostInfo(global_db_pool))
-  res$host_details$authentication_required = get_env_var("AUTH_REQ")
-  
+  res$host_details$authentication_required <- get_env_var("AUTH_REQ")
+
   res$pecan_details <- list(
-    version = get_env_var("PECAN_VERSION"), 
-    branch = get_env_var("PECAN_GIT_BRANCH"), 
+    version = get_env_var("PECAN_VERSION"),
+    branch = get_env_var("PECAN_GIT_BRANCH"),
     gitsha1 = get_env_var("PECAN_GIT_CHECKSUM")
   )
   return(res)

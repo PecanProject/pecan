@@ -19,7 +19,7 @@ y <- as.matrix(model(true) + generate.noise(n = nx, fw = 10, sigma = 1))
 nchains <- 3
 invert.options <- list()
 invert.options$model <- model
-invert.options$prior.function <- function(p) sum(dnorm(p, 0, 30, TRUE)) 
+invert.options$prior.function <- function(p) sum(dnorm(p, 0, 30, TRUE))
 invert.options$inits.function <- function() rnorm(3, 0, 30)
 invert.options$inits <- invert.options$inits.function()
 invert.options$nchains <- nchains
@@ -40,8 +40,10 @@ output_tests <- function(output) {
   })
 
   test_that("Inversion output produces distinct chains", {
-    expect_false(identical(output$samples[[1]],
-                           output$samples[[2]]))
+    expect_false(identical(
+      output$samples[[1]],
+      output$samples[[2]]
+    ))
   })
 
   test_that("Saving samples is successful", {
@@ -54,17 +56,21 @@ output_tests <- function(output) {
 }
 
 invert.options$threshold <- 1.2
-samp_parallel <- invert.auto(observed = y,
-                             invert.options = invert.options, 
-                             save.samples = save.samples)
+samp_parallel <- invert.auto(
+  observed = y,
+  invert.options = invert.options,
+  save.samples = save.samples
+)
 output_tests(samp_parallel)
 
 invert.options$calculate.burnin <- FALSE
 invert.options$threshold <- NULL
-samp_series <- invert.auto(observed = y,
-                           invert.options = invert.options, 
-                           save.samples = save.samples, 
-                           parallel = FALSE)
+samp_series <- invert.auto(
+  observed = y,
+  invert.options = invert.options,
+  save.samples = save.samples,
+  parallel = FALSE
+)
 output_tests(samp_series)
 
 file.remove(fname_expect, save.samples)

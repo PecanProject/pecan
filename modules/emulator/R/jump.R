@@ -5,16 +5,16 @@
 ##' @param ic optional data vector
 ##' @param rate target acceptance rate
 ##' @param ... Addtional arguments
-##' 
+##'
 ##' @author Michael Dietze
 jump <- function(ic = 0, rate = 0.4, ...) {
   return(methods::new("jump", history = ic, arate = 0, target = rate))
 } # jump
 
 ##' multivariate version
-##' @title mvjump 
+##' @title mvjump
 ##' @export
-##' 
+##'
 ##' @param ic optional data vector
 ##' @param rate target acceptance rate
 ##' @param nc NetCDF object containing target variable

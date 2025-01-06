@@ -43,42 +43,42 @@ dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
 
 # unzip and parse filenames
 if (grepl("pecan.zip$", args[1])) {
-    system2("/usr/bin/unzip", c("-o", "-d", cffolder, inputFile))
-    site <- NA
-    startYear <- NA
-    endYear <- NA
-    for(file in list.files(path=cffolder, pattern="*.nc")) {
-        pieces <- strsplit(file, ".", fixed=TRUE)[[1]]
-        if (length(pieces) != 3) {
-          usage(paste0("invalid file ", file, " should be <site>.<year>.nc"))
-        }
-        if (is.na(site)) {
-            site <- pieces[1]
-        } else if (site != pieces[1]) {
-            usage(paste0("incosistent sites ", file, " should be ", site, ".<year>.nc"))
-        }
-        if (is.na(startYear) || pieces[2] < startYear) {
-            startYear <- pieces[2]
-        }
-        if (is.na(endYear) || pieces[2] > endYear) {
-            endYear <- pieces[2]
-        }
-        startDate <- as.POSIXlt(paste0(startYear,"-01-01 00:00:00"), tz = "UTC")
-        endDate <- as.POSIXlt(paste0(endYear,"-12-31 23:59:59"), tz = "UTC")
+  system2("/usr/bin/unzip", c("-o", "-d", cffolder, inputFile))
+  site <- NA
+  startYear <- NA
+  endYear <- NA
+  for (file in list.files(path = cffolder, pattern = "*.nc")) {
+    pieces <- strsplit(file, ".", fixed = TRUE)[[1]]
+    if (length(pieces) != 3) {
+      usage(paste0("invalid file ", file, " should be <site>.<year>.nc"))
     }
     if (is.na(site)) {
       site <- pieces[1]
     } else if (site != pieces[1]) {
-      usage(paste0("inconsistent sites ", file, " should be ", site, ".<year>.nc"))
+      usage(paste0("incosistent sites ", file, " should be ", site, ".<year>.nc"))
     }
     if (is.na(startYear) || pieces[2] < startYear) {
       startYear <- pieces[2]
     }
+    if (is.na(endYear) || pieces[2] > endYear) {
+      endYear <- pieces[2]
+    }
+    startDate <- as.POSIXlt(paste0(startYear, "-01-01 00:00:00"), tz = "UTC")
+    endDate <- as.POSIXlt(paste0(endYear, "-12-31 23:59:59"), tz = "UTC")
+  }
+  if (is.na(site)) {
     site <- pieces[1]
-    year <- pieces[2]
-    file.copy(inputFile, file.path(cffolder, paste(site, year, "nc", sep=".")))
-    startDate <- as.POSIXlt(paste0(year,"-01-01 00:00:00"), tz = "UTC")
-    endDate <- as.POSIXlt(paste0(year,"-12-31 23:59:59"), tz = "UTC")
+  } else if (site != pieces[1]) {
+    usage(paste0("inconsistent sites ", file, " should be ", site, ".<year>.nc"))
+  }
+  if (is.na(startYear) || pieces[2] < startYear) {
+    startYear <- pieces[2]
+  }
+  site <- pieces[1]
+  year <- pieces[2]
+  file.copy(inputFile, file.path(cffolder, paste(site, year, "nc", sep = ".")))
+  startDate <- as.POSIXlt(paste0(year, "-01-01 00:00:00"), tz = "UTC")
+  endDate <- as.POSIXlt(paste0(year, "-12-31 23:59:59"), tz = "UTC")
 } else {
   usage("Did not recognize type of file")
 }

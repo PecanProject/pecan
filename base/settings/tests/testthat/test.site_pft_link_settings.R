@@ -9,7 +9,7 @@ test_that("`site.pft.link.settings` able to link sites to pfts and update settin
           )
         )
       )
-    ) 
+    )
     df <- data.frame(
       site = c("1000025731", "1000025732"),
       pft = c("temperate.broadleaf.deciduous1", "temperate.needleleaf.evergreen")
@@ -18,7 +18,7 @@ test_that("`site.pft.link.settings` able to link sites to pfts and update settin
     updated_settings <- site.pft.link.settings(settings)
     print(updated_settings)
     print(length(updated_settings$pfts))
-    for(i in 1:length(updated_settings$pfts)) {
+    for (i in 1:length(updated_settings$pfts)) {
       expect_equal(updated_settings$pfts[[i]]$name, df$pft[i])
       expect_equal(updated_settings$pfts$pft$constants, 1)
     }

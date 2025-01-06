@@ -8,12 +8,12 @@ trees <- read.csv("H 2012 Adult Field Data.csv")
 ## Read tree ring data
 rings <- Read_Tuscon("Revised 2/")
 
-combined <- matchInventoryRings(trees,rings,nyears=10)
+combined <- matchInventoryRings(trees, rings, nyears = 10)
 
 data <- buildJAGSdata_InventoryRings(combined)
 
-jags.out = InventoryGrowthFusion(data,n.iter=2000)
+jags.out <- InventoryGrowthFusion(data, n.iter = 2000)
 
 pdf("HF_JAM_treerings.pdf")
-InventoryGrowthFusionDiagnostics(jags.out,combined)
+InventoryGrowthFusionDiagnostics(jags.out, combined)
 dev.off()

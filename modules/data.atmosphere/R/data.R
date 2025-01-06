@@ -1,4 +1,3 @@
-
 ## Drafts of documentation for package datasets
 ##
 ## Written by CKB 2020-05-03, then commented out when I realized that as
@@ -31,8 +30,8 @@
 # #'    \item{source}{dataset identifier, in this case always "cruncep"}}
 # #' @seealso \code{\link{narr}} \code{\link{narr3h}} \code{\link{ebifarm}}
 # "cruncep"
-# 
-# 
+#
+#
 # #' Global 0.5 degree land/water mask for the CRUNCEP dataset
 # #'
 # #' For details, please see the CRUNCEP scripts included with this package:
@@ -44,8 +43,8 @@
 # #'    \item{lon}{longitude, in decimal degrees}
 # #'    \item{land}{logical. TRUE = land, FALSE = water}}
 # "cruncep_landmask"
-# 
-# 
+#
+#
 # #' 2010 weather station data from near Urbana, IL
 # #'
 # #' Hourly 2010 weather data collected at the EBI Energy Farm (Urbana, IL).
@@ -64,8 +63,8 @@
 # #'    \item{source}{dataset identifier, in this case always "ebifarm"}}
 # #' @seealso  \code{\link{cruncep}} \code{\link{narr}} \code{\link{narr3h}}
 # "ebifarm"
-# 
-# 
+#
+#
 # #' Codes and BeTY IDs for sites in the FLUXNET network
 # #'
 # #' @format a data frame with 698 rows and 2 columns:
@@ -75,8 +74,8 @@
 # #'    \item{site.id}{identifier used in the `sites` table of the PEcAn
 # #'      database. Integer, but stored as character}}
 # "FLUXNET.sitemap"
-# 
-# 
+#
+#
 # #' Global land/water mask for the NCEP dataset
 # #'
 # #' For details, please see the NCEP scripts included with this package:
@@ -88,8 +87,8 @@
 # #'    \item{lon}{longitude, in decimal degrees}
 # #'    \item{land}{logical. TRUE = land, FALSE = water}}
 # "landmask"
-# 
-# 
+#
+#
 # #' Latitudes of 94 sites from the NCEP dataset
 # #'
 # #' For details, please see the NCEP scripts included with this package:
@@ -97,8 +96,8 @@
 # #'
 # #' @format a vector of 94 decimal values
 # "Lat"
-# 
-# 
+#
+#
 # #' Longitudes of 192 sites from the NCEP dataset
 # #'
 # #' For details, please see the NCEP scripts included with this package:
@@ -106,8 +105,8 @@
 # #'
 # #' @format a vector of 192 decimal values
 # "Lon"
-# 
-# 
+#
+#
 # #' 2010 NARR weather data for Urbana, IL
 # #'
 # #' Hourly 2010 meteorology for the 0.3-degree grid cell containing the
@@ -127,8 +126,8 @@
 # #'    \item{source}{dataset identifier, in this case always "narr"}}
 # #' @seealso  \code{\link{cruncep}} \code{\link{ebifarm}} \code{\link{narr3h}}
 # "narr"
-# 
-# 
+#
+#
 # #' 2010 NARR 3-hourly weather data for Urbana, IL
 # #'
 # #' Hourly 2010 meteorology for the 0.25-degree grid cell containing the

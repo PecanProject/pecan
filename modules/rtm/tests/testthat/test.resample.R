@@ -5,8 +5,8 @@ test_that(
   {
     from <- seq(2, 20, 2)
     to <- seq(2, 20)
-    values <- from ^ 2
-    true_values <- to ^ 2
+    values <- from^2
+    true_values <- to^2
     resample_values <- resample(values, from, to)
     expect_equal(true_values, resample_values)
   }
@@ -46,7 +46,7 @@ test_that(
   }
 )
 
-# This test doesn't work with the PEcAn.logger functions because they mess with 
+# This test doesn't work with the PEcAn.logger functions because they mess with
 # the warning output.
 if (!requireNamespace("PEcAn.logger")) {
   test_that(
@@ -54,7 +54,7 @@ if (!requireNamespace("PEcAn.logger")) {
     {
       from <- seq(2, 20, 2)
       to <- seq(1, 30)
-      values <- from ^ 2
+      values <- from^2
       expect_warning(resample(values, from, to), "Resampled values .* unreliable")
     }
   )

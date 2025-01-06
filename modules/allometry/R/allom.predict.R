@@ -1,11 +1,10 @@
-
 #' allom.predict
 #'
 #' Function for making tree-level Monte Carlo predictions
 #' from allometric equations estimated from the PEcAn allometry module
 #'
 #' @param object Allometry model object. Option includes
-#'\describe{
+#' \describe{
 #'   \item{'list of mcmc'}{ - mcmc outputs in a list by PFT then component}
 #'   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
 #'   \item{'directory where files are located}{ - }
@@ -24,12 +23,10 @@
 #'
 #'
 #' @examples
-#'
 #' \dontrun{
-#'   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
-#'   dbh = seq(10,50,by=5)
-#'   mass = allom.predict(object,dbh,n=100)
-#'
+#' object <- "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+#' dbh <- seq(10, 50, by = 5)
+#' mass <- allom.predict(object, dbh, n = 100)
 #' }
 #'
 #' @author Michael Dietze, Christy Rollinson
@@ -40,11 +37,10 @@
 # 'prediction',single.tree=TRUE)
 allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, use = "Bg",
                           interval = "prediction", single.tree = FALSE) {
-  
   if (is.character(object)) {
     object <- load.allom(object)
   }
-  
+
   ## error checking
   npft <- length(object)
   if (npft == 0) {
@@ -74,8 +70,8 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
     print("ERROR: number of PFT records does not match number of DBH records")
     return(NA)
   }
-  
-  
+
+
   ## build PFT x Component table and convert mcmclist objects to mcmc
   pftByComp <- matrix(NA, npft, ncomp)
   for (i in seq_len(npft)) {
@@ -116,7 +112,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   if (n < 1 | is.na(n)) {
     print(paste("invalid n", n))
   }
-  
+
   ## Extract relevant parameter vectors stick in a list by PFT
   params <- list()
   for (i in seq_len(npft)) {
@@ -140,9 +136,8 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
         params[[i]] <- object[[i]][[component]][sel, c("Bg0", "Bg1")]
       } else if (use[i] == "mu") {
         params[[i]] <- object[[i]][[component]][sel, c("mu0", "mu1")]
-        
+
         #### *** should this case include random effects too ????
-        
       } else {
         print(paste("use =", use[i], "not currently supported"))
         return(NA)
@@ -171,7 +166,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
     }
   }
   names(params) <- names(object)
-  
+
   ### perform actual allometric calculation
   if (methods::is(dbh, "list")) {
     out <- list(length(dbh))
@@ -180,19 +175,19 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   }
   for (p in unique(pft)) {
     sel <- which(pft == p)
-    a <- params[[p]][,1]
-    b <- params[[p]][,2]
+    a <- params[[p]][, 1]
+    b <- params[[p]][, 2]
     if (ncol(params[[p]]) > 2) {
-      s <- sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
+      s <- sqrt(params[[p]][, 3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {
       s <- 0
     }
-    
+
     if (methods::is(dbh, "list")) {
       for (j in 1:length(sel)) {
         if ((methods::is(dbh[[sel[j]]], "numeric")) & (all(is.na(dbh[[sel[j]]])))) {
-          out[[sel[j]]] <- array(NA, c(n,1,length(dbh[[sel[j]]])))
-          out[[sel[j]]][,,] <- NA
+          out[[sel[j]]] <- array(NA, c(n, 1, length(dbh[[sel[j]]])))
+          out[[sel[j]]][, , ] <- NA
           next
         } else if (methods::is(dbh[[sel[j]]], "numeric")) {
           ntrees <- 1
@@ -201,36 +196,47 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
           ntrees <- nrow(dbh[[sel[j]]])
           nyears <- ncol(dbh[[sel[j]]])
         }
-        
-        out[[sel[j]]] <- array(NA, c(n,ntrees,nyears))
-        
+
+        out[[sel[j]]] <- array(NA, c(n, ntrees, nyears))
+
         for (k in 1:ntrees) {
           epsilon <- stats::rnorm(n, 0, s) # don't fix this for a single tree; fix for a single iteration for a single site across all trees
           if (methods::is(dbh[[sel[j]]], "numeric")) {
             dbh_sel_k <- dbh[[sel[j]]]
           } else {
-            dbh_sel_k <- dbh[[sel[j]]][k,]
+            dbh_sel_k <- dbh[[sel[j]]][k, ]
           }
-          
-          log_x <- sapply(dbh_sel_k, function(x) if(is.na(x)|(x<=0)){return(NA)}else{log(x)})
-          out[[sel[j]]][,k,] <-  sapply(log_x, function(x) if(is.na(x)){rep(NA, n)}else{exp(a+b*x + epsilon)})
+
+          log_x <- sapply(dbh_sel_k, function(x) {
+            if (is.na(x) | (x <= 0)) {
+              return(NA)
+            } else {
+              log(x)
+            }
+          })
+          out[[sel[j]]][, k, ] <- sapply(log_x, function(x) {
+            if (is.na(x)) {
+              rep(NA, n)
+            } else {
+              exp(a + b * x + epsilon)
+            }
+          })
         }
       }
     } else if (single.tree == TRUE) {
       # for a dbh time-series for a single tree, fix error for each draw
-      epsilon = stats::rnorm(n, 0, s)
+      epsilon <- stats::rnorm(n, 0, s)
       for (i in 1:n) {
-        out[i,] <- exp(a[i]+b[i]*log(dbh) + epsilon[i])
+        out[i, ] <- exp(a[i] + b[i] * log(dbh) + epsilon[i])
       }
     } else {
       # for a dbh time-series for different trees, error not fixed across draws
       for (i in sel) {
-        out[,i] <- exp(stats::rnorm(n, a+b*log(dbh[i]),s))
+        out[, i] <- exp(stats::rnorm(n, a + b * log(dbh[i]), s))
       }
     }
-    
   }
-  
+
   return(out)
 } # allom.predict
 
@@ -239,7 +245,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
 #' loads allom files
 #'
 #' @param object Allometry model object. Option includes
-#'\describe{
+#' \describe{
 #'   \item{'vector of file paths'}{ - path(s) to AllomAve RData files}
 #'   \item{'directory where files are located}{ - }
 #' }
@@ -247,11 +253,9 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
 #' @return mcmc outputs in a list by PFT then component
 #'
 #' @examples
-#'
 #' \dontrun{
-#'   object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
-#'   allom.mcmc = load.allom(object)
-#'
+#' object <- "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+#' allom.mcmc <- load.allom(object)
 #' }
 #'
 #' @author Michael Dietze
@@ -262,7 +266,6 @@ load.allom <- function(object) {
   ## assuming object is file path, load up
   tmp <- list()
   for (i in seq_along(object)) {
-    
     if (tolower(tools::file_ext(object[i])) == "rdata") {
       my.files <- object[i]
     } else {
@@ -271,14 +274,14 @@ load.allom <- function(object) {
     ## Need to add a 3rd option if the files are remotely on Dropbox
     ## download_file(object,'foo.Rdata',method='curl') works for a single file not sure how to get the
     ## file listing
-    
+
     for (j in seq_along(my.files)) {
       ## parse file name
       my.name <- basename(my.files[j])
       my.name.parts <- strsplit(my.name, split = ".", fixed = TRUE)[[1]]
       my.pft <- my.name.parts[length(my.name.parts) - 2]
       my.comp <- as.numeric(my.name.parts[length(my.name.parts) - 1])
-      
+
       ## load file itself
       if (my.pft %in% names(tmp)) {
         k <- which(names(tmp) == my.pft)
@@ -292,7 +295,7 @@ load.allom <- function(object) {
       tmp[[k]][[my.comp]] <- tmp_env$mc
     }
   }
-  
+
   ## convert mcmclist objects to mcmc
   for (i in seq_along(tmp)) {
     for (j in which(!sapply(tmp[[i]], is.null))) {
@@ -301,6 +304,6 @@ load.allom <- function(object) {
       }
     }
   }
-  
+
   return(tmp)
 } # load.allom

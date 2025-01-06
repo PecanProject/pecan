@@ -2,7 +2,7 @@
 ### random and gap-filling uncertainty based on the Barr et al
 ### NACP data product
 
-### inputs: annual NEE matrices of [time x ensemble member] 
+### inputs: annual NEE matrices of [time x ensemble member]
 ### outputs: mean and quantile spectra
 
 ## THIS PART OF THE CODE COMBINES SPECTRA
@@ -11,43 +11,46 @@
 ## Paths and prefixes
 .libPaths("/home/mdietze/lib/R")
 
-path  <- "/home/mdietze/stats/spectral/"
+path <- "/home/mdietze/stats/spectral/"
 spath <- "/scratch/NACP/spectral/"
-model.dir  <- "NEEm"
+model.dir <- "NEEm"
 site.files <- dir(model.dir, "txt")
 stepsize <- 50
 
 # for(sitenum in c(1,5,7,8,9,25,26,38,45)){
 for (sitenum in c(25, 38, 45)) {
-  
   site.name <- site.files[sitenum]
   site.name <- sub("_NEE.txt", "", site.name)
   site.name <- sub("-", "", site.name)
   prefix <- paste0("NEE_", site.name, "-")
   field <- paste0("NEEf/", site.name, "/FilledNEE/")
-  
+
   PspecG <- NULL
-  
+
   for (nstart in seq(1, 951, by = 50)) {
     print(c(sitenum, nstart))
     load(paste0(spath, site.name, ".", nstart, ".specCIclip.Rdata"))
     ## load(paste(spath,site.name,'.',nstart,'.specCI.Rdata',sep=''))
-    
+
     if (is.null(PspecG)) {
       PspecG <- matrix(NA, length(Period), 1000)
     }
-    PspecG[, seq(nstart, length = stepsize, by = 1)] <- Pspec[seq_along(Period), 
-                                                              seq(nstart, length = stepsize, by = 1)]
+    PspecG[, seq(nstart, length = stepsize, by = 1)] <- Pspec[
+      seq_along(Period),
+      seq(nstart, length = stepsize, by = 1)
+    ]
   }
-  
+
   pbar <- apply(PspecG, 1, mean, na.rm = TRUE)
-  pCI  <- apply(PspecG, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
-  pSD  <- sqrt(apply(PspecG, 1, var, na.rm = TRUE))
+  pCI <- apply(PspecG, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
+  pSD <- sqrt(apply(PspecG, 1, var, na.rm = TRUE))
   if (FALSE) {
-    plot(Period, pbar, log = "xy", ylim = c(10000, max(pCI)), type = "l",
-         ylab = "Power", xlab = "Period (days)", 
-         main = "US-Ho1 Null Spectra", lwd = 2, 
-         cex.lab = 1.5, cex.axis = 1.2, cex.main = 1.5)
+    plot(Period, pbar,
+      log = "xy", ylim = c(10000, max(pCI)), type = "l",
+      ylab = "Power", xlab = "Period (days)",
+      main = "US-Ho1 Null Spectra", lwd = 2,
+      cex.lab = 1.5, cex.axis = 1.2, cex.main = 1.5
+    )
     lines(Period, pCI[1, ], col = 2, lty = 2, lwd = 2)
     ## lines(period,pCI[2,],col=2)
     lines(Period, pCI[3, ], col = 2, lty = 2, lwd = 2)
@@ -59,24 +62,28 @@ for (sitenum in c(25, 38, 45)) {
 if (FALSE) {
   period <- 1 / s$freq / 48
   pspec <- pspec[seq_along(period), ]
-  
+
   pbar <- apply(pspec, 1, mean, na.rm = TRUE)
   pCI <- apply(pspec, 1, quantile, c(0.05, 0.5, 0.95), na.rm = TRUE)
-  plot(period, pbar, log = "xy", ylim = range(pCI), type = "l", 
-       ylab = "Power", xlab = "Period (days)")
+  plot(period, pbar,
+    log = "xy", ylim = range(pCI), type = "l",
+    ylab = "Power", xlab = "Period (days)"
+  )
   lines(period, pCI[1, ], col = 3)
   # lines(period,pCI[2,],col=2)
   lines(period, pCI[3, ], col = 4)
   abline(v = c(0.5, 1, 365.25 / 2, 365.25), col = 2, lty = 2)
-  
+
   sel <- which(period > 0.8 & period < 1.3)
-  
-  plot(period[sel], pbar[sel], log = "xy", ylim = range(pCI), type = "l", 
-       ylab = "Power", xlab = "Period (days)")
+
+  plot(period[sel], pbar[sel],
+    log = "xy", ylim = range(pCI), type = "l",
+    ylab = "Power", xlab = "Period (days)"
+  )
   lines(period[sel], pCI[1, sel], col = 3)
   # lines(period,pCI[2,],col=2)
   lines(period[sel], pCI[3, sel], col = 4)
   abline(v = c(0.5, 1, 365.25 / 2, 365.25), col = 2, lty = 2)
-  
+
   save.image("USHo1.specCI.Rdata")
 }

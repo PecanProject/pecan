@@ -1,4 +1,3 @@
-
 host <- list(name = "localhost")
 echo_string <- "pecan"
 out <- remote.execute.cmd(host = host, cmd = "echo", args = echo_string)

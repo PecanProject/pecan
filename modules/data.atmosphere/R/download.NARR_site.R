@@ -15,11 +15,9 @@
 #' @param ... further arguments, currently ignored
 #'
 #' @examples
-#'
 #' \dontrun{
 #' download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 #' }
-#'
 #'
 #' @export
 #' @importFrom rlang .data
@@ -34,7 +32,6 @@ download.NARR_site <- function(outfolder,
                                parallel = TRUE,
                                ncores = if (parallel) parallel::detectCores() else NULL,
                                ...) {
-
   if (verbose) PEcAn.logger::logger.info("Downloading NARR data")
   narr_data <- get_NARR_thredds(
     start_date, end_date, lat.in, lon.in,
@@ -114,7 +111,7 @@ prepare_narr_year <- function(dat, file, lat_nc, lon_nc, verbose = FALSE) {
   )
   nc <- ncdf4::nc_create(file, ncvar_list, verbose = verbose)
   on.exit(ncdf4::nc_close(nc), add = TRUE)
-  purrr::iwalk(nc_values, ~ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
+  purrr::iwalk(nc_values, ~ ncdf4::ncvar_put(nc, .y, .x, verbose = verbose))
   invisible(ncvar_list)
 }
 
@@ -148,7 +145,6 @@ col2ncvar <- function(variable, dims) {
 #' @return `tibble` containing time series of NARR data for the given site
 #' @author Alexey Shiklomanov
 #' @examples
-#'
 #' \dontrun{
 #' dat <- get_NARR_thredds("2008-01-01", "2008-01-15", 43.3724, -89.9071)
 #' }
@@ -158,9 +154,7 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
                              progress = TRUE,
                              drop_outside = TRUE,
                              parallel = TRUE,
-                             ncores = 1
-                             ) {
-
+                             ncores = 1) {
   PEcAn.logger::severeifnot(
     length(start_date) == 1,
     msg = paste("Start date must be a scalar, but has length", length(start_date))
@@ -217,12 +211,13 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
   xy <- latlon2narr(nc1, lat.in, lon.in)
 
   if (parallel) {
-    if (!requireNamespace("parallel", quietly = TRUE)
-        || !requireNamespace("doParallel", quietly = TRUE)) {
+    if (!requireNamespace("parallel", quietly = TRUE) ||
+      !requireNamespace("doParallel", quietly = TRUE)) {
       PEcAn.logger::logger.severe(
         "Could not find all packages needed for simultaneous NARR downloads. ",
         "Either run `install.packages(c(\"parallel\", \"doParallel\"))`, ",
-        "or call get_NARR_thredds with `parallel = FALSE`.")
+        "or call get_NARR_thredds with `parallel = FALSE`."
+      )
     }
 
     # Load in parallel
@@ -239,12 +234,11 @@ get_NARR_thredds <- function(start_date, end_date, lat.in, lon.in,
         .packages = c("PEcAn.data.atmosphere", "dplyr"),
         .export = c("get_narr_url", "robustly")
       ),
-        PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)
+      PEcAn.utils::robustly(get_narr_url)(url, xy = xy, flx = flx)
     )
     flx_data_raw <- dplyr::filter(get_dfs, .data$flx)
     sfc_data_raw <- dplyr::filter(get_dfs, !.data$flx)
   } else {
-
     # Retrieve remaining variables by iterating over URLs
     npb <- nrow(flx_df) * nrow(narr_flx_vars) +
       nrow(sfc_df) * nrow(narr_sfc_vars)
@@ -457,8 +451,8 @@ latlon2narr <- function(nc, lat.in, lon.in) {
   narr_x <- ncdf4::ncvar_get(nc, "x")
   narr_y <- ncdf4::ncvar_get(nc, "y")
   ptrans <- latlon2lcc(lat.in, lon.in)
-  x_ind <- which.min((ptrans$x - narr_x) ^ 2)
-  y_ind <- which.min((ptrans$y - narr_y) ^ 2)
+  x_ind <- which.min((ptrans$x - narr_x)^2)
+  y_ind <- which.min((ptrans$y - narr_y)^2)
   c(x = x_ind, y = y_ind)
 }
 
@@ -469,9 +463,9 @@ latlon2narr <- function(nc, lat.in, lon.in) {
 #' @return `sp::SpatialPoints` object containing transformed x and y
 #' coordinates, in km, which should match NARR coordinates
 #' @importFrom sf st_crs
-  # ^not used directly here, but needed by sp::CRS.
-  # sp lists sf in Suggests rather than Imports,
-  # so importing it here to ensure it's available at run time
+# ^not used directly here, but needed by sp::CRS.
+# sp lists sf in Suggests rather than Imports,
+# so importing it here to ensure it's available at run time
 #' @author Alexey Shiklomanov
 #' @export
 latlon2lcc <- function(lat.in, lon.in) {

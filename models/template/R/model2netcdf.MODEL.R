@@ -1,5 +1,5 @@
 ##' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
-##' 
+##'
 ##' @name model2netcdf.MODEL
 ##' @title Code to convert MODELS's output into netCDF format
 ##'
@@ -16,12 +16,11 @@ model2netcdf.MODEL <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
   # Please follow the PEcAn style guide:
   # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
-  
+
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".
   # Calls to dependent packages should use a double colon, e.g.
   #    `packageName::functionName()`.
   # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-  
+  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION.
 } # model2netcdf.MODEL

@@ -110,8 +110,8 @@ if (PEcAn.utils::status.check("CONFIG") == 0) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.CONFIGS.xml"))
 }
 
-if ((length(which(commandArgs() == "--advanced")) != 0)
-&& (PEcAn.utils::status.check("ADVANCED") == 0)) {
+if ((length(which(commandArgs() == "--advanced")) != 0) &&
+  (PEcAn.utils::status.check("ADVANCED") == 0)) {
   PEcAn.utils::status.start("ADVANCED")
   q()
 }
@@ -124,7 +124,7 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
     # If we're doing an ensemble run, don't stop. If only a single run, we
     # should be stopping.
     if (is.null(settings[["ensemble"]]) ||
-          as.numeric(settings[[c("ensemble", "size")]]) == 1) {
+      as.numeric(settings[[c("ensemble", "size")]]) == 1) {
       stop_on_error <- TRUE
     } else {
       stop_on_error <- FALSE
@@ -142,16 +142,16 @@ if (PEcAn.utils::status.check("OUTPUT") == 0) {
 }
 
 # Run ensemble analysis on model output.
-if ("ensemble" %in% names(settings)
-&& PEcAn.utils::status.check("ENSEMBLE") == 0) {
+if ("ensemble" %in% names(settings) &&
+  PEcAn.utils::status.check("ENSEMBLE") == 0) {
   PEcAn.utils::status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)
   PEcAn.utils::status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
-if ("sensitivity.analysis" %in% names(settings)
-&& PEcAn.utils::status.check("SENSITIVITY") == 0) {
+if ("sensitivity.analysis" %in% names(settings) &&
+  PEcAn.utils::status.check("SENSITIVITY") == 0) {
   PEcAn.utils::status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   PEcAn.utils::status.end()
@@ -177,8 +177,8 @@ if ("state.data.assimilation" %in% names(settings)) {
 }
 
 # Run benchmarking
-if ("benchmarking" %in% names(settings)
-&& "benchmark" %in% names(settings$benchmarking)) {
+if ("benchmarking" %in% names(settings) &&
+  "benchmark" %in% names(settings$benchmarking)) {
   PEcAn.utils::status.start("BENCHMARKING")
   results <-
     papply(settings, function(x) {
@@ -201,9 +201,9 @@ if (PEcAn.utils::status.check("FINISHED") == 0) {
   )
 
   # Send email if configured
-  if (!is.null(settings$email)
-  && !is.null(settings$email$to)
-  && (settings$email$to != "")) {
+  if (!is.null(settings$email) &&
+    !is.null(settings$email$to) &&
+    (settings$email$to != "")) {
     sendmail(
       settings$email$from,
       settings$email$to,

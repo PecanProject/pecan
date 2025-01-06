@@ -8,33 +8,32 @@ source("get.file.R")
 #' @return List of runs (belonging to a particuar workflow)
 #' @author Tezan Sahu
 #* @get /
-getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
-  if (! limit %in% c(10, 20, 50, 100, 500)) {
+getRuns <- function(req, workflow_id = NA, offset = 0, limit = 50, res) {
+  if (!limit %in% c(10, 20, 50, 100, 500)) {
     res$status <- 400
     return(list(error = "Invalid value for parameter"))
   }
 
   Runs <- tbl(global_db_pool, "runs") %>%
     select(id, model_id, site_id, parameter_list, ensemble_id, start_time, finish_time)
-  
+
   Runs <- tbl(global_db_pool, "ensembles") %>%
-    select(runtype, ensemble_id=id, workflow_id) %>%
-    full_join(Runs, by="ensemble_id") 
-  
-  if(! is.na(workflow_id)){
+    select(runtype, ensemble_id = id, workflow_id) %>%
+    full_join(Runs, by = "ensemble_id")
+
+  if (!is.na(workflow_id)) {
     Runs <- Runs %>%
       filter(workflow_id == !!workflow_id)
   }
-  
-  qry_res <- Runs %>% 
+
+  qry_res <- Runs %>%
     arrange(id) %>%
     collect()
-  
+
   if (nrow(qry_res) == 0 || as.numeric(offset) >= nrow(qry_res)) {
     res$status <- 404
-    return(list(error="Run(s) not found"))
-  }
-  else {
+    return(list(error = "Run(s) not found"))
+  } else {
     has_next <- FALSE
     has_prev <- FALSE
     if (nrow(qry_res) > (as.numeric(offset) + as.numeric(limit))) {
@@ -46,8 +45,8 @@ getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
     qry_res <- qry_res[(as.numeric(offset) + 1):min((as.numeric(offset) + as.numeric(limit)), nrow(qry_res)), ]
     result <- list(runs = qry_res)
     result$count <- nrow(qry_res)
-    if(has_next){
-      if(grepl("offset=", req$QUERY_STRING, fixed = TRUE)){
+    if (has_next) {
+      if (grepl("offset=", req$QUERY_STRING, fixed = TRUE)) {
         result$next_page <- paste0(
           req$rook.url_scheme, "://",
           req$HTTP_HOST,
@@ -55,11 +54,10 @@ getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
           req$PATH_INFO,
           substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
           (as.numeric(limit) + as.numeric(offset)),
-          "&limit=", 
+          "&limit=",
           limit
         )
-      }
-      else {
+      } else {
         result$next_page <- paste0(
           req$rook.url_scheme, "://",
           req$HTTP_HOST,
@@ -68,24 +66,24 @@ getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
           substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "limit=")[[2]] - 6),
           "offset=",
           (as.numeric(limit) + as.numeric(offset)),
-          "&limit=", 
+          "&limit=",
           limit
         )
       }
     }
-    if(has_prev) {
+    if (has_prev) {
       result$prev_page <- paste0(
         req$rook.url_scheme, "://",
         req$HTTP_HOST,
         "/api/runs",
-        req$PATH_INFO, 
+        req$PATH_INFO,
         substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
         max(0, (as.numeric(offset) - as.numeric(limit))),
-        "&limit=", 
+        "&limit=",
         limit
       )
     }
-    
+
     return(result)
   }
 }
@@ -97,57 +95,55 @@ getRuns <- function(req, workflow_id=NA, offset=0, limit=50, res){
 #' @return Details of requested run
 #' @author Tezan Sahu
 #* @get /<run_id>
-getRunDetails <- function(req, run_id, res){
-  
+getRunDetails <- function(req, run_id, res) {
   Runs <- tbl(global_db_pool, "runs") %>%
     select(-outdir, -outprefix, -setting, -created_at, -updated_at)
-  
+
   Runs <- tbl(global_db_pool, "ensembles") %>%
-    select(runtype, ensemble_id=id, workflow_id) %>%
-    full_join(Runs, by="ensemble_id") %>%
+    select(runtype, ensemble_id = id, workflow_id) %>%
+    full_join(Runs, by = "ensemble_id") %>%
     filter(id == !!run_id)
-  
+
   qry_res <- Runs %>% collect()
-  
-  if(Sys.getenv("AUTH_REQ") == TRUE){
+
+  if (Sys.getenv("AUTH_REQ") == TRUE) {
     user_id <- tbl(global_db_pool, "workflows") %>%
-      select(workflow_id=id, user_id) %>% full_join(Runs, by="workflow_id")  %>%
+      select(workflow_id = id, user_id) %>%
+      full_join(Runs, by = "workflow_id") %>%
       filter(id == !!run_id) %>%
       pull(user_id)
   }
-  
+
   if (nrow(qry_res) == 0) {
     res$status <- 404
-    return(list(error="Run with specified ID was not found"))
-  }
-  else {
-    
-    if(Sys.getenv("AUTH_REQ") == TRUE) {
+    return(list(error = "Run with specified ID was not found"))
+  } else {
+    if (Sys.getenv("AUTH_REQ") == TRUE) {
       # If user id of requested run does not match the caller of the API, return 403 Access forbidden
-      if(is.na(user_id) || user_id != req$user$userid){
+      if (is.na(user_id) || user_id != req$user$userid) {
         res$status <- 403
-        return(list(error="Access forbidden"))
+        return(list(error = "Access forbidden"))
       }
     }
-    
+
     # Convert the response from tibble to list
     response <- list()
-    for(colname in colnames(qry_res)){
+    for (colname in colnames(qry_res)) {
       response[colname] <- qry_res[colname]
     }
-    
+
     # If inputs exist on the host, add them to the response
     indir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/run/", run_id)
-    if(dir.exists(indir)){
+    if (dir.exists(indir)) {
       response$inputs <- getRunInputs(indir)
     }
-    
+
     # If outputs exist on the host, add them to the response
     outdir <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", response$workflow_id, "/out/", run_id)
-    if(dir.exists(outdir)){
+    if (dir.exists(outdir)) {
       response$outputs <- getRunOutputs(outdir)
     }
-    
+
     return(response)
   }
 }
@@ -161,26 +157,25 @@ getRunDetails <- function(req, run_id, res){
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/input/<filename>
-getRunInputFile <- function(req, run_id, filename, res){
-  
+getRunInputFile <- function(req, run_id, filename, res) {
   Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
-  
+
   workflow_id <- tbl(global_db_pool, "ensembles") %>%
-    select(ensemble_id=id, workflow_id) %>%
-    full_join(Run, by="ensemble_id")  %>%
+    select(ensemble_id = id, workflow_id) %>%
+    full_join(Run, by = "ensemble_id") %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
-  
-  inputpath <- paste0( Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
+
+  inputpath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/run/", run_id, "/", filename)
 
   result <- get.file(inputpath, req$user$userid)
-  if(is.null(result$file_contents)){
-    if(result$status == "Error" && result$message == "Access forbidden") {
+  if (is.null(result$file_contents)) {
+    if (result$status == "Error" && result$message == "Access forbidden") {
       res$status <- 403
       return()
     }
-    if(result$status == "Error" && result$message == "File not found") {
+    if (result$status == "Error" && result$message == "File not found") {
       res$status <- 404
       return()
     }
@@ -197,26 +192,25 @@ getRunInputFile <- function(req, run_id, filename, res){
 #' @author Tezan Sahu
 #* @serializer contentType list(type="application/octet-stream")
 #* @get /<run_id>/output/<filename>
-getRunOutputFile <- function(req, run_id, filename, res){
-  
+getRunOutputFile <- function(req, run_id, filename, res) {
   Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
-  
+
   workflow_id <- tbl(global_db_pool, "ensembles") %>%
-    select(ensemble_id=id, workflow_id) %>%
-    full_join(Run, by="ensemble_id")  %>%
+    select(ensemble_id = id, workflow_id) %>%
+    full_join(Run, by = "ensemble_id") %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
-  
+
   outputpath <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", filename)
-  
+
   result <- get.file(outputpath, req$user$userid)
-  if(is.null(result$file_contents)){
-    if(result$status == "Error" && result$message == "Access forbidden") {
+  if (is.null(result$file_contents)) {
+    if (result$status == "Error" && result$message == "Access forbidden") {
       res$status <- 403
       return()
     }
-    if(result$status == "Error" && result$message == "File not found") {
+    if (result$status == "Error" && result$message == "File not found") {
       res$status <- 404
       return()
     }
@@ -238,43 +232,43 @@ getRunOutputFile <- function(req, run_id, filename, res){
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
 
-plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res) {
+plotResults <- function(req, run_id, year, y_var, x_var = "time", width = 800, height = 600, res) {
   # Get workflow_id for the run
   Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
-  
+
   workflow_id <- tbl(global_db_pool, "ensembles") %>%
-    select(ensemble_id=id, workflow_id) %>%
-    full_join(Run, by="ensemble_id")  %>%
+    select(ensemble_id = id, workflow_id) %>%
+    full_join(Run, by = "ensemble_id") %>%
     filter(id == !!run_id) %>%
     pull(workflow_id)
-  
-  if(Sys.getenv("AUTH_REQ") == TRUE){
+
+  if (Sys.getenv("AUTH_REQ") == TRUE) {
     user_id <- tbl(global_db_pool, "workflows") %>%
       select(id, user_id) %>%
       filter(id == !!workflow_id) %>%
       pull(user_id)
   }
-  
+
   # Check if the data file exists on the host
   datafile <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/PEcAn_", workflow_id, "/out/", run_id, "/", year, ".nc")
-  if(! file.exists(datafile)){
+  if (!file.exists(datafile)) {
     res$status <- 404
     return()
   }
-  
-  if(Sys.getenv("AUTH_REQ") == TRUE) {
+
+  if (Sys.getenv("AUTH_REQ") == TRUE) {
     # If user id of requested run does not match the caller of the API, return 403 Access forbidden
-    if(is.na(user_id) || user_id != req$user$userid){
+    if (is.na(user_id) || user_id != req$user$userid) {
       res$status <- 403
-      return(list(error="Access forbidden"))
+      return(list(error = "Access forbidden"))
     }
   }
-  
+
   # Plot & return
   filename <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/temp", stringi::stri_rand_strings(1, 10), ".png")
-  PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), year=year, filename=filename)
-  img_bin <- readBin(filename,'raw',n = file.info(filename)$size)
+  PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), year = year, filename = filename)
+  img_bin <- readBin(filename, "raw", n = file.info(filename)$size)
   file.remove(filename)
   return(img_bin)
 }
@@ -287,9 +281,9 @@ plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, heigh
 #' @return Input details of the run
 #' @author Tezan Sahu
 
-getRunInputs <- function(indir){
+getRunInputs <- function(indir) {
   inputs <- list()
-  if(file.exists(paste0(indir, "/README.txt"))){
+  if (file.exists(paste0(indir, "/README.txt"))) {
     inputs$info <- "README.txt"
   }
   all_files <- list.files(indir)
@@ -304,26 +298,26 @@ getRunInputs <- function(indir){
 #' @return Output details of the run
 #' @author Tezan Sahu
 
-getRunOutputs <- function(outdir){
+getRunOutputs <- function(outdir) {
   outputs <- list()
-  if(file.exists(paste0(outdir, "/logfile.txt"))){
+  if (file.exists(paste0(outdir, "/logfile.txt"))) {
     outputs$logfile <- "logfile.txt"
   }
-  
-  if(file.exists(paste0(outdir, "/README.txt"))){
+
+  if (file.exists(paste0(outdir, "/README.txt"))) {
     outputs$info <- "README.txt"
   }
-  
-  year_files <- list.files(outdir, pattern="*.nc$")
+
+  year_files <- list.files(outdir, pattern = "*.nc$")
   years <- stringr::str_replace_all(year_files, ".nc", "")
   years_data <- c()
   outputs$years <- list()
-  for(year in years){
+  for (year in years) {
     var_lines <- readLines(paste0(outdir, "/", year, ".nc.var"))
     keys <- stringr::word(var_lines, 1)
     values <- stringr::word(var_lines, 2, -1)
     vars <- list()
-    for(i in 1:length(keys)){
+    for (i in 1:length(keys)) {
       vars[keys[i]] <- values[i]
     }
     years_data <- c(years_data, list(list(
@@ -331,7 +325,7 @@ getRunOutputs <- function(outdir){
       variables = vars
     )))
   }
-  for(i in 1:length(years)){
+  for (i in 1:length(years)) {
     outputs$years[years[i]] <- years_data[i]
   }
   return(outputs)

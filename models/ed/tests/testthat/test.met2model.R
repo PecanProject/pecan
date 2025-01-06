@@ -1,9 +1,10 @@
 test_that("Met conversion runs without error", {
-  outdir <- tempfile() #creates a directory
+  outdir <- tempfile() # creates a directory
   withr::defer(unlink(outdir, recursive = TRUE))
-  
+
   nc_path <- system.file("test-data", "CRUNCEP.2000.nc",
-                         package = "PEcAn.utils")
+    package = "PEcAn.utils"
+  )
   in.path <- dirname(nc_path)
   in.prefix <- "CRUNCEP"
   start_date <- "2000-01-01"

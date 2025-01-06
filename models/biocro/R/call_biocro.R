@@ -1,4 +1,3 @@
-
 l2n <- function(x) lapply(x, as.numeric)
 
 # wrapper to encapsulate version-specific logic for BioCro 0.9x
@@ -6,7 +5,6 @@ l2n <- function(x) lapply(x, as.numeric)
 call_biocro_0.9 <- function(WetDat, genus, year_in_run,
                             config, lat, lon,
                             tmp.result, HarvestedYield) {
-
   # Check that all variables are present in the expected order --
   # BioGro < 1.0 accesses weather vars by position and DOES NOT check headers.
   expected_cols <- c("year", "doy", "hour", "[Ss]olar", "Temp", "RH", "WS|windspeed", "precip")

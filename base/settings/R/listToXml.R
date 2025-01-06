@@ -42,7 +42,7 @@ listToXml.default <- function(x, ...) {
       return(XML::xmlNode(tag, x))
     }
   }
-  
+
   # create the node
   if (identical(names(x), c("text", ".attrs"))) {
     # special case a node with text and attributes
@@ -56,7 +56,7 @@ listToXml.default <- function(x, ...) {
       }
     }
   }
-  
+
   # add attributes to node
   attrs <- x[[".attrs"]]
   for (name in names(attrs)) {

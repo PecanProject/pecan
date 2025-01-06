@@ -11,15 +11,15 @@
 #'   "yyyy-mm-dd".
 #' @param outdir Character: path of the directory in which to save the
 #'   downloaded files. Default is the current work directory(getwd()).
-#' @param doi Character: data DOI on the NASA DAAC server, it can be obtained 
-#' directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
+#' @param doi Character: data DOI on the NASA DAAC server, it can be obtained
+#' directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through
 #' https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).
 #' @param netrc_file Character: path to the credential file, default is NULL.
 #' @param just_path Boolean: if we just want the metadata and URL or proceed the actual download.
 #'
 #' @return A list containing meta data and physical path for each data downloaded.
 #' @export
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' ul_lat <- 35
@@ -30,14 +30,16 @@
 #' to <- "2022-05-30"
 #' doi <- "10.3334/ORNLDAAC/2183"
 #' outdir <- "/projectnb/dietzelab/dongchen/SHIFT/test_download"
-#' metadata <- NASA_DAAC_download(ul_lat = ul_lat, 
-#'                                ul_lon = ul_lon, 
-#'                                lr_lat = lr_lat, 
-#'                                lr_lon = lr_lon, 
-#'                                from = from, 
-#'                                to = to, 
-#'                                doi = doi,
-#'                                just_path = T)
+#' metadata <- NASA_DAAC_download(
+#'   ul_lat = ul_lat,
+#'   ul_lon = ul_lon,
+#'   lr_lat = lr_lat,
+#'   lr_lon = lr_lon,
+#'   from = from,
+#'   to = to,
+#'   doi = doi,
+#'   just_path = T
+#' )
 #' }
 #' @author Dongchen Zhang
 #' @importFrom foreach %dopar%
@@ -74,11 +76,13 @@ NASA_DAAC_download <- function(ul_lat,
   # initialize variable for storing data.
   granules_href <- entry <- c()
   repeat {
-    request_url <- NASA_DAAC_URL(provider = provider_conceptID$provider[1],
-                                 concept_id = provider_conceptID$concept_id[1],
-                                 page = page, 
-                                 bbox = bbox, 
-                                 daterange = daterange)
+    request_url <- NASA_DAAC_URL(
+      provider = provider_conceptID$provider[1],
+      concept_id = provider_conceptID$concept_id[1],
+      page = page,
+      bbox = bbox,
+      daterange = daterange
+    )
     response <- curl::curl_fetch_memory(request_url)
     content <- rawToChar(response$content)
     result <- jsonlite::parse_json(content)
@@ -87,8 +91,9 @@ NASA_DAAC_download <- function(ul_lat,
       stop(paste("\n", result$errors, collapse = "\n"))
     }
     granules <- result$feed$entry
-    if (length(granules) == 0) 
+    if (length(granules) == 0) {
       break
+    }
     granules_href <- c(granules_href, sapply(granules, function(x) x$links[[1]]$href))
     page <- page + 1
   }
@@ -141,7 +146,7 @@ NASA_DAAC_download <- function(ul_lat,
 }
 #' Create URL that can be used to request data from NASA DAAC server.
 #'
-#' @param base_url Character: base URL for the CMR search. 
+#' @param base_url Character: base URL for the CMR search.
 #' default is "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true".
 #' @param provider Character: ID of data provider from NASA DAAC. See `NASA_CMR_finder` for more details.
 #' @param page_size Numeric: maximum requested length, default is 2000.
@@ -151,17 +156,19 @@ NASA_DAAC_download <- function(ul_lat,
 #' @param daterange Character: vectors of the requested start and end dates. In the form "yyyy-mm-dd".
 #'
 #' @return A character of URL that can be used to request data.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' provider <- "ORNL_CLOUD"
 #' concept_id <- "C2770099044-ORNL_CLOUD"
 #' bbox <- "-121,33,-117,35"
 #' daterange <- c("2022-02-23", "2022-05-30")
-#' URL <- NASA_DAAC_URL(provider = provider, 
-#' concept_id = concept_id, 
-#' bbox = bbox, 
-#' daterange = daterange)
+#' URL <- NASA_DAAC_URL(
+#'   provider = provider,
+#'   concept_id = concept_id,
+#'   bbox = bbox,
+#'   daterange = daterange
+#' )
 #' }
 #' @author Dongchen Zhang
 NASA_DAAC_URL <- function(base_url = "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true",
@@ -182,13 +189,13 @@ NASA_DAAC_URL <- function(base_url = "https://cmr.earthdata.nasa.gov/search/gran
 }
 #' Create URL that can be used to request data from NASA DAAC server.
 #'
-#' @param doi Character: data DOI on the NASA DAAC server, it can be obtained 
-#' directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
+#' @param doi Character: data DOI on the NASA DAAC server, it can be obtained
+#' directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through
 #' https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).
 #'
-#' @return A list with each containing corresponding provider and concept ids 
+#' @return A list with each containing corresponding provider and concept ids
 #' given the data doi.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' provider_conceptID <- NASA_CMR_finder("10.3334/ORNLDAAC/2183")
@@ -205,8 +212,12 @@ NASA_CMR_finder <- function(doi) {
   httr::stop_for_status(request)
   results <- httr::content(request, "parsed")
   # grab paried provider-conceptID records.
-  provider <- results$feed$entry %>% purrr::map("data_center") %>% unlist
-  concept_id <- results$feed$entry %>% purrr::map("id") %>% unlist
+  provider <- results$feed$entry %>%
+    purrr::map("data_center") %>%
+    unlist()
+  concept_id <- results$feed$entry %>%
+    purrr::map("id") %>%
+    unlist()
   # return results.
   return(as.list(data.frame(cbind(provider, concept_id))))
 }

@@ -1,11 +1,11 @@
 #' Setup EDR run
 #'
-#' Using an existing ED2IN file as a template, create a new ED2IN and history 
+#' Using an existing ED2IN file as a template, create a new ED2IN and history
 #' file configured for running EDR.
 #'
 #' @param ed2in ED2IN list object (see [PEcAn.ED2::read_ed2in]).
 #' @param output_dir Directory in which run files will be stored
-#' @param datetime Date time object (or compliant string) at which to run EDR. 
+#' @param datetime Date time object (or compliant string) at which to run EDR.
 #' Defaults to 12 noon on start date in ED2IN.
 #' @param ... Additional arguments passed on to `PEcAn.ED2::modify_ed2in`
 #' @return Path to EDR-configured ED2IN file.
@@ -13,11 +13,12 @@
 #' @export
 setup_edr <- function(ed2in, output_dir,
                       datetime = ISOdatetime(ed2in[["IYEARA"]],
-                                             ed2in[["IMONTHA"]],
-                                             ed2in[["IDATEA"]],
-                                             12, 00, 00, tz = "UTC"),
+                        ed2in[["IMONTHA"]],
+                        ed2in[["IDATEA"]],
+                        12, 00, 00,
+                        tz = "UTC"
+                      ),
                       ...) {
-
   hour <- as.numeric(strftime(datetime, "%H", tz = "UTC"))
   if (hour < 8 | hour > 17) {
     PEcAn.logger::logger.warn(
@@ -28,7 +29,7 @@ setup_edr <- function(ed2in, output_dir,
   }
 
   dir.create(output_dir, showWarnings = FALSE)
-  nextday <- as.POSIXct(datetime, tz = "UTC") + 86400   # Add one day
+  nextday <- as.POSIXct(datetime, tz = "UTC") + 86400 # Add one day
 
   history_prefix <- EDR.preprocess.history(
     history.path = dirname(ed2in$SFILOUT),

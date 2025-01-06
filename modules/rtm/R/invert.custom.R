@@ -1,56 +1,56 @@
 #' Bayesian inversion of a model
-#' 
-#' Performs an inversion of an arbitrary model using a modified 
-#' Metropolis Hastings algorithm with block sampling. This may be slightly 
-#' slower than the implementation in Fortran, but is much more customizable, as 
+#'
+#' Performs an inversion of an arbitrary model using a modified
+#' Metropolis Hastings algorithm with block sampling. This may be slightly
+#' slower than the implementation in Fortran, but is much more customizable, as
 #' the model can be any R function.
-#' @param observed Vector, matrix, or data frame (coerced to matrix) of 
-#' observed values. For spectral data, wavelengths are rows and spectra are 
+#' @param observed Vector, matrix, or data frame (coerced to matrix) of
+#' observed values. For spectral data, wavelengths are rows and spectra are
 #' columns. Dimensions must align with the output of `model`.
 #' @param invert.options R list object containing inversion settings. See details.
 #' @param quiet Suppress progress bar and status messages. Default=FALSE
-#' @param return.resume If `TRUE`, return results as list that includes current 
-#' Jump distribution (useful for continuing an ongoing run) and acceptance 
+#' @param return.resume If `TRUE`, return results as list that includes current
+#' Jump distribution (useful for continuing an ongoing run) and acceptance
 #' rate. Default = `FALSE`.
 #' @param runID Run-unique ID. Useful for parallel runs. Default=NULL
 #' @details
 #' `inversion.options` contains the following:
-#' 
+#'
 #' * `inits` -- Vector of initial values of model parameters to be inverted.
 #'
 #' * `ngibbs` -- Number of MCMC iterations
 #'
 #' * `prior.function` -- Function for use as prior.
-#' Should take a vector of parameters as input and return a single value -- the 
+#' Should take a vector of parameters as input and return a single value -- the
 #' sum of their log-densities -- as output.
 #'
 #' * `param.mins` -- Vector of minimum values for inversion parameters
-#' 
+#'
 #' * `param.maxs` -- Vector of minimum values for inversion parameters
 #'
 #' * `model` -- The model to be inverted.
-#' This should be an R function that takes `params` and `runID` as input and 
+#' This should be an R function that takes `params` and `runID` as input and
 #' returns one column of `observed` (nrows should be the same).
 #' Constants should be implicitly included here.
 #'
-#' * `adapt` -- Number of steps for adapting covariance matrix (i.e. adapt 
+#' * `adapt` -- Number of steps for adapting covariance matrix (i.e. adapt
 #' every 'n' steps). Default=100
-#' 
+#'
 #' * `adj_min` -- Minimum threshold for rescaling Jump standard deviation.
 #' Default = 0.1.
-#' 
-#' * `target` -- Target acceptance rate. Default=0.234, based on recommendation 
+#'
+#' * `target` -- Target acceptance rate. Default=0.234, based on recommendation
 #' for multivariate block sampling in Haario et al. 2001
-#' 
-#' * `do.lsq` -- Perform least squares optimization first (see `invert.lsq`), 
+#'
+#' * `do.lsq` -- Perform least squares optimization first (see `invert.lsq`),
 #' and use outputs to initialize Metropolis Hastings.
 #' This may improve mixing time, but risks getting caught in a local minimum.
 #' Default=FALSE
 #'
 #' * `catch_error` -- If `TRUE` (default), wrap model in `tryCatch` to prevent sampling termination on model execution error.
-#' @references 
-#' * Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive Metropolis 
-#' algorithm. Bernoulli 7 (2001), no. 2, 223--242. 
+#' @references
+#' * Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive Metropolis
+#' algorithm. Bernoulli 7 (2001), no. 2, 223--242.
 #' http://projecteuclid.org/euclid.bj/1080222083.
 #' @export
 invert.custom <- function(observed, invert.options,
@@ -64,26 +64,32 @@ invert.custom <- function(observed, invert.options,
   n_obs <- nspec * nwl
 
   need_opts <- c("inits", "prior.function", "model")
-  available_defaults <- c("param.mins", "param.maxs", "adapt",
-                          "adj_min", "target", "do.lsq", "catch_error")
+  available_defaults <- c(
+    "param.mins", "param.maxs", "adapt",
+    "adj_min", "target", "do.lsq", "catch_error"
+  )
 
   have.invert.options <- names(invert.options)
   match_need <- need_opts %in% have.invert.options
   if (any(!match_need)) {
     error.msg <- paste("Missing the following invert.options:",
-                       paste(need_opts[!match_need],
-                             collapse=" "),
-                       "Try modifying a default.invert.options() object",
-                       sep = "\n")
+      paste(need_opts[!match_need],
+        collapse = " "
+      ),
+      "Try modifying a default.invert.options() object",
+      sep = "\n"
+    )
     stop(error.msg)
   }
 
   match_default <- available_defaults %in% have.invert.options
   if (any(!match_default)) {
     msg <- paste("Using the following default options:",
-                 paste(available_defaults[!match_default],
-                       collapse=" "),
-                 sep = "\n")
+      paste(available_defaults[!match_default],
+        collapse = " "
+      ),
+      sep = "\n"
+    )
     message(msg)
   }
 
@@ -151,13 +157,16 @@ invert.custom <- function(observed, invert.options,
 
   # Set up inversion
   if (do.lsq) {
-    fit <- invert.lsq(observed, inits, model, 
-                      lower = param.mins, upper = param.maxs)
+    fit <- invert.lsq(observed, inits, model,
+      lower = param.mins, upper = param.maxs
+    )
     inits <- fit$par
   }
   if (!all(diag(init.Jump) > 0)) {
-    warning("Passed init.Jump matrix with zero values on diagonals. ", 
-            "Reverting to default initial Jump matrix")
+    warning(
+      "Passed init.Jump matrix with zero values on diagonals. ",
+      "Reverting to default initial Jump matrix"
+    )
     init.Jump <- NULL
   }
   if (is.null(init.Jump)) {
@@ -198,25 +207,28 @@ invert.custom <- function(observed, invert.options,
   }
 
   # Precalculate quantities for first inversion step
-  sigma2 <- init_sigma ^ 2
-  tau <- 1/sigma2
-  PrevSpec <- tryCatch({
+  sigma2 <- init_sigma^2
+  tau <- 1 / sigma2
+  PrevSpec <- tryCatch(
+    {
       model(inits, runID)
-  }, error = function(e) {
+    },
+    error = function(e) {
       print(e)
       stop("Initial model execution hit an error")
-  })
+    }
+  )
   PrevError <- PrevSpec - observed
   PrevSS <- sum(PrevError * PrevError)
   PrevPrior <- prior.function(inits)
   n_eff <- neff(PrevError)
-  logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs/n_eff)
-  Prev_logLL_term2 <- -0.5 * tau * n_eff/n_obs * PrevSS
+  logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs / n_eff)
+  Prev_logLL_term2 <- -0.5 * tau * n_eff / n_obs * PrevSS
   PrevLL <- logLL_term1 + Prev_logLL_term2
 
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
-    if (!quiet) { 
+    if (!quiet) {
       setTxtProgressBar(pb, ng)
     }
     if (ng %% adapt < 1) {
@@ -253,10 +265,10 @@ invert.custom <- function(observed, invert.options,
     if (samp) {
       if (catch_error) {
         TrySpec <- try(model(tvec, runID))
-          if (inherits(TrySpec, "try-error")) {
-              warning("Model hit an error. Skipping to next iteration")
-                samp <- FALSE
-            }
+        if (inherits(TrySpec, "try-error")) {
+          warning("Model hit an error. Skipping to next iteration")
+          samp <- FALSE
+        }
       } else {
         TrySpec <- model(tvec, runID)
       }
@@ -274,10 +286,10 @@ invert.custom <- function(observed, invert.options,
     if (samp) {
       TryError <- TrySpec - observed
       TrySS <- sum(TryError * TryError)
-      Try_logLL_term2 <- -0.5 * tau * n_eff/n_obs * TrySS
+      Try_logLL_term2 <- -0.5 * tau * n_eff / n_obs * TrySS
       TryLL <- logLL_term1 + Try_logLL_term2
       TryPost <- TryLL + TryPrior
-      Prev_logLL_term2 <- -0.5 * tau * n_eff/n_obs * PrevSS
+      Prev_logLL_term2 <- -0.5 * tau * n_eff / n_obs * PrevSS
       PrevLL <- logLL_term1 + Prev_logLL_term2
       PrevPost <- PrevLL + PrevPrior
       a <- exp(TryPost - PrevPost)
@@ -290,32 +302,35 @@ invert.custom <- function(observed, invert.options,
         PrevSS <- TrySS
         PrevPrior <- TryPrior
         n_eff <- neff(PrevError)
-        logLL_scale <- n_eff/n_obs
+        logLL_scale <- n_eff / n_obs
         ar <- ar + 1
       }
     }
     results[ng, 1:npars] <- inits
     deviance_store[ng] <- -2 * PrevLL
     n_eff_store[ng] <- n_eff
-    rp1 <- tau_0 + n_obs/2
-    rp2 <- tau_0 + PrevSS/2
+    rp1 <- tau_0 + n_obs / 2
+    rp2 <- tau_0 + PrevSS / 2
     tau <- rgamma(1, rp1, rp2)
-    sigma2 <- 1/tau
+    sigma2 <- 1 / tau
     sigma <- sqrt(sigma2)
     results[ng, npars + 1] <- sigma
-    logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs/n_eff)
+    logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs / n_eff)
   }
   if (!quiet) {
     close(pb)
   }
-  out <- list(results = results,
-              deviance = deviance_store,
-              n_eff = n_eff_store)
+  out <- list(
+    results = results,
+    deviance = deviance_store,
+    n_eff = n_eff_store
+  )
   if (return.resume) {
-    out <- append(out, list(resume = list(jump = Jump, 
-                                          ar = ar,
-                                          sigma = sigma)))
+    out <- append(out, list(resume = list(
+      jump = Jump,
+      ar = ar,
+      sigma = sigma
+    )))
   }
   return(out)
 }
-

@@ -1,4 +1,3 @@
-
 #' Creates an absolute path to a folder.
 #'
 #' This will take a folder and make it into an absolute folder name. It
@@ -10,7 +9,7 @@
 #' @return absolute path
 #' @export
 #' @examples
-#' full.path('pecan')
+#' full.path("pecan")
 full.path <- function(folder) {
   # normalize pathname
   folder <- normalizePath(folder, mustWork = FALSE)

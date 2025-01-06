@@ -8,18 +8,18 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   qsub_parallel(settings)
+#' qsub_parallel(settings)
 #' }
 #' @author Dongchen Zhang
-#' 
+#'
 #' @importFrom foreach %dopar%
 #' @importFrom dplyr %>%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10, hybrid = TRUE) {
-  if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
+  if ("try-error" %in% class(try(find.package("doSNOW"), silent = T))) {
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
     return(0)
   }
-  #declare variables within foreach section
+  # declare variables within foreach section
   run <- NULL
   folder <- NULL
   run_list <- readLines(con = file.path(settings$rundir, "runs.txt"))
@@ -31,15 +31,15 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
   cores <- parallel::detectCores()
   cl <- parallel::makeCluster(cores)
   doSNOW::registerDoSNOW(cl)
-  #progress bar
-  pb <- utils::txtProgressBar(min=1, max=ifelse(is.null(files), length(run_list), length(files)), style=3)
+  # progress bar
+  pb <- utils::txtProgressBar(min = 1, max = ifelse(is.null(files), length(run_list), length(files)), style = 3)
   progress <- function(n) utils::setTxtProgressBar(pb, n)
-  opts <- list(progress=progress)
+  opts <- list(progress = progress)
   PEcAn.logger::logger.info("Submitting jobs!")
   # if we want to submit jobs separately.
-  if(is.null(files)){
+  if (is.null(files)) {
     if (is_qsub) {
-      jobids <- foreach::foreach(run = run_list, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(run_list))) %dopar% {
+      jobids <- foreach::foreach(run = run_list, .packages = "Kendall", .options.snow = opts, settings = rep(settings, length(run_list))) %dopar% {
         run_id_string <- format(run, scientific = FALSE)
         qsub <- settings$host$qsub
         qsub <- gsub("@NAME@", paste0("PEcAn-", run_id_string), qsub)
@@ -48,32 +48,33 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
         qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
         # start the actual model run
         cmd <- qsub[[1]]
-        if(PEcAn.remote::is.localhost(settings$host)){
+        if (PEcAn.remote::is.localhost(settings$host)) {
           out <- system2(cmd, file.path(settings$host$rundir, run_id_string, "job.sh"), stdout = TRUE, stderr = TRUE)
-        }else{
+        } else {
           out <- PEcAn.remote::remote.execute.cmd(settings$host, cmd, file.path(settings$host$rundir, run_id_string, "job.sh"), stderr = TRUE)
         }
         jobid <- PEcAn.remote::qsub_get_jobid(
           out = out[length(out)],
           qsub.jobid = settings$host$qsub.jobid,
-          stop.on.error = TRUE)
+          stop.on.error = TRUE
+        )
         return(jobid)
       }
     } else if (is_rabbitmq) {
-      out <- foreach::foreach(run = run_list, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(run_list))) %dopar% {
+      out <- foreach::foreach(run = run_list, .packages = "Kendall", .options.snow = opts, settings = rep(settings, length(run_list))) %dopar% {
         run_id_string <- format(run, scientific = FALSE)
         PEcAn.remote::start_rabbitmq(file.path(settings$host$rundir, run_id_string), settings$host$rabbitmq$uri, settings$host$rabbitmq$queue)
       }
     }
-  }else{
+  } else {
     # if we want to submit merged job files.
     std_out <- file.path(settings$host$outdir, "merged_stdout")
-    if(!dir.exists(std_out)){
+    if (!dir.exists(std_out)) {
       dir.create(std_out)
-    }else{
+    } else {
       unlink(list.files(std_out, recursive = T, full.names = T))
     }
-    jobids <- foreach::foreach(file = files, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
+    jobids <- foreach::foreach(file = files, .packages = "Kendall", .options.snow = opts, settings = rep(settings, length(files))) %dopar% {
       qsub <- settings$host$qsub
       base_name <- basename(file)
       num <- gsub("\\D", "", base_name)
@@ -83,36 +84,38 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
       qsub <- gsub("@STDERR@", file.path(std_out, paste0("stderr", num, ".log")), qsub)
       qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
       cmd <- qsub[[1]]
-      if(PEcAn.remote::is.localhost(settings$host)){
+      if (PEcAn.remote::is.localhost(settings$host)) {
         out <- system2(cmd, file, stdout = TRUE, stderr = TRUE)
-      }else{
+      } else {
         out <- PEcAn.remote::remote.execute.cmd(settings$host, cmd, file, stderr = TRUE)
       }
       jobid <- PEcAn.remote::qsub_get_jobid(
         out = out[length(out)],
         qsub.jobid = settings$host$qsub.jobid,
-        stop.on.error = TRUE)
+        stop.on.error = TRUE
+      )
       return(jobid)
     }
   }
   PEcAn.logger::logger.info("Jobs submitted!")
-  #check if jobs are completed
+  # check if jobs are completed
   PEcAn.logger::logger.info("Checking the qsub jobs status!")
   PEcAn.logger::logger.info(paste0("Checking the file ", prefix))
   ## setup progressbar
   folders <- file.path(settings$host$outdir, run_list)
   L_folder <- length(folders)
   pb <- utils::txtProgressBar(min = 0, max = L_folder, style = 3)
-  #here we not only detect if the target files are generated.
-  #we also detect if the jobs are still existed on the server.
+  # here we not only detect if the target files are generated.
+  # we also detect if the jobs are still existed on the server.
   if (is_rabbitmq) {
     while ((L_folder - length(folders)) < L_folder) {
       Sys.sleep(sleep)
-      completed_folders <- foreach::foreach(folder = folders) %dopar% {
-        if(file.exists(file.path(folder, prefix))){
-          return(folder)
-        }
-      } %>% unlist()
+      completed_folders <- foreach::foreach(folder = folders) %dopar%
+        {
+          if (file.exists(file.path(folder, prefix))) {
+            return(folder)
+          }
+        } %>% unlist()
       folders <- folders[which(!folders %in% completed_folders)]
       pbi <- L_folder - length(folders)
       utils::setTxtProgressBar(pb, pbi)
@@ -121,53 +124,60 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
     L_jobid <- length(jobids)
     pb1 <- utils::txtProgressBar(min = 0, max = L_jobid, style = 3)
     if (hybrid) {
-      while ((L_folder - length(folders)) < L_folder & 
-             (L_jobid - length(jobids)) < L_jobid) {
+      while ((L_folder - length(folders)) < L_folder &
+        (L_jobid - length(jobids)) < L_jobid) {
         Sys.sleep(sleep)
-        completed_folders <- foreach::foreach(folder = folders) %dopar% {
-          if(file.exists(file.path(folder, prefix))){
-            return(folder)
-          }
-        } %>% unlist()
+        completed_folders <- foreach::foreach(folder = folders) %dopar%
+          {
+            if (file.exists(file.path(folder, prefix))) {
+              return(folder)
+            }
+          } %>% unlist()
         folders <- folders[which(!folders %in% completed_folders)]
-        
-        #or we can try detect if the jobs are still on the server.
-        #specify the host and qstat arguments for the future_map function.
+
+        # or we can try detect if the jobs are still on the server.
+        # specify the host and qstat arguments for the future_map function.
         host <- settings$host
         qstat <- host$qstat
-        completed_jobs <- jobids %>% furrr::future_map(function(id) {
-          if (PEcAn.remote::qsub_run_finished(
-            run = id,
-            host = host,
-            qstat = qstat)) {
-            return(id)
-          }
-        }) %>% unlist()
+        completed_jobs <- jobids %>%
+          furrr::future_map(function(id) {
+            if (PEcAn.remote::qsub_run_finished(
+              run = id,
+              host = host,
+              qstat = qstat
+            )) {
+              return(id)
+            }
+          }) %>%
+          unlist()
         jobids <- jobids[which(!jobids %in% completed_jobs)]
-        
-        #compare two progresses and set the maximum progress for the progress bar.
+
+        # compare two progresses and set the maximum progress for the progress bar.
         pbi <- L_folder - length(folders)
         utils::setTxtProgressBar(pb, pbi)
       }
     } else {
-      #special case that only detect the job ids on the server.
+      # special case that only detect the job ids on the server.
       while ((L_jobid - length(jobids)) < L_jobid) {
-        #detect if the jobs are still on the server.
-        #specify the host and qstat arguments for the future_map function.
+        # detect if the jobs are still on the server.
+        # specify the host and qstat arguments for the future_map function.
         Sys.sleep(sleep)
         host <- settings$host
         qstat <- host$qstat
-        completed_jobs <- jobids %>% furrr::future_map(function(id) {
-          if (PEcAn.remote::qsub_run_finished(
-            run = id,
-            host = host,
-            qstat = qstat)) {
-            return(id)
-          }
-        }) %>% unlist()
+        completed_jobs <- jobids %>%
+          furrr::future_map(function(id) {
+            if (PEcAn.remote::qsub_run_finished(
+              run = id,
+              host = host,
+              qstat = qstat
+            )) {
+              return(id)
+            }
+          }) %>%
+          unlist()
         jobids <- jobids[which(!jobids %in% completed_jobs)]
-        
-        #compare two progresses and set the maximum progress for the progress bar.
+
+        # compare two progresses and set the maximum progress for the progress bar.
         pbi1 <- L_jobid - length(jobids)
         utils::setTxtProgressBar(pb1, pbi1)
       }

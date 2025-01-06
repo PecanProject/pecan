@@ -37,7 +37,6 @@ confirm_deps <- function(pkg,
                          install = TRUE,
                          dependencies = NA,
                          ...) {
-
   # Q: "Why a separate variable instead of overwriting `dependencies`?"
   # A: As a quick workaround for https://github.com/r-lib/remotes/issues/809:
   # remotes::install_deps(pkgdir, `dependencies = TRUE`) correctly installs

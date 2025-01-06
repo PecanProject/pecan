@@ -1,5 +1,3 @@
-
-
 #' outlier.detector.boxplot
 #'
 #' @param X A list of dataframes
@@ -9,22 +7,21 @@
 #' @export
 #' @importFrom magrittr %>%
 #'
-outlier.detector.boxplot<-function(X) {
-  X <- X  %>% 
-    purrr::map(function(X.tmp){
-      #X.tmp is all the state variables for each element of the list (site)
+outlier.detector.boxplot <- function(X) {
+  X <- X %>%
+    purrr::map(function(X.tmp) {
+      # X.tmp is all the state variables for each element of the list (site)
       X.tmp %>%
-        purrr::map_dfc(function(col.tmp){
-          #naive way of finding the outlier - 3 * IQR
+        purrr::map_dfc(function(col.tmp) {
+          # naive way of finding the outlier - 3 * IQR
           OutVals <- graphics::boxplot(col.tmp, plot = FALSE)$out
           # if I make this NA then it would stay NA for ever.
-          #bc adjustment uses X to and comes up with new analysis
+          # bc adjustment uses X to and comes up with new analysis
           col.tmp[which((col.tmp %in% OutVals))] <- stats::median(col.tmp, na.rm = TRUE)
           col.tmp
         })
-      
     })
-  
+
   return(X)
 }
 
@@ -57,8 +54,7 @@ SDA_control <-
            debug = FALSE,
            pause = FALSE,
            Profiling = FALSE,
-           OutlierDetection=FALSE) {
-    
+           OutlierDetection = FALSE) {
     return(
       list(
         trace = trace,
@@ -87,29 +83,29 @@ SDA_control <-
 #' @return rescaled Matrix
 #' @export
 #' @importFrom magrittr %>%
-rescaling_stateVars <- function(settings, X, multiply=TRUE) {
-  
-  FUN <- ifelse(multiply, .Primitive('*'), .Primitive('/'))
-    
-  
+rescaling_stateVars <- function(settings, X, multiply = TRUE) {
+  FUN <- ifelse(multiply, .Primitive("*"), .Primitive("/"))
+
+
   # Finding the scaling factors
   scaling.factors <-
     settings$state.data.assimilation$state.variables %>%
-    purrr::map('scaling_factor') %>%
+    purrr::map("scaling_factor") %>%
     stats::setNames(settings$state.data.assimilation$state.variables %>%
-               purrr::map('variable.name')) %>%
+      purrr::map("variable.name")) %>%
     purrr::discard(is.null)
-  
-  if (length(scaling.factors) == 0)  return(X)
-  
-  
+
+  if (length(scaling.factors) == 0) {
+    return(X)
+  }
+
+
   Y <- seq_len(ncol(X)) %>%
     purrr::map_dfc(function(.x) {
-      
-      if(colnames(X)[.x] %in% names(scaling.factors))  {
+      if (colnames(X)[.x] %in% names(scaling.factors)) {
         # This function either multiplies or divides
-        FUN( X[, .x], scaling.factors[[colnames(X)[.x]]] %>% as.numeric())
-      }else{
+        FUN(X[, .x], scaling.factors[[colnames(X)[.x]]] %>% as.numeric())
+      } else {
         X[, .x]
       }
     })
@@ -119,21 +115,23 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
     colnames(Y) <- colnames(X)
   }
 
-  try({
-    # I'm trying to give the new transform variable the attributes of the old one
-    # X for example has `site` attribute
-    
-    attr.X <- names(attributes(X)) %>%
-      purrr::discard( ~ .x %in% c("dim", "dimnames"))
-    
-    if (length(attr.X) > 0) {
-      for (att in attr.X) {
-        attr(Y, att) <- attr(X, att)
+  try(
+    {
+      # I'm trying to give the new transform variable the attributes of the old one
+      # X for example has `site` attribute
+
+      attr.X <- names(attributes(X)) %>%
+        purrr::discard(~ .x %in% c("dim", "dimnames"))
+
+      if (length(attr.X) > 0) {
+        for (att in attr.X) {
+          attr(Y, att) <- attr(X, att)
+        }
       }
-    }
-    
-  }, silent = TRUE)
-  
+    },
+    silent = TRUE
+  )
+
   return(Y)
 }
 
@@ -149,18 +147,18 @@ rescaling_stateVars <- function(settings, X, multiply=TRUE) {
 #' @export
 #' @author Dongchen Zhang
 #' @importFrom lubridate %m+%
-obs_timestep2timepoint <- function(start.date, end.date, timestep){
+obs_timestep2timepoint <- function(start.date, end.date, timestep) {
   start.date <- lubridate::ymd(start.date)
   end.date <- lubridate::ymd(end.date)
-  if(timestep$unit == "year"){
+  if (timestep$unit == "year") {
     time_points <- seq(start.date, end.date, paste(timestep$num, "year"))
-  }else if(timestep$unit == "month"){
+  } else if (timestep$unit == "month") {
     time_points <- seq(start.date, end.date, paste(timestep$num, "month"))
-  }else if(timestep$unit == "week"){
+  } else if (timestep$unit == "week") {
     time_points <- seq(start.date, end.date, paste(timestep$num, "week"))
-  }else if(timestep$unit == "day"){
+  } else if (timestep$unit == "day") {
     time_points <- seq(start.date, end.date, paste(timestep$num, "day"))
-  }else{
+  } else {
     PEcAn.logger::logger.error("The Obs_prep functions only support year, month, week, and day as timestep unit!")
     return(0)
   }

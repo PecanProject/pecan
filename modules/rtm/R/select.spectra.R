@@ -20,7 +20,7 @@
 }
 
 #' Select spectra by wavelength
-#' 
+#'
 #' @inheritParams [.spectra
 #' @param wavelength Wavelength vector to select
 #' @param j index specifying elements to extract or replace.
@@ -43,4 +43,3 @@
   spectra[i, j] <- value
   spectra
 }
-

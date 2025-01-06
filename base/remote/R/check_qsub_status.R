@@ -8,8 +8,10 @@
 #' @export
 qsub_run_finished <- function(run, host, qstat) {
   if (is.na(run)) {
-    PEcAn.logger::logger.warn("Job", run, "encountered an error during submission.",
-                              "NOTE that the job will be stamped as 'finished' in BETY.")
+    PEcAn.logger::logger.warn(
+      "Job", run, "encountered an error during submission.",
+      "NOTE that the job will be stamped as 'finished' in BETY."
+    )
     return(FALSE)
   }
   run_id_string <- format(run, scientific = FALSE)
@@ -18,8 +20,8 @@ qsub_run_finished <- function(run, host, qstat) {
     # Need to use `system` to allow commands with pipes
     out <- system(check, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE)
   } else {
-    # This uses `system2` under the hood, but that's OK because the entire 
-    # command is passed as a single quoted argument, so the pipes are 
+    # This uses `system2` under the hood, but that's OK because the entire
+    # command is passed as a single quoted argument, so the pipes are
     # preserved.
     out <- remote.execute.cmd(host = host, cmd = check, stderr = TRUE)
   }

@@ -2,7 +2,7 @@ testdir <- tempfile()
 dir.create(testdir)
 withr::defer(unlink(testdir, recursive = TRUE))
 unzip("data/outdir.zip", exdir = testdir)
-#for interactive use:
+# for interactive use:
 # unzip("models/ed/tests/testthat/data/outdir.zip", exdir = testdir)
 
 s_file <- "history-S-2004-07-01-000000-g01.h5"

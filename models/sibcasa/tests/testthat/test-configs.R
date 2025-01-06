@@ -1,6 +1,4 @@
-
 test_that("write.configs produces a job.sh", {
-
   run_id <- "12345"
 
   path <- withr::local_file(file.path(tempdir(), "sibcasa_test"))
@@ -11,12 +9,15 @@ test_that("write.configs produces a job.sh", {
       site = list(lat = 45, lon = 90, met = "foo"),
       start.date = as.Date("2010-01-01"),
       end.date = as.Date("2015-01-01"),
-      inputs = list(met = list(path = file.path(path, "met")))),
+      inputs = list(met = list(path = file.path(path, "met")))
+    ),
     host = list(
       outdir = file.path(path, "out"),
-      rundir = file.path(path, "run")),
+      rundir = file.path(path, "run")
+    ),
     model = list(binary = "bar"),
-    rundir = file.path(path, "run"))
+    rundir = file.path(path, "run")
+  )
 
   expect_silent(write.config.SIBCASA(settings = settings, run.id = run_id))
   expect_true(file.exists(file.path(path, "run", run_id, "job.sh")))

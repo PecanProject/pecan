@@ -9,8 +9,8 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
   PEcAn.logger::logger.setLevel("DEBUG")
 
   # mocking functions
-  mockery::stub(convert_input, 'dbfile.input.check', data.frame())
-  mockery::stub(convert_input, 'db.query', data.frame(id = 1))
+  mockery::stub(convert_input, "dbfile.input.check", data.frame())
+  mockery::stub(convert_input, "db.query", data.frame(id = 1))
 
   withr::with_dir(tempdir(), {
     tmpdir <- getwd()
@@ -22,8 +22,8 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
       site.id = 1,
       start_date = start_date,
       end_date = end_date,
-      pkg = 'PEcAn.data.atmosphere',
-      fcn = 'download.CRUNCEP',
+      pkg = "PEcAn.data.atmosphere",
+      fcn = "download.CRUNCEP",
       con = NULL,
       host = data.frame(name = "localhost"),
       write = FALSE,
@@ -37,24 +37,23 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
     test_that("File exists at desired location", {
       # Set the desired file path
       file_path <- paste0(tmpdir, "/cruncep_landwater_mask.nc")
-      
+
       # Check if file exists at desired location
       expect_true(file.exists(file_path))
     })
 
     test_that("NetCDF file contains lat and lon variables", {
-
       mask_nc <- ncdf4::nc_open(paste0(tmpdir, "/cruncep_landwater_mask.nc"))
       on.exit(ncdf4::nc_close(mask_nc), add = TRUE)
       expect_true("land_water_mask" %in% names(mask_nc$var))
-      
+
       # Check the dimensions of "land_water_mask" variable
       expect_equal(mask_nc$var$land_water_mask$dim[[1]]$name, "lon")
       expect_equal(mask_nc$var$land_water_mask$dim[[2]]$name, "lat")
     })
 
     test_that("All the required files are downloaded and stored at desired location", {
-      # Cached raw CRUNCEP files 
+      # Cached raw CRUNCEP files
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-tair.nc")))
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-lwdown.nc")))
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-press.nc")))
@@ -63,7 +62,7 @@ test_download_CRUNCEP <- function(start_date, end_date, lat.in, lon.in, method, 
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-vwind.nc")))
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-qair.nc")))
       expect_true(file.exists(paste0(tmpdir, "/cruncep-raw-2000-40--88-rain.nc")))
-      
+
       # CRUNCEP file
       expect_true(file.exists(paste0(tmpdir, "/CRUNCEP.2000.nc")))
     })

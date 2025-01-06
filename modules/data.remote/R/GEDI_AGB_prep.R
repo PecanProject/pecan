@@ -16,20 +16,20 @@
 #' @param search_window search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.
 #'
 #' @return A data frame containing AGB and sd for each site and each time step.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' settings <- PEcAn.settings::read.settings("pecan.xml")
-#' site_info <- settings %>% 
-#'   purrr::map(~.x[['run']] ) %>% 
-#'   purrr::map('site')%>% 
-#'   purrr::map(function(site.list){
-#'     #conversion from string to number
+#' site_info <- settings %>%
+#'   purrr::map(~ .x[["run"]]) %>%
+#'   purrr::map("site") %>%
+#'   purrr::map(function(site.list) {
+#'     # conversion from string to number
 #'     site.list$lat <- as.numeric(site.list$lat)
 #'     site.list$lon <- as.numeric(site.list$lon)
-#'     list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
-#'   })%>% 
-#'   dplyr::bind_rows() %>% 
+#'     list(site_id = site.list$id, lat = site.list$lat, lon = site.list$lon, site_name = site.list$name)
+#'   }) %>%
+#'   dplyr::bind_rows() %>%
 #'   as.list()
 #' time_points <- seq(start.date, end.date, by = time.step)
 #' buffer <- 0.01
@@ -53,8 +53,9 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
   }
   # if we have dates with observations.
   # summarize data lists into data frame.
-  AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-    `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
+  AGB_Output <- matrix(NA, length(site_info$site_id), 2 * length(time_points) + 1) %>%
+    `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>%
+    as.data.frame() # we need: site_id, AGB, std, target time point.
   AGB_Output$site_id <- site_info$site_id
   # loop over each time point
   for (i in seq_along(time_points)) {
@@ -88,9 +89,9 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
 #' @param start_date start date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
 #' @param end_date end date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
 #'
-#' @return 
-#' @export 
-#' 
+#' @return
+#' @export
+#'
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
@@ -98,7 +99,7 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
 GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
   # redirect to the site folder.
   site_folder <- file.path(outdir, site.id)
-  # 
+  #
   if (file.exists(file.path(site_folder, "Error.txt"))) {
     PEcAn.logger::logger.info("The current point is outside of GEDI domain!")
     return(FALSE)
@@ -108,22 +109,24 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
       return(FALSE)
     } else {
       extent <- utils::read.table(file.path(site_folder, "extent.txt"), skip = 1) %>%
-        as.numeric %>%
+        as.numeric() %>%
         purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-      point.lat.lon <- matrix(c(mean(extent[c("ymin", "ymax")]), mean(extent[c("xmin", "xmax")])), nrow = 1) %>% 
+      point.lat.lon <- matrix(c(mean(extent[c("ymin", "ymax")]), mean(extent[c("xmin", "xmax")])), nrow = 1) %>%
         `colnames<-`(c("lat", "lon")) %>%
-        as.data.frame
-      extent.x.y <- data.frame(matrix(c(extent["xmin"], extent["ymin"],
-                                         extent["xmax"], extent["ymin"],
-                                         extent["xmax"], extent["ymax"],
-                                         extent["xmin"], extent["ymax"]), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
+        as.data.frame()
+      extent.x.y <- data.frame(matrix(c(
+        extent["xmin"], extent["ymin"],
+        extent["xmax"], extent["ymin"],
+        extent["xmax"], extent["ymax"],
+        extent["xmin"], extent["ymax"]
+      ), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
       res <- utils::read.csv(file.path(site_folder, "GEDI_AGB.csv"))
       ggplot2::ggplot() +
-        ggplot2::geom_polygon(data = extent.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color="blue", fill = "white") +
+        ggplot2::geom_polygon(data = extent.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color = "blue", fill = "white") +
         ggplot2::geom_point(data = res, ggplot2::aes(x = .data$lon_lowestmode, y = .data$lat_lowestmode, color = .data$agbd)) +
         ggplot2::geom_point(shape = 24, data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat), size = 3) +
-        ggplot2::geom_text(data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat, label=site.id, hjust=-0.1, vjust=0)) +
-        ggplot2::scale_color_distiller(palette = 'Greens', direction = 1) +
+        ggplot2::geom_text(data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat, label = site.id, hjust = -0.1, vjust = 0)) +
+        ggplot2::scale_color_distiller(palette = "Greens", direction = 1) +
         ggplot2::labs(color = "AGB")
     }
   }
@@ -140,13 +143,13 @@ GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
 #' @param gradient the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
 #' @return A list of AGB data frames for each site.
-#' 
+#'
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 0, buffer = 0.01, gradient = 0) {
-  #Initialize the multicore computation.
+  # Initialize the multicore computation.
   if (future::supportsMulticore()) {
     future::plan(future::multicore)
   } else {
@@ -154,14 +157,16 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
   }
   # grab site.info and convert from lat/lon to sf objects of points and buffer areas.
   GEDI_AGB <- split(as.data.frame(site_info), seq(nrow(as.data.frame(site_info)))) %>%
-    furrr::future_map(function(point){
+    furrr::future_map(function(point) {
       # flag determine if we have satisfied res.filter object.
       csv.valid <- FALSE
       # extent for filter.
-      extent <- data.frame(ymax = point$lat + buffer,
-                            ymin = point$lat - buffer,
-                            xmin = point$lon - buffer,
-                            xmax = point$lon + buffer)
+      extent <- data.frame(
+        ymax = point$lat + buffer,
+        ymin = point$lat - buffer,
+        xmin = point$lon - buffer,
+        xmax = point$lon + buffer
+      )
       # redirect to the current folder.
       # if we already create the folder.
       site_folder <- file.path(outdir, point$site_id)
@@ -173,18 +178,20 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
           res <- utils::read.csv(csv.path)
           if (file.exists(file.path(site_folder, "extent.txt")) & nfile.min != 0) {
             extent <- utils::read.table(file.path(site_folder, "extent.txt"), skip = 1, col.names = c("ymax", "ymin", "xmin", "xmax"))
-            extent <- extent[nrow(extent),]
+            extent <- extent[nrow(extent), ]
           }
           # filter previous records based on space and time.
-          res.filter <- res %>% dplyr::filter(.data$lat_lowestmode <= extent["ymax"],
-                                              .data$lat_lowestmode >= extent["ymin"],
-                                              .data$lon_lowestmode >= extent["xmin"], 
-                                              .data$lon_lowestmode <= extent["xmax"],
-                                              lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
-                                              lubridate::as_date(.data$date) <= lubridate::as_date(end_date))
+          res.filter <- res %>% dplyr::filter(
+            .data$lat_lowestmode <= extent["ymax"],
+            .data$lat_lowestmode >= extent["ymin"],
+            .data$lon_lowestmode >= extent["xmin"],
+            .data$lon_lowestmode <= extent["xmax"],
+            lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
+            lubridate::as_date(.data$date) <= lubridate::as_date(end_date)
+          )
           # determine if res.filter is not empty.
-          # In the future, we will need to document 
-          # file name of each pre-downloaded `GEDI L4A` files 
+          # In the future, we will need to document
+          # file name of each pre-downloaded `GEDI L4A` files
           # such that any new files within the range will be downloaded and processed.
           if (nrow(res.filter) > 0) {
             csv.valid <- TRUE
@@ -206,13 +213,15 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
         return(res.filter)
       } else {
         # download GEDI AGB for current site.
-        res.current <- GEDI_AGB_download(start_date = start_date,
-                                         end_date = end_date, 
-                                         outdir = site_folder, 
-                                         extent = extent,
-                                         nfile.min = nfile.min,
-                                         nrow.min = nrow.min,
-                                         gradient = gradient)
+        res.current <- GEDI_AGB_download(
+          start_date = start_date,
+          end_date = end_date,
+          outdir = site_folder,
+          extent = extent,
+          nfile.min = nfile.min,
+          nrow.min = nrow.min,
+          gradient = gradient
+        )
         # if we have previous downloaded GEDI records.
         if (exists("res", mode = "environment") & !all(is.na(res.current))) {
           res <- rbind(res, res.current)
@@ -231,7 +240,8 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
           return(NA)
         }
       }
-    }, .progress = T) %>% purrr::set_names(site_info$site_id)
+    }, .progress = T) %>%
+    purrr::set_names(site_info$site_id)
   GEDI_AGB
 }
 #' Download GEDI AGB data for the GEDI AGB extract function.
@@ -245,22 +255,24 @@ GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min 
 #' @param gradient the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
 #'
 #' @return A data frame containing AGB and sd for the target spatial and temporal extent.
-#' 
+#'
 #' @examples
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 0, nrow.min = 0, gradient = 0) {
   # download GEDI AGB files.
   # if there is no data within current buffer distance.
-  files <- try(l4_download(ncore = 1,
-                           ul_lat = extent["ymax"], 
-                           lr_lat = extent["ymin"], 
-                           ul_lon = extent["xmin"], 
-                           lr_lon = extent["xmax"], 
-                           from = start_date, 
-                           to = end_date,
-                           outdir = outdir,
-                           just_path = T), silent = T)
+  files <- try(l4_download(
+    ncore = 1,
+    ul_lat = extent["ymax"],
+    lr_lat = extent["ymin"],
+    ul_lon = extent["xmin"],
+    lr_lon = extent["xmax"],
+    from = start_date,
+    to = end_date,
+    outdir = outdir,
+    just_path = T
+  ), silent = T)
   # if we just need the data within fixed extent and hit error.
   if ("try-error" %in% class(files) & nfile.min == 0) {
     return(NA)
@@ -269,31 +281,35 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 
     # we iteratively add 0.1 degree to the buffer distance.
     extent[c(1, 4)] <- extent[c(1, 4)] + gradient
     extent[c(2, 3)] <- extent[c(2, 3)] - gradient
-    files <- try(l4_download(ncore = 1,
-                             ul_lat = extent["ymax"], 
-                             lr_lat = extent["ymin"], 
-                             ul_lon = extent["xmin"], 
-                             lr_lon = extent["xmax"], 
-                             from = start_date, 
-                             to = end_date,
-                             outdir = outdir,
-                             just_path = T), silent = T)
+    files <- try(l4_download(
+      ncore = 1,
+      ul_lat = extent["ymax"],
+      lr_lat = extent["ymin"],
+      ul_lon = extent["xmin"],
+      lr_lon = extent["xmax"],
+      from = start_date,
+      to = end_date,
+      outdir = outdir,
+      just_path = T
+    ), silent = T)
   }
-  try(files <- l4_download(ncore = 1,
-                           ul_lat = extent["ymax"], 
-                           lr_lat = extent["ymin"], 
-                           ul_lon = extent["xmin"], 
-                           lr_lon = extent["xmax"], 
-                           from = start_date, 
-                           to = end_date,
-                           outdir = outdir), silent = T)
+  try(files <- l4_download(
+    ncore = 1,
+    ul_lat = extent["ymax"],
+    lr_lat = extent["ymin"],
+    ul_lon = extent["xmin"],
+    lr_lon = extent["xmax"],
+    from = start_date,
+    to = end_date,
+    outdir = outdir
+  ), silent = T)
   # load files.
   res <- GEDI4R::l4_getmulti(files, ncore = 1)
   # filter observations based on filter buffer distance.
-  keep.ind <- which(res$lat_lowestmode <= extent["ymax"] & 
-                      res$lat_lowestmode >= extent["ymin"] & 
-                      res$lon_lowestmode >= extent["xmin"] & 
-                      res$lon_lowestmode <= extent["xmax"])
+  keep.ind <- which(res$lat_lowestmode <= extent["ymax"] &
+    res$lat_lowestmode >= extent["ymin"] &
+    res$lon_lowestmode >= extent["xmin"] &
+    res$lon_lowestmode <= extent["xmax"])
   while (length(keep.ind) < nrow.min & length(files) > 0) {
     # we iteratively add 0.1 degree to the buffer distance.
     # because sometimes even the the extent ensure at least 1 tile nearby the location.
@@ -303,9 +319,9 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 
     extent[c(2, 3)] <- extent[c(2, 3)] - gradient
     # filter observations based on filter buffer distance.
     keep.ind <- which(res$lat_lowestmode <= extent["ymax"] &
-                        res$lat_lowestmode >= extent["ymin"] &
-                        res$lon_lowestmode >= extent["xmin"] &
-                        res$lon_lowestmode <= extent["xmax"])
+      res$lat_lowestmode >= extent["ymin"] &
+      res$lon_lowestmode >= extent["xmin"] &
+      res$lon_lowestmode <= extent["xmax"])
   }
   # record extent for download and extraction.
   extent <- data.frame(matrix(extent, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
@@ -324,7 +340,7 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 
   if (length(keep.ind) == 0) {
     return(NA)
   } else {
-    return(res[keep.ind,])
+    return(res[keep.ind, ])
   }
 }
 #' DOWNLOAD GEDI level 4A data from DAACL.ORNL
@@ -364,8 +380,8 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 
 #' @return List of file path in outdir.
 #' @examples
 #' \dontrun{
-#' #retrive Italy bound
-#' bound <- sf::st_as_sf(raster::getData('GADM', country='ITA', level=1))
+#' # retrive Italy bound
+#' bound <- sf::st_as_sf(raster::getData("GADM", country = "ITA", level = 1))
 #' ex <- raster::extent(bound)
 #' ul_lat <- ex[4]
 #' lr_lat <- ex[3]
@@ -373,27 +389,30 @@ GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 
 #' lr_lon <- ex[1]
 #' from <- "2020-07-01"
 #' to <- "2020-07-02"
-#' #get just files path available for the searched parameters
-#' l4_download(ul_lat=ul_lat,
-#'             lr_lat=lr_lat,
-#'             ul_lon=ul_lon,
-#'             lr_lon=lr_lon,
-#'             from=from,
-#'             to=to,
-#'             just_path=T
+#' # get just files path available for the searched parameters
+#' l4_download(
+#'   ul_lat = ul_lat,
+#'   lr_lat = lr_lat,
+#'   ul_lon = ul_lon,
+#'   lr_lon = lr_lon,
+#'   from = from,
+#'   to = to,
+#'   just_path = T
 #' )
-#' 
-#' #download the first 4 files
-#' 
-#' l4_download(ul_lat=ul_lat,
-#'             lr_lat=lr_lat,
-#'             ul_lon=ul_lon,
-#'             lr_lon=lr_lon,
-#'             from=from,
-#'             to=to,
-#'             just_path=F,
-#'             outdir = tempdir(),
-#'             subset=1:4)
+#'
+#' # download the first 4 files
+#'
+#' l4_download(
+#'   ul_lat = ul_lat,
+#'   lr_lat = lr_lat,
+#'   ul_lon = ul_lon,
+#'   lr_lon = lr_lon,
+#'   from = from,
+#'   to = to,
+#'   just_path = F,
+#'   outdir = tempdir(),
+#'   subset = 1:4
+#' )
 #' }
 #' @author Elia Vangi
 l4_download <-
@@ -404,14 +423,13 @@ l4_download <-
            ncore = parallel::detectCores() - 1,
            from = NULL,
            to = NULL,
-           outdir=getwd(),
+           outdir = getwd(),
            just_path = F,
            subset = NULL) {
-    
     op <- options("warn")
     on.exit(options(op))
-    options(warn=1)
-    #check if outdir exist and if there is a netrc file in
+    options(warn = 1)
+    # check if outdir exist and if there is a netrc file in
     if (!just_path) {
       # stopifnot("outdir is not character" = check_char(outdir))
       if (!dir.exists(outdir)) {
@@ -420,13 +438,13 @@ l4_download <-
         # netrc_file <- getnetrc(outdir)
       } else if (length(list.files(outdir, pattern = "netrc")) == 0) {
         # netrc_file <- getnetrc(outdir)
-      } else{
+      } else {
         netrc_file <- list.files(outdir, pattern = "netrc", full.names = T)
       }
     }
-    #time period
+    # time period
     daterange <- c(from, to)
-    
+
     # Get path to GEDI2A data
     gLevel4 <-
       GEDI4R::gedifinder(
@@ -436,44 +454,49 @@ l4_download <-
         lr_lon,
         daterange = daterange
       )
-    
+
     lg <- length(gLevel4)
-    
-    if(lg==0){stop("there are no GEDI files for this date or coordinates")}
-    
+
+    if (lg == 0) {
+      stop("there are no GEDI files for this date or coordinates")
+    }
+
     if (just_path) {
       return(gLevel4)
       stop(invisible())
     }
-    
-    
-    #check for existing GEDI file in outdir
-    pre <- list.files(outdir,pattern = "h5")
-    if(length(pre)!=0) {
+
+
+    # check for existing GEDI file in outdir
+    pre <- list.files(outdir, pattern = "h5")
+    if (length(pre) != 0) {
       gLevel4 <-
         gLevel4[!basename(tools::file_path_sans_ext(gLevel4)) %in% basename(tools::file_path_sans_ext(pre))]
       nlg <- length(gLevel4)
-      message(lg, " files found, of wich ",lg-nlg, " already downloaded in ", outdir)
-      
-    }else{ message(lg, " files found.")}
-    
-    
-    #subset GEDI files
-    if (!is.null(subset) && is.numeric(subset)) {
-      if(length(subset)>length(gLevel4)){
-        warning("the length of subset vector is greater than the number of files to be download. Subsetting will not be done.")
-      }else{ gLevel4 <- gLevel4[subset]}
+      message(lg, " files found, of wich ", lg - nlg, " already downloaded in ", outdir)
+    } else {
+      message(lg, " files found.")
     }
-    
-    #set ncore equal to the number of files found or to the user defined value
+
+
+    # subset GEDI files
+    if (!is.null(subset) && is.numeric(subset)) {
+      if (length(subset) > length(gLevel4)) {
+        warning("the length of subset vector is greater than the number of files to be download. Subsetting will not be done.")
+      } else {
+        gLevel4 <- gLevel4[subset]
+      }
+    }
+
+    # set ncore equal to the number of files found or to the user defined value
     if (ncore > 1) {
-      ncore <- ifelse(length(gLevel4) <= parallel::detectCores()-1, length(gLevel4), ncore)
+      ncore <- ifelse(length(gLevel4) <= parallel::detectCores() - 1, length(gLevel4), ncore)
       message("using ", ncore, " cores")
-      #download
+      # download
       cl <- parallel::makeCluster(ncore)
       doParallel::registerDoParallel(cl)
       message("start download")
-      
+
       foreach::foreach(
         i = 1:length(gLevel4),
         .packages = "httr"
@@ -500,7 +523,7 @@ l4_download <-
           )
       }
     }
-    
+
     message("Done")
     files <- list.files(outdir, pattern = "h5", full.names = T)
     return(files)
@@ -509,24 +532,28 @@ l4_download <-
 #'
 #' @param dl_dir Directory where the netrc file will be stored.
 #' @return file path of the netrc file.
-getnetrc <- function (dl_dir) {
+getnetrc <- function(dl_dir) {
   netrc <- file.path(dl_dir, "netrc")
   if (file.exists(netrc) == FALSE ||
-      any(grepl("urs.earthdata.nasa.gov",
-                readLines(netrc))) == FALSE) {
+    any(grepl(
+      "urs.earthdata.nasa.gov",
+      readLines(netrc)
+    )) == FALSE) {
     netrc_conn <- file(netrc)
-    writeLines(c(
-      "machine urs.earthdata.nasa.gov",
-      sprintf(
-        "login %s",
-        getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
+    writeLines(
+      c(
+        "machine urs.earthdata.nasa.gov",
+        sprintf(
+          "login %s",
+          getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
+        ),
+        sprintf(
+          "password %s",
+          getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
+        )
       ),
-      sprintf(
-        "password %s",
-        getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
-      )
-    ),
-    netrc_conn)
+      netrc_conn
+    )
     close(netrc_conn)
     message(
       "A netrc file with your Earthdata Login credentials was stored in the output directory "

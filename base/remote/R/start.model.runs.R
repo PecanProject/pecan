@@ -14,11 +14,11 @@
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 ##'
 start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
-  .Defunct("PEcAn.workflow::start_model_runs")  
+  .Defunct("PEcAn.workflow::start_model_runs")
 }
 
 ##' @export
 ##' @rdname start.model.runs
-runModule.start.model.runs <- function(settings,stop.on.error=TRUE) {
-  .Defunct("PEcAn.workflow::runModule_start_model_runs") 
+runModule.start.model.runs <- function(settings, stop.on.error = TRUE) {
+  .Defunct("PEcAn.workflow::runModule_start_model_runs")
 }

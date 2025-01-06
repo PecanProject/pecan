@@ -1,4 +1,3 @@
-
 l <- data(package = "PEcAn.ED2")
 histfiles <- grep("history", l$results[, "Item"], value = TRUE)
 myenv <- new.env()

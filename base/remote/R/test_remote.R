@@ -1,7 +1,7 @@
 #' Test remote execution
 #'
 #' @inheritParams remote.execute.cmd
-#' 
+#'
 #' @param ... additional arguments.
 #'
 #' @return `TRUE` is remote execution is successful.
@@ -33,7 +33,7 @@ test_remote <- function(host, stderr = TRUE, ...) {
   if (length(out) > 0 && out == test_string) {
     return(TRUE)
   } else {
-    msg <- paste("Error in remote execution. Here is the remote output:\n", paste(out, collapse = '\n'))
+    msg <- paste("Error in remote execution. Here is the remote output:\n", paste(out, collapse = "\n"))
     if (stderr) {
       PEcAn.logger::logger.severe(msg)
     } else {

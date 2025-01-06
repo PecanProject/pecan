@@ -12,7 +12,7 @@
 #' @author Rob Kooper
 #' @examples
 #' \dontrun{
-#' clean.settings('output/PEcAn_1/pecan.xml', 'pecan.xml')
+#' clean.settings("output/PEcAn_1/pecan.xml", "pecan.xml")
 #' }
 clean.settings <- function(
     inputfile = "pecan.xml",

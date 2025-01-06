@@ -6,9 +6,9 @@
 #   <type>Ameriflux</type>
 #   <site>US-Dk3</site>
 #   <lat>35.9782</lat>
-#   <lon>-79.0942</lon> 
-#   <start_date>2001-01-01 00:00:00</start_date> 
-#   <end_date>2001-12-31 23:59:59</end_date> 
+#   <lon>-79.0942</lon>
+#   <start_date>2001-01-01 00:00:00</start_date>
+#   <end_date>2001-12-31 23:59:59</end_date>
 # </input>
 
 # send all output to stdout (incl stderr)
@@ -57,8 +57,10 @@ verbose <- FALSE
 rawfolder <- file.path(cacheDir, mettype, "raw")
 dir.create(rawfolder, showWarnings = FALSE, recursive = TRUE)
 if (mettype == "Ameriflux") {
-  do.call(paste0("download.", mettype), list(sitename, rawfolder, start_date, end_date, overwrite, 
-    verbose))
+  do.call(paste0("download.", mettype), list(
+    sitename, rawfolder, start_date, end_date, overwrite,
+    verbose
+  ))
 } else if (mettype == "NARR") {
   do.call(paste0("download.", mettype), list(rawfolder, start_date, end_date, overwrite))
 } else {
@@ -68,27 +70,31 @@ if (mettype == "Ameriflux") {
 # convert to CF
 cffolder <- file.path(cacheDir, mettype, "cf")
 dir.create(cffolder, showWarnings = FALSE, recursive = TRUE)
-do.call(paste0("met2CF.", mettype), list(rawfolder, sitename, cffolder, start_date, end_date, overwrite, 
-  verbose))
+do.call(paste0("met2CF.", mettype), list(
+  rawfolder, sitename, cffolder, start_date, end_date, overwrite,
+  verbose
+))
 
 if (mettype == "Ameriflux") {
   # gapfill
   gapfolder <- file.path(cacheDir, mettype, "gap")
   dir.create(gapfolder, showWarnings = FALSE, recursive = TRUE)
   metgapfill(cffolder, sitename, gapfolder, start_date, end_date, 0, overwrite, verbose)
-  
+
   folder <- gapfolder
   outname <- sitename
 } else if (mettype == "NARR") {
   permutefolder <- file.path(cacheDir, mettype, "permute")
   dir.create(permutefolder, showWarnings = FALSE, recursive = TRUE)
   permute.nc(cffolder, mettype, permutefolder, start_date, end_date, overwrite, verbose)
-  
+
   sitefolder <- file.path(cacheDir, mettype, "site", sitename)
   dir.create(sitefolder, showWarnings = FALSE, recursive = TRUE)
-  extract.nc(permutefolder, mettype, sitefolder, start_date, end_date, site_lat, site_lon, overwrite, 
-    verbose)
-  
+  extract.nc(
+    permutefolder, mettype, sitefolder, start_date, end_date, site_lat, site_lon, overwrite,
+    verbose
+  )
+
   folder <- sitefolder
   outname <- mettype
 }
@@ -104,7 +110,7 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
   for (year in start_year:end_year) {
     files <- c(files, file.path(folder, paste(outname, year, "nc", sep = ".")))
   }
-  
+
   # use intermediate file so it does not get marked as done until really done
   dir.create(tempDir, showWarnings = FALSE, recursive = TRUE)
   zipfile <- file.path(tempDir, "temp.zip")

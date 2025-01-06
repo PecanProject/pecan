@@ -8,7 +8,7 @@ test_that("unit conversions", {
 })
 
 test_that("unit conversion invariants", {
-  expect_equal(ud_convert(1, "g", "g"), 1) 
+  expect_equal(ud_convert(1, "g", "g"), 1)
   expect_equal(ud_convert(0, "g", "kg"), 0)
   expect_equal(ud_convert(Inf, "g", "kg"), Inf)
 })
@@ -23,7 +23,6 @@ test_that("output is type numeric and not class \"units\"", {
   x <- ud_convert(23, "degC", "K")
   testthat::expect_failure(expect_s3_class(x, "units"))
   testthat::expect_type(x, "double")
-
 })
 
 test_that("ud_convert() handles difftime", {
@@ -34,6 +33,6 @@ test_that("ud_convert() handles difftime", {
 
 test_that("ud_convert() warns with wrong input units for difftime", {
   expect_warning(ud_convert(as.difftime("12:00:00"), u1 = "years", u2 = "minutes"))
-  #should still error if units are not convertible
+  # should still error if units are not convertible
   expect_error(ud_convert(as.difftime("12:00:00"), u1 = "kilograms", u2 = "minutes"))
 })

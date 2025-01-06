@@ -18,7 +18,8 @@ MultiSettings <- function(...) {
   if (!all(sapply(result, is.Settings))) {
     stop(
       "MultiSettings can only be made from Setting,",
-      " MultiSettings, or a list of Settings")
+      " MultiSettings, or a list of Settings"
+    )
   }
 
   if (length(result) > 0 && is.null(names(result))) {
@@ -109,9 +110,11 @@ is.MultiSettings <- function(x) {
   replicatedFirstElement <- replicate(
     length(x),
     firstElement,
-    simplify = FALSE)
+    simplify = FALSE
+  )
   return(isTRUE(
-    all.equal(replicatedFirstElement, x, check.attributes = FALSE)))
+    all.equal(replicatedFirstElement, x, check.attributes = FALSE)
+  ))
 } # .allListElementsEqual
 
 #' @export
@@ -139,10 +142,10 @@ names.MultiSettings <- function(x) {
 }
 
 #' function that can retrieve or update the names of multi-settings.
-#' 
+#'
 #' @param multiSettings object for which to retrieve or set the names.
 #' @param settingNames  names to be set for the multi-settings object.
-#' 
+#'
 #' @export
 settingNames <- function(multiSettings, settingNames) {
   if (missing(settingNames)) {
@@ -160,7 +163,8 @@ print.MultiSettings <- function(x, printAll = FALSE, ...) {
   } else {
     print(
       paste0("A MultiSettings object containing ", length(x), " Settings."),
-      ...)
+      ...
+    )
   }
 }
 

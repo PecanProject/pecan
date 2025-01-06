@@ -10,17 +10,17 @@ read_ed2in <- function(filename) {
 
   # Extract tag-value pairs
   ed2in_tag_rxp <- paste0(
-    "^[[:blank:]]*",              # Initial whitespace (does not start with a `!` comment)
-    "NL%([[:graph:]]+)",          # Capture namelist tag (1)
-    "[[:blank:]]+=[[:blank:]]*",  # Equals, with optional surrounding whitespace
-    "(",                          # Begin value capture (2)
-    "[[:digit:].-]+(,[[:blank:]]*[[:digit:].-]+)*",   # Number, or number list
-    "|",                          # ...or...
-    "@.*?@",                      # Old substitution tag (e.g. @MYVALUE@)
-    "|",                          # ...or...
-    "'[[:graph:][:blank:]]*'",    # Quoted string, or list of strings
-    ")",                          # End value capture
-    "[[:blank:]]*!?.*$"           # Trailing whitespace and possible comments
+    "^[[:blank:]]*", # Initial whitespace (does not start with a `!` comment)
+    "NL%([[:graph:]]+)", # Capture namelist tag (1)
+    "[[:blank:]]+=[[:blank:]]*", # Equals, with optional surrounding whitespace
+    "(", # Begin value capture (2)
+    "[[:digit:].-]+(,[[:blank:]]*[[:digit:].-]+)*", # Number, or number list
+    "|", # ...or...
+    "@.*?@", # Old substitution tag (e.g. @MYVALUE@)
+    "|", # ...or...
+    "'[[:graph:][:blank:]]*'", # Quoted string, or list of strings
+    ")", # End value capture
+    "[[:blank:]]*!?.*$" # Trailing whitespace and possible comments
   )
 
   tag_lines <- grep(ed2in_tag_rxp, raw_file, perl = TRUE)
@@ -35,11 +35,11 @@ read_ed2in <- function(filename) {
 
   # Convert to a list to allow storing of multiple data types
   values_list <- as.list(values)
-  
+
   # NOTE: code below relies on as.numeric() coercing values to NA
   numeric_values <- !is.na(suppressWarnings(as.numeric(values))) |
-    grepl("^@.*?@$", values)    # Unquoted old substitutions are numeric
-  #check for old substitution tags
+    grepl("^@.*?@$", values) # Unquoted old substitutions are numeric
+  # check for old substitution tags
   if (any(grepl("^@.*?@$", values))) {
     PEcAn.logger::logger.warn("Old substitution tags present in ED2IN file")
   }
@@ -86,7 +86,7 @@ read_ed2in <- function(filename) {
 #' Sets attributes to `NULL` before printing, so the output isn't as messy.
 #'
 #' @inheritParams base::print
-#' 
+#'
 #' @export
 print.ed2in <- function(x, ...) {
   attributes(x) <- attributes(x)["names"]

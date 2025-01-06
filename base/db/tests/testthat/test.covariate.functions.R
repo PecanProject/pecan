@@ -4,7 +4,7 @@ test_that("`append.covariate` able to append new column for covariates in given 
     name = c("a", "b", "c", "d")
   )
   covariates.data <- data.frame(
-    trait_id = c( 1, 2, 3, 4, 4),
+    trait_id = c(1, 2, 3, 4, 4),
     level = c("A", "B", "C", "D", "E"),
     name = c("a", "b", "c", "d", "e")
   )

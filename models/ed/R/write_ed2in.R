@@ -1,13 +1,13 @@
 #' Write ED2IN list to file
 #'
-#' This writes a ED2IN file from an `ed2in` list. Default method writes a 
-#' barebones file without comments. S3 method for `ed2in` objects extracts 
-#' comments and their locations from the object attributes (if `barebones` is 
+#' This writes a ED2IN file from an `ed2in` list. Default method writes a
+#' barebones file without comments. S3 method for `ed2in` objects extracts
+#' comments and their locations from the object attributes (if `barebones` is
 #' `FALSE`).
 #'
 #' @param ed2in Named list of ED2IN tag-value pairs. See [read_ed2in].
 #' @param filename Target file name
-#' @param custom_header Character vector for additional header comments. Each 
+#' @param custom_header Character vector for additional header comments. Each
 #' item gets its own line.
 #' @param barebones Logical. If `TRUE`, omit comments and only write tag-value pairs.
 #' @export
@@ -28,18 +28,18 @@ write_ed2in.ed2in <- function(ed2in, filename, custom_header = character(), bare
   file_body <- character(nvalues + ncomments)
   file_body[attr(ed2in, "comment_linenos")] <-
     attr(ed2in, "comment_values")
-  file_body[attr(ed2in, "value_linenos")] <- 
+  file_body[attr(ed2in, "value_linenos")] <-
     tags_values_vec[1:length(attr(ed2in, "value_linenos"))]
-  
-  #check for new tags
-  if(length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
-    #find the $END
+
+  # check for new tags
+  if (length(tags_values_vec) > length(attr(ed2in, "value_linenos"))) {
+    # find the $END
     END_line <- grep("\\$END", file_body) - 1
-    new_tags <- 
+    new_tags <-
       tags_values_vec[(length(attr(ed2in, "value_linenos")) + 1):length(tags_values_vec)]
-    #put the new tags in with $END at the end
+    # put the new tags in with $END at the end
     file_body <- c(file_body[1:END_line], new_tags, "$END")
-  } 
+  }
   header <- c(
     "!=======================================",
     "!=======================================",

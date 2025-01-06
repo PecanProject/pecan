@@ -1,7 +1,7 @@
 test_that("`clear.scratch()` able to build the correct system command prompt to remove previous model run output", {
   mocked_res <- mockery::mock(TRUE)
-  mockery::stub(clear.scratch, 'system', mocked_res)
-  mockery::stub(clear.scratch, 'seq', 0)
+  mockery::stub(clear.scratch, "system", mocked_res)
+  mockery::stub(clear.scratch, "seq", 0)
   settings <- list(host = list(name = "cluster"))
   expect_output(
     clear.scratch(settings),
@@ -10,7 +10,7 @@ test_that("`clear.scratch()` able to build the correct system command prompt to 
   args <- mockery::mock_args(mocked_res)
   expect_true(
     grepl(
-      "ssh -T cluster qlogin -q all.q@compute-0-0.local.*clear.scratch.sh", 
+      "ssh -T cluster qlogin -q all.q@compute-0-0.local.*clear.scratch.sh",
       args[[1]][[1]]
     )
   )

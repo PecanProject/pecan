@@ -22,8 +22,10 @@ pars <- c(
   "k_cw",
   "k_cm"
 )
-dat_list <- c(list(wavelength = 400:2500),
-              lapply(pars, get_values, raw_file = raw_file))
+dat_list <- c(
+  list(wavelength = 400:2500),
+  lapply(pars, get_values, raw_file = raw_file)
+)
 dataSpec_prospectd <- do.call(cbind, dat_list)
 colnames(dataSpec_prospectd) <- c("wavelength", pars)
 save(dataSpec_prospectd, file = "data/dataSpec_prospectd.RData")

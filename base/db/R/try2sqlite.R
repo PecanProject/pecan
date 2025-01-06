@@ -1,7 +1,7 @@
 #' Convert TRY text file to SQLite database
 #'
-#' The TRY file is huge and unnecessarily long, which makes it difficult to 
-#' work with. The resulting SQLite database is much smaller on disk, and can be 
+#' The TRY file is huge and unnecessarily long, which makes it difficult to
+#' work with. The resulting SQLite database is much smaller on disk, and can be
 #' read much faster thanks to lazy evaluation.
 #'
 #' The resulting TRY SQLite database contains the following tables:
@@ -10,7 +10,7 @@
 #'  - `datasets` -- Description of datasets and references/citations. Links to `values` through `DatasetID` and `ReferenceID`.
 #'  - `species` -- Species. Links to `values` through `AccSpeciesID`.
 #'
-#' @param try_files Character vector of file names containing TRY data.  
+#' @param try_files Character vector of file names containing TRY data.
 #' Multiple files are combined with `data.table::rbindlist`.
 #' @param sqlite_file Target SQLite database file name, as character.
 #' @export
@@ -27,21 +27,21 @@ try2sqlite <- function(try_files, sqlite_file = "try.sqlite") {
   # Create tables
   PEcAn.logger::logger.info("Extracting data values table.")
   data_cols <- c(
-    "ObsDataID",        # TRY row ID -- unique to each observation of a given trait
-    "ObservationID",    # TRY "entity" ID -- identifies a set of trait measurements (e.g. leaf)
-    "DataID",           # Links to data ID
-    "StdValue",         # Standardized, QA-QC'ed value
-    "UnitName",         # Standardized unit
-    "AccSpeciesID",     # Link to 'species' table
-    "DatasetID",        # Link to 'datasets' table.
-    "ReferenceID",      # Link to 'try_references' table.
-    "ValueKindName",    # Type of value, e.g. mean, min, max, etc.
-    "UncertaintyName",  # Kind of uncertainty
-    "Replicates",       # Number of replicates
+    "ObsDataID", # TRY row ID -- unique to each observation of a given trait
+    "ObservationID", # TRY "entity" ID -- identifies a set of trait measurements (e.g. leaf)
+    "DataID", # Links to data ID
+    "StdValue", # Standardized, QA-QC'ed value
+    "UnitName", # Standardized unit
+    "AccSpeciesID", # Link to 'species' table
+    "DatasetID", # Link to 'datasets' table.
+    "ReferenceID", # Link to 'try_references' table.
+    "ValueKindName", # Type of value, e.g. mean, min, max, etc.
+    "UncertaintyName", # Kind of uncertainty
+    "Replicates", # Number of replicates
     "RelUncertaintyPercent",
-    "OrigValueStr",         # Original data, as character string (before QA/QC)
-    "OrigUnitStr",          # Original unit, as character string (before QA/QC)
-    "OrigUncertaintyStr"    # Original uncertainty, as character string (before QA/QC)
+    "OrigValueStr", # Original data, as character string (before QA/QC)
+    "OrigUnitStr", # Original unit, as character string (before QA/QC)
+    "OrigUncertaintyStr" # Original uncertainty, as character string (before QA/QC)
   )
   data_values <- unique(raw_data[, data_cols, with = FALSE])
 

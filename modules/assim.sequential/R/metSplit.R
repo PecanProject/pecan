@@ -13,25 +13,24 @@
 #' @export
 #'
 #' @return input.split object with split met filepaths
-#' 
+#'
 #' @author Alexis Helgeson
 #'
-metSplit <- function(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs){
-  
-  #set start and end date for splitting met
-  start.time = obs.times[t - 1] #always start timestep before
-  
-  if(restart_flag){
-    stop.time = settings$run$site$met.end
-  }else{
-    stop.time = obs.times[t]
+metSplit <- function(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs) {
+  # set start and end date for splitting met
+  start.time <- obs.times[t - 1] # always start timestep before
+
+  if (restart_flag) {
+    stop.time <- settings$run$site$met.end
+  } else {
+    stop.time <- obs.times[t]
   }
   #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-  inputs.split <- 
+  inputs.split <-
     furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")), inputs, model), function(settings, inputs, model) {
       # Loading the model package - this is required bc of the furrr
-      library(paste0("PEcAn.",model), character.only = TRUE)
-      
+      library(paste0("PEcAn.", model), character.only = TRUE)
+
       inputs.split <- list()
       if (!no_split) {
         for (i in seq_len(nens)) {
@@ -41,15 +40,16 @@ metSplit <- function(conf.settings, inputs, settings, model, no_split = FALSE, o
             args = list(
               settings = settings,
               start.time = (lubridate::ymd_hms(start.time, truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
-              stop.time =   lubridate::ymd_hms(stop.time, truncated = 3),
-              inputs = inputs$samples[[i]])
+              stop.time = lubridate::ymd_hms(stop.time, truncated = 3),
+              inputs = inputs$samples[[i]]
+            )
           )
         }
-      } else{
+      } else {
         inputs.split <- inputs
       }
       inputs.split
     })
-  
+
   return(inputs.split)
 }

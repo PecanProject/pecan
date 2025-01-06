@@ -10,7 +10,7 @@ test_that("`get.ensemble.inputs()` able to return desired ensemble inputs from s
   )
   res <- get.ensemble.inputs(settings)
   expect_equal(
-    res, 
+    res,
     list(input1 = c(1, 2, 3), input2 = c(1, 2, 3), input3 = c(1, 2, 3))
   )
 })

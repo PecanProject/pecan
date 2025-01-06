@@ -7,7 +7,7 @@
 ##
 
 ### Specify required functions
-library(dplR, lib.loc = "~/lib/R")  ## Andy Bunn's Dendrochronology package
+library(dplR, lib.loc = "~/lib/R") ## Andy Bunn's Dendrochronology package
 WAVE <- function(crn.vec, yr.vec, p2 = NULL, dj = 0.25, siglvl = 0.99, ...) {
   ## simple function based on Bunn's wavelet.plot fcn that returns wavelet info
   if (is.null(p2)) {
@@ -28,11 +28,13 @@ WAVE <- function(crn.vec, yr.vec, p2 = NULL, dj = 0.25, siglvl = 0.99, ...) {
 model.dir <- "NEEm"
 
 ## set of models to analyze
-model.set <- sort(c("BEPS", "CNCLASS", "ISOLSM", "TECO", "ecosys", "SiBCASA", "SiB", "DLEM", "ED2",
-                    "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", "LPJ", "BIOME_BGC",
-                    "SSiB2", "TRIPLEX", "EPIC"))
+model.set <- sort(c(
+  "BEPS", "CNCLASS", "ISOLSM", "TECO", "ecosys", "SiBCASA", "SiB", "DLEM", "ED2",
+  "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", "LPJ", "BIOME_BGC",
+  "SSiB2", "TRIPLEX", "EPIC"
+))
 
-Nmodel <- length(model.set)  ## number of models
+Nmodel <- length(model.set) ## number of models
 
 ## listing of available site files
 site.files <- dir(model.dir, "txt")
@@ -40,7 +42,6 @@ site.files <- dir(model.dir, "txt")
 
 ######### LOOP OVER SITES ##########
 for (i in seq_along(site.files)) {
-
   ## load site data table
   dat <- read.table(paste(model.dir, site.files[i], sep = "/"), header = TRUE, na.string = "-999.000")
 
@@ -49,19 +50,18 @@ for (i in seq_along(site.files)) {
   #  dat <- dat[dat$X.YEAR %in% 1999:2007,] ## LET
   #  dat <- dat[dat$X.YEAR %in% 1992:2006,] ## Ha1
 
-  m2c <- match(model.set, names(dat))  ## match model names to data table columns
-  day <- 1 / diff(dat$FDOY[1:2])  ## number of observations per day
+  m2c <- match(model.set, names(dat)) ## match model names to data table columns
+  day <- 1 / diff(dat$FDOY[1:2]) ## number of observations per day
   Nperiod <- 1 + 4 * log2(nrow(dat))
 
-  ##POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat)))
-  ##SIGNIF <- matrix(NA,Nmodel,Nperiod)
+  ## POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat)))
+  ## SIGNIF <- matrix(NA,Nmodel,Nperiod)
   #########  LOOP OVER MODELS ##########
   for (j in seq_len(Nmodel)) {
-
-    k <- m2c[j]  ## desired column in data table for specified model
+    k <- m2c[j] ## desired column in data table for specified model
 
     ## option 1 - absolute residuals
-    y <- dat$NEE_FILLED - dat[, k]  ### Model error fcn
+    y <- dat$NEE_FILLED - dat[, k] ### Model error fcn
 
     ## option 2 - normalized residuals (post)
     if (FALSE) {
@@ -75,7 +75,7 @@ for (i in seq_along(site.files)) {
       if (is.nan(ysd)) {
         ysd <- NA
       }
-      y <- (y - ybar) / ysd  ## normalize error
+      y <- (y - ybar) / ysd ## normalize error
     }
 
     ## option 3 - normalized residuals (pre)
@@ -89,7 +89,7 @@ for (i in seq_along(site.files)) {
     } else {
       NEEt.sd <- sqrt(stats::var(dat$NEE_FILLED, na.rm = TRUE))
     }
-    NEEt.norm <- (dat$NEE_FILLED - NEEt.bar)/NEEt.sd
+    NEEt.norm <- (dat$NEE_FILLED - NEEt.bar) / NEEt.sd
     ## normalize model
     NEEm.bar <- mean(dat[, k], na.rm = TRUE)
     NEEm.sd <- NA
@@ -98,16 +98,16 @@ for (i in seq_along(site.files)) {
     } else {
       NEEm.sd <- sqrt(stats::var(dat[, k], na.rm = TRUE))
     }
-    NEEm.norm <- (dat[, k] - NEEm.bar)/NEEm.sd
-    y <- NEEm.norm - NEEt.norm  ## calc residuals of normalized
+    NEEm.norm <- (dat[, k] - NEEm.bar) / NEEm.sd
+    y <- NEEm.norm - NEEt.norm ## calc residuals of normalized
 
-    y[is.na(y)] <- 0  ## need to fill in missing values
+    y[is.na(y)] <- 0 ## need to fill in missing values
 
-    wv <- WAVE(y)  ## Calculate wavelet spectrum
-    period <- wv$period/day  ## wavelet periods
-    Power <- (abs(wv$wave))^2  ## wavelet power
+    wv <- WAVE(y) ## Calculate wavelet spectrum
+    period <- wv$period / day ## wavelet periods
+    Power <- (abs(wv$wave))^2 ## wavelet power
     ## Crop out cone of influence
-    coi <- wv$coi  ## cone of influence (valid if below value)
+    coi <- wv$coi ## cone of influence (valid if below value)
     for (t in seq_along(coi)) {
       sel <- which(period > coi[t])
       Power[t, sel] <- NA
@@ -121,31 +121,30 @@ for (i in seq_along(site.files)) {
 
     print(c(i, j))
   }
-}  ## loop over sites
+} ## loop over sites
 
 
 if (FALSE) {
-
   plot(period, apply(Power, 2, mean), log = "xy", xlab = "Period (days)")
   abline(v = 1)
   abline(v = 365.25)
-  abline(v = 365.25/4)
+  abline(v = 365.25 / 4)
 
 
   ########################### SCRATCH ################################
 
-  j <- 9  ## model
+  j <- 9 ## model
 
 
-  tm <- seq(1, by = 1/48, length = nrow(dat))
-  NEE <- ts(dat$NEE_FILLED, deltat = 1/48)
+  tm <- seq(1, by = 1 / 48, length = nrow(dat))
+  NEE <- ts(dat$NEE_FILLED, deltat = 1 / 48)
   plot(spectrum(NEE))
 
   plot(dat$FDOY, dat$NEE)
   plot(dat$FDOY, dat$NEE_FILLED, pch = ".")
 
-  m2c <- match(model.set, names(dat))  ## match model names to data table columns
-  k <- m2c[j]  ## desired column in data table for specified model
+  m2c <- match(model.set, names(dat)) ## match model names to data table columns
+  k <- m2c[j] ## desired column in data table for specified model
 
   plot(dat$FDOY, dat[, k], pch = ".")
 
@@ -175,25 +174,25 @@ if (FALSE) {
 
   plot(acf(ra))
 
-  wavelet.plot(ra, tm, p2 = 10)  ##floor(log2(nrow(dat)))))
+  wavelet.plot(ra, tm, p2 = 10) ## floor(log2(nrow(dat)))))
 
 
   ### TESTING
-  y <- sin((1:512)/pi) + sin((1:512)/10)
+  y <- sin((1:512) / pi) + sin((1:512) / 10)
 
   ## null model construction:
   t <- seq_len(nrow(dat))
-  y <- sin(2 * pi * t/day) + sin(2 * pi * t/(365.25 * day))
+  y <- sin(2 * pi * t / day) + sin(2 * pi * t / (365.25 * day))
 
   wavelet.plot(y, seq_along(y), log2(length(y)))
   plot(y, type = "l")
 
   wv <- WAVE(y)
-  day <- 1/diff(dat$FDOY[1:2])
-  period <- wv$period/day
+  day <- 1 / diff(dat$FDOY[1:2])
+  period <- wv$period / day
   Power <- (abs(wv$wave))^2
   Signif <- t(matrix(wv$Signif, dim(wv$wave)[2], dim(wv$wave)[1]))
-  Signif <- Power/Signif
+  Signif <- Power / Signif
   image(Power)
 
   plot(apply(Power, 2, mean), log = "y")
@@ -203,7 +202,7 @@ if (FALSE) {
   plot(period, apply(Power, 2, mean), log = "xy", xlab = "Period (days)")
   abline(v = 1)
   abline(v = 365.25)
-  abline(v = 365.25/4)
+  abline(v = 365.25 / 4)
 
   ## divide up spectra
   Pglobe <- apply(Power, 2, mean)
@@ -218,21 +217,24 @@ if (FALSE) {
   synop.bin <- (max(day.bin) + 1):(min(year.bin) - 1)
   subday.bin <- 1:(min(day.bin) - 1)
   inter.bin <- (max(year.bin) + 1):length(period)
-  if (length(period) <= max(year.bin))
+  if (length(period) <= max(year.bin)) {
     inter.bin <- NA
+  }
 
-  pow.bin <- c(sum(Pglobe[subday.bin]), sum(Pglobe[day.bin]), sum(Pglobe[synop.bin]), sum(Pglobe[year.bin]),
-               sum(Pglobe[inter.bin]))
+  pow.bin <- c(
+    sum(Pglobe[subday.bin]), sum(Pglobe[day.bin]), sum(Pglobe[synop.bin]), sum(Pglobe[year.bin]),
+    sum(Pglobe[inter.bin])
+  )
 
 
 
-  plot(1/period, apply(Power, 2, mean), log = "y")
+  plot(1 / period, apply(Power, 2, mean), log = "y")
   plot(apply(Signif, 2, mean), log = "y")
   plot(apply(Signif, 2, mean))
   abline(h = 1)
 
   ## Crop out cone of influence
-  coi <- wv$coi  ## cone of influence (valid if below value)
+  coi <- wv$coi ## cone of influence (valid if below value)
   for (t in seq_along(coi)) {
     sel <- which(period > coi[t])
     Power[t, sel] <- NA

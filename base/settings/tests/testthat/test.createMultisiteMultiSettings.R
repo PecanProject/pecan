@@ -12,27 +12,27 @@ test_that("`createSitegroupMultiSettings` able to create a MultiSettings object 
     site_id = list("1000025731", "1000025732")
   )
   mockery::stub(
-    createSitegroupMultiSettings, 
-    'PEcAn.DB::db.query',
+    createSitegroupMultiSettings,
+    "PEcAn.DB::db.query",
     siteIds
   )
-  
+
   # without specifying nSite
   multi_site_settings <- createSitegroupMultiSettings(
-    templateSettings = templateSettings, 
-    sitegroupId = 10000, 
+    templateSettings = templateSettings,
+    sitegroupId = 10000,
     params = NULL
   )
-  for(i in seq_along(multi_site_settings)) {
+  for (i in seq_along(multi_site_settings)) {
     expect_equal(multi_site_settings[[i]]$run$site$id, siteIds$site_id[[i]])
   }
   expect_equal(length(multi_site_settings), length(siteIds$site_id))
-  
+
 
   # with nSite specified
   multi_site_settings <- createSitegroupMultiSettings(
-    templateSettings = templateSettings, 
-    sitegroupId = 10000, 
+    templateSettings = templateSettings,
+    sitegroupId = 10000,
     nSite = 1,
     params = NULL
   )
@@ -125,11 +125,11 @@ test_that("`setDates` function sets start and end dates correctly", {
       end.year = NULL
     )
   )
-  
+
   startDate <- "2023-01-01"
   endDate <- "2023-12-31"
   updated_settings <- setDates(settings, startDate, endDate)
-  
+
   expect_equal(updated_settings$run$start.date, startDate)
   expect_equal(updated_settings$run$end.date, endDate)
   expect_equal(updated_settings$ensemble$start.year, lubridate::year(startDate))

@@ -10,10 +10,9 @@ download.MERRA <- function(outfolder, start_date, end_date,
                            overwrite = FALSE,
                            verbose = FALSE,
                            ...) {
-
   dates <- seq.Date(as.Date(start_date), as.Date(end_date), "1 day")
 
-  if(!file.exists(outfolder)) {
+  if (!file.exists(outfolder)) {
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
 
@@ -48,10 +47,14 @@ download.MERRA <- function(outfolder, start_date, end_date,
     baseday <- paste0(year, "-01-01T00:00:00Z")
 
     # Accommodate partial years
-    y_startdate <- pmax(ISOdate(year, 01, 01, 0, tz = "UTC"),
-                        lubridate::as_datetime(start_date))
-    y_enddate <- pmin(ISOdate(year, 12, 31, 23, 59, 59, tz = "UTC"),
-                      lubridate::as_datetime(paste(end_date, "23:59:59Z")))
+    y_startdate <- pmax(
+      ISOdate(year, 01, 01, 0, tz = "UTC"),
+      lubridate::as_datetime(start_date)
+    )
+    y_enddate <- pmin(
+      ISOdate(year, 12, 31, 23, 59, 59, tz = "UTC"),
+      lubridate::as_datetime(paste(end_date, "23:59:59Z"))
+    )
 
     timeseq <- as.numeric(difftime(
       seq(y_startdate, y_enddate, "hours"),
@@ -71,8 +74,10 @@ download.MERRA <- function(outfolder, start_date, end_date,
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = paste("Days since ", baseday),
-                             vals = timeseq, create_dimvar = TRUE, unlim = TRUE)
+    time <- ncdf4::ncdim_def(
+      name = "time", units = paste("Days since ", baseday),
+      vals = timeseq, create_dimvar = TRUE, unlim = TRUE
+    )
     dim <- list(lat, lon, time)
 
     ## Create output variables
@@ -109,7 +114,7 @@ download.MERRA <- function(outfolder, start_date, end_date,
           "It will be overwritten."
         )
       }
-      
+
       ## Create output file
       loc <- ncdf4::nc_create(loc.file, var_list)
       on.exit(ncdf4::nc_close(loc), add = TRUE)
@@ -124,36 +129,40 @@ download.MERRA <- function(outfolder, start_date, end_date,
         PEcAn.logger::severeifnot(paste0("File ", mostfile, " does not exist."), file.exists(mostfile))
         nc <- ncdf4::nc_open(mostfile)
         for (r in seq_len(nrow(merra_vars))) {
-          x <- ncdf4::ncvar_get(nc, merra_vars[r,][["MERRA_name"]])
-          ncdf4::ncvar_put(loc, merra_vars[r,][["CF_name"]], x,
-                          start = c(1, 1, start), count = c(1, 1, 24))
+          x <- ncdf4::ncvar_get(nc, merra_vars[r, ][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_vars[r, ][["CF_name"]], x,
+            start = c(1, 1, start), count = c(1, 1, 24)
+          )
         }
         ncdf4::nc_close(nc)
         presfile <- file.path(outfolder, sprintf("merra-pres-%s.nc", as.character(date)))
         PEcAn.logger::severeifnot(paste0("File ", presfile, " does not exist."), file.exists(presfile))
         nc <- ncdf4::nc_open(presfile)
         for (r in seq_len(nrow(merra_pres_vars))) {
-          x <- ncdf4::ncvar_get(nc, merra_pres_vars[r,][["MERRA_name"]])
-          ncdf4::ncvar_put(loc, merra_pres_vars[r,][["CF_name"]], x,
-                          start = c(1, 1, start), count = c(1, 1, 24))
+          x <- ncdf4::ncvar_get(nc, merra_pres_vars[r, ][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_pres_vars[r, ][["CF_name"]], x,
+            start = c(1, 1, start), count = c(1, 1, 24)
+          )
         }
         ncdf4::nc_close(nc)
         fluxfile <- file.path(outfolder, sprintf("merra-flux-%s.nc", as.character(date)))
         PEcAn.logger::severeifnot(paste0("File ", fluxfile, " does not exist."), file.exists(fluxfile))
         nc <- ncdf4::nc_open(fluxfile)
         for (r in seq_len(nrow(merra_flux_vars))) {
-          x <- ncdf4::ncvar_get(nc, merra_flux_vars[r,][["MERRA_name"]])
-          ncdf4::ncvar_put(loc, merra_flux_vars[r,][["CF_name"]], x,
-                          start = c(1, 1, start), count = c(1, 1, 24))
+          x <- ncdf4::ncvar_get(nc, merra_flux_vars[r, ][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_flux_vars[r, ][["CF_name"]], x,
+            start = c(1, 1, start), count = c(1, 1, 24)
+          )
         }
         ncdf4::nc_close(nc)
         lfofile <- file.path(outfolder, sprintf("merra-lfo-%s.nc", as.character(date)))
         PEcAn.logger::severeifnot(paste0("File ", lfofile, " does not exist."), file.exists(lfofile))
         nc <- ncdf4::nc_open(lfofile)
         for (r in seq_len(nrow(merra_lfo_vars))) {
-          x <- ncdf4::ncvar_get(nc, merra_lfo_vars[r,][["MERRA_name"]])
-          ncdf4::ncvar_put(loc, merra_lfo_vars[r,][["CF_name"]], x,
-                          start = c(1, 1, start), count = c(1, 1, 24))
+          x <- ncdf4::ncvar_get(nc, merra_lfo_vars[r, ][["MERRA_name"]])
+          ncdf4::ncvar_put(loc, merra_lfo_vars[r, ][["CF_name"]], x,
+            start = c(1, 1, start), count = c(1, 1, 24)
+          )
         }
         ncdf4::nc_close(nc)
       }
@@ -164,14 +173,16 @@ download.MERRA <- function(outfolder, start_date, end_date,
         ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air") +
         ncdf4::ncvar_get(loc, "surface_diffuse_downwelling_nearinfrared_radiative_flux_in_air")
       ncdf4::ncvar_put(loc, "surface_diffuse_downwelling_shortwave_flux_in_air", sw_diffuse,
-                      start = c(1, 1, 1), count = c(1, 1, -1))
+        start = c(1, 1, 1), count = c(1, 1, -1)
+      )
 
       # Total SW direct = Direct PAR + Direct NIR
       sw_direct <-
         ncdf4::ncvar_get(loc, "surface_direct_downwelling_photosynthetic_radiative_flux_in_air") +
         ncdf4::ncvar_get(loc, "surface_direct_downwelling_nearinfrared_radiative_flux_in_air")
       ncdf4::ncvar_put(loc, "surface_direct_downwelling_shortwave_flux_in_air", sw_direct,
-                      start = c(1, 1, 1), count = c(1, 1, -1))
+        start = c(1, 1, 1), count = c(1, 1, -1)
+      )
     }
   }
 
@@ -210,8 +221,10 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   )
   qvars <- sprintf("%s%s", merra_vars$MERRA_name, idxstring)
   qstring <- paste(qvars, collapse = ",")
-  outfile <- file.path(outdir, sprintf("merra-most-%d-%02d-%02d.nc",
-                                       year, month, day))
+  outfile <- file.path(outdir, sprintf(
+    "merra-most-%d-%02d-%02d.nc",
+    year, month, day
+  ))
   if (overwrite || !file.exists(outfile)) {
     req <- httr::GET(
       paste(url, qstring, sep = "?"),
@@ -228,8 +241,10 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   )
   qvars <- sprintf("%s%s", merra_pres_vars$MERRA_name, idxstring)
   qstring <- paste(qvars, collapse = ",")
-  outfile <- file.path(outdir, sprintf("merra-pres-%d-%02d-%02d.nc",
-                                       year, month, day))
+  outfile <- file.path(outdir, sprintf(
+    "merra-pres-%d-%02d-%02d.nc",
+    year, month, day
+  ))
   if (overwrite || !file.exists(outfile)) {
     req <- httr::GET(
       paste(url, qstring, sep = "?"),
@@ -246,8 +261,10 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   )
   qvars <- sprintf("%s%s", merra_flux_vars$MERRA_name, idxstring)
   qstring <- paste(qvars, collapse = ",")
-  outfile <- file.path(outdir, sprintf("merra-flux-%d-%02d-%02d.nc",
-                                       year, month, day))
+  outfile <- file.path(outdir, sprintf(
+    "merra-flux-%d-%02d-%02d.nc",
+    year, month, day
+  ))
   if (overwrite || !file.exists(outfile)) {
     req <- PEcAn.utils::robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),
@@ -264,8 +281,10 @@ get_merra_date <- function(date, latitude, longitude, outdir, overwrite = FALSE)
   )
   qvars <- sprintf("%s%s", merra_lfo_vars$MERRA_name, idxstring)
   qstring <- paste(qvars, collapse = ",")
-  outfile <- file.path(outdir, sprintf("merra-lfo-%d-%02d-%02d.nc",
-                                       year, month, day))
+  outfile <- file.path(outdir, sprintf(
+    "merra-lfo-%d-%02d-%02d.nc",
+    year, month, day
+  ))
   if (overwrite || !file.exists(outfile)) {
     req <- PEcAn.utils::robustly(httr::GET, n = 10)(
       paste(url, qstring, sep = "?"),

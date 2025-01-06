@@ -23,13 +23,11 @@
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.bayesian.tools <- function(settings, external.data = NULL, external.priors = NULL, 
-                               external.formats = NULL, ensemble.id = NULL, 
-                               params.id = NULL, param.names = NULL, prior.id = NULL, 
-                               chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
+pda.bayesian.tools <- function(settings, external.data = NULL, external.priors = NULL,
+                               external.formats = NULL, ensemble.id = NULL,
+                               params.id = NULL, param.names = NULL, prior.id = NULL,
+                               chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
                                ar.target = NULL, jvar = NULL, remote = FALSE, ...) {
-
-
   sampler <- settings$assim.batch$bt.settings$sampler
 
   ## this bit of code is useful for defining the variables
@@ -40,10 +38,10 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     adapt <- adj.min <- ar.target <- jvar <- NULL
     remote <- FALSE
   }
-  
+
   # is this an extension run
-  extension.check <- is.null(settings$assim.batch$extension) 
-  
+  extension.check <- is.null(settings$assim.batch$extension)
+
   if (extension.check) {
     # not an extension run
     run.normal <- TRUE
@@ -53,23 +51,24 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     run.normal <- FALSE
     run.longer <- TRUE
   }
-  
+
   # load inputs with neff if this is another round
-  if(!run.normal){
+  if (!run.normal) {
     external_data_path <- file.path(settings$outdir, paste0("external.", settings$assim.batch$ensemble.id, ".Rdata"))
-    if(file.exists(external_data_path)){
+    if (file.exists(external_data_path)) {
       load(external_data_path)
       # and delete the file afterwards because it will be re-written with a new ensemble id in the end
       file.remove(external_data_path)
     }
   }
-  
+
   ## -------------------------------------- Setup -------------------------------------
   ## Handle settings
   settings <- pda.settings(
     settings = settings, params.id = params.id, param.names = param.names,
     prior.id = prior.id, chain = chain, iter = iter, adapt = adapt,
-    adj.min = adj.min, ar.target = ar.target, jvar = jvar)
+    adj.min = adj.min, ar.target = ar.target, jvar = jvar
+  )
 
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
@@ -87,24 +86,24 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   }
 
   ## Load priors
-  if(is.null(external.priors)){
-    temp        <- pda.load.priors(settings, con, run.normal)
-    prior.list  <- temp$prior
-    settings    <- temp$settings
-  }else{
-    prior.list  <- external.priors
+  if (is.null(external.priors)) {
+    temp <- pda.load.priors(settings, con, run.normal)
+    prior.list <- temp$prior
+    settings <- temp$settings
+  } else {
+    prior.list <- external.priors
   }
-  pname       <- lapply(prior.list, rownames)
+  pname <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
 
   ## Load data to assimilate against
-  if(is.null(external.data)){
+  if (is.null(external.data)) {
     inputs <- load.pda.data(settings, con, external.formats)
-  }else{
+  } else {
     inputs <- external.data
   }
   n.input <- length(inputs)
-  
+
   # get hyper parameters if any
   hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
 
@@ -117,15 +116,19 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    PEcAn.logger::logger.severe(paste(my.write.config, "does not exist. Please make sure that the PEcAn interface is loaded for",
-                        settings$model$type))
+    PEcAn.logger::logger.severe(paste(
+      my.write.config, "does not exist. Please make sure that the PEcAn interface is loaded for",
+      settings$model$type
+    ))
   }
 
   ## Select parameters to constrain
-  prior.ind <- lapply(seq_along(settings$pfts),
-                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
-  n.param   <- sapply(prior.ind, length)
-  
+  prior.ind <- lapply(
+    seq_along(settings$pfts),
+    function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]])
+  )
+  n.param <- sapply(prior.ind, length)
+
 
   ## NOTE: The listed samplers here require more than 1 parameter for now because of the way their
   ## cov is calculated
@@ -141,38 +144,42 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   }
 
   ## Create an ensemble id
-  if(is.null(ensemble.id)){
+  if (is.null(ensemble.id)) {
     settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
-  }else{
+  } else {
     settings$assim.batch$ensemble.id <- ensemble.id
   }
 
-  if(!remote){
-    settings_outdir  <- settings$outdir
-  }else{
-    settings_outdir  <- dirname(settings$host$rundir)
-    settings_outdir  <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
+  if (!remote) {
+    settings_outdir <- settings$outdir
+  } else {
+    settings_outdir <- dirname(settings$host$rundir)
+    settings_outdir <- gsub(settings$assim.batch$ensemble.id, "", settings_outdir)
   }
-  
+
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
-  prior.all     <- do.call("rbind", prior.list)
+  prior.all <- do.call("rbind", prior.list)
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
-  prior.fn.all  <- pda.define.prior.fn(prior.all)
+  prior.fn.all <- pda.define.prior.fn(prior.all)
   prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
-  pname.all     <- unlist(pname)
+  pname.all <- unlist(pname)
 
 
   ## Set initial conditions
-  parm          <- sapply(prior.fn.all$qprior, eval, list(p = 0.5))
-  names(parm)   <- pname.all
+  parm <- sapply(prior.fn.all$qprior, eval, list(p = 0.5))
+  names(parm) <- pname.all
 
 
-  PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
-  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
-                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
-                nrow = sum(n.param))
+  PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors.")) # M/AM/DR/DRAM can't work with -Inf, Inf values
+  rng <- matrix(
+    c(
+      sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
+      sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))
+    ),
+    nrow = sum(n.param)
+  )
   # if it's a uniform distribution, use given boundaries
   for (i in 1:sum(n.param)) {
     if (prior.all[prior.ind.all, ][i, 1] == "unif") {
@@ -181,22 +188,24 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     }
   }
   prior.sel <- prior.all[prior.ind.all, ]
-  prior.sel$lower <-  rng[,1]
-  prior.sel$upper <-  rng[,2]
-  prior.sel$best  <-  parm[prior.ind.all]
-  
+  prior.sel$lower <- rng[, 1]
+  prior.sel$upper <- rng[, 2]
+  prior.sel$best <- parm[prior.ind.all]
+
   ## Create prior class object for BayesianTools
-  bt.prior      <- pda.create.btprior(prior.sel)
+  bt.prior <- pda.create.btprior(prior.sel)
 
   ## Let's not write every bruteforce run to DB for now, also DB con might be an issue in parallelizing
-  if(is.null(external.formats)){
+  if (is.null(external.formats)) {
     external.formats <- list()
-    for(it in seq_len(n.input)){
-      external.formats[[it]] <- PEcAn.DB::query.format.vars(bety = con,
-                                            input.id = settings$assim.batch$inputs[[it]]$input.id)
+    for (it in seq_len(n.input)) {
+      external.formats[[it]] <- PEcAn.DB::query.format.vars(
+        bety = con,
+        input.id = settings$assim.batch$inputs[[it]]$input.id
+      )
     }
   }
-  
+
   ## Create log-likelihood function for createbayesianSetup{BayesianTools}
   ## you test with bt.likelihood(bt.prior$sampler())
   bt.likelihood <- function(x) {
@@ -213,24 +222,26 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
     now <- format(Sys.time(), "%Y%m%d%H%M%OS5")
 
     run.id <- pda.init.run(settings, NULL, my.write.config, workflow.id, run.params, n = 1, run.names = paste("run",
-                                                                                                             now, sep = "."))
+      now,
+      sep = "."
+    ))
 
     ## Start model run
     PEcAn.remote::start.model.runs(settings, FALSE)
-    
+
     ## Read model outputs
     align.return <- pda.get.model.output(settings, run.id, NULL, inputs, external.formats)
     model.out <- align.return$model.out
-    if(all(!is.na(model.out))){
+    if (all(!is.na(model.out))) {
       inputs <- align.return$inputs
     }
 
     # retrieve n
-    n.of.obs <- sapply(inputs,`[[`, "n")
-    names(n.of.obs) <- sapply(model.out,names)
+    n.of.obs <- sapply(inputs, `[[`, "n")
+    names(n.of.obs) <- sapply(model.out, names)
 
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
-    if(any(unlist(any.mgauss) == "multipGauss")) {
+    if (any(unlist(any.mgauss) == "multipGauss")) {
       isbias <- which(unlist(any.mgauss) == "multipGauss")
       # testing now
       nbias <- 1
@@ -240,8 +251,8 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
       bias.terms <- NULL
     }
 
-    if(!is.null(bias.terms)){
-      all.bias <- lapply(bias.terms, function(n) n[1,])
+    if (!is.null(bias.terms)) {
+      all.bias <- lapply(bias.terms, function(n) n[1, ])
       all.bias <- do.call("rbind", all.bias)
     } else {
       all.bias <- NULL
@@ -249,9 +260,11 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
 
     ## calculate error statistics
     pda.errors <- pda.calc.error(settings, NULL, model_out = model.out, run.id, inputs, all.bias)
-    llik.par <- pda.calc.llik.par(settings, n = n.of.obs,
-                                  error.stats = unlist(pda.errors),
-                                  hyper.pars)
+    llik.par <- pda.calc.llik.par(settings,
+      n = n.of.obs,
+      error.stats = unlist(pda.errors),
+      hyper.pars
+    )
     ## Calculate likelihood
     LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
 
@@ -265,61 +278,66 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
   bayesianSetup <- BayesianTools::createBayesianSetup(bt.likelihood, bt.prior, parallel = FALSE)
 
   PEcAn.logger::logger.info("MCMC starting. Please wait.")
-  
-  nChains <-  bt.settings$nrChains
-  bt.settings$nrChains <-  1
-  
+
+  nChains <- bt.settings$nrChains
+  bt.settings$nrChains <- 1
+
   # prepare for parallelization
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), nChains)
-  
-  if (!is.null(settings$assim.batch$extension)) {
-    load(settings$assim.batch$out.path)  # loads previous out list
 
-    cl <- parallel::makeCluster(ncores, type="FORK")
+  if (!is.null(settings$assim.batch$extension)) {
+    load(settings$assim.batch$out.path) # loads previous out list
+
+    cl <- parallel::makeCluster(ncores, type = "FORK")
     parallel::clusterEvalQ(cl, library(BayesianTools))
-    
+
     ## Parallel over chains
-    out <- parallel::parLapply(cl, out, function(x){
+    out <- parallel::parLapply(cl, out, function(x) {
       out <- BayesianTools::runMCMC(bayesianSetup = x, sampler = sampler, settings = bt.settings)
       return(out)
-    }) 
-    
+    })
   } else {
-
-    cl <- parallel::makeCluster(ncores, type="FORK")
+    cl <- parallel::makeCluster(ncores, type = "FORK")
     parallel::clusterEvalQ(cl, library(BayesianTools))
-    
+
     ## Parallel over chains
-    out <- parallel::parLapply(cl, seq_len(ncores), function(x){
+    out <- parallel::parLapply(cl, seq_len(ncores), function(x) {
       out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
       return(out)
-    }) 
-      
+    })
   }
-  
+
   parallel::stopCluster(cl)
-  
+
   ## Combine the chains
   out <- BayesianTools::createMcmcSamplerList(out)
 
   # save the out object for restart functionality and further inspection
-  settings$assim.batch$out.path <- file.path(settings$outdir,
-                                             paste0("out.pda",
-                                                    settings$assim.batch$ensemble.id,
-                                                    ".Rdata"))
+  settings$assim.batch$out.path <- file.path(
+    settings$outdir,
+    paste0(
+      "out.pda",
+      settings$assim.batch$ensemble.id,
+      ".Rdata"
+    )
+  )
   save(out, file = settings$assim.batch$out.path)
-  
+
   # save inputs list, this object has been processed for autocorrelation correction
   # this can take a long time depending on the data, re-load and skip in next iteration
   external.data <- inputs
-  save(external.data, file = file.path(settings_outdir,
-                                       paste0("external.",
-                                              settings$assim.batch$ensemble.id,
-                                              ".Rdata")))
+  save(external.data, file = file.path(
+    settings_outdir,
+    paste0(
+      "external.",
+      settings$assim.batch$ensemble.id,
+      ".Rdata"
+    )
+  ))
 
   # prepare for post-process
-  samples   <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE)  # BayesianTools::getSample
+  samples <- lapply(out, BayesianTools::getSample, parametersOnly = TRUE) # BayesianTools::getSample
   mcmc.list <- lapply(samples, `colnames<-`, pname.all[prior.ind.all])
 
   # Separate each PFT's parameter samples to their own list
@@ -341,5 +359,4 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
 
   ## Output an updated settings list
   return(settings)
-
 } # pda.bayesian.tools

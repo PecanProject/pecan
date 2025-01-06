@@ -2,7 +2,7 @@ context("check that BioCro output is summarized correctly")
 
 # Hand-calculate reference values
 ref_output <- mock_run()
-ref_met <- read.csv("data/US-Bo1.2004.csv", nrows=7*24)
+ref_met <- read.csv("data/US-Bo1.2004.csv", nrows = 7 * 24)
 ref_leaf1 <- max(ref_output$Leaf[ref_output$DayofYear == 1])
 ref_soil5 <- sum(ref_output$SoilEvaporation[ref_output$DayofYear == 5])
 ref_mat <- mean(ref_met$Temp)
@@ -12,7 +12,8 @@ metpath <- "data/US-Bo1"
 settings <- PEcAn.settings::read.settings("data/pecan.biocro.xml")
 settings$database$bety <- do.call(
   PEcAn.DB::get_postgres_envvars,
-  settings$database$bety)
+  settings$database$bety
+)
 config <- PEcAn.settings::prepare.settings(settings)
 config$pft$type$genus <- "Salix"
 config$run$start.date <- as.POSIXct("2004-01-01")

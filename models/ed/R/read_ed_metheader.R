@@ -1,9 +1,9 @@
 #' Read ED meteorology header file
 #'
-#' Read a ED_MET_DRIVER_HEADER file into a list-like object that can be 
+#' Read a ED_MET_DRIVER_HEADER file into a list-like object that can be
 #' manipulated within R. Returns a list of file formats.
 #'
-#' The output is an unnamed list with each element corresponding to a single 
+#' The output is an unnamed list with each element corresponding to a single
 #' file format. Each file format contains the following elements:
 #'
 #' - `path_prefix` -- Path and prefix of files
@@ -13,13 +13,13 @@
 #' - `dy` -- Size of latitude grid cell
 #' - `xmin` -- Minimum longitude
 #' - `ymin` -- Minimum latitude
-#' - `variables` -- Data frame of variables, with the columns described below.  
-#' Starred columns are required for writing. This table is left joined with 
+#' - `variables` -- Data frame of variables, with the columns described below.
+#' Starred columns are required for writing. This table is left joined with
 #' [met_variable_description] and [met_flag_description].
 #'    - `variable` -- Variable name
 #'    - `description` -- Variable description
 #'    - `unit` -- Variable unit
-#'    - `update_frequency` -- Update frequency (seconds) or scalar values if 
+#'    - `update_frequency` -- Update frequency (seconds) or scalar values if
 #'    `flag=4`
 #'    - `flag` -- Variable flags.
 #'    - `flag_description` -- Description of variable flag
@@ -38,11 +38,11 @@
 #' ```
 #'
 #' The variables in the third row are defined as follows:
-#' @param filename File name (including path) of met driver header file, as 
+#' @param filename File name (including path) of met driver header file, as
 #' character
-#' @param check Logical, whether or not to check file for correctness (default 
+#' @param check Logical, whether or not to check file for correctness (default
 #' = `TRUE`)
-#' @param check_files Logical. If `TRUE`, perform basic diagnostics on met 
+#' @param check_files Logical. If `TRUE`, perform basic diagnostics on met
 #' files as well.
 #' @return List of ED met input parameters. See Details.
 #' @importFrom rlang .data
@@ -71,7 +71,7 @@ read_ed_metheader <- function(filename, check = TRUE, check_files = TRUE) {
   ed_metheader <- vector("list", nvars)
   var_lines <- 6
   for (i in seq_len(nvars)) {
-    block <- seq(2 + length(comment_line) + (i-1) * var_lines, length.out = var_lines)
+    block <- seq(2 + length(comment_line) + (i - 1) * var_lines, length.out = var_lines)
     sub_file <- full_file[block]
     path_prefix <- sub_file[1]
     met_files <- PEcAn.utils::match_file(path_prefix)
@@ -141,7 +141,7 @@ met_variable_description <- tibble::tribble(
 #' Description of meteorology flags
 #'
 #' Descriptions of ED met header variable flags.
-#' 
+#'
 #' `data.frame` with the following columns:
 #'  - `flag` -- Numeric flag (in header file)
 #'  - `flag_description` -- Description of flag

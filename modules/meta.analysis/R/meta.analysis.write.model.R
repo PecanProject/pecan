@@ -5,7 +5,7 @@
 ##' @name write.ma.model
 ##' @title write.ma.model
 ##' @param modelfile model template file (ma.model.template.R)
-##' @param outfile file name of model created 
+##' @param outfile file name of model created
 ##' @param reg.model structure of regression model
 ##' @param pr.dist A string representing the root distribution name used by R, e.g. 'norm', 'lnorm', 'gamma', 'beta', etc.
 ##' @param pr.param.a first parameter value accepted by \code{pr.dist}
@@ -14,13 +14,12 @@
 ##' @param trt.n number of distinct treatments in data
 ##' @param site.n number of distinct sites in data
 ##' @param ghs.n = 1 if only non-greenhouse or greenhouse studies included, 2 if both
-##' @param tauA parameter a for gamma prior on precision 
+##' @param tauA parameter a for gamma prior on precision
 ##' @param tauB parameter b for gamma prior on precision
 ##' @return Nothing, but as a side effect, the model is written
 ##' @author David LeBauer and Mike Dietze.
-write.ma.model <- function(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n, 
+write.ma.model <- function(modelfile, outfile, reg.model, pr.dist, pr.param.a, pr.param.b, n,
                            trt.n, site.n, ghs.n, tauA, tauB) {
-  
   model.text <- scan(file = modelfile, what = "character", sep = "@")
   ## chose an uncommon separator in order to capture whole lines
   model.text <- gsub("%_%", "", model.text)
@@ -33,7 +32,7 @@ write.ma.model <- function(modelfile, outfile, reg.model, pr.dist, pr.param.a, p
   model.text <- gsub("LENGTHG", site.n, model.text)
   model.text <- gsub("TAUA", format(signif(tauA, 2), scientific = FALSE), model.text)
   model.text <- gsub("TAUB", format(signif(tauB, 2), scientific = FALSE), model.text)
-  
+
   if (ghs.n == 1) {
     model.text <- gsub("\\#GGG", "\\#", model.text)
   }

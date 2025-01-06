@@ -2,7 +2,7 @@
 #   PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
 #   on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE), add = TRUE)
 #   expect_output(
-#     db.print.connections(), 
+#     db.print.connections(),
 #     paste0(
 #       ".* Created 0 connections and executed 0 queries .* ",
 #       "Created 0 connections and executed 0 queries.*",

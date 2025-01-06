@@ -1,4 +1,3 @@
-
 #' query.allom.data
 #'
 #' Module to grab allometric information from the raw data table
@@ -17,7 +16,6 @@
 #' @param nsim       number of pseudo-data simulations for estimating SE
 #'
 query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
-  
   ## check validity of inputs
   if (is.null(pft_name) | is.na(pft_name)) {
     print(c("invalid PFT_NAME in QUERY.ALLOM.DATA", pft_name))
@@ -35,28 +33,30 @@ query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
     print("Connection not open in query.allom.data")
     return(NULL)
   }
-  
+
   ## define storage
   allomParms <- NULL
-  
+
   ## PFTs from trait database
   ##################################################################
   ## used to match species data to functional type
-  query <- paste0("SELECT s.spcd,p.id as pft,s.commonname as common,s.scientificname as scientific,",
-                  "s.\"Symbol\"", " as acronym,s.genus,", "s.\"Family\"", ",p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",
-                  pft_name, "%'")
+  query <- paste0(
+    "SELECT s.spcd,p.id as pft,s.commonname as common,s.scientificname as scientific,",
+    "s.\"Symbol\"", " as acronym,s.genus,", "s.\"Family\"", ",p.name from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",
+    pft_name, "%'"
+  )
   pft.data <- PEcAn.DB::db.query(query, con)
   if (length(pft.data) < 1) {
     print(c("QUERY.ALLOM.DATA: No species found for PFT - ", pft_name))
     return(NULL)
   }
-  
+
   ## Field data from 'Inputs' data table
   ####################################################################
   allomField <- NULL
   query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'crownAllom'"
   allomField.files <- PEcAn.DB::db.query(query, con)
-  
+
   ## Tally data from 'Input' data table
   #####################################################################
   ## Species          = FIA code (table 4, also includes sp gravity)
@@ -65,10 +65,11 @@ query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   ## Component.ID     = table 5. priorities: Foliar=18,stem=6,16, maybe 4, fine root=28,
   query <- "select * from Inputs as r join formats as f on f.id = r.format_id where f.name like 'allomTally'"
   allomTally.files <- PEcAn.DB::db.query(query, con)
-  
+
   allom <- read.allom.data(pft.data, variable, allomField.files$filepath, allomTally.files$filepath,
-                           nsim = nsim)
-  
+    nsim = nsim
+  )
+
   return(allom)
 } # query.allom.data
 
@@ -89,20 +90,20 @@ nu <- function(x) {
 #' @param x   units: mm, cm, cm2, m, in, g, kg, lb, Mg
 #' @param tp  diameter type, leave NULL if DBH. Options: 'd.b.h.^2','cbh','crc'
 AllomUnitCoef <- function(x, tp = NULL) {
-  
   y <- rep(1, length(x))
-  
+
   for (i in seq_along(x)) {
     y[i] <- switch(x[i],
-                   mm = 10,
-                   cm = 1,
-                   cm2 = NA,
-                   m = 0.01,
-                   `in` = 1 / 2.54,
-                   g = 0.001,
-                   kg = 1,
-                   lb = 0.4545,
-                   Mg = 1000)
+      mm = 10,
+      cm = 1,
+      cm2 = NA,
+      m = 0.01,
+      `in` = 1 / 2.54,
+      g = 0.001,
+      kg = 1,
+      lb = 0.4545,
+      Mg = 1000
+    )
     ## variable type corrections
     if (!is.null(tp)) {
       if (tp[i] == "d.b.h.^2") {

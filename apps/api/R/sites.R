@@ -5,23 +5,21 @@ library(dplyr)
 #' @return Site details
 #' @author Tezan Sahu
 #* @get /<site_id>
-getSite <- function(site_id, res){
-  
+getSite <- function(site_id, res) {
   site <- tbl(global_db_pool, "sites") %>%
     select(-created_at, -updated_at, -user_id, -geometry) %>%
     filter(id == !!site_id)
-  
-  
+
+
   qry_res <- site %>% collect()
-  
+
   if (nrow(qry_res) == 0) {
     res$status <- 404
-    return(list(error="Site not found"))
-  }
-  else {
+    return(list(error = "Site not found"))
+  } else {
     # Convert the response from tibble to list
     response <- list()
-    for(colname in colnames(qry_res)){
+    for (colname in colnames(qry_res)) {
       response[colname] <- qry_res[colname]
     }
     return(response)
@@ -36,22 +34,21 @@ getSite <- function(site_id, res){
 #' @return Site subset matching the site search string
 #' @author Tezan Sahu
 #* @get /
-searchSite <- function(sitename="", ignore_case=TRUE, res){
+searchSite <- function(sitename = "", ignore_case = TRUE, res) {
   sitename <- URLdecode(sitename)
-  
+
   sites <- tbl(global_db_pool, "sites") %>%
     select(id, sitename) %>%
-    filter(grepl(!!sitename, sitename, ignore.case=ignore_case)) %>%
+    filter(grepl(!!sitename, sitename, ignore.case = ignore_case)) %>%
     arrange(id)
-  
-  
+
+
   qry_res <- sites %>% collect()
-  
+
   if (nrow(qry_res) == 0) {
     res$status <- 404
-    return(list(error="Site(s) not found"))
-  }
-  else {
-    return(list(sites=qry_res, count = nrow(qry_res)))
+    return(list(error = "Site(s) not found"))
+  } else {
+    return(list(sites = qry_res, count = nrow(qry_res)))
   }
 }

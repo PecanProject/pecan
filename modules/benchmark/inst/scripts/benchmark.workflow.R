@@ -23,16 +23,13 @@ settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
 
 ################################################################################
 
-if(bm.settings$new_run){
-
+if (bm.settings$new_run) {
   # This section isn't ready yet
   # write.settings(settings = settings, outputfile = "pecan.xml", outputdir = settings$outdir)
   # # Run the workflow! YAY
   # settings <- read.settings(file.path(settings$outdir,"pecan.CHECKED.xml"))
   # results <- load(file.path(settings$outdir,"benchmarking.output.Rdata"))
-
-}else{
-
+} else {
   settings <- read_settings_BRR(settings)
   sprintf("MODEL: %s", settings$model$type)
 

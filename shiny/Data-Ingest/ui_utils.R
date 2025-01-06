@@ -4,4 +4,3 @@ source_ui <- function(...) {
     local = TRUE
   )$value
 }
-

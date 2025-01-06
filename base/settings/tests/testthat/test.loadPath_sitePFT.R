@@ -20,7 +20,7 @@ test_that("`loadPath.sitePFT` gives an error for file with number of columns not
   })
 })
 
-test_that("`loadPath.sitePFT` works for correct format of input file",{
+test_that("`loadPath.sitePFT` works for correct format of input file", {
   withr::with_tempfile("tf", fileext = ".csv", {
     settings <- list(host = "pecan")
     df <- data.frame(

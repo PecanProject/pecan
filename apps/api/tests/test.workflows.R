@@ -54,7 +54,7 @@ test_that("Submitting JSON workflow to /api/workflows/ returns Status 201", {
     "http://pecan.localhost/api/workflows/",
     httr::authenticate("carya", "illinois"),
     body = json_workflow,
-    encode='json'
+    encode = "json"
   )
   expect_equal(res$status, 201)
 })

@@ -1,5 +1,5 @@
-#You must run this script in the terminal using the code:
-#Rscript --vanilla EFI_workflow.R "/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/Site_XMLS/harvard.xml" "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/" 2021-07-01 2021-08-01
+# You must run this script in the terminal using the code:
+# Rscript --vanilla EFI_workflow.R "/projectnb/dietzelab/ahelgeso/pecan/modules/assim.sequential/inst/Site_XMLS/harvard.xml" "/projectnb/dietzelab/ahelgeso/Site_Outputs/Harvard/" 2021-07-01 2021-08-01
 
 library("PEcAn.all")
 library("PEcAn.utils")
@@ -10,51 +10,53 @@ library("R.utils")
 library("dynutils")
 
 ###### Preping Workflow for regular SIPNET Run ##############
-#set home directory as object (remember to change to your own directory before running this script)
+# set home directory as object (remember to change to your own directory before running this script)
 homedir <- "/projectnb/dietzelab/ahelgeso"
 
-#Load site.xml, start & end date, (with commandArgs specify args in terminal) and outputPath (i.e. where the model outputs will be stored) into args
-tmp = commandArgs(trailingOnly = TRUE)
-if(length(tmp)<3){
+# Load site.xml, start & end date, (with commandArgs specify args in terminal) and outputPath (i.e. where the model outputs will be stored) into args
+tmp <- commandArgs(trailingOnly = TRUE)
+if (length(tmp) < 3) {
   logger.severe("Missing required arguments")
 }
-args = list()
-args$settings = tmp[1]
-if(!file.exists(args$settings)){
+args <- list()
+args$settings <- tmp[1]
+if (!file.exists(args$settings)) {
   logger.severe("Not a valid xml path")
 }
-args$outputPath = tmp[2]
-if(!isAbsolutePath(args$outputPath)){
+args$outputPath <- tmp[2]
+if (!isAbsolutePath(args$outputPath)) {
   logger.severe("Not a valid outputPath")
 }
-args$start_date = as.Date(tmp[3])
-if(is.na(args$start_date)){
+args$start_date <- as.Date(tmp[3])
+if (is.na(args$start_date)) {
   logger.severe("No start date provided")
 }
 
-if(length(args)>3){
-  args$end_date = as.Date(tmp[4])
+if (length(args) > 3) {
+  args$end_date <- as.Date(tmp[4])
 } else {
-  args$end_date = args$start_date + 35
+  args$end_date <- args$start_date + 35
 }
 
-if(length(args)>4){
-  args$continue = tmp[5]
+if (length(args) > 4) {
+  args$continue <- tmp[5]
 } else {
-  args$continue = TRUE
+  args$continue <- TRUE
 }
 
-if(!dir.exists(args$outputPath)){dir.create(args$outputPath, recursive = TRUE)}
+if (!dir.exists(args$outputPath)) {
+  dir.create(args$outputPath, recursive = TRUE)
+}
 setwd(args$outputPath)
 
 # Open and read in settings file for PEcAn run.
 settings <- PEcAn.settings::read.settings(args$settings)
 
 start_date <- args$start_date
-end_date<- args$end_date
+end_date <- args$end_date
 
 # Finding the right end and start date
-met.start <- start_date 
+met.start <- start_date
 met.end <- met.start + lubridate::days(35)
 
 
@@ -63,7 +65,7 @@ settings$run$start.date <- as.character(met.start)
 settings$run$end.date <- as.character(met.end)
 settings$run$site$met.start <- as.character(met.start)
 settings$run$site$met.end <- as.character(met.end)
-#info
+# info
 settings$info$date <- paste0(format(Sys.time(), "%Y/%m/%d %H:%M:%S"), " +0000")
 
 # Update/fix/check settings.
@@ -74,50 +76,50 @@ settings <-
 # Write pecan.CHECKED.xml
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
-#manually add in clim files 
-con <-try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+# manually add in clim files
+con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
 
 input_check <- PEcAn.DB::dbfile.input.check(
-  siteid=settings$run$site$id %>% as.character(),
-  startdate = settings$run$start.date %>% as.Date,
+  siteid = settings$run$site$id %>% as.character(),
+  startdate = settings$run$start.date %>% as.Date(),
   enddate = NULL,
   parentid = NA,
-  mimetype="text/csv",
-  formatname="Sipnet.climna",
+  mimetype = "text/csv",
+  formatname = "Sipnet.climna",
   con = con,
   hostname = PEcAn.remote::fqdn(),
-  pattern = NULL, 
+  pattern = NULL,
   exact.dates = TRUE,
-  return.all=TRUE
+  return.all = TRUE
 )
 
-#If INPUTS already exists, add id and met path to settings file
+# If INPUTS already exists, add id and met path to settings file
 
-if(length(input_check$id) > 0){
-  #met paths 
-  clim_check = list()
-  for(i in 1:length(input_check$file_path)){
-    
+if (length(input_check$id) > 0) {
+  # met paths
+  clim_check <- list()
+  for (i in 1:length(input_check$file_path)) {
     clim_check[[i]] <- file.path(input_check$file_path[i], input_check$file_name[i])
-  }#end i loop for creating file paths 
-  #ids
-  index_id = list()
-  index_path = list()
-  for(i in 1:length(input_check$id)){
-    index_id[[i]] = as.character(input_check$id[i])#get ids as list
-    
-  }#end i loop for making lists
-  names(index_id) = sprintf("id%s",seq(1:length(input_check$id))) #rename list
-  names(clim_check) = sprintf("path%s",seq(1:length(input_check$id)))
-  
-  settings$run$inputs$met$id = index_id
-  settings$run$inputs$met$path = clim_check
-}else{PEcAn.logger::logger.error("No met file found")}
-#settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
+  } # end i loop for creating file paths
+  # ids
+  index_id <- list()
+  index_path <- list()
+  for (i in 1:length(input_check$id)) {
+    index_id[[i]] <- as.character(input_check$id[i]) # get ids as list
+  } # end i loop for making lists
+  names(index_id) <- sprintf("id%s", seq(1:length(input_check$id))) # rename list
+  names(clim_check) <- sprintf("path%s", seq(1:length(input_check$id)))
 
-if(is_empty(settings$run$inputs$met$path) & length(clim_check)>0){
-  settings$run$inputs$met$id = index_id
-  settings$run$inputs$met$path = clim_check
+  settings$run$inputs$met$id <- index_id
+  settings$run$inputs$met$path <- clim_check
+} else {
+  PEcAn.logger::logger.error("No met file found")
+}
+# settings <- PEcAn.workflow::do_conversions(settings, T, T, T)
+
+if (is_empty(settings$run$inputs$met$path) & length(clim_check) > 0) {
+  settings$run$inputs$met$id <- index_id
+  settings$run$inputs$met$path <- clim_check
 }
 PEcAn.DB::db.close(con)
 
@@ -131,22 +133,22 @@ if (args$continue && file.exists(status_file)) {
 }
 
 # Do conversions
-#settings <- PEcAn.workflow::do_conversions(settings)
+# settings <- PEcAn.workflow::do_conversions(settings)
 
 # Write model specific configs
 if (PEcAn.utils::status.check("CONFIG") == 0) {
   PEcAn.utils::status.start("CONFIG")
   settings <-
     PEcAn.workflow::runModule.run.write.configs(settings)
-  
+
   PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.CONFIGS.xml"))
 }
 
-if ((length(which(commandArgs() == "--advanced")) != 0)
-    && (PEcAn.utils::status.check("ADVANCED") == 0)) {
+if ((length(which(commandArgs() == "--advanced")) != 0) &&
+  (PEcAn.utils::status.check("ADVANCED") == 0)) {
   PEcAn.utils::status.start("ADVANCED")
   q()
 }
@@ -159,7 +161,7 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
     # If we're doing an ensemble run, don't stop. If only a single run, we
     # should be stopping.
     if (is.null(settings[["ensemble"]]) ||
-        as.numeric(settings[[c("ensemble", "size")]]) == 1) {
+      as.numeric(settings[[c("ensemble", "size")]]) == 1) {
       stop_on_error <- TRUE
     } else {
       stop_on_error <- FALSE
@@ -205,11 +207,11 @@ if (PEcAn.utils::status.check("FINISHED") == 0) {
     ),
     params = settings$database$bety
   )
-  
+
   # Send email if configured
-  if (!is.null(settings$email)
-      && !is.null(settings$email$to)
-      && (settings$email$to != "")) {
+  if (!is.null(settings$email) &&
+    !is.null(settings$email$to) &&
+    (settings$email$to != "")) {
     sendmail(
       settings$email$from,
       settings$email$to,
@@ -236,11 +238,11 @@ print("---------- PEcAn Workflow Complete ----------")
 # outdir <- args$outputPath
 # site.name <- settings$run$site$name
 # wid <- settings$workflow$id
-# 
+#
 # output_args = c(as.character(wid), site.num, outdir)
-# 
+#
 # data = efi.data.process(output_args)
-# 
+#
 # #Run SIPNET Outputs
 # data.final = data %>%
 #   mutate(date = as.Date(date)) %>%
@@ -254,9 +256,9 @@ print("---------- PEcAn Workflow Complete ----------")
 # #re-order columns and delete unnecessary columns in data.final
 # datacols <- c("date", "time", "siteID", "ensemble", "nee", "le", "vswc", "forecast", "data_assimilation")
 # data.final = data.final[datacols]
-# 
+#
 # ############ Plots to check out reliability of forecast #########################
-# 
+#
 # # ggplot(data.final, aes(x = time, y = nee, group = ensemble)) +
 # #   geom_line(aes(x = time, y = nee, color = ensemble))
 # #
@@ -265,9 +267,9 @@ print("---------- PEcAn Workflow Complete ----------")
 # #
 # # ggplot(data.final, aes(x = time, y = vswc, group = ensemble)) +
 # #   geom_line(aes(x = time, y = vswc, color = ensemble))
-# 
+#
 # ########### Export data.final  ###############
-# 
+#
 # write.csv(data.final, file = paste0(site.name, "-", start_date, "-", end_date, ".csv"))
-# 
-# 
+#
+#

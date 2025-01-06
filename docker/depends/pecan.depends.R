@@ -2,20 +2,21 @@
 
 # Don't use X11 for rgl
 Sys.setenv(RGL_USE_NULL = TRUE)
-rlib <- Sys.getenv('R_LIBS_USER', '/usr/local/lib/R/site-library')
+rlib <- Sys.getenv("R_LIBS_USER", "/usr/local/lib/R/site-library")
 Sys.setenv(RLIB = rlib)
 
 
 # Find the latest of several possible minimum package versions
 condense_version_requirements <- function(specs) {
-  if (all(specs ==  "*")) {
+  if (all(specs == "*")) {
     # any version is acceptable
     return("*")
   }
   specs <- unique(specs[specs != "*"])
   versions <- package_version(
-    gsub("[^[:digit:].-]+", "", specs))
-  
+    gsub("[^[:digit:].-]+", "", specs)
+  )
+
   if ((length(unique(versions)) > 1) && any(!grepl(">", specs))) {
     # Can't assume the latest version works for all, so give up.
     # We *could* write more to handle this case if needed, but it seems very rare:
@@ -31,7 +32,8 @@ condense_version_requirements <- function(specs) {
       "if all PEcAn packages declare the same version. ",
       "Sorry, this function doesn't know which dependency caused this. ",
       "To find it, search for these version strings in ",
-      "'pecan_package_dependencies.csv'.")
+      "'pecan_package_dependencies.csv'."
+    )
   }
   specs[versions == max(versions)]
 }
@@ -39,8 +41,8 @@ condense_version_requirements <- function(specs) {
 # Install <version> or newer,
 # upgrading dependencies only if needed to satisfy stated version requirements
 ensure_version <- function(pkg, version) {
-  vers <- gsub('[^[:digit:].-]+', '', version)
-  cmp <- get(gsub('[^<>=]+', '', version))
+  vers <- gsub("[^[:digit:].-]+", "", version)
+  cmp <- get(gsub("[^<>=]+", "", version))
   ok <- requireNamespace(pkg, quietly = TRUE) &&
     cmp(packageVersion(pkg), vers)
   if (!ok) {
@@ -50,12 +52,12 @@ ensure_version <- function(pkg, version) {
     # (install_version doesn't resolve these when upgrade=FALSE)
     dep <- desc::desc_get_deps(system.file("DESCRIPTION", package = pkg))
     dep <- dep[
-      dep$type %in% c("Depends", "Imports", "LinkingTo")
-      & dep$version != "*"
-      & dep$package != "R",]
+      dep$type %in% c("Depends", "Imports", "LinkingTo") &
+        dep$version != "*" &
+        dep$package != "R",
+    ]
     invisible(Map(ensure_version, dep$package, dep$version))
   }
-  
 }
 
 # Read list of dependencies.
@@ -76,13 +78,14 @@ remotes::install_github(gh_repos, lib = rlib)
 uniq_deps <- tapply(
   all_deps$version,
   INDEX = all_deps$package,
-  FUN = condense_version_requirements)
+  FUN = condense_version_requirements
+)
 
 
 # Install deps that declare no version restriction.
 # We'll install these with one plain old `install.packages()` call.
 unversioned <- names(uniq_deps[uniq_deps == "*"])
-missing <- unversioned[!(unversioned %in% installed.packages()[,'Package'])]
+missing <- unversioned[!(unversioned %in% installed.packages()[, "Package"])]
 install.packages(missing, lib = rlib)
 
 
@@ -92,8 +95,8 @@ install.packages(missing, lib = rlib)
 # it can't fill the version req from snapshot versions.
 # (Assumes our CRAN uses the same URL scheme as Posit package manager)
 options(repos = c(
-  getOption('repos'),
-  sub(r'(\d{4}-\d{2}-\d{2})', 'latest', getOption('repos'))
+  getOption("repos"),
+  sub(r'(\d{4}-\d{2}-\d{2})', "latest", getOption("repos"))
 ))
 versioned <- uniq_deps[uniq_deps != "*"]
 invisible(Map(ensure_version, names(versioned), versioned))
