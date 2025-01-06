@@ -88,7 +88,7 @@ Details: \url{http://www.nicebread.de/visually-weighted-regression-in-r-a-la-sol
 \examples{
 # build a demo data set
 set.seed(1)
-x <- rnorm(200, 0.8, 1.2) 
+x <- rnorm(200, 0.8, 1.2)
 e <- rnorm(200, 0, 3)*(abs(x)^1.5 + .5) + rnorm(200, 0, 4)
 e2 <- rnorm(200, 0, 5)*(abs(x)^1.5 + .8) + rnorm(200, 0, 5)
 y <- 8*x - x^3 + e

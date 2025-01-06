@@ -18,9 +18,11 @@ priors dataframe using JAGS default parameterizations
 R and BUGS have different parameterizations for some distributions. This function transforms the distributions from R defaults to BUGS defaults. BUGS is an implementation of the BUGS language, and these transformations are expected to work for bugs.
 }
 \examples{
-priors <- data.frame(distn = c('weibull', 'lnorm', 'norm', 'gamma'),
-                     parama = c(1, 1, 1, 1),
-                     paramb = c(2, 2, 2, 2))
+priors <- data.frame(
+  distn = c("weibull", "lnorm", "norm", "gamma"),
+  parama = c(1, 1, 1, 1),
+  paramb = c(2, 2, 2, 2)
+)
 r2bugs.distributions(priors)
 }
 \author{

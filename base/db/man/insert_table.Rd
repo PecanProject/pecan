@@ -13,7 +13,7 @@ insert_table(values, table, con, coerce_col_class = TRUE, drop = TRUE)
 
 \item{con}{Database connection object}
 
-\item{coerce_col_class}{logical, whether or not to coerce local data columns 
+\item{coerce_col_class}{logical, whether or not to coerce local data columns
 to SQL classes. Default = `TRUE.`}
 
 \item{drop}{logical. If `TRUE` (default), drop columns not found in SQL table.}
@@ -22,14 +22,14 @@ to SQL classes. Default = `TRUE.`}
 data frame with query results
 }
 \description{
-First, subset to matching columns. Then, make sure the local and SQL column 
-classes match, coercing local to SQL as necessary (or throwing an error). 
-Then, build an SQL string for the insert statement. Finally, insert into the 
+First, subset to matching columns. Then, make sure the local and SQL column
+classes match, coercing local to SQL as necessary (or throwing an error).
+Then, build an SQL string for the insert statement. Finally, insert into the
 database.
 }
 \examples{
 irisdb <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-dplyr::copy_to(irisdb, iris[1,], name = "iris", overwrite = TRUE)
-insert_table(iris[-1,], "iris", irisdb)
+dplyr::copy_to(irisdb, iris[1, ], name = "iris", overwrite = TRUE)
+insert_table(iris[-1, ], "iris", irisdb)
 dplyr::tbl(irisdb, "iris")
 }

@@ -29,6 +29,6 @@ read.allom.data(pft.data, component, field, parm, nsim = 10000)
 Extracts PFT- and component-specific data and allometeric equations from the specified files.
 }
 \details{
-This code also estimates the standard error from R-squared, 
+This code also estimates the standard error from R-squared,
 which is required to simulate pseudodata from the allometric eqns.
 }

@@ -25,8 +25,8 @@ id representing a model run
 Provides a consistent method of naming runs; for use in model input files and indices
 }
 \examples{
-get.run.id('ENS', left.pad.zeros(1, 5))
-get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
+get.run.id("ENS", left.pad.zeros(1, 5))
+get.run.id("SA", round(qnorm(-3), 3), trait = "Vcmax")
 }
 \author{
 Carl Davidson, David LeBauer

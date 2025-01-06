@@ -21,25 +21,25 @@ align.met(
 
 \item{source.path}{- data to be bias-corrected aligned with training data (from align.met)}
 
-\item{yrs.train}{- (optional) specify a specific years to be loaded for the training data; 
-prevents needing to load the entire dataset.  If NULL, all available years 
+\item{yrs.train}{- (optional) specify a specific years to be loaded for the training data;
+prevents needing to load the entire dataset.  If NULL, all available years
 will be loaded. If not null, should be a vector of numbers (so you can skip
 problematic years)}
 
 \item{yrs.source}{- (optional) specify a specific years to be loaded for the source data;
-prevents needing to load the entire dataset.  If NULL, all available years 
+prevents needing to load the entire dataset.  If NULL, all available years
 will be loaded. If not null, should be a vector of numbers (so you can skip
 problematic years)}
 
 \item{n.ens}{- number of ensemble members to generate and save}
 
-\item{pair.mems}{- logical stating whether ensemble members should be paired in 
+\item{pair.mems}{- logical stating whether ensemble members should be paired in
 the case where ensembles are being read in in both the training and source data}
 
-\item{mems.train}{- (optional) string of ensemble identifiers that ensure the training data is read 
+\item{mems.train}{- (optional) string of ensemble identifiers that ensure the training data is read
 in a specific order to ensure consistent time series & proper error propagation.
-If null, members of the training data ensemble will be randomly selected and 
-ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will 
+If null, members of the training data ensemble will be randomly selected and
+ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will
 ensure ensemble members are properly identified and combined.}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
@@ -50,28 +50,28 @@ ensure ensemble members are properly identified and combined.}
 2-layered list (stored in memory) containing the training and source data that are now matched
         in temporal resolution have the specified number of ensemble members
          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
-           are both lists that contain separate data frames for time indices and all available met 
+           are both lists that contain separate data frames for time indices and all available met
            variables with ensemble members in columns
 }
 \description{
-This script aligns meteorology datasets in at temporal resolution for debiasing & 
-             temporal downscaling.  
-             Note: The output here is stored in memory!  
-             Note: can probably at borrow from or adapt align_data.R in Benchmarking module, but 
+This script aligns meteorology datasets in at temporal resolution for debiasing &
+             temporal downscaling.
+             Note: The output here is stored in memory!
+             Note: can probably at borrow from or adapt align_data.R in Benchmarking module, but
              it's too much of a black box at the moment.
 }
 \details{
 Align meteorology datasets for debiasing
 
-1. Assumes that both the training and source data are in *at least* daily resolution 
-            and each dataset is in a consistent temporal resolution being read from a single file 
-            (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers 
+1. Assumes that both the training and source data are in *at least* daily resolution
+            and each dataset is in a consistent temporal resolution being read from a single file
+            (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers
             are in monthly resolution and temperature is in daily will need to be reconciled using
             one of the "met2CF" or "download" or "extract" functions
-         2. Default file structure: Ensembles members for a given site or set of simes are housed 
-            in a common folder with the site ID.  Right now everything is based off of Christy's 
+         2. Default file structure: Ensembles members for a given site or set of simes are housed
+            in a common folder with the site ID.  Right now everything is based off of Christy's
             PalEON ensemble ID scheme where the site ID is a character string (e.g. HARVARD) followed
-            the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
+            the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number
             (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
             "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
             with each year in a separate netcdf file inside of it.  "bcc-csm1-1_004" is an example of

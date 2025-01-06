@@ -28,11 +28,11 @@ or list and it can return either a random sample of length n OR a sample from a 
 \dontrun{
 # return 1st through 99th quantile of standard normal distribution:
 PEcAn.priors::get.sample(
-   prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+   prior = data.frame(distn = 'norm', parama = 0, paramb = 1),
    p = 1:99/100)
 # return 100 random samples from standard normal distribution:
 PEcAn.priors::get.sample(
-   prior = data.frame(distn = 'norm', parama = 0, paramb = 1), 
+   prior = data.frame(distn = 'norm', parama = 0, paramb = 1),
    n = 100)
 }
 }

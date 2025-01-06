@@ -19,5 +19,5 @@ vector of integers identifying textural class of each input layer.
 This function determines the soil class number based on the fraction of sand, clay, and silt
 }
 \examples{
-sclass(0.3,0.3)
+sclass(0.3, 0.3)
 }

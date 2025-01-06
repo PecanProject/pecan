@@ -34,10 +34,10 @@ Extract soil data from gssurgo
 }
 \examples{
 \dontrun{
-   outdir  <- "~/paleon/envTest"
-   lat     <- 40
-   lon     <- -80
-   PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
+outdir <- "~/paleon/envTest"
+lat <- 40
+lon <- -80
+PEcAn.data.land::extract_soil_gssurgo(outdir, lat, lon)
 }
 }
 \author{

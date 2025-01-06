@@ -21,7 +21,7 @@ Implementation of standard equations used to calculate mean and sd for a variety
 named distributions different
 }
 \examples{
-distn.stats('norm', 0, 1)
+distn.stats("norm", 0, 1)
 }
 \author{
 David LeBauer

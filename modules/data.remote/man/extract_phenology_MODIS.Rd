@@ -14,7 +14,7 @@ extract_phenology_MODIS(
 )
 }
 \arguments{
-\item{site_info}{A dataframe of site info containing the BETYdb site ID, 
+\item{site_info}{A dataframe of site info containing the BETYdb site ID,
 site name, latitude, and longitude, e.g.}
 
 \item{start_date}{Start date to download data}
@@ -23,14 +23,14 @@ site name, latitude, and longitude, e.g.}
 
 \item{outdir}{Path to store the outputs}
 
-\item{run_parallel}{optional method to download data parallely. Only works if more than 1 
+\item{run_parallel}{optional method to download data parallely. Only works if more than 1
 site is needed and there are >1 CPUs available.}
 
-\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the
 number of CPU's available, enter NULL.}
 }
 \value{
-the path for output file 
+the path for output file
 The output file will be saved as a CSV file to the outdir.
 Output column names are "year", "site_id", "lat", "lon", "leafonday","leafoffday","leafon_qa","leafoff_qa"
 }

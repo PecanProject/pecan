@@ -30,11 +30,11 @@ The list of environment variables we check is taken from the
  per-session behavior (e.g. PGTZ, PGSYSCONFDIR).
 }
 \examples{
- host <- Sys.getenv("PGHOST") # to restore environment after demo
+host <- Sys.getenv("PGHOST") # to restore environment after demo
 
- Sys.unsetenv("PGHOST")
- get_postgres_envvars()$host # NULL
- get_postgres_envvars(host = "default", port = 5432)$host # "default"
+Sys.unsetenv("PGHOST")
+get_postgres_envvars()$host # NULL
+get_postgres_envvars(host = "default", port = 5432)$host # "default"
  # defaults are ignored for a variable that exists
  Sys.setenv(PGHOST = "localhost")
  get_postgres_envvars()$host # "localhost"

@@ -20,11 +20,13 @@ home directory
 }
 \examples{
 \dontrun{
-download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+download_file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt", "~/test.download.txt")
 
-download_file("
+download_file(
+  "
   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
-  "~/pres.sfc.2000.nc")
+  "~/pres.sfc.2000.nc"
+)
 }
 
 }

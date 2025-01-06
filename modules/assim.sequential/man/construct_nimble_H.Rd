@@ -18,7 +18,7 @@ construct_nimble_H(site.ids, var.names, obs.t, pft.path = NULL, by = "single")
 \item{by}{criteria, it supports by variable, site, pft, all, and single Q.}
 }
 \value{
-Returns one vector containing index for which Q to be estimated for which variable, 
+Returns one vector containing index for which Q to be estimated for which variable,
 and the other vector gives which state variable has which observation (= element.W.Data).
 }
 \description{

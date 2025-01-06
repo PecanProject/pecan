@@ -42,39 +42,47 @@ Query priors using prepared statements
 }
 \examples{
 \dontrun{
-  con <- db.open(...)
+con <- db.open(...)
 
-  # No trait provided, so return all available traits
-  pdat <- query_priors(
-    c("temperate.Early_Hardwood", "temperate.North_Mid_Hardwood",
-      "temperate.Late_Hardwood"),
-    con = con
-  )
+# No trait provided, so return all available traits
+pdat <- query_priors(
+  c(
+    "temperate.Early_Hardwood", "temperate.North_Mid_Hardwood",
+    "temperate.Late_Hardwood"
+  ),
+  con = con
+)
 
-  # Traits provided, so restrict to only those traits. Note that
-  # because `expand = TRUE`, this will search for these traits for
-  # every PFT.
-  pdat2 <- query_priors(
-    c("Optics.Temperate_Early_Hardwood",
-      "Optics.Temperate_Mid_Hardwood",
-      "Optics.Temperate_Late_Hardwood"),
-    c("leaf_reflect_vis", "leaf_reflect_nir"),
-    con = con
-  )
+# Traits provided, so restrict to only those traits. Note that
+# because `expand = TRUE`, this will search for these traits for
+# every PFT.
+pdat2 <- query_priors(
+  c(
+    "Optics.Temperate_Early_Hardwood",
+    "Optics.Temperate_Mid_Hardwood",
+    "Optics.Temperate_Late_Hardwood"
+  ),
+  c("leaf_reflect_vis", "leaf_reflect_nir"),
+  con = con
+)
 
-  # With `expand = FALSE`, search the first trait for the first PFT,
-  # the second trait for the second PFT, etc. Note that this means
-  # PFT and trait input vectors must be the same length.
-  pdat2 <- query_priors(
-    c("Optics.Temperate_Early_Hardwood",
-      "Optics.Temperate_Early_Hardwood",
-      "Optics.Temperate_Mid_Hardwood",
-      "Optics.Temperate_Late_Hardwood"),
-    c("leaf_reflect_vis",
-      "leaf_reflect_nir",
-      "leaf_reflect_vis",
-      "leaf_reflect_nir"),
-    con = con
-  )
+# With `expand = FALSE`, search the first trait for the first PFT,
+# the second trait for the second PFT, etc. Note that this means
+# PFT and trait input vectors must be the same length.
+pdat2 <- query_priors(
+  c(
+    "Optics.Temperate_Early_Hardwood",
+    "Optics.Temperate_Early_Hardwood",
+    "Optics.Temperate_Mid_Hardwood",
+    "Optics.Temperate_Late_Hardwood"
+  ),
+  c(
+    "leaf_reflect_vis",
+    "leaf_reflect_nir",
+    "leaf_reflect_vis",
+    "leaf_reflect_nir"
+  ),
+  con = con
+)
 }
 }

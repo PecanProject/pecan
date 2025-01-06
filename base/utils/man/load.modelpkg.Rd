@@ -16,7 +16,9 @@ FALSE if function returns error; else TRUE
 Load model package
 }
 \examples{
-\dontrun{require.modelpkg(BioCro)}
+\dontrun{
+require.modelpkg(BioCro)
+}
 }
 \author{
 David LeBauer

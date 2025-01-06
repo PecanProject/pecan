@@ -18,7 +18,9 @@ table with parameter statistics
 Gets statistics for LaTeX - formatted table
 }
 \examples{
-\dontrun{get.parameter.stat(mcmc.summaries[[1]], 'beta.o')}
+\dontrun{
+get.parameter.stat(mcmc.summaries[[1]], "beta.o")
+}
 }
 \author{
 David LeBauer

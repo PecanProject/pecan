@@ -27,8 +27,8 @@ predict_subdaily_met(
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
 
-\item{in.path}{- base path to dataset you wish to temporally downscale; Note: in order for parallelization 
-to work, the in.prefix will need to be appended as the final level of the file structure.  
+\item{in.path}{- base path to dataset you wish to temporally downscale; Note: in order for parallelization
+to work, the in.prefix will need to be appended as the final level of the file structure.
 For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory with that title in in.path.}
 
 \item{in.prefix}{- prefix of model dataset, i.e. if file is GFDL.CM3.rcp45.r1i1p1.2006 the prefix is 'GFDL.CM3.rcp45.r1i1p1'}
@@ -42,7 +42,7 @@ For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory wit
 
 \item{yrs.predict}{- years for which you want to generate met.  if NULL, all years in in.path will be done}
 
-\item{ens.labs}{- vector containing the labels (suffixes) for each ensemble member; this allows you to add to your 
+\item{ens.labs}{- vector containing the labels (suffixes) for each ensemble member; this allows you to add to your
 ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}

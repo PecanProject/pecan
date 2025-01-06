@@ -13,7 +13,7 @@ noaa_stage2(
 )
 }
 \arguments{
-\item{cycle}{Hour at which forecast was made, as character string 
+\item{cycle}{Hour at which forecast was made, as character string
 (`"00"`, `"06"`, `"12"` or `"18"`). Only `"00"` (default) has 30 days horizon.}
 
 \item{version}{GEFS forecast version. Prior versions correspond to forecasts

@@ -14,5 +14,7 @@ Used in web/workflow.R to parse command line arguments.
 See also https://github.com/PecanProject/pecan/pull/2626.
 }
 \examples{
-\dontrun{./web/workflow.R -h}
+\dontrun{
+. / web / workflow.R - h
+}
 }

@@ -20,10 +20,10 @@ Dictionary of terms used to identify traits in ed, filenames, and figures
 \examples{
 # convert parameter name to a string appropriate for end-use plotting
 \dontrun{
-trait.lookup('growth_resp_factor')
-trait.lookup('growth_resp_factor')$figid
+trait.lookup("growth_resp_factor")
+trait.lookup("growth_resp_factor")$figid
 
 # get a list of all traits and units in dictionary
-trait.lookup()[,c('figid', 'units')]
+trait.lookup()[, c("figid", "units")]
 }
 }

@@ -16,8 +16,8 @@ TRUE if the units is parseable, FALSE otherwise.
 Function will replace the now-unmaintained \code{udunits2::ud.is.parseable}
 }
 \examples{
-  unit_is_parseable("g/sec^2")
-  unit_is_parseable("kiglometters")
+unit_is_parseable("g/sec^2")
+unit_is_parseable("kiglometters")
 
 }
 \author{

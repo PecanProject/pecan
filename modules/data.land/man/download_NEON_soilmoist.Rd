@@ -26,8 +26,8 @@ Both variables will be saved in outdir automatically (chr)}
 \item{enddate}{start date as YYYY-mm. If left empty, all data available will be downloaded (chr)}
 
 \item{outdir}{out directory to store the following data:
-.rds list files of SWC and SIC data for each site and sensor position, 
-sensor positions .csv for each site, 
+.rds list files of SWC and SIC data for each site and sensor position,
+sensor positions .csv for each site,
 variable description .csv file,
 readme .csv file}
 }

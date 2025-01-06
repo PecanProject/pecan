@@ -9,31 +9,31 @@
 A list with 26 entries:
 \describe{
   \item{air.cond, h2o.cond, sand.cond, silt.cond, clay.cond}{
-	thermal conductivity, W m^-1 K^-1}
+		thermal conductivity, W m^-1 K^-1}
   \item{air.hcap, sand.hcap, silt.hcap, clay.hcap}{heat capacity,
-	J m^-3 K^-1}
+		J m^-3 K^-1}
   \item{kair, ksand, ksilt, kclay}{relative conductivity factor}
   \item{fieldcp.K}{hydraulic conductance at field capacity, mm day^-1}
   \item{grav}{gravity acceleration, m s^-2}
   \item{soil.key}{Abbreviations for each of 18 soil texture classes, e.g.
 		"SiL", "LSa"}
   \item{soil.name}{Names for 18 soil texture classes, e.g. "Sand",
-	"Silty clay"}
+		"Silty clay"}
   \item{soilcp.MPa}{soil water potential when air-dry, MPa}
   \item{soilld.MPa}{soil water potential at critical water content, MPa}
   \item{soilwp.MPa}{soil water potential at wilting point, MPa}
   \item{stext.lines}{list of 18 lists, each giving minimum and maximum
-  	sand/silt/clay contents for a soil texture class}
+	  	sand/silt/clay contents for a soil texture class}
   \item{stext.polygon}{list of 18 lists, each giving corner points in the
-	soil texture triangle for a soil texture class}
+		soil texture triangle for a soil texture class}
   \item{texture}{data frame with 13 rows and 21 columns, giving default
-	parameter values for 13 named soil textures}
+		parameter values for 13 named soil textures}
   \item{theta.crit}{critical water content (fractional soil moisture at
-	which plants start dropping leaves), m^3 m^-3}
+		which plants start dropping leaves), m^3 m^-3}
   \item{xclay.def}{default volume fraction of sand in each of 18 soil
-	texture classes}
+		texture classes}
   \item{xsand.def}{default volume fraction of clay in each of 18 soil
-	texture classes}
+		texture classes}
 }
 }
 \source{

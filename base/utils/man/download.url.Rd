@@ -29,6 +29,6 @@ it will return the name of the file
 }
 \examples{
 \dontrun{
-download.url('http://localhost/', index.html)
+download.url("http://localhost/", index.html)
 }
 }

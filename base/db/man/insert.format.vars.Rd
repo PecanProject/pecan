@@ -56,7 +56,8 @@ formats_variables_tibble <- tibble::tibble(
   name = c("NPP", NA, "YEAR"),
   unit = c("g C m-2 yr-1", NA, NA),
   storage_type = c(NA, NA, "\%Y"),
-  column_number = c(2, NA, 4))
+  column_number = c(2, NA, 4)
+)
 
 insert.format.vars(
   con = con,
@@ -65,7 +66,8 @@ insert.format.vars(
   notes = "NPP from Harvard Forest.",
   header = FALSE,
   skip = 0,
-  formats_variables = formats_variables_tibble)
+  formats_variables = formats_variables_tibble
+)
 }
 }
 \author{

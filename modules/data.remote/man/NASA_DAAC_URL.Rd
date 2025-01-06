@@ -15,7 +15,7 @@ NASA_DAAC_URL(
 )
 }
 \arguments{
-\item{base_url}{Character: base URL for the CMR search. 
+\item{base_url}{Character: base URL for the CMR search.
 default is "https://cmr.earthdata.nasa.gov/search/granules.json?pretty=true".}
 
 \item{provider}{Character: ID of data provider from NASA DAAC. See `NASA_CMR_finder` for more details.}
@@ -42,10 +42,12 @@ provider <- "ORNL_CLOUD"
 concept_id <- "C2770099044-ORNL_CLOUD"
 bbox <- "-121,33,-117,35"
 daterange <- c("2022-02-23", "2022-05-30")
-URL <- NASA_DAAC_URL(provider = provider, 
-concept_id = concept_id, 
-bbox = bbox, 
-daterange = daterange)
+URL <- NASA_DAAC_URL(
+  provider = provider,
+  concept_id = concept_id,
+  bbox = bbox,
+  daterange = daterange
+)
 }
 }
 \author{

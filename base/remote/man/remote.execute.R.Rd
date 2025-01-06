@@ -39,7 +39,7 @@ machine it will execute the command locally without ssh.
 }
 \examples{
 \dontrun{
-  remote.execute.R('list.files()', host='localhost', verbose=FALSE)
+remote.execute.R("list.files()", host = "localhost", verbose = FALSE)
 }
 }
 \author{

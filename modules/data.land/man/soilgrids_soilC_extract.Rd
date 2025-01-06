@@ -7,25 +7,25 @@
 soilgrids_soilC_extract(site_info, outdir = NULL, verbose = TRUE)
 }
 \arguments{
-\item{site_info}{A dataframe of site info containing the BETYdb site ID, 
-site name, latitude, and longitude, e.g. 
+\item{site_info}{A dataframe of site info containing the BETYdb site ID,
+site name, latitude, and longitude, e.g.
 (site_id, site_name, lat, lon)}
 
-\item{outdir}{Optional. Provide the results as a CSV file 
+\item{outdir}{Optional. Provide the results as a CSV file
 (soilgrids_soilC_data.csv)}
 
 \item{verbose}{Provide progress feedback to the terminal? TRUE/FALSE}
 }
 \value{
-a dataframe containing the total soil carbon values  
-and the corresponding standard deviation values (uncertainties) for each location 
+a dataframe containing the total soil carbon values
+and the corresponding standard deviation values (uncertainties) for each location
 Output column names are c("Site_ID","Site_Name","Latitude","Longitude",
 "Total_soilC","Std_soilC")
 }
 \description{
 soilgrids_soilC_extract function
-A function to extract total soil organic carbon for a single or group of 
-lat/long locationsbased on user-defined site location from SoilGrids250m 
+A function to extract total soil organic carbon for a single or group of
+lat/long locationsbased on user-defined site location from SoilGrids250m
 version 2.0 : https://soilgrids.org
 }
 \examples{
@@ -41,7 +41,7 @@ db_password <- 'bety'
 bety <- list(user='bety', password='bety', host=host_db,
 dbname='betydb', driver=RPostgres::Postgres(),write=FALSE)
 
-con <- DBI::dbConnect(drv=bety$driver, dbname=bety$dbname, host=bety$host, 
+con <- DBI::dbConnect(drv=bety$driver, dbname=bety$dbname, host=bety$host,
 password=bety$password, user=bety$user)
 
 suppressWarnings(site_qry <- glue::glue_sql("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
@@ -55,7 +55,7 @@ DBI::dbDisconnect(con)
 
 site_info <- qry_results.2
 verbose <- TRUE
-system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info, 
+system.time(result_soc <- PEcAn.data.land::soilgrids_soilC_extract(site_info=site_info,
 verbose=verbose))
 result_soc
 

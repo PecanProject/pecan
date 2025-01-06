@@ -47,11 +47,9 @@ Requires the `progress` package to be installed.}
 Download NARR time series for a single site
 }
 \examples{
-
 \dontrun{
 download.NARR_site(tempdir(), "2001-01-01", "2001-01-12", 43.372, -89.907)
 }
-
 
 }
 \author{

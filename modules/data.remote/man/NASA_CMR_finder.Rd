@@ -7,12 +7,12 @@
 NASA_CMR_finder(doi)
 }
 \arguments{
-\item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained 
-directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
+\item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained
+directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through
 https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).}
 }
 \value{
-A list with each containing corresponding provider and concept ids 
+A list with each containing corresponding provider and concept ids
 given the data doi.
 }
 \description{

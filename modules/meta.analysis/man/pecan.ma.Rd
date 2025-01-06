@@ -69,12 +69,12 @@ function to modify the \code{ma.model.template.bug} generic model.
   values = list(pft))[[1]]
   traits <- c("SLA", "Vcmax")
   trait_string <- paste(shQuote(traits), collapse = ",")
-  
+
   # Load traits and priors from BETY
   species <- PEcAn.DB::query.pft_species(pft, con = con)
   trait.data <- PEcAn.DB::query.traits(species[["id"]], c("SLA", "Vcmax"), con = con)
   prior.distns <- PEcAn.DB::query.priors(pft_id, trait_string, con = con)
-  
+
   # Pre-process data
   jagged.data <- lapply(trait.data, PEcAn.MA::jagify)
   taupriors <- list(tauA = 0.01,

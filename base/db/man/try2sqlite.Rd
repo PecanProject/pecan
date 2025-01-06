@@ -13,8 +13,8 @@ Multiple files are combined with `data.table::rbindlist`.}
 \item{sqlite_file}{Target SQLite database file name, as character.}
 }
 \description{
-The TRY file is huge and unnecessarily long, which makes it difficult to 
-work with. The resulting SQLite database is much smaller on disk, and can be 
+The TRY file is huge and unnecessarily long, which makes it difficult to
+work with. The resulting SQLite database is much smaller on disk, and can be
 read much faster thanks to lazy evaluation.
 }
 \details{

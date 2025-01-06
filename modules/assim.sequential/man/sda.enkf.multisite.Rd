@@ -33,9 +33,9 @@ sda.enkf.multisite(
 
 \item{ensemble.samples}{Pass ensemble.samples from outside to avoid GitHub check issues.}
 
-\item{control}{List of flags controlling the behavior of the SDA. 
-`trace` for reporting back the SDA outcomes; 
-`TimeseriesPlot` for post analysis examination; 
+\item{control}{List of flags controlling the behavior of the SDA.
+`trace` for reporting back the SDA outcomes;
+`TimeseriesPlot` for post analysis examination;
 `debug` decide if we want to pause the code and examining the variables inside the function;
 `pause` decide if we want to pause the SDA workflow at current time point t;
 `Profiling` decide if we want to export the temporal SDA outputs in CSV file;

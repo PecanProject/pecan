@@ -23,17 +23,20 @@ Title Identify pft for each site of a multi-site settings using NLCD and Eco-reg
 }
 \examples{
 \dontrun{
- NLCD <- file.path(
-   "/fs", "data1", "pecan.data", "input",
-   "nlcd_2001_landcover_2011_edition_2014_10_10",
-   "nlcd_2001_landcover_2011_edition_2014_10_10.img")
- Ecoregion <- file.path(
-   "/projectnb", "dietzelab", "dongchen",
-   "All_NEON_SDA", "NEON42", "eco-region", "us_eco_l3_state_boundaries.shp")
- settings <- PEcAn.settings::read.settings(
-   "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml")
- con <- PEcAn.DB::db.open(settings$database$bety)
-   site_pft_info <- Create_Site_PFT_CSV(settings, Ecoregion, NLCD, con)
+NLCD <- file.path(
+  "/fs", "data1", "pecan.data", "input",
+  "nlcd_2001_landcover_2011_edition_2014_10_10",
+  "nlcd_2001_landcover_2011_edition_2014_10_10.img"
+)
+Ecoregion <- file.path(
+  "/projectnb", "dietzelab", "dongchen",
+  "All_NEON_SDA", "NEON42", "eco-region", "us_eco_l3_state_boundaries.shp"
+)
+settings <- PEcAn.settings::read.settings(
+  "/projectnb/dietzelab/dongchen/All_NEON_SDA/NEON42/pecan.xml"
+)
+con <- PEcAn.DB::db.open(settings$database$bety)
+site_pft_info <- Create_Site_PFT_CSV(settings, Ecoregion, NLCD, con)
 }
 
 }

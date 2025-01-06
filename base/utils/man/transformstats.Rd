@@ -21,10 +21,12 @@ LeBauer 2020 Transforming ANOVA and Regression statistics for Meta-analysis.
 Authorea. DOI: https://doi.org/10.22541/au.158359749.96662550
 }
 \examples{
-statdf <- data.frame(Y=rep(1,5),
-                     stat=rep(1,5),
-                     n=rep(4,5),
-                     statname=c('SD', 'MSE', 'LSD', 'HSD', 'MSD'))
+statdf <- data.frame(
+  Y = rep(1, 5),
+  stat = rep(1, 5),
+  n = rep(4, 5),
+  statname = c("SD", "MSE", "LSD", "HSD", "MSD")
+)
 transformstats(statdf)
 }
 \author{

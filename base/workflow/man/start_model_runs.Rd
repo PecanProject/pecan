@@ -27,7 +27,7 @@ Start selected ecosystem model runs within PEcAn workflow
 }}
 \examples{
 \dontrun{
-  start_model_runs(settings)
+start_model_runs(settings)
 }
 }
 \author{

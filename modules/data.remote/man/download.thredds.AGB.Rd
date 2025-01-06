@@ -29,8 +29,8 @@ download.thredds.AGB
 \examples{
 \dontrun{
 outdir <- "~/scratch/abg_data/"
-results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir, 
-           site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731), 
+results <- PEcAn.data.remote::download.thredds.AGB(outdir=outdir,
+           site_ids = c(676, 678, 679, 755, 767, 1000000030, 1000000145, 1000025731),
            run_parallel = TRUE, ncores = 8)
 }
 }

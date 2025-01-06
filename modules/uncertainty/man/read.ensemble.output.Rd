@@ -37,7 +37,7 @@ a list of ensemble model output
 Reads output from model ensemble
 }
 \details{
-Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
+Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year}
 and \code{end.year}
 }
 \author{

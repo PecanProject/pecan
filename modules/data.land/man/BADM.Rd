@@ -15,8 +15,8 @@ A data frame with 12,300 rows and 13 columns:
   \item{VARIABLE_GROUP}{category, eg abovground biomass or soil chemistry}
   \item{VARIABLE, DATAVALUE}{key and value for each measured variable}
   \item{NA_L1CODE, NA_L1NAME, NA_L2CODE, NA_L2NAME}{
-	numeric IDs and names for the Level 1 and level 2 ecoregions where
-	this site is located}
+		numeric IDs and names for the Level 1 and level 2 ecoregions where
+		this site is located}
 }
 }
 \source{

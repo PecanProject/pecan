@@ -103,9 +103,9 @@ You can use this function just to generate either one of the external.* PDA obje
 }
 \examples{
 \dontrun{
-pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs, 
+pda.externals <-  pda.generate.externals(external.data   = TRUE, obs = obs,
 varn = "NEE", varid = 297, n_eff = 106.9386,
-external.formats = TRUE, model_data_diag = TRUE, 
+external.formats = TRUE, model_data_diag = TRUE,
 model.out = "/tmp/out/outdir",
 start_date = "2017-01-01", end_date = "2018-12-31")
 }

@@ -33,13 +33,13 @@ download.ICOS(
 information about the output file
 }
 \description{
-Currently available products: 
+Currently available products:
 Drought-2018 ecosystem eddy covariance flux product https://www.icos-cp.eu/data-products/YVR0-4898
 ICOS Final Fully Quality Controlled Observational Data (Level 2) https://www.icos-cp.eu/data-products/ecosystem-release
 }
 \examples{
 \dontrun{
-download.ICOS("FI-Sii", "/home/carya/pecan", "2016-01-01", "2018-01-01", product="Drought2018")
+download.ICOS("FI-Sii", "/home/carya/pecan", "2016-01-01", "2018-01-01", product = "Drought2018")
 }
 }
 \author{

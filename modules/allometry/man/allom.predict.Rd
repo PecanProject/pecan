@@ -47,12 +47,10 @@ Function for making tree-level Monte Carlo predictions
 from allometric equations estimated from the PEcAn allometry module
 }
 \examples{
-
 \dontrun{
-  object = '~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/'
-  dbh = seq(10,50,by=5)
-  mass = allom.predict(object,dbh,n=100)
-
+object <- "~/Dropbox//HF C Synthesis/Allometry Papers & Analysis/"
+dbh <- seq(10, 50, by = 5)
+mass <- allom.predict(object, dbh, n = 100)
 }
 
 }

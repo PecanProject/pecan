@@ -43,7 +43,7 @@ format is output from db/R/query.format.vars, and should have:
   format$na.strings = list of missing values to convert to NA, such as -9999
   format$skip = lines to skip excluding header
   format$vars$column_number = Column number in CSV file (optional, will use header name first)
-Columns with NA for bety variable name are dropped. 
+Columns with NA for bety variable name are dropped.
 Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
 
 \item{overwrite}{should existing files be overwritten}

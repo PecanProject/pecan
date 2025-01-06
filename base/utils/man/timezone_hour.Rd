@@ -17,7 +17,7 @@ Returns the number of hours offset to UTC for a timezone.
 }
 \examples{
 \dontrun{
-timezone_hour('America/New_York')
+timezone_hour("America/New_York")
 }
 }
 \author{

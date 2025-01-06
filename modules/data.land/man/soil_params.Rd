@@ -42,5 +42,5 @@ Estimate soil parameters from texture class or sand/silt/clay
 \examples{
 sand <- c(0.3, 0.4, 0.5)
 clay <- c(0.3, 0.3, 0.3)
-soil_params(sand=sand,clay=clay)
+soil_params(sand = sand, clay = clay)
 }

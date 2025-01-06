@@ -24,9 +24,9 @@ Extract soil data from the gridpoint closest to a location
 \examples{
 \dontrun{
 in.file <- "~/paleon/env_paleon/soil/paleon_soil.nc"
-outdir  <- "~/paleon/envTest"
-lat     <- 40
-lon     <- -80
-PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
+outdir <- "~/paleon/envTest"
+lat <- 40
+lon <- -80
+PEcAn.data.land::extract_soil_nc(in.file, outdir, lat, lon)
 }
 }

@@ -25,30 +25,30 @@ call_MODIS(
 
 \item{band}{string value for which measurement to extract}
 
-\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat, 
+\item{site_info}{Bety list of site info for parsing MODIS data: list(site_id, site_name, lat,
 lon, time_zone)}
 
 \item{product_dates}{a character vector of the start and end date of the data in YYYYJJJ}
 
 \item{outdir}{where the output file will be stored. Default is NULL and in this case only values are returned. When path is provided values are returned and written to disk.}
 
-\item{run_parallel}{optional method to download data paralleize. Only works if more than 1 
+\item{run_parallel}{optional method to download data paralleize. Only works if more than 1
 site is needed and there are >1 CPUs available.}
 
-\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the 
+\item{ncores}{number of cpus to use if run_parallel is set to TRUE. If you do not know the
 number of CPU's available, enter NULL.}
 
-\item{package_method}{string value to inform function of which package method to use to download 
+\item{package_method}{string value to inform function of which package method to use to download
 modis data. Either "MODISTools" or "reticulate" (optional)}
 
-\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good 
-(as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this 
+\item{QC_filter}{Converts QC values of band and keeps only data values that are excellent or good
+(as described by MODIS documentation), and removes all bad values. qc_band must be supplied for this
 parameter to work. Default is False. Only MODISTools option.}
 
-\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download 
+\item{progress}{TRUE reports the download progress bar of the dataset, FALSE omits the download
 progress bar. Default is TRUE. Only MODISTools option.
 
-Requires Python3 for reticulate method option. There are a number of required python libraries. 
+Requires Python3 for reticulate method option. There are a number of required python libraries.
 sudo -H pip install numpy suds netCDF4 json
 depends on the MODISTools package version 1.1.0}
 }

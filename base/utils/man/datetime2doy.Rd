@@ -29,7 +29,7 @@ Julian Day do not support non-integer days.
 \examples{
 datetime2doy("2010-01-01") # 1
 datetime2doy("2010-01-01 12:00:00") # 1.5
-cf2doy(0, "days since 2007-01-01") 
+cf2doy(0, "days since 2007-01-01")
 cf2doy(5, "days since 2010-01-01") # 6
 cf2doy(5, "days since 2010-01-01") # 6
 }

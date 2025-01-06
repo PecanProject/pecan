@@ -15,7 +15,7 @@ get.quantiles.from.density(density.df, quantiles = c(0.025, 0.5, 0.975))
 Finds quantiles on a density data frame
 }
 \examples{
-prior.df <- create.density.df(distribution = list('norm',0,1))
+prior.df <- create.density.df(distribution = list("norm", 0, 1))
 get.quantiles.from.density(prior.df)
 samp.df <- create.density.df(samps = rnorm(100))
 get.quantiles.from.density(samp.df)

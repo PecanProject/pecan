@@ -28,7 +28,7 @@ qsub_parallel
 }
 \examples{
 \dontrun{
-  qsub_parallel(settings)
+qsub_parallel(settings)
 }
 }
 \author{

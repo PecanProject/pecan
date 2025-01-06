@@ -28,7 +28,7 @@ met_temporal_downscale.Gaussian_ensemble(
 
 \item{input_met}{- the source dataset that will temporally downscaled by the train_met dataset}
 
-\item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
+\item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset
 (see download.Fluxnet2015 or download.Ameriflux)}
 
 \item{overwrite}{logical: replace output file if it already exists?}

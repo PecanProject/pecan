@@ -35,13 +35,13 @@ Currently modifies the files IN PLACE rather than creating a new copy of the fil
 }
 \examples{
 \dontrun{
-in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
-in.prefix  <- ""
-outfolder  <- "~/paleon/metTest/"
+in.path <- "~/paleon/PalEONregional_CF_site_1-24047/"
+in.prefix <- ""
+outfolder <- "~/paleon/metTest/"
 start_date <- "0850-01-01"
-end_date   <- "2010-12-31"
-overwrite  <- FALSE
-verbose    <- TRUE
+end_date <- "2010-12-31"
+overwrite <- FALSE
+verbose <- TRUE
 
 split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 }

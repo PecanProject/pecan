@@ -18,9 +18,9 @@ integer vector, all either 365 or 366
 Calculate number of days in a year based on whether it is a leap year or not.
 }
 \examples{
-days_in_year(2010)  # Not a leap year -- returns 365
-days_in_year(2012)  # Leap year -- returns 366
-days_in_year(2000:2008)  # Function is vectorized over years
+days_in_year(2010) # Not a leap year -- returns 365
+days_in_year(2012) # Leap year -- returns 366
+days_in_year(2000:2008) # Function is vectorized over years
 }
 \author{
 Alexey Shiklomanov

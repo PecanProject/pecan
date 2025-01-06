@@ -23,7 +23,7 @@ Relative Humidity and the Dewpoint Temperature in Moist Air
 A Simple Conversion and Applications. BAMS
 https://doi.org/10.1175/BAMS-86-2-225
 R = 461.5 K-1 kg-1 gas constant H2O
-L enthalpy of vaporization 
+L enthalpy of vaporization
 linear dependence on T (p 226, following eq 9)
 }
 \author{

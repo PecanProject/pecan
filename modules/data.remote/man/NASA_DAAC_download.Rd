@@ -38,8 +38,8 @@ NASA_DAAC_download(
 \item{outdir}{Character: path of the directory in which to save the
 downloaded files. Default is the current work directory(getwd()).}
 
-\item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained 
-directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
+\item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained
+directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through
 https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).}
 
 \item{netrc_file}{Character: path to the credential file, default is NULL.}
@@ -62,14 +62,16 @@ from <- "2022-02-23"
 to <- "2022-05-30"
 doi <- "10.3334/ORNLDAAC/2183"
 outdir <- "/projectnb/dietzelab/dongchen/SHIFT/test_download"
-metadata <- NASA_DAAC_download(ul_lat = ul_lat, 
-                               ul_lon = ul_lon, 
-                               lr_lat = lr_lat, 
-                               lr_lon = lr_lon, 
-                               from = from, 
-                               to = to, 
-                               doi = doi,
-                               just_path = T)
+metadata <- NASA_DAAC_download(
+  ul_lat = ul_lat,
+  ul_lon = ul_lon,
+  lr_lat = lr_lat,
+  lr_lon = lr_lon,
+  from = from,
+  to = to,
+  doi = doi,
+  just_path = T
+)
 }
 }
 \author{

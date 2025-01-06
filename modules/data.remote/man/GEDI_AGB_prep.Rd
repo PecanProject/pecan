@@ -44,16 +44,16 @@ During the first use, users will be ask to enter their Earth Explore
 \examples{
 \dontrun{
 settings <- PEcAn.settings::read.settings("pecan.xml")
-site_info <- settings \%>\% 
-  purrr::map(~.x[['run']] ) \%>\% 
-  purrr::map('site')\%>\% 
-  purrr::map(function(site.list){
-    #conversion from string to number
+site_info <- settings \%>\%
+  purrr::map(~ .x[["run"]]) \%>\%
+  purrr::map("site") \%>\%
+  purrr::map(function(site.list) {
+    # conversion from string to number
     site.list$lat <- as.numeric(site.list$lat)
     site.list$lon <- as.numeric(site.list$lon)
-    list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
-  })\%>\% 
-  dplyr::bind_rows() \%>\% 
+    list(site_id = site.list$id, lat = site.list$lat, lon = site.list$lon, site_name = site.list$name)
+  }) \%>\%
+  dplyr::bind_rows() \%>\%
   as.list()
 time_points <- seq(start.date, end.date, by = time.step)
 buffer <- 0.01
