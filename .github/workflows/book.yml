@@ -50,9 +50,18 @@ jobs:
       with:
         name: pecan-documentation
         path: book_source/_book/
+    # check if documentation repo exists
+    - name: Check if documentation repo exists
+      id: doc_exists
+      run: |
+        if git ls-remote https://github.com/${{ github.repository_owner }}/pecan-documentation.git > /dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
     # download documentation repo
     - name: Checkout documentation repo
-      if: github.event_name == 'push'
+      if: ${{ github.event_name == 'push' && steps.doc_exists.outputs.exists == 'true' }}
       uses: actions/checkout@v4
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation

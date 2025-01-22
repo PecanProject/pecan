@@ -58,7 +58,7 @@ jobs:
     - name: install sipnet
       run: |
         cd ${GITHUB_WORKSPACE}/sipnet
-        make
+        make sipnet
 
     # compile PEcAn code
     - name: build

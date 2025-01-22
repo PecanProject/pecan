@@ -100,8 +100,10 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   # launch each of the jobs
   for (run in run_list) {
     run_id_string <- format(run, scientific = FALSE)
-    # write start time to database
-    PEcAn.DB::stamp_started(con = dbcon, run = run)
+    if(write){
+      # write start time to database
+      PEcAn.DB::stamp_started(con = dbcon, run = run)
+    }
     
     # check to see if we use the model launcher
     if (is_rabbitmq) {
@@ -170,9 +172,10 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         )
       }
       
-      # write finished time to database
-      PEcAn.DB::stamp_finished(con = dbcon, run = run)
-      
+      if (write){
+        # write finished time to database
+        PEcAn.DB::stamp_finished(con = dbcon, run = run)
+      }
       pbi <- pbi + 1
       utils::setTxtProgressBar(pb, pbi)
     }
@@ -236,12 +239,12 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
     } else {
-      out <- PEcAn.remote::start_serial(
-        run = run,
-        host = settings$host,
-        rundir = settings$rundir,
-        host_rundir = settings$host$rundir,
-        job_script = "launcher.sh")
+        out <- PEcAn.remote::start_serial(
+          run = run,
+          host = settings$host,
+          rundir = settings$rundir,
+          host_rundir = settings$host$rundir,
+          job_script = "launcher.sh")
       
       # check output to see if an error occurred during the model run
       PEcAn.remote::check_model_run(out = out, stop.on.error = TRUE)

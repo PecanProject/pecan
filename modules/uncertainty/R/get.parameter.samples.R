@@ -15,10 +15,11 @@ get.parameter.samples <- function(settings,
   num.pfts  <- length(settings$pfts)
   pft.names <- list()
   outdirs   <- list()
+
   ## Open database connection
   con <- try(PEcAn.DB::db.open(settings$database$bety))
   on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
-  
+
   # If we fail to connect to DB then we set to NULL
   if (inherits(con, "try-error"))  {
     con <- NULL
@@ -202,7 +203,7 @@ get.parameter.samples <- function(settings,
                                                env.samples, ens.sample.method, param.names)
     }
   }
-  
+
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples, 
        file = file.path(settings$outdir, "samples.Rdata"))
 } # get.parameter.samples

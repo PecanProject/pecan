@@ -31,4 +31,4 @@ runModule.run.write.configs <- function(settings, overwrite = TRUE) {
   } else {
     stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }
-}
+ }
