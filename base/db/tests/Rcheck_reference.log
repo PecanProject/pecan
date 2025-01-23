@@ -81,14 +81,6 @@ The Date field is over a month old.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-match_dbcols: no visible binding for global variable ‘.’
-match_dbcols: no visible binding for global variable ‘as’
-Undefined global functions or variables:
-  . as
-Consider adding
-  importFrom("methods", "as")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
