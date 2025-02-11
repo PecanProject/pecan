@@ -66,6 +66,8 @@ Suggests:
     raster,
     reticulate,
     testthat (>= 1.0.2)
+Remotes:
+    github::ropensci/traits
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true

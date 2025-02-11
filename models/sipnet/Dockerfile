@@ -15,7 +15,7 @@ WORKDIR /src
 RUN git clone https://github.com/PecanProject/sipnet.git \
     && cd sipnet \
     && if [ "${MODEL_VERSION}" != "git" ]; then git checkout ${MODEL_VERSION}; fi \
-    && make
+    && make sipnet
 
 ########################################################################
 

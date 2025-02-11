@@ -6,6 +6,7 @@ MikkoPeltoniemi/Rpreles
 RemkoDuursma/Maeswrap
 ropensci/geonames
 ropensci/nneo
+ropensci/traits
 SticsRPacks/SticsOnR
 SticsRPacks/SticsRFiles
 VangiElia/GEDI4R
