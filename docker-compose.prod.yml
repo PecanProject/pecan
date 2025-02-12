@@ -3,6 +3,7 @@ services:
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
     image: "traefik:v2.9"
+    platform: linux/amd64
     command:
       - --log.level=INFO
       - --api=true
@@ -62,6 +63,7 @@ services:
   # postgresql + postgis to hold all the data
   postgres:
     image: mdillon/postgis:9.5
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -73,6 +75,7 @@ services:
   # ----------------------------------------------------------------------
   bety:
     image: pecan/bety:${BETY_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -97,6 +100,7 @@ services:
   # PEcAn documentation as well as PEcAn home page
   docs:
     image: pecan/docs:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -109,6 +113,7 @@ services:
   pecan:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -132,6 +137,7 @@ services:
   monitor:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -152,6 +158,7 @@ services:
   executor:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -174,6 +181,7 @@ services:
   basgra:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -188,6 +196,7 @@ services:
   sipnet:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -202,6 +211,7 @@ services:
   ed2:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -216,6 +226,7 @@ services:
   maespa:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -230,6 +241,7 @@ services:
   biocro:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -246,6 +258,7 @@ services:
   api:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/api:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
