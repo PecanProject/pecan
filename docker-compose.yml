@@ -4,7 +4,6 @@ services:
   traefik:
     hostname: traefik
     image: "traefik:v2.9"
-    platform: linux/amd64
     command:
       - --log.level=INFO
       - --api=true
@@ -69,7 +68,6 @@ services:
   postgres:
     hostname: postgres
     image: mdillon/postgis:9.5
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -87,7 +85,6 @@ services:
   bety:
     hostname: bety
     image: pecan/bety:${BETY_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -117,7 +114,6 @@ services:
   rstudio:
     hostname: rstudio
     image: pecan/base:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     command: /work/rstudio.sh
     restart: unless-stopped
     networks:
@@ -181,7 +177,6 @@ services:
     hostname: pecan-web
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -268,7 +263,6 @@ services:
     hostname: fates
     user: "${UID:-1001}:${GID:-1001}"
     image: ghcr.io/noresmhub/ctsm-api:latest
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -319,7 +313,6 @@ services:
     hostname: ed2-2_2_0
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -336,7 +329,6 @@ services:
     hostname: maespa-git
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -372,7 +364,6 @@ services:
   dbsync:
     hostname: dbsync
     image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -397,7 +388,6 @@ services:
     hostname: api
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/api:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan

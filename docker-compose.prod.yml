@@ -3,7 +3,6 @@ services:
   # webserver to handle all traffic. This can use let's encrypt to generate a SSL cert.
   traefik:
     image: "traefik:v2.9"
-    platform: linux/amd64
     command:
       - --log.level=INFO
       - --api=true
@@ -63,7 +62,6 @@ services:
   # postgresql + postgis to hold all the data
   postgres:
     image: mdillon/postgis:9.5
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -113,7 +111,6 @@ services:
   pecan:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/web:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -137,7 +134,6 @@ services:
   monitor:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -212,7 +208,6 @@ services:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
     platform: linux/amd64
-    restart: unless-stopped
     networks:
       - pecan
     environment:
@@ -241,7 +236,6 @@ services:
   biocro:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -258,7 +252,6 @@ services:
   api:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/api:${PECAN_VERSION:-latest}
-    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
