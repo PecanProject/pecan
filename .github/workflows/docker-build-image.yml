@@ -47,18 +47,15 @@ jobs:
         id: name
         run: |
           echo "image_name=$(echo ${{ inputs.image-name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "repository=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: set PARENT_IMAGE only if specified
         id: parent
         shell: bash
         run: |
-          REGISTRY=$(
-            [[ ${{ github.event_name }} == 'pull_request' ]] &&
-            echo "ghcr.io/${{ github.repository_owner }}" ||
-            echo "docker.io/pecan")
           echo "PARENT_IMAGE_IF_SET=$(
             [[ -n '${{ inputs.parent-image }}' ]] &&
-            echo "PARENT_IMAGE=${REGISTRY}/"'${{ inputs.parent-image }}'
+            echo "PARENT_IMAGE=ghcr.io/${{ steps.name.outputs.repository }}/"'${{ inputs.parent-image }}'
             )" >> $GITHUB_OUTPUT
 
       - name: set MODEL_VERSION only if specified
@@ -81,7 +78,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            name=ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image_name }}
+            name=ghcr.io/${{ steps.name.outputs.repository }}/${{ steps.name.outputs.image_name }}
             name=pecan/${{ steps.name.outputs.image_name }},enable=${{ env.check_var != null }}
           # generate Docker tags based on the following events/attributes
           tags: |
