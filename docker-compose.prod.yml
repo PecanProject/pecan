@@ -207,6 +207,7 @@ services:
   ed2:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
+    restart: unless-stopped
     platform: linux/amd64
     networks:
       - pecan
