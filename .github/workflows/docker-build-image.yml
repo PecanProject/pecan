@@ -111,7 +111,7 @@ jobs:
       - name: Login to DockerHub
         env: 
           check_var: ${{ secrets.DOCKERHUB_USERNAME }}
-        if: env.check_var != null && github.event_name != 'pull_request'
+        if: env.check_var != null
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
