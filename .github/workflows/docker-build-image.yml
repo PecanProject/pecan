@@ -84,12 +84,12 @@ jobs:
           tags: |
             type=schedule
             type=ref,event=branch,enable=${{ inputs.r-version == '4.1' }}
-            type=ref,event=branch,suffix=R${{ inputs.r-version }}
+            type=ref,event=branch,suffix=-R${{ inputs.r-version }}
             type=ref,event=pr
             type=semver,pattern={{version}},enable=${{ inputs.r-version == '4.1' }}
             type=semver,pattern={{major}}.{{minor}},enable=${{ inputs.r-version == '4.1' }}
             type=semver,pattern={{major}},enable=${{ inputs.r-version == '4.1' }}
-            type=semver,pattern={{version}},suffix=R${{ inputs.r-version }}
+            type=semver,pattern={{version}},suffix=-R${{ inputs.r-version }}
 
       # setup docker build
       - name: Set up QEMU
