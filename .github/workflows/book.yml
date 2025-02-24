@@ -31,7 +31,7 @@ jobs:
           -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)'
     # generate package documentation
     - name: Generate Package Documentation
-      working-directory:./  # This is the root directory
+      working-directory: ./  
       run: make pkgdocs
     # copy files
     - name: copy extfiles
