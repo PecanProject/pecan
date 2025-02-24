@@ -113,6 +113,11 @@ check_modules: $(BASE_I) $(MODULES_C)
 
 document: $(ALL_PKGS_D) .doc/base/all
 
+pkgdocs:
+	Rscript scripts/build_pkgdown.R $(ALL_PKGS) || exit 1
+	
+.PHONY: all install check test document shiny pkgdocs
+
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all

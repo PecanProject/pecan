@@ -1,0 +1,18 @@
+model{  
+             for (k in 1:length(Y)){
+               Y[k]  ~ dnorm(beta.ft[ft[k]], tau.y[k])T(0,)
+               tau.y[k] <- prec.y*n[k]
+               u1[k] <- n[k]/2                             
+               u2[k] <- n[k]/(2*prec.y)
+               obs.prec[k] ~ dgamma(u1[k], u2[k])
+             }
+             for (f in 1:5){
+               beta.ft[f] ~ dnorm(0, tau.ft)
+             }
+             tau.ft ~ dgamma(0.1, 0.1)
+             prec.y    ~ dgamma(0.1, 0.1)     
+             sd.y      <- 1 / sqrt(prec.y)
+             ## estimating posterior predictive for new C4 species
+             pi.pavi <- Y[length(Y)]	     
+             diff <- beta.ft[1] - beta.ft[2]
+           }

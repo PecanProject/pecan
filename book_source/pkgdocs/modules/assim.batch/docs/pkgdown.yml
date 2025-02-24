@@ -1,0 +1,8 @@
+pandoc: 2.17.1.1
+pkgdown: 2.0.2
+pkgdown_sha: ~
+articles:
+  AssimBatchVignette: AssimBatchVignette.html
+  MultiSitePDAVignette: MultiSitePDAVignette.html
+last_built: 2025-02-24T02:00Z
+

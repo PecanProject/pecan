@@ -3,6 +3,9 @@ ARG IMAGE_VERSION="latest"
 ARG PARENT_IMAGE="pecan/depends"
 FROM ${PARENT_IMAGE}:${IMAGE_VERSION}
 
+# Install R package for pkgdown
+RUN R -e "install.packages(c('pkgdown', 'remotes'))"
+
 # ----------------------------------------------------------------------
 # PEcAn version information
 # ----------------------------------------------------------------------

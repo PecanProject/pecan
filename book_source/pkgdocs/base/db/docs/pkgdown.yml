@@ -1,0 +1,8 @@
+pandoc: 2.17.1.1
+pkgdown: 2.0.2
+pkgdown_sha: ~
+articles:
+  betydb_access: betydb_access.html
+  create_sites.geometry: create_sites.geometry.html
+last_built: 2025-02-24T01:52Z
+

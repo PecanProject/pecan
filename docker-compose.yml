@@ -135,6 +135,7 @@ services:
       - USERID=${UID:-1001}
       - GROUPID=${GID:-1001}
     volumes:
+      - ./:/pecan
       - pecan:/data
       - rstudio:/home
     labels:

@@ -1,0 +1,10 @@
+pandoc: 2.17.1.1
+pkgdown: 2.0.2
+pkgdown_sha: ~
+articles:
+  ameriflux_demo: ameriflux_demo.html
+  cfmet_downscaling: cfmet_downscaling.html
+  compare_narr_cruncep_met: compare_narr_cruncep_met.html
+  tdm_downscaling: tdm_downscaling.html
+last_built: 2025-02-24T02:01Z
+
