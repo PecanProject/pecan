@@ -125,7 +125,6 @@
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
 "knitr","*","models/biocro","Suggests",FALSE
-"knitr","*","models/ed","Suggests",FALSE
 "knitr","*","models/maat","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr","*","modules/priors","Suggests",FALSE
@@ -495,7 +494,6 @@
 "rlist","*","modules/assim.sequential","Suggests",FALSE
 "rmarkdown","*","base/visualization","Suggests",FALSE
 "rmarkdown","*","models/biocro","Suggests",FALSE
-"rmarkdown","*","models/ed","Suggests",FALSE
 "rmarkdown","*","models/maat","Suggests",FALSE
 "rmarkdown","*","modules/data.atmosphere","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE

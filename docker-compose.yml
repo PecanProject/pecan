@@ -159,6 +159,7 @@ services:
   docs:
     hostname: docs
     image: pecan/docs:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -208,6 +209,7 @@ services:
     hostname: monitor
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/monitor:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -237,6 +239,7 @@ services:
     hostname: executor
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -277,6 +280,7 @@ services:
     hostname: basgra
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -293,6 +297,7 @@ services:
     hostname: sipnet-git
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -341,6 +346,7 @@ services:
     hostname: biocro-0_95
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-biocro-0.95:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -429,3 +435,4 @@ volumes:
   pecan:
   rstudio:
 
+    
