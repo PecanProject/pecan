@@ -44,6 +44,8 @@ MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
+SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
+
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
 EXPECTED_ROXYGEN_VERSION := 7.3.2
@@ -101,7 +103,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document shiny \
+.PHONY: all install check test document clean shiny \
             check_base check_models check_modules document help
 
 all: install document
@@ -130,13 +132,19 @@ book:
 .doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
 	mkdir -p $@
 
+clean:
+	rm -rf .install .check .test .doc
+	for p in $(SRCS_TO_CLEAN); do \
+		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
+	done
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make all"
 	@echo "  make document"
-	@echo "  make document modules/assim.sequential  # Generate documentation for a specific package"
+	@echo "  make .doc/modules/assim.sequential  # Generate documentation for a specific package"
 	@echo ""
 	@echo "Notes:"
 	@echo "  - Components not included: cable (models), data.mining and DART (modules)."
@@ -167,11 +175,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 # (i.e. prerequisites must exist before building target, but
 # target need not be rebuilt when a prerequisite changes)
 include Makefile.depends
-
-clean: 
-	rm -rf .install .check .test .doc
-	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
-	find models/basgra/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools: | .install
 	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
