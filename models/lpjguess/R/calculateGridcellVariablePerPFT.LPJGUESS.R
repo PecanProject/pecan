@@ -9,10 +9,12 @@
 ##' @param variable A character string specifying what variable to extract.  This can be chosen based on the LPJ-GUESS variable name
 ##' as recorded in the big list of list (that represents describes the model state in R).  Once special case is "biomass" which
 ##' returns the sum of "cmass_leaf", "cmass_root", "cmass_sap" and "cmass_heart"  
+##' @param pft.params A data frame containing PFT parameters such as allometric coefficients.
+##' @param min.diam Minimum tree diameter (in cm) required for inclusion in calculations.
 ##' @return  A numeric vector, with one entry per PFT
 ##' @export
 ##' @author Matthew Forrest
-calculateGridcellVariablePerPFT <- function(model.state, variable) {
+calculateGridcellVariablePerPFT <- function(model.state, variable, pft.params, min.diam = 5 ) {
   
   # nstands - should always be 1 but lets make sure
   nstands <- unlist(model.state$nstands)
@@ -34,19 +36,12 @@ calculateGridcellVariablePerPFT <- function(model.state, variable) {
     
     # arrays to store the aggregated gridcell level properties
     gc.sum <- numeric(length(model.state$Stand[[stand.counter]]$Standpft$active))
-   
+    
     # loop through each patch
-    print(length(model.state$Stand[[stand.counter]]$Patch))
     for(patch.counter in 1:npatches) {
-
-      
-      print("-------------------------------------------------------------------------------------")
-      print(paste("--------------------------------  PATCH ", patch.counter, " -------------------------------------"))
-      print("-------------------------------------------------------------------------------------")
-      
       
       this.patch <- model.state$Stand[[stand.counter]]$Patch[[patch.counter]]
-
+      
       # pull out the number of individuals and a list of them   
       nindividuals <- length(this.patch$Vegetation)
       all.individuals <- this.patch$Vegetation$Individuals
@@ -55,54 +50,36 @@ calculateGridcellVariablePerPFT <- function(model.state, variable) {
       for(individual.counter in 1:length(all.individuals)) {
         this.individual <- all.individuals[[individual.counter]]
         
-        # print(paste("id = ", this.individual$indiv.pft.id))
-        # print(paste("leaf =" , this.individual$cmass_leaf))
-        # print(paste("root =" , this.individual$cmass_root))
-        # print(paste("sap =" , this.individual$cmass_sap))
-        # print(paste("heart =" , this.individual$cmass_heart)) 
-        # print(paste("debt =" , this.individual$cmass_debt)) 
-        print(paste("alive =" , this.individual$alive)) 
-        print(individual.counter)
-      
-        if(this.individual$alive) {
+        # get PFT index and covert the PFT from '0-indexed' C++ style to '1-indexed' R style
+        this.pft.id <- this.individual$indiv.pft.id
+        pft.index <- this.pft.id + 1
+    
+        # calculate diameter to exclude small trees (converted to cm)
+        diam = ((this.individual$height / pft.params[pft.index, "k_allom2"]) ^ (1.0 / pft.params[pft.index, "k_allom3"])) * 100
+        print(diam)
+        if(this.individual$alive && diam > min.diam) {
           
           # get the PFT ID
-          this.pft.id <- this.individual$indiv.pft.id
+          
+          
           if(!this.pft.id %in% active.PFTs) stop(paste0("Found individual of PFT id = ",this.pft.id, 
                                                         " but this doesn't seem to be active in the LPJ-GUESS run"))
           
-          # covert the PFT from '0-indexed' C++ style to '1-indexed' R style
-          pft.index <- this.pft.id+1
           
           # calculate the total cmass and density of individuals per PFT
           if(variable == "cmass") {
             gc.sum[pft.index] <- gc.sum[pft.index] + (this.individual$cmass_leaf+this.individual$cmass_root+this.individual$cmass_heart+this.individual$cmass_sap-this.individual$cmass_debt)/npatches
-            
-            
-            print(paste("id = ", this.individual$indiv.pft.id))
-            print(paste("leaf =" , this.individual$cmass_leaf))
-            print(paste("root =" , this.individual$cmass_root))
-            print(paste("sap =" , this.individual$cmass_sap))
-            print(paste("heart =" , this.individual$cmass_heart)) 
-            print(paste("debt =" , this.individual$cmass_debt)) 
-            
-            print(gc.sum) 
-           
-            
-         }
+          }
+          
           else if(variable == "nmass") {
             gc.sum[pft.index] <- gc.sum[pft.index] + ((this.individual$nmass_leaf+this.individual$nmass_root+this.individual$nmass_heart+
-                                                                 this.individual$nmass_sap+this.individual$nstore_labile+this.individual$nstore_longterm)/npatches)
-            #gc.sum[pft.index] <- gc.sum[pft.index] + ((this.individual$nmass_leaf+this.individual$nmass_root+this.individual$nmass_heart+
-            #                                                     this.individual$nmass_sap)/npatches)
-            
-            
-            #print(paste("leaf =" , this.individual$nmass_leaf))
-            #print(paste("root =" , this.individual$nmass_root))
-            #print(paste("sap =" , this.individual$nmass_sap))
-            #print(paste("heart =" , this.individual$nmass_heart))
-            
+                                                         this.individual$nmass_sap+this.individual$nstore_labile+this.individual$nstore_longterm)/npatches)
           }
+          
+          else if(variable == "AbvGrndWood") {
+            gc.sum[pft.index] <- gc.sum[pft.index] + (AbvGrndWood(this.individual)/npatches)
+          }
+          
           else  gc.sum[pft.index] <- gc.sum[pft.index] + (this.individual[[variable]]/npatches)
           
         }
@@ -114,7 +91,7 @@ calculateGridcellVariablePerPFT <- function(model.state, variable) {
     }
     
     
-   
+    
     
   } 
   

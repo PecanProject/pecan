@@ -10,10 +10,10 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
-## Components not currently included in the build
-## (Most need more development first)
-## 	models: cable
-##	modules: data.mining, DART
+# Components not currently included in the build
+# (Most need more development first)
+# 	models: cable
+#	modules: data.mining, DART
 
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
@@ -43,6 +43,8 @@ BASE_D := $(BASE:%=.doc/%)
 MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
 ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
+
+SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
@@ -101,51 +103,43 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document shiny \
-            check_base check_models check_modules 
+.PHONY: all install check test document clean shiny \
+            check_base check_models check_modules document help
 
-all: install document ## Install all packages and generate documentation
+all: install document
 
-check_base: $(BASE_C)     ## Check base packages  
-check_models: $(MODELS_C) ## Check model packages   
+#    Note: Installs base first as Modules has a circular dependency on base
+check_base: $(BASE_C)
+check_models: $(MODELS_C)
+check_modules: $(BASE_I) $(MODULES_C)
 
-# Install base first as Modules has a circular dependency on base,
-# and then run a check on modules
-check_modules: $(BASE_I) $(MODULES_C) ## Install base packages, check module packages
+document: $(ALL_PKGS_D) .doc/base/all
 
-.PHONY: document
-document: ## Generate documentation for all packages or a single package: make document path/to-package
-	@if [ "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
-		PKG="$(filter-out $@,$(MAKECMDGOALS))"; \
-		echo "Documenting package: $$PKG"; \
-		$(call doc_R_pkg, $$PKG); \
-	else \
-		echo "Documenting all packages"; \
-		$(MAKE) $(ALL_PKGS_D) .doc/base/all; \
-	fi
-
-install: $(ALL_PKGS_I) .install/base/all ## Install all packages
-check: $(ALL_PKGS_C) .check/base/all     ## Check all packages
-test: $(ALL_PKGS_T) .test/base/all       ## Test all packages
-shiny: $(SHINY_I)                        ## Install Shiny app dependencies
-
+install: $(ALL_PKGS_I) .install/base/all
+check: $(ALL_PKGS_C) .check/base/all
+test: $(ALL_PKGS_T) .test/base/all
+shiny: $(SHINY_I)
 
 book: 
-	cd ./book_source && make build ## Render the PEcAn bookdown documentation
+	cd ./book_source && make build
 
 # Make the timestamp directories if they don't exist yet
 .doc .install .check .test .shiny_depends $(call depends,base) $(call depends,models) $(call depends,modules):
 	mkdir -p $@
 
-### Help
+clean:
+	rm -rf .install .check .test .doc
+	for p in $(SRCS_TO_CLEAN); do \
+		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
+	done
 
-help: ## Show this help message
+help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make all     "
+	@echo "  make all"
 	@echo "  make document"
-	@echo "  make document modules/assim.sequential  # Generate documentation for a specific package"
+	@echo "  make .doc/modules/assim.sequential  # Generate documentation for a specific package"
 	@echo ""
 	@echo "Notes:"
 	@echo "  - Components not included: cable (models), data.mining and DART (modules)."
@@ -153,9 +147,18 @@ help: ## Show this help message
 	@echo "  - Before submitting a PR, please ensure that all tests pass, code is linted, and documentation is up-to-date."
 	@echo ""
 	@echo "Available targets:"
-	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
-
+	@echo "  all            Install all packages and generate documentation"
+	@echo "  check_base     Run R package checks on all in base/"
+	@echo "  check_models   Run R package checks on all in models/"
+	@echo "  check_modules  Run R package checks on all in modules/"
+	@echo "  document       Generate function documentation for packages"
+	@echo "  install        Install all packages"
+	@echo "  check          Run R package checks on all packages"
+	@echo "  test           Run unit tests on all packages"
+	@echo "  shiny          Install dependencies for Shiny apps"
+	@echo "  book           Render the PEcAn bookdown documentation"
+	@echo "  clean          Remove build artifacts"
+	@echo "  help           Show this help message"
 
 ### Dependencies
 
@@ -167,12 +170,6 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 # (i.e. prerequisites must exist before building target, but
 # target need not be rebuilt when a prerequisite changes)
 include Makefile.depends
-
-.PHONY: clean
-clean: 
-	rm -rf .install .check .test .doc
-	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
-	find models/basgra/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete ## Clean build artifacts.
 
 .install/devtools: | .install
 	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"

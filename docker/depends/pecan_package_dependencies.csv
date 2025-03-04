@@ -125,7 +125,6 @@
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
 "knitr","*","models/biocro","Suggests",FALSE
-"knitr","*","models/ed","Suggests",FALSE
 "knitr","*","models/maat","Suggests",FALSE
 "knitr","*","modules/data.atmosphere","Suggests",FALSE
 "knitr","*","modules/priors","Suggests",FALSE
@@ -281,6 +280,7 @@
 "PEcAn.data.land","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.data.land","*","modules/benchmark","Suggests",TRUE
 "PEcAn.data.remote","*","base/all","Depends",TRUE
+"PEcAn.data.remote","*","base/workflow","Imports",TRUE
 "PEcAn.data.remote","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.DB","*","base/all","Depends",TRUE
 "PEcAn.DB","*","base/qaqc","Imports",TRUE
@@ -487,6 +487,7 @@
 "rlang","*","models/biocro","Imports",FALSE
 "rlang","*","models/ed","Imports",FALSE
 "rlang","*","models/ldndc","Imports",FALSE
+"rlang","*","models/sipnet","Imports",FALSE
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
 "rlang","*","modules/data.land","Imports",FALSE
@@ -496,7 +497,6 @@
 "rlist","*","modules/assim.sequential","Suggests",FALSE
 "rmarkdown","*","base/visualization","Suggests",FALSE
 "rmarkdown","*","models/biocro","Suggests",FALSE
-"rmarkdown","*","models/ed","Suggests",FALSE
 "rmarkdown","*","models/maat","Suggests",FALSE
 "rmarkdown","*","modules/data.atmosphere","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE

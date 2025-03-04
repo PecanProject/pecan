@@ -28,99 +28,6 @@ inline bool largerthanzero(double dval, int limit = 0) {
 
 
 
-
-/**
- *  @brief This does what you think it does.
- *  @ingroup sorting_algorithms
- *  @param  __a  A thing of arbitrary type.
- *  @param  __b  Another thing of arbitrary type.
- *  @return   The lesser of the parameters.
- *
- *  This is the simple classic generic implementation.  It will work on
- *  temporary expressions, since they are only evaluated once, unlike a
- *  preprocessor macro.
- */
-template<typename _Tp>
-_GLIBCXX14_CONSTEXPR
-  inline const _Tp&
-    min(const _Tp& __a, const _Tp& __b)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
-      //return __b < __a ? __b : __a;
-      if (__b < __a)
-        return __b;
-      return __a;
-    }
-
-/**
-*  @brief This does what you think it does.
-*  @ingroup sorting_algorithms
-*  @param  __a  A thing of arbitrary type.
-*  @param  __b  Another thing of arbitrary type.
-*  @return   The greater of the parameters.
-*
-*  This is the simple classic generic implementation.  It will work on
-*  temporary expressions, since they are only evaluated once, unlike a
-*  preprocessor macro.
-*/
-template<typename _Tp>
-_GLIBCXX14_CONSTEXPR
-  inline const _Tp&
-    max(const _Tp& __a, const _Tp& __b)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
-      //return  __a < __b ? __b : __a;
-      if (__a < __b)
-        return __b;
-      return __a;
-    }
-
-/**
-*  @brief This does what you think it does.
-*  @ingroup sorting_algorithms
-*  @param  __a  A thing of arbitrary type.
-*  @param  __b  Another thing of arbitrary type.
-*  @param  __comp  A @link comparison_functors comparison functor@endlink.
-*  @return   The lesser of the parameters.
-*
-*  This will work on temporary expressions, since they are only evaluated
-*  once, unlike a preprocessor macro.
-*/
-template<typename _Tp, typename _Compare>
-_GLIBCXX14_CONSTEXPR
-  inline const _Tp&
-    min(const _Tp& __a, const _Tp& __b, _Compare __comp)
-    {
-      //return __comp(__b, __a) ? __b : __a;
-      if (__comp(__b, __a))
-        return __b;
-      return __a;
-    }
-
-/**
- *  @brief This does what you think it does.
- *  @ingroup sorting_algorithms
- *  @param  __a  A thing of arbitrary type.
- *  @param  __b  Another thing of arbitrary type.
- *  @param  __comp  A @link comparison_functors comparison functor@endlink.
- *  @return   The greater of the parameters.
- *
- *  This will work on temporary expressions, since they are only evaluated
- *  once, unlike a preprocessor macro.
- */
-template<typename _Tp, typename _Compare>
-_GLIBCXX14_CONSTEXPR
-  inline const _Tp&
-    max(const _Tp& __a, const _Tp& __b, _Compare __comp)
-    {
-      //return __comp(__a, __b) ? __b : __a;
-      if (__comp(__a, __b))
-        return __b;
-      return __a;
-    }
-
 ///////////////////////////////////////////////////////////////////////////////////////
 // ALLOCATION
 // Function allocation is an internal function (do not call directly from framework);
@@ -332,7 +239,7 @@ List allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
           if (ifcdebt) {
           cmass_deficit=cmass_leaf_inc_min+cmass_root_inc_min-bminc;
           if (cmass_deficit>0.0) {
-          cmass_loan=max(min(cmass_deficit*CDEBT_MAXLOAN_DEFICIT,
+          cmass_loan=fmax(fmin(cmass_deficit*CDEBT_MAXLOAN_DEFICIT,
           (cmass_sap-cmass_debt)*CDEBT_MAXLOAN_MASS),0.0);
           bminc+=cmass_loan;
           cmass_debt_inc=cmass_loan;
@@ -443,10 +350,10 @@ List allocation(double bminc,double cmass_leaf,double cmass_root,double cmass_sa
           cmass_root_inc = bminc - cmass_leaf_inc;
           
           // Make sure we don't end up with negative cmass_leaf
-          cmass_leaf_inc = max(-cmass_leaf, cmass_leaf_inc);
+          cmass_leaf_inc = fmax(-cmass_leaf, cmass_leaf_inc);
           
           // Make sure we don't end up with negative cmass_root
-          cmass_root_inc = max(-cmass_root, cmass_root_inc);
+          cmass_root_inc = fmax(-cmass_root, cmass_root_inc);
           
           // If biomass of roots and leafs can't meet biomass decrease then
           // sapwood also needs to decrease
@@ -513,10 +420,10 @@ else {
   }
   
   // Add killed leaves to litter
-  litter_leaf_inc = max(-cmass_leaf_inc, 0.0);
+  litter_leaf_inc = fmax(-cmass_leaf_inc, 0.0);
   
   // Add killed roots to litter
-  litter_root_inc = max(-cmass_root_inc, 0.0);
+  litter_root_inc = fmax(-cmass_root_inc, 0.0);
   
   // Calculate increase in sapwood mass (which must be negative)
   // Eqn (2)
@@ -578,10 +485,10 @@ else if (lifeform == 2) {
     }
     
     // Add killed leaves to litter
-    litter_leaf_inc = max(-cmass_leaf_inc, 0.0);
+    litter_leaf_inc = fmax(-cmass_leaf_inc, 0.0);
     
     // Add killed roots to litter
-    litter_root_inc = max(-cmass_root_inc, 0.0);
+    litter_root_inc = fmax(-cmass_root_inc, 0.0);
   }
   else if (bminc < 0) {
     

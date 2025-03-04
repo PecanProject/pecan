@@ -6,13 +6,13 @@
 ##' adjustments to the litter pools.
 ##' 
 ##' @param individual A nested list which encapsulates an LPJ-GUESS 'Individual' as read from a binary state file
-##' @param rel.change A numeric by which to scale the density and C and N pools
+##' @param biomass.inc A numeric value specifying the biomass increment to be applied.
 ##' @param sla The SLA (specific leaf area) (per PFT parameter)
+##' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
+##' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
 ##' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
 ##' @param k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
-##' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
-##' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
-##' @param lifeform An integer code for the lifeform of this individual (cohort): 1 = Tree, 2 = Grass
+##' @param trace Logical; if TRUE, prints details of biomass adjustment process.
 ##' 
 ##' The changes in C pools are determined by the allocation.  The changes in the N pools are designed to 
 ##' maintain the pre-exisiing C:N ratios, so N is just scaled using the updated C with the initial C:N ratio.
@@ -21,13 +21,13 @@
 ##' 
 ##' Note that after this function is called the function \code{allometry} should be used to update the individual
 ##' and to check that the newly updated individual has a 'valid' allometry. The litter pools should also be updated.
-##' This is implemented in the \code{updateState} function following the call to this \code{adjustBiomass} function. 
+##' This is implemented in the \code{update.state.LPJGUESS} function following the call to this \code{adjust.biomass.LPJGUESS} function. 
 ##' 
 ##' 
 ##' @keywords internal
 ##' @return the scaled 'individual' (the initial nested list with update values)
 ##' @author Matthew Forrest
-adjust.biomass.LPJGUESS <- function(individual, rel.change,  sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3){
+adjust.biomass.LPJGUESS <- function(individual, biomass.inc, sla, wooddens, lifeform, k_latosa, k_allom2, k_allom3, trace = TRUE){
   
   # dummy input values to the allocation function below
   # note that they are not actually updated by the function, the updated values are in the returned list
@@ -41,9 +41,12 @@ adjust.biomass.LPJGUESS <- function(individual, rel.change,  sla, wooddens, life
   exceeds_cmass <- 0
   
   # calculate the total biomass and the absolute change based on this
-  biomass.total <- individual$cmass_leaf+individual$cmass_root+individual$cmass_heart+individual$cmass_sap-individual$cmass_debt
-  biomass.inc <- (biomass.total * rel.change) - biomass.total
-  
+  biomass.total <- TotalCarbon(individual)
+  rel.change <- (biomass.total + biomass.inc) / biomass.total
+  if(trace) {
+    print(paste(" ------- DURING BIOMASS ADJUSTMENT -------"))
+    print(paste(" ***** Total Biomass Increment =", biomass.inc))
+  }
   
   updated.pools <- allocation(
     # vegetation state

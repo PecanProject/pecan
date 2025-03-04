@@ -22,7 +22,13 @@ on:
           - 4.3
           - 4.4
           - devel
-
+  schedule:
+    # 1:30 AM UTC, different R version each day
+    - cron: '30 1 * * 1' # Rdevel
+    - cron: '30 1 * * 2' # R4.4
+    - cron: '30 1 * * 3' # R4.3
+    - cron: '30 1 * * 4' # R4.2
+    - cron: '30 1 * * 5' # R4.1
 
 jobs:
   # ----------------------------------------------------------------------
@@ -35,9 +41,28 @@ jobs:
   rversion:
     runs-on: ubuntu-latest
     steps:
-       - run: echo "null"
+      - id: mon
+        if: github.event.schedule == '30 1 * * 1'
+        run: echo "R_VERSION=devel" >> "$GITHUB_OUTPUT"
+      - id: tue
+        if: github.event.schedule == '30 1 * * 2'
+        run: echo "R_VERSION=4.4" >> "$GITHUB_OUTPUT"
+      - id: wed
+        if: github.event.schedule == '30 1 * * 3'
+        run: echo "R_VERSION=4.3" >> "$GITHUB_OUTPUT"
+      - id: thu
+        if: github.event.schedule == '30 1 * * 4'
+        run: echo "R_VERSION=4.2" >> "$GITHUB_OUTPUT"
+      - id: fri
+        if: github.event.schedule == '30 1 * * 5'
+        run: echo "R_VERSION=4.1" >> "$GITHUB_OUTPUT"
+      - id: default
+        if: github.event_name != 'schedule'
+        run: echo "R_VERSION=${{ github.event.inputs.r_version || '4.1' }}" >> "$GITHUB_OUTPUT"
     outputs:
-      R_VERSION: ${{ github.event.inputs.r_version || '4.1' }}
+      # Note: "steps.*" seems to mean "all step ids", not "all steps"
+      # If seeing weird results here, check that all steps above have an id set.
+      R_VERSION: ${{ join(steps.*.outputs.R_VERSION, '') }}
 
   # ----------------------------------------------------------------------
   # depends image has all the dependencies installed

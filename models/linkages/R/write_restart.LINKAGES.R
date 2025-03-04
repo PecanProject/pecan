@@ -134,16 +134,21 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   }
   print(paste0("runid = ", runid))
   
+  # Create a new enviroment
+  linkages_env <- new.env()
   # load output
-  load(outfile)
+  load(outfile, envir = linkages_env)
   
-  ntrees <- ntrees.kill[, ncol(ntrees.kill), 1]  # number of trees
+  ntrees <- linkages_env$ntrees.kill[, ncol(linkages_env$ntrees.kill), 1]  # number of trees
   
   if(sum(ntrees)==0) {
     #reloads spin up if theres nothing in the output file
     print('No survivors. Reusing spinup.')
-    load(file.path(outdir, runid,list.files(file.path(outdir, runid))[grep(list.files(file.path(outdir, runid)),pattern='linkages')][1]))
-    ntrees <- ntrees.kill[, ncol(ntrees.kill), 1]  # number of trees
+    # new enviroment for spin up data 
+    linkages_env_spinup <- new.env()
+    spinup_file <- file.path(outdir, runid,list.files(file.path(outdir, runid))[grep(list.files(file.path(outdir, runid)),pattern='linkages')][1])
+    load(spinup_file, envir = linkages_env_spinup)
+    ntrees <- linkages_env_spinup$ntrees.kill[, ncol(linkages_env_spinup$ntrees.kill), 1]  # number of trees
     
   }
   
@@ -152,11 +157,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   tyl    <- tyl
   C.mat  <- C.mat
   
-  nogro  <- as.vector(nogro.save[, ncol(nogro.save), 1])  ## no growth indicator
+  nogro  <- as.vector(linkages_env$nogro.save[, ncol(linkages_env$nogro.save), 1])  ## no growth indicator
   ksprt  <- matrix(0, 1, nspec)  ## kill sprout indicator ## LOOK INTO THIS
-  iage   <- as.vector(iage.save[, ncol(iage.save), 1])  # individual age
+  iage   <- as.vector(linkages_env$iage.save[, ncol(linkages_env$iage.save), 1])  # individual age
   
-  dbh    <- as.vector(dbh.save[, ncol(dbh.save), 1])
+  dbh    <- as.vector(linkages_env$dbh.save[, ncol(linkages_env$dbh.save), 1])
   
   n.index <- c(rep(1, ntrees[1]))
   for (i in 2:length(settings$pfts)) {

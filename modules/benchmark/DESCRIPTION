@@ -4,19 +4,23 @@ Title: PEcAn Functions Used for Benchmarking
 Version: 1.7.3.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
+             person("Betsy", "Cowdery", role = c("aut"),
+                     email = "emcowdery@gmail.com"),
              person("David", "LeBauer", role = c("aut"),
-                     email = "dlebauer@email.arizona.edu"),
+                     email = "dlebauer@gmail.com"),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("Toni", "Viskari", role = c("aut")),
              person("University of Illinois, NCSA", role = c("cph")))
-Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
+Author: Michael Dietze, Betsy Cowdery, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
     model parameterization, execution, and analysis. The goal of PEcAn is to
     streamline the interaction between data and models, and to improve the
-    efficacy of scientific investigation.
+    efficacy of scientific investigation. The PEcAn.benchmark package provides 
+    utilities for comparing models and data, including a suite of statistical 
+    metrics and plots.
 Imports:
     dplyr,
     ggplot2,

@@ -105,13 +105,7 @@ is.MultiSettings <- function(x) {
 } # "[[.MultiSettings"
 
 .allListElementsEqual <- function(x) {
-  firstElement <- x[[1]]
-  replicatedFirstElement <- replicate(
-    length(x),
-    firstElement,
-    simplify = FALSE)
-  return(isTRUE(
-    all.equal(replicatedFirstElement, x, check.attributes = FALSE)))
+  all(sapply(x, identical, x[[1]]))
 } # .allListElementsEqual
 
 #' @export

@@ -73,6 +73,7 @@ services:
   # ----------------------------------------------------------------------
   bety:
     image: pecan/bety:${BETY_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -97,6 +98,7 @@ services:
   # PEcAn documentation as well as PEcAn home page
   docs:
     image: pecan/docs:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -152,6 +154,7 @@ services:
   executor:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/executor:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -174,6 +177,7 @@ services:
   basgra:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-basgra-basgra_n_v1.0:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -188,6 +192,7 @@ services:
   sipnet:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-sipnet-git:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
@@ -203,6 +208,7 @@ services:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-ed2-2.2.0:${PECAN_VERSION:-latest}
     restart: unless-stopped
+    platform: linux/amd64
     networks:
       - pecan
     environment:
@@ -216,6 +222,7 @@ services:
   maespa:
     user: "${UID:-1001}:${GID:-1001}"
     image: pecan/model-maespa-git:${PECAN_VERSION:-latest}
+    platform: linux/amd64
     restart: unless-stopped
     networks:
       - pecan
