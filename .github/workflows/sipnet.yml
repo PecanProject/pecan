@@ -48,17 +48,15 @@ jobs:
     - name: add models to db
       run: ./scripts/add.models.sh
 
-    # install sipnet
-    - name: Check out SIPNET
-      uses: actions/checkout@v4
+    # Download the pre-built SIPNET binary instead of building from source
+    - name: Download SIPNET binary
+      uses: actions/download-artifact@v3
       with:
-        repository: PecanProject/sipnet
+        name: sipnet-binary
         path: sipnet
-        set-safe-directory: false
-    - name: install sipnet
-      run: |
-        cd ${GITHUB_WORKSPACE}/sipnet
-        make sipnet
+
+    - name: Give execute permissions
+      run: chmod +x sipnet/sipnet
 
     # compile PEcAn code
     - name: build
@@ -67,3 +65,4 @@ jobs:
     # run SIPNET test
     - name: integration test
       run: ./tests/integration.sh ghaction
+
