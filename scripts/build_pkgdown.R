@@ -50,6 +50,8 @@ for (pkg in packages) {
     message(paste("✅ Successfully copied docs from", pkg, "to", dest))
   }, error = function(e) {
     warning(paste("❌ Error building pkgdown site for", pkg, ":", e$message))
+  }, warning = function(w) {
+    warning(paste("⚠️ Warning building pkgdown site for", pkg, ":", w$message))
   }, finally = {
     setwd(current_wd) 
   })
