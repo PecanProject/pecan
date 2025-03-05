@@ -39,14 +39,8 @@ for (pkg in packages) {
     if (!dir.exists(dest)) {
       dir.create(dest, recursive = TRUE, showWarnings = FALSE)
     }
-    if (getRversion() >= "4.2.0") {
-      dir.copy(from = source_docs, to = dest, recursive = TRUE, overwrite = TRUE)
-    } else { 
-      temp_dest <- paste0(dest, "_temp")
-      dir.create(temp_dest, recursive = TRUE, showWarnings = FALSE)
-      file.copy(from = source_docs, to = temp_dest, recursive = TRUE, overwrite = TRUE)
-      file.rename(temp_dest, dest)
-    }
+    file.copy(from = source_docs, to = dest, recursive = TRUE, overwrite = TRUE)
+
     message(paste("✅ Successfully copied docs from", pkg, "to", dest))
   }, error = function(e) {
     warning(paste("❌ Error building pkgdown site for", pkg, ":", e$message))
