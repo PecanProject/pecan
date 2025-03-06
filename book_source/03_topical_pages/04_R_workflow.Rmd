@@ -151,3 +151,53 @@ To enable the state data assimilation with sub-annual data, default `conflict` i
 
 (TODO: Under construction)
 
+## Using the Rmarkdown Template for PEcAn Workflow
+
+The PEcAn project provides an Rmarkdown template to help users create a basic PEcAn workflow. This template is designed to be user-friendly for interactive debugging and publishing a reproducible analysis. The template includes sections for loading libraries, setting up the environment, reading settings, running the workflow, and visualizing results.
+
+### Loading Libraries
+
+In this section, you will load the necessary libraries for running the PEcAn workflow. The template includes the following code:
+
+```r
+library(PEcAn.all)
+library(PEcAn.utils)
+library(PEcAn.settings)
+library(PEcAn.workflow)
+```
+
+### Setting Up the Environment
+
+In this section, you will set up the environment by specifying the path to the PEcAn settings file and reading the settings. The template includes the following code:
+
+```r
+# Set the path to the PEcAn settings file
+settings_file <- "path/to/pecan.xml"
+
+# Read the settings
+settings <- read.settings(settings_file)
+```
+
+### Running the Workflow
+
+In this section, you will run the PEcAn workflow by calling the appropriate functions. The template includes the following code:
+
+```r
+# Run the PEcAn workflow
+runModule.run.write.configs(settings)
+runModule_start_model_runs(settings)
+```
+
+### Visualizing Results
+
+In this section, you will visualize the results of the PEcAn workflow. The template includes the following code:
+
+```r
+# Load the results
+results <- load.results(settings)
+
+# Plot the results
+plot.results(results)
+```
+
+By following the template, you can create a basic PEcAn workflow that is easy to debug and publish as a reproducible analysis. The template can be found in the `base/workflow/templates/PEcAn_workflow_template.Rmd` file.

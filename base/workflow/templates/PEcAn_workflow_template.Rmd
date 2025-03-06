@@ -1,0 +1,47 @@
+---
+title: "Basic PEcAn Workflow"
+author: "PEcAn Team"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+
+```{r load-libraries}
+library(PEcAn.all)
+library(PEcAn.utils)
+library(PEcAn.settings)
+library(PEcAn.workflow)
+```
+
+## Set Up Environment
+
+```{r setup-environment}
+# Set the path to the PEcAn settings file
+settings_file <- "path/to/pecan.xml"
+
+# Read the settings
+settings <- read.settings(settings_file)
+```
+
+## Run Workflow
+
+```{r run-workflow}
+# Run the PEcAn workflow
+runModule.run.write.configs(settings)
+runModule_start_model_runs(settings)
+```
+
+## Visualize Results
+
+```{r visualize-results}
+# Load the results
+results <- load.results(settings)
+
+# Plot the results
+plot.results(results)
+```
