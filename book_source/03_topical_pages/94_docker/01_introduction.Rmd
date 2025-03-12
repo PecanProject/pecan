@@ -12,9 +12,9 @@ For more comprehensive Docker documentation, we refer you to the [Docker documen
 
 For a useful analogy for Docker containerization, we refer you to the webcomic [xkcd](https://xkcd.com/1988/). 
 
-Docker is a technology for encapsulating software in "containers", somewhat similarly to virtual machines.
+Docker is a technology for encapsulating software in "containers", somewhat similar to virtual machines.
 Like virtual machines, Docker containers facilitate software distribution by bundling the software with all of its dependencies in a single location.
-Unlike virtual machines, Docker containers are meant to only run a single service or process and are build on top of existing services provided by the host OS (such as disk access, networking, memory management etc.).
+Unlike virtual machines, Docker containers are meant to only run a single service or process and are built on top of existing services provided by the host OS (such as disk access, networking, memory management etc.).
 
 In Docker, an **image** refers to a binary snapshot of a piece of software and all of its dependencies.
 A **container** refers to a running instance of a particular image.
@@ -24,14 +24,14 @@ Docker makes it easy to run multiple software stacks at the same time in paralle
 Stacks can be given a unique name, which is passed along as a prefix to all their containers.
 Inside these stacks, containers can communicate using generic names not prefixed with the stack name, making it easy to deploy multiple stacks with the same internal configuration.
 Containers within the same stack communicate with each other via a common **network**.
-Like virtual machines or system processes, Docker stacks can also be instructed to open specific ports to facilitate communication with the host and other machines.
+Like virtual machines or system processes, Docker stacks can be instructed to open specific ports to facilitate communication with the host and other machines.
 
 The PEcAn database BETY provides an instructive case-study.
-BETY is comprised of two core processes -- a PostgreSQL database, and a web-based front-end to that database (Apache web server with Ruby on Rails).
-Running BETY as a "Dockerized" application therefore involves two containers -- one for the PostgreSQL database, and one for the web server.
+BETY is comprised of two core processes -- a PostgreSQL database and a web-based front-end to that database (Apache web server with Ruby on Rails).
+Running BETY as a "Dockerized" application therefore involves two containers -- one for the PostgreSQL database and one for the web server.
 We could build these containers ourselves by starting from a container with nothing but the essentials of a particular operating system, but we can save some time and effort by starting with an [existing image for PostgreSQL](https://hub.docker.com/_/postgres/) from Docker Hub.
 When starting a Dockerized BETY, we start the PostgreSQL container first, then start the BETY container telling it how to communicate with the PostgreSQL container.
-To upgrade an existing BETY instance, we stop the BETY container, download the latest version, tell it to upgrade the database, and re-start the BETY container.
+To upgrade an existing BETY instance, we stop the BETY container, download the latest version, tell it to upgrade the database, and restart the BETY container.
 There is no need to install new dependencies for BETY since they are all shipped as part of the container.
 
 The PEcAn Docker architecture is designed to facilitate installation and maintenance on a variety of systems by eliminating the need to install and maintain complex system dependencies (such as PostgreSQL, Apache web server, and Shiny server).

@@ -2,7 +2,6 @@ adokter/suntools
 araiho/linkages_package
 chuhousen/amerifluxr
 ebimodeling/biocro@0.951
-MikkoPeltoniemi/Rpreles
 RemkoDuursma/Maeswrap
 ropensci/geonames
 ropensci/nneo

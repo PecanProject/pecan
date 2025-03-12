@@ -180,11 +180,8 @@ update_state_LPJGUESS <- function(model.state, pft.params, dens.initial, dens.ta
               print(paste(" ***** Modified target AbvGrndWood relative change =", current.target.AbvGrndWood.rel.change))
               print(paste(" ***** Modified target density relative change =", current.target.densindiv.rel.change))
               print(paste(" ***** Combined AbvGrndWood relative change =", derived.overall.rel.change))
-            } # if trace
-            
-          } # if initial AbvGrndWood adjustment very low
-          
-          else if(target.AbvGrndWood.rel.change > 100) {
+            } # # if initial AbvGrndWood adjustment very low
+          } else if(target.AbvGrndWood.rel.change > 100) {
             target.overall.rel.change <- target.AbvGrndWood.rel.change * target.densindiv.rel.change
             current.target.AbvGrndWood.rel.change <- 100
             current.target.densindiv.rel.change <- target.overall.rel.change / current.target.AbvGrndWood.rel.change 
@@ -197,12 +194,9 @@ update_state_LPJGUESS <- function(model.state, pft.params, dens.initial, dens.ta
               print(paste(" ***** Modified target AbvGrndWood relative change =", current.target.AbvGrndWood.rel.change))
               print(paste(" ***** Modified target density relative change =", current.target.densindiv.rel.change))
               print(paste(" ***** Combined AbvGrndWood relative change =", derived.overall.rel.change))
-            } # if trace
+            } # if initial AbvGrndWood adjustment very high
             
-          } # if initial AbvGrndWood adjustment very high
-          
-          # AbvGrndWood nudge is safe to try without adjusting density
-          else {
+          } else {# AbvGrndWood nudge is safe to try without adjusting density
             current.target.AbvGrndWood.rel.change <- target.AbvGrndWood.rel.change
             current.target.densindiv.rel.change <- target.densindiv.rel.change
             
@@ -239,12 +233,11 @@ update_state_LPJGUESS <- function(model.state, pft.params, dens.initial, dens.ta
               stop(" ***** Density adjustment failed, this is suprising and confusing...")
             }
             
-          }
-          else {
+          } else {
             if(trace) {
               print(paste(" ------- NO INITIAL DENSITY ADJUSTMENT REQUIRED -------"))
             } # if trace
-            
+            updated.individual <- original.individual  # Make sure the variable is initialized
           } # if no density adjustment required
           
           
@@ -278,13 +271,10 @@ update_state_LPJGUESS <- function(model.state, pft.params, dens.initial, dens.ta
             # if nudge is already within the epsilon, adjust by that much biomass
             if(current.target.AbvGrndWood.rel.change > 1 - AbvGrndWood.epsilon & current.target.AbvGrndWood.rel.change < 1 + AbvGrndWood.epsilon) {
               this.biomass.inc <- pre.nudge.AbvGrndWood * (current.target.AbvGrndWood.rel.change - 1)
-            }
-            # else do a nudge by 5% of actual biomass
-            else {
+            } else { # else do a nudge by 5% of actual biomass
               if(current.AbvGrndWood < target.AbvGrndWood) {
                 this.biomass.inc <- 0.1 * current.AbvGrndWood
-              }
-              else {
+              } else {
                 this.biomass.inc <- -0.1 * current.AbvGrndWood
               }
             }

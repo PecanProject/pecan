@@ -2,53 +2,12 @@
 
 These instructions are provided to document how to install and setup PEcAn. It includes:
 
-- [Virtual machine](#install-vm) (Recommended for students and new users)
 - [PEcAn Docker](#install-docker) (Recommended for development and production deployment)
 - [Local installation from r-universe](#r-universe) (Recommended for development only)
 - [PEcAn OS specific installation](#install-native)
 
 The PEcAn code and necessary infrastructure can be obtained and compiled in different ways.
 This set of instructions will help facilitate your path and the steps necessary to move forward to have a fully a functioning PEcAn environment.
-
-## Virtual Machine (VM) {#install-vm}
-
-The PEcAn virtual machine consists of all of PEcAn pre-compiled within a Linux operating system and saved in a "virtual machine" (VM).
-Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
-
-1. **Install VirtualBox** This is the software that runs the virtual machine. You can find the download link and instructions at [https://www.virtualbox.org](https://www.virtualbox.org). *NOTE: On Windows you may see a warning about Logo testing, it is okay to ignore the warning.*
-  
-2. **Download the PEcAn VM** You can find the download link at [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN), under the "**Files**" header. Click the ".ova" file to begin the download. Note that the file is ~7 GB, so this download can take several minutes to hours depending on your connection speed. Also, the VM requires >4 GB of RAM to operate correctly. Please check current usage of RAM and shutdown processes as needed.
-
-3. **Import the VM** Once the download is complete, open VirtualBox. In the VirtualBox menus, go to "File" → "Import Appliance" and locate the downloaded ".ova" file. 
-
-
-For Virtualbox version 5.x: In the Appliance Import Settings, make sure you select "Reinitialize the MAC address of all network cards" (picture below). This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. 
-
-```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/pic1.jpg"))
-```
-
-For Virtualbox versions starting with 6.0, there is a slightly different interface (see figure). Select "Generate new MAC addresses for all network adapters" from the MAC Address Policy:
-  
-```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics(rep("figures/pic1v2.png"))
-```
-
-NOTE: If you experience network connection difficulties in the VM with this enabled, try re-importing the VM without this setting selected). 
-
-Finally, click "Import" to build the Virtual Machine from its image.
-
-4. **Launch PEcAn** Double click the icon for the PEcAn VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the `pecan login:` prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
-
-* If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [_Carya illinoinensis_][pecan-wikipedia]).
-
-5. **Open the PEcAn web interface** With the VM running in the background, open any web browser on the same machine and navigate to `localhost:6480/pecan/` to start the PEcAn workflow. (NOTE: The trailing backslash may be necessary depending on your browser)
-
-6. **Advanced interaction with the VM is mostly done through the command line.** You can perform these manipulations from inside the VM window. However, the VM is also configured for SSH access (username `carya`, hostname `localhost`, port 6422). For instance, to open an interactive shell inside the VM from a terminal on the host machine, use a command like `ssh -l carya -p 6422 localhost` (when prompted, the password is `illinois`, as above).
-
-These steps should be enough to get you started with running models and performing basic analyses with PEcAn.
-For advanced details on VM configuration and maintenance, see the [Advanced VM section](#working-with-vm).
-
 
 ## Docker {#install-docker}
 

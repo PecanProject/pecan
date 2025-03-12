@@ -29,13 +29,10 @@ See our ["Tutorials Page"](https://pecanproject.github.io/tutorials.html) that p
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of three methods:
+Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/develop/pecan-manual-setup.html). To get PEcAn up and running you can use one of the following methods:
 
-1. Run a [Virtual Machine](https://pecanproject.github.io/pecan-documentation/develop/install-vm.html#install-vm). This is recommended for students and new users, and provides a consistent, tested environment for each release.
-
-2. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/install-docker.html#install-docker). This is recommended, especially for development and production deployment.
-
-3. Install all of the PEcAn R packages on your own Linux or MacOS computer or server. This can be done by [installing from r-universe](https://pecanproject.github.io/pecan-documentation/develop/r-universe.html):
+1. Use [Docker](https://pecanproject.github.io/pecan-documentation/develop/install-docker.html#install-docker). This is recommended, especially for development and production deployment.
+2. Install all of the PEcAn R packages on your own Linux or MacOS computer or server. This can be done by [installing from r-universe](https://pecanproject.github.io/pecan-documentation/develop/r-universe.html):
 
 ```R
 # Enable repository from pecanproject
@@ -46,7 +43,7 @@ options(repos = c(
 install.packages('PEcAn.all')
 ```
 
-This, however, may have limited functionality without also installing other components of PEcAn, in particular [BETYdb](https://pecanproject.github.io/pecan-documentation/develop/osinstall.html#install-bety).
+Some functionalities will be limited without also installing the Postgres database ([BETYdb](https://pecanproject.github.io/pecan-documentation/develop/osinstall.html#install-bety)), though we are making steady progress toward removing this dependency.
 
 ### Website
 

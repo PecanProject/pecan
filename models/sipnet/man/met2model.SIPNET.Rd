@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2model.SIPNET.R
 \name{met2model.SIPNET}
 \alias{met2model.SIPNET}
-\title{met2model.SIPNET}
+\title{met2model wrapper for SIPNET}
 \usage{
 met2model.SIPNET(
   in.path,
@@ -19,24 +19,58 @@ met2model.SIPNET(
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
 
-\item{in.prefix}{prefix of input and output files OR the full file name if year.fragment = TRUE}
+\item{in.prefix}{prefix of input and output files,}
 
 \item{outfolder}{location on disk where outputs will be stored}
 
-\item{start_date}{the start date of the data to be downloaded (will only use the year part of the date)}
+\item{start_date}{the start date of the data to be downloaded
+(will only use the year part of the date)}
 
-\item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
+\item{end_date}{the end date of the data to be downloaded
+(will only use the year part of the date)}
 
 \item{overwrite}{should existing files be overwritten}
 
 \item{verbose}{should the function be very verbose}
 
-\item{year.fragment}{the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).}
+\item{year.fragment}{the function should ignore whether or not the data is
+stored as a set of complete years (such as for forecasts).}
 
 \item{...}{Additional arguments, currently ignored}
 }
+\value{
+a dataframe containing information about the files created
+}
 \description{
-met2model wrapper for SIPNET
+Reads weather data from CF-formatted NetCDFs and writes it in the \code{.clim}
+format expected by SIPNET: a 14-column tab-separated table with no headers.
+}
+\details{
+The columns of the output file are:
+\itemize{
+\item Grid index. Always 0 from this function; PEcAn configures SIPNET not to
+use this.
+\item 4-digit year
+\item Day of year
+\item Hour of day
+\item Timestep size (days)
+\item Air temperature (degrees C)
+\item Soil temperature (degrees C)
+\item PAR (mol/m2/hr)
+\item Precip (mm)
+\item VPD (Pa)
+\item VPD of soil (Pa)
+\item Canopy vapor pressure (Pa)
+\item Wind speed (m/s)
+\item Soil moisture (fraction of saturation).
+Always  0.6 from this function; PEcAn configures SIPNET to calculate it
+internally.
+}
+
+SIPNET does not allow missing values in its inputs. If the result contains
+NAs after conversion, no file is written and the process returns an error.
+To fix this, consider using a formal gap-filling method such as
+\code{PEcAn.data.atmosphere::metgapfill()} before calling met2model.
 }
 \author{
 Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper

@@ -32,6 +32,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Removed
 
 - Remove Browndog support for conversions (#3348, @Sweetdevil144).
+- Packages PEcAn.PRELES is no longer built or tested by default, because of ongoing build failures in the `RPreles` package it depends on.
+  Install it manually as needed, and be aware it is not being routinely checked by CI (so if you're checking it, please file bugs and submit fixes!).
 
 ## [1.8.0] - 2024-07-12
 
