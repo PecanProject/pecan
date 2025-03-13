@@ -381,6 +381,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       }
       dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
       dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
+      readme_path <- file.path(settings$rundir, run.id, "README.txt")
       # write run information to disk
       cat("runtype     : ensemble\n",
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
@@ -398,7 +399,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "hostname    : ", settings$host$name, "\n",
           "rundir      : ", file.path(settings$host$rundir, run.id), "\n",
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
-          file = file.path(settings$rundir, run.id, "README.txt"))
+          file = readme_path)
       
       #changing the structure of input tag to what the models are expecting
       for(input_i in seq_along(settings$run$inputs)){
@@ -406,6 +407,11 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         if (!is.null(samples[[input_tag]]))
           settings$run$inputs[[input_tag]][["path"]] <-
             samples[[input_tag]][["samples"]][[i]]
+          cat(
+            format(input_tag, width = 12), ": ", samples[[input_tag]][["samples"]][[i]], "\n",
+            file = readme_path,
+            append = TRUE
+          )
       }
 
       
