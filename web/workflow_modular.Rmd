@@ -1,0 +1,79 @@
+---
+title: "PEcAn Modular Workflow"
+author: "Aritra Dey"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library("PEcAn.all")
+```
+
+```{r error-handling}
+# make sure always to call status.end
+options(warn = 1)
+options(error = quote({
+  try(PEcAn.utils::status.end("ERROR"))
+  try(PEcAn.remote::kill.tunnel(settings))
+  if (!interactive()) {
+    q(status = 1)
+  }
+}))
+```
+```{r load-settings}
+
+settings_path <- "path/to/settings.xml" 
+settings <- PEcAn.settings::read.settings(settings_path)
+
+if (is.null(settings$debug)) {
+  settings$debug <- FALSE  # Default to FALSE if not defined
+}
+```
+
+```{r trait-analysis}
+if (settings$debug) cat("Starting trait analysis...\n")
+
+settings <- PEcAn.workflow::runModule.get.trait.data(settings)
+PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
+# Run meta-analysis if configured
+if (!is.null(settings$meta.analysis)) {
+  if (settings$debug) cat("Starting meta-analysis...\n")
+  PEcAn.MA::runModule.run.meta.analysis(settings)
+}
+
+
+```
+
+```{r model-setup}
+# Write configs
+if (settings$debug) cat("Writing model configurations...\n")
+
+settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
+
+# Run model
+if (settings$debug) cat("Starting model runs...\n")
+
+stop_on_error <- ifelse(!is.null(settings$run$stop_on_error),
+                      as.logical(settings$run$stop_on_error),
+                      TRUE)
+if (length(stop_on_error) == 0) {
+  if (is.null(settings$ensemble) || as.numeric(settings$ensemble$size) == 1) {
+    stop_on_error <- TRUE
+  } else {
+    stop_on_error <- FALSE
+  }
+}
+PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)
+
+```
+
+```{r finish}
+if (settings$debug) {
+    cat("Workflow completed successfully\n")
+}
+```
