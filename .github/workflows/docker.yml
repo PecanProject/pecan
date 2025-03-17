@@ -1,5 +1,8 @@
 name: Docker GHA
 
+env:
+  DEFAULT_R_VERSION: 4.1
+
 on:
   push:
     branches:
@@ -15,7 +18,7 @@ on:
         description: 'R version to use'
         required: true
         type: choice
-        default: "4.1"
+        default: "$DEFAULT_R_VERSION"
         options:
           - 4.1
           - 4.2
@@ -58,7 +61,7 @@ jobs:
         run: echo "R_VERSION=4.1" >> "$GITHUB_OUTPUT"
       - id: default
         if: github.event_name != 'schedule'
-        run: echo "R_VERSION=${{ github.event.inputs.r_version || '4.1' }}" >> "$GITHUB_OUTPUT"
+        run: echo "R_VERSION=${{ github.event.inputs.r_version || env.DEFAULT_R_VERSION }}" >> "$GITHUB_OUTPUT"
     outputs:
       # Note: "steps.*" seems to mean "all step ids", not "all steps"
       # If seeing weird results here, check that all steps above have an id set.

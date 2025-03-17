@@ -60,6 +60,7 @@ is.MultiSettings <- function(x) {
       } else if (length(x) == 1 && length(value) > 1) {
         x <- MultiSettings(replicate(length(value), x[[1]], simplify = FALSE))
         x[[i, global = FALSE]] <- value
+        x <- settingNames(x, names(value))
       } else {
         stop("Length mismatch in assigning to MultiSettings")
       }

@@ -28,6 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          - "4.4"
           - "4.2"
           - "4.1"
     uses: ./.github/workflows/test.yml
@@ -42,6 +43,7 @@ jobs:
       matrix:
         package: [check_base, check_modules, check_models]
         R:
+          - "4.4"
           - "4.2"
           - "4.1"
     uses: ./.github/workflows/check.yml
@@ -56,6 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         R:
+          - "4.4"
           - "4.2"
           - "4.1"
     uses: ./.github/workflows/sipnet.yml
