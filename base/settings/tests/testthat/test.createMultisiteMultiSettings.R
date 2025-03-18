@@ -12,7 +12,7 @@ test_that("`createSitegroupMultiSettings` able to create a MultiSettings object 
     site_id = list("1000025731", "1000025732")
   )
   mockery::stub(
-    createSitegroupMultiSettings, 
+    createSitegroupMultiSettings,
     'PEcAn.DB::db.query',
     siteIds
   )
@@ -78,6 +78,22 @@ test_that("`getRunSettings` able to build correct run settings for a given site 
   expect_equal(run_settings$start.date, templateSettings$run$start.date)
   expect_equal(run_settings$end.date, templateSettings$run$end.date)
   expect_equal(run_settings$inputs, templateSettings$run$inputs)
+})
+
+test_that("getRunSettings copies arbitrary site parameters", {
+  templateSettings <- list(
+    run = list(
+      start.date = "2015-01-01",
+      end.date = "2015-12-31",
+      inputs = list("a", "b")
+    )
+  )
+  run_settings <- getRunSettings(
+    templateSettings,
+    list(id = "10", name = "aaa", lat = 44.3))
+  expect_equal(run_settings$site$id, "10")
+  expect_equal(run_settings$site$lat, 44.3)
+  expect_null(run_settings$site$lon)
 })
 
 test_that("`setOutDir` function sets main output directory and nulls out the others", {

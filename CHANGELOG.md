@@ -10,7 +10,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 
 - Documentation of `make` options including addition of `make help` 
-- Add make option to document a single package with `make documentation pathto/package` 
+- Add make option to document a single package with `make documentation pathto/package`
+- `settings$host$qsub` and `settings$host$modellauncher$qsub.extra` will now expand `@NJOBS@` to the number of models in the run, allowing e.g. `--array=1-@NJOBS@`. Note that qsub still by default submits every model as a separate job, so for now this is mostly useful for custom modellauncher scripts
 
 ### Fixed
 - updated github action to build docker images
@@ -19,6 +20,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Docker images now use R 4.4 by default, with other supported versions available by appending the R version to the tag, e.g. `pecan/base:develop-R4.2`.
 - Is is now easier to run PEcAn workflows with no active database connection by setting `settings$database$bety$write` to FALSE or missing (#3398, #3419). In this mode you are reponsible for providing the correct paths/ids for all needed files, and run metadata are not written back to the database.
 - The following components have changed their licensing. With approval of all their contributors, we now provide them under a BSD 3-clause license rather than the previously used NCSA Open Source license. As a reminder, we intend to relicense the entire system and this list will expand as we gather permission from the relevant copyright owners.
     * `apps/api`

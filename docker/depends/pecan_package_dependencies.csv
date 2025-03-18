@@ -94,6 +94,7 @@
 "ggpubr","*","modules/assim.sequential","Suggests",FALSE
 "ggrepel","*","modules/assim.sequential","Suggests",FALSE
 "glue","*","base/db","Imports",FALSE
+"glue","*","base/settings","Imports",FALSE
 "glue","*","models/ed","Imports",FALSE
 "glue","*","modules/assim.sequential","Suggests",FALSE
 "glue","*","modules/data.atmosphere","Imports",FALSE

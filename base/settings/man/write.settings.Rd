@@ -2,7 +2,7 @@
 % Please edit documentation in R/write.settings.R
 \name{write.settings}
 \alias{write.settings}
-\title{Write settings}
+\title{Write a settings object as XML}
 \usage{
 write.settings(settings, outputfile, outputdir = settings$outdir)
 }
@@ -13,9 +13,15 @@ write.settings(settings, outputfile, outputdir = settings$outdir)
 
 \item{outputdir}{the directory to write to}
 }
+\value{
+path to written XML file,
+or settings as an XML string if outputfile is NULL
+}
 \description{
-Takes in a settings object, performs a series of checks,
-fixes & updates settings and produces pecan.CHECKED.xml
+If \code{outputdir} is NULL, the whole path is taken from \code{outputfile}.
+If both \code{outputfile} and \code{outputdir} are NULL, no file is written
+and it returns the formatted XML as character.
+This can be handy for debugging.
 }
 \author{
 Ryan Kelly
