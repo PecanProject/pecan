@@ -55,13 +55,18 @@ createSitegroupMultiSettings <- function(
 #'
 #' @param templateSettings A \code{\link{Settings}} object that will be
 #'   the template for the resulting MultiSettings.
-#' @param siteIds The site IDs to be used in the resulting MultiSettings
+#' @param siteIds The site IDs to be used in the resulting MultiSettings.
+#'   May be a vector or a data frame with a mandatory \code{id} column and
+#'   optionally other columns to be copied into \code{run$site}. See details.
 #'
 #' @details
 #' Starts with a template settings object, and duplicates the \code{run$site}
 #'   block once for each specified site ID. The resulting MultiSettings is thus
 #'   identical to the input, except ready to run for each site in the vector
 #'   of site IDs.
+#' If \code{siteIds} is a data frame with a column named \code{id},
+#'   each resulting \code{run$site} block will contain all the site parameters
+#'   (lat, lon, site name, etc) that are specified in its other columns.
 #'
 #' @return A \code{MultiSettings} object with the same settings as
 #'   \code{templateSettings} but replicated \code{run$site} blocks,
@@ -73,12 +78,21 @@ createSitegroupMultiSettings <- function(
 #' @example examples/examples.MultiSite.MultiSettings.r
 createMultiSiteSettings <- function(templateSettings, siteIds) {
   templateSettings <- as.MultiSettings(templateSettings)
+
+  if (is.data.frame(siteIds)) {
+    ids <- siteIds$id
+    # get rows as lists: (id=(1, 2), x=(a,b)) -> ((id=1, x=a), (id=2, x=b))
+    siteIds <- .mapply(FUN = list, dots = siteIds, MoreArgs = NULL)
+  } else {
+    ids <- siteIds
+  }
+
   runSettings <- lapply(
     siteIds,
     getRunSettings,
     templateSettings = templateSettings)
-
   templateSettings[["run", global = FALSE]] <- runSettings
+  templateSettings <- settingNames(templateSettings, paste0("site.", ids))
   return(templateSettings)
 }
 
@@ -90,16 +104,24 @@ createMultiSiteSettings <- function(templateSettings, siteIds) {
 #'
 #' @inheritParams createMultiSiteSettings
 #' @param siteId site to process. See `createMultiSiteSettings`
-#' @export
 getRunSettings <- function(templateSettings, siteId) {
   startDate <- templateSettings$run$start.date
   endDate <- templateSettings$run$end.date
   inputs <- templateSettings$run$inputs
+
+  if (is.list(siteId)) {
+    if (is.null(siteId$id)) {
+      PEcAn.logger::logger.error("Need a site ID for every site")
+    }
+    site_info <- siteId
+  } else {
+    site_info <- list(id = siteId)
+  }
+  site_info$met.start <- startDate
+  site_info$met.end <- endDate
+
   return(list(
-    site = list(
-      id = siteId,
-      met.start = startDate,
-      met.end = endDate),
+    site = site_info,
     start.date = startDate,
     end.date = endDate,
     inputs = inputs

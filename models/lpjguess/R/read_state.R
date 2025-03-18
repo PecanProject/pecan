@@ -480,10 +480,10 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   paramh_name <- paste0("parameters.", version, ".h") 
   paramh_in   <- readLines(con = system.file(paramh_name, package = "PEcAn.LPJGUESS"), n = -1)
   
-  ### these are the values read from params.ins, passed to this fcn
+  ## these are the values read from params.ins, passed to this fcn
   paramsins <- readLines(file.path(rundir, "params.ins"), n = -1)
   npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
-  
+  #npatches  <- 5
   
   ######################################
   ## read meta.bin

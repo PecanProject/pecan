@@ -6,16 +6,25 @@
 \usage{
 update_state_LPJGUESS(
   model.state,
+  pft.params,
   dens.initial,
   dens.target,
-  cmass.initial,
-  cmass.target,
+  AbvGrndWood.initial,
+  AbvGrndWood.target,
+  AbvGrndWood.epsilon,
+  trace,
+  min.diam,
   HEIGHT_MAX = 150
 )
 }
 \arguments{
 \item{model.state}{A large multiply-nested list containing the entire LPJ-GUESS state as read by 
 function \code{readStateBinary.LPJGUESS}}
+
+\item{pft.params}{A data.frame containing the parameters for each PFT.  Each row represents one PFT (ordering must be consistent with the vectors below. 
+The names of the columns describe the per-PFT parameter and must include: 
+wooddens, crownarea_max, lifeform (1 = tree, 2 = grass), k_latosa, k_rp, k_allom1,  k_allom2, k_allom3, crownarea_max and sla. 
+wooddens, crownarea_max, lifeform (1 = tree, 2 = grass), k_latosa, k_rp, k_allom1,  k_allom2, k_allom3, crownarea_max and sla.}
 
 \item{dens.initial}{A numeric vector of the initial stand-level stem densities (indiv/m^2) as named numeric vector 
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
@@ -25,11 +34,21 @@ using state data assimilation from function XXXXXX.}
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 using state data assimilation from function XXXXXX}
 
-\item{cmass.initial}{Initial carbon mass (kgC/m^2).}
-
-\item{cmass.target}{A numeric vector of the target stand-level biomasses (kgC/m^2) as named numeric vector 
+\item{AbvGrndWood.initial}{A numeric vector of the target stand-level above ground wood (kgC/m^2) as named numeric vector 
 with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
 using state data assimilation from function XXXXXX}
+
+\item{AbvGrndWood.target}{A numeric vector of the target stand-level above ground wood (kgC/m^2) as named numeric vector 
+with one entry per PFT/species, with the names being the PFT/species codes.  These values should be produced
+using state data assimilation from function XXXXXX}
+
+\item{AbvGrndWood.epsilon}{A single numeric specifying how close the final above ground wood needs to be to the target
+above ground stem biomass for each individual.  eg. 0.05 requires that the final above ground wood is within 5%
+of the target above ground wood}
+
+\item{trace}{Logical; if TRUE, prints detailed adjustment process information.}
+
+\item{min.diam}{Minimum tree diameter (in cm) for inclusion in adjustments.}
 
 \item{HEIGHT_MAX}{Maximum allowed height of an individual.  This is the maximum height that a tree
 can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 

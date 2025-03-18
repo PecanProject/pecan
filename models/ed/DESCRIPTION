@@ -57,13 +57,10 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     devtools,
-    knitr,
-    rmarkdown,
     withr
 Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-VignetteBuilder: knitr, rmarkdown
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.3.2

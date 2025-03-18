@@ -17,12 +17,14 @@ Imports:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.logger,
+    rlang,
     PEcAn.remote,
     PEcAn.utils,
     stats
 Suggests:
     coda,
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr
 SystemRequirements: SIPNET ecosystem model
 OS_type: unix
 License: BSD_3_clause + file LICENSE

@@ -11,8 +11,7 @@ FROM ${PARENT_IMAGE}:${IMAGE_VERSION}
 # SETUP FOR PYTHON CODE
 # ----------------------------------------------------------------------
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3-pip \
-    && pip3 install pika==1.0.0 \
+    && apt-get install -y --no-install-recommends python3-pika \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work

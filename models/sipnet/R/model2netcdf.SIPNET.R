@@ -140,7 +140,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
     ## Subset data for processing
-    sub.sipnet.output <- subset(sipnet_output, year == y)
+    sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out_day
     step <- utils::head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
