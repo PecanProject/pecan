@@ -17,6 +17,16 @@ To create a pecan.xml, you can download one generated in the PEcAn web interface
 
 settings_path <- "settings.xml" 
 settings <- PEcAn.settings::read.settings(settings_path)
+```
+
+
+```{r prepare-settings}
+# Prepare and check settings
+settings <- PEcAn.settings::prepare.settings(settings)
+```
+
+```{r convert-settings}
+# Convert settings to required units
 settings <- PEcAn.utils::do_conversions(settings)
 
 if (is.null(settings$debug)) {
@@ -24,27 +34,22 @@ if (is.null(settings$debug)) {
 }
 ```
 
-# Trait Analysis
-Fetches plant trait data and prior distributions from external databases for the specified Plant Functional Types (PFTs)
+# Trait and Meta Analysis
+Fetches plant trait data and prior distributions from external databases for the specified Plant Functional Types (PFTs), then combines trait data across multiple sources to derive probabilistic distributions for model parameters.
+If this step is skipped, a posterior file should be specified in the settings.
 
-```{r trait-analysis}
-if (settings$debug) cat("Starting trait analysis...\n")
+```{r trait-analysis and meta-analysis}
+if (settings$debug) cat("Starting trait and meta-analysis...\n")
 # Retrieve trait data and prior distributions for the specified Plant Functional Types (PFTs)
 settings <- PEcAn.workflow::runModule.get.trait.data(settings)
+# Perform meta-analysis to derive probabilistic distributions for model parameters
+PEcAn.workflow::runModule.run.meta.analysis(settings)
 # Save the updated settings, including the retrieved trait data, to an XML file
 PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
 
 ```
 
-# Meta Analysis
-Combines trait data across multiple sources to derive probabilistic distributions for model parameters
 
-```{r meta-analysis}
-if (settings$debug) cat("Starting meta-analysis...\n")
-# Perform meta-analysis to derive probabilistic distributions for model parameters
-settings <- runModule.get.trait.data(settings)
-runModule.run.meta.analysis(settings)
-```
 
 # Write Model Configuration Files
 Generates model-specific configuration files based on the settings, ensuring proper model execution.
@@ -59,21 +64,15 @@ Executes the model simulations and retrieves the results for further analysis.
 
 ```{r run-model}
 runModule.start.model.runs(settings)
-runModule.get.results(settings)
 ```
 
 # Model Analyses
 Performs various analyses on model outputs, including sensitivity analysis, variance decomposition, and ensemble analysis.
 
 ```{r model-analysis}
+runModule.get.results(settings)
 run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
 run.ensemble.analysis()  	      # Run ensemble analysis on model output. 
 run.ensemble.analysis(plot.timeseries=TRUE) 
 ```
 
-
-```{r finish}
-if (settings$debug) {
-    cat("Workflow completed successfully\n")
-}
-```
