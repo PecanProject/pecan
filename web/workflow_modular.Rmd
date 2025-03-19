@@ -38,7 +38,7 @@ if (is.null(settings$debug)) {
 Fetches plant trait data and prior distributions from external databases for the specified Plant Functional Types (PFTs), then combines trait data across multiple sources to derive probabilistic distributions for model parameters.
 If this step is skipped, a posterior file should be specified in the settings.
 
-```{r trait-analysis and meta-analysis}
+```{r meta-analysis}
 if (settings$debug) cat("Starting trait and meta-analysis...\n")
 # Retrieve trait data and prior distributions for the specified Plant Functional Types (PFTs)
 settings <- PEcAn.workflow::runModule.get.trait.data(settings)
