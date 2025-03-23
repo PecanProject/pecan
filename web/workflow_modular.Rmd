@@ -47,7 +47,10 @@ if ("sitegroup" %in% names(settings)) {
 
 ```{r convert-settings}
 # Convert settings to required units
-settings <- PEcAn.utils::do_conversions(settings)
+if (!is.list(settings$host)) {
+  settings$host <- list(name = settings$host)
+}
+settings <- PEcAn.workflow::do_conversions(settings)
 
 if (is.null(settings$debug)) {
   settings$debug <- FALSE  # Default to FALSE if not defined
