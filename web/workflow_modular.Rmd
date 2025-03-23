@@ -47,8 +47,8 @@ if ("sitegroup" %in% names(settings)) {
 
 ```{r convert-settings}
 # Convert settings to required units
-if (!is.list(settings$host)) {
-  settings$host <- list(name = settings$host)
+if (!is.list(settings$host) || length(settings$host) > 1) {
+settings$host <- list(name = as.character(settings$host)[1]) # Ensure single-element list
 }
 settings <- PEcAn.workflow::do_conversions(settings)
 
@@ -86,8 +86,8 @@ settings <- runModule.run.write.configs(settings)
 Executes the model simulations and retrieves the results for further analysis.
 
 ```{r run-model}
-if (!is.list(settings$host)) {
-  settings$host <- list(name = settings$host)
+if (!is.list(settings$host) || length(settings$host) > 1) {
+settings$host <- list(name = as.character(settings$host)[1]) 
 }
 PEcAn.utils::status.start("MODEL")
 runModule.start.model.runs(settings)
