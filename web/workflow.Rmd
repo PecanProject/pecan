@@ -51,10 +51,6 @@ if (!is.list(settings$host) || length(settings$host) > 1) {
 settings$host <- list(name = as.character(settings$host)[1]) # Ensure single-element list
 }
 settings <- PEcAn.workflow::do_conversions(settings)
-
-if (is.null(settings$debug)) {
-  settings$debug <- FALSE  # Default to FALSE if not defined
-}
 ```
 
 # Trait and Meta Analysis
@@ -78,7 +74,9 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
 Generates model-specific configuration files based on the settings, ensuring proper model execution.
 
 ```{r run.write.configs}
-settings <- runModule.run.write.configs(settings)
+settings$model$binary <- "/path/to/models/sipnet/" # Path to model binary,change it according to your models
+settings <-PEcAn.workflow::runModule.run.write.configs(settings)
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 ```
 
 
