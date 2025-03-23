@@ -86,6 +86,10 @@ settings <- runModule.run.write.configs(settings)
 Executes the model simulations and retrieves the results for further analysis.
 
 ```{r run-model}
+if (!is.list(settings$host)) {
+  settings$host <- list(name = settings$host)
+}
+PEcAn.utils::status.start("MODEL")
 runModule.start.model.runs(settings)
 ```
 
