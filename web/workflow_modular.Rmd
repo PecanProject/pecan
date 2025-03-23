@@ -23,6 +23,26 @@ settings <- PEcAn.settings::read.settings(settings_path)
 ```{r prepare-settings}
 # Prepare and check settings
 settings <- PEcAn.settings::prepare.settings(settings)
+
+if ("benchmarking" %in% names(settings)) {
+  library(PEcAn.benchmark)
+  settings <- papply(settings, read_settings_BRR)
+}
+
+# Process sitegroup settings
+if ("sitegroup" %in% names(settings)) {
+  if (is.null(settings$sitegroup$nSite)) {
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings,
+      sitegroupId = settings$sitegroup$id
+    )
+  } else {
+    settings <- PEcAn.settings::createSitegroupMultiSettings(
+      settings,
+      sitegroupId = settings$sitegroup$id,
+      nSite = settings$sitegroup$nSite
+    )
+  }
+}
 ```
 
 ```{r convert-settings}
