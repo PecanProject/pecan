@@ -34,11 +34,13 @@ Imports:
     foreach
 Suggests:
     data.table,
+    doSNOW,
     dplyr,
     getPass,
     GEDI4R,
     ggplot2,
     grDevices,
+    hdf5r,
     httr,
     jsonlite,
     lubridate,

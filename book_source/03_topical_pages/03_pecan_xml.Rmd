@@ -807,6 +807,11 @@ The following tags can be used for state data assimilation. More detailed inform
      <unit>year</unit>
      <num>1</num>
     </timestep>
+    <sd_threshold>20</sd_threshold>
+    <boundary>
+     <upper_boundary>0.95</upper_boundary>
+     <lower_boundary>0.05</lower_boundary>
+    </boundary>
    </MODIS_LAI>
    <SMAP_SMP>
     <search_window>30</search_window>
@@ -910,7 +915,7 @@ The following tags can be used for observation preparation for the SDA workflow.
 <state.data.assimilation>
   <Obs_Prep>
    <Landtrendr_AGB>
-    <AGB_indir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_indir>
+    <AGB_input_dir>/projectnb/dietzelab/dongchen/Multi-site/download_500_sites/AGB</AGB_input_dir>
     <allow_download>TRUE</allow_download>
     <export_csv>TRUE</export_csv>
     <timestep>
@@ -927,6 +932,11 @@ The following tags can be used for observation preparation for the SDA workflow.
      <unit>year</unit>
      <num>1</num>
     </timestep>
+    <sd_threshold>20</sd_threshold>
+    <boundary>
+     <upper_boundary>0.95</upper_boundary>
+     <lower_boundary>0.05</lower_boundary>
+    </boundary>
    </MODIS_LAI>
    
    <SMAP_SMP>
@@ -970,7 +980,8 @@ For the MODIS LAI and SMAP soil moisture observations, the `search_window` speci
 * **search_window** : [optional] This tag is used for LAI and SMAP observation preparation functions, which defines the search window within which the closest observation to the target date is selected. The default value is 30 days.
 * **update_csv** : [optional] This tag is used for SMAP preparation function only, which decide if we want to update the CSV file. Normally, we will only set it to be TRUE if we redownload the SMAP_GEE csv file from Google Earth Engine, the tutorial can be found in the SMAP_SMP_prep function itself. The default value is FALSE.
 * **run_parallel** : [optional] This tag defines if you want to proceed the MODIS LAI function parallely, the default value is FALSE.
-
+* **sd_threshold** : [optional] This tag defines the maximum allowable value for the MODIS LAI. Any records that have higher uncertainty will be removed.
+* **boundary** : [optional] This tag defines the upper and lower boundaries (in quantiles) for filtering the noisy LAI time series.
 
 ### (experimental) Benchmarking {#xml-benchmarking}
 

@@ -63,6 +63,7 @@ Suggests:
     foreach,
     furrr,
     future,
+    getPass,
     knitr,
     mockery,
     parallel,

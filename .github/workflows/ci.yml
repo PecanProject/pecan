@@ -30,7 +30,6 @@ jobs:
         R:
           - "4.4"
           - "4.2"
-          - "4.1"
     uses: ./.github/workflows/test.yml
     with:
       R-version: ${{ matrix.R }}
@@ -45,7 +44,6 @@ jobs:
         R:
           - "4.4"
           - "4.2"
-          - "4.1"
     uses: ./.github/workflows/check.yml
     with:
       R-version: ${{ matrix.R }}
@@ -60,7 +58,6 @@ jobs:
         R:
           - "4.4"
           - "4.2"
-          - "4.1"
     uses: ./.github/workflows/sipnet.yml
     with:
       R-version: ${{ matrix.R }}

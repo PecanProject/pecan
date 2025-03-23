@@ -41,6 +41,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","modules/data.remote","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
 "dplyr","*","base/remote","Imports",FALSE
@@ -79,6 +80,7 @@
 "GEDI4R","*","modules/data.remote","Suggests",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
+"getPass","*","modules/data.atmosphere","Suggests",FALSE
 "getPass","*","modules/data.land","Suggests",FALSE
 "getPass","*","modules/data.remote","Suggests",FALSE
 "ggmcmc","*","modules/meta.analysis","Suggests",FALSE
@@ -113,6 +115,7 @@
 "gridExtra","*","modules/benchmark","Imports",FALSE
 "gridExtra","*","modules/uncertainty","Imports",FALSE
 "hdf5r","*","models/ed","Imports",FALSE
+"hdf5r","*","modules/data.remote","Suggests",FALSE
 "here","*","base/db","Suggests",FALSE
 "httr","*","base/remote","Imports",FALSE
 "httr","*","modules/data.atmosphere","Imports",FALSE
