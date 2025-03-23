@@ -219,3 +219,10 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): | .install/devtools .in
 .shiny_depends/%: $$(call files_in_dir, %) | $$(@D)
 	Rscript scripts/install_shiny_deps.R $(subst .shiny_depends/,shiny/,$@)
 	echo `date` > $@
+
+# Generates directory structure documentation for the PEcAn project.
+# Writes output to documentation/directory_structure.md
+.PHONY: generate-dir-doc
+
+generate-dir-doc:
+	@bash scripts/generate_dir_structure.sh

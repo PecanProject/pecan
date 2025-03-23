@@ -1,0 +1,93 @@
+# PEcAn Directory Structure
+
+_This file is auto-generated. To update, run: `make generate-dir-doc`_
+
+- `apps/`
+  - `api/`
+- `base/`
+  - `all/`
+  - `db/`
+  - `logger/`
+  - `qaqc/`
+  - `remote/`
+  - `settings/`
+  - `utils/`
+  - `visualization/`
+  - `workflow/`
+- `book_source/`
+  - `01_introduction/`
+  - `02_demos_tutorials_workflows/`
+  - `03_topical_pages/`
+  - `04_appendix/`
+  - `06_reference/`
+  - `figures/`
+- `contrib/`
+  - `browndog/`
+  - `modellauncher/`
+- `docker/`
+  - `base/`
+  - `data/`
+  - `depends/`
+  - `docs/`
+  - `executor/`
+  - `models/`
+  - `monitor/`
+  - `rstudio-nginx/`
+  - `web/`
+- `documentation/`
+  - `tutorials/`
+- `models/`
+  - `basgra/`
+  - `biocro/`
+  - `cable/`
+  - `clm45/`
+  - `dalec/`
+  - `dvmdostem/`
+  - `ed/`
+  - `fates/`
+  - `gday/`
+  - `jules/`
+  - `ldndc/`
+  - `linkages/`
+  - `lpjguess/`
+  - `maat/`
+  - `maespa/`
+  - `preles/`
+  - `sibcasa/`
+  - `sipnet/`
+  - `stics/`
+  - `template/`
+- `modules/`
+  - `DART/`
+  - `allometry/`
+  - `assim.batch/`
+  - `assim.sequential/`
+  - `benchmark/`
+  - `data.atmosphere/`
+  - `data.land/`
+  - `data.mining/`
+  - `data.remote/`
+  - `emulator/`
+  - `meta.analysis/`
+  - `photosynthesis/`
+  - `priors/`
+  - `rtm/`
+  - `uncertainty/`
+- `scripts/`
+- `shiny/`
+  - `BenchmarkReport/`
+  - `Data-Ingest/`
+  - `Elicitation/`
+  - `ForecastingDashboard/`
+  - `Pecan.depend/`
+  - `SDAdashboard/`
+  - `ViewMet/`
+  - `dbsync/`
+  - `global-sensitivity/`
+  - `workflowPlot/`
+- `tests/`
+  - `met_download_settings/`
+- `web/`
+  - `images/`
+  - `leaflet/`
+  - `setups/`
