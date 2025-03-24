@@ -141,7 +141,7 @@ Place the pecan.xml file in the RStudio working directory and copy its file path
 If you are using an XML file from the **tests/** directory of the PEcAn repository, update your path accordingly.  
 
 For example, if using **docker.sipnet.xml**, the path should be: `tests/docker.sipnet.xml`.
-```{r load-settings}
+```{r load-settings,, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 settings_path <- "pecan.xml"  
 settings <- PEcAn.settings::read.settings(settings_path)
 ```
@@ -154,7 +154,7 @@ PEcAn provides utilities to process and validate settings before execution, ensu
 - If you are using Docker to set up PEcAn, there is no need to modify the `settings$outdir` path.  
 - If you are running RStudio in a PEcAn virtual machine (VM) or on a local system, update the `settings$outdir` path to the `pecan_runs` directory on your system and place it in your working directory.
 
-```{r prepare-settings}
+```{r prepare-settings,, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 settings$outdir <- "/home/carya/pecan_runs"
 settings <- PEcAn.settings::prepare.settings(settings)
 ```
