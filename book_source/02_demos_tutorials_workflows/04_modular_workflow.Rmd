@@ -129,7 +129,7 @@ Before running this workflow, ensure you have:
 
 We first load the necessary PEcAn modules required for running the workflow.
 
-```bash
+```{r libraries, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 library("PEcAn.all")
 ```
 
@@ -176,7 +176,7 @@ Before running model simulations, PEcAn processes the settings and ensures that 
 - This ensures that the input data is correctly structured before running the simulation.  
 
 
-```{r convert-settings}
+```{r convert-settings, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 if (!is.list(settings$host) || length(settings$host) > 1) {
   settings$host <- list(name = as.character(settings$host)[1])  
 }
@@ -218,7 +218,7 @@ This step is **optional**, and alternatives exist:
 
 ## **Executing the Code**  
 
-```{r meta-analysis}
+```{r meta-analysis, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 settings <- PEcAn.workflow::runModule.get.trait.data(settings)  # Fetch trait data
 PEcAn.workflow::runModule.run.meta.analysis(settings)  # Perform meta-analysis
 PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")  # Save updated settings
@@ -237,13 +237,13 @@ Before running simulations, PEcAn generates model-specific configuration files.
 - If PEcAn is running in a **virtual machine (VM) or a local system**, update the `settings$model$binary` path to the appropriate model directory.  
 - PEcAn models are located in the `pecan/models/` directory. Modify the path based on the model being used.  
   - For example, if using **ED2**, set:  
-    ```r
+    ```bash
     settings$model$binary <- "~/pecan/models/ed/"
     ```  
 
 ## **Run Model Configuration Generation**  
 
-```{r run.write.configs}
+```{r run.write.configs, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 settings$model$binary <- "~/pecan/models/sipnet/"  # Update the path to your model
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
@@ -261,7 +261,7 @@ Once the model configuration files have been generated, the next step is to exec
 Now, we execute the model using the `runModule_start_model_runs()` function. This function initiates the model run using the previously defined **trait data**, **meta-analysis results**, and **configuration settings**. The selected ecosystem model will now begin processing input data and generating outputs.  
 
 
-```{r run-model}
+```{r run-model, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 if (!is.list(settings$host) || length(settings$host) > 1) {
   settings$host <- list(name = as.character(settings$host)[1])
 }
@@ -301,7 +301,7 @@ Once the model run is complete, PEcAn provides tools to **extract, analyze, and 
 
 ## **Executing the Code**  
 
-```{r model-analyses}
+```{r model-analyses, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
 # Extract model output files  
 PEcAn.workflow::runModule.get.results(settings)  
 
