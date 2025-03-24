@@ -299,22 +299,5 @@ Once the model run is complete, PEcAn provides tools to **extract, analyze, and 
 
 
 
-## **Executing the Code**  
-
-```{r model-analyses, message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
-# Extract model output files  
-PEcAn.workflow::runModule.get.results(settings)  
-
-# Analyze how input variations impact predictions (optional)  
-PEcAn.workflow::run.sensitivity.analysis(settings)  
-
-# Run multiple simulations to estimate uncertainty (optional)  
-PEcAn.workflow::run.ensemble.analysis(settings)  
-
-# Generate time series plots for ensemble outputs (optional)  
-PEcAn.workflow::run.ensemble.analysis(settings, plot.timeseries=TRUE) 
-```
-
-
 
 
