@@ -1,0 +1,124 @@
+# Introduction
+
+This tutorial provides a step-by-step guide to running the **PEcAn Modular Workflow**. The PEcAn (Predictive Ecosystem Analyzer) system automates ecological modeling, helping researchers analyze plant functional traits, run model simulations, and perform sensitivity analyses.
+
+After setting up PEcAn locally, open **RStudio** in your browser and log in with:
+- **Username**: `carya`
+- **Password**: `illinois`
+
+Then, navigate to `web/workflow.Rmd` and open it to run the workflow. This method eliminates the need to execute the workflow through the web interface once `pecan.xml` is configured.
+
+---
+
+# Prerequisites
+
+Before running this workflow, ensure you have:
+
+- Installed **PEcAn** and its dependencies.
+- An XML settings file (`settings.xml`) configured for your use case.
+- A model binary (e.g., **SIPNET** or **ED2**) specified in your settings.
+
+---
+
+# Load PEcAn Packages
+
+We first load the necessary PEcAn modules required for running the workflow.
+
+```{r libraries, message=FALSE, warning=FALSE}
+library("PEcAn.all")
+```
+
+---
+
+# Load PEcAn Settings
+
+We read the PEcAn settings from an XML file. This file contains configuration details such as input datasets, model selection, and output directories.To create a pecan.xml, you can download one generated in the PEcAn web interface or one of the `pecan.<modelname>.xml` files in the tests/ directory of 
+the PEcAn repository (github.com/pecanproject/pecan).
+
+```{r load-settings}
+settings_path <- "settings.xml"  # Path to the settings file
+settings <- PEcAn.settings::read.settings(settings_path)
+```
+
+---
+
+# Prepare and Validate Settings
+
+PEcAn provides utilities to process and validate settings before execution. This step ensures that required fields are properly set.
+
+```{r prepare-settings}
+settings$outdir <- "/home/carya/pecan_runs"
+settings <- PEcAn.settings::prepare.settings(settings)
+```
+
+---
+
+# Convert Settings to Required Units
+
+PEcAn requires that settings be converted into the correct units before running model simulations.
+
+```{r convert-settings}
+if (!is.list(settings$host) || length(settings$host) > 1) {
+  settings$host <- list(name = as.character(settings$host)[1])  # Ensure single-element list
+}
+settings <- PEcAn.workflow::do_conversions(settings)
+```
+
+---
+
+# Trait and Meta Analysis
+
+PEcAn retrieves plant trait data and performs meta-analysis to derive parameter distributions for the model.
+
+```{r meta-analysis}
+settings <- PEcAn.workflow::runModule.get.trait.data(settings)
+PEcAn.workflow::runModule.run.meta.analysis(settings)
+PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
+```
+
+---
+
+# Write Model Configuration Files
+
+Model-specific configuration files are generated before running simulations.
+
+```{r run.write.configs}
+settings$model$binary <- "~/pecan/models/sipnet/"  # Update the path to your model
+settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
+```
+
+---
+
+# Run Model Simulations
+
+We execute the model using PEcAn’s workflow module.
+
+```{r run-model}
+if (!is.list(settings$host) || length(settings$host) > 1) {
+  settings$host <- list(name = as.character(settings$host)[1])
+}
+PEcAn.utils::status.start("MODEL")
+PEcAn.workflow::runModule_start_model_runs(settings)
+```
+
+---
+
+# Model Analyses
+
+Once the model runs are complete, we can analyze the results through sensitivity analysis and ensemble analysis.
+
+```{r model-analysis}
+runModule.get.results(settings)
+run.sensitivity.analysis(settings)      # Sensitivity analysis
+run.ensemble.analysis(settings)         # Ensemble analysis
+run.ensemble.analysis(plot.timeseries=TRUE)  # Plot results
+```
+
+---
+
+# Conclusion
+
+This tutorial guided you through setting up and executing a PEcAn-based workflow. The outputs include model-generated data, sensitivity analysis results, and ensemble forecasts.
+
+

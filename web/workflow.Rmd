@@ -12,7 +12,8 @@ library("PEcAn.all")
 # Load PEcAn settings files.
 
 Open and read in settings file for PEcAn run.
-To create a pecan.xml, you can download one generated in the PEcAn web interface or one of the `pecan.<modelname>.xml` files in the tests/ directory of the PEcAn repository (github.com/pecanproject/pecan).
+To create a pecan.xml, you can download one generated in the PEcAn web interface or one of the `pecan.<modelname>.xml` files in the tests/ directory of 
+the PEcAn repository (github.com/pecanproject/pecan).
 ```{r load-settings}
 
 settings_path <- "settings.xml" 
@@ -22,27 +23,8 @@ settings <- PEcAn.settings::read.settings(settings_path)
 
 ```{r prepare-settings}
 # Prepare and check settings
+settings$outdir <- "/home/carya/pecan_runs"
 settings <- PEcAn.settings::prepare.settings(settings)
-
-if ("benchmarking" %in% names(settings)) {
-  library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_BRR)
-}
-
-# Process sitegroup settings
-if ("sitegroup" %in% names(settings)) {
-  if (is.null(settings$sitegroup$nSite)) {
-    settings <- PEcAn.settings::createSitegroupMultiSettings(settings,
-      sitegroupId = settings$sitegroup$id
-    )
-  } else {
-    settings <- PEcAn.settings::createSitegroupMultiSettings(
-      settings,
-      sitegroupId = settings$sitegroup$id,
-      nSite = settings$sitegroup$nSite
-    )
-  }
-}
 ```
 
 ```{r convert-settings}
@@ -74,7 +56,7 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
 Generates model-specific configuration files based on the settings, ensuring proper model execution.
 
 ```{r run.write.configs}
-settings$model$binary <- "/path/to/models/sipnet/" # Path to model binary,change it according to your models
+settings$model$binary <- "~/pecan/models/sipnet/" # Path to model binary,change it according to your models if ed2 mention ed2 binary path
 settings <-PEcAn.workflow::runModule.run.write.configs(settings)
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 ```
@@ -88,7 +70,7 @@ if (!is.list(settings$host) || length(settings$host) > 1) {
 settings$host <- list(name = as.character(settings$host)[1]) 
 }
 PEcAn.utils::status.start("MODEL")
-runModule.start.model.runs(settings)
+PEcAn.workflow::runModule_start_model_runs(settings)
 ```
 
 # Model Analyses
@@ -96,8 +78,8 @@ Performs various analyses on model outputs, including sensitivity analysis, vari
 
 ```{r model-analysis}
 runModule.get.results(settings)
-run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
-run.ensemble.analysis()  	      # Run ensemble analysis on model output. 
+run.sensitivity.analysis(settings)      # Run sensitivity analysis and variance decomposition on model output
+run.ensemble.analysis(settings)  	      # Run ensemble analysis on model output. 
 run.ensemble.analysis(plot.timeseries=TRUE) 
 ```
 
