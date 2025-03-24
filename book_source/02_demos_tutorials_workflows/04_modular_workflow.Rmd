@@ -33,13 +33,6 @@ To obtain a `pecan.xml` file while running a workflow in the PEcAn web interface
 For a detailed step-by-step tutorial, refer to the official documentation:  
 [PEcAn Workflow Tutorial](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html).
 
-### PEcAn XML Configuration Page
-
-After clicking **Edit pecan.xml**, you will see a page similar to the image below:
-
-```{r runspec, echo=FALSE}
-knitr::include_graphics('./pecan_xml.png')
-```
 
 ### Example pecan.xml File
 
@@ -222,7 +215,7 @@ This step is **optional**, and alternatives exist:
 3. **Running Without Trait Data:**  
    - Some models may allow running simulations with default parameters, bypassing the need for a meta-analysis.  
 
-   
+
 ## **Executing the Code**  
 
 ```{r meta-analysis}
