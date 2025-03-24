@@ -129,7 +129,7 @@ Before running this workflow, ensure you have:
 
 We first load the necessary PEcAn modules required for running the workflow.
 
-```{r libraries, message=FALSE, warning=FALSE, echo=FALSE}
+```bash
 library("PEcAn.all")
 ```
 
