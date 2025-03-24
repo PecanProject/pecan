@@ -69,7 +69,6 @@ Executes the model simulations and retrieves the results for further analysis.
 if (!is.list(settings$host) || length(settings$host) > 1) {
 settings$host <- list(name = as.character(settings$host)[1]) 
 }
-PEcAn.utils::status.start("MODEL")
 PEcAn.workflow::start_model_runs(settings)
 ```
 
