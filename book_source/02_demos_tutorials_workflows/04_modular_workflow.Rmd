@@ -1,4 +1,4 @@
-# Introduction
+# PEcAn Modular Workflow
 
 The **PEcAn Modular Workflow** is an alternative approach to running PEcAn models directly in R, rather than using the web interface. PEcAn (Predictive Ecosystem Analyzer) automates ecological modeling, allowing researchers to analyze plant functional traits, execute model simulations, and perform sensitivity analyses. 
 
@@ -10,7 +10,6 @@ To use the modular workflow, open **RStudio** in your local machine.
 
 Then, navigate to `web/workflow.Rmd` and open it to run the workflow. Once `pecan.xml` is correctly configured, this approach eliminates the need for executing workflows via the web interface.
 
----
 
 ## Why Use the Modular Workflow?
 
@@ -22,8 +21,6 @@ Instead of running the entire workflow at once, users can:
 - Process meteorology, soils, initial conditions, phenology, and parameter files separately.
 
 This modular approach improves usability, debugging, and automation, making PEcAn workflows more efficient.
-
----
 
 ## How to Generate a `pecan.xml` File
 
@@ -41,7 +38,7 @@ For a detailed step-by-step tutorial, refer to the official documentation:
 After clicking **Edit pecan.xml**, you will see a page similar to the image below:
 
 ```{r runspec, echo=FALSE}
-knitr::include_graphics('extfiles/pecan_xml.png')
+knitr::include_graphics('./pecan_xml.png')
 ```
 
 ### Example pecan.xml File
@@ -134,7 +131,6 @@ Before running this workflow, ensure you have:
 - An XML settings file (`pecan.xml`) configured for your use case.
 - A model binary (e.g., **SIPNET**) specified in your settings.
 - A pecan repository cloned from GitHub(https://github.com/pecanproject/pecan) in rstudiio.If you are using docker to set up pecan no need to clone pecan repo.
----
 
 # Load PEcAn Packages
 
@@ -143,8 +139,6 @@ We first load the necessary PEcAn modules required for running the workflow.
 ```{r libraries, message=FALSE, warning=FALSE, echo=FALSE}
 library("PEcAn.all")
 ```
-
----
 
 # Load PEcAn Settings
 
@@ -159,8 +153,6 @@ settings_path <- "pecan.xml"
 settings <- PEcAn.settings::read.settings(settings_path)
 ```
 
----
-
 # Prepare and Validate Settings
 After reading the settings, a directory named `pecan_runs` will be created in the working directory. This directory will store all output files generated during the PEcAn run.  
 
@@ -174,7 +166,7 @@ settings$outdir <- "/home/carya/pecan_runs"
 settings <- PEcAn.settings::prepare.settings(settings)
 ```
 
----
+
 
 # **Processing PEcAn Settings**  
 
@@ -197,9 +189,7 @@ if (!is.list(settings$host) || length(settings$host) > 1) {
 }
 settings <- PEcAn.workflow::do_conversions(settings)
 ```
----
 
----
 
 # **Trait and Meta-Analysis**  
 
@@ -219,7 +209,6 @@ This step in the PEcAn workflow **retrieves plant trait data** and **performs a 
 - `PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")`  
   - Saves the updated settings, ensuring that the derived trait data and parameter distributions are recorded.  
 
-
 ## **Is This Step Required?**  
 
 This step is **optional**, and alternatives exist:  
@@ -233,7 +222,7 @@ This step is **optional**, and alternatives exist:
 3. **Running Without Trait Data:**  
    - Some models may allow running simulations with default parameters, bypassing the need for a meta-analysis.  
 
-
+   
 ## **Executing the Code**  
 
 ```{r meta-analysis}
@@ -243,7 +232,7 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")  # Save
 
 ```
 
----
+
 
 # Write Model Configuration Files
 
@@ -268,7 +257,7 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 
 ```
 
----
+
 
 # Run Model Simulations
 
@@ -286,7 +275,7 @@ if (!is.list(settings$host) || length(settings$host) > 1) {
 PEcAn.workflow::start_model_runs(settings)
 ```
 
----
+
 
 # **Model Analyses in PEcAn**  
 
@@ -315,7 +304,7 @@ Once the model run is complete, PEcAn provides tools to **extract, analyze, and 
   - Generates time series plots for ensemble results.  
   - **This will not run by default** unless ensemble visualization settings are enabled in `pecan.xml`.  
 
----
+
 
 ## **Executing the Code**  
 
@@ -333,6 +322,6 @@ PEcAn.workflow::run.ensemble.analysis(settings)
 PEcAn.workflow::run.ensemble.analysis(settings, plot.timeseries=TRUE) 
 ```
 
----
+
 
 
