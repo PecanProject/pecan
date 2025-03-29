@@ -656,6 +656,7 @@
 "utils","*","modules/assim.batch","Imports",FALSE
 "utils","*","modules/assim.sequential","Suggests",FALSE
 "utils","*","modules/benchmark","Imports",FALSE
+"utils","*","modules/data.atmosphere","Imports",FALSE
 "utils","*","modules/data.remote","Suggests",FALSE
 "utils","*","modules/photosynthesis","Imports",FALSE
 "vdiffr",">= 1.0.2","base/qaqc","Suggests",FALSE
