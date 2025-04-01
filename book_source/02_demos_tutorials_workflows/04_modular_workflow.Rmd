@@ -177,9 +177,6 @@ Before running model simulations, PEcAn processes the settings and ensures that 
 
 
 ```{r convert-settings, message=FALSE,echo=FALSE, eval=FALSE}
-if (!is.list(settings$host) || length(settings$host) > 1) {
-  settings$host <- list(name = as.character(settings$host)[1])  
-}
 settings <- PEcAn.workflow::do_conversions(settings)
 ```
 

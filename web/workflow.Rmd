@@ -29,9 +29,6 @@ settings <- PEcAn.settings::prepare.settings(settings)
 
 ```{r convert-settings}
 # Convert settings to required units
-if (!is.list(settings$host) || length(settings$host) > 1) {
-settings$host <- list(name = as.character(settings$host)[1]) # Ensure single-element list
-}
 settings <- PEcAn.workflow::do_conversions(settings)
 ```
 
@@ -66,9 +63,6 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 Executes the model simulations and retrieves the results for further analysis.
 
 ```{r run-model}
-if (!is.list(settings$host) || length(settings$host) > 1) {
-settings$host <- list(name = as.character(settings$host)[1]) 
-}
 PEcAn.workflow::start_model_runs(settings)
 ```
 
