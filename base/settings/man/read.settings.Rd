@@ -38,7 +38,7 @@ R --vanilla -- --settings path/to/mypecan.xml < workflow.R
 
 settings <- read.settings()
 settings <- read.settings(file="willowcreek.xml")
-test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
+test.settings.file <- system.file("tests/test.xml", package = "PEcAn.settings")
 settings <- read.settings(test.settings.file)
 }
 }

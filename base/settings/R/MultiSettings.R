@@ -60,6 +60,7 @@ is.MultiSettings <- function(x) {
       } else if (length(x) == 1 && length(value) > 1) {
         x <- MultiSettings(replicate(length(value), x[[1]], simplify = FALSE))
         x[[i, global = FALSE]] <- value
+        x <- settingNames(x, names(value))
       } else {
         stop("Length mismatch in assigning to MultiSettings")
       }
@@ -105,13 +106,7 @@ is.MultiSettings <- function(x) {
 } # "[[.MultiSettings"
 
 .allListElementsEqual <- function(x) {
-  firstElement <- x[[1]]
-  replicatedFirstElement <- replicate(
-    length(x),
-    firstElement,
-    simplify = FALSE)
-  return(isTRUE(
-    all.equal(replicatedFirstElement, x, check.attributes = FALSE)))
+  all(sapply(x, identical, x[[1]]))
 } # .allListElementsEqual
 
 #' @export

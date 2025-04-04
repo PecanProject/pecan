@@ -31,6 +31,9 @@ LAI_search_window <- 30
 LAI_timestep <- list(unit="year", num=1)
 LAI_export_csv <- TRUE
 run_parallel <- TRUE
+sd_threshold <- 20
+upper_quantile <- 0.95
+lower_quantile <- 0.05
 
 #SMP
 SMP_search_window <- 30
@@ -128,7 +131,8 @@ template <- PEcAn.settings::Settings(list(
     
     Obs_Prep = structure(list(
       Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
-      MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel)),
+      MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
+                                 sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
       SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
       Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
       start.date = obs_start_date,

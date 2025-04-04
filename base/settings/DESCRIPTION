@@ -15,6 +15,7 @@ Description: Contains functions to read PEcAn settings files.
 Depends:
     methods
 Imports:
+    glue,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,

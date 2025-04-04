@@ -30,6 +30,7 @@ Imports:
     dplyr,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
+    PEcAn.data.remote,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,

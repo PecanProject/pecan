@@ -45,15 +45,7 @@ Strong dependencies not in mainstream repositories:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-model2netcdf.SIPNET: no visible binding for global variable ‘year’
-split_inputs.SIPNET: no visible binding for global variable ‘.’
-split_inputs.SIPNET: no visible binding for global variable ‘V2’
-split_inputs.SIPNET: no visible binding for global variable ‘V3’
-split_inputs.SIPNET: no visible binding for global variable ‘Date’
-split_inputs.SIPNET: no visible binding for global variable ‘V4’
-Undefined global functions or variables:
-  %>% . Date V2 V3 V4 year
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

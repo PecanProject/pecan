@@ -216,7 +216,7 @@ pda.bayesian.tools <- function(settings, external.data = NULL, external.priors =
                                                                                                              now, sep = "."))
 
     ## Start model run
-    PEcAn.remote::start.model.runs(settings, FALSE)
+    PEcAn.workflow::start_model_runs(settings, write = FALSE)
     
     ## Read model outputs
     align.return <- pda.get.model.output(settings, run.id, NULL, inputs, external.formats)

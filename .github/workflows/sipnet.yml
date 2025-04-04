@@ -49,16 +49,15 @@ jobs:
       run: ./scripts/add.models.sh
 
     # install sipnet
-    - name: Check out SIPNET
-      uses: actions/checkout@v4
-      with:
-        repository: PecanProject/sipnet
-        path: sipnet
-        set-safe-directory: false
-    - name: install sipnet
+    - name: Download SIPNET for Linux
       run: |
-        cd ${GITHUB_WORKSPACE}/sipnet
-        make sipnet
+        curl -L -o sipnet-linux "https://github.com/PecanProject/sipnet/releases/download/v1.3.0/sipnet-linux-v1.3.0"
+        chmod +x sipnet-linux
+
+    - name: Download climate file from GitHub
+      run: |
+        curl -L -o niwot.clim "https://raw.githubusercontent.com/PecanProject/sipnet/refs/heads/master/tests/smoke/niwot.clim"
+  
 
     # compile PEcAn code
     - name: build

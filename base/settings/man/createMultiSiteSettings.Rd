@@ -10,7 +10,9 @@ createMultiSiteSettings(templateSettings, siteIds)
 \item{templateSettings}{A \code{\link{Settings}} object that will be
 the template for the resulting MultiSettings.}
 
-\item{siteIds}{The site IDs to be used in the resulting MultiSettings}
+\item{siteIds}{The site IDs to be used in the resulting MultiSettings.
+May be a vector or a data frame with a mandatory \code{id} column and
+optionally other columns to be copied into \code{run$site}. See details.}
 }
 \value{
 A \code{MultiSettings} object with the same settings as
@@ -26,6 +28,9 @@ Starts with a template settings object, and duplicates the \code{run$site}
 block once for each specified site ID. The resulting MultiSettings is thus
 identical to the input, except ready to run for each site in the vector
 of site IDs.
+If \code{siteIds} is a data frame with a column named \code{id},
+each resulting \code{run$site} block will contain all the site parameters
+(lat, lon, site name, etc) that are specified in its other columns.
 }
 \examples{
 dontrun <- function() { # Added by Alexey Shiklomanov

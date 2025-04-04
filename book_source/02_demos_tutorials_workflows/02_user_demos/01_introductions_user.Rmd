@@ -1,12 +1,8 @@
 # Tutorials {#user-section}
 
-## How PEcAn Works in a nutshell {#pecan-in-a-nutshell}
-
 PEcAn provides an interface to a variety of ecosystem models and attempts to standardize and automate the processes of model parameterization, execution, and analysis. First, you choose an ecosystem model, then the time and location of interest (a site), the plant community (or crop) that you are interested in simulating, and a source of atmospheric data from the BETY database (LeBauer et al, 2010). These are set in a "settings" file, commonly named `pecan.xml` which can be edited manually if desired. From here, PEcAn will take over and set up and execute the selected model using your settings. The key is that PEcAn uses models as-is, and all of the translation steps are done within PEcAn so no modifications are required of the model itself. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all past experiments and simulations.
 
 There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow. The quickest way to get started is to download the virtual machine or use an AWS instance.
-
-## PEcAn Demos {#demo-table}
 
 The following Tutorials assume you have installed PEcAn. If you have not, please consult the [PEcAn Installation Section](#pecan-manual-setup).
 

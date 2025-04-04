@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^dev
 ^tests
+vignettes/.*.rds

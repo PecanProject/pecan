@@ -73,7 +73,9 @@ files <- list.files(
   recursive = TRUE
 )
 # ...but don't do anything with these ones
-ignore <- c("modules/data.mining")
+# TODO consider parsing the active pkg list from Makefile
+# rather than duplicate exclusions here?
+ignore <- c("models/cable", "models/preles", "modules/data.mining")
 files <- files[!(dirname(files) %in% ignore)]
 
 

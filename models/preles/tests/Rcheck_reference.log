@@ -20,7 +20,8 @@ Strong dependencies not in mainstream repositories:
 Suggests or Enhances not in mainstream repositories:
   Rpreles
 * checking package namespace information ... OK
-* checking package dependencies ... OK
+* checking package dependencies ... NOTE
+  Package suggested but not available for checking: ‘Rpreles’
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK

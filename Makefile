@@ -1,9 +1,10 @@
+SHELL = /bin/bash
 NCPUS ?= 1
 
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				ldndc lpjguess maat maespa preles sibcasa sipnet stics template
+				ldndc lpjguess maat maespa sibcasa sipnet stics template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.land data.remote \
@@ -12,8 +13,9 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 
 # Components not currently included in the build
 # (Most need more development first)
-# 	models: cable
-#	modules: data.mining, DART
+# If you need one of these on your system, add it to the appropriate line above.
+# MODELS: cable preles
+# MODULES: data.mining DART
 
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
@@ -103,17 +105,21 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document clean shiny \
-            check_base check_models check_modules document help
+.PHONY: all install check test document clean shiny pkgdocs \
+            check_base check_models check_modules help
 
 all: install document
 
-#    Note: Installs base first as Modules has a circular dependency on base
+# Note: Installs base first as Modules has a circular dependency on base
 check_base: $(BASE_C)
 check_models: $(MODELS_C)
 check_modules: $(BASE_I) $(MODULES_C)
 
 document: $(ALL_PKGS_D) .doc/base/all
+
+pkgdocs:
+	Rscript scripts/build_pkgdown.R $(ALL_PKGS) base/all || exit 1
+	
 
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
@@ -142,7 +148,8 @@ help:
 	@echo "  make .doc/modules/assim.sequential  # Generate documentation for a specific package"
 	@echo ""
 	@echo "Notes:"
-	@echo "  - Components not included: cable (models), data.mining and DART (modules)."
+	@echo "  - Components not included by default: cable and preles (models), data.mining and DART (modules)."
+	@echo "      To install any of these, see comments in the Makefile and be aware they may need code updates."
 	@echo "  - Standard workflow: install packages, run checks, test, and document before submitting a PR."
 	@echo "  - Before submitting a PR, please ensure that all tests pass, code is linted, and documentation is up-to-date."
 	@echo ""
@@ -157,6 +164,7 @@ help:
 	@echo "  test           Run unit tests on all packages"
 	@echo "  shiny          Install dependencies for Shiny apps"
 	@echo "  book           Render the PEcAn bookdown documentation"
+	@echo "  pkgdocs        Build package documentation websites using pkgdown"
 	@echo "  clean          Remove build artifacts"
 	@echo "  help           Show this help message"
 
