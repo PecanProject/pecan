@@ -126,16 +126,12 @@ RUN set -e && \
 
 ########################################################################
 
-## 5. Is the following part (copied from sipnet) necessary for fates?
-
 # Some variables that can be used to set control the docker build
 ARG MODEL_VERSION=git
+ENV MODEL_VERSION=${MODEL_VERSION}
 
 # Setup model_info file
 ## model.json 
 COPY model_info.json /work/model.json
 RUN sed -i -e "s/@VERSION@/${MODEL_VERSION}/g" \
            -e "s#@BINARY@#/usr/local/bin/fates.${MODEL_VERSION}#g" /work/model.json
-
-# Copy binary file of fates 
-COPY --from=model-binary /src/CESM/fates /usr/local/bin/fates.${MODEL_VERSION} 

@@ -156,7 +156,9 @@ echo "*** Run case.build ***"
 sleep 10
 ./case.build # ! Long run, we should not be building the model.  But current BUILD_COMPLETE doesn't seem to be working !
 sleep 10
-## export $CASEROOT?? x
+
+# link binary to /usr/local/bin/
+ln -s @CASEDIR@/bld/cesm.exe /usr/local/bin/fates.${MODEL_VERSION}
 
 ## RUN
 echo "*** Run case.submit ***"
