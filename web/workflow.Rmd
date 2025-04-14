@@ -10,25 +10,29 @@ output: html_document
 library("PEcAn.all")
 ```
 # Load PEcAn settings files.
+Ensure that the pecan.xml file is properly configured for your use case before proceeding with the PEcAn run.
+- If you have pecan.xml generated from web,place the pecan.xml file in the RStudio working directory and copy its file path. Assign this path to the **settings_path** variable, then read the settings using the PEcAn.settings::read.settings 
 
-Open and read in settings file for PEcAn run.
-To create a pecan.xml, you can download one generated in the PEcAn web interface or one of the `pecan.<modelname>.xml` files in the tests/ directory of 
-the PEcAn repository (github.com/pecanproject/pecan).
+- If you are using an XML file from the **tests/** directory of the PEcAn repository, update your path accordingly.  
+For example, if using **docker.sipnet.xml**, the path should be: `tests/docker.sipnet.xml`.
 ```{r load-settings}
-
-settings_path <- "settings.xml" 
+settings_path <- "pecan.xml" 
 settings <- PEcAn.settings::read.settings(settings_path)
 ```
 
-
+# Prepare and Validate Settings
+PEcAn provides utilities to process and validate settings before execution, ensuring that all required fields are correctly configured.  
+- If you are using Docker to set up PEcAn, there is no need to modify the `settings$outdir` path.  
+- If you are running RStudio in a PEcAn virtual machine (VM) or on a local system, update the `settings$outdir` path to the `pecan_runs` directory on your system and place it in your working directory.
+ Replace 'carya' with your own username or appropriate path on your machine
+ For example: settings$outdir <- "/home/your-username/pecan_runs"
 ```{r prepare-settings}
-# Prepare and check settings
 settings$outdir <- "/home/carya/pecan_runs"
 settings <- PEcAn.settings::prepare.settings(settings)
 ```
-
+# Processing PEcAn Settings
+Converts settings into the format required by the selected ecosystem model
 ```{r convert-settings}
-# Convert settings to required units
 settings <- PEcAn.workflow::do_conversions(settings)
 ```
 
@@ -37,11 +41,10 @@ Fetches plant trait data and prior distributions from external databases for the
 If this step is skipped, a posterior file should be specified in the settings.
 
 ```{r meta-analysis}
-if (settings$debug) cat("Starting trait and meta-analysis...\n")
 # Retrieve trait data and prior distributions for the specified Plant Functional Types (PFTs)
 settings <- PEcAn.workflow::runModule.get.trait.data(settings)
 # Perform meta-analysis to derive probabilistic distributions for model parameters
-PEcAn.workflow::runModule.run.meta.analysis(settings)
+PEcAn.MA::runModule.run.meta.analysis(settings)
 # Save the updated settings, including the retrieved trait data, to an XML file
 PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
 
@@ -50,10 +53,19 @@ PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")
 
 
 # Write Model Configuration Files
-Generates model-specific configuration files based on the settings, ensuring proper model execution.
+Before running simulations, PEcAn generates model-specific configuration files.  
 
+- If PEcAn is set up using **Docker**, there is no need to modify `settings$model$binary`.  
+- If PEcAn is running in a **virtual machine (VM) or a local system**, update the `settings$model$binary` path to the appropriate model directory.  
+- PEcAn models are located in the `pecan/models/` directory. Modify the path based on the model being used.  
+  - For example, if using **ED2**, set:  
+    ```bash
+    settings$model$binary <- "~/pecan/models/ed/"
+    ```  
 ```{r run.write.configs}
 settings$model$binary <- "~/pecan/models/sipnet/" # Path to model binary,change it according to your models if ed2 mention ed2 binary path
+Generates model-specific configuration files based on the settings, ensuring proper model execution.
+# Generates model-specific configuration files based on the settings, ensuring proper model execution.
 settings <-PEcAn.workflow::runModule.run.write.configs(settings)
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 ```
@@ -66,13 +78,4 @@ Executes the model simulations and retrieves the results for further analysis.
 PEcAn.workflow::start_model_runs(settings)
 ```
 
-# Model Analyses
-Performs various analyses on model outputs, including sensitivity analysis, variance decomposition, and ensemble analysis.
-
-```{r model-analysis}
-runModule.get.results(settings)
-run.sensitivity.analysis(settings)      # Run sensitivity analysis and variance decomposition on model output
-run.ensemble.analysis(settings)  	      # Run ensemble analysis on model output. 
-run.ensemble.analysis(plot.timeseries=TRUE) 
-```
 
