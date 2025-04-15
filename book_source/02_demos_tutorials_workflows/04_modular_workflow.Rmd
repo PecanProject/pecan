@@ -22,13 +22,10 @@ Instead of running the entire workflow at once, users can:
 
 This modular approach improves usability, debugging, and automation, making PEcAn workflows more efficient.
 
-## How to Generate a `pecan.xml` File
+## How to Generate a `pecan.xml` File 
+The `pecan.xml` file is a configuration file that contains all the necessary settings for running a PEcAn workflow. It includes information about the model, input data, output directories, and other parameters required for the simulation.
+To create a pecan.xml, you can download one genrated in the PEcAn web interface or one of the `pecan.<modelname>.xml` files in the tests/ directory of the PEcAn repository (github.com/pecanproject/pecan).
 
-To obtain a `pecan.xml` file while running a workflow in the PEcAn web interface, follow these steps:
-
-1. Execute the workflow in the PEcAn web interface.
-2. Once the workflow runs successfully, download the `pecan.xml` file from the web interface.
-3. After configuring your settings, click on **Edit pecan.xml** to modify the file as needed.
 
 For a detailed step-by-step tutorial, refer to the official documentation:  
 [PEcAn Workflow Tutorial](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html).
@@ -41,79 +38,72 @@ If you follow the steps outlined in the PEcAn Basic Workflow section, you will g
 ```xml
 <?xml version="1.0"?>
 <pecan>
-  <info>
-    <notes></notes>
-    <userid>-1</userid>
-    <username></username>
-    <date>2025/03/24 10:37:56 +0000</date>
-  </info>
-  <outdir>/data/workflows/PEcAn_99000000005</outdir>
+  <outdir>/data/tests/sipnet</outdir>
+
   <database>
     <bety>
+      <driver>PostgreSQL</driver>
       <user>bety</user>
       <password>bety</password>
       <host>postgres</host>
-      <port>5432</port>
       <dbname>bety</dbname>
-      <driver>PostgreSQL</driver>
-      <write>true</write>
+      <write>FALSE</write>
     </bety>
-    <dbfiles>/data/dbfiles</dbfiles>
   </database>
+
   <pfts>
     <pft>
       <name>temperate.coniferous</name> 
     </pft>
   </pfts>
+
   <meta.analysis>
     <iter>3000</iter>
-    <random.effects>
-      <on>FALSE</on>
-      <use_ghs>TRUE</use_ghs>
-    </random.effects>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
   </meta.analysis>
+
   <ensemble>
-    <size>1</size>
     <variable>NPP</variable>
-    <samplingspace>
-      <parameters>
-        <method>uniform</method>
-      </parameters>
-      <met>
-        <method>sampling</method>
-      </met>
-    </samplingspace>
   </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>NPP</variable>
+  </sensitivity.analysis>
+
   <model>
-    <id>99000000003</id>
+    <type>SIPNET</type>
+    <revision>r136</revision>
   </model>
-  <workflow>
-    <id>99000000005</id>
-  </workflow>
+
   <run>
     <site>
       <id>772</id>
-      <met.start>2004/01/01</met.start>
-      <met.end>2004/12/31</met.end>
     </site>
     <inputs>
       <met>
-        <source>AmerifluxLBL</source>
-        <output>SIPNET</output>
-        <username>Aritra_2023</username>
+        <id>5000000005</id>
       </met>
     </inputs>
-    <start.date>2004/01/01</start.date>
-    <end.date>2004/12/31</end.date>
+    <start.date>2002-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <dbfiles>pecan/dbfiles</dbfiles>
   </run>
+
   <host>
     <name>localhost</name>
     <rabbitmq>
       <uri>amqp://guest:guest@rabbitmq/%2F</uri>
-      <queue>SIPNET_git</queue>
+      <queue>SIPNET_r136</queue>
     </rabbitmq>
   </host>
 </pecan>
+
 ```
 
 
@@ -123,177 +113,3 @@ Before running this workflow, ensure you have:
 - An XML settings file (`pecan.xml`) 
 - A model binary (e.g., **SIPNET**) specified in your settings.
 - A pecan repository cloned from GitHub(https://github.com/pecanproject/pecan) in rstudiio.If you are using docker to set up pecan no need to clone pecan repo.
-
-# Load PEcAn Packages
-
-We first load the necessary PEcAn modules required for running the workflow.
-
-```{r libraries, message=FALSE,echo=FALSE, eval=FALSE}
-library("PEcAn.all")
-```
-
-# Load PEcAn Settings
-
-Ensure that the pecan.xml file is properly configured for your use case before proceeding with the PEcAn run. Follow the steps provided earlier to create the pecan.xml file.
-
-Place the pecan.xml file in the RStudio working directory and copy its file path. Assign this path to the **settings_path** variable, then read the settings using the PEcAn.settings::read.settings 
-If you are using an XML file from the **tests/** directory of the PEcAn repository, update your path accordingly.  
-
-For example, if using **docker.sipnet.xml**, the path should be: `tests/docker.sipnet.xml`.
-```{r load-settings, message=FALSE,echo=FALSE, eval=FALSE}
-settings_path <- "pecan.xml"  
-settings <- PEcAn.settings::read.settings(settings_path)
-```
-
-# Prepare and Validate Settings
-After reading the settings, a directory named `pecan_runs` will be created in the working directory. This directory will store all output files generated during the PEcAn run.  
-
-PEcAn provides utilities to process and validate settings before execution, ensuring that all required fields are correctly configured.  
-
-- If you are using Docker to set up PEcAn, there is no need to modify the `settings$outdir` path.  
-- If you are running RStudio in a PEcAn virtual machine (VM) or on a local system, update the `settings$outdir` path to the `pecan_runs` directory on your system and place it in your working directory.
-
-```{r prepare-settings, message=FALSE,echo=FALSE, eval=FALSE}
-settings$outdir <- "/home/carya/pecan_runs"
-settings <- PEcAn.settings::prepare.settings(settings)
-```
-
-
-
-# **Processing PEcAn Settings**  
-
-Before running model simulations, PEcAn processes the settings and ensures that the required input files are correctly formatted for the selected model.  
-
-## **Understanding the Code**  
-
-### **1. Checking the Host Settings**  
-- The `if` statement verifies whether `settings$host` is a list and ensures it contains only a single entry.  
-- If `settings$host` is not already a list or has multiple entries, it converts `settings$host` into a list containing only the first entry.  
-
-### **2. Converting Input Files to the Model’s Required Format**  
-- The function `PEcAn.workflow::do_conversions(settings)` **builds all necessary input files** and **converts them into the format required by the selected ecosystem model**.  
-- This ensures that the input data is correctly structured before running the simulation.  
-
-
-```{r convert-settings, message=FALSE,echo=FALSE, eval=FALSE}
-settings <- PEcAn.workflow::do_conversions(settings)
-```
-
-
-# **Trait and Meta-Analysis**  
-
-This step in the PEcAn workflow **retrieves plant trait data** and **performs a meta-analysis** to derive parameter distributions for the model.  
-
-## **1. Retrieving Trait Data**  
-- `PEcAn.workflow::runModule.get.trait.data(settings)`  
-  - Fetches trait data from databases such as **BETYdb** (Biofuel Ecophysiological Traits and Yields Database).  
-  - This data is used to inform model parameters based on real-world observations.  
-
-## **2. Running Meta-Analysis**  
-- `PEcAn.workflow::runModule.run.meta.analysis(settings)`  
-  - Uses statistical techniques to generate parameter distributions from collected trait data.  
-  - Helps improve the accuracy of ecosystem models by integrating **uncertainty estimates**.  
-
-## **3. Saving Updated Settings**  
-- `PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")`  
-  - Saves the updated settings, ensuring that the derived trait data and parameter distributions are recorded.  
-
-## **Is This Step Required?**  
-
-This step is **optional**, and alternatives exist:  
-
-1. **Using Precomputed Trait Data:**  
-   - If you already have trait distributions from previous runs, you can **skip** this step and directly use existing parameter values.  
-
-2. **Manually Setting Parameters:**  
-   - Instead of retrieving data from BETYdb, you can manually define trait distributions in the `pecan.xml` file.  
-
-3. **Running Without Trait Data:**  
-   - Some models may allow running simulations with default parameters, bypassing the need for a meta-analysis.  
-
-
-## **Executing the Code**  
-
-```{r meta-analysis, message=FALSE,echo=FALSE, eval=FALSE}
-settings <- PEcAn.workflow::runModule.get.trait.data(settings)  # Fetch trait data
-PEcAn.workflow::runModule.run.meta.analysis(settings)  # Perform meta-analysis
-PEcAn.settings::write.settings(settings, outputfile = "pecan.TRAIT.xml")  # Save updated settings
-
-```
-
-
-
-# Write Model Configuration Files
-
-## Generating Model-Specific Configuration Files  
-
-Before running simulations, PEcAn generates model-specific configuration files.  
-
-- If PEcAn is set up using **Docker**, there is no need to modify `settings$model$binary`.  
-- If PEcAn is running in a **virtual machine (VM) or a local system**, update the `settings$model$binary` path to the appropriate model directory.  
-- PEcAn models are located in the `pecan/models/` directory. Modify the path based on the model being used.  
-  - For example, if using **ED2**, set:  
-    ```bash
-    settings$model$binary <- "~/pecan/models/ed/"
-    ```  
-
-## **Run Model Configuration Generation**  
-
-```{r run.write.configs, message=FALSE,echo=FALSE, eval=FALSE}
-settings$model$binary <- "~/pecan/models/sipnet/"  # Update the path to your model
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
-PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
-
-```
-
-
-
-# Run Model Simulations
-
-# **Executing the Model in PEcAn**  
-
-Once the model configuration files have been generated, the next step is to execute the model using PEcAn’s workflow module. This step runs the selected ecosystem model based on the previously configured settings.  
-
-Now, we execute the model using the `runModule_start_model_runs()` function. This function initiates the model run using the previously defined **trait data**, **meta-analysis results**, and **configuration settings**. The selected ecosystem model will now begin processing input data and generating outputs.  
-
-
-```{r run-model, message=FALSE,echo=FALSE, eval=FALSE}
-if (!is.list(settings$host) || length(settings$host) > 1) {
-  settings$host <- list(name = as.character(settings$host)[1])
-}
-PEcAn.workflow::start_model_runs(settings)
-```
-
-
-
-# **Model Analyses in PEcAn**  
-
-Once the model run is complete, PEcAn provides tools to **extract, analyze, and visualize** the results. These analyses help in understanding the model's performance, uncertainty, and sensitivity to input parameters.  
-
-## **Understanding the Code**  
-
-### **1. Extracting Model Results**  
-- `PEcAn.workflow::runModule.get.results(settings)`  
-  - Retrieves output files from the model run and formats them for further analysis.  
-
-### **2. Sensitivity Analysis (Optional)**  
-- `PEcAn.workflow::run.sensitivity.analysis(settings)`  
-  - Evaluates how variations in input parameters impact model predictions.  
-  - **This step is optional** and will only run if sensitivity analysis settings are properly configured in `pecan.xml`.  
-  - To enable sensitivity analysis, see [PEcAn Sensitivity Analysis Documentation](https://pecanproject.github.io/pecan-documentation/master/demo-2.html).  
-
-### **3. Ensemble Analysis (Optional)**  
-- `PEcAn.workflow::run.ensemble.analysis(settings)`  
-  - Runs multiple simulations with different parameter sets to estimate model uncertainty.  
-  - This step **requires ensemble settings to be configured** in `pecan.xml`.  
-  - Learn more about ensemble analysis settings [here](https://pecanproject.github.io/pecan-documentation/master/demo-2.html).  
-
-### **4. Visualizing Ensemble Outputs (Optional)**  
-- `PEcAn.workflow::run.ensemble.analysis(settings, plot.timeseries=TRUE)`  
-  - Generates time series plots for ensemble results.  
-  - **This will not run by default** unless ensemble visualization settings are enabled in `pecan.xml`.  
-
-
-
-
-
