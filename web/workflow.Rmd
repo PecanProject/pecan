@@ -10,7 +10,6 @@ output: html_document
 library("PEcAn.all")
 ```
 # Load PEcAn settings files.
-Ensure that the pecan.xml file is properly configured for your use case before proceeding with the PEcAn run.
 - If you have pecan.xml generated from web,place the pecan.xml file in the RStudio working directory and copy its file path. Assign this path to the **settings_path** variable, then read the settings using the PEcAn.settings::read.settings 
 
 - If you are using an XML file from the **tests/** directory of the PEcAn repository, update your path accordingly.  
@@ -76,6 +75,5 @@ Executes the model simulations and retrieves the results for further analysis.
 
 ```{r run-model}
 PEcAn.workflow::start_model_runs(settings)
+PEcAn.workflow::runModule.get.results(settings)
 ```
-
-
