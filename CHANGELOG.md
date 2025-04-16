@@ -16,11 +16,8 @@ section for the next release.
 - Introduced an RMarkdown template titled "PEcAn Modular Workflow" to streamline and document the execution of PEcAn workflows. This template facilitates:
   - Loading necessary PEcAn packages.
   - Reading and preparing settings from a specified `settings.xml` file.
-  - Conducting trait and meta-analysis.
   - Writing model configuration files.
   - Running model simulations and retrieving results.
-  - Performing analyses on model outputs, including sensitivity and ensemble analyses.
-
 
 ### Fixed
 
