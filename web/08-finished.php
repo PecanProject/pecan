@@ -42,6 +42,18 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
+if (!file_exists($folder)) {
+  echo "<div class='alert alert-warning'>
+      <strong>Missing Workflow Folder:</strong><br>
+      The specified workflow output folder <code>$folder</code> does not exist on this machine.<br><br>
+      <ul>
+          <li>This workflow may have run on a different server.</li>
+          <li>The files may have been moved or deleted.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Please start over or check the workflow source machine.</p>
+  </div>";
+  return;
+}
 $notes = htmlspecialchars($workflow['notes'] ?? '');
 if ($workflow['value'] != '') {
   $params = json_decode($workflow['value'], true);
