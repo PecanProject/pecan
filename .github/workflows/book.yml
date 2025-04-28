@@ -23,33 +23,50 @@ jobs:
     steps:
     # checkout source code
     - uses: actions/checkout@v4
+    
     # install bookdown
     - name: Install bookdown
       run: |
         Rscript \
           -e 'repos <- c(getOption("repos"), sub(r"(\d{4}-\d{2}-\d{2})", "latest", getOption("repos")))' \
           -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)'
+    
     # copy files
     - name: copy extfiles
       run: |
         mkdir -p book_source/extfiles
         cp -f documentation/tutorials/01_Demo_Basic_Run/extfiles/* book_source/extfiles
-    # compile PEcAn code
+    
+    # build needed modules
     - name: build needed modules
       run: |
         R CMD INSTALL base/logger
         R CMD INSTALL base/remote
         R CMD INSTALL base/utils
-    # render book
+    
+    # check critical paths
+    - name: Check if critical paths exist
+      run: |
+        REQUIRED_PATHS=("book_source" "/home/carya/output/PEcAn_5000000241" "/path/to/other/critical/dir" "config.yaml")
+        for PATH in "${REQUIRED_PATHS[@]}"; do
+          if [ ! -d "$PATH" ] && [ ! -f "$PATH" ]; then
+            echo "Error: Required path or file '$PATH' does not exist. Please verify."
+            exit 1
+          fi
+        done
+    
+    # Render Book
     - name: Render Book
       run: |
         cd book_source
         Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
+
     # save artifact
     - uses: actions/upload-artifact@v4
       with:
         name: pecan-documentation
         path: book_source/_book/
+
     # check if documentation repo exists
     - name: Check if documentation repo exists
       id: doc_exists
@@ -59,6 +76,7 @@ jobs:
         else
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
+    
     # download documentation repo
     - name: Checkout documentation repo
       if: ${{ github.event_name == 'push' && steps.doc_exists.outputs.exists == 'true' }}
@@ -67,6 +85,7 @@ jobs:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation
         token: ${{ secrets.GH_PAT }}
+
     # upload new documentation
     - name: publish to github
       if: github.event_name == 'push'
