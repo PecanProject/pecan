@@ -1,2 +1,3 @@
 contrib
 data-raw
+^docs$

@@ -42,7 +42,7 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
-$notes = htmlspecialchars($workflow['notes']);
+$notes = htmlspecialchars($workflow['notes'] ?? '');
 if ($workflow['value'] != '') {
   $params = json_decode($workflow['value'], true);
 } else {

@@ -72,7 +72,7 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   #initialize SMAP_Output
   SMAP_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-    `colnames<-`(c("site_id", paste0(time_points, "_SoilMoistFrac"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    `colnames<-`(c("site_id", paste0(time_points, "_SoilMoist"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
   SMAP_Output$site_id <- site_info$site_id
   #Calculate SMAP for each time step and site.
   #loop over time and site
@@ -88,15 +88,15 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
         out.t <- rbind(out.t, list(mean = NA, sd = NA))
       }
     }
-    out.t %>% purrr::set_names(c(paste0(t, "_SoilMoistFrac"), paste0(t, "_SD")))
+    out.t %>% purrr::set_names(c(paste0(t, "_SoilMoist"), paste0(t, "_SD")))
   }, .progress = T)
   for (i in seq_along(time_points)) {
     t <- time_points[i]#otherwise the t will be number instead of date.
-    SMAP_Output[, paste0(t, "_SoilMoistFrac")] <- SMAP.list[[i]][,paste0(t, "_SoilMoistFrac")]
+    SMAP_Output[, paste0(t, "_SoilMoist")] <- SMAP.list[[i]][,paste0(t, "_SoilMoist")]
     SMAP_Output[, paste0(t, "_SD")] <- SMAP.list[[i]][,paste0(t, "_SD")]
   }
   PEcAn.logger::logger.info("SMAP SMP Prep Completed!")
-  list(SMP_Output = SMAP_Output, time_points = time_points, var = "SoilMoistFrac")
+  list(SMP_Output = SMAP_Output, time_points = time_points, var = "SoilMoist")
 }
 
 #' Prepare SMAP soil moisture profile (SMP) data from the NASA DAAC server for the SDA workflow.

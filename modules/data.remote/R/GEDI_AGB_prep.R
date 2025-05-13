@@ -1,21 +1,23 @@
 #' Prepare L4A GEDI above ground biomass (AGB) data for the state data assimilation (SDA) workflow.
-#' This function is built upon the modified `l4_download` function within the `GEDI4R` package in need for a better parallel computation.
-#' @details During the first use, users will be ask to enter their Earth Explore
-#'  login Information for downloading the data. If you don't have already an
-#'  account, register at https://urs.earthdata.nasa.gov/users/new.
-#'  These information will be saved in outdir as a netrc
-#'  file. This function uses the foreach package for
-#'  downloading files in parallel, with the
-#'  doParallel configuration. If a file with the same
-#'  name is already presented in outdir it will be overwrite.
+#' @details During the first use, users will need to create the 
+#'  `.nasadaacapirc` file in the out folder where the first and second lines 
+#'  are the username and password on the NASA Earth Explore server. 
+#'  If you don't have an account, register at https://urs.earthdata.nasa.gov/users/new.
 #'
-#' @param site_info A list including site_id, longitude, and latitude.
-#' @param time_points A vector of date contains target dates (in YYYY-MM-DD).
-#' @param outdir Directory where the final CSV file will be stored.
-#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).
-#' @param search_window search window (any length of time. e.g., 3 month) for locate available GEDI AGB values.
+#' @param site_info List: A list including site_id, longitude, and latitude.
+#' @param time_points Character: A vector of date contains target dates (in YYYY-MM-DD).
+#' @param outdir Character: Directory where the final CSV file will be stored.
+#' @param buffer Numeric: buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.005 [~ 500 m]).
+#' @param search_window Character: search window (any length of time. e.g., 6 month) for locate available GEDI AGB values.
+#' @param bbox Numeric: the vector (in xmin, xmax, ymin, and ymax) that covers all the sites in the site_info object (default is NULL).
+#' @param batch Boolean: determine if we want to submit jobs to the queue or not (default is FALSE).
+#' @param prerun Character: series of pre-launch shell command before running the shell job (default is NULL).
+#' @param num.folder Numeric: the number of batch folders to be created when submitting jobs to the queue.
+#' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
+#' @param credential.folder Character: the physical path to the folder that contains the credential file (.nasadaacapirc).
 #'
 #' @return A data frame containing AGB and sd for each site and each time step.
+#' @export
 #' 
 #' @examples
 #' \dontrun{
@@ -28,23 +30,52 @@
 #'     site.list$lat <- as.numeric(site.list$lat)
 #'     site.list$lon <- as.numeric(site.list$lon)
 #'     list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
-#'   })%>% 
+#'   }) %>% 
 #'   dplyr::bind_rows() %>% 
 #'   as.list()
 #' time_points <- seq(start.date, end.date, by = time.step)
-#' buffer <- 0.01
+#' buffer <- 0.005
 #' outdir <- getwd()
 #' GEDI_AGB <- GEDI_AGB_prep(site_info, time_points, outdir, buffer)
 #' }
 #' @author Dongchen Zhang
-#' @importFrom magrittr %>%
-GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "GEDI_AGB"), buffer = 0.01, search_window = "3 month") {
+#' @importFrom purrr %>%
+GEDI_AGB_prep <- function(site_info, 
+                          time_points, 
+                          outdir = file.path(getwd(), "GEDI_AGB"), 
+                          buffer = 0.005, 
+                          search_window = "6 month", 
+                          bbox = NULL,
+                          batch = FALSE, 
+                          prerun = NULL,
+                          num.folder = NULL,
+                          cores = parallel::detectCores(),
+                          credential.folder = "~") {
+  # convert list to vector.
+  if (is.list(bbox)) {
+    bbox <- as.numeric(unlist(bbox))
+  }
+  if (is.list(prerun)) {
+    prerun <- unlist(prerun)
+  }
+  # calculate the bbox if it's not inputted.
+  if (is.null(bbox)) {
+    bbox <- c(min(site_info$lon) - buffer,
+              max(site_info$lon) + buffer,
+              min(site_info$lat) - buffer,
+              max(site_info$lat) + buffer)
+  }
   # if we don't have outdir, we will use the temp dir as outdir.
   if (!dir.exists(outdir)) {
     dir.create(outdir)
   }
-  # Create credential file into outdir.
-  getnetrc(outdir)
+  # detect if we generate the NASA DAAC credential file.
+  if (!file.exists(file.path(credential.folder, ".nasadaacapirc"))) {
+    PEcAn.logger::logger.info("There is no credential file for NASA DAAC server.")
+    PEcAn.logger::logger.info("Please create the .nasadaacapirc file within the credential folder.")
+    PEcAn.logger::logger.info("The first and second lines of the file are the username and password.")
+    return(NULL)
+  }
   # check dates.
   time_points <- time_points[which(time_points >= as.Date("2019-04-18"))]
   # if we don't have any observation for those dates.
@@ -56,481 +87,463 @@ GEDI_AGB_prep <- function(site_info, time_points, outdir = file.path(getwd(), "G
   AGB_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
     `colnames<-`(c("site_id", paste0(time_points, "_AGB"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, AGB, std, target time point.
   AGB_Output$site_id <- site_info$site_id
-  # loop over each time point
+  # loop over each time point.
   for (i in seq_along(time_points)) {
     # create start and end dates.
     start_date <- seq(time_points[i], length.out = 2, by = paste0("-", search_window))[2]
     end_date <- seq(time_points[i], length.out = 2, by = search_window)[2]
-    # extract GEDI AGB.
-    AGB <- GEDI_AGB_extract(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 1, buffer = as.numeric(buffer))
-    for (j in seq_along(AGB)) {
+    # create the download folder for downloaded GEDI tiles.
+    download.path <- file.path(outdir, "download")
+    if (!dir.exists(download.path)) {
+      dir.create(download.path)
+    } else {
+      # delete previous downloaded files.
+      unlink(download.path, recursive = T)
+      dir.create(download.path)
+    }
+    # download GEDI tiles.
+    files <- NASA_DAAC_download(ul_lat = bbox[4], 
+                                ul_lon = bbox[1], 
+                                lr_lat = bbox[3], 
+                                lr_lon = bbox[2], 
+                                ncore = cores, 
+                                from = start_date, 
+                                to = end_date, 
+                                outdir = download.path, 
+                                doi = "10.3334/ORNLDAAC/2056", 
+                                just_path = F, 
+                                credential.folder = credential.folder)
+    # if we want to submit jobs to the queue.
+    if (batch) {
+      if (is.null(num.folder)) {
+        PEcAn.logger::logger.info("Please provide the number of batch folders if you want to submit jobs to the queue!")
+        return(NULL)
+      }
+      which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
+                                                         outdir = outdir, 
+                                                         site_info = site_info, 
+                                                         num.folder = as.numeric(num.folder), 
+                                                         buffer = as.numeric(buffer), 
+                                                         cores = as.numeric(cores), 
+                                                         prerun = prerun)
+      agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
+                                       outdir = outdir, 
+                                       which.point.in.which.file = which.point.in.which.file, 
+                                       num.folder = as.numeric(num.folder), 
+                                       buffer = as.numeric(buffer), 
+                                       cores = as.numeric(cores), 
+                                       prerun = prerun)
+    } else {
+      # if we want to run the job locally.
+      which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
+                                                         site_info = site_info, 
+                                                         buffer = as.numeric(buffer), 
+                                                         cores = as.numeric(cores))
+      agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
+                                       which.point.in.which.file = which.point.in.which.file, 
+                                       buffer = as.numeric(buffer), 
+                                       cores = as.numeric(cores))
+    }
+    # delete previous downloaded files.
+    unlink(download.path, recursive = T)
+    # loop over sites.
+    for (j in seq_len(nrow(agb))) {
       # skip NA observations.
-      if (all(is.na(AGB[[j]]))) {
+      if (is.na(agb$agb_mean[j])) {
         next
       }
       # otherwise calculate the mean and standard error.
-      AGB_Output[j, paste0(time_points[i], "_AGB")] <- mean(AGB[[j]]$agbd, na.rm = T) # mean
-      # Note: the following sd calculation is only for testing.
-      # TODO: making sure to upgrade this sd calculation.
-      if (nrow(AGB[[i]]) == 1) {
-        AGB_Output[j, paste0(time_points[i], "_SD")] <- AGB[[j]]$agbd_se # sd
-      } else {
-        AGB_Output[j, paste0(time_points[i], "_SD")] <- stats::sd(AGB[[j]]$agbd, na.rm = T) # sd
-      }
+      AGB_Output[j, paste0(time_points[i], "_AGB")] <- agb$agb_mean[j] # mean
+      AGB_Output[j, paste0(time_points[i], "_SD")] <- agb$agb_sd[j] # sd
     }
   }
   return(list(AGB_Output = AGB_Output, time_points = time_points, var = "AGB"))
 }
-#' Plot GEDI AGB observations around the target site.
+#' Detect which GEDI level 4A tiles intercept which site.
 #'
-#' @param outdir Where the plot PNG file will be stored.
-#' @param site.id Unique ID for the target site.
-#' @param start_date start date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
-#' @param end_date end date (date with YYYY-MM-DD format) for filtering out the existing CSV file.
-#'
-#' @return 
-#' @export 
+#' @param files Character: full paths of GEDI level 4A tiles.
+#' @param site_info List: list of site info including site_id, site_name, lon, and lat.
+#' @param buffer Numeric: buffer distance (in degree) that is used to create the bounding box (default is 0.005 [~ 500 m]).
+#' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
 #' 
-#' @examples
-#' @author Dongchen Zhang
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
-GEDI_AGB_plot <- function(outdir, site.id, start_date, end_date) {
-  # redirect to the site folder.
-  site_folder <- file.path(outdir, site.id)
-  # 
-  if (file.exists(file.path(site_folder, "Error.txt"))) {
-    PEcAn.logger::logger.info("The current point is outside of GEDI domain!")
-    return(FALSE)
-  } else {
-    if (!file.exists(file.path(site_folder, "extent.txt")) | !file.exists(file.path(site_folder, "GEDI_AGB.csv"))) {
-      PEcAn.logger::logger.info("Please rerun the GEDI_AGB_prep function for this site!")
-      return(FALSE)
+#' @return A list containing physical paths of GEDI tiles that intercept the each site.
+#' @export
+GEDI_L4A_Finder <- function(files, 
+                            site_info, 
+                            buffer = 0.005, 
+                            cores = parallel::detectCores()) {
+  # report current workflow.
+  PEcAn.logger::logger.info("Intersecting GEDI tiles with sites.")
+  # grab coordinates from site_info object.
+  lats <- site_info$lat
+  lons <- site_info$lon
+  # initialize parallel.
+  cl <- parallel::makeCluster(as.numeric(cores))
+  doSNOW::registerDoSNOW(cl)
+  # setup progress bar.
+  pb <- utils::txtProgressBar(min=1, max=length(files), style=3)
+  which.point.in.which.file <- vector("list", length = length(lats))
+  # loop over files.
+  for (i in seq_along(files)) {
+    # load file.
+    level4a_h5 <- hdf5r::H5File$new(files[i], mode = "r")
+    # load beams id.
+    groups_id <- grep("BEAM\\d{4}$", gsub("/", "", hdf5r::list.groups(level4a_h5,recursive = F)), value = T)
+    # loop over beams.
+    dat <- c()
+    for (j in groups_id) {
+      level4a_i <- level4a_h5[[j]]
+      if (any(hdf5r::list.datasets(level4a_i) == "shot_number")) {
+        rhs <- data.table::data.table(lat_lowestmode = level4a_i[["lat_lowestmode"]][],
+                                      lon_lowestmode = level4a_i[["lon_lowestmode"]][],
+                                      agbd = level4a_i[["agbd"]][])
+        
+        rhs <- rhs[which(rhs$agbd>=0),]
+        dat <- rbind(dat, rhs)
+      }
+    }
+    if (nrow(dat) == 0) next
+    # determine which sites are within the current GEDI tile.
+    # resolve GitHub namespace checking.
+    lat <- lon <- NULL
+    res <- foreach::foreach(lat = lats, lon = lons) %dopar% {
+      if (lat > 54 | lat < -54) {
+        return(0)
+      }
+      diff.lat <- abs(lat - dat$lat_lowestmode)
+      diff.lon <- abs(lon - dat$lon_lowestmode)
+      keep.inds <- which(diff.lat <= buffer & diff.lon <= buffer)
+      if (length(keep.inds) > 0) {
+        return(1)
+      } else {
+        return(0)
+      }
+    } %>% unlist
+    # load the file path to the corresponding site if intercepted.
+    for (j in which(res == 1)) {
+      which.point.in.which.file[[j]] <- c(which.point.in.which.file[[j]], files[i])
+    }
+    # update progress bar.
+    utils::setTxtProgressBar(pb, i)
+  }
+  # stop parallel.
+  parallel::stopCluster(cl)
+  foreach::registerDoSEQ()
+  return(which.point.in.which.file)
+}
+#' Submit jobs through `qsub` for the `GEDI_L4A_Finder` function.
+#' 
+#' @param files Character: full paths of GEDI level 4A tiles.
+#' @param outdir Character: the physical path within which the batch job folders will be created.
+#' @param site_info List: list of site info including site_id, site_name, lon, and lat.
+#' @param num.folder Numeric: the number of batch folders to be created.
+#' @param buffer Numeric: buffer distance (in degree) that is used to create the bounding box (default is 0.005 [~ 500 m]).
+#' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
+#' @param prerun Character: a vector of strings that will be executed beforehand. The default is NULL.
+#' 
+#' @return A list containing physical paths of GEDI tiles that intercept the each site.
+#' @export
+GEDI_L4A_Finder_batch <- function(files, 
+                                  outdir, 
+                                  site_info, 
+                                  num.folder, 
+                                  buffer = 0.005, 
+                                  cores = parallel::detectCores(), 
+                                  prerun = NULL) {
+  # report current workflow.
+  PEcAn.logger::logger.info("Intersecting GEDI tiles with sites.")
+  # how many files do we have.
+  L <- length(files)
+  # how many folders should be created.
+  num.per.folder <- ceiling(L/num.folder)
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
+  folder.paths <- c()
+  for (i in 1:num.folder) {
+    # create folder for each set of pixels.
+    head.num <- (i-1)*num.per.folder + 1
+    # if the site number can not be evenly divided.
+    if (i*num.per.folder > L) {
+      tail.num <- L
     } else {
-      extent <- utils::read.table(file.path(site_folder, "extent.txt"), skip = 1) %>%
-        as.numeric %>%
-        purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-      point.lat.lon <- matrix(c(mean(extent[c("ymin", "ymax")]), mean(extent[c("xmin", "xmax")])), nrow = 1) %>% 
-        `colnames<-`(c("lat", "lon")) %>%
-        as.data.frame
-      extent.x.y <- data.frame(matrix(c(extent["xmin"], extent["ymin"],
-                                         extent["xmax"], extent["ymin"],
-                                         extent["xmax"], extent["ymax"],
-                                         extent["xmin"], extent["ymax"]), nrow = 4, byrow = T)) %>% `colnames<-`(c("lon", "lat"))
-      res <- utils::read.csv(file.path(site_folder, "GEDI_AGB.csv"))
-      ggplot2::ggplot() +
-        ggplot2::geom_polygon(data = extent.x.y, ggplot2::aes(x = .data$lon, y = .data$lat), color="blue", fill = "white") +
-        ggplot2::geom_point(data = res, ggplot2::aes(x = .data$lon_lowestmode, y = .data$lat_lowestmode, color = .data$agbd)) +
-        ggplot2::geom_point(shape = 24, data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat), size = 3) +
-        ggplot2::geom_text(data = point.lat.lon, ggplot2::aes(x = .data$lon, y = .data$lat, label=site.id, hjust=-0.1, vjust=0)) +
-        ggplot2::scale_color_distiller(palette = 'Greens', direction = 1) +
-        ggplot2::labs(color = "AGB")
+      tail.num <- i*num.per.folder
+    }
+    # create folder name based on start and end numbers.
+    folder.name <- paste0("From_", head.num, "_to_", tail.num)
+    folder.path <- file.path(batch.folder, folder.name)
+    folder.paths <- c(folder.paths, folder.path)
+    if (dir.exists(folder.path)) {
+      unlink(x = file.path(folder.path, c("stderr.log", "stdout.log")))
+    } else {
+      dir.create(folder.path)
+      # write parameters.
+      configs <- list(folder.files = files[head.num:tail.num],
+                      site_info = site_info,
+                      buffer = buffer,
+                      cores = cores)
+      saveRDS(configs, file = file.path(folder.path, "configs.rds"))
+    }
+    jobsh <- c(prerun,  
+               "echo \"require (purrr)",
+               "       require (PEcAn.data.remote)",
+               "       require (foreach)",
+               "       configs <- readRDS(file.path('@FOLDER_PATH@', 'configs.rds'))",
+               "       which.point.in.which.file <- GEDI_L4A_Finder(configs[[1]], configs[[2]], configs[[3]], configs[[4]])",
+               "       saveRDS(which.point.in.which.file, file = file.path('@FOLDER_PATH@', 'res.rds'))",
+               "    \" | R --no-save")
+    jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
+    writeLines(jobsh, con = file.path(folder.path, "job.sh"))
+    # qsub command.
+    qsub <- "qsub -l h_rt=1:00:00 -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+    qsub <- gsub("@CORES@", cores, qsub)
+    qsub <- gsub("@NAME@", paste0("Job-", i), qsub)
+    qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
+    qsub <- gsub("@STDERR@", file.path(folder.path, "stderr.log"), qsub)
+    qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
+    cmd <- qsub[[1]]
+    out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    # if we reach the maximum file number.
+    if (tail.num == L) {
+      num.folder <- i
+      break
     }
   }
-}
-#' Extract L4A GEDI above ground biomass data for the GEDI AGB prep function.
-#'
-#' @param site_info A list including site_id, longitude, and latitude.
-#' @param start_date target start date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.
-#' @param end_date end date (date with YYYY-MM-DD format) for preparing GEDI AGB from remote or local database.
-#' @param outdir Directory where the final CSV file will be stored.
-#' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
-#' @param nrow.min the minimum required observation number to be extracted, default is 0.
-#' @param buffer buffer distance (in degrees) for locate GEDI AGB searching box (default is 0.01 [~ 1 km]).
-#' @param gradient the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
-#'
-#' @return A list of AGB data frames for each site.
-#' 
-#' @examples
-#' @author Dongchen Zhang
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
-GEDI_AGB_extract <- function(site_info, start_date, end_date, outdir, nfile.min = 0, nrow.min = 0, buffer = 0.01, gradient = 0) {
-  #Initialize the multicore computation.
-  if (future::supportsMulticore()) {
-    future::plan(future::multicore)
-  } else {
-    future::plan(future::multisession)
+  PEcAn.logger::logger.info("Checking outputs.")
+  l <- length(list.files(batch.folder, pattern = "res.rds", recursive = T))
+  pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
+  while(l < num.folder) {
+    Sys.sleep(10)
+    l <- length(list.files(batch.folder, pattern = "res.rds", recursive = T))
+    utils::setTxtProgressBar(pb, l)
   }
-  # grab site.info and convert from lat/lon to sf objects of points and buffer areas.
-  GEDI_AGB <- split(as.data.frame(site_info), seq(nrow(as.data.frame(site_info)))) %>%
-    furrr::future_map(function(point){
-      # flag determine if we have satisfied res.filter object.
-      csv.valid <- FALSE
-      # extent for filter.
-      extent <- data.frame(ymax = point$lat + buffer,
-                            ymin = point$lat - buffer,
-                            xmin = point$lon - buffer,
-                            xmax = point$lon + buffer)
-      # redirect to the current folder.
-      # if we already create the folder.
-      site_folder <- file.path(outdir, point$site_id)
-      if (file.exists(site_folder)) {
-        # if csv file has been generated.
-        csv.path <- list.files(site_folder, "GEDI_AGB.csv", full.names = T)
-        if (length(csv.path) > 0) {
-          # read csv file.
-          res <- utils::read.csv(csv.path)
-          if (file.exists(file.path(site_folder, "extent.txt")) & nfile.min != 0) {
-            extent <- utils::read.table(file.path(site_folder, "extent.txt"), skip = 1, col.names = c("ymax", "ymin", "xmin", "xmax"))
-            extent <- extent[nrow(extent),]
-          }
-          # filter previous records based on space and time.
-          res.filter <- res %>% dplyr::filter(.data$lat_lowestmode <= extent["ymax"],
-                                              .data$lat_lowestmode >= extent["ymin"],
-                                              .data$lon_lowestmode >= extent["xmin"], 
-                                              .data$lon_lowestmode <= extent["xmax"],
-                                              lubridate::as_date(.data$date) >= lubridate::as_date(start_date),
-                                              lubridate::as_date(.data$date) <= lubridate::as_date(end_date))
-          # determine if res.filter is not empty.
-          # In the future, we will need to document 
-          # file name of each pre-downloaded `GEDI L4A` files 
-          # such that any new files within the range will be downloaded and processed.
-          if (nrow(res.filter) > 0) {
-            csv.valid <- TRUE
-          }
-        }
-      } else {
-        # create folder for the current site.
-        base::dir.create(site_folder)
-        # copy and paste credentials to the current folder.
-        base::file.copy(file.path(outdir, "netrc"), file.path(site_folder, "netrc"))
-      }
-      # filter out point outside the GEDI spatial domain.
-      if (point$lat > 52 | point$lat < -52) {
-        utils::write.table("Point is outside the GEDI domain.", file = file.path(site_folder, "Error.txt"))
-        return(NA)
-      }
-      # if we have previous GEDI records covering space and time.
-      if (csv.valid) {
-        return(res.filter)
-      } else {
-        # download GEDI AGB for current site.
-        res.current <- GEDI_AGB_download(start_date = start_date,
-                                         end_date = end_date, 
-                                         outdir = site_folder, 
-                                         extent = extent,
-                                         nfile.min = nfile.min,
-                                         nrow.min = nrow.min,
-                                         gradient = gradient)
-        # if we have previous downloaded GEDI records.
-        if (exists("res", mode = "environment") & !all(is.na(res.current))) {
-          res <- rbind(res, res.current)
-        } else if (!all(is.na(res.current))) {
-          res <- res.current
-        }
-        # write into new csv file.
-        if (exists("res") & !all(is.na(res.current))) {
-          utils::write.csv(res, file = file.path(site_folder, "GEDI_AGB.csv"), row.names = F)
-          # save plot.
-          grDevices::png(file.path(site_folder, "plot.png"))
-          print(GEDI_AGB_plot(outdir = outdir, site.id = point$site_id, start_date = start_date, end_date = end_date))
-          grDevices::dev.off()
-          return(res.current)
-        } else {
-          return(NA)
-        }
-      }
-    }, .progress = T) %>% purrr::set_names(site_info$site_id)
-  GEDI_AGB
+  # assemble results.
+  PEcAn.logger::logger.info("Assembling results.")
+  res.paths <- list.files(batch.folder, pattern = "res.rds", recursive = T, full.names = T)
+  res <- vector("list", length = length(site_info$site_id))
+  for (path in res.paths) {
+    which.point.in.which.file <- readRDS(path)
+    for (i in seq_along(res)) {
+      if (is.null(which.point.in.which.file[[i]])) next
+      res[[i]] <- c(res[[i]], which.point.in.which.file[[i]])
+    }
+  }
+  return(res)
 }
-#' Download GEDI AGB data for the GEDI AGB extract function.
+#' Aggregate AGB mean and uncertainty from the GEDI level4A tiles.
 #'
-#' @param start_date start date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.
-#' @param end_date end date (date with YYYY-MM-DD format) for downloading GEDI AGB from remote database.
-#' @param outdir Directory where the final CSV file will be stored.
-#' @param extent the XY box (in degrees) for downloading GEDI AGB file.
-#' @param nfile.min the minimum required file number to be downloaded and extracted, default is 0.
-#' @param nrow.min the minimum required observation number to be extracted, default is 0.
-#' @param gradient the gradient for iteratively enlarge the extent if the nfile.min or nrow.min are not reached, default is 0. If nfile.min or nrow.min is 0 this will be skipped.
-#'
-#' @return A data frame containing AGB and sd for the target spatial and temporal extent.
+#' @param site_info List: list of site info including site_id, site_name, lon, and lat.
+#' @param which.point.in.which.file List: lists containing physical paths of GEDI tiles that intercept the each site.
+#' @param buffer Numeric: buffer distance (in degree) that is used to create the bounding box (default is 0.005 [~ 500 m]).
+#' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
 #' 
-#' @examples
-#' @author Dongchen Zhang
-#' @importFrom magrittr %>%
-GEDI_AGB_download <- function(start_date, end_date, outdir, extent, nfile.min = 0, nrow.min = 0, gradient = 0) {
-  # download GEDI AGB files.
-  # if there is no data within current buffer distance.
-  files <- try(l4_download(ncore = 1,
-                           ul_lat = extent["ymax"], 
-                           lr_lat = extent["ymin"], 
-                           ul_lon = extent["xmin"], 
-                           lr_lon = extent["xmax"], 
-                           from = start_date, 
-                           to = end_date,
-                           outdir = outdir,
-                           just_path = T), silent = T)
-  # if we just need the data within fixed extent and hit error.
-  if ("try-error" %in% class(files) & nfile.min == 0) {
+#' @return A list containing AGB mean and standard deviation for each site.
+#' @export
+GEDI_L4A_2_mean_var <- function(site_info, 
+                                which.point.in.which.file, 
+                                buffer = 0.005, 
+                                cores = parallel::detectCores()) {
+  # checking packages.
+  if ("try-error" %in% class(try(find.package("hdf5r")))) {
+    PEcAn.logger::logger.info("The hdf5r is not installed.")
     return(NA)
   }
-  while ("try-error" %in% class(files) | length(files) < nfile.min) {
-    # we iteratively add 0.1 degree to the buffer distance.
-    extent[c(1, 4)] <- extent[c(1, 4)] + gradient
-    extent[c(2, 3)] <- extent[c(2, 3)] - gradient
-    files <- try(l4_download(ncore = 1,
-                             ul_lat = extent["ymax"], 
-                             lr_lat = extent["ymin"], 
-                             ul_lon = extent["xmin"], 
-                             lr_lon = extent["xmax"], 
-                             from = start_date, 
-                             to = end_date,
-                             outdir = outdir,
-                             just_path = T), silent = T)
-  }
-  try(files <- l4_download(ncore = 1,
-                           ul_lat = extent["ymax"], 
-                           lr_lat = extent["ymin"], 
-                           ul_lon = extent["xmin"], 
-                           lr_lon = extent["xmax"], 
-                           from = start_date, 
-                           to = end_date,
-                           outdir = outdir), silent = T)
-  # load files.
-  res <- GEDI4R::l4_getmulti(files, ncore = 1)
-  # filter observations based on filter buffer distance.
-  keep.ind <- which(res$lat_lowestmode <= extent["ymax"] & 
-                      res$lat_lowestmode >= extent["ymin"] & 
-                      res$lon_lowestmode >= extent["xmin"] & 
-                      res$lon_lowestmode <= extent["xmax"])
-  while (length(keep.ind) < nrow.min & length(files) > 0) {
-    # we iteratively add 0.1 degree to the buffer distance.
-    # because sometimes even the the extent ensure at least 1 tile nearby the location.
-    # they may not be accessible by the extent when we try to extract the file.
-    # possible due to accuracy issue.
-    extent[c(1, 4)] <- extent[c(1, 4)] + gradient
-    extent[c(2, 3)] <- extent[c(2, 3)] - gradient
-    # filter observations based on filter buffer distance.
-    keep.ind <- which(res$lat_lowestmode <= extent["ymax"] &
-                        res$lat_lowestmode >= extent["ymin"] &
-                        res$lon_lowestmode >= extent["xmin"] &
-                        res$lon_lowestmode <= extent["xmax"])
-  }
-  # record extent for download and extraction.
-  extent <- data.frame(matrix(extent, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-  utils::write.table(extent, file = file.path(outdir, "extent.txt"), row.names = F)
-  # if (file.exists(file.path(outdir, "extent.txt"))) {
-  #   pre.extent <- utils::read.table(file.path(outdir, "extent.txt"), skip = 1)
-  #   extent <- rbind(pre.extent, extent) %>% `colnames<-`(c("ymax", "ymin", "xmin", "xmax"))
-  #   extent <- extent[!base::duplicated(extent),]
-  #   utils::write.table(extent, file = file.path(outdir, "extent.txt"), row.names = F)
-  # } else {
-  #   extent <- data.frame(matrix(extent, nrow = 1)) %>% purrr::set_names(c("ymax", "ymin", "xmin", "xmax"))
-  #   utils::write.table(extent, file = file.path(outdir, "extent.txt"), row.names = F)
-  # }
-  # delete downloaded H5 files.
-  unlink(list.files(outdir, "*.h5", full.names = T), recursive = T)
-  if (length(keep.ind) == 0) {
+  if ("try-error" %in% class(try(find.package("doSNOW")))) {
+    PEcAn.logger::logger.info("The doSNOW is not installed.")
     return(NA)
-  } else {
-    return(res[keep.ind,])
   }
+  # report current workflow.
+  PEcAn.logger::logger.info("Estimating AGB mean and uncertainty.")
+  # initialize agb mean and sd lists for each site.
+  agb_mean <- agb_sd <- rep(NA, length(which.point.in.which.file))
+  # initialize parallel.
+  cl <- parallel::makeCluster(cores)
+  doSNOW::registerDoSNOW(cl)
+  # setup progress bar.
+  pb <- utils::txtProgressBar(min=1, max=length(which.point.in.which.file), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
+  # resolve GitHub namespace checking.
+  i <- NULL
+  agb_mean_sd <- foreach::foreach(i = seq_along(which.point.in.which.file), .packages = c("Kendall", "purrr"), .options.snow=opts) %dopar% {
+    temp.files <- which.point.in.which.file[[i]]
+    # if we only have 1 or 0 files that cover this pixel.
+    if (length(temp.files) <= 1) {
+      return(list(agb_mean = NA, agb_sd = NA))
+    }
+    file.keep.dat <- vector("list", length = length(temp.files))
+    # loop over files.
+    for (j in seq_along(temp.files)) {
+      # load file.
+      level4a_h5 <- hdf5r::H5File$new(temp.files[j], mode = "r")
+      # load beams id.
+      groups_id <- grep("BEAM\\d{4}$", gsub("/", "", hdf5r::list.groups(level4a_h5,recursive = F)), value = T)
+      dat <- c()
+      for (beam in groups_id) {
+        level4a_i <- level4a_h5[[beam]]
+        # if we have that datasets for the specific beam.
+        if (any(hdf5r::list.datasets(level4a_i) == "shot_number")) {
+          # grab lat/lon, agb, and the orbit information.
+          rhs <- data.table::data.table(lat_lowestmode = level4a_i[["lat_lowestmode"]][],
+                                        lon_lowestmode = level4a_i[["lon_lowestmode"]][],
+                                        agbd = level4a_i[["agbd"]][],
+                                        orbit = substr(level4a_i[["shot_number"]][], 1, 5))
+          xvar <- t(level4a_i[["xvar"]][,]) %>% `colnames<-`(c("RH25", "RH50", "RH75", "RH98"))
+          predict_stratum <- level4a_i[["predict_stratum"]][]
+          rhs <- cbind(rhs, xvar, predict_stratum)
+          # grab records that have usable agb estimations.
+          rhs <- rhs[which(rhs$agbd>=0),]
+          dat <- rbind(dat, rhs)
+        }
+      }
+      # filtering data by the bounding box.
+      diff.lat <- abs(site_info$lat[i] - dat$lat_lowestmode)
+      diff.lon <- abs(site_info$lon[i] - dat$lon_lowestmode)
+      keep.inds <- which(diff.lat <= buffer & diff.lon <= buffer)
+      file.keep.dat[[j]] <- list(dat = dat[keep.inds, ])
+    }
+    # grab ancillary table.
+    ancillary <- level4a_h5[["ANCILLARY"]][["model_data"]]
+    vcov <- array(unlist(lapply(1:35,function(x)ancillary[x][["vcov"]])), dim = c(5, 5, 35))
+    predict_stratum <- do.call(rbind,lapply(1:35,function(x)ancillary[x][["predict_stratum"]]))
+    # combining data and extract records that have the most abundant predict stratum.
+    dat <- file.keep.dat %>% purrr::map(function(d){d$dat}) %>% dplyr::bind_rows()
+    most_stratum <- names(sort(table(dat$predict_stratum), decreasing = TRUE))[1]
+    for (j in seq_along(file.keep.dat)) {
+      file.keep.dat[[j]]$dat <- file.keep.dat[[j]]$dat[which(file.keep.dat[[j]]$dat$predict_stratum == most_stratum),]
+    }
+    dat <- file.keep.dat %>% purrr::map(function(d){d$dat}) %>% dplyr::bind_rows()
+    # loop over clusters by the unique orbit IDs.
+    cluster.ids <- unique(dat$orbit)
+    m <- length(cluster.ids)
+    # if we only have one unique orbit.
+    if (m == 1) {
+      return(list(agb_mean = NA, agb_sd = NA))
+    }
+    # calculate number of footprints and sum agb per cluster.
+    num.footprints <- agb.sum <- c()
+    predictor <- rep(0, 4)
+    for (id in cluster.ids) {
+      num.footprints <- c(num.footprints, length(which(dat$orbit == id)))
+      agb.sum <- c(agb.sum, sum(dat$agbd[which(dat$orbit == id)]))
+      predictor <- predictor + colSums(dat[which(dat$orbit == id), 5:8])
+    }
+    # calculate the agb mean and uncertainty based on equation 5 in:
+    # https://iopscience.iop.org/article/10.1088/1748-9326/ab18df/pdf.
+    which.stratum <- which(predict_stratum == most_stratum)
+    agb_est <- mean(agb.sum)/mean(num.footprints)
+    sample.error <- sum((agb.sum - agb_est * num.footprints)^2)/(m*(m-1)*mean(num.footprints)^2)
+    vcov <- vcov[,,which.stratum]
+    mean.predictor <- c(mean(num.footprints), predictor/m)
+    sd_est <- sqrt(t(mean.predictor) %*% vcov %*% mean.predictor + sample.error)
+    return(list(agb_mean = agb_est, agb_sd = sd_est))
+  }
+  # stop parallel.
+  parallel::stopCluster(cl)
+  foreach::registerDoSEQ()
+  agb_mean_sd <- data.frame(site_id = site_info$site_id, 
+                            agb_mean = agb_mean_sd %>% purrr::map("agb_mean")%>%unlist, 
+                            agb_sd = agb_mean_sd %>% purrr::map("agb_sd")%>%unlist)
+  return(agb_mean_sd)
 }
-#' DOWNLOAD GEDI level 4A data from DAACL.ORNL
-#'
-#' Download all GEDI footprints from
-#' \href{https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056}{the official repository} that intersect a study area, defined as an extent in lon/lat
-#' coordinates. The footprints are located within the global latitude band
-#' observed by the International Space Station (ISS), nominally 51.6 degrees N
-#' and S and reported for the period 2019-04-18 to 2020-09-02
-#'
-#' @param ul_lat Numeric: upper left latitude.
-#' @param lr_lat Numeric: lower right latitude.
-#' @param ul_lon Numeric: upper left longitude.
-#' @param lr_lon Numeric: lower right longitude.
-#' @param ncore Numeric: numbers of core to be used if the maximum core
-#'   available is less than the number of files to be download. Default to the
-#'   number of cores available minus one.
-#' @param from Character: date from which the data search starts. In the form
-#'   "yyyy-mm-dd".
-#' @param to Character: date on which the data search end. In the form
-#'   "yyyy-mm-dd".
-#' @param outdir Character: path of the directory in which to save the
-#'   downloaded files.Default to the working directory. If it doesn't exist it
-#'   will be created. Ignored if just_path=TRUE.
-#' @param just_path Logical: if TRUE return a character vector of available
-#'   files without downloading them. Default to FALSE.
-#' @param subset Numeric vector of indices for downloading a subset of files
-#'   instead of all. If is not numeric it will be ignored silently.
-#' @details During the first use, users will be ask to enter their Earth Explore
-#'  login Information for downloading the data. If you don't have already an
-#'  account, register at https://urs.earthdata.nasa.gov/users/new.
-#'  These information will be saved in outdir as a netrc
-#'  file. This function uses the foreach package for
-#'  downloading files in parallel, with the
-#'  doParallel configuration. If a file with the same
-#'  name is already presented in outdir it will be overwrite.
-#' @return List of file path in outdir.
-#' @examples
-#' \dontrun{
-#' #retrive Italy bound
-#' bound <- sf::st_as_sf(raster::getData('GADM', country='ITA', level=1))
-#' ex <- raster::extent(bound)
-#' ul_lat <- ex[4]
-#' lr_lat <- ex[3]
-#' ul_lon <- ex[2]
-#' lr_lon <- ex[1]
-#' from <- "2020-07-01"
-#' to <- "2020-07-02"
-#' #get just files path available for the searched parameters
-#' l4_download(ul_lat=ul_lat,
-#'             lr_lat=lr_lat,
-#'             ul_lon=ul_lon,
-#'             lr_lon=lr_lon,
-#'             from=from,
-#'             to=to,
-#'             just_path=T
-#' )
+#' Submit jobs through `qsub` for the `GEDI_L4A_2_mean_var` function.
 #' 
-#' #download the first 4 files
+#' @param site_info List: list of site info including site_id, site_name, lon, and lat.
+#' @param outdir Character: the physical path within which the batch job folders will be created.
+#' @param which.point.in.which.file List: lists containing physical paths of GEDI tiles that intercept the each site.
+#' @param num.folder Numeric: the number of batch folders to be created.
+#' @param buffer Numeric: buffer distance (in degree) that is used to create the bounding box (default is 0.005 [~ 500 m]).
+#' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
+#' @param prerun Character: a vector of strings that will be executed beforehand. The default is NULL.
 #' 
-#' l4_download(ul_lat=ul_lat,
-#'             lr_lat=lr_lat,
-#'             ul_lon=ul_lon,
-#'             lr_lon=lr_lon,
-#'             from=from,
-#'             to=to,
-#'             just_path=F,
-#'             outdir = tempdir(),
-#'             subset=1:4)
-#' }
-#' @author Elia Vangi
-l4_download <-
-  function(ul_lat,
-           lr_lat,
-           ul_lon,
-           lr_lon,
-           ncore = parallel::detectCores() - 1,
-           from = NULL,
-           to = NULL,
-           outdir=getwd(),
-           just_path = F,
-           subset = NULL) {
-    
-    op <- options("warn")
-    on.exit(options(op))
-    options(warn=1)
-    #check if outdir exist and if there is a netrc file in
-    if (!just_path) {
-      # stopifnot("outdir is not character" = check_char(outdir))
-      if (!dir.exists(outdir)) {
-        dir.create(outdir)
-        message(outdir, " does not exist. It will be created")
-        # netrc_file <- getnetrc(outdir)
-      } else if (length(list.files(outdir, pattern = "netrc")) == 0) {
-        # netrc_file <- getnetrc(outdir)
-      } else{
-        netrc_file <- list.files(outdir, pattern = "netrc", full.names = T)
-      }
-    }
-    #time period
-    daterange <- c(from, to)
-    
-    # Get path to GEDI2A data
-    gLevel4 <-
-      GEDI4R::gedifinder(
-        ul_lat,
-        ul_lon,
-        lr_lat,
-        lr_lon,
-        daterange = daterange
-      )
-    
-    lg <- length(gLevel4)
-    
-    if(lg==0){stop("there are no GEDI files for this date or coordinates")}
-    
-    if (just_path) {
-      return(gLevel4)
-      stop(invisible())
-    }
-    
-    
-    #check for existing GEDI file in outdir
-    pre <- list.files(outdir,pattern = "h5")
-    if(length(pre)!=0) {
-      gLevel4 <-
-        gLevel4[!basename(tools::file_path_sans_ext(gLevel4)) %in% basename(tools::file_path_sans_ext(pre))]
-      nlg <- length(gLevel4)
-      message(lg, " files found, of wich ",lg-nlg, " already downloaded in ", outdir)
-      
-    }else{ message(lg, " files found.")}
-    
-    
-    #subset GEDI files
-    if (!is.null(subset) && is.numeric(subset)) {
-      if(length(subset)>length(gLevel4)){
-        warning("the length of subset vector is greater than the number of files to be download. Subsetting will not be done.")
-      }else{ gLevel4 <- gLevel4[subset]}
-    }
-    
-    #set ncore equal to the number of files found or to the user defined value
-    if (ncore > 1) {
-      ncore <- ifelse(length(gLevel4) <= parallel::detectCores()-1, length(gLevel4), ncore)
-      message("using ", ncore, " cores")
-      #download
-      cl <- parallel::makeCluster(ncore)
-      doParallel::registerDoParallel(cl)
-      message("start download")
-      
-      foreach::foreach(
-        i = 1:length(gLevel4),
-        .packages = "httr"
-      ) %dopar% {
-        response <-
-          httr::GET(
-            gLevel4[i],
-            httr::write_disk(file.path(outdir, basename(gLevel4)[i]), overwrite = T),
-            httr::config(netrc = TRUE, netrc_file = netrc_file),
-            httr::set_cookies("LC" = "cookies")
-          )
-      }
-      parallel::stopCluster(cl)
-      foreach::registerDoSEQ()
+#' @return A list containing AGB mean and standard devieation for each site.
+#' @export
+GEDI_L4A_2_mean_var.batch <- function(site_info, 
+                                      outdir, 
+                                      which.point.in.which.file, 
+                                      num.folder, 
+                                      buffer = 0.005, 
+                                      cores = parallel::detectCores(), 
+                                      prerun = NULL) {
+  # report current workflow.
+  PEcAn.logger::logger.info("Estimating AGB mean and uncertainty.")
+  # how many files do we have.
+  L <- length(which.point.in.which.file)
+  # how many folders should be created.
+  num.per.folder <- ceiling(L/num.folder)
+  # create folder for storing job outputs.
+  batch.folder <- file.path(outdir, "batch")
+  # delete the whole folder if it's not empty.
+  if (file.exists(batch.folder)){
+    unlink(batch.folder, recursive = T)
+  } 
+  dir.create(batch.folder)
+  folder.paths <- c()
+  for (i in 1:num.folder) {
+    # create folder for each set of pixels.
+    head.num <- (i-1)*num.per.folder + 1
+    # if the site number can not be evenly divided.
+    if (i*num.per.folder > L) {
+      tail.num <- L
     } else {
-      message("using ", ncore, " core")
-      for (i in seq_along(gLevel4)) {
-        response <-
-          httr::GET(
-            gLevel4[i],
-            httr::write_disk(file.path(outdir, basename(gLevel4)[i]), overwrite = T),
-            httr::config(netrc = TRUE, netrc_file = netrc_file),
-            httr::set_cookies("LC" = "cookies")
-          )
-      }
+      tail.num <- i*num.per.folder
     }
-    
-    message("Done")
-    files <- list.files(outdir, pattern = "h5", full.names = T)
-    return(files)
+    folder.name <- paste0("From_", head.num, "_to_", tail.num)
+    folder.path <- file.path(batch.folder, folder.name)
+    folder.paths <- c(folder.paths, folder.path)
+    if (dir.exists(folder.path)) {
+      unlink(x = file.path(folder.path, c("stderr.log", "stdout.log")))
+    } else {
+      dir.create(folder.path)
+      # write parameters.
+      configs <- list(site_info = list(site_id = site_info$site_id[head.num:tail.num],
+                                       lat = site_info$lat[head.num:tail.num],
+                                       lon = site_info$lon[head.num:tail.num]),
+                      which.point.in.which.file = which.point.in.which.file[head.num:tail.num],
+                      buffer = buffer,
+                      cores = cores)
+      saveRDS(configs, file = file.path(folder.path, "configs.rds"))
+    }
+    jobsh <- c(prerun,
+               "echo \"require (purrr)",
+               "       require (PEcAn.data.remote)",
+               "       require (foreach)",
+               "       configs <- readRDS(file.path('@FOLDER_PATH@', 'configs.rds'))",
+               "       res <- GEDI_L4A_2_mean_var(configs[[1]], configs[[2]], configs[[3]], configs[[4]])",
+               "       saveRDS(res, file = file.path('@FOLDER_PATH@', 'res.rds'))",
+               "    \" | R --no-save")
+    jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
+    writeLines(jobsh, con = file.path(folder.path, "job.sh"))
+    # qsub command.
+    qsub <- "qsub -l h_rt=1:00:00 -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+    qsub <- gsub("@CORES@", cores, qsub)
+    qsub <- gsub("@NAME@", paste0("Job-", i), qsub)
+    qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
+    qsub <- gsub("@STDERR@", file.path(folder.path, "stderr.log"), qsub)
+    qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
+    cmd <- qsub[[1]]
+    out <- system2(cmd, file.path(folder.path, "job.sh"), stdout = TRUE, stderr = TRUE)
+    if (tail.num == L) {
+      num.folder <- i
+      break
+    }
   }
-#' Function for building netrc file with access credentials
-#'
-#' @param dl_dir Directory where the netrc file will be stored.
-#' @return file path of the netrc file.
-getnetrc <- function (dl_dir) {
-  netrc <- file.path(dl_dir, "netrc")
-  if (file.exists(netrc) == FALSE ||
-      any(grepl("urs.earthdata.nasa.gov",
-                readLines(netrc))) == FALSE) {
-    netrc_conn <- file(netrc)
-    writeLines(c(
-      "machine urs.earthdata.nasa.gov",
-      sprintf(
-        "login %s",
-        getPass::getPass(msg = "Enter NASA Earthdata Login Username \n (or create an account at urs.earthdata.nasa.gov) :")
-      ),
-      sprintf(
-        "password %s",
-        getPass::getPass(msg = "Enter NASA Earthdata Login Password:")
-      )
-    ),
-    netrc_conn)
-    close(netrc_conn)
-    message(
-      "A netrc file with your Earthdata Login credentials was stored in the output directory "
-    )
+  PEcAn.logger::logger.info("Checking outputs.")
+  l <- length(list.files(batch.folder, pattern = "res.rds", recursive = T))
+  pb <- utils::txtProgressBar(min = 0, max = num.folder, style = 3)
+  while(l < num.folder) {
+    Sys.sleep(10)
+    l <- length(list.files(batch.folder, pattern = "res.rds", recursive = T))
+    utils::setTxtProgressBar(pb, l)
   }
-  return(netrc)
+  # assemble results.
+  PEcAn.logger::logger.info("Assembling results.")
+  agb <- file.path(folder.paths, "res.rds") %>% 
+    purrr::map(readRDS)
+  agb <- do.call(rbind, agb)
+  return(agb)
 }

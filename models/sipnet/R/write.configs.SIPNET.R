@@ -555,6 +555,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
       param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
+    ## soilWater IC$soilWater is in kg/m2, and soilWHC is in cm
+    if ("soilWater" %in% ic.names) {
+      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWater/(param[which(param[, 1] == "soilWHC"), 2]*10)
+    }
     ## soilWFracInit fraction
     if ("soilWFrac" %in% ic.names) {
       param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac

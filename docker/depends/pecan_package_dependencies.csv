@@ -77,7 +77,6 @@
 "future","*","modules/data.atmosphere","Suggests",FALSE
 "future","*","modules/data.land","Imports",FALSE
 "future","*","modules/data.remote","Imports",FALSE
-"GEDI4R","*","modules/data.remote","Suggests",FALSE
 "geonames","> 0.998","modules/data.atmosphere","Imports",FALSE
 "getPass","*","base/remote","Suggests",FALSE
 "getPass","*","modules/data.atmosphere","Suggests",FALSE
@@ -165,7 +164,7 @@
 "lubridate",">= 1.6.0","modules/assim.sequential","Imports",FALSE
 "lubridate",">= 1.6.0","modules/benchmark","Imports",FALSE
 "lubridate",">= 1.6.0","modules/data.atmosphere","Imports",FALSE
-"lubridate",">= 1.6.0","modules/rtm","Imports",FALSE
+"lubridate",">= 1.6.0","modules/rtm","Suggests",FALSE
 "lubridate",">= 1.7.0","models/biocro","Imports",FALSE
 "Maeswrap","*","models/maespa","Suggests",FALSE
 "magic",">= 1.5.0","modules/assim.sequential","Suggests",FALSE
@@ -488,7 +487,6 @@
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
 "rlang","*","modules/data.land","Imports",FALSE
-"rlang","*","modules/data.remote","Imports",FALSE
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
@@ -566,6 +564,7 @@
 "stats","*","modules/assim.batch","Imports",FALSE
 "stats","*","modules/assim.sequential","Suggests",FALSE
 "stats","*","modules/photosynthesis","Imports",FALSE
+"stats","*","modules/rtm","Imports",FALSE
 "SticsRFiles","*","models/stics","Suggests",FALSE
 "stringi","*","base/logger","Imports",FALSE
 "stringi","*","base/utils","Imports",FALSE

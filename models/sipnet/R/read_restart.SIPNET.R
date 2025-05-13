@@ -15,7 +15,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   forecast <- list()
   params$restart <-c() #state.vars not in var.names will be added here
   #SIPNET inital states refer to models/sipnet/inst/template.param
-  state.vars <- c("SWE", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
+  state.vars <- c("SWE", "SoilMoist", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
                   "litter_carbon_content", "fine_root_carbon_content", 
                   "coarse_root_carbon_content", "litter_mass_content_of_water")
   #when adding new state variables make sure the naming is consistent across read_restart, write_restart and write.configs
@@ -100,6 +100,13 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("litter_mass_content_of_water")
   }else{
     params$restart["litter_mass_content_of_water"] <- ens$litter_mass_content_of_water[last]
+  }
+  
+  if ("SoilMoist" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilMoist[last]
+    names(forecast[[length(forecast)]]) <- c("SoilMoist")
+  }else{
+    params$restart["SoilMoist"] <- ens$SoilMoist[last]
   }
   
   if ("SoilMoistFrac" %in% var.names) {

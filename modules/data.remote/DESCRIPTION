@@ -27,7 +27,6 @@ Imports:
     PEcAn.logger,
     magrittr,
     PEcAn.remote,
-    rlang,
     terra,
     doParallel,
     parallel,
@@ -37,7 +36,6 @@ Suggests:
     doSNOW,
     dplyr,
     getPass,
-    GEDI4R,
     ggplot2,
     grDevices,
     hdf5r,
@@ -50,8 +48,6 @@ Suggests:
     testthat (>= 1.0.2),
     tibble,
     utils
-Remotes:
-    github::VangiElia/GEDI4R
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

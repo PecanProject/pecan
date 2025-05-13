@@ -713,8 +713,7 @@ sda.enkf.multisite <- function(settings,
       colnames(analysis) <- colnames(X)
       ##### Mapping analysis vectors to be in bounds of state variables
       for(i in 1:ncol(analysis)){
-        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                                                    var.names)),]
+        int.save <- state.interval[which(colnames(analysis)[i]==var.names),]
         analysis[analysis[,i] < int.save[1],i] <- int.save[1]
         analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
