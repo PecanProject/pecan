@@ -7,6 +7,7 @@
 ##' @return a dataframe with new site information on lat, lon and time_zone
 ##' @export
 ##' @author Abhinav Pandey
+##' @importFrom digest digest
 ##'
 ##' @examples
 ##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=NULL,latlon=NULL)
@@ -20,7 +21,7 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
             if ((!is.null(site$lat) && !is.null(site$lon)) &&
                 (!is.na(site$lat) && !is.na(site$lon))
             ) {
-                site.id <- paste0(lat, "_", lon)
+                site.id <- paste0(site$lat, "_", site$lon)
                 new.site <- data.frame(
                     id = as.numeric(site.id),
                     lat = site$lat,
