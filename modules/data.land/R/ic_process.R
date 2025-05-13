@@ -50,23 +50,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
-  # setup site database number, lat, lon and name and copy for format.vars if new input
-  latlon <- NULL
-  if(is.null(site$lat) | is.null(site$lon)) {
-    site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
-
-    # extract new.site and str_ns from site.info
-    new.site <- site.info$new.site
-    str_ns <- site.info$str_ns
-  } else {
-    latlon <- list(lon = site$lat, lon=site$lon)
-    new.site <- data.frame(
-      id = as.numeric(site$id),
-      lat = site$lat,
-      lon = site$lon
-    )
-    str_ns <- paste0(site$lat, "-", site$lon)
-  }
+  # Setup site database number, lat, lon and name and copy for format.vars if new input
+  # Then extract new.site and str_ns from site.info 
+  site.info <- PEcAn.DB::get.new.site(site, con=con, latlon = latlon)
+  new.site <- site.info$new.site
+  str_ns <- site.info$str_ns
 
   new.site$name <- settings$run$site$name
 
