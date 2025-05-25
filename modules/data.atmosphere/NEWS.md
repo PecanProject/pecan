@@ -1,8 +1,19 @@
-# PEcAn.data.atmosphere 1.8.0.9000
+# PEcAn.data.atmosphere 1.9.0
 
 ## Fixed
 
 * `download.AmerifluxLBL` no longer wrongly re-fetches raw zipfiles when `overwrite = FALSE`
+
+## Changed
+
+* Functions that take argument `site_id` now accept strings as well as BETYdb numeric IDs. 
+* `download.ERA5.old` renamed to `download.ERA5_cds`
+
+## Removed
+
+* Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
+* Removed `browndog.net`; the Browndog service is defunct.
+
 
 # PEcAn.data.atmosphere 1.8.0
 
@@ -32,7 +43,6 @@
 ## Removed
 
 *  Helper function `robustly` has moved to package PEcAn.utils [@meetagrawal, #3096]
-*  Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
 
 
 # PEcAn.data.atmosphere 1.7.1
