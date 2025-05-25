@@ -1,4 +1,4 @@
-# PEcAn.BASGRA 1.8.0.9000
+# PEcAn.BASGRA 1.8.1
 
 ## License change
 * PEcAn.BASGRA is now distributed under the BSD three-clause license instead of the NCSA Open Source license.

@@ -1,6 +1,6 @@
-# PEcAn.logger 1.8.2.9000
+# PEcAn.logger 1.8.3
 
-
+- Maintenance release with no user-visible changes.
 
 # PEcAn.logger 1.8.2
 
