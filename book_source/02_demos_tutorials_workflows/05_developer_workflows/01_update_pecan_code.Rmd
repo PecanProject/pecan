@@ -20,6 +20,8 @@ This will update the documentation for all packages and install them, as well as
 
 For more control, the following `make` commands are available:
 
+* `make help` -- shows all available make options.
+
 * `make document` -- Use `devtools::document` to update the documentation for all package. 
 Under the hood, this uses the `roxygen2` documentation system.
 

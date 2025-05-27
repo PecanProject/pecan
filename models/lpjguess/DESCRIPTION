@@ -1,7 +1,7 @@
 Package: PEcAn.LPJGUESS
 Type: Package
 Title: PEcAn Package for Integration of the LPJ-GUESS Model
-Version: 1.7.3.9000
+Version: 1.8.0
 Authors@R: c(person("Istem", "Fer", role = c("aut", "cre"),
                      email = "istem.fer@fmi.fi"),
              person("Tony", "Gardella", role = c("aut"),
@@ -14,7 +14,10 @@ Imports:
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    tibble
+    Rcpp (>= 1.0.1),
+    tibble,
+    stringr,
+    utils
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: LPJ-GUESS model
@@ -25,3 +28,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+LinkingTo: Rcpp

@@ -65,10 +65,10 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   }
   
   # prepare site info for extraction
-  internal_site_info <- data.frame(site_info$site_id, site_info$site_name, site_info$lat,site_info$lon)
+  internal_site_info <- site_info[, c("site_id", "site_name", "lat", "lon")]
   #create a variable to store mean and quantile of organic carbon density (ocd) for each soil depth
-  ocdquant <- matrix(NA, nrow = 6, ncol = length(internal_site_info$site_info.lon) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites 
-  lonlat <- cbind(internal_site_info$site_info.lon, internal_site_info$site_info.lat)
+  ocdquant <- matrix(NA, nrow = 6, ncol = length(internal_site_info$lon) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites
+  lonlat <- cbind(internal_site_info$lon, internal_site_info$lat)
   base_data_url <- "/vsicurl?max_retry=30&retry_delay=60&list_dir=no&url=https://files.isric.org/soilgrids/latest/data/ocd/ocd_"
   depths <- c("0-5cm", "5-15cm", "15-30cm", "30-60cm", "60-100cm", "100-200cm")
   layer_thick <- c(0.05,0.10,0.15,0.30,0.40,1.00) # in unit m
@@ -81,18 +81,19 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   data_tag <- c("_mean.vrt", "_Q0.05.vrt", "_Q0.5.vrt", "_Q0.95.vrt")
   name_tag <- expand.grid(depths, data_tag, stringsAsFactors = F)#find the combinations between data and depth tags.
   L <- split(as.data.frame(name_tag), seq(nrow(as.data.frame(name_tag))))#convert tags into lists.
-  if ("try-error" %in% class(try(ocd_real <- L %>% furrr::future_map(function(l){
+
+  get_layer <- function(l) {
     ocd_url <- paste0(base_data_url, l[[1]], l[[2]])
     ocd_map <- terra::extract(terra::rast(ocd_url), p_reproj)
-    unlist(ocd_map[, -1])/10
-  }, .progress = T)))) {
+    unlist(ocd_map[, -1]) / 10
+  }
+
+  ocd_real <- try(furrr::future_map(L, get_layer, .progress = TRUE))
+  if ("try-error" %in% class(ocd_real)) {
     ocd_real <- vector("list", length = length(L))
     pb <- utils::txtProgressBar(min = 0, max = length(L), style = 3)
     for (i in seq_along(L)) {
-      l <- L[[i]]
-      ocd_url <- paste0(base_data_url, l[[1]], l[[2]])
-      ocd_map <- terra::extract(terra::rast(ocd_url), p_reproj)
-      ocd_real[[i]] <- unlist(ocd_map[, -1])/10
+      ocd_real[[i]] <- get_layer(L[[i]])
       utils::setTxtProgressBar(pb, i)
     }
   }
@@ -101,12 +102,9 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
     dep.ind <- which(grepl(depths[dep], name_tag[, 1]))
     ocdquant[dep, ] <- ocd_real[dep.ind] %>% unlist
   }
-  na.ind <- which(is.na(ocdquant[1, 1:length(site_info$site_id)]))
-  internal_site_info <- data.frame(site_info$site_id[-na.ind], 
-                                   site_info$site_name[-na.ind], 
-                                   site_info$lat[-na.ind],
-                                   site_info$lon[-na.ind]) %>% `colnames<-`(names(site_info))
-  
+  na_sites <- is.na(ocdquant[1, seq_len(nrow(internal_site_info))])
+  internal_site_info <- internal_site_info[!na_sites, ]
+
  # parse extracted data and prepare for output
   quantile_name <-c(paste("Mean_",site_info$site_id,sep=""),paste("0.05_",site_info$site_id,sep=""),paste("0.5_",site_info$site_id,sep=""),paste("0.95_",site_info$site_id,sep=""))
   colnames(ocdquant) <- quantile_name

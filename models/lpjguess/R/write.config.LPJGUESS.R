@@ -9,10 +9,11 @@
 ##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
+##' @param restart Logical, whether to restart the simulation.
 ##' @return configuration file for LPJ-GUESS for given run
 ##' @export
 ##' @author Istem Fer, Tony Gardella
-write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
+write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id, restart = NULL) {
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -26,7 +27,7 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
   
   #-----------------------------------------------------------------------
   # write LPJ-GUESS specific instruction file
-  settings <- write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
+  settings <- write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id, restart)
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -82,30 +83,61 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id) {
 #' @param rundir rundir
 #' @param outdir outdir
 #' @param run.id PEcAn run ID
+#' @param restart Logical, whether to restart the simulation.
 #' @return settings Updated list
 #' @author Istem Fer
-write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id) {
+write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.id, restart = NULL) {
   
   guessins  <- readLines(con = system.file("template.ins", package = "PEcAn.LPJGUESS"), n = -1)
   paramsins <- readLines(con = system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n = -1)
-  pftindx   <- 152:222 # should grab automatically
+  pftindx   <- 154:224 # should grab automatically
   pftblock  <- paramsins[pftindx] # lines with pft params
   
-  # create the grid indices file
+  # fill save state flags
+  if(is.null(restart)){
+    year_string <- substring(basename(settings$run$inputs$met[[1]]), 
+                             nchar(basename(settings$run$inputs$met[[1]]))-15,
+                             nchar(basename(settings$run$inputs$met[[1]]))-7)
+    #spinup plus simulation years, extract from defult, or pass it here if you'll be varying this in the future
+    spinup_years <- as.numeric(gsub("[^[:digit:].]", "", paramsins[grepl("nyear_spinup", paramsins, fixed = TRUE)]))
+    state_year   <- spinup_years + diff(as.numeric(strsplit(year_string, split = ".", fixed = TRUE)[[1]])) + 1
+  }else{
+    # read previous year's params.ins and add 1 or?
+  }
+  
+  if(!is.null(settings$model$save_state)){
+    save_state <- as.logical(settings$model$save_state)
+    if(save_state){
+      paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
+      paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+      paramsins  <- gsub("@STATE_YEAR@", paste0("state_year ", state_year), paramsins)
+    }else{
+      paramsins  <- gsub("@RESTART_OPTION@", 0, paramsins)
+      paramsins  <- gsub("@STATE_PATH@", "!state_path", paramsins)
+      paramsins  <- gsub("@STATE_PATH@", "!state_year", paramsins)
+    }
+  }else{
+    # wouldn't hurt to save state by default?
+    paramsins  <- gsub("@SAVE_STATE_OPTION@", 1, paramsins)
+    paramsins  <- gsub("@STATE_PATH@", paste0("state_path '", outdir, "'"), paramsins)
+    paramsins  <- gsub("@STATE_YEAR@", paste0("state_year ", state_year), paramsins)
+  }
+  
+  # cp the grid indices file
   grid.file <- file.path(settings$host$rundir, "gridind.txt")
   gridind   <- readLines(con = system.file("gridind.txt", package = "PEcAn.LPJGUESS"), n = -1)
   writeLines(gridind, grid.file)
   guessins  <- gsub("@GRID_FILE@", grid.file, guessins)
   
   pft_names <- sapply(settings$pfts, `[[`,"name")
-  load(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
-  
+  lpjguess_param_data <- PEcAn.utils::load_local(system.file("lpjguess_params.Rdata",package = "PEcAn.LPJGUESS"))
+  lpjguess_param_list <- lpjguess_param_data$lpjguess_param_list
   # name and unit conversion
   trait.values <- pecan2lpjguess(trait.values)
   
   # these are strings, should they be passed via xml?
   # e.g. defaults lifeform=tree phenology=evergreen leafphysiognomy=broadleaf landcover=natural pathway=c3
-  noprior_params <- c("lifeform", "phenology", "leafphysiognomy", "landcover", "pathway")
+  noprior_params <- c("lifeform", "landcover", "pathway")
   
   write2pftblock <-  vector("list", length(settings$pfts))
   # write params with values from trait.values
@@ -130,6 +162,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
               upper_layer_fraction = 1 - lower_layer_fraction
               pecan_sample <- paste(upper_layer_fraction, lower_layer_fraction)
             }
+            
             
             if(trait_name == "wooddens"){  # convert from relative density to sapwood and heartwood density (kgC/m3)
               pecan_sample <- pecan_sample*997 # density of water
@@ -183,7 +216,9 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   if (end.year < 1850) {
     CO2 <- data.frame(start.year:end.year, rep(280, n.year))
   } else if (end.year < 2021) {
-    data(co2.1850.2020, package = "PEcAn.LPJGUESS")
+    co2_data <- new.env()
+    utils::data(co2.1850.2020, package = "PEcAn.LPJGUESS", envir = co2_data)
+    co2.1850.2020 <- co2_data$co2.1850.2020
     if (start.year < 1850) {
       CO2_preind <- data.frame(year = start.year:1849, ppm = rep(280, length(start.year:1849)))
       CO2_postind <- co2.1850.2020[1:which(co2.1850.2020[, 1] == end.year), ]
@@ -194,7 +229,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   } else {
     PEcAn.logger::logger.severe("End year should be < 2021 for CO2")
   }
-  write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
+  utils::write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins <- gsub("@CO2_FILE@", co2.file, guessins)
   
   # write soil file path
@@ -202,6 +237,14 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   guessins <- gsub("@SOIL_FILE@", soil.file, guessins)
   
   settings$model$insfile <- file.path(settings$rundir, run.id, "guess.ins")
+  
+  # version check
+  if(!is.null(settings$model$revision)){
+    if(settings$model$revision == "PalEON"){
+      rm_inds <- which(grepl("@@@@@ Remove in PalEON version @@@@@", paramsins))
+      paramsins <- paramsins[-(rm_inds[1]:rm_inds[2])]
+    }
+  }
   
   writeLines(paramsins, con = file.path(settings$rundir, run.id, "params.ins"))
   writeLines(guessins, con = file.path(settings$rundir, run.id, "guess.ins"))
@@ -217,6 +260,28 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
 #' @return translated list
 #' @author Istem Fer
 pecan2lpjguess <- function(trait.values){
+  
+  # leafphysiognomy and phenology are special cases
+  # these are binary flags
+  ph_params <- c("evergreen", "cold_deciduous", "broad_leaved")
+  if(any(ph_params %in% unlist(lapply(trait.values, names)))){
+    for(i in seq_along(trait.values)){
+      if("evergreen" %in% names(trait.values[[i]])){
+        # "any" might be unexpected here, grasses can be "any" phenology
+        trait.values[[i]][names(trait.values[[i]]) == "evergreen"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "evergreen"], "evergreen", "any")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "evergreen"] <- "phenology"
+      }
+      if("cold_deciduous" %in% names(trait.values[[i]])){
+        trait.values[[i]][names(trait.values[[i]]) == "cold_deciduous"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "cold_deciduous"], "summergreen", "raingreen")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "cold_deciduous"] <- "phenology"
+      }
+      if("broad_leaved" %in% names(trait.values[[i]])){
+        trait.values[[i]][names(trait.values[[i]]) == "broad_leaved"] <- ifelse(trait.values[[i]][names(trait.values[[i]]) == "broad_leaved"], "broadleaf", "needleleaf")
+        names(trait.values[[i]])[names(trait.values[[i]]) == "broad_leaved"] <- "leafphysiognomy"
+      }
+    }
+  }
+  
   
   # TODO :match all lpjguess and pecan names
   vartable <- tibble::tribble(
@@ -260,7 +325,7 @@ pecan2lpjguess <- function(trait.values){
     "alphar", "alphar", NA, NA,
     "greff_min", "greff_min", NA, NA, 
     "k_allom1", "k_allom1", NA, NA,
-    "k_latosa", "k_latosa", NA, NA,        
+    "sapwood_ratio", "k_latosa", NA, NA,        
     "gcmin", "gmin", "m s-1", "mm s-1",               
     "intc", "intc", NA, NA,
     "ga", "ga", NA, NA,
@@ -279,7 +344,11 @@ pecan2lpjguess <- function(trait.values){
     "eps_iso", "eps_iso", NA, NA,
     "seas_iso", "seas_iso", NA, NA,
     "eps_mon", "eps_mon", NA, NA,
-    "storfrac_mon", "storfrac_mon", NA, NA)
+    "storfrac_mon", "storfrac_mon", NA, NA,
+    "minmoist_est", "minmoist_est", NA, NA,
+    "phenology", "phenology", NA, NA, # these two lines are hacks
+    "leafphysiognomy", "leafphysiognomy", NA, NA
+    )
   
   trait.values <- lapply(trait.values, function(x){
     names(x) <- vartable$lpjguessname[match(names(x), vartable$pecanname)]

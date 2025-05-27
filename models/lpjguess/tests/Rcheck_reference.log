@@ -45,35 +45,7 @@ Strong dependencies not in mainstream repositories:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-getClass_Fluxes: no visible binding for global variable ‘zz’
-getClass_Individual: no visible binding for global variable ‘zz’
-getClass_Patchpft: no visible binding for global variable ‘npft’
-getClass_Patchpft: no visible binding for global variable ‘zz’
-getClass_Soil: no visible binding for global variable ‘zz’
-getClass_Sompool: no visible binding for global variable ‘zz’
-getClass_SompoolCent: no visible binding for global variable ‘zz’
-getClass_Vegetation: no visible binding for global variable ‘zz’
-model2netcdf.LPJGUESS: no visible binding for global variable
-  ‘read.table’
-write.insfile.LPJGUESS: no visible binding for global variable
-  ‘lpjguess_param_list’
-write.insfile.LPJGUESS: no visible global function definition for
-  ‘data’
-write.insfile.LPJGUESS: no visible binding for global variable
-  ‘co2.1850.2020’
-write.insfile.LPJGUESS: no visible global function definition for
-  ‘write.table’
-Undefined global functions or variables:
-  co2.1850.2020 data lpjguess_param_list npft read.table write.table zz
-Consider adding
-  importFrom("utils", "data", "read.table", "write.table")
-to your NAMESPACE file.
-
-Found the following calls to data() loading into the global environment:
-File ‘PEcAn.LPJGUESS/R/write.config.LPJGUESS.R’:
-  data(co2.1850.2020, package = "PEcAn.LPJGUESS")
-See section ‘Good practice’ in ‘?data’.
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

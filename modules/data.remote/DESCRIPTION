@@ -1,7 +1,7 @@
 Package: PEcAn.data.remote
 Type: Package
 Title: PEcAn Functions Used for Extracting Remote Sensing Data
-Version: 1.8.0.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Bailey", "Morrison", role = c("aut", "cre"),
@@ -27,18 +27,18 @@ Imports:
     PEcAn.logger,
     magrittr,
     PEcAn.remote,
-    rlang,
     terra,
     doParallel,
     parallel,
     foreach
 Suggests:
     data.table,
+    doSNOW,
     dplyr,
     getPass,
-    GEDI4R,
     ggplot2,
     grDevices,
+    hdf5r,
     httr,
     jsonlite,
     lubridate,
@@ -48,8 +48,6 @@ Suggests:
     testthat (>= 1.0.2),
     tibble,
     utils
-Remotes:
-    github::VangiElia/GEDI4R
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

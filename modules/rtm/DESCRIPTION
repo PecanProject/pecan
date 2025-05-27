@@ -1,7 +1,7 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn Functions Used for Radiative Transfer Modeling
-Version: 1.7.3.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Shawn", "Serbin", role = c("aut"),
@@ -15,22 +15,23 @@ Description: Functions for performing forward runs and inversions of radiative
     Underlying numerical analyses are optimized for speed using Fortran code.
 Depends: R (>= 2.10)
 Imports:
-    PEcAn.logger,
-    MASS,
+    BayesianTools,
     coda,
-    lubridate (>= 1.6.0),
+    MASS,
     PEcAn.assim.batch,
-    BayesianTools
+    PEcAn.logger,
+    stats
 Suggests:
-    minpack.lm,
+    knitr (>= 1.42),
+    lubridate (>= 1.6.0),
     mclust,
-    PEcAn.utils,
+    minpack.lm,
     PEcAn.ED2,
-    XML,
+    PEcAn.utils,
+    pwr,
     rmarkdown,
     testthat (>= 1.0.2),
-    knitr (>= 1.42),
-    pwr
+    XML
 OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

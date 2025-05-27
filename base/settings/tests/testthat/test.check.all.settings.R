@@ -211,7 +211,7 @@ test_that("`check.database.settings` able to set bety parameters correctly if th
   expect_equal(checked_settings$database$bety$user, "bety")
   expect_equal(checked_settings$database$bety$password, "bety")
   expect_equal(checked_settings$database$bety$dbname, "bety")
-  expect_equal(checked_settings$database$bety$write, TRUE)
+  expect_equal(checked_settings$database$bety$write, FALSE)
 })
 
 test_that("`check.ensemble.settings` throws an error if not variables specified to compute ensemble", {

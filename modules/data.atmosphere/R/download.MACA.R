@@ -23,12 +23,21 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id <- as.numeric(site_id)
+  site_id <- tryCatch(
+    as.numeric(site_id),
+    warning = function(w) as.character(site_id)
+  )
   model <- paste0(model)
   scenario <- paste0(scenario)
   ensemble_member <- paste0(ensemble_member)
-  outfolder <- paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
-  
+  if (is.numeric(site_id) && site_id > 1e9) {
+    # Assume this is a BETY id, condense for readability
+    siteid_str <- paste0(site_id %/% 1000000000, "-", site_id %% 1000000000)
+  } else {
+    siteid_str <- as.character(site_id)
+  }
+  outfolder <-  paste0(outfolder, "_site_", siteid_str)
+
   if (model == 'CCSM4'){
     ensemble_member <- 'r6i1p1'
   }

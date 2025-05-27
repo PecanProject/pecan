@@ -1,0 +1,74 @@
+name : Docker Stack Model Test
+on :
+  pull_request:
+
+  # allow manual triggering
+  workflow_dispatch:
+
+  schedule:
+    # run Thursday 4:30 AM UTC
+  - cron: '30 4 * * 4'    
+jobs:
+  sipnet:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: false
+        swap-storage: true
+
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Compose
+      run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
+          
+    - name: Add Volumes to Executor
+      run: |
+          cp docker-compose.dev.yml docker-compose.override.yml
+          sed -i'' '/R_library/d' docker-compose.override.yml
+
+    - name: Build Containers
+      run: |
+        cp docker/env.example .env
+        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+        echo "PECAN_VERSION=develop" >> .env
+        echo "UID=$(id -u)" >> .env
+        echo "GID=$(id -g)" >> .env
+        
+        docker compose up --wait -d postgres
+        docker run --rm --network pecan_pecan pecan/db:ci
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+        docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u):$(id -g)" /data
+        docker image rm pecan/db:ci pecan/data:develop
+    
+    - name: Run required containers
+      run: |
+        docker compose up --wait -d sipnet executor monitor rabbitmq
+
+    - name: List running containers
+      run: |
+        sleep 50
+        docker ps
+
+    # - name: Add models
+    #   run: |
+    #     docker compose cp scripts/add.util.sh postgres:/tmp/add.util.sh
+    #     docker compose cp scripts/add.models.sh postgres:/tmp/add.models.sh
+    #     docker compose exec postgres /tmp/add.models.sh
+
+    - name: Run SIPNET
+      run: |
+        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml

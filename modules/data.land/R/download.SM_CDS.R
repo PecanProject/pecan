@@ -56,32 +56,6 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
       conditionMessage(e)
     )
   })
-  #define function for building credential file.
-  #maybe as a helper function.
-  getnetrc <- function (dl_dir) {
-    netrc <- file.path(dl_dir, ".cdsapirc")
-    if (file.exists(netrc) == FALSE ||
-        any(grepl("https://cds.climate.copernicus.eu/api/v2",
-                  readLines(netrc))) == FALSE) {
-      netrc_conn <- file(netrc)
-      writeLines(c(
-        sprintf(
-          "url: %s",
-          getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
-        ),
-        sprintf(
-          "key: %s",
-          getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
-        )
-      ),
-      netrc_conn)
-      close(netrc_conn)
-      message(
-        "A netrc file with your CDS Login credentials was stored in the output directory "
-      )
-    }
-    return(netrc)
-  }
   #check if the token exists for the cdsapi.
   if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")) & auto.create.key) {
     getnetrc(Sys.getenv("HOME"))
@@ -114,7 +88,7 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
     if (file.exists(fname) && !overwrite) {
       PEcAn.logger::logger.warn(glue::glue(
         "File `{fname}` already exists, and `overwrite` is FALSE. ",
-        "Skipping to next variable."
+        "Skipping to next date."
       ))
       next
     }
@@ -131,13 +105,11 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
         'type_of_record'= 'cdr',
         'version'= 'v202212'
       ),
-      'download.zip'
+      fname.zip
     )))) {
       Sys.sleep(10)
       PEcAn.logger::logger.info("Encounter error! Will try download in 10 seconds.")
     }
-    #download file to local.
-    utils::download.file(do_next$reply$location, destfile = fname.zip)
     #unzip file.
     unzipPath <- utils::unzip(zipfile = fname.zip, exdir = outfolder)
     #rename unziped file.
@@ -149,4 +121,34 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
     utils::setTxtProgressBar(pb, pbi)
   }
   file.names
+}
+
+
+
+
+
+# helper function for building credential file.
+getnetrc <- function(dl_dir) {
+  netrc <- file.path(dl_dir, ".cdsapirc")
+  if (file.exists(netrc) == FALSE ||
+      any(grepl("https://cds.climate.copernicus.eu/api/v2",
+                readLines(netrc))) == FALSE) {
+    netrc_conn <- file(netrc)
+    writeLines(c(
+      sprintf(
+        "url: %s",
+        getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+      ),
+      sprintf(
+        "key: %s",
+        getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+      )
+    ),
+    netrc_conn)
+    close(netrc_conn)
+    message(
+      "A netrc file with your CDS Login credentials was stored in the output directory "
+    )
+  }
+  return(netrc)
 }

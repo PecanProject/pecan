@@ -1,15 +1,18 @@
 # this needs to be at the top, what version are we building
 ARG IMAGE_VERSION="latest"
+ARG PARENT_IMAGE="pecan/models"
 
 # ----------------------------------------------------------------------
 # BUILD MODEL BINARY
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION} AS model-binary
+FROM ${PARENT_IMAGE}:${IMAGE_VERSION} AS model-binary
 
 # download, unzip and build ed2
 WORKDIR /src
+COPY namelist.patch .
 RUN git -c http.sslVerify=false clone https://bitbucket.org/remkoduursma/maespa.git \
     && cd maespa \
+    && patch -p1 < ../namelist.patch \
     && make
 
 ########################################################################
@@ -17,7 +20,7 @@ RUN git -c http.sslVerify=false clone https://bitbucket.org/remkoduursma/maespa.
 # ----------------------------------------------------------------------
 # BUILD PECAN FOR MODEL
 # ----------------------------------------------------------------------
-FROM pecan/models:${IMAGE_VERSION}
+FROM ${PARENT_IMAGE}:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
 # INSTALL MODEL SPECIFIC PIECES

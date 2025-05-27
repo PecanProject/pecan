@@ -194,7 +194,7 @@ invert.custom <- function(observed, invert.options,
   }
 
   if (!quiet) {
-    pb <- txtProgressBar(min = 0, max = ngibbs, style = 3)
+    pb <- utils::txtProgressBar(min = 0, max = ngibbs, style = 3)
   }
 
   # Precalculate quantities for first inversion step
@@ -217,7 +217,7 @@ invert.custom <- function(observed, invert.options,
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
     if (!quiet) { 
-      setTxtProgressBar(pb, ng)
+      utils::setTxtProgressBar(pb, ng)
     }
     if (ng %% adapt < 1) {
       if (ar < 2) {
@@ -226,10 +226,10 @@ invert.custom <- function(observed, invert.options,
       } else {
         adj <- max(ar / adapt / target, adj_min)
         region <- seq(ng - adapt, ng - 1)
-        stdev <- apply(results[region, 1:npars], 2, sd)
+        stdev <- apply(results[region, 1:npars], 2, stats::sd)
         rescale <- diag(stdev * adj)
         if (npars > 1) {
-          cormat <- cor(results[region, 1:npars])
+          cormat <- stats::cor(results[region, 1:npars])
         } else {
           cormat <- matrix(1)
         }
@@ -284,7 +284,7 @@ invert.custom <- function(observed, invert.options,
       if (is.na(a)) {
         a <- -1
       }
-      if (a > runif(1)) {
+      if (a > stats::runif(1)) {
         inits <- tvec
         PrevError <- TryError
         PrevSS <- TrySS
@@ -299,7 +299,7 @@ invert.custom <- function(observed, invert.options,
     n_eff_store[ng] <- n_eff
     rp1 <- tau_0 + n_obs/2
     rp2 <- tau_0 + PrevSS/2
-    tau <- rgamma(1, rp1, rp2)
+    tau <- stats::rgamma(1, rp1, rp2)
     sigma2 <- 1/tau
     sigma <- sqrt(sigma2)
     results[ng, npars + 1] <- sigma

@@ -4,17 +4,17 @@
 git clone git@github.com/pecanproject/pecan
 cd pecan
 
-# start database
+# Start database
 docker-compose -p pecan up -d postgres
 
-# add example data (first time only)
+# Add example data (first time only)
 docker-compose run --rm bety initialize
 docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 
-# start PEcAn
+# Start PEcAn
 docker-compose -p pecan up -d
 
-# run a model
+# Run a model
 curl -v -X POST \
     -F 'hostname=docker' \
     -F 'modelid=1000000014' \

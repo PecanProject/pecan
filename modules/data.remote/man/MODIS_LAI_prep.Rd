@@ -10,21 +10,27 @@ MODIS_LAI_prep(
   outdir = NULL,
   search_window = 30,
   export_csv = FALSE,
-  sd_threshold = 20
+  sd_threshold = 20,
+  skip.download = TRUE,
+  boundary = NULL
 )
 }
 \arguments{
-\item{site_info}{Bety list of site info including site_id, lon, and lat.}
+\item{site_info}{list: Bety list of site info including site_id, lon, and lat.}
 
-\item{time_points}{A vector contains each time point within the start and end date.}
+\item{time_points}{character: a vector contains each time point within the start and end date.}
 
-\item{outdir}{Where the final CSV file will be stored.}
+\item{outdir}{character: where the final CSV file will be stored.}
 
-\item{search_window}{search window for locate available LAI values.}
+\item{search_window}{numeric: search window for locate available LAI values.}
 
-\item{export_csv}{Decide if we want to export the CSV file.}
+\item{export_csv}{boolean: decide if we want to export the CSV file.}
 
-\item{sd_threshold}{Threshold for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.}
+\item{sd_threshold}{numeric or character: for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.}
+
+\item{skip.download}{boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.}
+
+\item{boundary}{numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., c(0.05, 0.95) or list(0.05, 0.95)). The default is NULL.}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

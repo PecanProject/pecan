@@ -19,8 +19,13 @@ substrRight <- function(x, n) {
 ##' @author James Simkins
 debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "linear", 
                        overwrite = FALSE, verbose = FALSE, ...) {
-  
-  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
+  if (is.numeric(site_id) && site_id > 1e+09) {
+    # Assume this is a BETY id, condense for readability
+    siteid_str <- paste0(site_id %/% 1e+09, "-", site_id %% 1e+09)
+  } else {
+    siteid_str <- as.character(site_id)
+  }
+  outfolder <-  paste0(outfolder, "_site_", siteid_str)
   
   var <- data.frame(CF.name = c("air_temperature", "air_temperature_max", "air_temperature_min", 
                                 "surface_downwelling_longwave_flux_in_air", "air_pressure", "surface_downwelling_shortwave_flux_in_air", 

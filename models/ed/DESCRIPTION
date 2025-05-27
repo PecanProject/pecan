@@ -1,7 +1,7 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn Package for Integration of ED2 Model
-Version: 1.8.0.9000
+Version: 1.8.1
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut"),
@@ -57,13 +57,10 @@ Imports:
 Suggests:
     testthat (>= 1.0.2),
     devtools,
-    knitr,
-    rmarkdown,
     withr
 Additional_repositories: https://pecanproject.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
-VignetteBuilder: knitr, rmarkdown
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.3.2

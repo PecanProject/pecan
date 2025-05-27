@@ -32,7 +32,7 @@ jobs:
       _R_CHECK_SYSTEM_CLOCK_: 0
 
     container: 
-      image: pecan/depends:R${{ inputs.R-version }}
+      image: pecan/depends:develop-R${{ inputs.R-version }}
 
     steps:
     # checkout source code

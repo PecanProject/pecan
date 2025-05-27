@@ -1,5 +1,7 @@
-# PEcAn.data.remote 1.8.0.9000
+# PEcAn.data.remote 1.9.0
 
+* Refactored GEDI, LAI, and SMAP workflows for more efficient parallel processing
+* Added `GEDI_L4A*` functions to work with footprint-level GEDI biomass data
 
 
 # PEcAn.data.remote 1.8.0

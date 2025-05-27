@@ -18,54 +18,29 @@ runModule.get.trait.data <- function(settings) {
       pfts <- c(pfts, pfts.i[ind])
       pft.names <- sapply(pfts, function(x) x$name)
     }
-
-    PEcAn.logger::logger.info(paste0(
-      "Getting trait data for all PFTs listed by any Settings object in the list: ",
+    PEcAn.logger::logger.info(
+      "Getting trait data for all PFTs listed by any Settings object in the list:",
       paste(pft.names, collapse = ", ")
-    ))
-
-    modeltype <- settings$model$type
-    dbfiles <- settings$database$dbfiles
-    database <- settings$database$bety
-    forceupdate <-
-      ifelse(is.null(settings$meta.analysis$update),
-             FALSE,
-             settings$meta.analysis$update)
-    write <- settings$database$bety$write
-    settings$pfts <-
-      PEcAn.DB::get.trait.data(
-        pfts = pfts,
-        modeltype = modeltype,
-        dbfiles = dbfiles,
-        database = database,
-        forceupdate = forceupdate,
-        write = write
-      )
-    return(settings)
+    )
   } else if (PEcAn.settings::is.Settings(settings)) {
     pfts <- settings$pfts
     if (!is.list(pfts)) {
       PEcAn.logger::logger.severe("settings$pfts is not a list")
     }
-    modeltype <- settings$model$type
-    dbfiles <- settings$database$dbfiles
-    database <- settings$database$bety
-    forceupdate <-
-      ifelse(is.null(settings$meta.analysis$update),
-             FALSE,
-             settings$meta.analysis$update)
-    write <- settings$database$bety$write
-    settings$pfts <-
-      PEcAn.DB::get.trait.data(
-        pfts = pfts,
-        modeltype = modeltype,
-        dbfiles = dbfiles,
-        database = database,
-        forceupdate = forceupdate,
-        write = write
-      )
-    return(settings)
   } else {
     stop("runModule.get.trait.data only works with Settings or MultiSettings")
   }
+
+  settings$pfts <- PEcAn.DB::get.trait.data(
+    pfts = pfts,
+    modeltype = settings$model$type,
+    dbfiles = settings$database$dbfiles,
+    database = settings$database$bety,
+    forceupdate = ifelse(is.null(settings$meta.analysis$update),
+                         FALSE,
+                         settings$meta.analysis$update),
+    write = isTRUE(settings$database$bety$write)
+  )
+
+  return(settings)
 }

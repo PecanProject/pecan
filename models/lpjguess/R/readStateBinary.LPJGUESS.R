@@ -208,13 +208,13 @@ readStateBinary <- function(out.path, npft){
   nofpatch <- readBin(zz, integer(), 1, size = 4)  
   
   for(pat in 1:nofpatch){
-    Patchpft_list[[pat]] <- getClass_Patchpft()
-    Vegetation_list[[pat]] <- getClass_Vegetation()
-    Individual_list[[pat]] <- getClass_Individual(Vegetation_list[[pat]]$indv)
-    Soil_list[[pat]] <- getClass_Soil()
-    Sompool_list[[pat]] <- getClass_Sompool()
-    SompoolCent_list[[pat]] <- getClass_SompoolCent() 
-    Fluxes_list[[pat]] <- getClass_Fluxes()
+    Patchpft_list[[pat]] <- getClass_Patchpft(zz, npft)
+    Vegetation_list[[pat]] <- getClass_Vegetation(zz)
+    Individual_list[[pat]] <- getClass_Individual(Vegetation_list[[pat]]$indv, zz)
+    Soil_list[[pat]] <- getClass_Soil(zz)
+    Sompool_list[[pat]] <- getClass_Sompool(zz)
+    SompoolCent_list[[pat]] <- getClass_SompoolCent(zz) 
+    Fluxes_list[[pat]] <- getClass_Fluxes(zz)
   }
   
   # close connection to the binary state file
@@ -226,7 +226,7 @@ readStateBinary <- function(out.path, npft){
 
 
 ##################### Class : Patchpft #####################
-getClass_Patchpft <- function(){
+getClass_Patchpft <- function(zz, npft){
   
   Patchpft <- list()
   
@@ -370,7 +370,7 @@ getClass_Patchpft <- function(){
 }
 
 ##################### Class : Vegetation #####################
-getClass_Vegetation <- function(){
+getClass_Vegetation <- function(zz){
   
   Vegetation <- list()
   Vegetation$indv <- readBin(zz, integer(), 1, size = 4)
@@ -380,7 +380,7 @@ getClass_Vegetation <- function(){
 
 
 ##################### Class : Individual #####################
-getClass_Individual <- function(nind){      #  nind <- Vegetation$indv 
+getClass_Individual <- function(nind, zz){      #  nind <- Vegetation$indv 
   
   Individual <- list()
   
@@ -670,7 +670,7 @@ getClass_Individual <- function(nind){      #  nind <- Vegetation$indv
 }
 
 ##################### Class : Soil #####################
-getClass_Soil <- function(){
+getClass_Soil <- function(zz){
   Soil <- list()
   
   # water content of soil layers [0=upper layer] as fraction of available water holding capacity;
@@ -748,7 +748,7 @@ getClass_Soil <- function(){
 
 
 ##################### Class : Sompool #####################
-getClass_Sompool <- function(){
+getClass_Sompool <- function(zz){
   Sompool <- list()
   npools <- 12
   
@@ -807,7 +807,7 @@ getClass_Sompool <- function(){
 
 
 ##################### Class : Sompool, CENTURY #####################
-getClass_SompoolCent <- function(){
+getClass_SompoolCent <- function(zz){
   SompoolCent <- list()
   
   # daily percolation (mm)
@@ -869,7 +869,7 @@ getClass_SompoolCent <- function(){
 
 
 ##################### Class : Fluxes #####################
-getClass_Fluxes <- function(){
+getClass_Fluxes <- function(zz){
   Fluxes <- list()
   #f.bytes <- bytes[1570:1667,]
   Fluxes$f1 <- readBin(zz, double(), 1, size = 8)

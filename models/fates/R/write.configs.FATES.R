@@ -13,7 +13,18 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## site information
    site <- settings$run$site
-   site.id <- as.numeric(site$id)
+   site_id <- tryCatch(
+     as.numeric(site$id),
+     warning = function(w) as.character(site$id)
+   )
+   if (is.numeric(site_id) && site_id > 1e9) {
+     # assume this is a BETYdb id, condense for readability
+     site_name <- paste0(site_id %/% 1e9, "-", site_id %% 1e9)
+   } else {
+     #treat as string, leave as-is
+     site_name <- site_id
+   }
+
   
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
@@ -25,7 +36,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    binary       <- file.path(bld,"cesm.exe")
    indir        <- file.path(rundir,"input") ## input directory
    default      <- settings$run$inputs$default$path ## reference inputs file structure
-   site_name    <- paste0(site.id %/% 1000000000, "-", site.id %% 1000000000)
    
    ## DATES
    ## CLM is a bit odd and takes a start date and length, so we need to precompute

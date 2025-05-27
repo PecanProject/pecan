@@ -1,7 +1,7 @@
 Package: PEcAn.SIPNET
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.8.0.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -17,12 +17,14 @@ Imports:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.logger,
+    rlang,
     PEcAn.remote,
     PEcAn.utils,
     stats
 Suggests:
     coda,
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr
 SystemRequirements: SIPNET ecosystem model
 OS_type: unix
 License: BSD_3_clause + file LICENSE

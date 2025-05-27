@@ -4,7 +4,14 @@
 \alias{write.insfile.LPJGUESS}
 \title{Write LPJ-GUESS instruction script}
 \usage{
-write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
+write.insfile.LPJGUESS(
+  settings,
+  trait.values,
+  rundir,
+  outdir,
+  run.id,
+  restart = NULL
+)
 }
 \arguments{
 \item{settings}{PEcAn settings list}
@@ -16,6 +23,8 @@ write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
 \item{outdir}{outdir}
 
 \item{run.id}{PEcAn run ID}
+
+\item{restart}{Logical, whether to restart the simulation.}
 }
 \value{
 settings Updated list

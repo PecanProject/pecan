@@ -22,15 +22,16 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
   
   #getting site info
   #grab the site info from Bety DB if we can't get the site info directly from the settings object.
-  if ("try-error" %in% class(try(site_info <- settings$run %>% 
-                                 purrr::map('site')%>% 
+  if ("try-error" %in% class(try(site_info <- settings %>%
+                                 purrr::map(~.x[['run']] ) %>%
+                                 purrr::map('site') %>%
                                  purrr::map(function(site.list){
                                    #conversion from string to number
                                    site.list$lat <- as.numeric(site.list$lat)
                                    site.list$lon <- as.numeric(site.list$lon)
-                                   list(site.id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
-                                 }) %>% 
-                                 dplyr::bind_rows() %>% 
+                                   list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+                                 })%>%
+                                 dplyr::bind_rows() %>%
                                  as.list()))) {
     #getting site ID
     observations <- c()

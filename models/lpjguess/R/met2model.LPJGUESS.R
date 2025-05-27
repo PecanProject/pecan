@@ -18,6 +18,7 @@
 ##' @param ... additional arguments, currently ignored
 ##' @author Istem Fer
 ##' @importFrom ncdf4 ncvar_get ncvar_def ncdim_def ncatt_get ncatt_put nc_close
+##' @importFrom PEcAn.utils days_in_year
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
 

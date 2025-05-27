@@ -1,23 +1,49 @@
-# R Code to convert NetCDF CF met files into SIPNET met files
-
-## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
-## gives user the notice that file already exists. If user wants to overwrite the existing files,
-## just change overwrite statement below to TRUE.
-
-##' met2model wrapper for SIPNET
-##'
-##' @title met2model.SIPNET
-##' @export
-##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input and output files OR the full file name if year.fragment = TRUE
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose should the function be very verbose
-##' @param year.fragment the function should ignore whether or not the data is stored as a set of complete years (such as for forecasts).
-##' @param ... Additional arguments, currently ignored
-##' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
+#' met2model wrapper for SIPNET
+#'
+#' Reads weather data from CF-formatted NetCDFs and writes it in the `.clim`
+#' format expected by SIPNET: a 14-column tab-separated table with no headers.
+#'
+#' The columns of the output file are:
+#'    * Grid index. Always 0 from this function; PEcAn configures SIPNET not to
+#'      use this.
+#'    * 4-digit year
+#'    * Day of year
+#'    * Hour of day
+#'    * Timestep size (days)
+#'    * Air temperature (degrees C)
+#'    * Soil temperature (degrees C)
+#'    * PAR (mol/m2/hr)
+#'    * Precip (mm)
+#'    * VPD (Pa)
+#'    * VPD of soil (Pa)
+#'    * Canopy vapor pressure (Pa)
+#'    * Wind speed (m/s)
+#'    * Soil moisture (fraction of saturation).
+#'      Always  0.6 from this function; PEcAn configures SIPNET to calculate it
+#'      internally.
+#'
+#' SIPNET does not allow missing values in its inputs. If the result contains
+#' NAs after conversion, no file is written and the process returns an error.
+#' To fix this, consider using a formal gap-filling method such as
+#' `PEcAn.data.atmosphere::metgapfill()` before calling met2model.
+#'
+#' @md
+#' @return a dataframe containing information about the files created
+#' @export
+#' @param in.path location on disk where inputs are stored
+#' @param in.prefix prefix of input and output files,
+#   OR the full file name if year.fragment = TRUE
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded
+#'  (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded
+#'  (will only use the year part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose should the function be very verbose
+#' @param year.fragment the function should ignore whether or not the data is
+#'  stored as a set of complete years (such as for forecasts).
+#' @param ... Additional arguments, currently ignored
+#' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...) {
  
@@ -297,19 +323,36 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
   }
 
-    
-    if (is.null(out)) {
-      out <- tmp
-    } else {
-      out <- rbind(out, tmp)
-    }
-    
+
+    out <- rbind(out, tmp)
+
   }  ## end loop over years
-  
+
   if (!is.null(out)) {
-    
+
+    # Sipnet does not know how to handle missing values in clim files.
+    # -- No, say it louder: Missing values send Sipnet into _infinite loops_.
+    # Let's not do that, hmm?
+    if (anyNA(out)) {
+      n_bad <- nrow(out) - nrow(stats::na.omit(out))
+      PEcAn.logger::logger.error(
+        "Result contains", n_bad, "(of", nrow(out), "total)",
+        "rows with missing values, which are not allowed in SIPNET inputs.",
+        "No output written."
+      )
+      return(invisible(NULL))
+    }
+
     ## write output
-    utils::write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+    utils::write.table(
+      # as.data.frame to avoid writing integers as floats
+      x = format(as.data.frame(out), digits = 4),
+      file = out.file.full,
+      quote = FALSE,
+      sep = "\t",
+      row.names = FALSE,
+      col.names = FALSE
+    )
     return(invisible(results))
   } else {
     PEcAn.logger::logger.info("NO MET TO OUTPUT")

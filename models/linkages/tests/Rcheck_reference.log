@@ -50,37 +50,7 @@ Suggests or Enhances not in mainstream repositories:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-model2netcdf.LINKAGES: no visible binding for global variable
-  ‘ag.biomass’
-model2netcdf.LINKAGES: no visible binding for global variable
-  ‘total.soil.carbon’
-model2netcdf.LINKAGES: no visible binding for global variable
-  ‘leaf.litter’
-model2netcdf.LINKAGES: no visible binding for global variable ‘area’
-model2netcdf.LINKAGES: no visible binding for global variable ‘ag.npp’
-model2netcdf.LINKAGES: no visible binding for global variable
-  ‘hetero.resp’
-model2netcdf.LINKAGES: no visible binding for global variable ‘nee’
-model2netcdf.LINKAGES: no visible binding for global variable ‘et’
-model2netcdf.LINKAGES: no visible binding for global variable ‘agb.pft’
-model2netcdf.LINKAGES: no visible binding for global variable ‘f.comp’
-model2netcdf.LINKAGES: no visible binding for global variable ‘water’
-model2netcdf.LINKAGES: no visible binding for global variable
-  ‘abvgroundwood.biomass’
-write_restart.LINKAGES: no visible binding for global variable
-  ‘ntrees.kill’
-write_restart.LINKAGES: no visible binding for global variable
-  ‘nogro.save’
-write_restart.LINKAGES: no visible binding for global variable
-  ‘iage.save’
-write_restart.LINKAGES: no visible binding for global variable
-  ‘dbh.save’
-Undefined global functions or variables:
-  abvgroundwood.biomass ag.biomass ag.npp agb.pft area
-  db.close db.open db.query dbh.save et f.comp
-  hetero.resp iage.save leaf.litter nee nogro.save
-  ntrees.kill total.soil.carbon water
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

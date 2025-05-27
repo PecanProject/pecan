@@ -1,4 +1,7 @@
-# PEcAn.ED2 1.8.0.9000
+# PEcAn.ED2 1.8.1
+
+* Fixed vignette compilation
+* Docker build fixes
 
 
 # PEcAn.ED2 1.8.0

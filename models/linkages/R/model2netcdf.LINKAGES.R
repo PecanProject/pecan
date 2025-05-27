@@ -15,9 +15,11 @@
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
                                   end_date = NULL, pft_names = NULL) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
-  
+
+  ## Create a new enviroment 
+  linkages_env <- new.env()
   ### Read in model output in linkages format
-  load(file.path(outdir, "linkages.out.Rdata"))
+  load(file.path(outdir, "linkages.out.Rdata"),envir = linkages_env)
   # linkages.output.dims <- dim(linkages.output)
   
   ### Determine number of years and output timestep
@@ -47,21 +49,21 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
     ## standard variables: Carbon Pools
-    output[[1]]  <- ag.biomass[y, ]  # Above Ground Biomass in kgC/m2
-    output[[2]]  <- ag.biomass[y, ]  # Total Live Biomass in kgC/m2 (no distinction from AGB in linkages)
-    output[[3]]  <- total.soil.carbon[y, ]  # TotSoilCarb in kgC/m2
-    output[[4]]  <- c(ag.biomass[y, ], total.soil.carbon[y, ], leaf.litter[y, ], area[y, ])  # Carb Pools in kgC/m2
+    output[[1]]  <- linkages_env$ag.biomass[y, ]  # Above Ground Biomass in kgC/m2
+    output[[2]]  <- linkages_env$ag.biomass[y, ]  # Total Live Biomass in kgC/m2 (no distinction from AGB in linkages)
+    output[[3]]  <- linkages_env$total.soil.carbon[y, ]  # TotSoilCarb in kgC/m2
+    output[[4]]  <- c(linkages_env$ag.biomass[y, ], linkages_env$total.soil.carbon[y, ], linkages_env$leaf.litter[y, ], linkages_env$area[y, ])  # Carb Pools in kgC/m2
     output[[5]]  <- c("AGB", "Soil Organic Matter", "Leaf Litter", "LAI")  # poolname
-    output[[6]]  <- ag.npp[y, ]  # GWBI = NPP in linkages
-    output[[7]]  <- hetero.resp[y, ]  # HeteroResp in kgC/m^2/s
-    output[[8]]  <- ag.npp[y, ]  # NPP = GWBI in linkages
-    output[[9]]  <- nee[y, ]  # NEE #possibly questionable
-    output[[10]] <- et[y, ]  # Evap in kg/m^2/s
-    output[[11]] <- agb.pft[, y, ]
-    output[[12]] <- f.comp[, y]
-    output[[13]] <- area[y, ]  #LAI
-    output[[14]] <- water[y, ]  #soil moisture
-    output[[15]] <- abvgroundwood.biomass[y,] #AbvGroundWood just wood no leaves
+    output[[6]]  <- linkages_env$ag.npp[y, ]  # GWBI = NPP in linkages
+    output[[7]]  <- linkages_env$hetero.resp[y, ]  # HeteroResp in kgC/m^2/s
+    output[[8]]  <- linkages_env$ag.npp[y, ]  # NPP = GWBI in linkages
+    output[[9]]  <- linkages_env$nee[y, ]  # NEE #possibly questionable
+    output[[10]] <- linkages_env$et[y, ]  # Evap in kg/m^2/s
+    output[[11]] <- linkages_env$agb.pft[, y, ]
+    output[[12]] <- linkages_env$f.comp[, y]
+    output[[13]] <- linkages_env$area[y, ]  #LAI
+    output[[14]] <- linkages_env$water[y, ]  #soil moisture
+    output[[15]] <- linkages_env$abvgroundwood.biomass[y,] #AbvGroundWood just wood no leaves
     output[[16]] <- seq_along(pft_names) 
     
     # ******************** Declare netCDF variables ********************#
@@ -75,7 +77,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL,
     dim.cpools <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
     dim.cpools1 <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
     #dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
-    dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = 1:length(agb.pft[, 1, 1]), longname = "Plant Functional Type", unlim = TRUE)
+    dim.pfts <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = 1:length(linkages_env$agb.pft[, 1, 1]), longname = "Plant Functional Type", unlim = TRUE)
     
     
     for (i in seq_along(output)) {

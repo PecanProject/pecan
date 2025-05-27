@@ -13,31 +13,38 @@ exec &> "@OUTDIR@/logfile.txt"
 # create output folder
 mkdir -p "@OUTDIR@"
 
-# see if application needs running
-if [ ! -e "@OUTDIR@/sipnet.out" ]; then
-  cd "@RUNDIR@"
-  ln -s "@SITE_MET@" sipnet.clim
+# Convert any relative paths to absolute
+# (otherwise we'd lose track of them when cd'ing into rundir)
+OUTDIR=$(cd "@OUTDIR@" && pwd -P)
+RUNDIR=$(cd "@RUNDIR@" && pwd -P)
+SITE_MET=$(cd $(dirname "@SITE_MET@") && pwd -P)/$(basename "@SITE_MET@")
+BINARY=$(cd $(dirname "@BINARY@") && pwd -P)/$(basename "@BINARY@")
 
-  "@BINARY@"
+# see if application needs running
+if [ ! -e "${OUTDIR}/sipnet.out" ]; then
+  cd "$RUNDIR"
+  ln -s "${SITE_MET}" sipnet.clim
+
+  "${BINARY}"
   STATUS=$?
   
   # copy output
-  mv "@RUNDIR@/sipnet.out" "@OUTDIR@"
+  mv "${RUNDIR}/sipnet.out" "$OUTDIR"
 
   # check the status
   if [ $STATUS -ne 0 ]; then
-  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
-  	exit $STATUS
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '${OUTDIR}/logfile.txt'" >&3
+    exit $STATUS
   fi
 
   # convert to MsTMIP
   echo "require (PEcAn.SIPNET)
-    model2netcdf.SIPNET('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @DELETE.RAW@, '@REVISION@')
+    model2netcdf.SIPNET('${OUTDIR}', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@', @DELETE.RAW@, '@REVISION@')
     " | R --no-save
 fi
 
 # copy readme with specs to output
-cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+cp  "${RUNDIR}/README.txt" "${OUTDIR}/README.txt"
 
 # run getdata to extract right variables
 
@@ -45,4 +52,4 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 @HOST_TEARDOWN@
 
 # all done
-echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "MODEL FINISHED\nLogfile is located at '${OUTDIR}/logfile.txt'" >&3

@@ -121,14 +121,7 @@ manual.
 The argument of a replacement function which corresponds to the right
 hand side must be named ‘value’.
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-check.ensemble.settings: no visible binding for global variable
-  ‘startdate’
-check.ensemble.settings: no visible binding for global variable
-  ‘enddate’
-site.pft.link.settings: no visible binding for global variable ‘.’
-Undefined global functions or variables:
-  . enddate startdate
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

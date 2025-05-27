@@ -309,8 +309,15 @@ fia.to.psscss <- function(settings,
   
   # ----- Write files 
   # Write files locally
-  site.string <- paste0(as.numeric(settings$run$site$id)%/%1e+09, "-", 
-                        as.numeric(settings$run$site$id)%%1e+09)
+  siteid <- tryCatch(
+    as.numeric(settings$run$site$id),
+    warning = function(w)as.character(settings$run$site$id)
+  )
+  if (is.numeric(siteid) && siteid > 1e9) {
+    site.string <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
+  } else {
+    site.string <- siteid
+  }
   if (settings$host$name == "localhost") {
     out.dir.local <- file.path(settings$database$dbfiles, paste0("FIA_ED2_site_", site.string))
   } else {

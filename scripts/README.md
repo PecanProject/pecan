@@ -1,67 +1,84 @@
-Contents of PEcAn scripts/ folder
----------------------------------
+# PEcAn Scripts Directory
 
+This folder contains helper scripts used for building, testing, running, and managing the PEcAn ecosystem.
 
-## Building PEcAn
+---
 
-#### `./install.dependencies.R`
+## Build and Installation Scripts
 
-Installs R functions required by R
+- `compile.sh` – Compilation helper
+- `quickbuild.R` – Loads all PEcAn packages in `dev_mode()` using `devtools`
+- `install_pecan.sh` – Full PEcAn installation script
+- `install_shiny_deps.R` – Installs required dependencies for Shiny apps
+- `ncsa-build.sh` – Builds PEcAn on the NCSA system
 
-#### `$PEcAn_root/scripts/quickbuild.R`
+---
 
-Uses `devtools` to quickly load all PEcAn packages in `dev_mode()`
+## Documentation and Dependencies
 
-#### `./build.sh`
+- `dependencies.R` – Generates package dependency graph
+- `generate_dependencies.R` – Advanced dependency analysis tool
+- `confirm_deps.R` – Confirms package dependencies
+- `updateVersion.sh` – Bumps version numbers
+- `check_with_errors.R` – Verifies documentation or build errors
+- `get_orphaned_functions.py` – Detects unused functions
 
-Builds PEcAn
+---
 
+##  Workflow and Test Scripts
 
-## Documentation
+- `workflow.bm.R` – Benchmark workflow
+- `workflow.pda.R` – Parameter data assimilation workflow
+- `workflow.pda.recover.r` – Recovery workflow for PDA
+- `workflow.treering.R` – Tree-ring data assimilation
+- `workflow.wcr.assim.R` – Assimilation example for WCR
+- `Rfcn.R` – Execute R functions remotely
+- `cleansettings.R` – Script for sanitizing settings files
+- `efi_data_process.R` – EFI data workflow
+- `EFI_metprocess.R` – EFI met processing
+- `EFI_workflow.R` – Full EFI workflow demo
+- `HARV_metdownload_efi.R` – Met download script for Harvard Forest (EFI)
 
-#### `./dependencies.R` 
+---
 
-makes graph of package dependencies for all PEcAn packages
+##  Database and Data Scripts
 
-#### `./updateVersion.sh 0.0.1`
+- `add.data.sh` – Loads input data into the BETY database
+- `add.models.sh` – Loads model metadata into BETY
+- `add.util.sh` – Helper functions used by add scripts
+- `backup.bety.sh` – Backs up the BETY database
 
-Bumps Version number
+---
 
+##  Metadata and Configuration
 
-#### `./roxygenize.R`
+- `create-hooks.sh` – Sets up git hooks
+- `sshkey.sh` – SSH key configuration
+- `syncgit.sh` – Git sync helper
+- `time.sh` – Benchmarking script
+- `docker_rebuild.sh` – Rebuilds Docker containers
+- `cron.sh` – Cron job runner
+- `thredds.sh` – THREDDS data publishing script
+- `find.string.sh` – Searches for strings in files
 
-Updates documentation for all packages
+---
 
-## Testing / Demonstration
+##  Data Preparation and Examples
 
-## Helper Functions 
- 
-#### `./Rfcn.R` 
+- `dataprep_10_site.csv` – Example CSV for preparing 10 sites
+- `dataprep_10_sites.csv` – Duplicate of above (maybe remove one?)
 
-executable for running R functions on remote machine at command line
+---
 
-  ```r
- ssh <machine> <package> <function> <args>
-  ```
+##  Other
 
-#### `workflow.R` test workflows
+- `.gitignore` – Git ignore rules
+- `README.md` – This file
 
- ```r
- ./workflow.R --settings pecan.xml
-```
+---
 
+##  Note
 
+If you remove or rename any scripts in the future, **please update this README** to keep documentation in sync.
 
-### Loading Database
-
-#### `./dump.bety.sh`
-
-#### `./load.bety.sh`
-
-#### `./add.models.sh`
-
-#### `./add.data.sh`
-
-#### `./add.util.sh`
-
-convenience functions used in add.data.sh and add.models.sh
+---

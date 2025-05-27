@@ -935,7 +935,7 @@ check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE
   if (!is.null(dbcon)
-      && settings$database$bety$write
+      && isTRUE(settings$database$bety$write)
       && ("model" %in% names(settings))) {
     if (!"workflow" %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -1024,8 +1024,9 @@ check.database.settings <- function(settings) {
       # should runs be written to database
       if (is.null(settings$database$bety$write)) {
         PEcAn.logger::logger.info(
-          "Writing all runs/configurations to database.")
-        settings$database$bety$write <- TRUE
+          "database$bety$write not set.",
+          "Will not write any runs/configurations to database.")
+        settings$database$bety$write <- FALSE
       } else {
         settings$database$bety$write <- as.logical(settings$database$bety$write)
         if (settings$database$bety$write) {

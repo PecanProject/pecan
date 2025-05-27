@@ -2,7 +2,7 @@
 
 ## Cookies and pecan web pages
 
-You may need to disable cookies specifically for the pecan webserver in your browser. This shouldn't be a problem running from the virtual machine, but your installation of php can include a 'PHPSESSID' that is quite long, and this can overflow the params field of the workflows table, depending on how long your hostname, model name, site name, etc are. 
+You may need to disable cookies specifically for the pecan webserver in your browser. This is because your installation of php can include a 'PHPSESSID' that is quite long, and this can overflow the params field of the workflows table, depending on how long your hostname, model name, site name, etc are. 
 
 ## `Warning: mkdir() [function.mkdir]: No such file or directory`
 

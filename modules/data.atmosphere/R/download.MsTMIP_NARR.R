@@ -21,8 +21,18 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  site_id    <- as.numeric(site_id)
-  outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
+
+  site_id <- tryCatch(
+    as.numeric(site_id),
+    warning = function(w) as.character(site_id)
+  )
+  if (is.numeric(site_id) && site_id > 1e+09) {
+    # Assume this is a BETY id, condense for readability
+    siteid_str <- paste0(site_id %/% 1e+09, "-", site_id %% 1e+09)
+  } else {
+    siteid_str <- as.character(site_id)
+  }
+  outfolder <-  paste0(outfolder, "_site_", siteid_str)
 
   lat.in    <- as.numeric(lat.in)
   lon.in    <- as.numeric(lon.in)

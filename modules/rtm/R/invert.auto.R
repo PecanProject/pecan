@@ -37,7 +37,7 @@
 #' inputs list containing runID, initial values, and resume (NULL) as an
 #' argument.
 #'
-#' * `calculate.burnin` -- If `TRUE`, use `PEcAn.assim.batch::autoburin`
+#' * `calculate.burnin` -- If `TRUE`, use `PEcAn.assim.batch::autoburnin`
 #' function to calculate burnin. Otherwise, assume burnin is `min(niter/2,
 #' iter_conv_check)`.
 #'
@@ -60,7 +60,7 @@ invert.auto <- function(observed, invert.options,
   if (parallel == TRUE) {
     testForPackage("parallel")
   } else {
-    message("Running in serial mode. Better performance can be achived with `parallel=TRUE`.")
+    message("Running in serial mode. Better performance can be achieved with `parallel=TRUE`.")
   }
 
   ngibbs.max <- invert.options$ngibbs.max
@@ -125,7 +125,7 @@ invert.auto <- function(observed, invert.options,
     if (is.null(parallel.cores)) {
       parallel.cores <- maxcores - 1
     } else {
-      if (!is.numeric(parallel.cores) | parallel.cores %% 1 != 0) {
+      if (!is.numeric(parallel.cores) || parallel.cores %% 1 != 0) {
         stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
       } else if (parallel.cores > maxcores) {
         warning(sprintf("Requested %1$d cores but only %2$d cores available. ",
@@ -291,8 +291,8 @@ process_output <- function(output.list,
   }
 
   out$nsamp <- coda::niter(out$samples)
-  nburn <- min(floor(out$nsamp/2), iter_conv_check)
-  burned_samples <- window(out$samples, start = nburn)
+  nburn <- min(floor(out$nsamp / 2), iter_conv_check)
+  burned_samples <- stats::window(out$samples, start = nburn)
   check_initial <- check.convergence(burned_samples,
                                      threshold = threshold,
                                      autoburnin = FALSE)
@@ -321,7 +321,7 @@ process_output <- function(output.list,
       out$results <- summary_simple(do.call(rbind, burn$samples))
     }
   } else {
-    message("Skipping robust convergece check (autoburnin) because ",
+    message("Skipping robust convergence check (autoburnin) because ",
             "calculate.burnin == FALSE.")
     out$burnin <- nburn
     out$results <- summary_simple(do.call(rbind, burned_samples))

@@ -1,7 +1,7 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn Functions Used for Managing Climate Driver Data
-Version: 1.8.0.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -55,6 +55,7 @@ Imports:
     tidyselect,
     truncnorm,
     units,
+    utils,
     XML (>= 3.98-1.4),
     xts,
     zoo
@@ -63,6 +64,7 @@ Suggests:
     foreach,
     furrr,
     future,
+    getPass,
     knitr,
     mockery,
     parallel,

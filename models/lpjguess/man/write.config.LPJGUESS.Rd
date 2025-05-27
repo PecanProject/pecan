@@ -4,7 +4,7 @@
 \alias{write.config.LPJGUESS}
 \title{Write LPJ-GUESS configuration files}
 \usage{
-write.config.LPJGUESS(defaults, trait.values, settings, run.id)
+write.config.LPJGUESS(defaults, trait.values, settings, run.id, restart = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
@@ -14,6 +14,8 @@ write.config.LPJGUESS(defaults, trait.values, settings, run.id)
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
+
+\item{restart}{Logical, whether to restart the simulation.}
 }
 \value{
 configuration file for LPJ-GUESS for given run

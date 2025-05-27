@@ -1,4 +1,4 @@
-# PEcAn.JULES 1.7.3.9000
+# PEcAn.JULES 1.7.4
 
 ## License change
 * PEcAn.JULES is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
