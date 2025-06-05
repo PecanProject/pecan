@@ -3,16 +3,15 @@
 ##' @title Get New Site Info
 ##' @param site a dataframe with site information including id, lat, lon, and time_zone.
 ##' @param con Database connection object.
-##' @param latlon Optional global latlon object which will store updated lat/lon.
 ##' @return a dataframe with new site information on lat, lon and time_zone
 ##' @export
 ##' @author Abhinav Pandey
 ##' @importFrom digest digest
 ##'
 ##' @examples
-##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2,time_zone="UTC"),con=NULL,latlon=NULL)
+##' get.new.site(site=data.frame(id=1,lat=40.1,lon=-88.2, time_zone = "UTC"), con = NULL)
 
-get.new.site <- function(site, con = NULL, latlon = NULL) {
+get.new.site <- function(site, con = NULL) {
     if (is.null(con)) {
         PEcAn.logger::logger.debug("DB connection is closed. Trying to generate a new site ID or use pre-existing one.")
         # No DB connection present. Generate a new ID using one of below steps:
@@ -95,14 +94,6 @@ get.new.site <- function(site, con = NULL, latlon = NULL) {
                     lon = site$lon
                 )
                 str_ns <- paste0(site$lat, "_", site$lon)
-            } else {
-                latlon <- query.site(site$id, con = con)[c("lat", "lon")]
-                new.site <- data.frame(
-                    id = as.numeric(site$id),
-                    lat = latlon$lat,
-                    lon = latlon$lon
-                )
-                str_ns <- paste0(new.site$lat, "_", new.site$lon)
             }
         }
     }
