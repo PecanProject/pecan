@@ -131,7 +131,7 @@ services:
       - RABBITMQ_PORT=15672
       - FQDN=${PECAN_FQDN:-docker}
       - NAME=${PECAN_NAME:-docker}
-      - USER=${PECAN_RSTUDIO_USER:-carya}
+      - DEFAULT_USER=${PECAN_RSTUDIO_USER:-carya}
       - PASSWORD=${PECAN_RSTUDIO_PASS:-illinois}
       - USERID=${UID:-1001}
       - GROUPID=${GID:-1001}

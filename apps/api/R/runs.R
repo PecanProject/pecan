@@ -237,8 +237,9 @@ getRunOutputFile <- function(req, run_id, filename, res){
 #' @author Tezan Sahu
 #* @get /<run_id>/graph/<year>/<y_var>
 #* @serializer contentType list(type='image/png')
+plotResults <- function(req, run_id, year, y_var, width = 800, height = 600, res) {
+  x_var <- ifelse(!is.null(req$args$xvar), req$args$xvar, "time")
 
-plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, height=600, res) {
   # Get workflow_id for the run
   Run <- tbl(global_db_pool, "runs") %>%
     filter(id == !!run_id)
@@ -273,7 +274,7 @@ plotResults <- function(req, run_id, year, y_var, x_var="time", width=800, heigh
   
   # Plot & return
   filename <- paste0(Sys.getenv("DATA_DIR", "/data/"), "workflows/temp", stringi::stri_rand_strings(1, 10), ".png")
-  PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), year=year, filename=filename)
+  PEcAn.visualization::plot_netcdf(datafile, y_var, x_var, as.integer(width), as.integer(height), filename=filename, year=year)
   img_bin <- readBin(filename,'raw',n = file.info(filename)$size)
   file.remove(filename)
   return(img_bin)

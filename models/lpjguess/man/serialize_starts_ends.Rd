@@ -17,3 +17,4 @@ A numeric vector of length 2, giving the start and end line numbers.
 \description{
 Finds the start and end lines for serialization.
 }
+\keyword{internal}

@@ -1,4 +1,4 @@
-# PEcAn.DALEC 1.7.3.9000
+# PEcAn.DALEC 1.7.4
 
 ## License change
 * PEcAn.DALEC is now distributed under the BSD three-clause license instead of the NCSA Open Source license.

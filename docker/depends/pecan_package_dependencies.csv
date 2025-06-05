@@ -41,6 +41,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","modules/data.land","Imports",FALSE
 "doSNOW","*","modules/data.remote","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
 "dplyr","*","base/qaqc","Imports",FALSE
@@ -65,6 +66,7 @@
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Suggests",FALSE
+"foreach","*","modules/data.land","Imports",FALSE
 "foreach","*","modules/data.remote","Imports",FALSE
 "fs","*","base/db","Imports",FALSE
 "fs","*","modules/data.land","Imports",FALSE
@@ -187,6 +189,7 @@
 "mclust","*","modules/rtm","Suggests",FALSE
 "MCMCpack","*","modules/allometry","Imports",FALSE
 "MCMCpack","*","modules/assim.batch","Imports",FALSE
+"MCMCpack","*","modules/data.land","Imports",FALSE
 "MCMCpack","*","modules/emulator","Imports",FALSE
 "methods","*","base/db","Imports",FALSE
 "methods","*","base/settings","Depends",FALSE
@@ -206,6 +209,7 @@
 "mockery","*","base/workflow","Suggests",FALSE
 "mockery","*","modules/data.atmosphere","Suggests",FALSE
 "mockery","*","modules/meta.analysis","Suggests",FALSE
+"mockery","*","modules/uncertainty","Suggests",FALSE
 "mockery",">= 0.3.0","models/biocro","Suggests",FALSE
 "mockery",">= 0.4.3","base/db","Suggests",FALSE
 "MODISTools",">= 1.1.0","modules/data.remote","Imports",FALSE

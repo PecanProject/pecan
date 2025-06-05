@@ -1,7 +1,7 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn Package for Integration of the MAAT Model
-Version: 1.7.3.9000
+Version: 1.7.4
 Authors@R: c(
     person("Shawn", "Serbin", role = c("aut", "cre"), email="sserbin@bnl.gov"),
     person("Anthony", "Walker", role = "aut", email="walkerap@ornl.gov"))

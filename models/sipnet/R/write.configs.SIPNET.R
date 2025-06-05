@@ -20,7 +20,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   ### WRITE *.clim
   template.clim <- settings$run$inputs$met$path  ## read from settings
-  
   if (!is.null(inputs)) {
     ## override if specified in inputs
     if ("met" %in% names(inputs)) {
@@ -490,20 +489,48 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   } ## end loop over PFTS
   ####### end parameter update
-  #working on reading soil file (only working for 1 soil file)
-  if(length(settings$run$inputs$soilinitcond$path)==1){
-    soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(settings$run$inputs$soilinitcond$path)
-    #SoilWHC and LitterWHC
-    if("volume_fraction_of_water_in_soil_at_saturation"%in%names(soil_IC_list$vals)){
-      #SoilWHC
-      param[which(param[, 1] == "soilWHC"), 2] <- mean(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]))*100
-      
-      #LitterWHC
-      #param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*100
+  #working on reading soil file
+  if (length(settings$run$inputs$soil_physics$path) > 0) {
+    template.soil_physics <- settings$run$inputs$soil_physics$path  ## read from settings
+    
+    if (!is.null(inputs)) {
+      ## override if specified in inputs
+      if ("soil_physics" %in% names(inputs)) {
+        template.soil_physics <- inputs$soil_physics$path
+      }
     }
-    if("soil_hydraulic_conductivity_at_saturation"%in%names(soil_IC_list$vals)){
-      #litwaterDrainrate
-      param[which(param[, 1] == "litWaterDrainRate"), 2] <- unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1]*100/(3600*24)
+    
+    if (length(template.soil_physics)!=1) {
+      PEcAn.logger::logger.warn(
+        paste0("No single soil physical parameter file was found for ",
+               run.id))
+    } else {
+      soil_IC_list <- PEcAn.data.land::pool_ic_netcdf2list(template.soil_physics)
+      #SoilWHC
+      if ("volume_fraction_of_water_in_soil_at_saturation" %in% names(soil_IC_list$vals)) {
+        #if depth is provided in the file
+        if ("depth" %in% names(soil_IC_list$dims)) {
+          # Calculate the thickness of soil layers based on the assumption that the depth values are at bottoms and the first layer top is at 0
+          thickness<-c(soil_IC_list$dims$depth[1],diff(soil_IC_list$dims$depth))
+          thickness<-PEcAn.utils::ud_convert(thickness, "m", "cm")
+          # Calculate the soilWHC for the whole soil profile in cm
+          soilWHC_total <- sum(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])*thickness)
+          if (thickness[1]<=10) {
+            #LitterWHC in cm, assuming the litter depth is within the top 10 cm
+            param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*thickness[1]
+          }
+        } else {
+          #if no depth/thickness is provided
+          PEcAn.logger::logger.warn("No depth info was found in the soil file. Will use the default or user-specified soil depth")
+          thickness <- 100 #assume the default soil depth is the plant rooting depth of 100 cm, or use the user-specified value
+          soilWHC_total <- soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]*thickness
+        }
+        param[which(param[, 1] == "soilWHC"), 2] <- soilWHC_total
+      }
+      if ("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)) {
+         #litwaterDrainrate in cm/day
+         param[which(param[, 1] == "litWaterDrainRate"), 2] <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1], "m s-1", "cm day-1")
+       }
     }
   }
   if (!is.null(IC)) {
@@ -575,8 +602,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
   else if (length(settings$run$inputs$poolinitcond$path)>0) {
     ICs_num <- length(settings$run$inputs$poolinitcond$path)
-    IC.path <- settings$run$inputs$poolinitcond$path[[sample(1:ICs_num, 1)]]
-
+    IC.path <- settings$run$inputs$poolinitcond$path[[1]] 
+    
     IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
