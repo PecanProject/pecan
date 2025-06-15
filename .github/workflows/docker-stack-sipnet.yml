@@ -39,12 +39,12 @@ jobs:
       run: |
           cp docker-compose.dev.yml docker-compose.override.yml
           sed -i'' '/R_library/d' docker-compose.override.yml
-
+      #test
     - name: Build Containers
       run: |
         cp docker/env.example .env
         echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-        echo "PECAN_VERSION=latest" >> .env
+        echo "PECAN_VERSION=develop" >> .env
         echo "UID=$(id -u)" >> .env
         echo "GID=$(id -g)" >> .env
         
