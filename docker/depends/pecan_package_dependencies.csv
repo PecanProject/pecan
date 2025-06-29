@@ -1,5 +1,6 @@
 "package","version","needed_by_dir","type","is_pecan"
 "abind","*","modules/assim.batch","Imports",FALSE
+"abind","*","modules/assim.sequential","Suggests",FALSE
 "abind",">= 1.4.5","base/utils","Imports",FALSE
 "abind",">= 1.4.5","models/ed","Imports",FALSE
 "abind",">= 1.4.5","modules/data.atmosphere","Imports",FALSE
@@ -41,6 +42,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","modules/assim.sequential","Suggests",FALSE
 "doSNOW","*","modules/data.land","Imports",FALSE
 "doSNOW","*","modules/data.remote","Suggests",FALSE
 "dplR","*","modules/data.land","Imports",FALSE
@@ -65,6 +67,7 @@
 "emdbook","*","modules/assim.sequential","Suggests",FALSE
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
+"foreach","*","modules/assim.sequential","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Suggests",FALSE
 "foreach","*","modules/data.land","Imports",FALSE
 "foreach","*","modules/data.remote","Imports",FALSE
@@ -123,6 +126,7 @@
 "httr","*","modules/data.land","Imports",FALSE
 "httr","*","modules/data.remote","Suggests",FALSE
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
+"itertools","*","modules/assim.sequential","Suggests",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
@@ -216,7 +220,7 @@
 "mvbutils","*","base/qaqc","Suggests",FALSE
 "mvtnorm","*","modules/allometry","Imports",FALSE
 "mvtnorm","*","modules/assim.batch","Imports",FALSE
-"mvtnorm","*","modules/assim.sequential","Imports",FALSE
+"mvtnorm","*","modules/assim.sequential","Suggests",FALSE
 "mvtnorm","*","modules/data.land","Imports",FALSE
 "mvtnorm","*","modules/emulator","Imports",FALSE
 "ncdf4","*","base/db","Imports",FALSE
@@ -576,11 +580,11 @@
 "stringr","*","modules/assim.sequential","Imports",FALSE
 "stringr","*","modules/benchmark","Imports",FALSE
 "stringr","*","modules/data.land","Imports",FALSE
+"stringr","*","modules/data.remote","Suggests",FALSE
 "stringr",">= 1.1.0","base/visualization","Imports",FALSE
 "stringr",">= 1.1.0","models/ed","Imports",FALSE
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
-"swfscMisc","*","modules/data.land","Imports",FALSE
 "terra","*","modules/assim.sequential","Suggests",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
 "terra","*","modules/data.land","Imports",FALSE
@@ -676,6 +680,7 @@
 "withr","*","models/sipnet","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
 "withr","*","modules/data.atmosphere","Suggests",FALSE
+"xgboost","*","modules/assim.sequential","Suggests",FALSE
 "XML","*","base/workflow","Imports",FALSE
 "XML","*","models/biocro","Imports",FALSE
 "XML","*","models/maat","Imports",FALSE
