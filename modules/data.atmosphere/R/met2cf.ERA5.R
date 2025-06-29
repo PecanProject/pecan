@@ -35,6 +35,17 @@ met2CF.ERA5<- function(lat,
   start_date <- paste0(lubridate::year(start_date),"-01-01")  %>% as.Date()
   end_date <- paste0(lubridate::year(end_date),"-12-31") %>% as.Date()
   # adding RH and converting rain
+
+  # Define variable mapping 
+  cf_mapping <- c(
+    "t2m" = "air_temperature",
+    "sp" = "air_pressure", 
+    "tp" = "precipitation_flux",
+    "u10" = "eastward_wind",
+    "v10" = "northward_wind",
+    "ssrd" = "surface_downwelling_shortwave_flux_in_air",
+    "strd" = "surface_downwelling_longwave_flux_in_air"
+  )
  
   out.new <- ensemblesN %>%
     purrr::map(function(ensi) {
@@ -43,55 +54,90 @@ met2CF.ERA5<- function(lat,
         ens <- out.xts[[ensi]]
         # Solar radation conversions
         #https://confluence.ecmwf.int/pages/viewpage.action?pageId=104241513
-        #For ERA5 daily ensemble data, the accumulation period is 3 hours. Hence to convert to W/m2:
-        ens[, "ssrd"] <- ens[, "ssrd"] / (3 * 3600)
-        ens[, "strd"] <- ens[, "strd"] / (3 * 3600)
-        #precipitation it's originaly in meters. Meters times the density will give us the kg/m2
-        ens[, "tp"] <-
-          ens[, "tp"] * 1000 / 3 # divided by 3 because we have 3 hours data
-        ens[, "tp"] <-
-          PEcAn.utils::ud_convert(as.numeric(ens[, "tp"]), "kg m-2 hr-1", "kg m-2 s-1")  #There are 21600 seconds in 6 hours
-        #RH
+        available_vars <- colnames(ens)
+        
+        # Detect timestep dynamically (use median for robustness)
+        time_diffs <- diff(as.numeric(zoo::index(ens)))
+        if (length(time_diffs) > 0) {
+          timestep_seconds <- as.numeric(median(time_diffs))
+        } else {
+          timestep_seconds <- 3 * 3600 # Fallback to 3-hourly
+          if (verbose) PEcAn.logger::logger.info("Only one timestamp found. Defaulting to 3-hour timestep for conversion.")
+        }
+        timestep_hours <- timestep_seconds / 3600
+        
+        # Solar radiation conversions (J/m2 to W/m2)
+        if ("ssrd" %in% available_vars) ens[, "ssrd"] <- ens[, "ssrd"] / timestep_seconds
+        if ("strd" %in% available_vars) ens[, "strd"] <- ens[, "strd"] / timestep_seconds
+        
+        # Precipitation - m to kg/m2/s
+        if ("tp" %in% available_vars) {
+          ens[, "tp"] <- (ens[, "tp"] * 1000) / timestep_seconds
+        }
         #Adopted from weathermetrics/R/moisture_conversions.R
-        t <-
-          PEcAn.utils::ud_convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
-        dewpoint  <-
-          PEcAn.utils::ud_convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
-        beta <- (112 - (0.1 * t) + dewpoint) / (112 + (0.9 * t))
-        relative.humidity <- beta ^ 8
-        #specific humidity
-        specific_humidity <-
-          PEcAn.data.atmosphere::rh2qair(relative.humidity,
-                                         ens[, "t2m"] %>% as.numeric(),
-                                         ens[, "sp"] %>% as.numeric()) # Pressure in Pa
+        # Relative and specific humidity (only if all required vars present)
+        specific_humidity <- NULL
+        if (all(c("t2m", "d2m", "sp") %in% available_vars)) {
+          t <-
+            PEcAn.utils::ud_convert(ens[, "t2m"] %>% as.numeric(), "K", "degC")
+          dewpoint  <-
+            PEcAn.utils::ud_convert(ens[, "d2m"] %>% as.numeric(), "K", "degC")
+          beta <- (112 - (0.1 * t) + dewpoint) / (112 + (0.9 * t))
+          relative.humidity <- beta ^ 8
+          #specific humidity
+          specific_humidity <-
+            PEcAn.data.atmosphere::rh2qair(relative.humidity,
+                                           ens[, "t2m"] %>% as.numeric(),
+                                           ens[, "sp"] %>% as.numeric()) # Pressure in Pa
+        }
+        
+        # Select available ERA5 variables and convert to CF naming
+        available_era5_vars <- intersect(names(cf_mapping), available_vars)
+        ens_cf <- ens[, available_era5_vars, drop = FALSE]
+        colnames(ens_cf) <- cf_mapping[available_era5_vars]
+        
+        # Add specific humidity if calculated successfully
+        if (!is.null(specific_humidity)) {
+          colnames(specific_humidity) <- "specific_humidity"
+          ens_cf <- xts::merge.xts(ens_cf, specific_humidity)
+        }
+        
+        # Attach timestep as attribute for downstream use
+        attr(ens_cf, "timestep_hours") <- timestep_hours
+        return(ens_cf)
+        
       },
       error = function(e) {
         PEcAn.logger::logger.severe("Something went wrong during the unit conversion in met2cf ERA5.",
                                     conditionMessage(e))
+        return(NULL)
       })
-      
-      
-      #adding humidity
-      xts::merge.xts(ens[, -c(3)], (specific_humidity)) %>%
-        `colnames<-`(
-          c(
-            "air_temperature",
-            "air_pressure",
-            "precipitation_flux",
-            "eastward_wind",
-            "northward_wind",
-            "surface_downwelling_shortwave_flux_in_air",
-            "surface_downwelling_longwave_flux_in_air",
-            "specific_humidity"
-          )
-        )
       
     })
   
+  # Filter out NULL results from failed ensembles
+  out.new <- out.new[!sapply(out.new, is.null)]
+  
+  if (length(out.new) == 0) {
+    PEcAn.logger::logger.severe("No valid ensembles processed")
+    return(NULL)
+  }
 
+  # Define units mapping for CF variables
+  cf_units_mapping <- c(
+    "air_temperature" = "K",
+    "air_pressure" = "Pa", 
+    "precipitation_flux" = "kg m-2 s-1",
+    "eastward_wind" = "m s-1",
+    "northward_wind" = "m s-1",
+    "surface_downwelling_shortwave_flux_in_air" = "W m-2",
+    "surface_downwelling_longwave_flux_in_air" = "W m-2",
+    "specific_humidity" = "1"
+  )
+  
   #These are the cf standard names
   cf_var_names = colnames(out.new[[1]])
-  cf_var_units = c("K", "Pa", "kg m-2 s-1", "m s-1", "m s-1", "W m-2", "W m-2", "1")  #Negative numbers indicate negative exponents
+  cf_var_units = cf_units_mapping[cf_var_names]
   
 
   results_list <-  ensemblesN %>%
@@ -153,14 +199,14 @@ met2CF.ERA5<- function(lat,
           data.for.this.year.ens <- out.new[[i]]
           data.for.this.year.ens <- data.for.this.year.ens[year %>% as.character]
           
+          if (nrow(data.for.this.year.ens) == 0) return(NULL)
           
-          #Each ensemble gets its own file.
-          time_dim = ncdf4::ncdim_def(
+          # Use actual timestamps for time dimension (robust, CF-compliant)
+          time_vals <- as.numeric(zoo::index(data.for.this.year.ens))
+          time_dim <- ncdf4::ncdim_def(
             name = "time",
-            paste(units = "hours since", format(start_date, "%Y-%m-%dT%H:%M")),
-            seq(0, (length(zoo::index(
-              data.for.this.year.ens
-            )) * 3) - 1 , length.out = length(zoo::index(data.for.this.year.ens))),
+            units = "seconds since 1970-01-01 00:00:00",
+            vals = time_vals,
             create_dimvar = TRUE
           )
           lat_dim = ncdf4::ncdim_def("latitude", "degree_north", lat, create_dimvar = TRUE)
@@ -183,7 +229,7 @@ met2CF.ERA5<- function(lat,
                 # "j" is the variable number.  "i" is the ensemble number.
                 ncdf4::ncvar_put(nc_flptr,
                                  nc_var_list[[j]],
-                                 zoo::coredata(data.for.this.year.ens)[, nc_var_list[[j]]$name])
+                                 zoo::coredata(data.for.this.year.ens)[, j])
               }
               
               ncdf4::nc_close(nc_flptr)  #Write to the disk/storage
@@ -200,10 +246,7 @@ met2CF.ERA5<- function(lat,
               " already exists.  It was not overwritten."
             ))
           }
-          
-          
         }) 
-      
       return(results)
     })
   #For each ensemble
