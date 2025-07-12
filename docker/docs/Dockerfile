@@ -15,14 +15,29 @@ RUN apt-get update \
         -e 'remotes::install_version("rmarkdown", ">= 2.19", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("knitr", ">= 1.42", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
+        -e 'install.packages("pkgdown", repos = repos)' \
     && rm -rf /var/lib/apt/lists/*
 
+# ----------------------------------------------------------------------
+# Compile bookdown documentation
+# ----------------------------------------------------------------------    
 WORKDIR /src/book_source/
 COPY book_source /src/book_source/
 COPY documentation /src/documentation/
 COPY docker-compose.yml /src/
 COPY docker/env.example /src/docker/
 RUN make build
+
+# ----------------------------------------------------------------------
+# Build pkgdown documentation
+# ----------------------------------------------------------------------
+WORKDIR /pkgdoc/
+COPY Makefile Makefile.depends /pkgdoc/
+COPY scripts/build_pkgdown.R /pkgdoc/scripts/build_pkgdown.R
+COPY base /pkgdoc/base/
+COPY modules /pkgdoc/modules/
+COPY models /pkgdoc/models/
+RUN make clean && make pkgdocs
 
 # ----------------------------------------------------------------------
 # copy html pages to container
@@ -36,6 +51,7 @@ RUN apt-get update \
 
 COPY docker/docs/index.html /usr/local/apache2/htdocs/
 COPY --from=pecandocs /src/book_source/_book/ /usr/local/apache2/htdocs/docs/pecan/
+COPY --from=pecandocs /pkgdoc/_pkgdown_docs/ /usr/local/apache2/htdocs/pkgdocs/
 
 # ----------------------------------------------------------------------
 # PEcAn version information

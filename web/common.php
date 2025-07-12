@@ -14,7 +14,7 @@ function get_footer() {
     Terrestrial Ecosystems, Department of Energy (ARPA-E #DE-AR0000594 and #DE-AR0000598), 
     Department of Defense, the Arizona Experiment Station, the Energy Biosciences Institute, 
     and an Amazon AWS in Education Grant.
-    <span style=\"float:right\">PEcAn Version 1.8.0.9000</span>";
+    <span style=\"float:right\">PEcAn Version 1.9.0</span>";
 }
 
 function whoami() {
@@ -42,11 +42,11 @@ function left_footer() {
 
 ?>
 <p></p>
-  <a href="https://pecanproject.github.io/pecan-documentation/latest" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/documentation/master/" target="_blank">Documentation</a>
   <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Slack Channel</a>
   <br>
-  <a href="http://pecanproject.github.io/Report_an_issue.html" target="_blank">Bug Report</a>
+  <a href="https://github.com/PecanProject/pecan/issues/new/choose" target="_blank">Bug Report</a>
 <?php
 }
 

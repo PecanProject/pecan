@@ -1,4 +1,4 @@
-# PEcAn.SIBCASA 0.0.1.9000
+# PEcAn.SIBCASA 0.0.2
 
 ## License change
 * PEcAn.SIBCASA is now distributed under the BSD three-clause license instead of the NCSA Open Source license.

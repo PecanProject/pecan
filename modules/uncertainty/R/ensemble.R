@@ -197,6 +197,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param samples Sampled inputs such as met and parameter files
 ##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
@@ -211,7 +212,30 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, samples = NULL, rename = FALSE) {
+  
+  
+  # Check if there are NO inputs
+ 
+for (input_tag in names(settings$run$inputs)) {
+  input <- settings$run$inputs[[input_tag]]
+  input_paths <- input$path
+  
+  # Check for required paths
+  if (is.null(input_paths) || length(input_paths) == 0) {
+     PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
+  }
+  
+  # Check for unsampled multi-path inputs
+  if (length(input_paths) > 1 && 
+     !(input_tag %in% names(settings$ensemble$samplingspace))) {
+    PEcAn.logger::logger.error(
+      "Input", sQuote(input_tag), "has", length(input_paths), "paths but no sampling method.",
+      "Add <samplingspace> for this input in pecan.xml")
+  }
+}
+
+  
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -280,7 +304,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       required_tags<-c("met","parameters")
       
     }
-    
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
     #finding who has a parent
@@ -289,19 +312,20 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
     #new ordered sampling space
     samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
-    #performing the sampling
-    samples<-list()
-    # For the tags specified in the xml I do the sampling
-    for(i in seq_along(samp.ordered)){
-      myparent<-samp.ordered[[i]]$parent # do I have a parent ?
-      #call the function responsible for generating the ensemble
-      samples[[names(samp.ordered[i])]] <- input.ens.gen(settings=settings,
+    if(is.null(samples)){
+       #performing the sampling
+       samples<-list()
+       # For the tags specified in the xml I do the sampling
+      for(i in seq_along(samp.ordered)){
+         myparent<-samp.ordered[[i]]$parent # do I have a parent ?
+         #call the function responsible for generating the ensemble
+         samples[[names(samp.ordered[i])]] <- input.ens.gen(settings=settings,
                                                          input=names(samp.ordered)[i],
                                                          method=samp.ordered[[i]]$method,
-                                                         parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
-      )
-    }
-
+                                                         parent_ids=if( !is.null(myparent)) samples[[myparent]]) # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
+       }
+     }
+    
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
@@ -381,6 +405,20 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       }
       dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
       dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
+      
+      # build dynamic input info string
+      input_info <- ""
+      #changing the structure of input tag to what the models are expecting
+      for(input_i in seq_along(settings$run$inputs)){
+        input_tag <- names(settings$run$inputs)[[input_i]]
+        if (!is.null(samples[[input_tag]])) {
+          settings$run$inputs[[input_tag]][["path"]] <-
+            samples[[input_tag]][["samples"]][[i]]
+          input_info <- paste0(input_info,format(input_tag, width = 12, justify = "left"), ": ", 
+                               samples[[input_tag]]$samples[[i]], "\n")
+        }
+      }
+      
       # write run information to disk
       cat("runtype     : ensemble\n",
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
@@ -392,21 +430,32 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "model id    : ", format(settings$model$id, scientific = FALSE), "\n",
           "site        : ", settings$run$site$name, "\n",
           "site  id    : ", format(settings$run$site$id, scientific = FALSE), "\n",
-          "met data    : ", samples$met$samples[[i]], "\n",
+          input_info,  #  dynamically generated input paths
           "start date  : ", settings$run$start.date, "\n",
           "end date    : ", settings$run$end.date, "\n",
           "hostname    : ", settings$host$name, "\n",
           "rundir      : ", file.path(settings$host$rundir, run.id), "\n",
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
           file = file.path(settings$rundir, run.id, "README.txt"))
+
+
       
-      #changing the structure of input tag to what the models are expecting
-      for(input_i in seq_along(settings$run$inputs)){
-        input_tag <- names(settings$run$inputs)[[input_i]]
-        if (!is.null(samples[[input_tag]]))
-          settings$run$inputs[[input_tag]][["path"]] <-
-            samples[[input_tag]][["samples"]][[i]]
-      }
+    #changing the structure of input tag to what the models are expecting
+    for (input_i in seq_along(settings$run$inputs)) {
+            input_tag <- names(settings$run$inputs)[[input_i]]
+            input <- settings$run$inputs[[input_tag]]
+  
+  
+     if (!input_tag %in% names(samples)) {
+        # Use first path (already validated as single path)
+        settings$run$inputs[[input_tag]]$path <- input$path[1]  } 
+        else {
+           # Use sampled path
+          settings$run$inputs[[input_tag]]$path <- samples[[input_tag]][["samples"]][[i]]
+  }
+
+}
+
 
       
       do.call(my.write.config, args = list( defaults = defaults, 
@@ -453,6 +502,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
+      input_list <- list()
+      for (input_tag in names(inputs)) {
+        if (!is.null(inputs[[input_tag]]$samples[[i]])) 
+          input_list[[input_tag]] <- list(path = inputs[[input_tag]]$samples[[i]])
+      }
+      
       do.call(my.write_restart, 
               args =  list(outdir = settings$host$outdir, 
                            runid = run.id[[i]], 
@@ -461,12 +516,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            settings = settings,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
-                           inputs =list(met=list(path=inputs$samples[[i]])), 
+                           inputs = input_list,
                            RENAME = rename)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params
-    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=list(met=inputs)
+    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=inputs
     )
     ))
   }
@@ -527,3 +582,4 @@ input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NUL
 
   return(samples)
 }
+

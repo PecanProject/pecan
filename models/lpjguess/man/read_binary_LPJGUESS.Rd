@@ -7,7 +7,7 @@
 read_binary_LPJGUESS(outdir, version = "PalEON")
 }
 \arguments{
-\item{outdir}{A character string specifying the output directory containing the binary state files.}
+\item{outdir}{The output directory where ".state" and "meta.bin" will be written}
 
 \item{version}{A character string specifying the LPJ-GUESS version (default is "PalEON").}
 }
@@ -16,4 +16,7 @@ A matrix or list containing the extracted data.
 }
 \description{
 Reads a binary file formatted for LPJ-GUESS and extracts relevant data.
+}
+\author{
+Istem Fer, Yinghao Sun
 }

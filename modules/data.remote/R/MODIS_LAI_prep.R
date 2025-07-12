@@ -6,7 +6,7 @@
 #' @param search_window numeric: search window for locate available LAI values.
 #' @param export_csv boolean: decide if we want to export the CSV file.
 #' @param sd_threshold numeric or character: for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.
-#' @param skip.download boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.
+#' @param skip_download boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.
 #' @param boundary numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., c(0.05, 0.95) or list(0.05, 0.95)). The default is NULL.
 #'
 #' @return A data frame containing LAI and sd for each site and each time step.
@@ -14,7 +14,7 @@
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = 20, skip.download = TRUE, boundary = NULL){
+MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = 20, skip_download = FALSE, boundary = NULL){
   # unlist boundary if it's passing from the assembler function.
   if (is.list(boundary)) {
     boundary <- as.numeric(unlist(boundary))
@@ -56,8 +56,9 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
     if (!is.null(boundary)) {
       Previous_CSV <- MODIS_LAI_ts_filter(Previous_CSV, boundary = boundary)
     }
-    LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>%
+      `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>%
+      as.data.frame()#we need: site_id, LAI, std, target time point.
     LAI_Output$site_id <- site_info$site_id
     #Calculate LAI for each time step and site.
     #loop over time and site
@@ -81,14 +82,15 @@ MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window 
       LAI_Output[, paste0(t, "_SD")] <- LAI.list[[i]][,paste0(t, "_SD")]
     }
   }else{#we don't have any previous downloaded CSV file.
-    LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-      `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>%
+      `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>%
+      as.data.frame()#we need: site_id, LAI, std, target time point.
     LAI_Output$site_id <- site_info$site_id
   }
   #only Site that has NA for any time points need to be downloaded.
   new_site_info <- site_info %>% purrr::map(function(x)x[!stats::complete.cases(LAI_Output)])
   #TODO: only download data for specific date when we have missing data.
-  if(length(new_site_info$site_id) != 0 && !skip.download){
+  if(length(new_site_info$site_id) != 0 && !skip_download){
     product <- "MCD15A3H"
     PEcAn.logger::logger.info("Extracting LAI mean products!")
     lai_mean <- split(as.data.frame(new_site_info), seq(nrow(as.data.frame(new_site_info)))) %>% 

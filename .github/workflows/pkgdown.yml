@@ -1,0 +1,69 @@
+name: renderpkgdown
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - '*'
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+jobs:
+  pkgdown:
+    runs-on: ubuntu-latest  
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    container: 
+      image: pecan/depends:develop
+
+    steps:
+    # Checkout source code
+    - uses: actions/checkout@v4
+
+    # Install pkgdown
+    - name: Install dependencies
+      run: Rscript -e 'install.packages("pkgdown")'
+
+    # Generate documentation using Makefile
+    - name: Generate Package Documentation
+      run: make pkgdocs
+
+    # Check if package documentation repo exists
+    - name: Check if package documentation repo exists
+      id: pkgdoc_exists
+      run: |
+        if git ls-remote https://github.com/${{ github.repository_owner }}/package-documentation.git > /dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    # Checkout package documentation repo
+    - name: Checkout package documentation repo
+      if: ${{ github.event_name == 'push' && steps.pkgdoc_exists.outputs.exists == 'true' }}
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository_owner }}/package-documentation
+        path: package-documentation
+        token: ${{ secrets.GH_PAT }}
+
+    # Deploy Pkgdown documentation
+    - name: Publish to github
+      if: github.event_name == 'push'
+      run: |
+        git config --global user.email "pecanproj@gmail.com"
+        git config --global user.name "GitHub Documentation Robot"
+        export VERSION=$(echo $GITHUB_REF | sed 's,.*/,,' )
+        if [ "$VERSION" = "main" ]; then
+          export VERSION=latest
+        fi
+        cd package-documentation
+        mkdir -p $VERSION
+        rsync -a --delete ../_pkgdown_docs/ ${VERSION}/
+        git add --all *
+        git commit -m "Build pkgdown docs from pecan revision ${GITHUB_SHA}" || true
+        git push -q origin main

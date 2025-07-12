@@ -92,7 +92,16 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+
+  if (length(host) == 1 && !utils::hasName(host, "name")) {
+    # We were passed a bare hostname; wrap in a list as downstream fns expect
+    host <- list(name = host)
+  }
+  if (host$name == "localhost") {
+    machine.host <- PEcAn.remote::fqdn()
+  } else {
+    machine.host <- host$name
+  }
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
 

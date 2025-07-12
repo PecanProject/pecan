@@ -20,8 +20,7 @@ abstract: >-
   improve this ability by developing a accessibe
   framework for integrating multiple data sources in
   a sensible manner.
-license:
-  - BSD-3-Clause and NCSA
+license: BSD-3-Clause
 doi: 10.5281/zenodo.5557914
 message: >-
   Please cite this software using the metadata from

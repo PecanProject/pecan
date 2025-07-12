@@ -1,4 +1,10 @@
-# PEcAn.settings 1.8.0.9000
+# PEcAn.settings 1.9.1
+
+## Fixed
+
+* listToXml.MultiSettings now produces valid XML from a MultiSettings with length 1.
+
+# PEcAn.settings 1.9.0
 
 ## Changed
 

@@ -12,6 +12,7 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
+  samples = NULL,
   rename = FALSE
 )
 }
@@ -29,6 +30,8 @@ write.ensemble.configs(
 \item{write.to.db}{logical: Record this run in BETY?}
 
 \item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
+
+\item{samples}{Sampled inputs such as met and parameter files}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
 }
