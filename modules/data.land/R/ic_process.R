@@ -120,12 +120,14 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
-  if(is.null(model)){
-    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
-    model <- PEcAn.DB::db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+  if(!is.null(settings$model$name)){
+    model$name<- settings$model$name
   }
-
-
+  else{
+    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", model$id, "'"), con)[[1]]
+    model$name <- PEcAn.DB::db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+  }
+  
 
   getveg.id <- putveg.id <- NULL
 
@@ -197,7 +199,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                                        n.ensemble = i,
                                        dir        = dir,
                                        machine    = machine,
-                                       model      = model,
+                                       model      = model$name,
                                        start_date = start_date,
                                        end_date   = end_date,
                                        new_site   = new.site,
