@@ -18,6 +18,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
   - You can compile all pkgdown pages locally at any time with `make pkgdocs`.
 - The ERA5 NC extraction function can now handle multi-site instead of one.
 - Added function for merging images from the same tiling system (MODIS, GLANCE, ICESat-2, HLS, etc.).
+- Added `met2CF.ERA5.reanalysis` function for converting ERA5 reanalysis NetCDF data to CF-compliant format
 
 ### Fixed
 - api to correctly use x_var from request in plotResults #3528
