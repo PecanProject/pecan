@@ -104,7 +104,6 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       if (!is.null(settings$run$inputs$met$path)) {
       PEcAn.logger::logger.info("Skipping met.process: model-ready path provided")
       settings$run$inputs[[i]] <- settings$run$inputs$met
-      needsave <- TRUE
 
       }else if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
         PEcAn.logger::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
