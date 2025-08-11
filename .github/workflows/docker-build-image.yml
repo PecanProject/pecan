@@ -75,15 +75,15 @@ jobs:
       # create metadata for image
       - name: Docker meta
         env:
-          check_var: ${{ secrets.DOCKERHUB_USERNAME }}
           is_default_R: ${{ inputs.r-version == env.DEFAULT_R_VERSION }}
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME || 'pecan' }}
         id: meta
         uses: docker/metadata-action@v5
         with:
           # list of Docker images to use as base name for tags
           images: |
             name=ghcr.io/${{ steps.name.outputs.repository }}/${{ steps.name.outputs.image_name }}
-            name=pecan/${{ steps.name.outputs.image_name }},enable=${{ env.check_var != null }}
+            name=${{ env.docker_username }}/${{ steps.name.outputs.image_name }},enable=${{ env.docker_username != 'pecan' }}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -114,8 +114,8 @@ jobs:
       # login to registries
       - name: Login to DockerHub
         env: 
-          check_var: ${{ secrets.DOCKERHUB_USERNAME }}
-        if: env.check_var != null
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+        if: env.docker_username != null
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
