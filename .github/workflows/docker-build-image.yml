@@ -77,13 +77,14 @@ jobs:
         env:
           is_default_R: ${{ inputs.r-version == env.DEFAULT_R_VERSION }}
           docker_username: ${{ secrets.DOCKERHUB_USERNAME || 'pecan' }}
+          has_dockerhub: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+          is_fork_pr: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # list of Docker images to use as base name for tags
           images: |
-            name=ghcr.io/${{ steps.name.outputs.repository }}/${{ steps.name.outputs.image_name }}
-            name=${{ env.docker_username }}/${{ steps.name.outputs.image_name }},enable=${{ env.docker_username != 'pecan' }}
+            name=ghcr.io/${{ steps.name.outputs.repository }}/${{ steps.name.outputs.image_name }},enable=${{ env.is_fork_pr != 'true' }}
+            name=${{ env.docker_username }}/${{ steps.name.outputs.image_name }},enable=${{ env.has_dockerhub == 'true' }}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -137,7 +138,7 @@ jobs:
         with:
           context: ${{ inputs.build-context }}
           file: ${{ inputs.dockerfile }}
-          push: true
+          push: ${{ steps.meta.outputs.tags != '' }}
           platforms: ${{ inputs.platforms }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
