@@ -1,254 +1,64 @@
-name: Docker GHA
-
-env:
-  DEFAULT_R_VERSION: 4.4
+name: Docker Stack SIPNET
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-    tags:
-      - "v*.*.*"
   pull_request:
-  merge_group:
   workflow_dispatch:
-    inputs:
-      r_version:
-        description: 'R version to use'
-        required: true
-        type: choice
-        default: "$DEFAULT_R_VERSION"
-        options:
-          - 4.1
-          - 4.2
-          - 4.3
-          - 4.4
-          - devel
   schedule:
-    # 1:30 AM UTC, different R version each day
-    - cron: '30 1 * * 1' # Rdevel
-    - cron: '30 1 * * 2' # R4.4
-    - cron: '30 1 * * 3' # R4.3
-    - cron: '30 1 * * 4' # R4.2
-    - cron: '30 1 * * 5' # R4.1
+    - cron: '30 4 * * 4'
 
 jobs:
-  # ----------------------------------------------------------------------
-  # Set R version.
-  # This is a hack: We really just want a global env var here, but it seems
-  # `env:` values can't be passed into a `jobs.<jobid>.with` context
-  # (see https://github.com/actions/runner/issues/2372).
-  # As an ugly workaround, we assign it to a job output instead.
-  # ----------------------------------------------------------------------
-  rversion:
+  sipnet:
+    name: sipnet
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - id: mon
-        if: github.event.schedule == '30 1 * * 1'
-        run: echo "R_VERSION=devel" >> "$GITHUB_OUTPUT"
-      - id: tue
-        if: github.event.schedule == '30 1 * * 2'
-        run: echo "R_VERSION=4.4" >> "$GITHUB_OUTPUT"
-      - id: wed
-        if: github.event.schedule == '30 1 * * 3'
-        run: echo "R_VERSION=4.3" >> "$GITHUB_OUTPUT"
-      - id: thu
-        if: github.event.schedule == '30 1 * * 4'
-        run: echo "R_VERSION=4.2" >> "$GITHUB_OUTPUT"
-      - id: fri
-        if: github.event.schedule == '30 1 * * 5'
-        run: echo "R_VERSION=4.1" >> "$GITHUB_OUTPUT"
-      - id: default
-        if: github.event_name != 'schedule'
-        run: echo "R_VERSION=${{ github.event.inputs.r_version || env.DEFAULT_R_VERSION }}" >> "$GITHUB_OUTPUT"
-    outputs:
-      # Note: "steps.*" seems to mean "all step ids", not "all steps"
-      # If seeing weird results here, check that all steps above have an id set.
-      R_VERSION: ${{ join(steps.*.outputs.R_VERSION, '') }}
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
 
-  # ----------------------------------------------------------------------
-  # depends image has all the dependencies installed
-  # ----------------------------------------------------------------------
-  depends:
-    permissions:
-      packages: write
-    needs: rversion
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: depends
-      build-context: docker/depends
-      dockerfile: docker/depends/Dockerfile
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      platforms: "linux/amd64"
-    secrets: inherit
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-  # ----------------------------------------------------------------------
-  # base image has PEcAn compiled and installed, and depends on depends
-  # ----------------------------------------------------------------------
-  base:
-    needs: [rversion, depends]
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: base
-      build-context: .
-      dockerfile: docker/base/Dockerfile
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "depends"
-      platforms: "linux/amd64"
-    secrets: inherit
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install docker-compose
 
-# ----------------------------------------------------------------------
-# models image has some python installed to run models, depends on base
-# ----------------------------------------------------------------------
-  models:
-    needs: [rversion, base]
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: models
-      build-context: docker/models
-      dockerfile: docker/models/Dockerfile
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "base"
-    secrets: inherit
+      - name: Prepare override
+        run: |
+          cp docker-compose.dev.yml docker-compose.override.yml
+          sed -i'' '/R_library/d' docker-compose.override.yml
 
-# ----------------------------------------------------------------------
-# Next are images that have models installed
-# ----------------------------------------------------------------------
-  modelsbinary:
-    needs: [rversion, models]
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - basgra
-          - biocro
-          # - ed2_2.2.0
-          - ed2_git
-          - maespa
-          - sipnet
-        include:
-          - name: basgra
-            CONTEXT: models/basgra
-            DOCKERFILE: models/basgra/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: basgra
-            VERSION: BASGRA_N_v1
-          - name: biocro
-            CONTEXT: models/biocro
-            DOCKERFILE: models/biocro/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: biocro
-            VERSION: "0.95"
-          # - name: ed2_2.2.0
-          #   CONTEXT: models/ed
-          #   DOCKERFILE: models/ed/Dockerfile
-          #   PLATFORM: "linux/amd64"
-          #   MODEL: ed2
-          #   VERSION: "2.2.0"
-          - name: ed2_git
-            CONTEXT: models/ed
-            DOCKERFILE: models/ed/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: ed2
-            VERSION: "git"
-          - name: maespa
-            CONTEXT: models/maespa
-            DOCKERFILE: models/maespa/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: maespa
-            VERSION: "git"
-          - name: sipnet
-            CONTEXT: models/sipnet
-            DOCKERFILE: models/sipnet/Dockerfile
-            PLATFORM: "linux/amd64"
-            MODEL: sipnet
-            VERSION: "git"
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
-      build-context: ${{ matrix.CONTEXT }}
-      dockerfile: ${{ matrix.DOCKERFILE }}
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "models"
-      model-version: ${{ matrix.VERSION }}
-      platforms: ${{ matrix.PLATFORM }}
-    secrets: inherit
+      - name: Initialize data volumes
+        run: |
+          cp docker/env.example .env
+          echo "COMPOSE_PROJECT_NAME=pecan" >> .env
+          echo "PECAN_VERSION=develop" >> .env
+          echo "UID=$(id -u)" >> .env
+          echo "GID=$(id -g)" >> .env
+          docker compose up --wait -d postgres
+          docker run --rm --network pecan_pecan pecan/db:ci
+          docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
+          docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u):$(id -g)" /data
+          docker image rm pecan/db:ci pecan/data:develop || true
 
-  # ----------------------------------------------------------------------
-  # Next are images that depend on base image
-  # ----------------------------------------------------------------------
-  baseplus:
-    needs: [rversion, base]
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - docs
-          - executor
-          - api
-        include:
-          - name: docs
-            CONTEXT: .
-            DOCKERFILE: docker/docs/Dockerfile
-            PLATFORM: "linux/amd64"
-          - name: executor
-            CONTEXT: docker/executor
-            DOCKERFILE: docker/executor/Dockerfile
-            PLATFORM: "linux/amd64"
-          - name: api
-            CONTEXT: apps/api
-            DOCKERFILE: apps/api/Dockerfile
-            PLATFORM: "linux/amd64"
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: ${{ matrix.name }}
-      build-context: ${{ matrix.CONTEXT }}
-      dockerfile: ${{ matrix.DOCKERFILE }}
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      platforms: ${{ matrix.PLATFORM }}
-    secrets: inherit
+      - name: Start required services
+        run: |
+          docker compose up --wait -d sipnet executor monitor rabbitmq
 
-  # ----------------------------------------------------------------------
-  # Next are images that do not depend on either depends or base image
-  # ----------------------------------------------------------------------
-  extras:
-    needs: rversion
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - web
-          - shiny-dbsync
-          - data
-          - monitor
-          - rstudio-nginx
-        include:
-          - name: web
-            CONTEXT: .
-            DOCKERFILE: docker/web/Dockerfile
-            PLATFORM: "linux/amd64,linux/arm64"
-          - name: shiny-dbsync
-            CONTEXT: .
-            DOCKERFILE: shiny/dbsync/Dockerfile
-            PLATFORM: "linux/amd64"
-          - name: data
-            CONTEXT: docker/data
-            DOCKERFILE: docker/data/Dockerfile
-            PLATFORM: "linux/amd64,linux/arm64"
-          - name: monitor
-            CONTEXT: docker/monitor
-            DOCKERFILE: docker/monitor/Dockerfile
-            PLATFORM: "linux/amd64,linux/arm64"
-          - name: rstudio-nginx
-            CONTEXT: docker/rstudio-nginx
-            DOCKERFILE: docker/rstudio-nginx/Dockerfile
-            PLATFORM: "linux/amd64,linux/arm64"
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: ${{ matrix.name }}
-      build-context: ${{ matrix.CONTEXT }}
-      dockerfile: ${{ matrix.DOCKERFILE }}
-      platforms: ${{ matrix.PLATFORM }}
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-    secrets: inherit
+      - name: List running containers
+        run: |
+          sleep 50
+          docker ps
+
+      - name: Run SIPNET workflow
+        run: |
+          docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml

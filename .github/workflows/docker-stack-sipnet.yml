@@ -1,74 +1,386 @@
-name : Docker Stack Model Test
-on :
-  pull_request:
+name: Docker GHA
 
-  # allow manual triggering
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - "v*.*.*"
+  pull_request:
+  schedule:
+    - cron: '30 4 * * 4'
   workflow_dispatch:
 
-  schedule:
-    # run Thursday 4:30 AM UTC
-  - cron: '30 4 * * 4'    
 jobs:
-  sipnet:
+  depends:
+    name: depends / build
     runs-on: ubuntu-latest
-
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
+      PUSH: ${{ github.event_name != 'pull_request' }}
+      # common tag patterns (applied per image)
+      TAG_PATTERNS: |
+        type=ref,event=branch
+        type=ref,event=pr
+        type=sha
     steps:
-    - name: Free Disk Space (Ubuntu)
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: false
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        docker-images: false
-        swap-storage: true
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Checkout source code
-      uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-    - name: Set up Docker Compose
-      run: |
-          sudo apt-get update
-          sudo apt-get -y install docker-compose
-          
-    - name: Add Volumes to Executor
-      run: |
-          cp docker-compose.dev.yml docker-compose.override.yml
-          sed -i'' '/R_library/d' docker-compose.override.yml
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build Containers
-      run: |
-        cp docker/env.example .env
-        echo "COMPOSE_PROJECT_NAME=pecan" >> .env
-        echo "PECAN_VERSION=develop" >> .env
-        echo "UID=$(id -u)" >> .env
-        echo "GID=$(id -g)" >> .env
-        
-        docker compose up --wait -d postgres
-        docker run --rm --network pecan_pecan pecan/db:ci
-        docker run --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
-        docker run --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u):$(id -g)" /data
-        docker image rm pecan/db:ci pecan/data:develop
-    
-    - name: Run required containers
-      run: |
-        docker compose up --wait -d sipnet executor monitor rabbitmq
+      # -------------------------------------------------
+      # (Optional) show effective push mode
+      - name: Mode
+        run: echo "PUSH = $PUSH"
 
-    - name: List running containers
-      run: |
-        sleep 50
-        docker ps
+      # -------------------------------------------------
+      # Logins only when pushing
+      - name: Login DockerHub
+        if: ${{ env.PUSH == 'true' && secrets.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    # - name: Add models
-    #   run: |
-    #     docker compose cp scripts/add.util.sh postgres:/tmp/add.util.sh
-    #     docker compose cp scripts/add.models.sh postgres:/tmp/add.models.sh
-    #     docker compose exec postgres /tmp/add.models.sh
+      - name: Login GHCR
+        if: ${{ env.PUSH == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Run SIPNET
-      run: |
-        docker compose exec --workdir /pecan/tests executor R CMD ../web/workflow.R --settings docker-ghaction.sipnet.xml
+      # Helper note:
+      # For images that are multi-arch (amd64,arm64) we only build both when pushing.
+      # On PR (no push) we restrict to amd64 to avoid multi-platform export errors.
+
+      # ===================== depends ====================
+      - name: Meta depends
+        id: meta_depends
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/depends
+            ghcr.io/${{ github.repository_owner }}/depends
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build depends
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/depends
+          file: docker/depends/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_depends.outputs.tags }}
+          labels: ${{ steps.meta_depends.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ===================== base =======================
+      - name: Meta base
+        id: meta_base
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/base
+            ghcr.io/${{ github.repository_owner }}/base
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build base
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/base
+          file: docker/base/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_base.outputs.tags }}
+          labels: ${{ steps.meta_base.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ===================== models (meta image) ========
+      - name: Meta models
+        id: meta_models
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/models
+            ghcr.io/${{ github.repository_owner }}/models
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build models
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/models
+          file: docker/models/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_models.outputs.tags }}
+          labels: ${{ steps.meta_models.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ===================== model binaries =============
+      - name: Meta basgra
+        id: meta_basgra
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/basgra
+            ghcr.io/${{ github.repository_owner }}/basgra
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build basgra
+        uses: docker/build-push-action@v6
+        with:
+          context: models/basgra
+          file: models/basgra/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_basgra.outputs.tags }}
+          labels: ${{ steps.meta_basgra.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta biocro
+        id: meta_biocro
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/biocro
+            ghcr.io/${{ github.repository_owner }}/biocro
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build biocro
+        uses: docker/build-push-action@v6
+        with:
+          context: models/biocro
+          file: models/biocro/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_biocro.outputs.tags }}
+          labels: ${{ steps.meta_biocro.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta ed2_git
+        id: meta_ed2_git
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/ed2_git
+            ghcr.io/${{ github.repository_owner }}/ed2_git
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build ed2_git
+        uses: docker/build-push-action@v6
+        with:
+          context: models/ed2_git
+          file: models/ed2_git/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_ed2_git.outputs.tags }}
+          labels: ${{ steps.meta_ed2_git.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta maespa
+        id: meta_maespa
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/maespa
+            ghcr.io/${{ github.repository_owner }}/maespa
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build maespa
+        uses: docker/build-push-action@v6
+        with:
+          context: models/maespa
+          file: models/maespa/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_maespa.outputs.tags }}
+          labels: ${{ steps.meta_maespa.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta sipnet
+        id: meta_sipnet
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/sipnet
+            ghcr.io/${{ github.repository_owner }}/sipnet
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build sipnet
+        uses: docker/build-push-action@v6
+        with:
+          context: models/sipnet
+          file: models/sipnet/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_sipnet.outputs.tags }}
+          labels: ${{ steps.meta_sipnet.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ===================== baseplus ===================
+      - name: Meta docs
+        id: meta_docs
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/docs
+            ghcr.io/${{ github.repository_owner }}/docs
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build docs
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/docs/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_docs.outputs.tags }}
+          labels: ${{ steps.meta_docs.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta executor
+        id: meta_executor
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/executor
+            ghcr.io/${{ github.repository_owner }}/executor
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build executor
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/executor
+          file: docker/executor/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_executor.outputs.tags }}
+          labels: ${{ steps.meta_executor.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta api
+        id: meta_api
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/api
+            ghcr.io/${{ github.repository_owner }}/api
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build api
+        uses: docker/build-push-action@v6
+        with:
+            context: apps/api
+            file: apps/api/Dockerfile
+            platforms: linux/amd64
+            push: ${{ env.PUSH == 'true' }}
+            tags: ${{ steps.meta_api.outputs.tags }}
+            labels: ${{ steps.meta_api.outputs.labels }}
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
+
+      # ===================== extras =====================
+      - name: Meta web
+        id: meta_web
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/web
+            ghcr.io/${{ github.repository_owner }}/web
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/web/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_web.outputs.tags }}
+          labels: ${{ steps.meta_web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta shiny-dbsync
+        id: meta_shiny_dbsync
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/shiny-dbsync
+            ghcr.io/${{ github.repository_owner }}/shiny-dbsync
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build shiny-dbsync
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: shiny/dbsync/Dockerfile
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_shiny_dbsync.outputs.tags }}
+          labels: ${{ steps.meta_shiny_dbsync.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta data
+        id: meta_data
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/data
+            ghcr.io/${{ github.repository_owner }}/data
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build data
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/data
+          file: docker/data/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_data.outputs.tags }}
+          labels: ${{ steps.meta_data.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta monitor
+        id: meta_monitor
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/monitor
+            ghcr.io/${{ github.repository_owner }}/monitor
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build monitor
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/monitor
+          file: docker/monitor/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_monitor.outputs.tags }}
+          labels: ${{ steps.meta_monitor.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Meta rstudio-nginx
+        id: meta_rstudio_nginx
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            pecan/rstudio-nginx
+            ghcr.io/${{ github.repository_owner }}/rstudio-nginx
+          tags: ${{ env.TAG_PATTERNS }}
+      - name: Build rstudio-nginx
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/rstudio-nginx
+          file: docker/rstudio-nginx/Dockerfile
+          platforms: ${{ env.PUSH == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta_rstudio_nginx.outputs.tags }}
+          labels: ${{ steps.meta_rstudio_nginx.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
