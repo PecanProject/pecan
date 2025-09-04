@@ -32,7 +32,6 @@
 - changed-files:
   - any-glob-to-any-file: 'models/**'
 
-# Modules
 'Modules':
 - changed-files:
   - any-glob-to-any-file: 'modules/**'
