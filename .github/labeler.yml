@@ -1,78 +1,57 @@
-# Auto-apply labels to PRs based on changed files
-# Triggered by .github/workflows/prlabeler.yml
+#
+# Add project labels to PRs
+# Invocation is done by .github/workflows/prlabeler.yml
 
-# Documentation
-'Documentation/User':
-  - changed-files:
-      - any-glob-to-any-file: 'book_source/**'
-      - any-glob-to-any-file: 'documentation/user_guides/**'
+# changes in the documentation
+'Documentation':
+- changed-files:
+  - any-glob-to-any-file: 'book_source/**'
+  - any-glob-to-any-file: 'documentation/**'
+  - any-glob-to-any-file: 'CONTRIBUTING.md'
+  - any-glob-to-any-file: 'DEBUGING.md'
+  - any-glob-to-any-file: 'DEV-INTRO.md'
+  - any-glob-to-any-file: 'README.md'
 
-'Documentation/Developer':
-  - changed-files:
-      - any-glob-to-any-file: 'CONTRIBUTING.md'
-      - any-glob-to-any-file: 'DEBUGGING.md'
-      - any-glob-to-any-file: 'DEV-INTRO.md'
+# Add 'Dockerfile' label to any changes in the docker directory
+'Dockerfile':
+- changed-files:
+  - any-glob-to-any-file: 'docker/**'
 
-'Documentation/General':
-  - changed-files:
-      - any-glob-to-any-file: 'README.md'
-      - any-glob-to-any-file: 'documentation/**'
 
-# Models
-'Models/Climate':
-  - changed-files:
-      - any-glob-to-any-file: 'models/climate/**'
+# Add 'Website' label to any changes in the web directory
+'Website':
+- changed-files:
+  - any-glob-to-any-file: 'web/**'
 
-'Models/Biophysical':
-  - changed-files:
-      - any-glob-to-any-file: 'models/biophysical/**'
+# Add 'Base' label to any changes in the base directory
+'Base':
+- changed-files:
+  - any-glob-to-any-file: 'base/**'
 
-'Models/Economics':
-  - changed-files:
-      - any-glob-to-any-file: 'models/economics/**'
+'Models':
+- changed-files:
+  - any-glob-to-any-file: 'models/**'
 
 # Modules
 'Modules':
-  - changed-files:
-      - any-glob-to-any-file: 'modules/**'
+- changed-files:
+  - any-glob-to-any-file: 'modules/**'
 
-# Scripts
-'Scripts/R':
-  - changed-files:
-      - any-glob-to-any-file: '**/*.R'
-      - any-glob-to-any-file: '**/*.Rmd'
 
-'Scripts/Python':
-  - changed-files:
-      - any-glob-to-any-file: '**/*.py'
+# Add 'GitHub Actions' label to any changes in the .github/workflows directory
+'GitHub Actions':
+- changed-files:
+  - any-glob-to-any-file: '.github/workflows/**'
 
-'Scripts/Bash':
-  - changed-files:
-      - any-glob-to-any-file: '**/*.sh'
 
-# Tests
+# TODO: scripts folder is due for a reorganization by theme;
+# update these tags when that is done
+'Scripts':
+- changed-files:
+  - any-glob-to-any-file: 'scripts/**'
+
 'Tests':
-  - all:
-      - changed-files:
-          - any-glob-to-any-file: ['tests/**', '**/tests/**']
-          - any-glob-to-any-file: '!**/tests/Rcheck_reference.log'
-
-# Docker
-'Docker':
+- all:
   - changed-files:
-      - any-glob-to-any-file: 'docker/**'
-
-# Web Frontend
-'Web Frontend':
-  - changed-files:
-      - any-glob-to-any-file: 'web/**'
-
-# Base
-'Base':
-  - changed-files:
-      - any-glob-to-any-file: 'base/**'
-
-# GitHub Actions (CI/CD)
-'CI/CD':
-  - changed-files:
-      - any-glob-to-any-file: '.github/workflows/**'
+    - any-glob-to-any-file: ['tests/**', '**/tests/**']
+    - any-glob-to-any-file: '!**/tests/Rcheck_reference.log'
