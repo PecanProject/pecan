@@ -2,7 +2,6 @@
 # Add project labels to PRs
 # Invocation is done by .github/workflows/prlabeler.yml
 
-# changes in the documentation
 'Documentation':
 - changed-files:
   - any-glob-to-any-file: 'book_source/**'
@@ -12,18 +11,14 @@
   - any-glob-to-any-file: 'DEV-INTRO.md'
   - any-glob-to-any-file: 'README.md'
 
-# Add 'Dockerfile' label to any changes in the docker directory
 'Dockerfile':
 - changed-files:
   - any-glob-to-any-file: 'docker/**'
 
-
-# Add 'Website' label to any changes in the web directory
-'Website':
+'Web Frontend':
 - changed-files:
   - any-glob-to-any-file: 'web/**'
 
-# Add 'Base' label to any changes in the base directory
 'Base':
 - changed-files:
   - any-glob-to-any-file: 'base/**'
@@ -36,7 +31,6 @@
 - changed-files:
   - any-glob-to-any-file: 'modules/**'
 
-# Add 'GitHub Actions' label to any changes in the .github/workflows directory
 'GitHub Actions':
 - changed-files:
   - any-glob-to-any-file: '.github/workflows/**'
