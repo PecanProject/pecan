@@ -123,6 +123,8 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
+        # Check if we are pushing to GHCR (i.e., not a PR from a fork)
+        if: ${{ github.repository == 'pecanproject/pecan' && (github.event_name == 'push' || github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -134,7 +136,12 @@ jobs:
         with:
           context: ${{ inputs.build-context }}
           file: ${{ inputs.dockerfile }}
-          push: true
+          # --------------------------------------------------------------------------
+          # Only push if it's the main repository and one of the allowed events
+          # For PRs from forks, github.repository will be 'your-fork/pecan',
+          # not 'pecanproject/pecan', so push will be false.
+          # --------------------------------------------------------------------------
+          push: ${{ github.repository == 'pecanproject/pecan' && (github.event_name == 'push' || github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}
           platforms: ${{ inputs.platforms }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
