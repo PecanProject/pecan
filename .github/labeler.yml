@@ -36,7 +36,6 @@
 - changed-files:
   - any-glob-to-any-file: 'modules/**'
 
-
 # Add 'GitHub Actions' label to any changes in the .github/workflows directory
 'GitHub Actions':
 - changed-files:
