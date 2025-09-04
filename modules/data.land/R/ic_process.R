@@ -50,7 +50,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   #grab site lat and lon info
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
+
+  # check if site metadata is available in the settings$run$site
+  if (isTRUE(nzchar(settings$run$site$lat)) && isTRUE(nzchar(settings$run$site$lon))) {
+    # if lat and lon are available, use them directly
+    latlon <- data.frame(lat = settings$run$site$lat, lon = settings$run$site$lon)
+  } else {
+    # otherwise, query the site information from the database
+    latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
+  }
+
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id),
                          lat = latlon$lat,
@@ -103,22 +112,32 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     # end_date = as.Date("2021-09-01")
     #Note the start and end dates for ICs are not the same as those for the forecast runs
     #please check out NEON products DP1.10098.001 for your desired site to check data availability before setting start and end dates
-  }else{
-
+  }else if(!is.null(input$startdate) && !is.null(input$enddate)){
+    start_date <- as.Date(input$startdate)
+    end_date <- as.Date(input$enddate)
+  } else{
+   
    query      <- paste0("SELECT * FROM inputs where id = ", input$id)
    input_file <- PEcAn.DB::db.query(query, con = con) 
    start_date <- input_file$start_date
    end_date   <- input_file$end_date
 
   }
+  
   # set up host information
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
+  if (host$name == "localhost") {
+    machine.host <- PEcAn.remote::fqdn()
+  } else {
+    machine.host <- host$name
+  }
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
-  if(is.null(model)){
-    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
-    model <- PEcAn.DB::db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+  if(isTRUE(nzchar(settings$model$name))){
+    model$name <- settings$model$name
+  } else {
+    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", model$id, "'"), con)[[1]]
+    model$name <- PEcAn.DB::db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
   }
 
 
@@ -192,8 +211,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                                        outfolder  = outfolder,
                                        n.ensemble = i,
                                        dir        = dir,
-                                       machine    = machine,
-                                       model      = model,
+                                       model      = model$name,
                                        start_date = start_date,
                                        end_date   = end_date,
                                        new_site   = new.site,

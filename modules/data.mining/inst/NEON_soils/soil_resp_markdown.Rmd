@@ -1,0 +1,721 @@
+---
+title: "Soil Resp"
+output: html_document
+date: "2025-04-22"
+---
+
+Libraries
+```{r setup, include=FALSE}
+library(DBI)
+library(RSQLite) 
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(sf)
+library(maps)
+library(terra)
+library(knitr)
+library(tidyr)
+library(neonUtilities)
+library(swfscMisc)
+library(maps)
+library(tidyverse)
+library(neonSoilFlux)
+library(parallel)
+library(ncdf4)
+library(data.table)
+library(purrr)
+library(data.table)
+library(parallel)
+library(lubridate)
+library(terra)
+library(httr)
+library(sp)
+library(neonSoilFlux)
+library(stringr)
+library(scales)
+```
+
+Get NEON soil respiration data
+```{r}
+# get a list of NEON sites and their coordinates
+Neonplots <- read.csv("/usr4/ugrad/chaney/R/3_25/Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info (site_info has coordinates of each location in df)
+Site_Info <- readRDS("/usr4/ugrad/chaney/R/3_25/site.locs.rds")
+
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+# Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+# Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+# Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+# make list to store matched list
+matched <- data.frame(id = numeric(nrow(Neonplots)), # id in forecast
+                      site_id = numeric(nrow(Neonplots))) # NEON id
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+### Get the model output (0715, 16 outputs) (Yang's code)
+years <- 2000:2025
+Nensem <- 1:25 
+
+# Initialize the output list
+
+sr_list <- list()
+
+# Process Ensemble Function
+process_ensemble <- function(ens) {
+  ens_id <- sprintf("%05d", ens)
+  sr_ens <- list()
+
+  # loop through all the sites
+  for (i in seq_len(nrow(matched))) {
+    site_id <- matched$site_id[i]
+    ID <- matched$id[i]
+    
+    for (year in years) {
+      file_path <- paste0(
+        "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_25ens_2025_4_19/out/ENS-",
+        ens_id, "-", ID, "/", year, ".nc"
+      )
+      
+      # open NetCDF files
+      nc_data <- tryCatch({
+        nc_open(file_path)
+      }, error = function(e) {
+        return(NULL)
+      })
+      
+      # file open
+      if (!is.null(nc_data)) {
+
+        if ("time" %in% names(nc_data$dim)) {
+          time_values <- ncvar_get(nc_data, "time")
+          time_units <- ncatt_get(nc_data, "time", "units")$value
+          
+          # Analyze the model start date
+          start_datetime <- as.POSIXct(
+            sub("days since ", "", time_units),
+            format = "%Y-%m-%d %H:%M:%S", tz = "UTC"
+          )
+          
+          # Calculate the time series
+          time_datetimes <- as.Date(start_datetime) + (time_values - 1)
+          
+          # Extract Soil Respiration data
+          sr <- tryCatch({
+            ncvar_get(nc_data, "SoilResp")
+          }, error = function(e) {
+            return(NULL)
+          })
+          
+          
+          if (!is.null(sr)) {
+
+            sr[sr == -999] <- NA
+            
+            # create dataframe
+            sr_df <- data.table(
+              Time = time_datetimes,
+              SR = sr,
+              Ensemble = ens,
+              Site_ID = site_id
+            )
+            
+            # save the results
+            sr_ens[[length(sr_ens) + 1]] <- sr_df
+          } 
+        } 
+        
+        # Close NetCDF File
+        nc_close(nc_data)
+      }
+    } 
+  }
+  
+  # Combine the results
+  sr_result <- if (length(sr_ens) > 0) rbindlist(sr_ens, use.names = TRUE, fill = TRUE) else data.table()
+  
+  return(list(sr = sr_result))
+}
+
+
+# Apply parallel calculation
+num_cores <- detectCores() - 1
+results <- mclapply(Nensem, process_ensemble, mc.cores = num_cores)
+
+# Combine results from all ensmebles
+sr_output <- rbindlist(lapply(results, `[[`, "sr"))
+
+# Calculate ensemble mean
+sr_mean <- sr_output[, .(SR = mean(SR, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+# Merge SR mean value
+daily_mean_data <- as.data.table(sr_mean)
+
+# Format Time to character for processing
+daily_mean_data[, Time := as.character(Time)]
+
+# Calculate daily SR(time resolution is 1 day)
+final_daily_sr_data <- daily_mean_data[, .(
+  Final_SR = mean(SR, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+```
+
+Get John's NEON soil respiration data
+```{r}
+# function to get soil fluxes for specified years for 1 site
+soil_flux <- function(site_number, flux_type){
+  summary_table <- data.frame(Time = character(5114),
+                              Site_id = character(5114),
+                              sr_neon = numeric(5114))
+  
+  day_count <- 1 
+  temp <- 0 
+  na_count <- 0
+  tot <- 0
+
+  years = 2012:2025
+  site = matched$site_id[site_number]
+
+  for (year in years){
+    for (i in 01:12){
+      if (i < 10){
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/flux-results/out-flux-", site, "-",year,"-0",i,".Rda")
+      }else{
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/flux-results/out-flux-", site, "-",year,"-",i,".Rda")
+      }
+      if (file.exists(file_name)== TRUE){
+        load(file_name)
+        
+        # sort by date so I can average over all horizontal positions
+        out_fluxes <- out_fluxes[order(out_fluxes$startDateTime),]
+        
+        # Average over each day (data is in 30 min increments)
+        for (j in 1:(nrow(out_fluxes)/240)){
+          if (j == 1){
+            start <- 1
+            end <- 240
+          } else{
+            start <- (j-1)*240
+            end <- j*240
+          }
+          for (k in start:end){
+            temp <- out_fluxes[[3]][[k]]$flux[flux_type]
+            if (is.na(temp)){
+              na_count <- na_count + 1}
+            else{
+              tot <- tot + temp
+            }
+          }
+          summary_table$sr_neon[day_count] <- mean()
+          summary_table$Site_id[day_count] <- site
+          if (start == 1){
+            summary_table$Time[day_count] <- str_sub(out_fluxes$startDateTime[start], end=-1)
+          } else{
+            summary_table$Time[day_count] <- str_sub(out_fluxes$startDateTime[k], end=-10)
+          }
+          day_count <- day_count + 1
+          na_count <- 0
+          tot <- 0
+        }
+      }
+    }
+  }
+  
+return(list(sr = summary_table))
+}
+r <- soil_flux(1,4)
+
+# Apply parallel calculation for each site
+n = 1:nrow(matched)
+num_cores <- detectCores() - 1
+
+# Use Marshall method at top of soil (000)
+results_j <- mclapply(n, soil_flux, mc.cores = num_cores, flux_type = 4)
+# Combine results from all ensembles
+sr_marshall <- rbindlist(lapply(results_j, `[[`, "sr"))
+# delete rows with all zeros
+sr_marshall_filtered <- filter(sr_marshall, sr_neon != 0)
+
+# Use Milington- Quirk method at top of soil (000)
+results_j_2 <- mclapply(n, soil_flux, mc.cores = num_cores, flux_type = 8)
+# Combine results from all ensembles
+sr_m_q <- rbindlist(lapply(results_j_2, `[[`, "sr"))
+# delete rows where the soil respiration is 0
+sr_m_q_filtered <-filter(sr_m_q, sr_neon != 0)
+
+
+# combine the two methods
+daily_mean_data_neon <- merge(sr_marshall_filtered, sr_m_q_filtered, by = c("Time", "Site_id"))
+
+# rename rows
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.x"] <- "Marshall_SR"
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.y"] <- "Mill_Quirk_SR"
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "Site_id"] <- "Site_ID"
+
+
+# combine data frame into final_daily_sr_data
+daily_sr <- merge(final_daily_sr_data, daily_mean_data_neon, by = c("Time","Site_ID"))
+names(daily_sr)[names(daily_sr) == "Final_SR"] <- "Forecast_SR"
+
+# convert Time to date class
+daily_sr$Time <- as.Date(daily_sr$Time)
+
+# convert NEON data to to kg/mol ^2 *s (currently in umol/m^2 * s)
+daily_sr$Marshall_SR = daily_sr$Marshall_SR*10^-6*12.011*10^-3
+daily_sr$Mill_Quirk_SR = daily_sr$Mill_Quirk_SR*10^-6*12.011*10^-3
+
+```
+
+Find error
+```{r}
+# calculate error
+daily_sr$Marsh_error <- daily_sr$Forecast_SR - daily_sr$Marshall_SR
+daily_sr$MQ_error <- daily_sr$Forecast_SR - daily_sr$Mill_Quirk_SR
+
+# keep a permanent daily_sr
+daily_sr_perm <- daily_sr
+
+# make table for summary statistics
+summary_stat <- data.frame(Site_ID = character(length(unique(daily_sr$Site_ID))),
+                           Marsh_corr_coef = numeric(length(unique(daily_sr$Site_ID))),
+                           MQ_corr_coef = numeric(length(unique(daily_sr$Site_ID))),
+                           Marsh_rms_error = numeric(length(unique(daily_sr$Site_ID))),
+                           MQ_rms_error = numeric(length(unique(daily_sr$Site_ID))))
+
+
+# do summary stats
+sites <- unique(daily_sr$Site_ID)
+
+for (i in 1:length(sites)){
+  temp_data <- filter(daily_sr, Site_ID == sites[i])
+  # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  # add site name
+  summary_stat$Site_ID[i] <- sites[i]
+  
+  # find correlation coeffs
+  summary_stat$Marsh_corr_coef[i] <- cor(temp_data$Marshall_SR, temp_data$Forecast_SR)
+  summary_stat$MQ_corr_coef[i] <- cor(temp_data$Mill_Quirk_SR, temp_data$Forecast_SR)
+  
+  # find RMS errors
+  summary_stat$Marsh_rms_error[i] <- sqrt(mean((temp_data$Marshall_SR - temp_data$Forecast_SR)^2))
+  summary_stat$MQ_rms_error[i] <- sqrt(mean((temp_data$Mill_Quirk_SR - temp_data$Forecast_SR)^2))
+}
+
+```
+
+Graph Time Series
+```{r}
+
+for (i in 1:length(sites)){
+  temp_data <- filter(daily_sr, Site_ID == sites[i])
+  
+  
+print(ggplot(temp_data) +  
+  geom_line(aes(x = Time, y = Marshall_SR, group = 1), linewidth = 1, color = "orange") + 
+  geom_line(aes(x = Time, y = Forecast_SR,group = 1), linewidth = 1, color = "lightblue") +
+  labs(title = sites[i], x = "date", y = "Soil Respiration (kg/ (m^2 s)"))
+}
+
+```
+
+
+Predicted Obervered plots
+```{r}
+# make predicted- observed plots
+for (i in 1:length(sites)){
+  temp_data <- filter(daily_sr, Site_ID == sites[i])
+  
+  print(ggplot(temp_data, aes(x = Forecast_umol, y = Marsh_umol)) + geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = sites[i], x = "Predicted (kg/m^2*s)", y = "Observed (kg/m^2*s)"))
+
+}
+```
+
+
+Cross-correlation coefficients graphs
+```{r}
+
+# List of sites with a noticable lag
+lag_sites <- c("MLBS", "HARV","SERC","UNDE","ABBY", "GRSM","WREF","SJER")
+
+peak <- numeric(length(lag_sites))
+count = 1
+
+for (site in lag_sites){
+  temp_data <- filter(daily_sr, Site_ID == site)
+  
+   # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  name <- temp_data$Site_ID[1]
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  ccf_data <- ccf(temp_data$Marshall_SR, temp_data$Forecast_SR, lag = 91, plot = TRUE, ylim = range(-1,1))
+  
+  title(name)
+  
+  peak[count] <- ccf_data$lag[which.max(ccf_data$acf)]
+  count = count + 1
+}
+
+```
+
+
+Soil Moisture Fraction from Model 
+```{r}
+
+# Initialize the output list
+sm_list <- list()
+
+# Process Ensemble Function
+
+process_ensemble_sm <- function(ens) {
+  ens_id <- sprintf("%05d", ens)
+  sm_ens <- list()
+
+  # go through all the sites
+  for (i in seq_len(nrow(matched))) {
+    site_id <- matched$site_id[i]
+    ID <- matched$id[i]
+    
+    # go through the years
+    for (year in years) {
+      file_path <- paste0(
+        "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_25ens_2024_11_25/run/ENS-",
+        ens_id, "-", ID, "/", year, ".nc"
+      )
+      
+      # check if the file exists
+      
+      # open NetCDF files
+      nc_data <- tryCatch({
+        nc_open(file_path)
+      }, error = function(e) {
+        return(NULL)
+      })
+      
+      # file open
+      if (!is.null(nc_data)) {
+        if ("time" %in% names(nc_data$dim)) {
+          time_values <- ncvar_get(nc_data, "time")
+          time_units <- ncatt_get(nc_data, "time", "units")$value
+          
+          # Analyze the model start date
+          start_datetime <- as.POSIXct(
+            sub("days since ", "", time_units),
+            format = "%Y-%m-%d %H:%M:%S", tz = "UTC"
+          )
+          
+          # Calculate the time series
+          time_datetimes <- as.Date(start_datetime) + (time_values - 1)
+          
+          # get Soil Respiration data
+          sm <- tryCatch({
+            ncvar_get(nc_data, "SoilMoistFrac")
+          }, error = function(e) {
+            return(NULL)
+          })
+          
+          
+          if (!is.null(sm)) {
+            # replace -999 to NA
+            sm[sm == -999] <- NA
+            
+            # create dataframe
+            sm_df <- data.table(
+              Time = time_datetimes,
+              SM = sm,
+              Ensemble = ens,
+              Site_ID = site_id
+            )
+            
+            # save the results
+            sm_ens[[length(sm_ens) + 1]] <- sm_df
+          } 
+        } 
+        
+        # Close NetCDF File
+        nc_close(nc_data)
+      }
+    } 
+  }
+  
+  # Combine the results
+  sm_result <- if (length(sm_ens) > 0) rbindlist(sm_ens, use.names = TRUE, fill = TRUE) else data.table()
+  
+  return(list(sm = sm_result))
+}
+
+Nensem <- 1:100
+# Apply parallel calculation
+num_cores <- detectCores() - 1
+
+sm_model_results <- mclapply(Nensem, process_ensemble_sm, mc.cores = num_cores)
+
+# Combine Results from all ensembles
+sm_output <- rbindlist(lapply(sm_model_results, '[[', "sm"))
+
+# Calculate ensemble mean
+sm_mean <- sm_output[, .(sm = mean(sm, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+# Merge SR mean value with a time resolution of 3h (Not 1 day)
+daily_sm_data <- as.data.table(sm_mean)
+
+# Format Time to character for processing
+daily_sm_data[, Time := as.character(Time)]
+
+# Calculate daily SR(time resolution is 1 day)
+final_daily_sm_data <- daily_sm_data[, .(
+  Soil_moist_model = mean(sm, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+```
+
+
+Soil temperature data from Model
+```{r}
+process_ensemble_st <- function(ens) {
+  ens_id <- sprintf("%05d", ens)
+  sm_ens <- list()
+  c = 1
+  
+   # create a data frame
+  st_df <- data.table(
+              Time = character(13*365*nrow(matched)),
+              ST = numeric(13*365*nrow(matched)),
+              Site_ID = character(13*365*nrow(matched))
+            )
+
+  # go through all the sites
+  for (i in seq_len(nrow(matched))) {
+    
+    
+    site_id <- matched$site_id[i]
+    ID <- matched$id[i]
+            
+    # get file path 
+
+      file_path <- paste0(
+        "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_25ens_2024_11_25/run/ENS-",
+        ens_id, "-", ID, "/README.txt")
+       if (file.exists(file_path)== TRUE){
+         # read the text file in 
+          temp <- readLines(file_path)
+          
+         # get the met data path
+          met_data_path <- substr(temp[11],17,119)
+          
+          # change path of readme file so that both 2021 are 2024
+          met_data_path <- str_replace(met_data_path,"2021","2024")
+          met_data_path <- str_replace(met_data_path,"2021","2024")
+          
+          # open the new file
+          if (file.exists(met_data_path)== TRUE){
+            temp_table <- read.table(met_data_path)
+            temp_table_yr <- temp_table$V2
+            
+            for (year in 2012:2024){
+              temp_table_yr <- filter(temp_table, V2 == year)
+              org_date = paste0(year - 1, "-12-31")
+              for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V3 == day)
+                st_df$Site_ID[c] = site_id
+                st_df$ST[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                st_df$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+              }
+            }
+          }
+       }
+      }
+  return(list(st = st_df))
+}
+
+results <- process_ensemble_st(1)
+# apply parallel computation
+
+results_temp <- mclapply(Nensem, process_ensemble_st, mc.cores = num_cores)
+
+st_output <- rbindlist(lapply(results_temp, `[[`, "st"))
+
+soil_temperature <- filter(st_output, st != 0)
+
+
+```
+
+
+Get Temp and Soil Moisture from John's NEON data
+```{r}
+
+soil_temp_and_moist <- function(site_number){
+  summary_table <- data.frame(Site_ID = character(5114),
+                              Time = character(5114),
+                              Soil_temp_neon = numeric(5114),
+                              Soil_moist_neon = numeric(5114))
+
+  years = 2012:2025
+  site = matched$site_id[site_number]
+  day_count <- 1 
+
+  for (year in years){
+    for (i in 01:12){
+      if (i < 10){
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-0",i,".Rda")
+      }else{
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-",i,".Rda")
+      }
+      if (file.exists(file_name)== TRUE){
+        load(file_name)
+      
+        # get just 501 data
+        site_data_temp <- filter(site_data[[2]][[3]], verticalPosition == "501")
+        site_data_moist <- filter(site_data[[2]][[2]], verticalPosition == "501")
+        
+        # sort by date
+        site_data_temp <- site_data_temp[order(site_data_temp$startDateTime),]
+        site_data_moist <- site_data_moist[order(site_data_moist$startDateTime),]
+        
+        for (j in 1:(nrow(site_data_temp)/240)){
+          if (j == 1){
+            start <- 1
+            end <- 240
+          } else{
+            start <- (j-1)*240
+            end <- j*240
+          }
+          summary_table$soil_temp[day_count] <- mean(site_data_temp$soilTempMean[start:end], na.rm = TRUE)
+          summary_table$soil_moist[day_count] <- mean(site_data_moist$VSWCMean[start:end], na.rm = TRUE)
+          summary_table$Site_id[day_count] <- site
+          if (start == 1){
+            summary_table$Time[day_count] <- str_sub(site_data_temp$startDateTime[start], end=-1)
+          } else{
+            summary_table$Time[day_count] <- str_sub(site_data_temp$startDateTime[start], end=-10)
+          }
+        day_count = day_count + 1
+        }
+        
+      }
+    }
+  }
+
+return(list(stm = summary_table))
+}
+
+# Apply parallel calculation for each site
+n = 1:nrow(matched)
+num_cores <- detectCores() - 1
+
+# soil_temp results
+results_tempandmoist <- mclapply(n, soil_temp_and_moist, mc.cores = num_cores)
+
+# Combine results from all ensembles
+soil_tm <- rbindlist(lapply(results_tempandmoist, `[[`, "stm"))
+
+# Delete all rows with just zeros
+soil_tm <- filter(soil_tm, soil_temp != 0)
+
+# temp is in C, soil moisture is a ratio 
+
+```
+Combine the soil moisture data
+```{r}
+soil_moist_table <- merge(final_daily_sm_data, soil_tm, by = c("Time","Site_ID"))
+```
+
+Graph Time series
+```{r}
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_moist_table, Site_ID == sites[i])
+  
+  
+print(ggplot(temp_data) +  
+  geom_line(aes(x = Time, y = Soil_moist_neon, group = 1), linewidth = 1, color = "orange") + 
+  geom_line(aes(x = Time, y = Soil_moist_model,group = 1), linewidth = 1, color = "lightblue") +
+  labs(title = sites[i], x = "date", y = "Soil Moisture Fraction"))
+}
+
+```
+
+
+Cross- Correlation coefficients
+```{r}
+lag <- data.frame(lag_sites = character(8),
+                 half_lag = numeric(8),
+                 year_lag = numeric(8))
+
+lag$lag_sites <- c("MLBS", "HARV","SERC","UNDE","ABBY", "GRSM","WREF","SJER")
+
+peak <- numeric(length(lag$lag_sites))
+count = 1
+
+for (site in lag$lag_sites){
+  temp_data <- filter(soil_moist_table, Site_ID == site)
+  
+   # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  name <- temp_data$Site_ID[1]
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  ccf_data <- ccf(temp_data$Soil_moist_neon, temp_data$Soil_moist_model, lag = 183, plot = TRUE, ylim = range(-1,1))
+  
+  #title(name)
+  
+  lag$half_lag[count] <- ccf_data$lag[which.max(ccf_data$acf)]
+
+}
+```
+
+
+To do:
+- find function for soil moisture and respiration data, and for soil temperature and respiration
+
+
+

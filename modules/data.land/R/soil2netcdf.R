@@ -56,7 +56,7 @@ soil2netcdf <- function(soil.data, new.file){
   ncvar <- list()
   good_vars <- 0
   for(n in seq_along(soil.data)){
-    if(all(is.null(soil.data[[n]])) | all(is.na(soil.data[[n]]))) next
+    if(all(is.null(soil.data[[n]])) || all(is.na(soil.data[[n]]))) next
     varname <- names(soil.data)[n]
     if(length(soil.data[[n]])>1){
       ## if vector, save by depth
@@ -81,7 +81,7 @@ soil2netcdf <- function(soil.data, new.file){
   
   ## add data
   for (i in seq_along(ncvar)) {
-    if(is.null(soil.data[[i]])|is.na(soil.data[[i]])) next
+    if(is.null(soil.data[[i]]) || all(is.na(soil.data[[i]]))) next
     ncdf4::ncvar_put(nc, ncvar[[i]], soil.data[[i]]) 
   }
   

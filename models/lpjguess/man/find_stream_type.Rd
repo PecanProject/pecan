@@ -29,3 +29,4 @@ A character string indicating the stream type.
 \description{
 Determines the type of a given stream variable in an LPJ-GUESS file.
 }
+\keyword{internal}

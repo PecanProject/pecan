@@ -89,6 +89,12 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("litter_mass_content_of_water")
   }
   
+  if ("SoilMoist" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoist
+    if (new.state$SoilMoist < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("soilWater")
+  }
+  
   if ("SoilMoistFrac" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac/100  ## unitless
     if (analysis.save[[length(analysis.save)]] < 0 || analysis.save[[length(analysis.save)]] > 1) analysis.save[[length(analysis.save)]] <- 0.5

@@ -17,7 +17,8 @@ paths, as a \code{glue::glue()} input (see examples)}
 either 1 or equal to \code{n}.}
 }
 \value{
-list of paths the same length as \code{n}, with names set as \verb{path<n>}
+list of paths the same length as \code{n}, with names set as \verb{path<n>},
+or a single path if there is only one of them
 }
 \description{
 Given a template string and a set of variables that includes a replicate ID,

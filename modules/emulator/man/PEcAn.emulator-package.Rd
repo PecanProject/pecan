@@ -10,6 +10,14 @@ Supports both likelihood and bayesian approaches for kriging and model
 \description{
 Implementation of a Gaussian Process model (both likelihood and bayesian approaches) for kriging and model emulation. Includes functions for sampling design and prediction.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://pecanproject.github.io}
+  \item Report bugs at \url{https://github.com/PecanProject/pecan/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Mike Dietze \email{dietze@bu.edu}
 

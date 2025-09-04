@@ -24,8 +24,8 @@ if (get_page_acccess_level() > $min_upload_level) {
 }
 
 # drag and drop window. 
+/** 
 *Copyright (c) 2010 Remy Sharp, http://html5demos.com
- 
 *Permission is hereby granted, free of charge, to any person obtaining
 *a copy of this software and associated documentation files (the
 *"Software"), to deal in the Software without restriction, including
@@ -44,8 +44,11 @@ if (get_page_acccess_level() > $min_upload_level) {
 *LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 *OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 *WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
+*/
+?>
+<!DOCTYPE html>
+<html>
+<head>
 <title>Drag and drop, automatic upload</title>
 <style>
 #holder { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
@@ -102,7 +105,7 @@ var holder = document.getElementById('holder'),
   }
 });
 
-function previewfile(file) { # don't know if we need to display a preview of the file... It could just display the progress bar then, 'done'
+function previewfile(file) { // don't know if we need to display a preview of the file... It could just display the progress bar then, 'done'
   if (tests.filereader === true && acceptedTypes[file.type] === true) {
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -164,3 +167,5 @@ if (tests.dnd) {
 }
 
 </script>
+</body>
+</html>

@@ -12,7 +12,6 @@ put_veg_module(
   outfolder,
   n.ensemble,
   dir,
-  machine,
   model,
   start_date,
   end_date,
@@ -35,8 +34,6 @@ put_veg_module(
 \item{n.ensemble}{integer, ensemble member number}
 
 \item{dir}{dir path to dbfiles on local machine}
-
-\item{machine}{data frame, DB info regarding localhost machine id/hostname etc.}
 
 \item{model}{model name, e.g. "ED2"}
 

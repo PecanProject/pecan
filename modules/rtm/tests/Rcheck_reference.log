@@ -45,8 +45,6 @@ Suggests or Enhances not in mainstream repositories:
 * checking loading without being on the library search path ... OK
 * checking use of S3 registration ... OK
 * checking dependencies in R code ... WARNING
-Namespace in Imports field not imported from: ‘lubridate’
-  All declared Imports should be used.
 Unexported object imported by a ':::' call: ‘stats:::C_acf’
   See the note in ?`:::` about the use of this operator.
   Including base/recommended package(s):
@@ -103,14 +101,6 @@ generate.rsr.all: no visible binding for global variable
   ‘bandwidth.chrisproba’
 get.EDR.output: no visible global function definition for ‘read.table’
 interpolate.rsr: no visible global function definition for ‘splinefun’
-invert.custom: no visible global function definition for
-  ‘txtProgressBar’
-invert.custom: no visible global function definition for
-  ‘setTxtProgressBar’
-invert.custom: no visible binding for global variable ‘sd’
-invert.custom: no visible global function definition for ‘cor’
-invert.custom: no visible global function definition for ‘runif’
-invert.custom: no visible global function definition for ‘rgamma’
 invert_bt: no visible global function definition for ‘modifyList’
 invert_bt: no visible binding for global variable ‘sampler’
 print.spectra: no visible global function definition for ‘head’
@@ -120,7 +110,6 @@ priorfunc.prospect : prior: no visible global function definition for
 process.licor.rsr: no visible global function definition for ‘read.csv’
 process.licor.rsr: no visible global function definition for
   ‘complete.cases’
-process_output: no visible global function definition for ‘window’
 prospect_bt_prior: no visible global function definition for
   ‘modifyList’
 read.rsr.folder: no visible global function definition for ‘read.csv’
@@ -137,17 +126,16 @@ summary_simple: no visible binding for global variable ‘sd’
 summary_simple: no visible binding for global variable ‘quantile’
 summary_simple: no visible binding for global variable ‘median’
 Undefined global functions or variables:
-  approxfun bandwidth.chrisproba complete.cases cor data dlnorm dnorm
+  approxfun bandwidth.chrisproba complete.cases data dlnorm dnorm
   fwhm.aviris.classic fwhm.aviris.ng fwhm.hyperion head median
   modifyList pftmapping pnorm qnorm quantile raw.sensor.data read.csv
-  read.table rgamma rnorm runif sampler sd sensor.rsr setTxtProgressBar
-  splinefun tail txtProgressBar window
+  read.table rnorm runif sampler sd sensor.rsr splinefun tail
 Consider adding
-  importFrom("stats", "approxfun", "complete.cases", "cor", "dlnorm",
-             "dnorm", "median", "pnorm", "qnorm", "quantile", "rgamma",
-             "rnorm", "runif", "sd", "splinefun", "window")
+  importFrom("stats", "approxfun", "complete.cases", "dlnorm",
+             "dnorm", "median", "pnorm", "qnorm", "quantile",
+             "rnorm", "runif", "sd", "splinefun")
   importFrom("utils", "data", "head", "modifyList", "read.csv",
-             "read.table", "setTxtProgressBar", "tail", "txtProgressBar")
+             "read.table", "tail")
 to your NAMESPACE file.
 
 Found the following calls to data() loading into the global environment:

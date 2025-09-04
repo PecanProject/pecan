@@ -1,6 +1,12 @@
-# PEcAn.uncertainty 1.8.0.9000
+# PEcAn.uncertainty 1.8.2
 
+* Plotting sensitivity now makes less noise in the console and once again produces a one-page PDF as intended.
 
+# PEcAn.uncertainty 1.8.1
+
+* `write.ensemble.configs` now respects argument `write.to.db` when settings$database$bety$write is NULL
+	(but if settings$database$bety$write is set, it still overrides `write.to.db`).
+* Roxygen fixes
 
 # PEcAn.uncertainty 1.8.0
 

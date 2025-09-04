@@ -66,6 +66,18 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   
   # prepare site info for extraction
   internal_site_info <- site_info[, c("site_id", "site_name", "lat", "lon")]
+
+  # Early return if no valid sites (after processing internal_site_info)
+  if (nrow(internal_site_info) == 0) {
+    if (verbose) {
+      PEcAn.logger::logger.severe(
+        "No valid sites remaining after NA check. ",
+        "All sites had missing SoilGrids data for the first depth layer."
+      )
+    }
+    return(NULL)
+  }
+
   #create a variable to store mean and quantile of organic carbon density (ocd) for each soil depth
   ocdquant <- matrix(NA, nrow = 6, ncol = length(internal_site_info$lon) * 4) #row represents soil depth, col represents mean, 5%, 50% and 95%-quantile of ocd for all sites
   lonlat <- cbind(internal_site_info$lon, internal_site_info$lat)
@@ -78,17 +90,27 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   p <- terra::vect(lonlat, crs = "+proj=longlat +datum=WGS84") # Users need to provide lon/lat
   newcrs <- "+proj=igh +datum=WGS84 +no_defs +towgs84=0,0,0" 
   p_reproj <- terra::project(p, newcrs) # Transform the point vector to data with Homolosine projection
+
+  # Extract coordinates for safe parallel transfer
+  p_coords <- terra::crds(p_reproj)
+
   data_tag <- c("_mean.vrt", "_Q0.05.vrt", "_Q0.5.vrt", "_Q0.95.vrt")
   name_tag <- expand.grid(depths, data_tag, stringsAsFactors = F)#find the combinations between data and depth tags.
   L <- split(as.data.frame(name_tag), seq(nrow(as.data.frame(name_tag))))#convert tags into lists.
 
   get_layer <- function(l) {
     ocd_url <- paste0(base_data_url, l[[1]], l[[2]])
-    ocd_map <- terra::extract(terra::rast(ocd_url), p_reproj)
-    unlist(ocd_map[, -1]) / 10
+    tryCatch({
+      # Create temporary vector inside worker
+      p_temp <- terra::vect(p_coords, crs = newcrs)
+      vals <- terra::extract(terra::rast(ocd_url), p_temp)
+      unlist(vals[, -1]) / 10
+    }, error = function(e) {
+      rep(NA, nrow(p_coords))
+    })
   }
 
-  ocd_real <- try(furrr::future_map(L, get_layer, .progress = TRUE))
+  ocd_real <- try(furrr::future_map(L, get_layer, .options = furrr::furrr_options(seed = TRUE), .progress = TRUE))
   if ("try-error" %in% class(ocd_real)) {
     ocd_real <- vector("list", length = length(L))
     pb <- utils::txtProgressBar(min = 0, max = length(L), style = 3)
@@ -116,6 +138,19 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   ocd_df$Value<-as.numeric(ocd_df$Value)
   f1<-factor(ocd_df$Siteid,levels=unique(ocd_df$Siteid))
   f2<-factor(ocd_df$Depth,levels=unique(ocd_df$Depth))
+
+  # Skip if not enough quantiles (before gamma fitting)
+  if (length(unique(ocd_df$Quantile)) < 2) {
+    if (verbose) {
+      PEcAn.logger::logger.warn(
+        "Insufficient quantiles (", length(unique(ocd_df$Quantile)), ") ",
+        "available for gamma distribution fitting at some sites. ",
+        "Require at least 2 different quantiles to fit parameters."
+      )
+    }
+    return(NULL)
+  }
+
   #split data by groups of sites and soil depth, while keeping the original order of each group
   dat <- split(ocd_df, list(f1, f2))  
   
@@ -132,22 +167,29 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   }
   
   fitQ <- function(x) {
-    val = x$Value
-    stat = as.character(x$Quantile)
-    theta = c(10, 10)
-    fit <-
-      list(Gamma = stats::optim(theta, cgamma, val = val, stat = stat))
-    SS <- sapply(fit, function(f) {
-      f$value
-    })
-    par <- sapply(fit, function(f) {
-      f$par
-    })
-    return(list(par = par, SS = SS))
+    val <- x$Value
+    stat <- as.character(x$Quantile)
+    # Skip fitting if all values are NA or not numeric
+    if (all(is.na(val)) || length(val) == 0) {
+      return(list(par = c(NA, NA), SS = NA))
+    }
+    theta <- c(10, 10)
+    fit <- tryCatch(
+      stats::optim(theta, cgamma, val = val, stat = stat),
+      error = function(e) NULL
+    )
+    if (is.null(fit)) {
+      return(list(par = c(NA, NA), SS = NA))
+    }
+    return(list(par = fit$par, SS = fit$value))
   }
   
   score <- suppressWarnings(lapply(dat, fitQ))
   bestPar <- sapply(score, function(f) { f$par })
+  # Ensure bestPar is a 2-row matrix even when invalid sites are present
+  if (is.null(dim(bestPar)) || nrow(bestPar) != 2) {
+    bestPar <- matrix(bestPar, nrow = 2, byrow = TRUE)
+  }
   mean <- bestPar[1,] / bestPar[2,]
   std <- sqrt(bestPar[1,] / bestPar[2,] ^ 2)
   mean_site <- matrix(mean, length(internal_site_info$lon), 6)
@@ -184,11 +226,17 @@ soilgrids_soilC_extract <- function (site_info, outdir=NULL, verbose=TRUE) {
   rownames(soilgrids_soilC_data) <- NULL
 
   if (!is.null(outdir)) {
-    PEcAn.logger::logger.info(paste0("Storing results in: ",file.path(outdir,"soilgrids_soilC_data.csv")))
-    utils::write.csv(soilgrids_soilC_data,file=file.path(outdir,"soilgrids_soilC_data.csv"),row.names = FALSE)
-  }
-  else {
-    PEcAn.logger::logger.error("No output directory found.")
+    # Ensure the directory exists; create if not
+    if (!dir.exists(outdir)) {
+      dir.create(outdir, recursive = TRUE)
+      PEcAn.logger::logger.info(paste0("Created output directory: ", outdir))
+    }
+    PEcAn.logger::logger.info(paste0("Storing results in: ", file.path(outdir, "soilgrids_soilC_data.csv")))
+    utils::write.csv(soilgrids_soilC_data,
+                     file = file.path(outdir, "soilgrids_soilC_data.csv"),
+                     row.names = FALSE)
+  } else {
+    PEcAn.logger::logger.warn("No output directory found. Results are only returned to R environment.")
   }
   # return the results to the terminal as well
   return(soilgrids_soilC_data)

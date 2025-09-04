@@ -1,5 +1,7 @@
-# Readme.md
+# PEcAn Papers and Tutorials
 
-This folder contains published articles describing the development and application of PEcAn as well as tutorials.
+This directory contains: 
+- published articles describing the development and application of PEcAn
+- tutorials
 
-The full documentation can be found in the book_source directory, and is published at <https://pecanproject.github.io/pecan-documentation/> with each new release.
+The full PEcAn documentation is maintained in the [`book_source/`](https://github.com/PecanProject/pecan/tree/develop/book_source) directory and is published at [pecanproject.github.io/pecan-documentation/](https://pecanproject.github.io/documentation).

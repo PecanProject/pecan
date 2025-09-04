@@ -80,11 +80,12 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @export
 ##' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
-                                 method = "uniform", param.names = NULL, ...) {
-  
-  if (is.null(method)) {
-    PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
-    method <- "uniform"
+                                 method = "random", param.names = NULL, ...) {
+
+  # Define supported methods
+  supported_methods <- c("random", "uniform", "halton", "sobol", "lhc")
+  if (!method %in% supported_methods) {
+    stop("Invalid sampling method")
   }
   
   ## force as numeric for compatibility with Fortran code in halton()
@@ -139,48 +140,59 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     
     
     ensemble.samples <- list()
-    
+    sampled.indices <- list()
     
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
+      sampled.indices[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       
       # meaning we want to keep MCMC samples together
       if(length(pft.samples[[pft.i]])>0 & !is.null(param.names)){ 
         if (method == "halton") {
-          same.i <- round(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+          same.i <- floor(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
         } else if (method == "sobol") {
-          same.i <- round(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))
+          same.i <- floor(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))+1
         } else if (method == "torus") {
-          same.i <- round(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))
+          same.i <- floor(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
         } else if (method == "lhc") {
-          same.i <- round(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))
+          same.i <- floor(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))+1
         } else if (method == "uniform") {
           same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
-        } else {
-          PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
-          # uniform random
-          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
+        } else if (method == "random") {
+            PEcAn.logger::logger.info("Using random row sampling for MCMC draws")
+           same.i <- sample(nrow(pft.samples[[pft.i]][[1]]), ensemble.size, replace = TRUE)
+        }
+        else {
+          PEcAn.logger::logger.error("Sampling method %s is not recognized", method)
+        
         }
         
       }
       
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        if(names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]){ # keeping samples
-          ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
-        }else{
+        if (names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]) { 
+             ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
+             sampled.indices[[pft.i]][, trait.i] <- same.i
+       }else{
+          # Extract original trait values
+          trait.values <- pft.samples[[pft.i]][[trait.i]]
+          sampled.values <- stats::quantile(trait.values, random.samples[, col.i])
+
           ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
                                                                   random.samples[, col.i])
-        }
-      }  # end trait
-      ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
-      colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
-    }  #end pft
-    names(ensemble.samples) <- names(pft.samples)
-    ans <- ensemble.samples
+          sampled.indices[[pft.i]][, trait.i] <- sapply(sampled.values, function(val) {which.min(abs(trait.values - val)) })
+      }   
+    }  
+          ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
+          colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
+    
+  }  #end pft
+   names(ensemble.samples) <- names(pft.samples)
+   ans <- ensemble.samples
   }
-  return(ans)
+    return(list(ans,sampled.indices))
 } # get.ensemble.samples
 
 
@@ -190,6 +202,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
 ##'
+##' @param input_design the input indices for samples 
 ##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
 ##' @param settings list of PEcAn settings
@@ -197,6 +210,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+##' @param samples Sampled inputs such as met and parameter files
 ##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
@@ -210,8 +224,31 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @importFrom rlang .data
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
-write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
+write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, input_design ,
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, samples = NULL, rename = FALSE) {
+  
+  
+  # Check if there are NO inputs
+ 
+for (input_tag in names(settings$run$inputs)) {
+  input <- settings$run$inputs[[input_tag]]
+  input_paths <- input$path
+  
+  # Check for required paths
+  if (is.null(input_paths) || length(input_paths) == 0) {
+     PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
+  }
+  
+  # Check for unsampled multi-path inputs
+  if (length(input_paths) > 1 && 
+     !(input_tag %in% names(settings$ensemble$samplingspace))) {
+    PEcAn.logger::logger.error(
+      "Input", sQuote(input_tag), "has", length(input_paths), "paths but no sampling method.",
+      "Add <samplingspace> for this input in pecan.xml")
+  }
+}
+
+  
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -280,7 +317,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       required_tags<-c("met","parameters")
       
     }
-    
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
     #finding who has a parent
@@ -289,19 +325,23 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
     #new ordered sampling space
     samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
-    #performing the sampling
-    samples<-list()
-    # For the tags specified in the xml I do the sampling
-    for(i in seq_along(samp.ordered)){
-      myparent<-samp.ordered[[i]]$parent # do I have a parent ?
-      #call the function responsible for generating the ensemble
-      samples[[names(samp.ordered[i])]] <- input.ens.gen(settings=settings,
-                                                         input=names(samp.ordered)[i],
-                                                         method=samp.ordered[[i]]$method,
-                                                         parent_ids=if( !is.null(myparent)) samples[[myparent]] # if I have parent then give me their ids - this is where the ordering matters making sure the parent is done before it's asked
-      )
+    if(is.null(samples)){
+       #performing the sampling
+      samples <- list()
+      input_tags <- names(settings$run$inputs)
+
+      for (input_tag in input_tags) {
+           if (input_tag %in% colnames(input_design)) {
+                  input_paths <- settings$run$inputs[[input_tag]]$path
+                  input_indices <- input_design[[input_tag]]
+
+                 samples[[input_tag]] <- list(
+                   samples = lapply(input_indices, function(idx) input_paths[[idx]])
+                 )
     }
 
+     }
+    }
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
@@ -381,6 +421,20 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
       }
       dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
       dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
+      
+      # build dynamic input info string
+      input_info <- ""
+      #changing the structure of input tag to what the models are expecting
+      for(input_i in seq_along(settings$run$inputs)){
+        input_tag <- names(settings$run$inputs)[[input_i]]
+        if (!is.null(samples[[input_tag]])) {
+          settings$run$inputs[[input_tag]][["path"]] <-
+            samples[[input_tag]][["samples"]][[i]]
+          input_info <- paste0(input_info,format(input_tag, width = 12, justify = "left"), ": ", 
+                               samples[[input_tag]]$samples[[i]], "\n")
+        }
+      }
+      
       # write run information to disk
       cat("runtype     : ensemble\n",
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
@@ -392,21 +446,32 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
           "model id    : ", format(settings$model$id, scientific = FALSE), "\n",
           "site        : ", settings$run$site$name, "\n",
           "site  id    : ", format(settings$run$site$id, scientific = FALSE), "\n",
-          "met data    : ", samples$met$samples[[i]], "\n",
+          input_info,  #  dynamically generated input paths
           "start date  : ", settings$run$start.date, "\n",
           "end date    : ", settings$run$end.date, "\n",
           "hostname    : ", settings$host$name, "\n",
           "rundir      : ", file.path(settings$host$rundir, run.id), "\n",
           "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
           file = file.path(settings$rundir, run.id, "README.txt"))
+
+
       
-      #changing the structure of input tag to what the models are expecting
-      for(input_i in seq_along(settings$run$inputs)){
-        input_tag <- names(settings$run$inputs)[[input_i]]
-        if (!is.null(samples[[input_tag]]))
-          settings$run$inputs[[input_tag]][["path"]] <-
-            samples[[input_tag]][["samples"]][[i]]
-      }
+    #changing the structure of input tag to what the models are expecting
+    for (input_i in seq_along(settings$run$inputs)) {
+            input_tag <- names(settings$run$inputs)[[input_i]]
+            input <- settings$run$inputs[[input_tag]]
+  
+  
+     if (!input_tag %in% names(samples)) {
+        # Use first path (already validated as single path)
+        settings$run$inputs[[input_tag]]$path <- input$path[1]  } 
+        else {
+           # Use sampled path
+          settings$run$inputs[[input_tag]]$path <- samples[[input_tag]][["samples"]][[i]]
+  }
+
+}
+
 
       
       do.call(my.write.config, args = list( defaults = defaults, 
@@ -453,6 +518,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     
     # stop and start time are required by bc we are wrtting them down into job.sh
     for (i in seq_len(settings$ensemble$size)) {
+      input_list <- list()
+      for (input_tag in names(inputs)) {
+        if (!is.null(inputs[[input_tag]]$samples[[i]])) 
+          input_list[[input_tag]] <- list(path = inputs[[input_tag]]$samples[[i]])
+      }
+      
       do.call(my.write_restart, 
               args =  list(outdir = settings$host$outdir, 
                            runid = run.id[[i]], 
@@ -461,12 +532,12 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                            settings = settings,
                            new.state = new.state[i, ], 
                            new.params = new.params[[i]], #new.params$`646`[[i]] for debugging
-                           inputs =list(met=list(path=inputs$samples[[i]])), 
+                           inputs = input_list,
                            RENAME = rename)#for restart from previous model runs, not sharing the same outdir
       )
     }
     params<-new.params
-    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=list(met=inputs)
+    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=inputs
     )
     ))
   }
@@ -527,3 +598,4 @@ input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NUL
 
   return(samples)
 }
+

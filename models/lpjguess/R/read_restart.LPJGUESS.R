@@ -1,13 +1,25 @@
-
-# developing
-# outdir = "/fs/data2/output//PEcAn_1000010473/out"
-# runid = 1002656839
-# stop.time = "1960-12-31 23:59:59 UTC"
-# load("/fs/data2/output/PEcAn_1000010473/SDAsettings_develop.Rdata")
-# var.names = c("AGB.pft", "TotSoilCarb")
-# load("/fs/data2/output/PEcAn_1000010473/SDAparams_develop.Rdata")
-
-
+#' Read Restart for LPJGUESS
+#'
+#' @param outdir      output directory
+#' @param runid       run ID
+#' @param stop.time   year that is being read
+#' @param settings    PEcAn settings object
+#' @param var.names   var.names to be extracted
+#' @param params      passed on to return value
+#'
+#' @return X_tmp      vector of forecasts
+#' @export
+#' @examples
+#' \dontrun{
+#'   rx <- read_restart.LPJGUESS(
+#'            outdir   = "/projectnb/…/LPJ_output",
+#'            runid    = "123456",
+#'            stop.time = as.POSIXct("2001-12-31 23:59:59", tz = "UTC"),
+#'            settings = settings,
+#'            var.names = c("AGB.pft"),
+#'            params = params)
+#' }
+#' @author Istem Fer, Yinghao Sun
 read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names, params){
   
   # which LPJ-GUESS version, the structure of state file depends a lot on version
@@ -24,7 +36,6 @@ read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names,
   # read binary state file, takes a couple of minutes
   Gridcell_container <- read_binary_LPJGUESS(outdir  = file.path(outdir, runid), 
                                              version = lpjguess_ver)
-  
   forecast <- list()
   
   # additional varnames for LPJ-GUESS?
@@ -33,8 +44,8 @@ read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names,
     
     if (var_name == "AGB.pft") {
       
-      cmass_sap_perpft   <- calculateGridcellVariablePerPFT(model.state = Gridcell_container, variable = "cmass_sap")
-      cmass_heart_perpft <- calculateGridcellVariablePerPFT(model.state = Gridcell_container, variable = "cmass_heart")
+      cmass_sap_perpft   <- calculateGridcellVariablePerPFT(model.state = Gridcell_container$state, variable = "cmass_sap")
+      cmass_heart_perpft <- calculateGridcellVariablePerPFT(model.state = Gridcell_container$state, variable = "cmass_heart")
       
       cmass_wood <- cmass_sap_perpft + cmass_heart_perpft
       cmass_wood <- PEcAn.utils::ud_convert(cmass_wood, "kg/m^2", "Mg/ha")
@@ -45,11 +56,12 @@ read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names,
       cmass_abvg_wood <- cmass_wood - cmass_blwg_wood
       
       forecast[[length(forecast) + 1]]    <- cmass_abvg_wood
-      names(forecast[[length(forecast)]]) <- paste0("AGB.pft.", unlist(Gridcell_container$meta_data$pft))
+      names(forecast[[length(forecast)]]) <- paste0("AGB.pft.", unlist(Gridcell_container$state$meta_data$pft))
       
     }
   }
   
+  # params$LPJGUESS_state include state, pos_list, siz_list
   params$LPJGUESS_state <- Gridcell_container
   
   PEcAn.logger::logger.info("Finished --", runid)

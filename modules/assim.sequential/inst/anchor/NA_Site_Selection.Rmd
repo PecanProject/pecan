@@ -1,0 +1,1257 @@
+---
+title: "Downscale_anchorSites"
+author: "Dongchen Zhang"
+date: '2024-06-21'
+output: html_document
+---
+# The workflow for preprocessing raster datasets is as follows: 1. read raster; 2. reproject raster to WGS84; 3. crop the raster to the extent of north america; 4. resample raster based on 1-km base map (was reprojected and croped forest age map).
+
+# read base map.
+
+```{r}
+library(purrr)
+base.map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/base_map.tiff")
+extent <- terra::ext(base.map)
+xres <- terra::xres(base.map)
+yres <- terra::yres(base.map)
+dim <- dim(base.map)
+```
+
+# TWI map.
+
+```{r}
+TWI <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/TWI/TWI_resample.tiff")
+```
+
+# forest age map.
+
+```{r}
+# read tiff.
+forest_age <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/forest_age/forest_age_2010_TC000_crop.tiff")
+```
+
+# GEDI density.
+
+```{r}
+doi <- "10.3334/ORNLDAAC/2299"
+metadata <- PEcAn.data.remote::NASA_DAAC_download(ul_lat = extent[4], 
+                                                  ul_lon = extent[1], 
+                                                  lr_lat = extent[3], 
+                                                  lr_lon = extent[2], 
+                                                  from = "2019-04-18",
+                                                  to = "2023-03-16", 
+                                                  just_path = F,
+                                                  outdir = "/projectnb/dietzelab/dongchen/anchorSites/downscale/GEDI_Density/GEDI_4B",
+                                                  doi = doi,
+                                                  ncore = parallel::detectCores()-1, 
+                                                  netrc_file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2001/hdf_data/netrc")
+
+gedi_density <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/GEDI_Density/GEDI_4B/GEDI04_B_MW019MW223_02_002_02_R01000M_NS.tif")
+# project image.
+sr <- '+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0' 
+tempRast <- terra::project(gedi_density, sr)
+# crop image.
+tempRast <- terra::crop(tempRast, base.map)
+# resample image
+tempRast <- terra::resample(tempRast, base.map, method="mode")
+# write to disk.
+terra::writeRaster(tempRast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/GEDI_Density/gedi_density_reproj_crop_resample.tif")
+```
+
+# MODIS land cover.
+
+```{r}
+library(lubridate)
+doi <- "10.5067/MODIS/MCD12Q1.061"
+dates <- seq(as.Date("2000-01-01"), as.Date("2012-01-01"), by="1 year")
+for (i in seq_along(dates)) {
+  from <- dates[i]
+  to <- dates[i] %m+% years(1)
+  outdir <- file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC", paste0("y", lubridate::year(from)))
+  if (file.exists(outdir)) {
+    next
+  } else {
+    dir.create(outdir)
+  }
+  # download files.
+  hdf.folder <- file.path(outdir, "hdf_data")
+  dir.create(hdf.folder)
+  metadata <- PEcAn.data.remote::NASA_DAAC_download(ul_lat = extent[4], 
+                                                  ul_lon = extent[1], 
+                                                  lr_lat = extent[3], 
+                                                  lr_lon = extent[2], 
+                                                  from = from,
+                                                  to = to, 
+                                                  just_path = F,
+                                                  outdir = hdf.folder,
+                                                  doi = doi,
+                                                  ncore = parallel::detectCores()-1, 
+                                                  netrc_file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2001/hdf_data/netrc")
+  # convert from hdf to tiff.
+  tiff.folder <- file.path(outdir, "tiff_data")
+  dir.create(tiff.folder)
+  for (j in seq_along(metadata$path)) {
+    temp.img <- terra::rast(metadata$path[j])
+    terra::writeRaster(temp.img, file.path(tiff.folder, paste0("img", j, ".tiff")))
+    if (j%%10 == 0) print(j/length(metadata$path))
+  }
+  zip(file.path(outdir, "tiff_data.zip"), tiff.folder)
+  print(paste("i =", i))
+}
+
+# crop and upscale images.
+folders <- list.files("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/", full.names = T)
+for (i in seq_along(folders)) {
+  if (file.exists(file.path(folders[i], "merged_reproj_crop_resample.tif"))) {
+    next
+  }
+  tempRast <- terra::rast(file.path(folders[i], "merged_reproj.tif"))
+  # crop image.
+  if (file.exists(file.path(folders[i], "merged_reproj_crop.tif"))) {
+    tempRast <- terra::rast(file.path(folders[i], "merged_reproj_crop.tif"))
+  } else {
+    tempRast <- terra::crop(tempRast, base.map)
+    terra::writeRaster(tempRast, file=file.path(folders[i], "merged_reproj_crop.tif"))
+  }
+  
+  # resample image.
+  tempRast <- terra::resample(tempRast, base.map, method="mode")
+  terra::writeRaster(tempRast, file=file.path(folders[i], "merged_reproj_crop_resample.tif"))
+  print(basename(folders[i]))
+}
+
+# calculate transition matrix.
+library(purrr)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+2000:2011 %>% furrr::future_map(function(year){
+  lc_type <- c("water_bodies", 
+               "Evergreen_Needleleaf_Trees", 
+               "Evergreen_Broadleaf_Trees", 
+               "Deciduous_Needleleaf_Trees", 
+               "Deciduous_Broadleaf_Trees",
+               "Shrub",
+               "Grass",
+               "Cereal_Croplands",
+               "Broadleaf_Croplands",
+               "Urban",
+               "Snow",
+               "Non_Vegetated_Lands")
+  lc_pre <- terra::rast(file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC", paste0("y", year), "merged_reproj_crop_resample.tif"))
+  lc_after <- terra::rast(file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC", paste0("y", year+1), "merged_reproj_crop_resample.tif"))
+  lc_pre_vector <- matrix(lc_pre[[5]], byrow = T)
+  lc_after_vector <- matrix(lc_after[[5]], byrow = T)
+  trans.mat <- matrix(0, 12, 12)
+  pb <- utils::txtProgressBar(min = 0, max = length(lc_pre_vector), style = 3)
+  for (i in seq_along(lc_pre_vector)) {
+    trans.mat[lc_pre_vector[i]+1, lc_after_vector[i]+1] <- trans.mat[lc_pre_vector[i]+1, lc_after_vector[i]+1] + 1
+    utils::setTxtProgressBar(pb, i)
+  }
+  trans.mat <- trans.mat %>% `rownames<-`(lc_type) %>% `colnames<-`(lc_type)
+  save(trans.mat, file=file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs", paste0(year, "_transMat.Rdata")))
+}, .progress = T)
+
+# filter land cover time-series.
+# loop over years.
+# read tiff file.
+forest_type <- c(1:4)
+grass_type <- c(5:8)
+non_veg_type <- c(0, 9, 10, 11)
+ts_lc <- c()
+for (y in 2000:2012) {
+  # load image.
+  lc_tif <- terra::rast(file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC", paste0("y", y), "merged_reproj_crop_resample.tif"))
+  lc_matrix <- matrix(lc_tif[[5]], byrow = T)
+  # reclassify.
+  lc_matrix[which(lc_matrix %in% forest_type)] <- 1
+  lc_matrix[which(lc_matrix %in% grass_type)] <- 2
+  lc_matrix[which(lc_matrix %in% non_veg_type)] <- 3
+  # combine image.
+  ts_lc <- cbind(ts_lc, lc_matrix)
+  print(y)
+}
+ind <- which(lc_matrix == 1)[5000]
+vec <- ts_lc[ind,]
+filter.lc.ts(vec)
+# function for filtering time series.
+filter.lc.ts <- function(vec, window.L = 3) {
+  L <- length(vec)
+  window <- c()
+  edge.case <- FALSE
+  # 
+  if(length(unique(vec)) == 1) {
+    return(c(unique(vec), unique(vec), length(vec)))
+  }
+  for (i in L:1) {
+    # push item into the window.
+    window <- c(window, vec[i])
+    # print(window)
+    # if window has not reached its size.
+    if (length(window) < window.L) {
+      next
+    }
+    # window operation.
+    uni.val <- unique(window)
+    # if there is no change.
+    if (length(uni.val) == 1) {
+      
+    } else if (length(uni.val) > 1) {
+      # check if head == tail.
+      if (head(window, 1) == tail(window, 1)) {
+        
+      } else {
+        window.ind <- window.L - tail(which(window == head(uni.val, 1)), 1) + 1
+        return(c(tail(rev(uni.val), 2), L - i + 1 - window.ind + 1))
+      }
+    }
+    # remove the last item from the window.
+    window <- tail(window, -1)
+  }
+}
+
+# loop over NA.
+res <- matrix(NA, dim(ts_lc)[1], 4) %>% `colnames<-`(c("from", "to", "years", "type"))
+pb <- utils::txtProgressBar(min=1, max=dim(ts_lc)[1], style=3)
+for (i in 1:dim(ts_lc)[1]) {
+  res[i, 1:3] <- filter.lc.ts(ts_lc[i,])
+  # grab change patterns.
+  if (all(res[i, 1:2] == c(1, 2))) {
+    res[i, 4] <- 1
+  } else if (all(res[i, 1:2] == c(1, 3))) {
+    res[i, 4] <- 2
+  } else if (all(res[i, 1:2] == c(2, 3))) {
+    res[i, 4] <- 3
+  } else if (all(res[i, 1:2] == c(2, 1))) {
+    res[i, 4] <- 4
+  } else if (all(res[i, 1:2] == c(3, 1))) {
+    res[i, 4] <- 5
+  } else if (all(res[i, 1:2] == c(3, 2))) {
+    res[i, 4] <- 6
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+# load res object and create multi-layer raster file.
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs/disturbance.Rdata")
+base_map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2000/merged_reproj_crop_resample.tif")
+base_crs <- terra::crs(base_map)
+base_ext <- terra::ext(base_map)
+disturb_array <- array(NA, c(9360, 19080, 4))
+for (i in 1:4) {
+  disturb_array[, , i] <- matrix(res[, i], 9360, 19080, byrow = T)
+}
+disturb_rast <- terra::rast(disturb_array)
+names(disturb_rast) <- c("from", "to", "years", "type")
+terra::ext(disturb_rast) <- base_ext
+terra::crs(disturb_rast) <- base_crs
+terra::writeRaster(disturb_rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs/disturb.tif")
+```
+
+# agb 2010 map.
+
+```{r}
+agb <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/IC/aboveground_biomass_carbon_2010.tif")
+agb_crop <- terra::crop(agb, base.map)
+agb_resample <- terra::resample(agb_crop, base.map)
+terra::writeRaster(agb_resample, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/AGB/agb.tif")
+```
+
+# handling background mask (non-vegetation pixels)
+
+```{r}
+# load disturbance data.
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs/disturbance.Rdata")
+# load forest age data.
+forest_age <- matrix(terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/forest_age/forest_age_2010_TC000_crop.tiff"), byrow = T)
+# load last year MODIS LC map.
+LC <- matrix(terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2012/merged_reproj_crop_resample.tif")[[5]], byrow = T)
+# calculate mean age for different LC types.
+mean_age <- c()
+for (i in 1:8) {
+  mean_age <- c(mean_age, mean(forest_age[which(LC == i)], na.rm = T))
+}
+# any pixel in forest that are tagged as grassland should be replaced with the 
+for (i in seq_along(forest_age)) {
+  # if it's diturbed vegetation.
+  if (res[i, "years"] < 13) {
+    forest_age[i] <- res[i, "years"]
+    next
+  }
+  # no record for the forest age.
+  if (is.na(forest_age[i])) {
+    # if it is non vegetation.
+    if (res[i, "to"] == 3) {
+      # forest_age[i] <- 0
+      next
+    } else {
+      # if it's non-disturbed vegetation.
+      forest_age[i] <- mean_age[LC[i]]
+    }
+  }
+}
+# convert to raster file.
+base_map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2000/merged_reproj_crop_resample.tif")
+base_crs <- terra::crs(base_map)
+base_ext <- terra::ext(base_map)
+forest_age <- terra::rast(matrix(forest_age, 9360, 19080, byrow = T))
+terra::ext(forest_age) <- base_ext
+terra::crs(forest_age) <- base_crs
+terra::writeRaster(forest_age, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs/age.tif")
+```
+
+# FIA plots.
+
+```{r}
+tree_table <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/data/ENTIRE_SITETREE.csv")
+tree_table <- tree_table[which(!is.na(tree_table$DIA)),]
+soil_table <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/data/ENTIRE_SOILS_LAB.csv")
+soil_table <- soil_table[which(!is.na(soil_table$BULK_DENSITY) & !is.na(soil_table$C_ORG_PCT)),]
+plot_table <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/data/ENTIRE_PLOTGEOM.csv")
+plot_table <- plot_table[which(plot_table$INVYR >= 2000),]
+
+uniq_plot <- unique(c(tree_table$PLT_CN, soil_table$PLT_CN))
+inter_plot <- intersect(tree_table$PLT_CN, soil_table$PLT_CN)
+
+plot_lat <- plot_table$LAT[which(plot_table$CN %in% uniq_plot)]
+plot_lon <- plot_table$LON[which(plot_table$CN %in% uniq_plot)]
+plotCN <- plot_table$CN[which(plot_table$CN %in% uniq_plot)]
+
+pts <- data.frame(lat = plot_lat, lon = plot_lon)
+sp::coordinates(pts) <- ~lon+lat
+sp::proj4string(pts) <- terra::crs("+init=epsg:4326") # set it to lat-long
+pts <- terra::vect(pts)
+
+base.map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/base_map.tiff")
+result <- terra::rasterize(pts, base.map, fun="length")
+names(result) <- "FIA_dens"
+terra::writeRaster(result, "/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/num_plts_per_pixel.tif")
+fia.vec <- terra::as.points(result)
+terra::writeVector(fia.vec, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/fia_vec.shp")
+```
+
+```{r}
+lat.fia <- lat[unlist(points)[which(ecoClim[unlist(points),"fia"] > 0)]]
+lon.fia <- lon[unlist(points)[which(ecoClim[unlist(points),"fia"] > 0)]]
+inds <- c()
+for (i in seq_along(lat.fia)) {
+  inds <- c(inds, which.min(abs(lat.fia[i]-plot_lat)+abs(lon.fia[i]-plot_lon)))
+}
+CN <- plotCN[inds]
+write.table(CN, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/selected_fia_cn.txt", row.names = F, col.names = F)
+```
+
+# summarize all layers.
+
+```{r}
+# all raster
+all.rast <- terra::rast(c("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/outputs/age.tif", 
+                          "/projectnb/dietzelab/dongchen/anchorSites/downscale/AGB/agb.tif", 
+                          "/projectnb/dietzelab/dongchen/anchorSites/downscale/FIA/num_plts_per_pixel.tif", 
+                          "/projectnb/dietzelab/dongchen/anchorSites/downscale/GEDI_Density/gedi_density_reproj_crop_resample.tif", 
+                          "/projectnb/dietzelab/dongchen/anchorSites/downscale/TWI/TWI_resample.tiff"))
+d <- dim(all.rast)
+base.ext <- terra::ext(all.rast)
+base.crs <- terra::crs(all.rast)
+# preprocess covariates.
+for (i in 1:5) {
+  temp <- matrix(all.rast[[i]], byrow = T)
+  # rescale data into 0-1 scale.
+  if (i == 4){# convert GEDI density into log scale.
+    temp <- log(temp)
+  }
+  max <- max(temp, na.rm = T)
+  min <- min(temp, na.rm = T)
+  temp <- (temp - min)/(max - min)
+  # data with NAs will be assigned as 0.
+  if (i > 1) {
+    temp[which(is.na(temp))] <- 0
+  }
+  # recover raster.
+  tempRast <- terra::rast(matrix(temp, d[1], d[2], byrow = T))
+  terra::ext(tempRast) <- base.ext
+  terra::crs(tempRast) <- base.crs
+  all.rast[[i]] <- tempRast
+  print(i)
+}
+names(all.rast) <- c("year_since_disturb", "agb", "fia", "gedi", "twi")
+terra::writeRaster(all.rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/all_rast.tif", overwrite = TRUE)
+```
+
+# Merge previous data layers.
+
+```{r}
+# load data.
+all.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_rast.tif")
+d <- dim(all.rast)
+# grab crs and ext.
+base.crs <- terra::crs(all.rast)
+base.ext <- terra::ext(all.rast)
+# load previous data layers.
+# For this section. Please refer to `pecan/modules/assim.sequential/inst/covariates` script.
+# here I will just load the TIFF file generated using this script.
+# met.
+met <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/met.tif")
+# preprocessing (crs, ext).
+met <- terra::crop(met, all.rast)
+met <- terra::resample(met, all.rast)
+terra::ext(met) <- base.ext
+# normalize.
+nx <- terra::minmax(met)
+met <- (met - nx[1,]) / (nx[2,] - nx[1,])
+names(met) <- c("tavg", "srad", "prec", "vapr")
+# soil properties.
+SoilGrids <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/SoilGrids.tif")
+# preprocessing (crs, ext).
+SoilGrids <- terra::crop(SoilGrids, all.rast)
+SoilGrids <- terra::resample(SoilGrids, all.rast)
+terra::ext(SoilGrids) <- base.ext
+# normalize.
+nx <- terra::minmax(SoilGrids)
+SoilGrids <- (SoilGrids - nx[1,]) / (nx[2,] - nx[1,])
+names(SoilGrids) <- c("PH", "N", "SOC", "Sand")
+# Lat/lon.
+latlon <- terra::xyFromCell(all.rast[[1]], which(!is.na(all.rast[[1]][]))) %>% 
+  data.frame %>%
+  `colnames<-`(c("lon", "lat"))
+lat <- lon <- matrix(all.rast[[1]], byrow = T)
+lon[which(!is.na(lon))] <- latlon[,1]
+lat[which(!is.na(lat))] <- latlon[,2]
+latlon <- c(terra::rast(matrix(lat, d[1], d[2], byrow = T)),
+            terra::rast(matrix(lon, d[1], d[2], byrow = T)))
+terra::crs(latlon) <- terra::crs(all.rast)
+terra::ext(latlon) <- terra::ext(all.rast)
+# normalize
+nx <- terra::minmax(latlon)
+latlon <- (latlon - nx[1,]) / (nx[2,] - nx[1,])
+names(latlon) <- c("lat", "lon")
+# sp::coordinates(latlon) <- ~lon+lat
+# sp::proj4string(latlon) <- terra::crs("+init=epsg:4326")
+# latlon <- terra::vect(latlon)
+# test <- terra::extract(all.rast[[1]], latlon)
+# test1 <- matrix(all.rast[[1]], byrow = T)
+# merge.
+all.data.layers <- c(all.rast[[1]], all.rast[[2]], all.rast[[3]], all.rast[[4]], all.rast[[5]],
+                     met[[1]], met[[2]], met[[3]], met[[4]],
+                     SoilGrids[[1]], SoilGrids[[2]], SoilGrids[[3]], SoilGrids[[4]],
+                     latlon[[1]], latlon[[2]])
+terra::writeRaster(all.data.layers, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.tif", overwrite=T)
+```
+# determine cluster sizes.
+
+```{r}
+library(pathviewr)
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/clusts.Rdata")
+sizes <- c()
+for (i in seq_along(tot.clust)) {
+  inds <- which(names(tot.clust[[i]]) == "tot.withinss")
+  # find elbow location.
+  df <- data.frame(x = 1:20, y = unlist(tot.clust[[i]][inds]))
+  size <- find_curve_elbow(df)
+  sizes <- c(sizes, size)
+}
+```
+
+# NLCD Vs MODIS.
+
+```{r}
+# load land cover map at 2012.
+base.map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_LC/y2012/merged_reproj_crop_resample.tif")
+LC <- matrix(base.map[[5]], byrow = T)
+nlcd <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/nlcd_resample_clip.tif")
+nlcd_mat <- matrix(nlcd, byrow = T)
+non.na.nlcd.inds <- which(!is.na(nlcd_mat))
+evergreen.inds.nlcd <- which(nlcd_mat==42)
+
+# Lat/lon.
+latlon <- terra::xyFromCell(base.map[[5]], which(!is.na(base.map[[5]][]))) %>% 
+  data.frame %>%
+  `colnames<-`(c("lon", "lat"))
+lat <- lon <- matrix(base.map[[5]], byrow = T)
+lon[which(!is.na(lon))] <- latlon[,1]
+lat[which(!is.na(lat))] <- latlon[,2]
+
+# reclassify modis lc.
+LC[which(LC == 6 & nlcd_mat == 42 & lon <= -100)] <- 1 # grass to evergreen needle leaf forest.
+LC[which(LC == 4 & nlcd_mat == 42)] <- 1 # deciduous to evergreen needle leaf forest.
+
+# write into new GeoTIFF file.
+LC.rast <- terra::rast(matrix(LC, dim(base.map)[1], dim(base.map)[2], byrow = T))
+terra::crs(LC.rast) <- terra::crs(base.map)
+terra::ext(LC.rast) <- terra::ext(base.map)
+terra::writeRaster(LC.rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_NLCD_LC.tif", overwrite=TRUE)
+```
+
+# load all data layers.
+
+```{r}
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+setwd("/projectnb/dietzelab/dongchen/anchorSites/")
+# load all data layers.
+all.data.layers <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.tif")
+# load land cover at 2012.
+base.map <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_NLCD_LC.tif")
+# handle data.
+if (!file.exists("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.Rdata")) {
+  ###################################################################################### merge previous sites.
+  # anchor sites.
+  load("/projectnb/dietzelab/dongchen/anchorSites/site_info.Rdata")
+  site.locs.anchor <- cbind(site_info[[2]], site_info[[3]]) %>% `colnames<-`(c("lat", "lon"))
+  site.name.anchor <- site_info$site_name
+  
+  # 500 CONUS Sites.
+  settings.500 <- PEcAn.settings::read.settings("/projectnb/dietzelab/hamzed/SDA/ProductionRun/500Sites/SDA/Utility/SDA_500.xml")
+  site.locs.500 <- settings.500$run %>% 
+    map("site") %>% 
+    map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric) %>% 
+    t %>%
+    `colnames<-`(c("Lon","Lat"))
+  site.names.500 <- settings.500$run %>% 
+    map("site") %>% 
+    map_dfr(~c(.x[['name']])) %>% unlist
+  
+  # Hawaii points.
+  Hawaii.pts <- data.frame(lon = c(-159.49, -155.69, -155.728, -156.458), 
+                           lat = c(22.05, 19.93, 19.774, 20.825)) %>% as.matrix
+  Hawaii.names <- rep("Hawaii", 4)
+  
+  # FIA Tree core sites (26 valid sites).
+  tree.core.locs <- readxl::read_xlsx("/projectnb/dietzelab/dongchen/anchorSites/downscale/extra_site/MissingTreeCoreSites.xlsx")
+  tree.core.names <- paste0("FIA_Tree_Core_CN_", tree.core.locs$CN)
+  tree.core.locs <- tree.core.locs[,2:3]
+  
+  # FIA Soil Core Alaska (100 valid sites).
+  soil.core.alaska.locs <- read.table("/projectnb/dietzelab/dongchen/anchorSites/downscale/extra_site/100_suggested_soil_locations_alaska.txt", header = T, sep = ",")
+  soil.core.alaska.names <- rep("soil_core_alaska", dim(soil.core.alaska.locs)[1])
+  
+  # Ameriflux site (190 valid sites).
+  ameriflux.locs <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/downscale/extra_site/Unmatched_Sites.csv")
+  ameriflux.names <- rep("ameriflux", dim(ameriflux.locs)[1])
+  
+  # combine two settings.
+  site.locs.lat <- c(site.locs.anchor[,1], site.locs.500[,2], Hawaii.pts[,2], tree.core.locs$LAT, soil.core.alaska.locs$LAT, ameriflux.locs$Latitude..degrees.)
+  site.locs.lon <- c(site.locs.anchor[,2], site.locs.500[,1], Hawaii.pts[,1], tree.core.locs$LON, soil.core.alaska.locs$LON, ameriflux.locs$Longitude..degrees.)
+  site.names <- c(site.name.anchor, site.names.500, Hawaii.names, tree.core.names, soil.core.alaska.names, ameriflux.names)
+  site.locs <- cbind(site.locs.lat, site.locs.lon) %>% `colnames<-`(c("lat", "lon"))
+  
+  # generate anchor points vector.
+  pts <- data.frame(lat = site.locs[,1], lon = site.locs[,2])
+  sp::coordinates(pts) <- ~lon+lat
+  sp::proj4string(pts) <- terra::crs(base.map)
+  pts <- terra::vect(pts)
+  anchorRast <- terra::rasterize(pts, base.map) # rasterize anchor sites points.
+  # anchorMat <- matrix(anchorRast, byrow = T)
+  
+  # Lat/lon.
+  latlon <- terra::xyFromCell(base.map, which(!is.na(base.map[]))) %>% 
+    data.frame %>%
+    `colnames<-`(c("lon", "lat"))
+  lat <- lon <- matrix(base.map, byrow = T)
+  lon[which(!is.na(lon))] <- latlon[,1]
+  lat[which(!is.na(lat))] <- latlon[,2]
+  # combine eco-climatic properties.
+  ecoClim <- cbind(matrix(all.data.layers[[1]], byrow = T),
+                  matrix(all.data.layers[[2]], byrow = T),
+                  matrix(all.data.layers[[3]], byrow = T),
+                  matrix(all.data.layers[[4]], byrow = T),
+                  matrix(all.data.layers[[5]], byrow = T),
+                  matrix(all.data.layers[[6]], byrow = T),
+                  matrix(all.data.layers[[7]], byrow = T),
+                  matrix(all.data.layers[[8]], byrow = T),
+                  matrix(all.data.layers[[9]], byrow = T),
+                  matrix(all.data.layers[[10]], byrow = T),
+                  matrix(all.data.layers[[11]], byrow = T),
+                  matrix(all.data.layers[[12]], byrow = T),
+                  matrix(all.data.layers[[13]], byrow = T),
+                  matrix(all.data.layers[[14]], byrow = T),
+                  matrix(all.data.layers[[15]], byrow = T),
+                  matrix(base.map, byrow = T),
+                  lat,
+                  lon) %>% as.data.frame
+  colnames(ecoClim) <- c(names(all.data.layers), "LC", "latitude", "longitude")
+  na.inds <- c()
+  for (i in 1:ncol(ecoClim)) {
+    na.inds <- unique(c(na.inds, which(is.na(ecoClim[,i]))))
+    print(i)
+  }
+  na.inds <- unique(c(na.inds, which(ecoClim[,"LC"] %in% c(0, 9, 10, 11)))) # non-vegetated pixels.
+  # non.na.inds <- which(complete.cases(ecoClim[,1:11]))
+  L <- dim(ecoClim)[1]
+  non.na.inds <- which(! 1:L %in% na.inds)
+  # add anchor sites to the data layers.
+  # add anchor sites to non-na-inds.
+  # non.na.inds <- sort(unique(c(non.na.inds, which(!is.na(anchorMat)))))
+  ecoClim <- ecoClim[non.na.inds,]
+  anchorMat <- matrix(anchorRast, byrow = T)[non.na.inds] # convert raster to vector
+  anchorMat[which(is.na(anchorMat))] <- 0
+  anchorMat[which(anchorMat>0)] <- 1:length(which(anchorMat>0))
+  
+  # find duplicated sites.
+  anchorMat.full <- rep(NA, L)
+  anchorMat.full[non.na.inds] <- anchorMat
+  anchor.Rast <- terra::rast(matrix(anchorMat.full, dim(base.map)[1], dim(base.map)[2], byrow = T))
+  terra::crs(anchor.Rast) <- terra::crs(base.map)
+  terra::ext(anchor.Rast) <- terra::ext(base.map)
+  anchor.extract <- terra::extract(anchor.Rast, pts)
+  
+  # remove NA and duplicated sites.
+  anchor.na.inds <- which(is.na(anchor.extract$lyr.1))
+  duplicated.inds <- which(duplicated(anchor.extract$lyr.1))
+  anchor.remove.inds <- unique(c(anchor.na.inds, duplicated.inds))
+  site.names <- site.names[-anchor.remove.inds]
+  site.locs <- site.locs[-anchor.remove.inds,]
+  ecoClim$anchor <- anchorMat
+  
+  # save file.
+  save(list = c("ecoClim", "non.na.inds", "L", "site.names", "site.locs"), 
+       file="/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.Rdata")
+} else {
+  load("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.Rdata")
+}
+```
+
+# calculating weights.
+
+```{r}
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.Rdata")
+# determine cluster sizes.
+library(pathviewr)
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/clusts.Rdata")
+sizes <- c()
+for (i in seq_along(tot.clust)) {
+  inds <- which(names(tot.clust[[i]]) == "tot.withinss")
+  # find elbow location.
+  df <- data.frame(x = 1:20, y = unlist(tot.clust[[i]][inds]))
+  size <- find_curve_elbow(df)
+  sizes <- c(sizes, size)
+}
+# function for smooth division.
+smooth.div <- function(tot, v) {
+  vec <- c()
+  ceil <- TRUE
+  remain <- tot
+  
+  for (i in seq_along(v)) {
+    if (i == length(v)) {
+      vec <- c(vec, remain)
+      break
+    }
+    if (ceil) {
+      temp <- ceiling(v[i])
+    } else {
+      temp <- floor(v[i])
+    }
+    ceil <- !ceil
+    remain <- remain - temp
+    vec <- c(vec, temp)
+  }
+  vec
+}
+# calculate latitude threshold by GEDI density.
+lat.threshold <- max(ecoClim$latitude[which(ecoClim$gedi>0)])
+# calculating weights by FIA and GEDI density layers.
+# FIA mistakenly falls within non-forest area should be removed.
+ecoClim$fia[which(! ecoClim$LC %in% c(1:4))] <- 0
+# base weights of 1.
+weights <- rep(1, dim(ecoClim)[1])
+# FIA weights.
+weights[which(ecoClim$fia > 0)] <- 500 # FIA
+# GEDI weights.
+weights <- weights + 50 * ecoClim$gedi # GEDI density
+# # weights above GEDI boundary.
+# weights[which(ecoClim$latitude > lat.threshold)] <- 
+#   weights[which(ecoClim$latitude > lat.threshold)] + 
+#   100*median(ecoClim$gedi[which(ecoClim$gedi>0)])
+#remove anchor sites from weights.
+weights[which(ecoClim$anchor > 0)] <- 0 # remove anchor sites.
+# conditional on LC.
+LC.inds <- vector("list", 8)
+for (i in seq_along(LC.inds)) {
+  LC.inds[[i]] <- which(ecoClim$LC == (i))
+}
+# calculate number of points for each land cover class.
+pre.selected.LC.num <- c()
+for (i in 1:8) {
+  pre.selected.LC.num <- c(pre.selected.LC.num, length(which(ecoClim$LC == i & ecoClim$anchor > 0)))
+}
+# proportion.
+proportion <- LC.inds %>% purrr::map(length) %>% unlist
+proportion <- proportion/sum(proportion)
+tot.points.num <- smooth.div(8000, (8000 - 200*8) * proportion + 200) - pre.selected.LC.num # each class has 200 base sample
+# loop over land cover classes.
+sub.sampling.num <- 6e4
+# tot.sites.num <- sites.num.remain <- 6400
+L.eco <- dim(ecoClim)[1]
+clusters <- points <- tot.clust <- vector("list", length = 8)
+for (i in seq_along(unique(ecoClim$LC))) {
+  # total pixels.
+  tot.inds <- which(ecoClim$LC == i)
+  # anchor.
+  anchor.inds <- which(ecoClim$LC == i & ecoClim$anchor > 0)
+  # north points.
+  north.tot.inds <- which(ecoClim$LC == i & ecoClim$latitude > lat.threshold)
+  # sampling.
+  if (sub.sampling.num > length(tot.inds)) {
+    north.sub.sample.size <- floor(length(tot.inds) * length(north.tot.inds)/length(tot.inds))
+  } else {
+    north.sub.sample.size <- floor(sub.sampling.num * length(north.tot.inds)/length(tot.inds))
+  }
+  north.sample.inds <- sample(x = north.tot.inds, size = north.sub.sample.size, 
+                              replace = F, prob = weights[north.tot.inds])
+  # south points.
+  south.tot.inds <- which(ecoClim$LC == i & ecoClim$latitude <= lat.threshold)
+  # sampling.
+  if (sub.sampling.num > length(tot.inds)) {
+    south.sub.sample.size <- floor(length(tot.inds) * length(south.tot.inds)/length(tot.inds))
+  } else {
+    south.sub.sample.size <- floor(sub.sampling.num * length(south.tot.inds)/length(tot.inds))
+  }
+  south.sample.inds <- sample(x = south.tot.inds, size = south.sub.sample.size, 
+                              replace = F, prob = weights[south.tot.inds])
+  # combine north and south.
+  sub.sampling.inds <- c(north.sample.inds,
+                         south.sample.inds,
+                         anchor.inds)
+  # k-means clustering.
+  k <- factoextra::hkmeans(ecoClim[sub.sampling.inds, c(1, 2, 5:15)], 
+                           sizes[i], hc.metric = "euclidean", iter.max = 50)
+  # loop over clusters.
+  point <- cluster <- c()
+  cluster.points.num <- smooth.div(tot.points.num[i], rep(tot.points.num[i]/sizes[i], sizes[i]))
+  for (j in 1:sizes[i]) {
+    # total cluster points.
+    cluster.tot.inds <- sub.sampling.inds[which(k$cluster == j)]
+    # north points.
+    cluster.north.inds <- cluster.tot.inds[which(ecoClim$latitude[cluster.tot.inds] > lat.threshold)]
+    # calculate size.
+    cluster.north.sample.size <- floor(cluster.points.num[j] * length(cluster.north.inds) / length(cluster.tot.inds))
+    # if cluster size is close to the total size it will be assigned as total size.
+    if ((cluster.points.num[j] - cluster.north.sample.size) == 1) {
+      cluster.north.sample.size <- cluster.points.num[j]
+    }
+    # sampling.
+    if (cluster.north.sample.size > 0) {
+      cluster.north.sample <- sample(x = cluster.north.inds, size = cluster.north.sample.size, 
+                              replace = F, prob = weights[cluster.north.inds])
+    } else {
+      cluster.north.sample <- c()
+    }
+    # south points.
+    cluster.south.inds <- cluster.tot.inds[which(ecoClim$latitude[cluster.tot.inds] <= lat.threshold)]
+    # calculate size.
+    cluster.south.sample.size <- cluster.points.num[j] - cluster.north.sample.size
+    # sampling.
+    if (cluster.south.sample.size > 0) {
+      cluster.south.sample <- sample(x = cluster.south.inds, size = cluster.south.sample.size, 
+                              replace = F, prob = weights[cluster.south.inds])
+    } else {
+      cluster.south.sample <- c()
+    }
+    # summarize.
+    point <- c(point, cluster.north.sample, cluster.south.sample)
+    cluster <- c(cluster, rep(j, cluster.points.num[j]))
+  }
+  # add anchor sites.
+  point <- c(point, anchor.inds)
+  cluster <- c(cluster, k$cluster[which(sub.sampling.inds %in% anchor.inds)])
+  # check GEDI and FIA.
+  plot(density(ecoClim$gedi[tot.inds[which(ecoClim$latitude[tot.inds] <= lat.threshold)]]))
+  lines(density(ecoClim$gedi[point[which(ecoClim$latitude[point] <= lat.threshold & ecoClim$anchor[point]==0)]]), col=2)
+  print(length(which(ecoClim$fia[point] > 0)))
+  # load to lists.
+  points[[i]] <- point
+  clusters[[i]] <- cluster
+  tot.clust[[i]] <- list(k_means = k, inds = sub.sampling.inds)
+  # print progress.
+  print(i)
+}
+# check GEDI and FIA.
+plot(density(ecoClim$gedi[which(ecoClim$latitude <= lat.threshold)]), 
+     xlab = "Normalized GEDI Density at Log Scale",
+     ylab = "Density",
+     main = "",
+     col = 1,
+     lwd = 2, 
+     ylim = c(0, 4.5))
+lines(density(ecoClim$gedi[unlist(points)[which(ecoClim$latitude[unlist(points)] <= lat.threshold & ecoClim$anchor[unlist(points)]==0)]]), col=2, lwd = 2)
+legend("topright", lty = 1, lwd = 2, col = c(1, 2), legend = c("Before sampling", "After Sampling"))
+length(which(ecoClim$fia[unlist(points)] > 0))
+# save files.
+save(list = c("points", "clusters"), file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/final_cluster.Rdata")
+save(tot.clust, file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster_by_class.Rdata")
+```
+
+```{r}
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/final_cluster.Rdata")
+all.data.layers <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.tif")
+d <- dim(all.data.layers)
+vec1 <- vec2 <- vec3 <- vec4 <- vec5 <- names <- rep(NA, d[1]*d[2])
+pre.selected.inds <- which(ecoClim$anchor > 0)
+
+names[non.na.inds[unlist(points)]] <- 0
+names[non.na.inds[pre.selected.inds]] <- seq_along(site.names)
+
+vec1[non.na.inds[unlist(points)]] <- unlist(clusters)
+# vec1[non.na.inds[pre.selected.inds]] <- 0
+vec2[non.na.inds[unlist(points)]] <- ecoClim$LC[unlist(points)]
+vec3[non.na.inds[unlist(points)]] <- 0
+vec3[non.na.inds[pre.selected.inds]] <- 1
+# only for anchor sites.
+vec4[non.na.inds[pre.selected.inds]] <- ecoClim$anchor[pre.selected.inds] #1
+vec5[non.na.inds[pre.selected.inds]] <- ecoClim$LC[pre.selected.inds]
+# convert vector to raster.
+cluster.rast <- c(terra::rast(matrix(vec1, d[1], d[2], byrow = T)),
+                  terra::rast(matrix(vec2, d[1], d[2], byrow = T)),
+                  terra::rast(matrix(names, d[1], d[2], byrow = T)))
+terra::ext(cluster.rast) <- terra::ext(all.data.layers)
+terra::crs(cluster.rast) <- terra::crs(all.data.layers)
+names(cluster.rast) <- c("cluster", "landcover", "site_order")
+# terra::writeRaster(cluster.rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/final_clust.tif", overwrite=TRUE)
+# cluster.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/final_clust.tif")
+clust_vec <- terra::as.points(cluster.rast)
+terra::writeVector(clust_vec, "/projectnb/dietzelab/dongchen/anchorSites/downscale/clust_points.shp", overwrite=TRUE)
+
+pts <- sf::st_read("/projectnb/dietzelab/dongchen/anchorSites/downscale/clust_points.shp")
+pts.order <- pts$site_order
+site_names <- rep("weighted_sample", dim(pts)[1])
+site_names[which(pts.order>0)] <- site.names
+pts$site_names <- site_names
+sf::st_write(pts, "/projectnb/dietzelab/dongchen/anchorSites/downscale/clust_points_by_name.shp")
+# write anchor shape file.
+anchor.rast <- c(terra::rast(matrix(vec4, d[1], d[2], byrow = T)),
+                 terra::rast(matrix(vec5, d[1], d[2], byrow = T)))
+terra::ext(anchor.rast) <- terra::ext(all.data.layers)
+terra::crs(anchor.rast) <- terra::crs(all.data.layers)
+names(anchor.rast) <- c("is_anchor", "landcover")
+anchor_vec <- terra::as.points(anchor.rast)
+terra::writeVector(anchor_vec, "/projectnb/dietzelab/dongchen/anchorSites/downscale/anchor_points.shp", overwrite=TRUE)
+
+```
+
+# calculate proportions.
+
+```{r}
+max(ecoClim[which(ecoClim[,"gedi"]>0),"latitude"])
+```
+
+```{r}
+library(purrr)
+# conditional on LC.
+LC.inds <- vector("list", 8)
+for (i in seq_along(LC.inds)) {
+  LC.inds[[i]] <- which(LC == (i))
+}
+# proportion.
+proportion <- LC.inds %>% purrr::map(length) %>% unlist
+proportion <- proportion/sum(proportion)
+# sub-sampling.
+# calculate weights based on GEDI density and FIA density.
+FIA <- matrix(all.data.layers[[3]], byrow = T)
+FIA[which(FIA > 0)] <- 50
+# assign zero to FIA weights when pixel in non-forest area.
+FIA[which(! LC %in% c(1,2,3,4))] <- 0
+
+# YSD <- matrix(all.data.layers[[1]], byrow = T)
+GEDI <- matrix(all.data.layers[[4]], byrow = T) * 3
+weights <- 1 + FIA + GEDI
+non_na_inds <- which(!is.na(weights) & complete.cases(ecoClim[,1:11]))
+# add 1 or 2 weights to places above GEDI boundary 51.6.
+latlon <- terra::xyFromCell(all.data.layers[[1]], which(!is.na(all.data.layers[[1]][]))) %>% 
+  data.frame %>%
+  `colnames<-`(c("lon", "lat"))
+lat <- lon <- matrix(all.data.layers[[1]], byrow = T)
+lon[which(!is.na(lon))] <- latlon[,1]
+lat[which(!is.na(lat))] <- latlon[,2]
+non.GEDI.inds <- non_na_inds[which(lat[non_na_inds] > 51.6)]
+weights[non.GEDI.inds] <- weights[non.GEDI.inds] + 2
+
+# filter out pre-selected sites.
+pre.selected.inds <- pre.selected.inds[-which(!pre.selected.inds %in% non_na_inds)]
+pre.selected.LC <- LC[pre.selected.inds]
+
+weights[pre.selected.inds] <- 0 # remove previous selected sites.
+```
+
+# new k-means clustering
+
+```{r}
+# function for smooth division.
+smooth.div <- function(tot, v) {
+  vec <- c()
+  ceil <- TRUE
+  remain <- tot
+  
+  for (i in seq_along(v)) {
+    if (i == length(v)) {
+      vec <- c(vec, remain)
+      break
+    }
+    if (ceil) {
+      temp <- ceiling(v[i])
+    } else {
+      temp <- floor(v[i])
+    }
+    ceil <- !ceil
+    remain <- remain - temp
+    vec <- c(vec, temp)
+  }
+  vec
+}
+# calculate number of points for each land cover class.
+pre.selected.LC.num <- c()
+for (i in 1:8) {
+  pre.selected.LC.num <- c(pre.selected.LC.num, length(which(pre.selected.LC == i)))
+}
+sample.size <- 6e4
+cluster.size <- 20
+# tot.points.num <- 5e3
+tot.points.num <- smooth.div(8000, (8000 - 200*8) * proportion + 200) - pre.selected.LC.num # each class has 200 base sample size.
+
+# for loop over land cover classes.
+points <- clusters <- vector("list", length(LC.inds))
+tot.clust <- vector("list", length(LC.inds))
+for (i in seq_along(LC.inds)) {
+  # calculate total points number based on proportion.
+  # points.num <- ceiling(tot.points.num * proportion[i])
+  points.num <- tot.points.num[i]
+  print(points.num)
+  # sample by weights.
+  inds <- LC.inds[[i]][which(LC.inds[[i]] %in% non_na_inds)] # per cluster non NA inds.
+  if (sample.size > length(inds)) {
+    sample.inds <- inds
+  } else {
+    sample.inds <- sample(x = inds, size = sample.size, replace = F, prob = weights[inds])
+  }
+  # merge with previous sites.
+  sample.inds <- unique(c(sample.inds, pre.selected.inds[which(pre.selected.LC == i)]))
+  ecoClim.sample <- ecoClim[sample.inds,]
+  # k-means.
+  # lc.clust <- c()
+  # for (ksize in 1:20) {
+  #   k <- factoextra::hkmeans(ecoClim.sample, ksize, hc.metric = "euclidean", iter.max = 50)
+  #   lc.clust <- c(lc.clust, k)
+  # }
+  # tot.clust[[i]] <- lc.clust
+  k <- factoextra::hkmeans(ecoClim.sample, sizes[i], hc.metric = "euclidean", iter.max = 50)
+  cluster.points.nums <- smooth.div(points.num, rep(points.num/sizes[i], sizes[i]))
+  LC.points <- LC.clusters <- c()
+  for (j in 1:sizes[i]) {
+    cluster.inds <- sample.inds[which(k$cluster == j)]
+    # calculate number of points for this cluster.
+    # cluster.proportion <- length(cluster.inds)/sample.size
+    # cluster.points.num <- ceiling(points.num * cluster.proportion)
+    cluster.points.num <- cluster.points.nums[j]
+    # sampling based on weights.
+    if (length(which(weights[cluster.inds] > 0)) < cluster.points.num) {
+      cluster.points <- sample(x = cluster.inds, size = cluster.points.num, replace = F)
+    } else {
+      cluster.points <- sample(x = cluster.inds, size = cluster.points.num, replace = F, prob = weights[cluster.inds])
+    }
+    LC.points <- c(LC.points, cluster.points)
+    LC.clusters <- c(LC.clusters, rep(j, cluster.points.num))
+  }
+  # add previous selected sites.
+  LC.points <- c(LC.points, pre.selected.inds[which(pre.selected.LC == i)])
+  # LC.clusters <- c(LC.clusters, rep(0, length(pre.selected.inds[which(pre.selected.LC == i)])))
+  LC.clusters <- c(LC.clusters, k$cluster[which(sample.inds %in% pre.selected.inds[which(pre.selected.LC == i)])])
+  
+  points[[i]] <- LC.points
+  clusters[[i]] <- LC.clusters
+  tot.clust[[i]] <- list(k_means = k, inds = sample.inds)
+  print(i)
+}
+save(list = c("points", "clusters"), file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/final_cluster.Rdata")
+save(tot.clust, file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster_by_class.Rdata")
+# convert points to raster.
+d <- dim(all.data.layers)
+vec1 <- vec2 <- vec3 <- vec4 <- vec5 <- rep(NA, d[1]*d[2])
+vec1[unlist(points)] <- unlist(clusters)
+vec1[pre.selected.inds] <- 0
+vec2[unlist(points)] <- LC[unlist(points)]
+vec3[unlist(points)] <- 0
+vec3[pre.selected.inds] <- 1
+# only for anchor sites.
+vec4[pre.selected.inds] <- 1
+vec5[pre.selected.inds] <- LC[pre.selected.inds]
+# convert vector to raster.
+cluster.rast <- c(terra::rast(matrix(vec1, d[1], d[2], byrow = T)),
+                  terra::rast(matrix(vec2, d[1], d[2], byrow = T)),
+                  terra::rast(matrix(vec3, d[1], d[2], byrow = T)))
+terra::ext(cluster.rast) <- terra::ext(all.data.layers)
+terra::crs(cluster.rast) <- terra::crs(all.data.layers)
+names(cluster.rast) <- c("cluster", "landcover", "pre-selected")
+terra::writeRaster(cluster.rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/final_clust.tif", overwrite=TRUE)
+
+cluster.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/final_clust.tif")
+clust_vec <- terra::as.points(cluster.rast)
+terra::writeVector(clust_vec, "/projectnb/dietzelab/dongchen/anchorSites/downscale/clust_points.shp", overwrite=TRUE)
+
+# write anchor shape file.
+anchor.rast <- c(terra::rast(matrix(vec4, d[1], d[2], byrow = T)),
+                 terra::rast(matrix(vec5, d[1], d[2], byrow = T)))
+terra::ext(anchor.rast) <- terra::ext(all.data.layers)
+terra::crs(anchor.rast) <- terra::crs(all.data.layers)
+names(anchor.rast) <- c("is_anchor", "landcover")
+anchor_vec <- terra::as.points(anchor.rast)
+terra::writeVector(anchor_vec, "/projectnb/dietzelab/dongchen/anchorSites/downscale/anchor_points.shp", overwrite=TRUE)
+
+FIA.selected <- FIA[unlist(points)]
+length(which(FIA.selected>0))
+length(which(FIA[points[[8]]]>0))
+# GEDI summary.
+gedi.mat <- log(matrix(terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/GEDI_Density/gedi_density_reproj_crop_resample.tif"), byrow = T))
+length(which(gedi.mat[unlist(points)] > 0))
+
+ind <- unlist(points)[which(! unlist(points) %in% pre.selected.inds)]
+inds <- ind[which(lat[ind] < 51.6)]
+inds1 <- non_na_inds[which(lat[non_na_inds] < 51.6)]
+
+plot(density(na.omit(gedi.mat[inds1])), col = 1, lwd = 2, ylim = c(0, 0.55))
+lines(density(na.omit(gedi.mat[inds])), col = 2, lwd = 2)
+legend("topleft", col=c(1, 2), lty=1, lwd=2, legend=c("GEDI density", "GEDI density after weighted sampling"))
+
+plot(density(na.omit(weights[non_na_inds])), col = 1, lwd = 2)
+lines(density(na.omit(weights[unlist(points)])), col = 2, lwd = 2)
+legend("topright", col=c(1, 2), lty=1, lwd=2, legend=c("Weights density", "Weights density after weighted sampling"))
+
+weights.non.weighted <- weights[inds1]
+weights.weighted <- weights[inds]
+
+plot(density(weights.non.weighted))
+lines(density(weights.weighted), col=2)
+
+plot(sort(weights[non_na_inds]))
+```
+
+# cluster visualizations.
+
+```{r}
+library(ggplot2)
+# load datasets.
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/final_cluster.Rdata")
+load("/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster_by_class.Rdata")
+all.data.layers <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.tif")
+lc_type <- c("Evergreen_Needleleaf_Trees", 
+               "Evergreen_Broadleaf_Trees", 
+               "Deciduous_Needleleaf_Trees", 
+               "Deciduous_Broadleaf_Trees",
+               "Shrub",
+               "Grass",
+               "Cereal_Croplands",
+               "Broadleaf_Croplands")
+# initialize variables.
+k.plots <- k.pca <-  vector("list", length = length(tot.clust))
+pca.loading <- c()
+d <- dim(all.data.layers)
+cent.locs <- vector("list", length = length(tot.clust))
+for (i in seq_along(tot.clust)) {
+  # progress.
+  print(i)
+  # grab ecoClim for the current land cover class.
+  df <- ecoClim[tot.clust[[i]]$inds, c(1,2, 5:15)]
+  # df$group <- tot.clust[[i]]$k_means$cluster
+  # pca_res <- vegan::rda(df[,-14])
+  # biplot(pca_res)
+  # k-means distance visualization.
+  # k.plots[[i]] <- factoextra::fviz_cluster(tot.clust[[i]]$k_means, df)
+  # PCA visualization.
+  pca_res <- prcomp(as.matrix(df), center = TRUE, scale. = TRUE)
+  summ <- summary(pca_res)
+  variance.explained <- summ$importance[2,]
+  pca.loading <- rbind(pca.loading, t(pca_res$rotation[,1:2]))
+  plot_data <- cbind(as.data.frame(pca_res$x[, 1:2]), cluster = as.character(tot.clust[[i]]$k_means$cluster))
+  # calculate center points.
+  cent.loc <- data.frame()
+  for (j in seq_along(unique(tot.clust[[i]]$k_means$cluster))) {
+    cent.loc <- rbind(cent.loc, list(PC1 = median(plot_data[which(plot_data$cluster == j),1]), 
+                                     PC2 = median(plot_data[which(plot_data$cluster == j),2])))
+  }
+  cent.loc$cluster <- as.character(unique(tot.clust[[i]]$k_means$cluster))
+  cent.locs[[i]] <- cent.loc
+  k.pca[[i]] <- ggplot() +
+                  geom_point(data = plot_data, mapping = aes(x = PC1, y = PC2, colour = cluster)) +
+                  geom_point(data = cent.loc, mapping = aes(x = PC1, y = PC2, fill = cluster), 
+                             shape = 23, size = 5, colour = "black") +
+                  labs(x = paste0("PC1 (", variance.explained[1]*100, "%)"),
+                       y = paste0("PC2 (", variance.explained[2]*100, "%)"))
+  # split shape file by land cover classes.
+  vec <- rep(NA, d[1]*d[2])
+  vec[non.na.inds[points[[i]]]] <- clusters[[i]]
+  # convert vector to raster.
+  cluster.rast <- terra::rast(matrix(vec, d[1], d[2], byrow = T))
+  terra::ext(cluster.rast) <- terra::ext(all.data.layers)
+  terra::crs(cluster.rast) <- terra::crs(all.data.layers)
+  names(cluster.rast) <- c("cluster")
+  clust_vec <- terra::as.points(cluster.rast)
+  terra::writeVector(clust_vec, file.path("/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster_vis/", paste0(lc_type[i], ".shp")), overwrite = TRUE)
+}
+colnames(pca.loading) <- names(all.data.layers)[c(1:2, 5:15)]
+rownames <- c()
+for (i in seq_along(lc_type)) {
+  rownames <- c(rownames, paste0("PC1", lc_type[i]), paste0("PC2", lc_type[i]))
+}
+row.names(pca.loading) <- rownames
+write.csv(pca.loading, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/pca_loadings.csv")
+# # plot cluster sizes.
+# load("/projectnb/dietzelab/dongchen/anchorSites/downscale/clusts.Rdata")
+# for (i in seq_along(tot.clust)) {
+#   inds <- which(names(tot.clust[[i]]) == "tot.withinss")
+#   plot(unlist(tot.clust[[i]][inds]), xlab="cluster size", ylab="tot.within.ss")
+#   abline(v=sizes[i], col=2, lwd=2)
+# }
+```
+
+# some comparisons.
+
+```{r}
+# weights.
+plot(density(weights[non_na_inds]), col=1, main = "Weights Comparison", xlab="Weights", ylab="Density")
+lines(density(weights[unlist(points)]), col=2)
+legend("topright", lty=1, col=c(1, 2), legend=c("background density", "sampled density"))
+
+# FIA density.
+vec <- matrix(all.data.layers[[3]], byrow = T)
+plot(density(vec[non_na_inds]), col=1, main = "FIA Comparison", xlab="Weights", ylab="Density")
+lines(density(vec[unlist(points)]), col=2)
+legend("topright", lty=1, col=c(1, 2), legend=c("background density", "sampled density"))
+
+# # time since disturbance.
+# vec <- matrix(all.data.layers[[1]], byrow = T)
+# plot(density(vec[non_na_inds]), col=1, main = "Time-since-disturbance Comparison", xlab="Weights", ylab="Density")
+# lines(density(vec[unlist(points)]), col=2)
+# legend("topright", lty=1, col=c(1, 2), legend=c("background density", "sampled density"))
+
+# GEDI density.
+vec <- matrix(all.data.layers[[4]], byrow = T)
+plot(density(vec[non_na_inds]), col=1, main = "GEDI Comparison", xlab="Weights", ylab="Density")
+lines(density(vec[unlist(points)]), col=2)
+legend("topright", lty=1, col=c(1, 2), legend=c("background density", "sampled density"))
+```
+
+# k-means clustering.
+
+```{r}
+# load data.
+all.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_rast.tif")
+base.crs <- terra::crs(all.rast)
+base.ext <- terra::ext(all.rast)
+# resample to 25km.
+all.rast <- terra::aggregate(all.rast, 30, fun = mean, na.rm=TRUE)
+d <- dim(all.rast)
+# convert raster to data frame.
+df <- data.frame(matrix(all.rast[[1]], byrow = T))
+for (i in 2:5) {
+  temp <- matrix(all.rast[[i]], byrow = T)
+  df <- cbind(df, temp)
+}
+# record NA index for later recovering process.
+non_na_inds <- which(!is.na(df[,1]))
+# remove NAs.
+df <- df[complete.cases(df),]
+colnames(df) <- c("stand_time", "AGB", "FIA", "GEDI", "TWI")
+# # calculate total within sum square to determine best cluster size.
+# totss <- c()
+# for (k in 1:20) {
+#   temp <- factoextra::hkmeans(df, k, hc.metric = "euclidean", iter.max = 50)
+#   totss <- c(totss, temp$tot.withinss)
+#   print(k)
+# }
+# plot(totss, type="l")
+# points(1:20, totss, pch=18)
+# save(totss, file = "/projectnb/dietzelab/dongchen/anchorSites/downscale/totss.Rdata")
+# k-means clustering with proper size.
+k <- factoextra::hkmeans(df, 6, hc.metric = "euclidean", iter.max = 50)
+p <- factoextra::fviz_cluster(k, df); p # plotting.
+# recover to raster.
+real.vec <- rep(NA, d[1] * d[2])
+real.vec[non_na_inds] <- k$cluster
+clust.rast <- terra::rast(matrix(real.vec, d[1], d[2], byrow = T))
+terra::ext(clust.rast) <- base.ext
+terra::crs(clust.rast) <- base.crs
+terra::writeRaster(clust.rast, file="/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster.tif"); terra::plot(clust.rast)
+```
+
+# select points (excluding anchor sites).
+
+```{r}
+library(purrr)
+# load cluster raster file.
+clust.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/cluster.tif")
+d <- dim(clust.rast)
+# load pecan settings for previous anchor sites.
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/anchorSites/SDA/pecan.xml")
+# convert settings to lat/lon.
+site.ids <- settings$run %>% 
+  purrr::map('site') %>% 
+  purrr::map('id') %>% 
+  base::unlist() %>% 
+  base::as.character()
+site.locs <- settings$run %>% 
+  map("site") %>% 
+  map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric) %>% 
+  t %>%
+  `colnames<-`(c("Lon","Lat")) %>%
+  `rownames<-`(site.ids)
+# generate anchor points vector.
+pts <- data.frame(lat = site.locs[,2], lon = site.locs[,1])
+sp::coordinates(pts) <- ~lon+lat
+sp::proj4string(pts) <- terra::crs("+init=epsg:4326")
+pts <- terra::vect(pts)
+# convert raster to vector for convenience.
+anchorRast <- terra::rasterize(pts, clust.rast, fun="length") # rasterize anchor sites points.
+anchorMat <- matrix(anchorRast, byrow = T) # convert raster to vector.
+clustMat <- matrix(clust.rast, byrow = T) # convert cluster raster to vector.
+# grab index for different clusters.
+# initialize lists of index for different clusters and selected points at different clusters.
+clusterInds <- inds <- vector("list", length = length(unique(clustMat))-1)
+for (i in seq_along(clusterInds)) {
+  clusterInds[[i]] <- which(clustMat == i)
+}
+# grab the rest points.
+# define total points number for each cluster.
+numPerClust <- 1000
+for (i in seq_along(clusterInds)) {
+  # grab index for non-anchor points.
+  non.anchor.inds <- clusterInds[[i]][which(is.na(anchorMat[clusterInds[[i]]]))]
+  # calculate the number for rest points selection.
+  num.sites <- numPerClust - (length(clusterInds[[i]]) - length(non.anchor.inds))
+  # sample from non-anchor points.
+  inds[[i]] <- sample(non.anchor.inds, num.sites)
+}
+# combine index for selected points.
+totInds <- sort(do.call("c", inds))
+# fill in the full-length vector.
+totIndsVec <- rep(NA, length(anchorMat))
+# tag selected points as 1.
+totIndsVec[totInds] <- 1
+# convert vector to raster.
+totIndsRast <- terra::rast(matrix(totIndsVec, d[1], d[2], byrow = T))
+terra::ext(totIndsRast) <- terra::ext(clust.rast)
+terra::crs(totIndsRast) <- terra::crs(clust.rast)
+terra::plot(totIndsRast) # verify.
+# grab coordinates of selected points.
+tot.lat.lon <- terra::xyFromCell(totIndsRast, which(totIndsRast[] == 1))
+```

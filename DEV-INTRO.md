@@ -169,7 +169,7 @@ Linux & Mac
 
 ```bash
 # Change ownership of /data directory in pecan volume to the current user
-docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u).$(id -g)" /data
+docker run -ti --rm --network pecan_pecan --volume pecan_pecan:/data pecan/data:develop chown -R "$(id -u):$(id -g)" /data
 
 docker run -ti --user="$(id -u)" --rm --network pecan_pecan --volume pecan_pecan:/data --env FQDN=docker pecan/data:develop
 ```

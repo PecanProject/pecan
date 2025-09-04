@@ -9,10 +9,13 @@ logger.setQuitOnSevere(severeQuits)
 \arguments{
 \item{severeQuits}{should R quit on a severe error.}
 }
+\value{
+invisibly, the previous value of \code{severeQuits}.
+This can be used to restore settings after a temporary change.
+}
 \description{
-The default is for a non-interactive session to quit. Setting this to false is
-especially useful for running tests when placed in \code{inst/tests/test.<fn>.R},
-but is not passed from \code{tests/run.all.R}.
+The default is for a non-interactive session to quit.
+Setting this to false is especially useful for running tests.
 }
 \examples{
 \dontrun{

@@ -6,8 +6,8 @@
 \usage{
 run.write.configs(
   settings,
+  input_design,
   write = TRUE,
-  ens.sample.method = "uniform",
   posterior.files = rep(NA, length(settings$pfts)),
   overwrite = TRUE
 )
@@ -15,9 +15,9 @@ run.write.configs(
 \arguments{
 \item{settings}{a PEcAn settings list}
 
-\item{write}{should the runs be written to the database?}
+\item{input_design}{input indices for samples}
 
-\item{ens.sample.method}{how to sample the ensemble members('halton' sequence or 'uniform' random)}
+\item{write}{should the runs be written to the database?}
 
 \item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
 analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)}

@@ -1,8 +1,29 @@
-# PEcAn.data.atmosphere 1.8.0.9000
+# PEcAn.data.atmosphere 1.9.1
+
+* `ERA5_met_process()` can now process ensemble data efficiently in parallel using new option `n_cores`
+* Dependency `ggplot2` is now suggested rather than required. It is used in two vignettes and for optional diagnostic plots from `debias_met_regression`.
+* `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
+* New function `sat_vapor_pressure()` added for computing saturation vapor pressure from temperature using various methods.
+* Added `AmeriFlux_met_ensemble()` function with ERA5 fallback for AmeriFlux meteorological data processing and ensemble generation
+* `extract.nc.ERA5()` and `met2CF.ERA5` now supports both ensemble and reanalysis data processing .
+* added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
+
+# PEcAn.data.atmosphere 1.9.0
 
 ## Fixed
 
 * `download.AmerifluxLBL` no longer wrongly re-fetches raw zipfiles when `overwrite = FALSE`
+
+## Changed
+
+* Functions that take argument `site_id` now accept strings as well as BETYdb numeric IDs. 
+* `download.ERA5.old` renamed to `download.ERA5_cds`
+
+## Removed
+
+* Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
+* Removed `browndog.net`; the Browndog service is defunct.
+
 
 # PEcAn.data.atmosphere 1.8.0
 
@@ -32,7 +53,6 @@
 ## Removed
 
 *  Helper function `robustly` has moved to package PEcAn.utils [@meetagrawal, #3096]
-*  Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
 
 
 # PEcAn.data.atmosphere 1.7.1

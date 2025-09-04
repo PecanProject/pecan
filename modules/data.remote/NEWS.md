@@ -1,5 +1,14 @@
-# PEcAn.data.remote 1.8.0.9000
+# PEcAn.data.remote 1.9.1
 
+* `MODIS_LAI_prep` gains two arguments:
+	- `skip_download` (with default FALSE) to work offline from an existing file named "LAI.csv".
+	- `boundary` (with default NULL, ie no effect) to set upper and lower quantiles for trimming LAI data
+
+
+# PEcAn.data.remote 1.9.0
+
+* Refactored GEDI, LAI, and SMAP workflows for more efficient parallel processing
+* Added `GEDI_L4A*` functions to work with footprint-level GEDI biomass data
 
 
 # PEcAn.data.remote 1.8.0
