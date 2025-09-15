@@ -18,6 +18,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation. The PEcAn.photosynthesis package
     contains functions used in the Hierarchical Bayesian calibration of the
     Farquhar et al 1980 model.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     rjags
 Imports:

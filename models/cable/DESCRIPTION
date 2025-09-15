@@ -9,6 +9,8 @@ Authors@R: c(person("Kaitlin", "Ragosta", role = c("aut")),
 Author: Kaitlin Ragosta
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link the (CABLE) to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8)

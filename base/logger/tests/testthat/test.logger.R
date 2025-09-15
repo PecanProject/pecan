@@ -7,7 +7,7 @@ test_that("`logger.getLevelNumber` returns correct level number",{
   expect_equal(logger.getLevelNumber("info"), 20)
   expect_equal(logger.getLevelNumber("warn"), 30)
   expect_equal(logger.getLevelNumber("error"), 40)
-  expect_equal(logger.getLevelNumber("severe"), 40)
+  expect_equal(logger.getLevelNumber("severe"), 50)
   expect_equal(logger.getLevelNumber("off"), 60)
   
   old_settings <- logger.setLevel("ERROR")

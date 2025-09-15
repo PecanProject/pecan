@@ -13,6 +13,8 @@ Imports:
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2

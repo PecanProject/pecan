@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest  
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      PECAN_GIT_BRANCH: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
 
     container: 
       image: pecan/depends:develop
@@ -24,7 +25,7 @@ jobs:
     # Checkout source code
     - uses: actions/checkout@v4
 
-    # Install pkgdown
+    # Install dependencies
     - name: Install dependencies
       run: Rscript -e 'install.packages("pkgdown")'
 

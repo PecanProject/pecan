@@ -5,6 +5,8 @@
 \title{Write ensemble config files}
 \usage{
 write.ensemble.configs(
+  input_design,
+  ensemble.size,
   defaults,
   ensemble.samples,
   settings,
@@ -17,6 +19,10 @@ write.ensemble.configs(
 )
 }
 \arguments{
+\item{input_design}{the input indices for samples}
+
+\item{ensemble.size}{size of ensemble}
+
 \item{defaults}{pft}
 
 \item{ensemble.samples}{list of lists supplied by \link{get.ensemble.samples}}

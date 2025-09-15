@@ -1,3 +1,9 @@
+# PEcAn.SIBCASA 0.0.3
+
+* model2netcdf.SIBCASA no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+
+
+
 # PEcAn.SIBCASA 0.0.2
 
 ## License change

@@ -9,16 +9,18 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     coda,
     dplyr,
+    foreach,
     furrr,
     future,
     ggplot2,
     lubridate (>= 1.6.0),
     magrittr,
     Matrix,
-    mvtnorm,
     ncdf4,
     nimble,
     PEcAn.DB,
@@ -31,14 +33,18 @@ Imports:
     rlang,
     stringr
 Suggests:
+    abind,
     corrplot,
+    doSNOW,
     exactextractr,
-    emdbook,
+    mvtnorm,
+    ggrepel,
     glue,
     ggpubr,
     ggrepel,
     gridExtra,
     keras3 (>= 1.0.0),
+    itertools,
     magic (>= 1.5.0),
     methods,
     PEcAn.benchmark,
@@ -62,6 +68,7 @@ Suggests:
     tictoc,
     tidyr,
     utils,
+    xgboost,
     XML
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

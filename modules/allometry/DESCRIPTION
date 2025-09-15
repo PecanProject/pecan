@@ -7,6 +7,8 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
              person("Shashank", "Singh", role = c("ctb")),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: Synthesize allometric equations or fit allometries to data.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     coda (>= 0.18),
     grDevices,

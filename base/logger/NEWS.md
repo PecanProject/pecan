@@ -1,3 +1,8 @@
+# PEcAn.logger 1.8.4 (unreleased)
+
+- All `logger.set*` functions now invisibly return the previously set value. This can be handy for restoring settings after a temporary change.
+- Multipart logger messages passed in `...` now get a more robust conversion to string before concatenating, hopefully giving nicer results for nontext objects such as dates and lists.
+
 # PEcAn.logger 1.8.3
 
 - Maintenance release with no user-visible changes.

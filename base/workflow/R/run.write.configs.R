@@ -5,9 +5,11 @@
 #' \code{write.config.*} function for your specific ecosystem model
 #' (e.g. write.config.ED2, write.config.SIPNET).
 #'
+#'
 #' @param settings a PEcAn settings list
+#' @param ensemble.size number of ensemble runs
+#' @param input_design input indices for samples 
 #' @param write should the runs be written to the database?
-#' @param ens.sample.method how to sample the ensemble members('halton' sequence or 'uniform' random)
 #' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
 #'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
 #' @param overwrite logical: Replace output files that already exist?
@@ -22,9 +24,13 @@
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
-run.write.configs <- function(settings, write = TRUE, ens.sample.method = "uniform", 
+
+run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,  
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
+  
+  
+  
   ## Skip database connection if settings$database is NULL or write is False
   if (!isTRUE(write) && is.null(settings$database)) {
     PEcAn.logger::logger.info("Not writing this run to database, so database connection skipped")
@@ -93,13 +99,23 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   scipen <- getOption("scipen")
   options(scipen = 12)
   
-  PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
   samples.file <- file.path(settings$outdir, "samples.Rdata")
   if (file.exists(samples.file)) {
     samples <- new.env()
     load(samples.file, envir = samples) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
     trait.samples <- samples$trait.samples
-    ensemble.samples <- samples$ensemble.samples
+    trait_sample_indices <- input_design[["param"]]
+    ensemble.samples <- list()
+    for (pft in names(trait.samples)) {
+      pft_traits <- trait.samples[[pft]]
+      ensemble.samples[[pft]] <- as.data.frame(
+        lapply(
+          names(pft_traits),
+          function(trait) pft_traits[[trait]][trait_sample_indices]
+        )
+      )
+      names(ensemble.samples[[pft]]) <- names(pft_traits)
+    }
     sa.samples <- samples$sa.samples
     runs.samples <- samples$runs.samples
     ## env.samples <- samples$env.samples
@@ -164,9 +180,11 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
     ens.runs <- PEcAn.uncertainty::write.ensemble.configs(defaults = settings$pfts,
+                                                          ensemble.size = ensemble.size,
                                                           ensemble.samples = ensemble.samples, 
                                                           settings = settings,
                                                           model = model, 
+                                                          input_design = input_design,
                                                           write.to.db = write)
     
     # Store output in settings and output variables
@@ -190,6 +208,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
        file = file.path(settings$outdir, "samples.Rdata"))
   PEcAn.logger::logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen = scipen)
-  
-  return(invisible(settings))
+  invisible(settings)
+  return(settings)
 }

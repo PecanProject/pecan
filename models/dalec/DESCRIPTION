@@ -1,7 +1,7 @@
 Package: PEcAn.DALEC
 Type: Package
 Title: PEcAn Package for Integration of the DALEC Model
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Tristan", "Quaife", role = c("aut")),
@@ -10,6 +10,8 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.logger,
     PEcAn.remote,

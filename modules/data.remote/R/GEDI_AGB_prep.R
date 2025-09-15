@@ -14,7 +14,7 @@
 #' @param prerun Character: series of pre-launch shell command before running the shell job (default is NULL).
 #' @param num.folder Numeric: the number of batch folders to be created when submitting jobs to the queue.
 #' @param cores Numeric: numbers of core to be used for the parallel computation. The default is the maximum current CPU number.
-#' @param credential.folder Character: the physical path to the folder that contains the credential file (.nasadaacapirc).
+#' @param credential_path Character: the physical path to the credential file. (.netrc).
 #'
 #' @return A data frame containing AGB and sd for each site and each time step.
 #' @export
@@ -50,7 +50,7 @@ GEDI_AGB_prep <- function(site_info,
                           prerun = NULL,
                           num.folder = NULL,
                           cores = parallel::detectCores(),
-                          credential.folder = "~") {
+                          credential_path = "~/.netrc") {
   # convert list to vector.
   if (is.list(bbox)) {
     bbox <- as.numeric(unlist(bbox))
@@ -70,7 +70,7 @@ GEDI_AGB_prep <- function(site_info,
     dir.create(outdir)
   }
   # detect if we generate the NASA DAAC credential file.
-  if (!file.exists(file.path(credential.folder, ".nasadaacapirc"))) {
+  if (!file.exists(file.path(credential_path))) {
     PEcAn.logger::logger.info("There is no credential file for NASA DAAC server.")
     PEcAn.logger::logger.info("Please create the .nasadaacapirc file within the credential folder.")
     PEcAn.logger::logger.info("The first and second lines of the file are the username and password.")
@@ -89,63 +89,70 @@ GEDI_AGB_prep <- function(site_info,
   AGB_Output$site_id <- site_info$site_id
   # loop over each time point.
   for (i in seq_along(time_points)) {
-    # create start and end dates.
-    start_date <- seq(time_points[i], length.out = 2, by = paste0("-", search_window))[2]
-    end_date <- seq(time_points[i], length.out = 2, by = search_window)[2]
-    # create the download folder for downloaded GEDI tiles.
-    download.path <- file.path(outdir, "download")
-    if (!dir.exists(download.path)) {
-      dir.create(download.path)
+    # if we have pre-existing output.
+    if (file.exists(file.path(outdir, paste0("agb_", time_points[i], ".rds")))) {
+      agb <- readRDS(file.path(outdir, paste0("agb_", time_points[i], ".rds")))
     } else {
+      # create start and end dates.
+      start_date <- seq(time_points[i], length.out = 2, by = paste0("-", search_window))[2]
+      end_date <- seq(time_points[i], length.out = 2, by = search_window)[2]
+      # create the download folder for downloaded GEDI tiles.
+      download.path <- file.path(outdir, "download")
+      if (!dir.exists(download.path)) {
+        dir.create(download.path)
+      } else {
+        # delete previous downloaded files.
+        unlink(download.path, recursive = T)
+        dir.create(download.path)
+      }
+      # download GEDI tiles.
+      files <- NASA_DAAC_download(ul_lat = bbox[4], 
+                                  ul_lon = bbox[1], 
+                                  lr_lat = bbox[3], 
+                                  lr_lon = bbox[2], 
+                                  ncore = cores, 
+                                  from = start_date, 
+                                  to = end_date, 
+                                  data_version = "V2_1", 
+                                  outdir = download.path, 
+                                  doi = "10.3334/ORNLDAAC/2056", 
+                                  just_path = F, 
+                                  credential_path = credential_path)
+      # if we want to submit jobs to the queue.
+      if (batch) {
+        if (is.null(num.folder)) {
+          PEcAn.logger::logger.info("Please provide the number of batch folders if you want to submit jobs to the queue!")
+          return(NULL)
+        }
+        which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
+                                                           outdir = outdir, 
+                                                           site_info = site_info, 
+                                                           num.folder = as.numeric(num.folder), 
+                                                           buffer = as.numeric(buffer), 
+                                                           cores = as.numeric(cores), 
+                                                           prerun = prerun)
+        agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
+                                         outdir = outdir, 
+                                         which.point.in.which.file = which.point.in.which.file, 
+                                         num.folder = as.numeric(num.folder), 
+                                         buffer = as.numeric(buffer), 
+                                         cores = as.numeric(cores), 
+                                         prerun = prerun)
+      } else {
+        # if we want to run the job locally.
+        which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
+                                                           site_info = site_info, 
+                                                           buffer = as.numeric(buffer), 
+                                                           cores = as.numeric(cores))
+        agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
+                                         which.point.in.which.file = which.point.in.which.file, 
+                                         buffer = as.numeric(buffer), 
+                                         cores = as.numeric(cores))
+      }
+      saveRDS(agb, file = file.path(outdir, paste0("agb_", time_points[i], ".rds")))
       # delete previous downloaded files.
       unlink(download.path, recursive = T)
-      dir.create(download.path)
     }
-    # download GEDI tiles.
-    files <- NASA_DAAC_download(ul_lat = bbox[4], 
-                                ul_lon = bbox[1], 
-                                lr_lat = bbox[3], 
-                                lr_lon = bbox[2], 
-                                ncore = cores, 
-                                from = start_date, 
-                                to = end_date, 
-                                outdir = download.path, 
-                                doi = "10.3334/ORNLDAAC/2056", 
-                                just_path = F, 
-                                credential.folder = credential.folder)
-    # if we want to submit jobs to the queue.
-    if (batch) {
-      if (is.null(num.folder)) {
-        PEcAn.logger::logger.info("Please provide the number of batch folders if you want to submit jobs to the queue!")
-        return(NULL)
-      }
-      which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
-                                                         outdir = outdir, 
-                                                         site_info = site_info, 
-                                                         num.folder = as.numeric(num.folder), 
-                                                         buffer = as.numeric(buffer), 
-                                                         cores = as.numeric(cores), 
-                                                         prerun = prerun)
-      agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
-                                       outdir = outdir, 
-                                       which.point.in.which.file = which.point.in.which.file, 
-                                       num.folder = as.numeric(num.folder), 
-                                       buffer = as.numeric(buffer), 
-                                       cores = as.numeric(cores), 
-                                       prerun = prerun)
-    } else {
-      # if we want to run the job locally.
-      which.point.in.which.file <- GEDI_L4A_Finder_batch(files = files, 
-                                                         site_info = site_info, 
-                                                         buffer = as.numeric(buffer), 
-                                                         cores = as.numeric(cores))
-      agb <- GEDI_L4A_2_mean_var.batch(site_info = site_info, 
-                                       which.point.in.which.file = which.point.in.which.file, 
-                                       buffer = as.numeric(buffer), 
-                                       cores = as.numeric(cores))
-    }
-    # delete previous downloaded files.
-    unlink(download.path, recursive = T)
     # loop over sites.
     for (j in seq_len(nrow(agb))) {
       # skip NA observations.

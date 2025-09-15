@@ -10,6 +10,8 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
 Author: David LeBauer, Tess McCabe
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: PEcAn integration and model skill testing
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     dplyr,
     graphics,

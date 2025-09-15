@@ -5,13 +5,15 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Version: 1.9.0
+Version: 1.9.1
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
 Description: Contains functions to read PEcAn settings files.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     methods
 Imports:

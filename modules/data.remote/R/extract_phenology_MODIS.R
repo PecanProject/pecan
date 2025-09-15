@@ -84,8 +84,8 @@ extract_phenology_MODIS<- function(site_info,start_date,end_date,outdir,run_para
     leafphdata$leafonday[leafphdata$leafon_qa==3]<-NA #exclude the data when QA is poor
     leafphdata$leafoffday[leafphdata$leafoff_qa==3]<-NA
     leafphdata$leafonday[leafphdata$leafonday>leafphdata$leafoffday]<-NA #exclude the data when leaf-on date is larger than leaf-off date
-    leafphdata$leafonday<-lubridate::yday(as.Date(leafphdata$leafonday),origin="1970-01-01") #convert the dates to Day-of-Year format
-    leafphdata$leafoffday<-lubridate::yday(as.Date(leafphdata$leafoffday),origin="1970-01-01")
+    leafphdata$leafonday<-lubridate::yday(as.Date(leafphdata$leafonday,origin="1970-01-01")) #convert the dates to Day-of-Year format
+    leafphdata$leafoffday<-lubridate::yday(as.Date(leafphdata$leafoffday,origin="1970-01-01"))
     leafphdata$year<-lubridate::year(leafphdata$year)
     leafphdata$site_id<-as.character(leafphdata$site_id)
     

@@ -343,3 +343,46 @@ mpot2smoist <- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b
   smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation
   return(smoist)
 }#end function
+
+#' Convert soil organic carbon concentration to organic carbon stock
+#'
+#' @param soc_percent soil organic carbon concentration (percent, 0-100)
+#' @param bulk_density bulk density (g/cm3)
+#' @param thickness layer thickness (cm)
+#' @param coarse_fraction coarse fragment volume fraction (0-1, default = 0)
+#' @return organic carbon stock (kg/m2)
+#' @export
+#' @author Akash
+#' @examples
+#' soc2ocs(2.5, 1.3, 30, 0.15)
+#'
+#' # Multiple soil layers
+#' soc_pct <- c(3.2, 2.1, 1.8)
+#' bd_g_cm3 <- c(1.2, 1.4, 1.5)
+#' thickness_cm <- c(15, 15, 30)
+#' coarse_fraction <- c(0.10, 0.20, 0.25)
+#' soc2ocs(soc_pct, bd_g_cm3, thickness_cm, coarse_fraction)
+
+soc2ocs <- function(soc_percent, bulk_density, thickness, coarse_fraction = 0) {
+  # Convert inputs to standard units for calculation
+  soc_frac <- soc_percent / 100
+  bd_kg_m3 <- PEcAn.utils::ud_convert(bulk_density, "g cm-3", "kg m-3") 
+  thick_m <- PEcAn.utils::ud_convert(thickness, "cm", "m")
+  
+  # organic carbon stock: SOC × BD × thickness × (1 - coarse_fraction)
+  ocs_kg_m2 <- soc_frac * bd_kg_m3 * thick_m * (1 - coarse_fraction)
+  return(ocs_kg_m2)
+} # soc2ocs
+
+#' Convert organic matter to soil organic carbon 
+#'
+#' @description Converts organic matter content to soil organic carbon using the Van Bemmelen factor (1.724).
+#'
+#' @param om_percent organic matter percentage (0-100)
+#' @return soil organic carbon percentage (0-100)
+#' @export
+#' @author Akash
+
+om2soc <- function(om_percent) {
+  return(om_percent / 1.724)
+} # om2soc

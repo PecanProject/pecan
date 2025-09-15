@@ -1,7 +1,7 @@
 Package: PEcAn.FATES
 Type: Package
 Title: PEcAn Package for Integration of FATES Model
-Version: 1.8.0
+Version: 1.8.1
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Shawn", "Serbin", role = c("aut"),
@@ -15,6 +15,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the FATES model to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     stringr,
     PEcAn.logger,

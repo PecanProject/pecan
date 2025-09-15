@@ -110,3 +110,8 @@ contrib/modellauncher/modellauncher
 
 # don't track project level .Rprofile
 .Rprofile
+
+
+# Ignore any folder named demo_outdir (Quarto notebook outputs)
+**/demo_outdir/
+dbfiles/

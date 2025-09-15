@@ -3,7 +3,20 @@ All notable changes are kept in this file. All changes made should be added to t
 `Unreleased`. Once a new release is made this file will be updated to create a new `Unreleased`
 section for the next release.
 
-For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
+	For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
+
+## Unreleased
+
+### Added
+
+* Add function `clip_and_save_raster_file()` for subsetting rasters to match a polygon of interest (#3537).
+* Add CH4 and N2O to standard_vars in PEcAn.utils
+* New function `sat_vapor_pressure()` added for computing saturation vapor pressure from temperature using various methods.
+* Added `AmeriFlux_met_ensemble()` function with ERA5 fallback for AmeriFlux meteorological data processing and ensemble generation
+
+### Fixed
+
+* Fixed a bug within the `model2netcdf.SIPNET` function where we assumed the constant calculations of `pecan_start_doy` across years (the calculations should vary depending on the last date from the last loop and the start date of the current loop), which will lead to incorrect calculations of the start `sub_dates` and `sub_dates_cf` if we are jumping between years (e.g., from 2012-12-31 to 2013-01-01). The `sipnet2datetime` function is no longer used anywhere and therefore has been removed.
 
 ## [1.9.0] - 2025-05-25
 
@@ -16,6 +29,22 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added automated pkgdown documentation for all PEcAn packages (@divine7022, #3482): 
   - Compiled pages are live at https://pecanproject.github.io/package-documentation and inside Docker at `pecan.localhost/pkgdocs/`, and these are automatically updated each time a PR to the source packages is merged.
   - You can compile all pkgdown pages locally at any time with `make pkgdocs`.
+- Included all relevant carbon pools (`ROOT_BIOMASS`, `AG_BIOMASS`, `SOIL_STOCK`, `LIT_BIOMASS`) in BADM-based IC extraction; excluded non-pool variables like `SOIL_CHEM`.
+- Added explicit support for `LIT_BIOMASS` to fully utilize **BADM** biomass capabilities.
+- Added `test-IC_BADM_Utilities.R` to validate BADM initial condition extraction and processing
+- The ERA5 NC extraction function can now handle multi-site instead of one.
+- Added function for merging images from the same tiling system (MODIS, GLANCE, ICESat-2, HLS, etc.).
+- Added function for converting images towards the GDAL-supported formats (H5, NetCDF, HDF4, GeoTIFF, etc .).
+- `extract_soil_gssurgo` now supports spatial sampling using a grid of user-defined size and spacing. And supports ensemble simulation of soil organic carbon (SOC) stocks, using area-weighted aggregation
+- New utility script `IC_SOILGRID_Utilities.R` for processing SoilGrids data to generate soil carbon initial condition (IC) files. This includes  (#3508):
+  - **`soilgrids_ic_process`**: A function to extract, process, and generate ensemble members from SoilGrids250m data.
+  - **`preprocess_soilgrids_data`**: A helper function to handle missing values and ensure data integrity during preprocessing. 
+  - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data. 
+- `extract.nc.ERA5()` and `met2CF.ERA5` now supports both ensemble and reanalysis data processing .
+- Initial Quarto notebook `run_pecan.qmd` to run PEcAn Demo 1 workflow from a pre-configured `pecan.xml` file, enabling notebook-based model runs, analysis, and visualization.[#3531](https://github.com/PecanProject/pecan/pull/3531)
+ - Directory structure for PEcAn Quarto notebooks under `pecan/documentation/tutorials/Demo_1_Basic_Run`
+ - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
+- added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
 
 ### Fixed
 - api to correctly use x_var from request in plotResults #3528
@@ -28,6 +57,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Refactored and created new version of `SDA_downscale` named `ensemble_downscale`.
 - Added helper function `.convert_coords_to_sf()` for consistent conversion of data with lat lon data to `sf` pts.
 - R version 4.4 installs Python 3.12 which wants to leverage os managed packages instead, install python3-pika using apt.
+- Fixed a bugs and BADM now process both single-site and multi-site settings, detecting the input structure and processing each site independently to generate the correct number of ensemble members per site.
+- Fixed "external pointer is not valid" error and addressed key bugs in `soilgrids_soilC_extract()` function (#3506)
 
 ### Changed
 
@@ -41,6 +72,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     * Modules `PEcAn.allometry`, `PEcAn.assim.batch`, `PEcAn.data.mining`, `PEcAn.emulator`, `PEcAn.MA`, `PEcAn.photosynthesis`, `PEcAn.priors`, and `PEcAn.RTM`.
 - Renamed master branch to main
 - `PEcAn.all::pecan_version()` now reports commit hashes as well as version numbers for each installed package.
+- `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
 
 ### Removed
 
@@ -74,8 +106,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added GEDI AGB preparation workflow.
 - Added new feature of downloading datasets from the NASA DAAC ORNL database.
 - Extended downscale function and created 'downscale_hrly' so that it handles more frequent data
-- Added 'aggregate' as a new feature for downscaled data
+- Added 'aggregate' as a new feature for downscaled data.
 - Added ERA5 download function that applies to the new CDS API.
+- Added downscale functions and scripts that apply to the North America SDA run.
 
 ### Fixed
 

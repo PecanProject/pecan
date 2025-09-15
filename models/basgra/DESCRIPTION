@@ -6,6 +6,8 @@ Authors@R: c(person("Istem", "Fer", role = c("aut", "cre"),
                      email = "istem.fer@fmi.fi"),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: This module provides functions to link the BASGRA model to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends: R (>= 4.0.0)
 Imports:
     PEcAn.logger,

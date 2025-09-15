@@ -2,6 +2,7 @@
 ##' Convert priors / MCMC samples to chains that can be sampled for model parameters 
 ##' 
 ##' @param settings PEcAn settings object
+##' @param ensemble.size number of runs in model ensemble
 ##' @param posterior.files list of filenames to read from
 ##' @param ens.sample.method one of "halton", "sobol", "torus", "lhc", "uniform"
 ##' @export
@@ -9,7 +10,7 @@
 ##' @author David LeBauer, Shawn Serbin, Istem Fer
 #' @importFrom purrr `%||%`
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(settings, 
+get.parameter.samples <- function(settings, ensemble.size = 1,
                                   posterior.files = rep(NA, length(settings$pfts)), 
                                   ens.sample.method = "uniform") {
   pfts      <- settings$pfts
@@ -191,19 +192,18 @@ get.parameter.samples <- function(settings,
                                      quantiles = quantiles)
   }
   if ("ensemble" %in% names(settings)) {
-    #if it's not there it's one probably
-    if (is.null(settings$ensemble$size)) settings$ensemble$size <- 1
-    if (settings$ensemble$size == 1) {
+   
+    if (ensemble.size == 1) {
       ## run at median if only one run in ensemble
       ensemble.samples <- PEcAn.utils::get.sa.sample.list(
         pft = trait.samples,
         env = env.samples,
         quantiles = 0.5
       )
-    } else if (settings$ensemble$size > 1) {
+    } else if (ensemble.size > 1) {
       
       ## subset the trait.samples to ensemble size using Halton sequence
-      ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, 
+      ensemble.samples <- get.ensemble.samples(ensemble.size, trait.samples, 
                                                env.samples, ens.sample.method, param.names)
     }
   }

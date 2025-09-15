@@ -1,3 +1,10 @@
+# PEcAn.utils 1.8.2
+
+## Added
+
+* New function `nc_write_varfiles()` creates text summaries of the variables in all netCDF files in an output directory, writing either one file named `nc_vars.txt` if `output_mode = "combined"` or a separate `[filename].nc.var` alongside each netCDF if `output_mode = "paired"`.
+
+
 # PEcAn.utils 1.8.1
 
 ## License change
@@ -6,6 +13,7 @@
 ## Changed
 * utility function `zero.bounded.density` is now exported.
 * Roxygen fixes
+* Add CH4 and N2O to standard_vars
 
 
 # PEcAn.utils 1.8.0

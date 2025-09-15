@@ -1,11 +1,13 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn Package for Integration of the MAAT Model
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(
     person("Shawn", "Serbin", role = c("aut", "cre"), email="sserbin@bnl.gov"),
     person("Anthony", "Walker", role = "aut", email="walkerap@ornl.gov"))
 Description: This module provides functions to wrap the MAAT model into the PEcAn workflows.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.data.atmosphere,
     PEcAn.logger,

@@ -1,7 +1,7 @@
 Package: PEcAn.PRELES
 Type: Package
 Title: PEcAn Package for Integration of the PRELES Model
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Tony", "Gardella", role = c("aut", "cre"),
@@ -14,6 +14,8 @@ Description: This module provides functions to run the PREdict Light use
     parameterization,execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.logger,
     lubridate (>= 1.6.0),

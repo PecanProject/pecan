@@ -9,20 +9,23 @@ extract_soil_gssurgo(
   lat,
   lon,
   size = 1,
-  radius = 500,
+  grid_size = 3,
+  grid_spacing = 100,
   depths = c(0.15, 0.3, 0.6)
 )
 }
 \arguments{
 \item{outdir}{Output directory for writing down the netcdf file}
 
-\item{lat}{Latitude}
+\item{lat}{Latitude of center point (single numeric value)}
 
-\item{lon}{Longitude}
+\item{lon}{Longitude of center point (single numeric value)}
 
 \item{size}{Ensemble size}
 
-\item{radius}{radius in meters is used to take soil type samples around the site}
+\item{grid_size}{Size of the spatial sampling grid around the center point (default: 3)}
+
+\item{grid_spacing}{Spacing between grid cells in meters (default: 100)}
 
 \item{depths}{Standard set of soil depths in m to create the ensemble of soil profiles with.}
 }
@@ -32,6 +35,19 @@ It returns the address for the generated soil netcdf file
 \description{
 Extract soil data from gssurgo
 }
+\details{
+This function takes a single lat/lon point and creates a spatial grid 
+around it for sampling soil variability. The grid_size parameter determines 
+how many grid points (grid_size x grid_size) are created around the center point.
+}
+\section{Current Limitations}{
+
+- MUKEY frequency weighting treats occurrence counts as proportional to area coverage
+- This approximation may introduce geometric bias for irregular polygon data
+- Buffer radius is set to grid_spacing/2 to reduce overlapping queries, but may still miss coverage
+- True area-weighted aggregation using polygon geometries is planned (see issue #3609)
+}
+
 \examples{
 \dontrun{
    outdir  <- "~/paleon/envTest"
@@ -41,5 +57,5 @@ Extract soil data from gssurgo
 }
 }
 \author{
-Hamze Dokoohaki
+Hamze Dokoohaki, Akash
 }

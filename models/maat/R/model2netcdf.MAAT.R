@@ -179,20 +179,12 @@ model2netcdf.MAAT <- function(rundir, outdir, sitelat = -999, sitelon = -999, st
     ncout <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), output$var)
     ncdf4::ncatt_put(ncout, "time", "bounds", "time_bounds", prec=NA)
     for (i in seq_along(output$var)) {
-      #print(i)  # for debugging
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]])
     }
-    
-    ## extract variable and long names to VAR file for PEcAn vis
-    utils::write.table(sapply(ncout$var, function(x) { x$longname }), 
-                file = file.path(outdir, paste(year, "nc.var", sep = ".")), 
-                col.names = FALSE, 
-                row.names = TRUE, 
-                quote = FALSE)
-    
+
     # close netCDF file
     try(ncdf4::nc_close(ncout))
-    
+
   }  ## Year loop
 } # model2netcdf.MAAT
 ##-------------------------------------------------------------------------------------------------#

@@ -73,7 +73,7 @@ title 'LPJ-GUESS cohort mode - global pfts'
 
 vegmode "cohort"		! "cohort", "individual" or "population"
 nyear_spinup 500		! number of years to spin up the simulation for
-spinup_lifeform "nolifeform"
+! spinup_lifeform "tree"
 ifcalcsla 0				! whether to calculate SLA from leaf longevity
 ! (PFT-specific value can be specified in this file instead)
 ifcalccton 1			! whether to calculate leaf C:N min from leaf longevity
@@ -84,7 +84,7 @@ patcharea 1000			! patch area (m2)
 estinterval 5			! years between establishment events in cohort mode
 ifdisturb 1				! whether generic patch-destroying disturbances enabled
 distinterval 500		! average return time for generic patch-destroying disturbances
-disturb_year -1
+! disturb_year -1
 ifbgestab 1				! whether background establishment enabled
 ifsme 1					! whether spatial mass effect enabled
 ifstochestab 1			! whether establishment stochastic

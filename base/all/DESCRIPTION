@@ -43,6 +43,8 @@ Description: The Predictive Ecosystem Carbon Analyzer
     PEcAn is to streamline the interaction between data and
     models, and to improve the efficacy of scientific
     investigation.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     PEcAn.DB,
     PEcAn.settings,

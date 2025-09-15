@@ -1,3 +1,8 @@
+# PEcAn.FATES 1.8.1
+
+* model2netcdf.FATES no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+
+
 # PEcAn.FATES 1.8.0
 
 ## License change

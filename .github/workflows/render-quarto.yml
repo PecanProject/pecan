@@ -1,0 +1,40 @@
+name: Build and Render Quarto PDF
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  render-notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build PEcAn base Docker image
+        run: |
+          docker build -t pecan-base-ci:latest -f docker/base/Dockerfile .
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: '1.8.17'
+
+      - name: Check R code style with styler
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/work pecan-base-ci:latest bash -c "Rscript -e '
+            if (!requireNamespace(\"styler\", quietly = TRUE)) install.packages(\"styler\");
+            unstyled <- styler::style_file(\"/work/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd\");
+            if (is.data.frame(unstyled) && \"changed\" %in% names(unstyled) && any(unstyled$changed == TRUE)) {
+              print(unstyled);
+              stop(\"run_pecan.qmd is not styled. Please run styler::style_file() locally and commit the changes.\")
+            } else {
+              cat(\"run_pecan.qmd is styled.\\n\")
+            }
+          '"
+
+      - name: Render the Quarto notebook to HTML
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/work pecan-base-ci:latest bash -c "quarto render /work/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd --to html"

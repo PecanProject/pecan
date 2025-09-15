@@ -1,12 +1,14 @@
 Package: PEcAn.STICS
 Type: Package
 Title: PEcAn Package for Integration of the STICS Model
-Version: 1.8.1
+Version: 1.8.2
 Authors@R: c(
   person("Istem", "Fer",
     email = "istem.fer@fmi.fi",
     role = c("aut", "cre")))
 Description: This module provides functions to link the STICS to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.settings,
     PEcAn.logger,

@@ -7,7 +7,12 @@
 logger.setOutputFile(filename)
 }
 \arguments{
-\item{filename}{the file to send the log messages to (or NA to not write to file)}
+\item{filename}{the file to send the log messages to
+(or NA to not write to file)}
+}
+\value{
+Invisibly, the previously set filename.
+This can be used to restore settings after a temporary change.
 }
 \description{
 The name of the file where the logging information should be written to.

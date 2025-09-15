@@ -1,0 +1,623 @@
+---
+title: "Soil Carbon data validation"
+date: "2025-01-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Load libraries, WD, cran repository
+library(DBI)
+library(RSQLite) 
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(rnaturalearth)
+library(sf)
+library(maps)
+library(scoringRules)
+library(ncf)
+library(terra)
+library(knitr)
+library(gstat)
+library(tidyr)
+library(neonstore)
+library(neonUtilities)
+library(swfscMisc)
+library(PEcAn.utils)
+library(maps)
+
+
+# load functions from other script
+source("extract_neon_sc_func.R")
+
+setwd("/Users/chane/OneDrive/Documents/ef lab/R files")
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+```
+
+
+Get soil carbon data from SDA forecast (copying Cami's code)
+```{r, echo = FALSE}
+
+# Load data
+SIPNET <- load("sda.all.forecast.analysis.Rdata")
+
+# Get site coordinates
+Site_Info <- readRDS("site.locs.rds")
+
+# Rename lists to years
+names(analysis.all) <- 2012:2021
+year <- 2012:2021
+
+# Names of variables
+variables <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+
+# Loop through each year list in analysis.all
+for (year in names(analysis.all)) {
+  
+  # Get the current data frame for the year
+  year_df <- analysis.all[[year]]
+  
+  # Initialize a vector for new column names
+  new_colnames <- character(ncol(year_df))
+  
+  # Loop over each site and assign variable names
+  for (site in 1:6400) {
+    # Calculate the starting column index for each site's variables
+    start_col <- (site - 1) * 4 + 1
+    
+    # Assign the names for the 4 variable columns for this site
+    new_colnames[start_col:(start_col + 3)] <- paste0(variables, "_Site", site)
+  }
+  
+  # Apply the new column names to the data frame
+  colnames(year_df) <- new_colnames
+  analysis.all[[year]] <- year_df  # Update the list with modified data frame
+}
+
+
+# Load list of neon sites with their latitudes and longitudes
+Neonplots <- read.csv("Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info (site_info has coordinates of each location in df)
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+  # Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+  # Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+  # Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+  # Create a new column in Neonplots to store the closest Site_Number
+Neonplots$Closest_Site <- NA
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  Neonplots$Closest_Site[i] <- Site_Info$Site_Number[closest_site_index]}
+
+```
+
+Filtering analysis data with relevant sites
+```{r, echo=FALSE}
+## Filter analysis.all to only include relevant sites ##
+
+# Get the list of sites to keep from Neonplots
+sites_to_keep <- Neonplots$Closest_Site  
+
+# Loop through each data frame in the analysis.all list
+analysis.fia = list()
+for (year in names(analysis.all)) {
+  # Get the current data frame
+  df <- analysis.all[[year]]
+  
+  # Create a pattern to match columns that include sites in sites_to_keep
+  pattern <- paste0("_Site(", paste(sites_to_keep, collapse = "|"), ")$")
+  
+  # Keep only columns that match the pattern
+  df_filtered <- df[, grep(pattern, colnames(df))]
+  
+  # Replace the original data frame in the list with the filtered one
+  analysis.fia[[year]] <- df_filtered}
+
+```
+
+Now extract the sites from Neonplots
+```{r, echo = FALSE}
+## Extract the unique site-year combinations from Neonplots ##
+valid_sites <- unique(Neonplots[, "Closest_Site"])
+
+# Loop over each year list in analysis.all
+for (year in names(analysis.fia)) {
+  
+  # Extract the current data frame for the year
+  year_df <- analysis.fia[[year]]
+  
+  # Identify the year as a numeric value
+  current_year <- as.numeric(substr(year, 1, 4))
+  
+  # Identify columns with site numbers that match valid_sites
+  matching_columns <- grep(paste0("_Site(", paste(valid_sites, collapse = "|"), ")$"), 
+                           colnames(year_df), value = TRUE)
+  
+  # Subset the data frame to only include matching columns
+  analysis.fia[[year]] <- year_df[, matching_columns, drop = FALSE]
+}
+```
+
+Extract soil carbon data - mean and standard deviation of each year
+```{r, echo = FALSE}
+# Initialize a list to store summary tables for each year
+summary_list <- list()
+
+# Loop through each year's data frame in analysis.all
+names(analysis.fia) = names(analysis.all)
+for (year in names(analysis.all)) {
+  
+  # Extract the year from the full date format 
+  year_only <- sub("^(\\d{4}).*", "\\1", year)
+  
+  # Get the current data frame
+  df <- analysis.fia[[year]]
+  
+  # Create a pattern to match columns that include sites
+  site_numbers <- unique(gsub(".*_Site(\\d+)", "\\1", colnames(df))) 
+  
+  # Initialize a data frame to hold summary statistics for this year
+  summary_table <- data.frame(Site_Number = numeric(0), 
+      Year = character(0), 
+      SC_Mean_Mod = numeric(0), 
+      SC_SD_Mod = numeric(0),
+      stringsAsFactors = FALSE)
+
+  # Loop through each site number
+  for (site in site_numbers) {
+    # Create a vector for soil carbon data
+    tsc_col <- paste0("TotSoilCarb_Site", site)
+    
+     # Check if columns exist in the data frame
+    if (tsc_col %in% colnames(df)) {
+       soilC = df[[tsc_col]]
+       
+      # Calculate mean and SD for each variable
+      mean_soil = mean(soilC, na.rm = TRUE)  # Average of soil C
+      sd_soil = sd(soilC, na.rm = TRUE)      # Standard deviation of soil C
+      
+      # Add to summary table
+      summary_table <- rbind(summary_table, 
+        data.frame(Site_Number = as.numeric(site), 
+        Year = year_only,  
+        SC_Mean_Mod = mean_soil,
+        SC_SD_Mod = sd_soil))
+    }
+  }
+ # Store the summary table for this year in the list
+  summary_list[[year]] <- summary_table 
+}  
+
+# Combine all the summary tables into one data frame
+final_summary_table <- do.call(rbind, summary_list) 
+```
+
+Graph the soil carbon year means in a histogram 
+```{r}
+hist(final_summary_table[["SC_Mean_Mod"]], main = "Histogram of Soil Carbon Means across NEON Sites and Year", col = "lightblue", breaks = 10, border = "black", freq = FALSE)
+```
+
+
+Loading soil carbon data from NEON (Alexi's code)
+```{r, echo = FALSE}
+
+# load copy of Alexi's code
+source("extract_neon_sc_func.R") 
+
+# Set start and end to NA to get all years
+start_date = NA
+end_date = NA 
+store_dir <- "/Users/chane/OneDrive/Documents/ef_lab/R_files" # storing to folder I am in
+
+# create summary table for loading data 
+summary_table_NEON_data <- data.frame(sitename = character(240),
+            year = character(240), 
+           mean_organicC = numeric(240),
+            sd_organicC = numeric(240),
+            mean_bulkD = numeric(240),
+            sd_bulkD = numeric(240),
+            mean_frac30 = numeric(240),
+            sd_frac30 = numeric(240),
+            mean_soilC= numeric(240),
+            sd_soilC = numeric(240))
+
+# create temp data 
+temp_table <- data.frame(sitename = character(240),
+            year = character(240), 
+            mean_organicC = numeric(240),
+            sd_organicC = numeric(240),
+            mean_bulkD = numeric(240),
+            sd_bulkD = numeric(240),
+            mean_frac30 = numeric(240),
+            sd_frac30 = numeric(240),
+            mean_soilC= numeric(240),
+            sd_soilC = numeric(240))
+
+# assign first data to the table
+sitename <- Neonplots["field_site_id"][1,1]
+summary_table_NEON_data <-extract_NEON_veg(sitename, start_date, end_date, store_dir, neonsites = NULL)
+
+# loop through and mean and sd of each data point from each year at all of the neonplot sites
+for (i in 2:47){
+  sitename <- Neonplots["field_site_id"][i,1]
+  temp_table <- extract_NEON_veg(sitename, start_date, end_date, store_dir, neonsites = NULL)
+  summary_table_NEON_data <- rbind(summary_table_NEON_data, temp_table)
+}
+
+temp_summary_NEON <- summary_table_NEON_data
+
+```
+
+Add model to summary table
+```{r}
+# create summary_table as copy of neon table
+summary_table <- temp_summary_NEON
+
+# remove NAs
+summary_table <- drop_na(summary_table)
+
+# add row for sitename
+summary_table$Site_Number <- numeric(length(summary_table$sitename)) 
+
+
+# loop through summary table and Neon plots site and when equal and add closest site
+for (i in 1:length(summary_table$year)){
+   for (j in 1:length(Neonplots$field_site_id)){
+      if (Neonplots$field_site_id[j] == summary_table$sitename[i]){
+          summary_table$Site_Number[i] <- Neonplots$Closest_Site[j]
+   }
+ }
+}
+
+# sort by site number
+summary_table <- summary_table[order(summary_table$Site_Number),]
+
+# sort based on year (like final_summary_table)
+summary_table <- summary_table[order(summary_table$year),]
+
+# add rows for forecast to the summary_table_NEON_data
+summary_table$SC_mean_forecast = numeric(nrow(summary_table));
+summary_table$SC_sd_forecast = numeric(nrow(summary_table))
+
+c = 1 # counter
+
+# add forecast data, leave zeros where no forecast data
+for (i in 1:length(final_summary_table$Year)){
+  for (j in 1:nrow(summary_table)){
+    if (summary_table$year[j] < 2022){
+      if (final_summary_table$Year[i] == summary_table$year[j] & final_summary_table$Site_Number[i] == summary_table$Site_Number[j]){
+        summary_table$SC_mean_forecast[c] = final_summary_table$SC_Mean_Mod[i];
+        summary_table$SC_sd_forecast[c] = final_summary_table$SC_SD_Mod[i];
+        c <- c +1
+      }
+    }
+  }
+}
+
+
+```
+
+Analysis!
+```{r, echo = FALSE}
+# Plot summary table
+
+summary_table_2021 = summary_table[1:77, 1:12]
+ggplot(summary_table_2021, aes(x=SC_mean_forecast, y=mean_soilC)) + geom_point(size = 2)
+
+```
+
+Map of RMS error
+```{r}
+# find the error 
+summary_table$error_soilC = numeric(nrow(summary_table))
+
+for (i in 1:nrow(summary_table)){
+  # model - actual
+  summary_table$error_soilC[i] = (summary_table$SC_mean_forecast[i] - summary_table$mean_soilC[i])
+} 
+
+# find rms error for each site
+
+# make dataframe to store name and rms error of each
+error_df <- data.frame(sitename = character(46),
+            rms_error = numeric(46))
+
+error_df$sitename <- unique(summary_table$sitename) # make list of names
+
+# create temp vector for before averages
+vec <- numeric(1)
+c = 1 # counter
+
+for (i in 1:nrow(error_df)){
+  for (j in 1:nrow(summary_table)){
+    if(error_df$sitename[i] == summary_table$sitename[j]){
+      vec[c] = (summary_table$error_soilC[j])^2
+      c <- c + 1
+    }
+  }
+  error_df$rms_error[i] = sqrt(sum(vec)/(c-1))
+  c <- 1
+  rm(vec)
+  vec <- numeric(1)
+}
+
+# sort alphabetically
+error_df <- error_df[order(error_df$sitename),]
+
+# add lat and long columns
+error_df$site_lat <- numeric(nrow(error_df))
+error_df$site_long <- numeric(nrow(error_df))
+
+# add lat and long
+for (i in 1:nrow(error_df)){
+  for (j in 1:nrow(Neonplots)){
+    if (error_df$sitename[i] == Neonplots$field_site_id[j]){
+      error_df$site_lat[i] <- Neonplots$field_latitude[j]
+      error_df$site_long[i] <- Neonplots$field_longitude[j]
+    }
+  }
+}
+
+# get map of usa
+USA = map_data("world") %>% filter(region == "USA")
+
+# make bubble map with size and color depening on RMS error
+ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3, main = "RMS  error of each site") + geom_point(data = error_df, aes(x= site_long, y = site_lat, size = rms_error, color = rms_error)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title = "RMS error of forecast for NEON sites") + theme(plot.title = element_text(hjust = 0.5),)
+
+# find max errors
+error_df <- error_df[order(error_df$rms_error),]
+
+```
+
+Find rate of change of soil carbon for each 
+```{r, echo = FALSE}
+
+# find rate of change of NEON data
+# sort by location
+summary_table <- summary_table[order(summary_table$sitename),]
+
+error_df <- error_df[order(error_df$sitename),]
+
+# create places for rate of change
+error_df$roc_soilC <- numeric(46)
+error_df$roc_forecast <- numeric(46)
+error_df$roc_percent_error <- numeric(46)
+error_df$roc_error <- numeric(46)
+
+c = 1
+for (i in 1:nrow(summary_table)){
+  if (i == 1){
+    if( summary_table$sitename[1] != summary_table$sitename[2]){
+      error_df$roc_soilC[1] <- NaN
+      error_df$roc_forecast[1] <- NaN
+      error_df$roc_percent_error[1] <- NaN
+      error_df$roc_error <- NaN
+    }
+  }
+  if (i>1){
+    if (summary_table$sitename[i] != summary_table$sitename[i - 1]){
+      temp_name = summary_table$sitename[i]
+      j <- i
+      while (summary_table$sitename[j] == temp_name){
+        j <- j+1
+        if (j == 108){
+          break
+      }
+    }
+     c <- c+1
+  error_df$roc_soilC[c] <- ((summary_table$mean_soilC[j-1] - summary_table$mean_soilC[i])/(as.numeric(summary_table$year[j-1]) - as.numeric(summary_table$year[i])))
+  error_df$roc_forecast[c] <- ((summary_table$SC_mean_forecast[j-1] - summary_table$SC_mean_forecast[i])/(as.numeric(summary_table$year[j-1]) - as.numeric(summary_table$year[i])))
+  error_df$roc_error[c] <- (error_df$roc_soilC[c] - error_df$roc_forecast[c])
+  error_df$roc_percent_error[c] <- abs((error_df$roc_soilC[c] - error_df$roc_forecast[c])/error_df$roc_forecast[c])*100
+  }
+  }
+}
+
+# Bubble map with size and color depending on RMS error
+ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = error_df, aes(x= site_long, y = site_lat, size = roc_error, color = roc_error)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title = "Rate of Change Residual") + theme(plot.title = element_text(hjust = 0.5),)
+
+ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = error_df, aes(x= site_long, y = site_lat, size = roc_percent_error, color = roc_percent_error)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="Rate of Change Percent Error") + theme(plot.title = element_text(hjust = 0.5),)
+
+error_df <- error_df[order(error_df$roc_percent_error),]
+
+error_df_roc <- drop_na(error_df)
+```
+
+Residual map of rate of change (copied from Cami's code)
+```{r, echo = FALSE}
+
+# define colors based on sign
+error_df$Color <- with(error_df,
+  ifelse(roc_error > 0, "lightsalmon",
+  ifelse(roc_error < 0, "orangered2", "grey")))
+
+
+USA = map_data("world") %>% filter(region == "USA")
+us_map <- st_as_sf(USA, 
+            coords = c("long", "lat"), 
+            crs = 4326)  # CRS 4326 is WGS84 (latitude/longitude)
+                                
+
+# Make the plot
+ggplot(data = us_map) +
+  geom_sf(fill = "lightgrey") +  
+  geom_point(data = error_df, 
+             aes(x = site_long, y = site_lat, color = Color, size = abs(roc_error)), 
+             alpha = 0.7) +
+  scale_color_manual(
+    name = "Residuals",
+    values = c(
+      "lightsalmon" = "lightsalmon", 
+      "orangered2" = "orangered2"
+    ),
+    labels = c(
+      "lightsalmon" = "Rate of change (+)",
+      "orangered2" = "Rate of change (-)"
+    )
+  ) +
+  scale_size(range = c(1, 10), name = "Residual Size") +
+  coord_sf(xlim = c(-160, -60), ylim = c(25, 70)) +
+  labs(title = "Soil Carbon rate of change1
+       Residuals", x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+  )
+
+
+```
+
+spatial variograms (from cami's code)
+```{r, echo = FALSE}
+
+proj4string(error_df) <- CRS("+proj=longlat +datum=WGS84")
+
+variogram_model_rmse <- variogram(rms_error ~ 1, data = error_df)
+
+ggplot(data = variogram_model_rmse, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of RMS Error",
+       x = "Distance",
+       y = "Semivariance (γ)") +
+  theme_minimal() +
+  theme(
+  plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)), 
+    axis.title.y = element_text(margin = margin(r = 10)))
+
+
+```
+
+```{r, echo = FALSE}
+# coordinates(error_df_roc) <- ~ site_long + site_lat
+variogram_model_roc <- variogram(roc_error ~ 1, data = error_df_roc)
+
+ggplot(data = variogram_model_roc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Rate of Change residual",
+       x = "Distance",
+       y = "Semivariance (γ)") +
+  theme_minimal() +
+  theme(
+  plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)), 
+    axis.title.y = element_text(margin = margin(r = 10)))
+
+ggplot(data = us_map) +
+  ggplot
+```
+
+Compare error to 13 other factors (from Dongchen's folder on github)
+```{r, echo = FALSE}
+
+# get data on US 13 factors
+dat = terra::rast("all_data_layers.tif")
+
+# add columns to error_df
+error_df$ysd <- numeric(46)
+error_df$abg<- numeric(46)
+error_df$fia <- numeric(46)
+error_df$gedi<- numeric(46)
+error_df$twi<- numeric(46)
+error_df$tavg <- numeric(46)
+error_df$srad <- numeric(46)
+error_df$prec <- numeric(46)
+error_df$vapr <- numeric(46)
+error_df$ph <- numeric(46)
+error_df$n <- numeric(46)
+error_df$soc <- numeric(46)
+error_df$sand <- numeric(46)
+
+pt = numeric(1)
+
+# extract data for each from each Neon site coordinate
+for (i in 1:nrow(error_df)){
+  pt = terra::extract(dat,data.frame(lon=error_df$site_long[i], lat = error_df$site_lat[i]))
+  error_df$ysd[i] = pt$year_since_disturb
+  error_df$abg[i] <- pt$agb
+  error_df$fia[i] <- pt$fia
+  error_df$gedi[i] <- pt$gedi
+  error_df$twi[i] <- pt$twi
+  error_df$tavg[i] <- pt$tavg
+  error_df$srad[i] <- pt$srad
+  error_df$prec[i] <- pt$prec
+  error_df$vapr[i] <- pt$vapr
+  error_df$ph[i] <- pt$PH
+  error_df$n[i] <- pt$N
+  error_df$soc[i] <- pt$SOC
+  error_df$sand[i] <- pt$Sand
+}
+
+# use lm to fit a linear model to the data
+fit_ysd = lm(error_df$ysd ~ error_df$rms_error)
+fit_abg = lm(error_df$abg ~ error_df$rms_error)
+fit_fia = lm(error_df$fia ~ error_df$rms_error)
+fit_gedi = lm(error_df$gedi ~ error_df$rms_error)
+fit_twi = lm(error_df$twi ~ error_df$rms_error)
+fit_tavg = lm(error_df$tavg ~ error_df$rms_error)
+fit_srad = lm(error_df$srad ~ error_df$rms_error)
+fit_prec = lm(error_df$prec~ error_df$rms_error)
+fit_vapr = lm(error_df$vapr ~ error_df$rms_error)
+fit_ph = lm(error_df$ph ~ error_df$rms_error)
+fit_n = lm(error_df$n ~ error_df$rms_error)
+fit_soc = lm(error_df$soc ~ error_df$rms_error)
+fit_sand = lm(error_df$sand ~ error_df$rms_error)
+
+
+# make data frame
+summary_factors <- data.frame(factor_name= character(13),
+                    r_squared = numeric(13),
+                    slope = numeric (13),
+                    p_value = numeric(13))
+
+for (i in 23:35){
+  # fit a line
+  error_df$temp = error_df[[i]]
+  fit = lm(error_df$temp ~ error_df$rms_error)
+  
+  # graph
+
+  print(ggplot(error_df, aes(x = temp, y = rms_error)) + geom_point() + geom_smooth(method = "lm", se = FALSE) + xlab(colnames(error_df[(i-13)])))
+
+  # add r squared, slope, p value
+  summary_factors$factor_name[(i-22)] <- colnames(error_df[(i-13)])
+  summary_factors$slope[(i-22)] <- coef(fit)[2]
+  f <- summary(fit)$fstatistic
+  summary_factors$p_value[(i-22)] <- pf(f[1], f[2], f[3], lower.tail=F)
+  summary_factors$r_squared[(i-22)] <- summary(fit)$adj.r.squared
+}
+```
+
+
+
+
+
+
+

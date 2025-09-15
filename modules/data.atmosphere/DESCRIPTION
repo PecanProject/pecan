@@ -1,7 +1,7 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn Functions Used for Managing Climate Driver Data
-Version: 1.9.0
+Version: 1.9.1
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -19,6 +19,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     package converts climate driver data into a standard format for models
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
@@ -26,8 +29,8 @@ Imports:
     arrow,
     curl,
     dplyr (>= 0.8.1),
+    foreach,
     geonames (> 0.998),
-    ggplot2,
     glue,
     httr,
     jsonlite,
@@ -61,10 +64,12 @@ Imports:
     zoo
 Suggests:
     doParallel,
-    foreach,
+    ecmwfr (>= 2.0.0),
+    doSNOW,
     furrr,
     future,
     getPass,
+    ggplot2,
     knitr,
     mockery,
     parallel,

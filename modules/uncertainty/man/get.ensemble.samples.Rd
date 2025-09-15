@@ -8,7 +8,7 @@ get.ensemble.samples(
   ensemble.size,
   pft.samples,
   env.samples,
-  method = "uniform",
+  method = "random",
   param.names = NULL,
   ...
 )

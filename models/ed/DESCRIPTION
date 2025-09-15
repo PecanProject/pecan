@@ -1,7 +1,7 @@
 Package: PEcAn.ED2
 Type: Package
 Title: PEcAn Package for Integration of ED2 Model
-Version: 1.8.1
+Version: 1.8.2
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut"),
@@ -30,6 +30,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. This package provides functions to
     link the Ecosystem Demography Model, version 2, to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends: 
     R (>= 3.5)
 Imports:

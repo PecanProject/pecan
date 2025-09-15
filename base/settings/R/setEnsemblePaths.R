@@ -110,7 +110,8 @@ set_site_paths <- function(settings, input_type, ...) {
 #'  paths, as a `glue::glue()` input (see examples)
 #' @param ... other variables to be interpolated into the path, each with length
 #'  either 1 or equal to `n`.
-#' @return list of paths the same length as `n`, with names set as `path<n>`
+#' @return list of paths the same length as `n`, with names set as `path<n>`,
+#'  or a single path if there is only one of them
 #' @keywords internal
 ### ^ Internal for now, but OK to export later if that proves useful.
 ### If/when exporting, remove the \dontrun{} below along with this comment --
@@ -124,8 +125,14 @@ build_pathset <- function(n, glue_str = "./file_{n}.nc", ...) {
   if (length(n) == 1 && is.numeric(n)) {
     n <- seq_len(n)
   }
-  values <- list(n = n, ...)
-  glue::glue_data(.x = values, glue_str) |>
+  paths <- list(n = n, ...) |>
+    glue::glue_data(glue_str)
+
+  if (length(paths) == 1) {
+    return(as.character(paths))
+  }
+
+  paths |>
     as.list() |>
     stats::setNames(glue::glue("path{n}", n = n))
 }

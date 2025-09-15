@@ -6,12 +6,15 @@
 \usage{
 get.parameter.samples(
   settings,
+  ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
   ens.sample.method = "uniform"
 )
 }
 \arguments{
 \item{settings}{PEcAn settings object}
+
+\item{ensemble.size}{number of runs in model ensemble}
 
 \item{posterior.files}{list of filenames to read from}
 

@@ -1,7 +1,7 @@
 Package: PEcAn.MAESPA
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis using MAESPA
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(person("Tony", "Gardella", role = c("aut", "cre"),
                      email = "tonygard@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -11,6 +11,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.This package allows for MAESPA to be
     run through the PEcAN workflow.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.data.atmosphere,
     PEcAn.logger,

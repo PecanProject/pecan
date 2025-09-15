@@ -1,15 +1,17 @@
 #!/usr/bin/env Rscript
-
 # Build pkgdown documentation for PEcAn packages
 library(pkgdown)
-
+library(yaml)
+library(desc)
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   stop("No package names provided. Please pass package names as arguments.")
 }
-
 packages <- args
 output_dir <- "_pkgdown_docs"
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
 
 if (requireNamespace("PEcAn.logger", quietly = TRUE)) {
   logger <- PEcAn.logger::logger.info
@@ -21,6 +23,8 @@ if (requireNamespace("PEcAn.logger", quietly = TRUE)) {
 
 logger("Building pkgdown docs for:", paste(packages, collapse = ", "))
 
+# Define branch variable once for all packages
+branch <- Sys.getenv("PECAN_GIT_BRANCH", unset = "develop")
 for (pkg in packages) {
   logger("Building pkgdown site for:", pkg)
   current_wd <- getwd()  
@@ -29,7 +33,23 @@ for (pkg in packages) {
       stop(paste("Package directory does not exist:", pkg))
     }
     setwd(pkg) 
-    pkgdown::build_site() 
+    pkgdown::build_site(
+      pkg = ".",
+      override = list(
+        repo = list(
+          url = list(
+            source = paste0("https://github.com/PecanProject/pecan/blob/", 
+                            branch, "/", pkg, "/")
+          )
+        ),
+        template = list(
+          bootstrap = 5,
+          includes = list(
+            before_navbar = "<a href=\"../index.html\" style=\"padding: 0em 1em\">← Up</a>"
+          )
+        )
+      )
+    )
     setwd(current_wd) 
     source_docs <- file.path(pkg, "docs")
     if (!dir.exists(source_docs)) {
@@ -68,7 +88,7 @@ before_text <- c(
   '<body>',
   '<h1>PEcAn package documentation</h1>',
   '<p>Function documentation and articles for each PEcAn package,',
-  '   generated from the package source using <code>{pkgdown}</code>.</p>',
+  '   generated from the package source using <a href="https://pkgdown.r-lib.org/">pkgdown</a>.</p>',
   '',
   '<ul>'
 )
