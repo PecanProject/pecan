@@ -86,8 +86,6 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' Convert SIPNET output to netCDF
 ##'
 ##' Converts all output contained in a folder to netCDF.
-##' @name model2netcdf.SIPNET
-##' @title Function to convert SIPNET model output to standard netCDF format
 ##'
 ##' @param outdir Location of SIPNET model output
 ##' @param sitelat Latitude of the site
@@ -98,7 +96,7 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @param overwrite Flag for overwriting nc files or not
 ##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
 ##' @param prefix prefix to read the output files
-##' @param delete.raw Flag to remove sipnet.out files, FALSE = do not remove files TRUE = remove files
+##' @param delete.raw logical: remove sipnet.out files after converting?
 ##'
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
@@ -151,7 +149,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     print(paste("---- Processing year: ", y))  # turn on for debugging
 
     ## Subset data for processing
-    sub.sipnet.output <- subset(sipnet_output, year == y)
+    sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out_day
     step <- utils::head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
@@ -222,7 +220,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA # LAI
     output[["fine_root_carbon_content"]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
     output[["coarse_root_carbon_content"]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-    output[["GWBI"]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
+    output[["GWBI"]] <- sub.sipnet.output$woodCreation * 0.001  # gC -> kgC
+    if (isTRUE(abs(output[["GWBI"]]) < 1e-6)) {
+      output[["GWBI"]] <- 0
+    }
     output[["AGB"]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
     output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
@@ -274,7 +275,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "LAI" = PEcAn.utils::to_ncvar("LAI", dims),
       "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
-      "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+      "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2 yr-1", dim = list(lon, lat, t), missval = -999,
                                      longname = "Gross Woody Biomass Increment"),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                      longname = "Total aboveground biomass"),
@@ -314,6 +315,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
       ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
       varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
+      
       for (i in seq_along(nc_var)) {
         ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
         cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
