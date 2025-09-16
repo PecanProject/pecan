@@ -19,14 +19,26 @@
 ##' @export
 read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
+  # local helpers
+  .safe_num <- function(x, default = NA_real_) {
+    x <- suppressWarnings(as.numeric(x)[1])
+    if (is.finite(x)) x else default
+  }
+  grab_scalar <- function(v, last_idx) {
+    val <- tryCatch(v[last_idx], error = function(e) NA_real_)
+    if (length(val) == 0) val <- NA_real_
+    .safe_num(val, default = NA_real_)
+  }
+  nz_num <- function(x) { if (is.finite(x)) x else 0 }
+  
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
   params$restart <-c() #state.vars not in var.names will be added here
   #SIPNET inital states refer to models/sipnet/inst/template.param
-  state.vars <- c("SWE", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
+  state.vars <- c("SWE", "SoilMoist", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
                   "litter_carbon_content", "fine_root_carbon_content", 
-                  "coarse_root_carbon_content", "litter_mass_content_of_water")
+                  "coarse_root_carbon_content", "litter_mass_content_of_water", "GWBI")
   #when adding new state variables make sure the naming is consistent across read_restart, write_restart and write.configs
   #pre-populate parsm$restart with NAs so state names can be added
   params$restart <- rep(NA, length(setdiff(state.vars, var.names)))
@@ -43,33 +55,84 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   time_var <- ens$time_bounds[1,]
   real_time <- as.POSIXct(time_var*3600*24, origin = start.time)
   # last <- which(as.Date(real_time)==as.Date(stop.time))[1]
-  last <- which(as.Date(real_time)==as.Date(stop.time))[length(which(as.Date(real_time)==as.Date(stop.time)))]
+  
+  # restart index (exact match; else latest prior; else last)
+  idxs <- which(as.Date(real_time) == as.Date(stop.time))
+  if (length(idxs) > 0) {
+    last <- tail(idxs, 1)
+  } else {
+    prior <- which(as.Date(real_time) <= as.Date(stop.time))
+    if (length(prior) > 0) {
+      last <- max(prior)
+      PEcAn.logger::logger.warn("read_restart.SIPNET: no exact match for stop.time; using most recent prior step.")
+    } else {
+      last <- length(real_time)
+      PEcAn.logger::logger.warn("read_restart.SIPNET: no prior step exists; using final timestep in file.")
+    }
+  }
   
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
-    names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
+    # AbvGrndWood -> forecast (Mg/ha) and skip if invalid
+    val <- tryCatch(
+      PEcAn.utils::ud_convert(.safe_num(ens$AbvGrndWood[last]), "kg/m^2", "Mg/ha"),
+      error = function(e) NA_real_
+    )
+    forecast[[length(forecast) + 1]] <- if (length(val) == 1 && is.finite(val)) val else NA_real_
+    names(forecast[[length(forecast)]]) <- "AbvGrndWood"
+    if (!is.finite(forecast[[length(forecast)]][1])) {
+      PEcAn.logger::logger.warn("AbvGrndWood missing/invalid at restart; using NA.")
+    }
     
-    wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
-    if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
+    # robust wood fractions
+    abv <- .safe_num(ens$AbvGrndWood[last])
+    fr  <- .safe_num(ens$fine_root_carbon_content[last])
+    cr  <- .safe_num(ens$coarse_root_carbon_content[last])
     
-    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
-  }else{
-    params$restart["AbvGrndWood"] <- PEcAn.utils::ud_convert(ens$AbvGrndWood[last],  "kg/m^2", "g/m^2")
-    # calculate fractions, store in params, will use in write_restart
-    wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
-    if (wood_total_C<=0) wood_total_C <- 0.0001 # Making sure we are not making Nans in case there is no plant living there.
+    wood_total_C <- abv + fr + cr
+    if (!isTRUE(is.finite(wood_total_C) && wood_total_C > 0)) wood_total_C <- 1e-4
     
-    params$restart["abvGrndWoodFrac"] <- ens$AbvGrndWood[last]  / wood_total_C
-    params$restart["coarseRootFrac"]  <- ens$coarse_root_carbon_content[last] / wood_total_C
-    params$restart["fineRootFrac"]    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart["abvGrndWoodFrac"] <- abv / wood_total_C
+    params$restart["coarseRootFrac"]  <- cr  / wood_total_C
+    params$restart["fineRootFrac"]    <- fr  / wood_total_C
+    
+  } else {
+    # store AbvGrndWood (g/m^2) into params
+    val_gm2 <- tryCatch(
+      PEcAn.utils::ud_convert(.safe_num(ens$AbvGrndWood[last]), "kg/m^2", "g/m^2"),
+      error = function(e) NA_real_
+    )
+    if (length(val_gm2) == 1 && is.finite(val_gm2)) {
+      params$restart["AbvGrndWood"] <- val_gm2
+    } else {
+      PEcAn.logger::logger.warn("AbvGrndWood missing/invalid; not setting params$restart['AbvGrndWood'].")
+    }
+    
+    # robust wood fractions
+    abv <- .safe_num(ens$AbvGrndWood[last])
+    fr  <- .safe_num(ens$fine_root_carbon_content[last])
+    cr  <- .safe_num(ens$coarse_root_carbon_content[last])
+    
+    wood_total_C <- abv + fr + cr
+    if (!isTRUE(is.finite(wood_total_C) && wood_total_C > 0)) wood_total_C <- 1e-4
+    
+    params$restart["abvGrndWoodFrac"] <- abv / wood_total_C
+    params$restart["coarseRootFrac"]  <- cr  / wood_total_C
+    params$restart["fineRootFrac"]    <- fr  / wood_total_C
   }
   
+  
   if ("GWBI" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- PEcAn.utils::ud_convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
-    names(forecast[[length(forecast)]]) <- c("GWBI")
+    gwbi_vec <- suppressWarnings(as.numeric(unlist(ens$GWBI)))
+    if (!length(gwbi_vec) || all(!is.finite(gwbi_vec))) {
+      PEcAn.logger::logger.warn("GWBI present but non-numeric/NA; setting GWBI = NA")
+      gwbi_ann <- NA_real_
+    } else {
+      # sum over the year
+      gwbi_ann <- sum(gwbi_vec, na.rm = TRUE)   # -> kg C m-2 yr-1
+    }
+    forecast[[length(forecast) + 1]] <- gwbi_ann
+    names(forecast[[length(forecast)]]) <- "GWBI"
   }
   
   # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
@@ -101,7 +164,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }else{
-    params$restart["litter_carbon_content"] <- PEcAn.utils::ud_convert(ens$litter_carbon_content[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    params$restart["litter_carbon_content"] <- PEcAn.utils::ud_convert(ens$litter_carbon_content[last], 'kg m-2', 'g m-2')
   }
   
   if ("litter_mass_content_of_water" %in% var.names) {
@@ -109,6 +172,13 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("litter_mass_content_of_water")
   }else{
     params$restart["litter_mass_content_of_water"] <- ens$litter_mass_content_of_water[last]
+  }
+  
+  if ("SoilMoist" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilMoist[last]
+    names(forecast[[length(forecast)]]) <- c("SoilMoist")
+  }else{
+    params$restart["SoilMoist"] <- ens$SoilMoist[last]
   }
   
   if ("SoilMoistFrac" %in% var.names) {
@@ -135,13 +205,27 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }else{
-    params$restart["TotSoilCarb"] <- PEcAn.utils::ud_convert(ens$TotSoilCarb[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    params$restart["TotSoilCarb"] <- PEcAn.utils::ud_convert(ens$TotSoilCarb[last], 'kg m-2', 'g m-2')
   }
   
   #remove any remaining NAs from params$restart
   params$restart <- stats::na.omit(params$restart)
   
   print(runid)
+  
+  # normalize forecast to exactly var.names
+  fv <- setNames(rep(NA_real_, length(var.names)), var.names)
+  if (length(forecast)) {
+    raw <- unlist(forecast, use.names = TRUE)
+    if (length(raw)) {
+      keep <- intersect(names(raw), var.names)
+      if (length(keep)) fv[keep] <- suppressWarnings(as.numeric(raw[keep]))
+    }
+  }
+  
+  X_tmp <- list(X = fv, params = params)
+  return(X_tmp)
+} # read_restart.SIPNET
   
   X_tmp <- list(X = unlist(forecast), params = params)
   
