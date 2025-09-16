@@ -67,6 +67,41 @@ jobs:
       # If seeing weird results here, check that all steps above have an id set.
       R_VERSION: ${{ join(steps.*.outputs.R_VERSION, '') }}
 
+  push_test:
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: lowercase image name
+        id: name
+        run: |
+          echo "image_name=$(echo ${{ inputs.image-name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          # if pr then actor not repository owner otherwise we can not push to ghcr.io
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "repository=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          else
+            echo "repository=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          fi
+      # setup docker build
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ steps.name.outputs.repository }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test GHCR push permissions
+        run: |
+          echo "FROM alpine" | docker build -t ghcr.io/${{ steps.name.outputs.repository }}/test:${{ github.sha }} -
+          docker push ghcr.io/${{ steps.name.outputs.repository }}/test:${{ github.sha }}   
+
   # ----------------------------------------------------------------------
   # depends image has all the dependencies installed
   # ----------------------------------------------------------------------
