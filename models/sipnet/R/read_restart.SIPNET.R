@@ -90,7 +90,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     cr  <- .safe_num(ens$coarse_root_carbon_content[last])
     
     wood_total_C <- abv + fr + cr
-    if (!isTRUE(is.finite(wood_total_C) && wood_total_C > 0)) wood_total_C <- 1e-4
+    if (!is.finite(wood_total_C) && wood_total_C > 0) wood_total_C <- 1e-4
     
     params$restart["abvGrndWoodFrac"] <- abv / wood_total_C
     params$restart["coarseRootFrac"]  <- cr  / wood_total_C
