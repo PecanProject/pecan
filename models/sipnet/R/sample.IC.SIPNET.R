@@ -23,10 +23,8 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
   ## GWBI as an SDA state var (annual, kg C m-2 yr-1)
   if ("GWBI" %in% names(state)) {
     GWBI <- state$GWBI[sample.int(length(state$GWBI), ne)]
-  } else {
-    GWBI <- stats::runif(ne, 0, 1)
+    attr(GWBI, "units") <- "kg C m-2 yr-1"
   }
-  attr(GWBI, "units") <- "kg C m-2 yr-1"
   
   # g C * m-2 ground area in wood (above-ground + roots)
   Mgha2gm <- (1000000) / (10000) # these unit conversions are for testing
