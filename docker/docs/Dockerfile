@@ -15,7 +15,6 @@ RUN apt-get update \
         -e 'remotes::install_version("rmarkdown", ">= 2.19", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("knitr", ">= 1.42", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
-        -e 'install.packages("pkgdown", repos = repos)' \
     && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------

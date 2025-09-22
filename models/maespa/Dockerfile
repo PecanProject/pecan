@@ -9,8 +9,10 @@ FROM ${PARENT_IMAGE}:${IMAGE_VERSION} AS model-binary
 
 # download, unzip and build ed2
 WORKDIR /src
+COPY namelist.patch .
 RUN git -c http.sslVerify=false clone https://bitbucket.org/remkoduursma/maespa.git \
     && cd maespa \
+    && patch -p1 < ../namelist.patch \
     && make
 
 ########################################################################

@@ -1,7 +1,11 @@
-# PEcAn.DB 1.8.0.9000
+# PEcAn.DB 1.8.1
 
 ## License change
 * PEcAn.DB is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
+
+## Changed
+* Fixed several cases where `dbfile.input.insert` continued instead of returning early
+* Removed support for Browndog because the service is defunct 
 
 
 # PEcAn.DB 1.8.0

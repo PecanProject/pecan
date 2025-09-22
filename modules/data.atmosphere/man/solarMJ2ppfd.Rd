@@ -24,7 +24,7 @@ The above conversion is based on the following reasoning
 Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
 See also the chapter radiation basics (10)
 Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
-This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 This means that 1e6 / (2.35e6) * 0.486 = 2.07
 1e6 converts from mol to mu mol
 1/3600 divides the values in hours to seconds

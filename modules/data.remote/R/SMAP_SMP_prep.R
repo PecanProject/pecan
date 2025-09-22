@@ -72,7 +72,7 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
   time_points <- time_points[which(lubridate::year(time_points)>=2015)] #filter out any time points that are before 2015
   #initialize SMAP_Output
   SMAP_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>% 
-    `colnames<-`(c("site_id", paste0(time_points, "_SoilMoistFrac"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
+    `colnames<-`(c("site_id", paste0(time_points, "_SoilMoist"), paste0(time_points, "_SD"))) %>% as.data.frame()#we need: site_id, LAI, std, target time point.
   SMAP_Output$site_id <- site_info$site_id
   #Calculate SMAP for each time step and site.
   #loop over time and site
@@ -88,15 +88,15 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
         out.t <- rbind(out.t, list(mean = NA, sd = NA))
       }
     }
-    out.t %>% purrr::set_names(c(paste0(t, "_SoilMoistFrac"), paste0(t, "_SD")))
+    out.t %>% purrr::set_names(c(paste0(t, "_SoilMoist"), paste0(t, "_SD")))
   }, .progress = T)
   for (i in seq_along(time_points)) {
     t <- time_points[i]#otherwise the t will be number instead of date.
-    SMAP_Output[, paste0(t, "_SoilMoistFrac")] <- SMAP.list[[i]][,paste0(t, "_SoilMoistFrac")]
+    SMAP_Output[, paste0(t, "_SoilMoist")] <- SMAP.list[[i]][,paste0(t, "_SoilMoist")]
     SMAP_Output[, paste0(t, "_SD")] <- SMAP.list[[i]][,paste0(t, "_SD")]
   }
   PEcAn.logger::logger.info("SMAP SMP Prep Completed!")
-  list(SMP_Output = SMAP_Output, time_points = time_points, var = "SoilMoistFrac")
+  list(SMP_Output = SMAP_Output, time_points = time_points, var = "SoilMoist")
 }
 
 #' Prepare SMAP soil moisture profile (SMP) data from the NASA DAAC server for the SDA workflow.
@@ -108,13 +108,14 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
 #' @param to character: the end time for searching the MODIS products.
 #' @param download.outdir character: Where the MODIS tiles will be stored.
 #' @param csv.outdir character: Where the final CSV file will be stored.
+#' @param credential_path Character: physical path to the credential file (.netrc file).
 #' 
 #' @return A data frame containing SMP and sd for each site and each time step.
 #' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir) {
+Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir, credential_path) {
   # SMAP CRS, EPSG:6933.
   smap.crs <- "+proj=cea +lat_ts=30 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
   # load previous CSV file.
@@ -143,10 +144,10 @@ Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir
                                  to = to, 
                                  just_path = F,
                                  outdir = download.outdir,
-                                 doi = "10.5067/LWJ6TF5SZRG3",
-                                 ncore = parallel::detectCores()-1)
-  smap.out <- metadata$path
-  file <- smap.out[1] # select the first file.
+                                 doi = "10.5067/02LGW4DGJYRX",
+                                 ncore = parallel::detectCores()-1,
+                                 credential_path = credential_path)
+  file <- metadata[1] # select the first file.
   # grab smap extents, it's from the ArcGIS report using the SMAP H5 file.
   smap.ext <- c(-17363027.292480, 17367529.945160, -7319045.227051, 7310037.171387) %>% terra::ext()
   # convert h5 file to raster.

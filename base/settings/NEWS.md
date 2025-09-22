@@ -1,4 +1,17 @@
-# PEcAn.settings 1.8.0.9000
+# PEcAn.settings 1.9.1
+
+## Fixed
+
+* listToXml.MultiSettings now produces valid XML from a MultiSettings with length 1.
+* setEnsemblePaths no longer wraps single paths in a list, giving `<path>/your/file.here</path>` instead of the previous `<path><path1>/your/file.here</path1></path>`.
+
+## Changed
+
+* The `tag` argument to `listToXml()` is now optional and will default to "pecan" if not specified. This sets the name of the root tag of the resulting XML object.
+* The first argument of `listToXml.MultiSettings()` has been renamed from `item` to `x`, and it now accepts but ignores `...`, both for consistency with the generic.
+
+
+# PEcAn.settings 1.9.0
 
 ## Changed
 

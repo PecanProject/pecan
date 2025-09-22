@@ -46,4 +46,12 @@ test_that("setEnsemblePaths sets paths across sites", {
     path_template = "../{id}_{foo}{n}.{ext}"
   )
   expect_match(with_extras$run$site.s1$inputs$met$path$path2, "s1_bar2.txt")
+
+  # Ensembles of 1 return bare path not list
+  one_path <- setEnsemblePaths(settings, n_reps = 1)
+  two_path <- setEnsemblePaths(settings, n_reps = 2)
+  expect_identical(
+    one_path$run$site.s1$inputs$met$path,
+    two_path$run$site.s1$inputs$met$path$path1
+  )
 })

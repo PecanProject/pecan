@@ -355,17 +355,47 @@ sda.enkf.multisite <- function(settings,
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     }
-      #sample met ensemble members
-      #TODO: incorporate Phyllis's restart work
-      #      sample all inputs specified in the settings$ensemble not just met
-      inputs <- PEcAn.settings::papply(conf.settings,function(setting) {
-        PEcAn.uncertainty::input.ens.gen(
-          settings = setting,
-          input = "met",
-          method = setting$ensemble$samplingspace$met$method,
-          parent_ids = NULL 
-        )
-       })
+      
+ 
+  #TODO: incorporate Phyllis's restart work
+  #sample all inputs specified in the settings$ensemble
+  #now looking into the xml
+  samp <- conf.settings$ensemble$samplingspace
+  #finding who has a parent
+  parents <- lapply(samp,'[[', 'parent')
+  #order parents based on the need of who has to be first
+  order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
+  #new ordered sampling space
+  samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
+  #performing the sampling
+  inputs <- vector("list", length(conf.settings))
+  #for the tags specified in the xml, do the sampling for a random site and then replicate the same sample ids for the remaining sites for each ensemble member 
+  for (i in seq_along(samp.ordered)) {
+    random_site <- sample(1:length(conf.settings),1)
+    if (is.null(inputs[[random_site]])) {
+      inputs[[random_site]] <- list() 
+    }
+    input_tag<-names(samp.ordered)[i]
+    #call the function responsible for generating the ensemble for the random site
+    inputs[[random_site]][[input_tag]] <- PEcAn.uncertainty::input.ens.gen(settings=conf.settings[[random_site]],
+                                                        input=input_tag,
+                                                        method=samp.ordered[[i]]$method,
+                                                        parent_ids=NULL)
+    #replicate the same ids for the remaining sites
+    for (s in seq_along(conf.settings)) {
+      if (s!= random_site) {
+        if (is.null(inputs[[s]])) {
+          inputs[[s]] <- list() 
+        }
+        input_path <- conf.settings[[s]]$run$inputs[[tolower(input_tag)]]$path
+        inputs[[s]][[input_tag]]$ids<-inputs[[random_site]][[input_tag]]$ids
+        inputs[[s]][[input_tag]]$samples<- input_path[inputs[[random_site]][[input_tag]]$ids]
+      }
+    }
+  }
+  
+      
+
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
@@ -380,7 +410,7 @@ sda.enkf.multisite <- function(settings,
         #for next time step split the met if model requires
         #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
         inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
-        
+    
         #---------------- setting up the restart argument for each site separately and keeping them in a list
         restart.list <-
           furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
@@ -412,9 +442,8 @@ sda.enkf.multisite <- function(settings,
         X <- X
       }else{
         if (control$debug) browser()
-        out.configs <- conf.settings %>%
-          `class<-`(c("list")) %>%
-          furrr::future_map2(restart.list, function(settings, restart.arg) {
+        
+        out.configs <-furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")),restart.list, inputs), function(settings, restart.arg, inputs) {
             # Loading the model package - this is required bc of the furrr
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
@@ -425,6 +454,7 @@ sda.enkf.multisite <- function(settings,
               model = settings$model$type,
               write.to.db = settings$database$bety$write,
               restart = restart.arg,
+              samples=inputs,
               rename = TRUE
             )
           }) %>%
@@ -713,8 +743,7 @@ sda.enkf.multisite <- function(settings,
       colnames(analysis) <- colnames(X)
       ##### Mapping analysis vectors to be in bounds of state variables
       for(i in 1:ncol(analysis)){
-        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                                                    var.names)),]
+        int.save <- state.interval[which(colnames(analysis)[i]==var.names),]
         analysis[analysis[,i] < int.save[1],i] <- int.save[1]
         analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
@@ -769,3 +798,4 @@ sda.enkf.multisite <- function(settings,
       ## MCD: I commented the above "if" out because if you are restarting from a previous forecast, this might delete the files in that earlier folder
   } ### end loop over time
 } # sda.enkf
+      

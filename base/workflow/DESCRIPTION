@@ -2,7 +2,7 @@ Package: PEcAn.workflow
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and
     Reanalysis
-Version: 1.8.0.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -25,6 +25,8 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation. This package provides workhorse functions
     that can be used to run the major steps of a PEcAn analysis.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 License: BSD_3_clause + file LICENSE
 Imports:
     dplyr,

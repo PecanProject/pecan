@@ -1,6 +1,3 @@
-
-######################## Helper functions ########################
-
 #' Find Stream Variable
 #'
 #' A helper function that lists streamed variables. It returns the names of streamed variables.
@@ -8,6 +5,7 @@
 #' @param file_in A character vector representing the file content to search through.
 #' @param line_nos A numeric vector of length 2, specifying the start and end lines to search for streamed variables.
 #' @return A character vector of streamed variable names.
+#' @keywords internal
 # helper function that lists streamed variables, it just returns the names, types are checked by other fucntion
 find_stream_var <- function(file_in, line_nos){
   
@@ -85,6 +83,7 @@ find_stream_var <- function(file_in, line_nos){
 #' @param pattern A character string pattern to look for in the file.
 #' @return A numeric vector of length 2, giving the start and end line numbers.
 #' @importFrom stringr str_match
+#' @keywords internal
 # helper function that scans LPJ-GUESS that returns the beginning and the ending lines of serialized object
 serialize_starts_ends <- function(file_in, pattern = "void Gridcell::serialize"){
   # find the starting line from the given pattern
@@ -159,6 +158,7 @@ find_closing <- function(find = "}", line_no, file_in, if_else_check = FALSE){
 #' @return A numeric value representing the size (number of streamed variables).
 #' @importFrom stringr str_match
 #' @importFrom utils glob2rx
+#' @keywords internal
 # helper function that determines the stream size to read
 find_stream_size <- function(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS){
   
@@ -322,6 +322,7 @@ read_state <- function(file_path) {
 #' @param LPJ_GUESS_TYPES A character vector of recognized LPJ-GUESS types.
 #' @param guessh_in A character vector of LPJ-GUESS header file content.
 #' @return A character string indicating the stream type.
+#' @keywords internal
 # helper function to decide the type of the stream
 # this function relies on the architecture of LPJ-GUESS and has bunch of harcoded checks, see model documentation
 find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in){
@@ -429,13 +430,8 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
   return(list(type = gsub(" ", "", stream_type), name = stream_name, substring = sub_string))
 } # find_stream_type
 
-
-###################################### READ STATE
-
-
 # this fcn is for potential natural vegetation only
 # when there is landcover, there will be more stand types
-
 # also for cohort mode only
 
 # Gridcell: Top-level object containing all dynamic and static data for a particular gridcell
@@ -450,25 +446,30 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
 # Soil : Stores state variables for soils and the snow pack. One object of class Soil is defined for each patch.
 # Fluxes : The Fluxes class stores accumulated monthly and annual fluxes. One object of type Fluxes is defined for each patch.
 # Individual : Stores state variables for an average individual plant. In cohort mode, it is the average individual of a cohort of plants approximately the same age and from the same patch.
-
-
-# test path
-#outdir <- "/fs/data2/output/PEcAn_1000010473/out/1002656304"
-
-# outdir, at least model version, maybe also settings
+# 
 #' Read Binary File for LPJ-GUESS
 #'
 #' Reads a binary file formatted for LPJ-GUESS and extracts relevant data.
 #'
-#' @param outdir A character string specifying the output directory containing the binary state files.
+#' @param outdir  The output directory where ".state" and "meta.bin" will be written
 #' @param version A character string specifying the LPJ-GUESS version (default is "PalEON").
 #' @importFrom stringr str_match
 #' @importFrom utils glob2rx
 #' @return A matrix or list containing the extracted data.
+#' @export
+#' @author Istem Fer, Yinghao Sun
 read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
+  
+  # ## FOR TEST
+  # outdir <- "/projectnb/dietzelab/yinghao/try/write_test/out"
+  # rundir <- "/projectnb/dietzelab/yinghao/try/write_test/run"
   
   # find rundir too, params.ins is in there and we need to get some values from there
   rundir <- file.path(dirname(dirname(outdir)), "run", basename(outdir))
+  
+  # create lists to store byte offset and byte size for each variable
+  pos_list <- list()
+  siz_list <- list()
   
   # guess.cpp has the info of what is being written
   guesscpp_name <- paste0("guess.", version, ".cpp")  # these are gonna be in the package guess.VERSION.cpp
@@ -629,6 +630,10 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   Gridcell <- list()
   level <- "Gridcell"
   for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
+    
+    # # Debug for empty nstands
+    # if(g_i == 7) browser()
+    
     current_stream <- streamed_vars_gridcell[g_i]
     # weird, it doesn't go into Gridcell st
     if(current_stream == "st[i]")   next #current_stream <- "Gridcellst" 
@@ -643,7 +648,12 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
       # note that this is streamed under Gridcell, not Stand in guess.cpp, 
       # but I think this info needs to go together with the Stand sublist
       # so prepend landcovertype to the streamed_vars_stand EDIT: I'll actually just read it here
-      Gridcell[["Stand"]][["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
+      
+      ## Past version
+      #Gridcell[["Stand"]][["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
+      
+      # # Landcover will be read again under stand. So "landcovertype" here is meaningless but we need to read/write.  
+      Gridcell[["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
       num_stnd <- as.numeric(Gridcell$nstands)
       Gridcell[["Stand"]] <- vector("list", num_stnd) 
       
@@ -652,7 +662,6 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
     
     # "(*this)[*]" points to different things under different levels, here it is stand
     if(grepl(utils::glob2rx("(*this)[*]"), current_stream)){ # note that first else-part will be evaluated considering the order in guess.cpp
-      
       # STAND
       level <- "Stand"
       current_stream <- "Stand"
@@ -669,15 +678,16 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
       
       for(stnd_i in seq_len(num_stnd)){ #looping over the stands
         for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
-          
           current_stream <- streamed_vars_stand[svs_i]
           if(grepl(utils::glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
           
           if(current_stream == "nobj" & level == "Stand"){
-            # nobj points to different things under different levels, here it is the number of patches
+            # nobj: Number of Patches
             # number of patches is set through insfiles, read by write.configs and passed to this fcn
             # but it's also written to the state file, need to move bytes
+            pos <- seek(zz)
             nofpatch <- readBin(zz, integer(), 1, size = 4)  
+            # browser()
             if(npatches == nofpatch){ # also not a bad place to check if everything is going fine so far
               Gridcell[["Stand"]][[stnd_i]]$npatches <- npatches
               #Gridcell[["Stand"]] <- vector("list", npatches) 
@@ -687,8 +697,8 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
             next
           }
           
-          # "(*this)[*]" points to different things under different levels, here it is patch
-          if(grepl(utils::glob2rx("(*this)[*]"), current_stream)){ 
+          ##### "(*this)[*]" points to different things under different levels, here it is PATCH ####
+          if(grepl(utils::glob2rx("(*this)[*]"), current_stream)){
             # PATCH
             level <- "Patch"
             current_stream <- "Patch"
@@ -704,6 +714,7 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
             
             for(ptch_i in seq_len(npatches)){ #looping over the patches
               for(svp_i in seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
+                # if(svp_i == 17) browser()
                 current_stream <- streamed_vars_patch[svp_i]
                 if(grepl(utils::glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
                 
@@ -734,16 +745,20 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     streamed_vars_veg <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
                     
                     # NOTE : Unlike other parts, this bit is a lot less generalized!!!
-                    # I'm gonna asumme Vegetation class won't change much in the future
+                    # I'm gonna assume Vegetation class won't change much in the future
                     # indiv.pft.id and indiv needs to be looped over nobj times
                     if(!setequal(streamed_vars_veg, c("nobj", "indiv.pft.id", "indiv"))){
                       PEcAn.logger::logger.severe("Vegetation class object changed in this model version, you need to fix read.state")
                     }
                     
                     # nobj points to different things under different levels, here it is the number of individuals
+                    pos <- seek(zz)
                     number_of_individuals <- readBin(zz, integer(), 1, size = 4) 
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]] <- list()
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["number_of_individuals"]] <- number_of_individuals
+                    key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Vegetation", "number_of_individuals", fsep = "/")
+                    pos_list[[key]] <- pos
+                    siz_list[[key]] <- 4
                     
                     # few checks for sensible vals
                     if(number_of_individuals < 0 | number_of_individuals > 10000){ # should there be an upper limit here too?
@@ -764,7 +779,12 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     for(indv_i in seq_len(number_of_individuals)){
                       Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]] <- list()
                       # which PFT is this?
+                      pos <- seek(zz)
                       Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["indiv.pft.id"]] <- readBin(zz, integer(), 1, size = 4)
+                      key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Vegetation", "Individuals", indv_i, "indiv.pft.id", fsep = "/")
+                      pos_list[[key]] <- pos
+                      siz_list[[key]] <- 4
+                      
                       # read all the individual class
                       for(svi_i in seq_along(streamed_vars_indv)){ # 
                         
@@ -797,11 +817,14 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                             
                             current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                             # and read!
-                            
+                            pos <- seek(zz)
                             Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][["PhotosynthesisResult"]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                                                                                                                            what = current_stream_specs$what, 
                                                                                                                                                                                            n    = current_stream_specs$n, 
                                                                                                                                                                                            size = current_stream_specs$size)
+                            key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Vegetation", "Individuals", indv_i, "PhotosynthesisResult", current_stream_type$name, fsep = "/")
+                            pos_list[[key]] <- pos
+                            siz_list[[key]] <- current_stream_specs$size
                             
                           }# streamed_vars_photo-loop ends
                           
@@ -812,16 +835,24 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                           current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                           
                           if(current_stream_specs$single){
+                            pos <- seek(zz)
                             Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                                                                                                  what = current_stream_specs$what, 
                                                                                                                                                                  n    = current_stream_specs$n, 
                                                                                                                                                                  size = current_stream_specs$size)
+                            key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Vegetation", "Individuals", indv_i, current_stream_type$name, fsep = "/")
+                            pos_list[[key]] <- pos
+                            siz_list[[key]] <- current_stream_specs$size 
                           }else{
                             for(css.i in seq_along(current_stream_specs$what)){
+                              pos <- seek(zz)
                               Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Vegetation"]][["Individuals"]][[indv_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                                                            what = current_stream_specs$what[css.i], 
                                                                                                                                                                            n    = current_stream_specs$n[css.i], 
                                                                                                                                                                            size = current_stream_specs$size[css.i])
+                              key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Vegetation", "Individuals", indv_i, current_stream_specs$names[css.i], fsep = "/")
+                              pos_list[[key]] <- pos
+                              siz_list[[key]] <- current_stream_specs$size[css.i] 
                             }
                           }
                         }
@@ -845,18 +876,33 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     # parse from guess.h
                     PerPFTFluxType <- c("NPP", "GPP", "RA", "ISO", "MON")
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]] <- list()
-                    key1 <- readBin(zz, "integer", 1, 8)
+                    # The number of PFTS
+                    pos <- seek(zz)
+                    key1 <- readBin(zz, "integer", 1, 8) 
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][["n_pft"]] <- key1
-                    for(fpft_i in seq_len(key1)){ # key1 11 PFTs
-                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]] <- list()
+                    key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Fluxes", "annual_fluxes_per_pft", "n_pft", fsep = "/")
+                    pos_list[[key]] <- pos
+                    siz_list[[key]] <- 8
+                    
+                    for(fpft_i in seq_len(key1)){ # key1 12 PFTs
+                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[paste0("pft", fpft_i)]] <- list()
+                      pos <- seek(zz)
                       key2 <- readBin(zz, "integer", 1, 8)
                       if(key2 > 10000){ #make sure you dind't read a weird number, this is supposed to be number of fluxes per pft, can't have too many
                         PEcAn.logger::logger.severe("Number of fluxes per pft read from the state file is too high. Check read.state function")
                       }
-                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]][["key2"]] <- key2
+                      Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[paste0("pft", fpft_i)]][["key2"]] <- key2
+                      key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Fluxes", "annual_fluxes_per_pft", paste0("pft", fpft_i), "key2", fsep = "/")
+                      pos_list[[key]] <- pos
+                      siz_list[[key]] <- 8
+                      
                       for(flux_i in seq_len(key2)){
                         # is this double?
-                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[fpft_i]][[PerPFTFluxType[flux_i]]] <- readBin(zz, "double", 1, 8)
+                        pos <- seek(zz)
+                        Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["annual_fluxes_per_pft"]][[paste0("pft", fpft_i)]][[PerPFTFluxType[flux_i]]] <- readBin(zz, "double", 1, 8)
+                        key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Fluxes", "annual_fluxes_per_pft", paste0("pft", fpft_i), PerPFTFluxType[flux_i], fsep = "/")
+                        pos_list[[key]] <- pos
+                        siz_list[[key]] <- 8
                       }
                     }
                     
@@ -864,16 +910,25 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     # double monthly_fluxes_patch[12][NPERPATCHFLUXTYPES];
                     # maybe read this as a matrix?
                     n_monthly_fluxes_patch <- 12 * LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var =="PerPatchFluxType"]
+                    pos <- seek(zz)
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["monthly_fluxes_patch"]] <- readBin(zz, "double", n_monthly_fluxes_patch, 8)
+                    key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Fluxes", "monthly_fluxes_patch", fsep = "/")
+                    pos_list[[key]] <- pos
+                    siz_list[[key]] <- 8
                     
                     # monthly_fluxes_pft read as a vector at once
                     # double monthly_fluxes_pft[12][NPERPFTFLUXTYPES];
                     # maybe read this as a matrix?
                     n_monthly_fluxes_pft <- 12 * LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var =="PerPFTFluxType"]
+                    pos <- seek(zz)
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Fluxes"]][["monthly_fluxes_pft"]] <- readBin(zz, "double", n_monthly_fluxes_pft, 8)
+                    key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Fluxes", "monthly_fluxes_pft", fsep = "/")
+                    pos_list[[key]] <- pos
+                    siz_list[[key]] <- 8
                     
                   }else{
-                    # NOT VEGETATION OR FLUX
+                    # NOT VEGETATION OR FLUX. 
+                    # Patchpft or Soil in this case
                     streamed_vars <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
                     # NO CROPS, NATURAL VEG
                     if("*cropphen" %in% streamed_vars) streamed_vars <- streamed_vars[!(streamed_vars == "*cropphen")]
@@ -881,6 +936,12 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     
                     for(varname in streamed_vars){
                       Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[current_stream_type$name]][[varname]] <- vector("list", num_pft) 
+                    }
+                    
+                    if (current_stream == "soil"){
+                      past_stream <-  tools::toTitleCase(current_stream)
+                    } else{
+                      past_stream <-  current_stream
                     }
                     
                     # maybe try modifying this bit later to make it a function
@@ -921,10 +982,17 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                               current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                               
                               if(current_stream_specs$single){
+                                pos <- seek(zz)
                                 Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][["Soil"]][["Sompool"]][[current_stream_type$name]][[som_i]] <- readBin(con  = zz,
                                                                                                                                                           what = current_stream_specs$what, 
                                                                                                                                                           n    = current_stream_specs$n, 
                                                                                                                                                           size = current_stream_specs$size)
+                                
+
+                                key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, "Soil", "Sompool", current_stream_type$name, som_i, fsep = "/")
+                                pos_list[[key]] <- pos
+                                siz_list[[key]] <- current_stream_specs$size 
+                                
                               }else{
                                 PEcAn.logger::logger.severe("Historic under sompool.") # Not expecting any
                               }
@@ -935,16 +1003,24 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                           current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                           # and read!
                           if(current_stream_specs$single){ # maybe use current_stream in sublist names to find correct place
-                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
+                            pos <- seek(zz)
+                            Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length(Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
                                                                                                                                                                                               what = current_stream_specs$what, 
                                                                                                                                                                                               n    = current_stream_specs$n, 
                                                                                                                                                                                               size = current_stream_specs$size)
+                            key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, past_stream, current_stream_type$name, pft_i, fsep = "/")
+                            pos_list[[key]] <- pos
+                            siz_list[[key]] <- current_stream_specs$size 
                           }else{ # only for historic type?
                             for(css.i in seq_along(current_stream_specs$what)){ # maybe use current_stream in sublist names to find correct place
-                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length( Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
+                              pos <- seek(zz)
+                              Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[length(Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]])]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                                                                                what = current_stream_specs$what[css.i], 
                                                                                                                                                                                                n    = current_stream_specs$n[css.i], 
                                                                                                                                                                                                size = current_stream_specs$size[css.i])
+                              key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, past_stream, current_stream_type$names[css.i], pft_i, fsep = "/")
+                              pos_list[[key]] <- pos
+                              siz_list[[key]] <- current_stream_specs$size[css.i]
                             }
                           }
                         }
@@ -958,18 +1034,25 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                   current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                   # and read!
                   if(current_stream_specs$single){
-                    
+                    pos <- seek(zz)
                     Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                                               what = current_stream_specs$what, 
                                                                                                               n    = current_stream_specs$n, 
                                                                                                               size = current_stream_specs$size)
+                    key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, current_stream_type$name, fsep = "/")
+                    pos_list[[key]] <- pos
+                    siz_list[[key]] <- current_stream_specs$size
                   }else{ # probably don't need this but let's keep
                     for(css_i in seq_along(current_stream_specs$what)){
-                      # CHANGE ALL THESE HISTORIC TYPES SO THAT cirrent_index and full goes together with the variable
+                      # CHANGE ALL THESE HISTORIC TYPES SO THAT current_index and full goes together with the variable
+                      pos <- seek(zz)
                       Gridcell[["Stand"]][[stnd_i]][["Patch"]][[ptch_i]][[current_stream_specs$names[css_i]]] <- readBin(con  = zz, 
                                                                                                                          what = current_stream_specs$what[css_i], 
                                                                                                                          n    = current_stream_specs$n[css_i], 
                                                                                                                          size = current_stream_specs$size[css_i])
+                      key <- file.path("Gridcell", "Stand", stnd_i, "Patch", ptch_i, current_stream_specs$names[css_i], fsep = "/")
+                      pos_list[[key]] <- pos
+                      siz_list[[key]] <- current_stream_specs$size[css_i] 
                     }
                   }
                 }# end if-class within Patch
@@ -987,6 +1070,9 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
             
             Gridcell[["Stand"]][[stnd_i]][[length(Gridcell[["Stand"]][[stnd_i]])+1]] <- list()
             names(Gridcell[["Stand"]][[stnd_i]])[length(Gridcell[["Stand"]][[stnd_i]])] <- current_stream_type$name
+            
+            # Save the past stream like Standpft
+            past_stream <- current_stream
             
             if(current_stream_type$type == "class"){
               
@@ -1019,16 +1105,24 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                     current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
                     # and read!
                     if(current_stream_specs$single){
+                      pos <- seek(zz)
                       Gridcell[["Stand"]][[stnd_i]][[length(Gridcell[["Stand"]][[stnd_i]])]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
                                                                                                                                              what = current_stream_specs$what, 
                                                                                                                                              n    = current_stream_specs$n, 
                                                                                                                                              size = current_stream_specs$size)
+                      key <- file.path("Gridcell", "Stand", stnd_i, past_stream, current_stream_type$name, pft_i, fsep = "/")
+                      pos_list[[key]] <- pos
+                      siz_list[[key]] <- current_stream_specs$size
                     }else{
                       for(css.i in seq_along(current_stream_specs$what)){
+                        pos <- seek(zz)
                         Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                          what = current_stream_specs$what[css.i], 
                                                                                                                                          n    = current_stream_specs$n[css.i], 
                                                                                                                                          size = current_stream_specs$size[css.i])
+                        key <- file.path("Gridcell", "Stand", stnd_i, past_stream, current_stream_type$name[css.i], fsep = "/")
+                        pos_list[[key]] <- pos
+                        siz_list[[key]] <- current_stream_specs$size[css.i]
                       }
                     }
                   }
@@ -1040,16 +1134,24 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
               current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
               # and read!
               if(current_stream_specs$single){
+                pos <- seek(zz)
                 Gridcell[["Stand"]][[stnd_i]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                                      what = current_stream_specs$what, 
                                                                                      n    = current_stream_specs$n, 
                                                                                      size = current_stream_specs$size)
+                key <- file.path("Gridcell", "Stand", stnd_i, current_stream_type$name, fsep = "/")
+                pos_list[[key]] <- pos
+                siz_list[[key]] <- current_stream_specs$size
               }else{ # probably don't need this but let's keep
                 for(css_i in seq_along(current_stream_specs$what)){
+                  pos <- seek(zz)
                   Gridcell[[length(Gridcell)]][[current_stream_specs$names[css_i]]] <- readBin(con  = zz, 
                                                                                                what = current_stream_specs$what[css_i], 
                                                                                                n    = current_stream_specs$n[css_i], 
                                                                                                size = current_stream_specs$size[css_i])
+                  key <- file.path("Gridcell", "Stand", stnd_i, current_stream_type$name, fsep = "/")
+                  pos_list[[key]] <- pos
+                  siz_list[[key]] <- current_stream_specs$size[css_i] 
                 }
               }
             }# end if-class within Stand
@@ -1062,6 +1164,7 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
     }else{ #not reading in Stand variables
       
       # NOT STAND
+      past_stream <- current_stream
       
       current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       
@@ -1092,27 +1195,40 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
             current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
             # and read!
             if(current_stream_specs$single){
+              pos <- seek(zz)
               Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]] <- readBin(con  = zz, 
                                                                                            what = current_stream_specs$what, 
                                                                                            n    = current_stream_specs$n, 
                                                                                            size = current_stream_specs$size)
-            }else if(current_stream_specs$name %in% c("hmtemp_20", "hmprec_20", "hmeet_20")){
+              key <- file.path("Gridcell", past_stream, current_stream_type$name, pft_i, fsep = "/")
+              pos_list[[key]] <- pos
+              siz_list[[key]] <- current_stream_specs$size 
+              
+            }else if(current_stream_type$name %in% c("hmtemp_20", "hmprec_20", "hmeet_20")){
               # these three are just too different, maybe extract their names in the beginning
               # be careful while writing back to the binary
               # Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con = zz, double(), 264, 8)
               Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- vector("list", length(current_stream_specs) - 2)
               for(css.i in seq_len(length(current_stream_specs) - 2)){
+                 pos <- seek(zz)
                  Gridcell[[length(Gridcell)]][[current_stream_type$name]][[css.i]] <- readBin(con  = zz, 
                                                                  what = current_stream_specs[[css.i]]$what, 
                                                                  n    = current_stream_specs[[css.i]]$n, 
                                                                  size = current_stream_specs[[css.i]]$size)
+                 key <- file.path("Gridcell", past_stream, current_stream_type$name, css.i, fsep = "/")
+                 pos_list[[key]] <- pos
+                 siz_list[[key]] <- current_stream_specs[[css.i]]$size 
               }
             }else{
               for(css.i in seq_along(current_stream_specs$what)){
+                pos <- seek(zz)
                 Gridcell[[length(Gridcell)]][[current_stream_type$name]][[pft_i]][[current_stream_specs$names[css.i]]]<- readBin(con  = zz, 
                                                                                                                                  what = current_stream_specs$what[css.i], 
                                                                                                                                  n    = current_stream_specs$n[css.i], 
                                                                                                                                  size = current_stream_specs$size[css.i])
+                key <- file.path("Gridcell", past_stream, current_stream_type$name, pft_i, current_stream_specs$names[css.i], fsep = "/")
+                pos_list[[key]] <- pos
+                siz_list[[key]] <- current_stream_specs$size[css.i] 
               }
             }
             
@@ -1124,16 +1240,24 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
         current_stream_specs <- find_stream_size(current_stream_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
         # and read!
         if(current_stream_specs$single){
+          pos <- seek(zz)
           Gridcell[[length(Gridcell)]][[current_stream_type$name]] <- readBin(con  = zz, 
                                                                               what = current_stream_specs$what, 
                                                                               n    = current_stream_specs$n, 
                                                                               size = current_stream_specs$size)
-        }else{ # probably don't need this but let's keep
+          key <- file.path("Gridcell", past_stream, current_stream_type$name, fsep = "/")
+          pos_list[[key]] <- pos
+          siz_list[[key]] <- current_stream_specs$size
+        }else{
           for(css_i in seq_along(current_stream_specs$what)){
+            pos <- seek(zz)
             Gridcell[[length(Gridcell)]][[current_stream_specs$names[css_i]]] <- readBin(con  = zz, 
                                                                                          what = current_stream_specs$what[css_i], 
                                                                                          n    = current_stream_specs$n[css_i], 
                                                                                          size = current_stream_specs$size[css_i])
+            key <- file.path("Gridcell", past_stream, current_stream_type$name[css_i], fsep = "/")
+            pos_list[[key]] <- pos
+            siz_list[[key]] <- current_stream_specs$size[css_i] 
           }
         }
       }# end if-class within Gridcell
@@ -1145,7 +1269,12 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   
   Gridcell$meta_data <- meta_data
   
-  return(Gridcell)
+  # return(Gridcell)
+  return(list(
+    state = Gridcell,
+    pos_list = pos_list,
+    siz_list = siz_list
+  ))
 } # read_binary_LPJGUESS end
 
 

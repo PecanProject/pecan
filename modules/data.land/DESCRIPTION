@@ -1,7 +1,7 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.8.0.9000
+Version: 1.8.2
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut"),
@@ -21,23 +21,27 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
-Depends: R (>= 3.5.0)
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     coda,
     curl,
+    doSNOW,
     dplyr,
     dplR,
+    foreach,
     fs,
     future,
     furrr,
     httr,
     lubridate,
     magrittr,
+    MCMCpack,
     mvtnorm,
     ncdf4 (>= 1.15),
     neonUtilities,
     neonstore,
-    swfscMisc,
     PEcAn.benchmark,
     PEcAn.DB,
     PEcAn.logger,
@@ -55,7 +59,7 @@ Imports:
     tidyr,
     tidyselect,
     traits,
-    XML (>= 3.98-1.4)      
+    XML (>= 3.98-1.4)
 Suggests:
     dataone,
     datapack,
@@ -65,7 +69,9 @@ Suggests:
     redland,
     raster,
     reticulate,
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr,
+    MASS
 Remotes:
     github::ropensci/traits
 License: BSD_3_clause + file LICENSE

@@ -1,7 +1,7 @@
 Package: PEcAn.all
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.8.0.9000
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -43,6 +43,8 @@ Description: The Predictive Ecosystem Carbon Analyzer
     PEcAn is to streamline the interaction between data and
     models, and to improve the efficacy of scientific
     investigation.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     PEcAn.DB,
     PEcAn.settings,

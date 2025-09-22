@@ -15,17 +15,47 @@ gSSURGO.Query(
 \item{fields}{a character vector of the fields to be extracted. See details and the default argument to find out how to define fields.}
 }
 \value{
-a dataframe with soil properties. Units can be looked up from database documentation
+a dataframe with soil properties.
 }
 \description{
 This function queries the gSSURGO database for a series of map unit keys
 }
 \details{
-Full documention of available tables and their relationships can be found here \url{www.sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}
-There have been occasions where NRCS made some minor changes to the structure of the API which this code is where those changes need
-to be implemneted here.
-Fields need to be defined with their associate tables. For example, sandtotal is a field in chorizon table which needs to be defined as chorizon.sandotal_(r/l/h), where 
-r stands for the representative value, l stands for low and h stands for high. At the moment fields from mapunit, component, muaggatt, and chorizon tables can be extracted.
+This function queries the NRCS gSSURGO database using map unit keys (mukeys).
+\itemize{
+\item \strong{Available tables}: \code{mapunit}, \code{component}, \code{muaggatt}, \code{chorizon}, and \code{chfrags}.
+\item \strong{Field definitions}: Fields must be specified with their associated table name.
+For example, total sand content is stored in the \code{chorizon} table and must be
+requested as \code{chorizon.sandtotal_(r|l|h)}, where:
+\itemize{
+\item \code{r} = representative value
+\item \code{l} = low value
+\item \code{h} = high value
+}
+}
+
+\strong{Commonly queried fields and units} (see NRCS gSSURGO \href{https://www.nrcs.usda.gov/sites/default/files/2022-08/SSURGO-Metadata-Tables-and-Columns-Report.pdf}{"Tables and Columns Report"}
+for full list):\tabular{lll}{
+   Field \tab Description \tab Units \cr
+   \code{chorizon.cec7_r} \tab Cation exchange capacity at pH 7 \tab cmol(+)/kg \cr
+   \code{chorizon.sandtotal_r} \tab Total sand (<2 mm fraction) \tab \% \cr
+   \code{chorizon.silttotal_r} \tab Total silt (<2 mm fraction) \tab \% \cr
+   \code{chorizon.claytotal_r} \tab Total clay (<0.002 mm fraction) \tab \% \cr
+   \code{chorizon.om_r} \tab Organic matter (<2 mm soil) \tab \% \cr
+   \code{chorizon.hzdept_r} \tab Horizon top depth \tab cm \cr
+   \code{chfrags.fragvol_r} \tab Rock fragments \tab \% (by volume) \cr
+   \code{chorizon.dbthirdbar_r} \tab Bulk density at field capacity \tab g/cm³ \cr
+   \code{chorizon.ph1to1h2o_r} \tab Soil pH (1:1 H2O) \tab pH (unitless) \cr
+   \code{chorizon.cokey} \tab Component key (identifier) \tab — \cr
+   \code{chorizon.chkey} \tab Horizon key (identifier) \tab — \cr
+}
+
+
+\strong{API stability:} The NRCS occasionally modifies the API schema. If queries fail,
+adjustments may be required here to align with the updated structure.
+
+Full documentation of available tables and their relationships is provided in the
+\href{https://sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx}{gSSURGO documentation}.
 }
 \examples{
 \dontrun{
@@ -38,4 +68,7 @@ r stands for the representative value, l stands for low and h stands for high. A
      "chorizon.dbovendry_r","chorizon.ph1to1h2o_r",
      "chorizon.cokey","chorizon.chkey"))
 }
+}
+\author{
+Hamze Dokohaki, Akash
 }

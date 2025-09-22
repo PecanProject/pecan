@@ -1,7 +1,7 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.7.3.9000
+Version: 1.7.4
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Xiaohui", "Feng", role = c("aut"),
@@ -18,6 +18,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     efficacy of scientific investigation. The PEcAn.photosynthesis package
     contains functions used in the Hierarchical Bayesian calibration of the
     Farquhar et al 1980 model.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     rjags
 Imports:

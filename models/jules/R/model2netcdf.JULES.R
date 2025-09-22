@@ -15,13 +15,7 @@ model2netcdf.JULES <- function(outdir) {
   for (fname in files) {
     print(fname)
     nc <- ncdf4::nc_open(fname, write = TRUE)
-    ## extract variable and long names
-    utils::write.table(sapply(nc$var, function(x) { x$longname }), 
-                file = paste0(fname, ".var"), 
-                col.names = FALSE, 
-                row.names = TRUE,
-                quote = FALSE)
-    
+
     vars <- names(nc[["var"]])
     # Check that frac is reported
     if("frac_grid" %in% vars){
