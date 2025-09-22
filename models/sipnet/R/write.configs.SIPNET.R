@@ -474,10 +474,17 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
                                           & leafphdata$site_id == settings$run$site$id]
         leafOffDay <- leafphdata$leafoffday[leafphdata$year == obs_year_start
                                             & leafphdata$site_id == settings$run$site$id]
-        if (!is.na(leafOnDay)) {
-          param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
+        # when we have NAs for phenology.
+        if (is.na(leafOnDay)) {
+          leafOnDay <- param[which(param[, 1] == "leafOnDay"), 2]
         }
-        if (!is.na(leafOffDay)) {
+        if (is.na(leafOffDay)) {
+          leafOffDay <- param[which(param[, 1] == "leafOffDay"), 2]
+        }
+        # when we have Leaf off date larger than leaf on date.
+        # Otherwise the phenology will not be used.
+        if (leafOffDay > leafOnDay) {
+          param[which(param[, 1] == "leafOnDay"), 2] <- leafOnDay
           param[which(param[, 1] == "leafOffDay"), 2] <- leafOffDay
         }
       } else {
@@ -631,7 +638,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[param[, 1] == "plantWoodInit", 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "kg m-2", "g m-2")
+        fineRootFrac <- param[which(param[,1] == "fineRootFrac"),2]
+        coarseRootFrac <- param[which(param[,1] == "coarseRootFrac"),2]
+        # accounts for the fact that SIPNET take plantWoodInit as all woods (including roots).
+        param[which(param[, 1] == "plantWoodInit"), 2] <- PEcAn.utils::ud_convert(IC.pools$wood, "kg m-2", "g m-2")/(1-fineRootFrac-coarseRootFrac)
       }
       ## laiInit m2/m2
       lai <- IC.pools$LAI

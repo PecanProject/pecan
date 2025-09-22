@@ -459,7 +459,7 @@ for (input_tag in names(settings$run$inputs)) {
   
      if (!input_tag %in% names(samples)) {
         # Use first path (already validated as single path)
-        settings$run$inputs[[input_tag]]$path <- input$path[1]  } 
+        settings$run$inputs[[input_tag]]$path <- unlist(input$path[1])} 
         else {
            # Use sampled path
           settings$run$inputs[[input_tag]]$path <- samples[[input_tag]][["samples"]][[i]]

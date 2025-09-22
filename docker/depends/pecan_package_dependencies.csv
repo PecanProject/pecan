@@ -42,6 +42,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","base/utils","Suggests",FALSE
 "doSNOW","*","modules/assim.sequential","Suggests",FALSE
 "doSNOW","*","modules/data.atmosphere","Suggests",FALSE
 "doSNOW","*","modules/data.land","Imports",FALSE
@@ -68,6 +69,7 @@
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
+"foreach","*","base/utils","Imports",FALSE
 "foreach","*","modules/assim.sequential","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Imports",FALSE
 "foreach","*","modules/data.land","Imports",FALSE

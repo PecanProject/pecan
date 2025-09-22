@@ -37,6 +37,7 @@ Imports:
     abind (>= 1.4.5),
     curl,
     dplyr,
+    foreach,
     lubridate (>= 1.6.0),
     magrittr,
     ncdf4 (>= 1.15),
@@ -48,6 +49,7 @@ Imports:
 Suggests:
     coda (>= 0.18),
     data.table,
+    doSNOW,
     ggplot2,
     MASS,
     mockery,
