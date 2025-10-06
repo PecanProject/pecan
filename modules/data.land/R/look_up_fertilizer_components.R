@@ -104,7 +104,7 @@ look_up_fertilizer_components <- function(
       )
       
       res <- fertilizer_info |>
-        dplyr::select(.data$name, .data$NO3_N, .data$NH4_N, .data$N_org, .data$C_org) |>
+        dplyr::select("name", "NO3_N", "NH4_N", "N_org", "C_org") |>
         dplyr::rename(type = .data$name) |>
         as.list()
     return(res)

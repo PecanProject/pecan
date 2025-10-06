@@ -2,7 +2,8 @@
 % Please edit documentation in R/get.parameter.samples.R
 \name{get.parameter.samples}
 \alias{get.parameter.samples}
-\title{Convert priors / MCMC samples to chains that can be sampled for model parameters}
+\title{Convert priors / MCMC samples to chains that can be sampled
+  for model parameters}
 \usage{
 get.parameter.samples(
   settings,
@@ -21,7 +22,8 @@ get.parameter.samples(
 \item{ens.sample.method}{one of "halton", "sobol", "torus", "lhc", "uniform"}
 }
 \description{
-Convert priors / MCMC samples to chains that can be sampled for model parameters
+Convert priors / MCMC samples to chains that can be sampled
+  for model parameters
 }
 \author{
 David LeBauer, Shawn Serbin, Istem Fer

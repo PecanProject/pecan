@@ -42,7 +42,7 @@ _Note for Linux (including Windows WSL2) users:_ add your user to the docker gro
 
 ```sh
 # for linux users
-sudo adduser ${USER} docker.
+sudo adduser ${USER} docker
 ```
 
 ### Deploying PEcAn in Docker

@@ -206,6 +206,7 @@ jobs:
       build-context: ${{ matrix.CONTEXT }}
       dockerfile: ${{ matrix.DOCKERFILE }}
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      parent-image: "base"
       platforms: ${{ matrix.PLATFORM }}
     secrets: inherit
 
