@@ -9,26 +9,18 @@ section for the next release.
 
 ### Added
 
-- Add function `clip_and_save_raster_file()` for subsetting rasters to match a polygon of interest (#3537).
-- Add CH4 and N2O to standard_vars in PEcAn.utils
-- New function `sat_vapor_pressure()` added for computing saturation vapor pressure from temperature using various methods.
-- Added `AmeriFlux_met_ensemble()` function with ERA5 fallback for AmeriFlux meteorological data processing and ensemble generation
-- Added `all_site_nc_merge_by_year()` and `single_site_nc_merge()` functions to merge netCDF files across ensembles and sites from pecan model netCDF outputs.
-- Added parallel mode for the entire SDA workflow.
-- Included all relevant carbon pools (`ROOT_BIOMASS`, `AG_BIOMASS`, `SOIL_STOCK`, `LIT_BIOMASS`) in BADM-based IC extraction; excluded non-pool variables like `SOIL_CHEM`.
-- Added explicit support for `LIT_BIOMASS` to fully utilize **BADM** biomass capabilities.
-- Added `test-IC_BADM_Utilities.R` to validate BADM initial condition extraction and processing
-- Added function for merging images from the same tiling system (MODIS, GLANCE, ICESat-2, HLS, etc.).
-- Added function for converting images towards the GDAL-supported formats (H5, NetCDF, HDF4, GeoTIFF, etc .).
-- New utility script `IC_SOILGRID_Utilities.R` for processing SoilGrids data to generate soil carbon initial condition (IC) files. This includes  (#3508):
-  - **`soilgrids_ic_process`**: A function to extract, process, and generate ensemble members from SoilGrids250m data.
-  - **`preprocess_soilgrids_data`**: A helper function to handle missing values and ensure data integrity during preprocessing. 
-  - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data. 
-- `extract.nc.ERA5()` and `met2CF.ERA5` now supports both ensemble and reanalysis data processing .
-- Initial Quarto notebook `run_pecan.qmd` to run PEcAn Demo 1 workflow from a pre-configured `pecan.xml` file, enabling notebook-based model runs, analysis, and visualization (#3531)
- - Directory structure for PEcAn Quarto notebooks under `pecan/documentation/tutorials/Demo_1_Basic_Run`
- - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
-- added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
+- Documentation of `make` options including addition of `make help` 
+- Add make option to document a single package with `make documentation pathto/package`
+- `settings$host$qsub` and `settings$host$modellauncher$qsub.extra` will now expand `@NJOBS@` to the number of models in the run, allowing e.g. `--array=1-@NJOBS@`. Note that qsub still by default submits every model as a separate job, so for now this is mostly useful for custom modellauncher scripts
+
+- Introduced an RMarkdown template titled "PEcAn Modular Workflow" to streamline and document the execution of PEcAn workflows. This template facilitates:
+  - Loading necessary PEcAn packages.
+  - Reading and preparing settings from a specified `settings.xml` file.
+  - Conducting trait and meta-analysis.
+  - Writing model configuration files.
+  - Running model simulations and retrieving results.
+  - Performing analyses on model outputs, including sensitivity and ensemble analyses.
+
 
 ### Fixed
 
