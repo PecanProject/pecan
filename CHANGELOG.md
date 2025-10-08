@@ -35,6 +35,7 @@ section for the next release.
 - Fixed a bugs and BADM now process both single-site and multi-site settings, detecting the input structure and processing each site independently to generate the correct number of ensemble members per site.
 - Fixed "external pointer is not valid" error and addressed key bugs in `soilgrids_soilC_extract()` function (#3506)
 - Fixed a bug within the `model2netcdf.SIPNET` function where we assumed the constant calculations of `pecan_start_doy` across years (the calculations should vary depending on the last date from the last loop and the start date of the current loop), which will lead to incorrect calculations of the start `sub_dates` and `sub_dates_cf` if we are jumping between years (e.g., from 2012-12-31 to 2013-01-01). The `sipnet2datetime` function is no longer used anywhere and therefore has been removed.
+- `extract_soil_gssurgo()` -- replaced point-based WFS queries with raster-based WCS approach using `soilDB::mukey.wcs()` for accurate area-weighted sampling. Integrated `soilDB::get_SDA_property()` for depth-integrated soil property retrieval and `soilDB::fetchSDA()` for comprehensive rock fragment data across all size classes. This eliminates spatial coverage gaps and reduces network requests while maintaining backward compatibility.
 
 ### Changed
 
