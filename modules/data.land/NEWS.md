@@ -4,7 +4,8 @@
 * New utility script `IC_SOILGRID_Utilities.R` for processing SoilGrids data to generate soil carbon initial condition (IC) files. This includes (#3508):
   - **`soilgrids_ic_process`**: A function to extract, process, and generate ensemble members from SoilGrids250m data.
   - **`preprocess_soilgrids_data`**: A helper function to handle missing values and ensure data integrity during preprocessing. 
-  - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data. 
+  - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data.
+* `extract_soil_gssurgo()` -- replaced point-based WFS queries with raster-based WCS approach using `soilDB::mukey.wcs()` for accurate area-weighted sampling. Integrated `soilDB::get_SDA_property()` for depth-integrated soil property retrieval and `soilDB::fetchSDA()` for comprehensive rock fragment data across all size classes. This eliminates spatial coverage gaps and reduces network requests while maintaining backward compatibility.
 
 # PEcAn.data.land 1.8.2
 - Removed unused parameter `machine` from put_veg_module()
