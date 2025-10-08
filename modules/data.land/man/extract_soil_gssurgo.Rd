@@ -40,14 +40,6 @@ This function takes a single lat/lon point and creates a spatial grid
 around it for sampling soil variability. The grid_size parameter determines 
 how many grid points (grid_size x grid_size) are created around the center point.
 }
-\section{Current Limitations}{
-
-- MUKEY frequency weighting treats occurrence counts as proportional to area coverage
-- This approximation may introduce geometric bias for irregular polygon data
-- Buffer radius is set to grid_spacing/2 to reduce overlapping queries, but may still miss coverage
-- True area-weighted aggregation using polygon geometries is planned (see issue #3609)
-}
-
 \examples{
 \dontrun{
    outdir  <- "~/paleon/envTest"
