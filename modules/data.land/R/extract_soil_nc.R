@@ -13,12 +13,6 @@
 #'
 #' @return It returns the address for the generated soil netcdf file
 #'
-#' @section Current Limitations:
-#' - MUKEY frequency weighting treats occurrence counts as proportional to area coverage
-#' - This approximation may introduce geometric bias for irregular polygon data
-#' - Buffer radius is set to grid_spacing/2 to reduce overlapping queries, but may still miss coverage
-#' - True area-weighted aggregation using polygon geometries is planned (see issue #3609)
-#'
 #' @importFrom rlang .data
 #' @examples
 #' \dontrun{
@@ -31,168 +25,147 @@
 #' @export
 #'  
 extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spacing=100, depths=c(0.15,0.30,0.60)){
-  # I keep all the ensembles here 
-  all.soil.ens <-list()
-
-  # Grid-based spatial sampling around the center point (via WFS queries)
-  # This creates a grid_size x grid_size sampling grid centered on lat/lon
-  proj_crs <- sf::st_crs("+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-  wgs84_crs <- sf::st_crs(4326)
+  all.soil.ens <- list()
   
-  # Convert single center lat/lon to projected coordinates
-  point_sf <- sf::st_sfc(sf::st_point(c(lon, lat)), crs = wgs84_crs)
-  point_proj <- sf::st_transform(point_sf, proj_crs)
-  coords_proj <- sf::st_coordinates(point_proj)
+  # create spatial bounding box
+  half_extent_m <- (grid_size - 1) / 2 * grid_spacing
+  lat_offset <- half_extent_m / 111000
+  lon_offset <- half_extent_m / (111000 * cos(lat * pi / 180))
   
-  # Define grid extent 
-  half_extent <- (grid_size - 1) / 2 * grid_spacing
-  xmin <- coords_proj[1] - half_extent
-  xmax <- coords_proj[1] + half_extent
-  ymin <- coords_proj[2] - half_extent
-  ymax <- coords_proj[2] + half_extent
-  
-  # Create raster template
-  raster_template <- terra::rast(
-    xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-    resolution = grid_spacing, crs = proj_crs$wkt
+  bbox <- sf::st_bbox(
+    c(xmin = lon - lon_offset, 
+      xmax = lon + lon_offset,
+      ymin = lat - lat_offset, 
+      ymax = lat + lat_offset),
+    crs = sf::st_crs(4326)
   )
-  grid_coords <- terra::crds(raster_template)
+  aoi <- sf::st_as_sfc(bbox)
   
-  # Transform grid coordinates back to WGS84 for gSSURGO queries
-  grid_sf <- sf::st_as_sf(data.frame(x = grid_coords[, 1], y = grid_coords[, 2]),
-                          coords = c("x", "y"), crs = proj_crs)
-  grid_wgs84 <- sf::st_transform(grid_sf, wgs84_crs)
-  grid_coords_wgs84 <- sf::st_coordinates(grid_wgs84)
+  PEcAn.logger::logger.info("Querying gSSURGO Web Coverage Service for map unit keys")
+  mu_raster <- soilDB::mukey.wcs(aoi = aoi, db = 'gSSURGO', res = 30)
   
-  # Query gSSURGO for each grid point to capture spatial variability
-  buffer_radius <- grid_spacing / 2
-  PEcAn.logger::logger.warn(
-    "Buffer radius set to grid_spacing/2 to avoid overlap",
-    "results may be biased due to lack of area weighting and incomplete spatial coverage."
-  )
-  mukeys_all <- c()
-  for (i in seq_len(nrow(grid_coords_wgs84))) {
-    # Extract coordinates for this grid point (not user input)
-    this_lon <- grid_coords_wgs84[i, 1]
-    this_lat <- grid_coords_wgs84[i, 2]
-    
-    # I ask the gSSURGO to find all the mukeys (loosely can be thought of soil type) within grid_spacing distance of each grid point location. 
-    # Basically I think of this as me going around and taking soil samples at each grid point.
-    #https://sdmdataaccess.nrcs.usda.gov/SpatialFilterHelp.htm
-    mu.Path <- paste0(
-      "https://sdmdataaccess.nrcs.usda.gov/Spatial/SDMWGS84Geographic.wfs?",
-      "SERVICE=WFS",
-      "&VERSION=1.1.0",
-      "&REQUEST=GetFeature&TYPENAME=MapunitPoly",
-      "&FILTER=",
-        "<Filter>",
-          "<DWithin>",
-            "<PropertyName>Geometry</PropertyName>",
-            "<gml:Point>",
-              "<gml:coordinates>", this_lon, ",", this_lat, "</gml:coordinates>",
-            "</gml:Point>",
-            "<Distance%20units=%27m%27>", buffer_radius, "</Distance>",
-          "</DWithin>",
-        "</Filter>",
-      "&OUTPUTFORMAT=XMLMukeyList"
-    )
-    
-    # XML handling with temp file
-    temp_file <- tempfile(fileext = ".xml")
-    xmll <- curl::curl_download(
-      mu.Path,
-      destfile = temp_file,
-      handle = curl::new_handle(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE)
-    )
-    
-    # mukey extraction with error recovery
-    mukey_str <- tryCatch({
-      xml_doc <- XML::xmlParse(temp_file)
-      mapunit_nodes <- XML::getNodeSet(xml_doc, "//MapUnitKeyList")
-      
-      if (length(mapunit_nodes) > 0) {
-        mukey_data <- XML::xmlValue(mapunit_nodes[[1]])
-        if (!is.null(mukey_data) && nchar(trimws(mukey_data)) > 0) {
-          mukey_data
-        } else {
-          PEcAn.logger::logger.debug(paste("Empty MapUnitKeyList for coordinates", 
-                                           this_lat, ",", this_lon))
-          NULL
-        }
-      } else {
-        PEcAn.logger::logger.debug(paste("No MapUnitKeyList found for coordinates", 
-                                         this_lat, ",", this_lon, "skipping grid point"))
-        NULL
-      }
-    }, error = function(e) {
-      PEcAn.logger::logger.warn(paste("Failed to parse gSSURGO response for coordinates", 
-                                      this_lat, ",", this_lon, ":", e$message))
-      NULL
-    })
-    if (file.exists(temp_file)) unlink(temp_file)
-    if (is.null(mukey_str)) next
-    
-    mukeys <- strsplit(mukey_str, ",")[[1]]
-    if (length(mukeys) == 0) next
-    
-    mukeys_all <- c(mukeys_all, mukeys)
-  }
-
-  # mukey occurrences across all grid points
-  mukey_counts <- table(mukeys_all)
-  # Get unique mukeys from all grid points
-  mukeys_all <- unique(mukeys_all)
+  # Extract unique mukeys and their pixel counts for area weighting
+  mukey_values <- terra::values(mu_raster)
+  mukey_values <- mukey_values[!is.na(mukey_values)]
+  mukey_counts <- table(mukey_values)
+  mukeys_all <- as.character(names(mukey_counts))
+  
   if (length(mukeys_all) == 0) {
     PEcAn.logger::logger.severe("No mapunit keys were found for this site.")
-    return(NULL)
   }
   
-  # calling the query function sending the mapunit keys
-  soilprop <- gSSURGO.Query(
-    mukeys_all,
-    c("chorizon.sandtotal_r",
-      "chorizon.silttotal_r",
-      "chorizon.claytotal_r",
-      "chorizon.hzdept_r",
-      "chorizon.hzdepb_r",  
-      "chorizon.om_r",      
-      "chorizon.dbthirdbar_r",  # bulk density at 1/3 bar (field capacity);which is the standard field capacity bulk density measurement
-      "chfrags.fragvol_r",
-      "component.comppct_r")) 
+  # Get soil properties using soilDB
+  depths_cm <- depths * 100
+  all_soil_data <- list()
   
-  # Two-step aggregation:
-  # (1) Sum fragments within horizons, (2) Component area-weighting by mapunit
-  soilprop.weighted <- soilprop %>%
-    dplyr::group_by(.data$cokey, .data$hzdept_r, .data$hzdepb_r) %>%
-    # Each horizon may have multiple rows from different fragment size classes
-    # Sum fragments across size classes and remove duplicate horizon data
-    dplyr::mutate(fragvol_r = min(sum(.data$fragvol_r, na.rm = TRUE), 100)) %>%
-    dplyr::distinct() %>% # Remove duplicate rows created by multiple fragment size classes
-    dplyr::ungroup() %>%
-    # Component area-weighted aggregation by mapunit and horizon depth
-    dplyr::group_by(.data$mukey, .data$hzdept_r, .data$hzdepb_r) %>%
-    dplyr::summarise(
-      sandtotal_r = stats::weighted.mean(.data$sandtotal_r, .data$comppct_r, na.rm = TRUE),
-      silttotal_r = stats::weighted.mean(.data$silttotal_r, .data$comppct_r, na.rm = TRUE),
-      claytotal_r = stats::weighted.mean(.data$claytotal_r, .data$comppct_r, na.rm = TRUE),
-      om_r = stats::weighted.mean(.data$om_r, .data$comppct_r, na.rm = TRUE),
-      dbthirdbar_r = stats::weighted.mean(.data$dbthirdbar_r, .data$comppct_r, na.rm = TRUE),
-      fragvol_r = stats::weighted.mean(.data$fragvol_r, .data$comppct_r, na.rm = TRUE),
-      .groups = "drop"
-    )
+  for (i in seq_along(depths_cm)) {
+    if (i == 1) {
+      top_depth <- 0
+      bottom_depth <- depths_cm[1]
+    } else {
+      top_depth <- depths_cm[i-1]
+      bottom_depth <- depths_cm[i]
+    }
+    
+    # get soil properties per mukey
+    soil_props <- tryCatch({
+      soilDB::get_SDA_property(
+        property = c("sandtotal_r", "silttotal_r", "claytotal_r", "om_r", "dbthirdbar_r"),
+        method = "Weighted Average",
+        mukeys = as.integer(mukeys_all),
+        top_depth = top_depth,
+        bottom_depth = bottom_depth,
+        include_minors = TRUE
+      )
+    }, error = function(e) {
+      PEcAn.logger::logger.error(paste("Failed to get SDA properties:", e$message))
+      return(NULL)
+    })
+    
+    # Use fetchSDA instead of get_SDA_property to obtain complete rock fragment data
+    # get_SDA_property only provides frag3to10_r and fraggt10_r 
+    # but fetchSDA returns fragvol_r which represents TOTAL rock fragment volume including
+    # all size classes: 2-75mm (pebbles), 75-250mm (cobbles), 250-600mm (stones), and >600mm (boulders).
+    # plus component weighting needed for aggregation 
+    sda_data <- tryCatch({
+      soilDB::fetchSDA(
+        WHERE = paste0("mukey IN (", paste(mukeys_all, collapse = ","), ")"),
+        duplicates = TRUE,
+        childs = TRUE,
+        nullFragsAreZero = TRUE,
+        rmHzErrors = TRUE
+      )
+    }, error = function(e) {
+      PEcAn.logger::logger.warn(paste("Failed to fetch SDA data:", e$message))
+      return(NULL)
+    })
+    
+    if (!is.null(sda_data)) {
+      # extract horizon and site data
+      hz_data <- aqp::horizons(sda_data)
+      site_data <- aqp::site(sda_data)
+      
+      fragment_data <- hz_data %>%
+        dplyr::left_join(site_data[, c("cokey", "comppct_r", "mukey")], by = "cokey") %>%
+        dplyr::filter(hzdept_r < bottom_depth & hzdepb_r > top_depth) %>%
+        dplyr::mutate(
+          hz_top_adj = pmax(hzdept_r, top_depth),
+          hz_bot_adj = pmin(hzdepb_r, bottom_depth),
+          hz_thickness = hz_bot_adj - hz_top_adj
+        ) %>%
+        dplyr::group_by(mukey) %>%
+        dplyr::summarise(
+          fragvol_r = stats::weighted.mean(
+            fragvol_r, 
+            comppct_r * hz_thickness, 
+            na.rm = TRUE
+          ),
+          .groups = "drop"
+        )
+      
+      # Merge soil properties with fragment data
+      depth_data <- soil_props %>%
+        dplyr::left_join(fragment_data, by = "mukey") %>%
+        dplyr::mutate(
+          depth_layer = depths[i],
+          hzdept_r = top_depth,
+          hzdepb_r = bottom_depth
+        )
+    } else {
+      # Keep other soil data, mark fragments as explicitly missing
+      # complete.cases() will filter these out later
+      PEcAn.logger::logger.info(
+        paste("Fragment data unavailable for depth", top_depth, "-", bottom_depth,
+              "cm. These records will be excluded from final analysis.")
+      )
+      depth_data <- soil_props %>%
+        dplyr::mutate(
+          fragvol_r = NA_real_,
+          depth_layer = depths[i],
+          hzdept_r = top_depth,
+          hzdepb_r = bottom_depth
+        )
+    }
+    
+    all_soil_data[[i]] <- depth_data
+    # Loop continues to next depth layer regardless
+  }
   
-  soilprop.new <- soilprop.weighted %>%
-    dplyr::arrange(.data$hzdept_r) %>%
+  # Transform to match original code format
+  soilprop <- do.call(rbind, all_soil_data)
+  
+  soilprop.new <- soilprop %>%
     dplyr::select(
-      fraction_of_sand_in_soil = "sandtotal_r", # %
-      fraction_of_silt_in_soil = "silttotal_r", # %
-      fraction_of_clay_in_soil = "claytotal_r", # %
-      soil_depth = "hzdept_r", # cm
-      soil_depth_bottom = "hzdepb_r", # cm
-      organic_matter_pct = "om_r", # %
-      bulk_density = "dbthirdbar_r", # g/cm3
-      coarse_fragment_pct = "fragvol_r", # %
-      mukey = "mukey") %>%
+      fraction_of_sand_in_soil = "sandtotal_r",
+      fraction_of_silt_in_soil = "silttotal_r", 
+      fraction_of_clay_in_soil = "claytotal_r",
+      soil_depth = "hzdept_r",
+      soil_depth_bottom = "hzdepb_r",
+      organic_matter_pct = "om_r",
+      bulk_density = "dbthirdbar_r",
+      coarse_fragment_pct = "fragvol_r",
+      mukey = "mukey"
+    ) %>%
     dplyr::mutate(
       dplyr::across(c(dplyr::starts_with("fraction_of"), "coarse_fragment_pct"), 
                     ~ . / 100),
@@ -205,13 +178,14 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
       )
     ) %>%
     dplyr::filter(stats::complete.cases(.))
+  
   if(nrow(soilprop.new) == 0) {
     PEcAn.logger::logger.error("No valid soil properties after filtering")
     return(NULL)
   } 
-  if(!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
   
-  #converting it to list
+  if(!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
+
   soil.data.gssurgo <- list(
     fraction_of_sand_in_soil = soilprop.new$fraction_of_sand_in_soil,
     fraction_of_silt_in_soil = soilprop.new$fraction_of_silt_in_soil,
@@ -219,21 +193,19 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
     soil_depth = soilprop.new$soil_depth,
     soil_organic_carbon_stock = soilprop.new$soil_organic_carbon_stock
   )
-  #This ensures that I have at least one soil ensemble in case the modeling part failed
-  all.soil.ens <-c(all.soil.ens, list(soil.data.gssurgo))
   
+  all.soil.ens <- c(all.soil.ens, list(soil.data.gssurgo))
   
-  # What I do here is that I put soil data into depth classes and then model each class speparatly
-  #- see if we need to generate soil ensemble and add that to the list of all
+  # Generate modeled ensembles
   tryCatch({
-    # find the soil depth levels based on the depth argument 
-    # if soil profile is deeper than what is specified in the argument then I go as deep as the soil profile.
-    if (max(soilprop.new$soil_depth) > max(depths)) {
-      depths <- sort(c(depths, max(soilprop.new$soil_depth)))
+    # Adjust depth levels if needed
+    if (max(soilprop.new$soil_depth_bottom) > max(depths_cm)) {
+      depths_cm <- sort(c(depths_cm, max(soilprop.new$soil_depth)))
     }
-    depth.levs<-findInterval(soilprop.new$soil_depth, depths)
-    depth.levs[depth.levs==0] <-1
-    depth.levs[depth.levs>length(depths)] <-length(depths)
+    
+    depth.levs <- findInterval(soilprop.new$soil_depth_bottom, depths_cm)
+    depth.levs[depth.levs == 0] <- 1
+    depth.levs[depth.levs > length(depths_cm)] <- length(depths_cm)
     
     # Remove any NA depth levels
     valid_indices <- !is.na(depth.levs)
@@ -242,76 +214,65 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
       depth.levs <- depth.levs[valid_indices]
     }
     
-    soilprop.new.grouped<-soilprop.new %>% 
-      dplyr::mutate(DepthL=depths[depth.levs])
+    soilprop.new.grouped <- soilprop.new %>% 
+      dplyr::mutate(DepthL = depths_cm[depth.levs])
     
-    # let's fit dirichlet for each depth level separately
-    simulated.soil.props<-soilprop.new.grouped %>%
-      split(list(soilprop.new.grouped$DepthL, soilprop.new.grouped$mukey)) %>%
-      purrr::map_df(function(DepthL.Data){
+    # Dirichlet modeling per mukey
+    simulated.soil.props <- soilprop.new.grouped %>%
+      split(.$mukey) %>%
+      purrr::map_df(function(mukey_group) {
         tryCatch({
-          # I model the soil properties for this depth
-          dir.model <-DepthL.Data[,c(1:3)] %>%
-            as.matrix() %>%
-            sirt::dirichlet.mle(.)
-          # Monte Carlo sampling based on my dirichlet model
-          alpha <- dir.model$alpha
-          alpha <- matrix(alpha, nrow= size, ncol=length(alpha), byrow=TRUE )
-          simulated.soil <- sirt::dirichlet.simul(alpha)
-          # Validate SOC data before processing
-          if (any(is.na(DepthL.Data$soil_organic_carbon_stock))) {
-            PEcAn.logger::logger.warn("Found NA values in soil_organic_carbon_stock data. Removing incomplete records.")
-            DepthL.Data <- DepthL.Data[!is.na(DepthL.Data$soil_organic_carbon_stock), ]
-          }
-          if (nrow(DepthL.Data) == 0) {
-            PEcAn.logger::logger.warn("No valid SOC data after removing NAs")
-            return(NULL)
-          }
-          # Simulate SOC uncertainty using Gamma distribution
-          soc_mean <- mean(DepthL.Data$soil_organic_carbon_stock, na.rm = TRUE)
-          soc_sd <- stats::sd(DepthL.Data$soil_organic_carbon_stock, na.rm = TRUE)
+          texture_data <- mukey_group[,c("fraction_of_sand_in_soil",
+                                         "fraction_of_silt_in_soil",
+                                         "fraction_of_clay_in_soil")] %>% 
+            as.matrix()
           
-          # Handle edge cases for SOC simulation
-          if (nrow(DepthL.Data) == 1) {
-            simulated_soc <- rep(NA_real_, size)
-          } else if (is.na(soc_sd) || soc_sd == 0) {
+          if(nrow(texture_data) == 0) return(NULL)
+          
+          dir.model <- sirt::dirichlet.mle(texture_data)
+          alpha <- matrix(dir.model$alpha, nrow = size, ncol = length(dir.model$alpha), byrow = TRUE)
+          simulated.soil <- sirt::dirichlet.simul(alpha)
+          
+          # SOC modeling
+          soc_mean <- mukey_group$soil_organic_carbon_stock
+          soc_sd <- stats::sd(soc_mean, na.rm = TRUE)
+          n_depths <- length(soc_mean)
+          
+          if (n_depths == 1 || is.na(soc_sd) || soc_sd == 0) {
             simulated_soc <- rep(NA_real_, size)
           } else {
-            shape <- (soc_mean^2) / (soc_sd^2)
-            rate <- soc_mean / (soc_sd^2)
-            simulated_soc <- stats::rgamma(size, shape=shape, rate=rate)
+            shape <- (mean(soc_mean, na.rm=TRUE)^2) / (soc_sd^2)
+            rate <- mean(soc_mean, na.rm=TRUE) / (soc_sd^2)
+            simulated_soc <- stats::rgamma(size, shape = shape, rate = rate)
           }
           
-          simulated.soil<-simulated.soil %>%
-            as.data.frame %>%
-            dplyr::mutate(DepthL=rep(DepthL.Data$DepthL[1], size),
-                   mukey=rep(DepthL.Data$mukey[1], size),
-                   soil_organic_carbon_stock = simulated_soc) %>%
-            `colnames<-`(c("fraction_of_sand_in_soil",
-                           "fraction_of_silt_in_soil",
-                           "fraction_of_clay_in_soil",
-                           "soil_depth",
-                           "mukey",
-                           "soil_organic_carbon_stock"))
-          simulated.soil
+          result_df <- data.frame(
+            fraction_of_sand_in_soil = simulated.soil[,1],
+            fraction_of_silt_in_soil = simulated.soil[,2],
+            fraction_of_clay_in_soil = simulated.soil[,3],
+            soil_depth = mukey_group$soil_depth,
+            mukey = unique(mukey_group$mukey),
+            soil_organic_carbon_stock = simulated_soc
+          )
+          
+          return(result_df)
         },
         error = function(e) {
           PEcAn.logger::logger.warn(conditionMessage(e))
           return(NULL)
         })
-      }) 
+      })
     
-    # estimating the proportion of areas for those mukeys which are modeled
-
-    # defining mukey_area
+    # calculate mukey area
     mukey_area <- data.frame(
       mukey = names(mukey_counts),
       Area = as.numeric(mukey_counts) / sum(mukey_counts)
     ) %>%
       dplyr::filter(.data$mukey %in% unique(simulated.soil.props$mukey)) %>%
       dplyr::mutate(Area = .data$Area / sum(.data$Area, na.rm = TRUE))
-    #--- Mixing the depths
-    soil.profiles<-simulated.soil.props %>% 
+    
+    # generate weighted profiles
+    soil.profiles <- simulated.soil.props %>% 
       split(.$mukey) %>%   
       purrr::map(function(soiltype.sim){
         sizein <- mukey_area$Area[mukey_area$mukey == unique(soiltype.sim$mukey)] * size
@@ -324,8 +285,9 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
           })
       }) %>%
       purrr::flatten()
-    #- add them to the list of all the ensembles ready to be converted to .nc file
-    all.soil.ens<-soil.profiles %>%
+    
+    # convert profiles to ensemble arrays
+    all.soil.ens <- soil.profiles %>%
       purrr::map(function(SEns){
         SEns <- SEns[, names(SEns) != "mukey"]
         names(SEns) %>%
@@ -334,24 +296,19 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
           }) %>%
           stats::setNames(names(SEns))
       }) %>%
-      c(all.soil.ens,.)
+      c(all.soil.ens, .)
     
   },
   error = function(e) {
     PEcAn.logger::logger.warn(conditionMessage(e))
   })
   
-  
-  #-- generating the .nc files for all the collected ensembles
+  # generate NetCDF files
   out.ense <- (1:length(all.soil.ens)) %>%
     purrr::map(function(i) {
-      
       tryCatch({
-        #browser()
-        # calc new filename
         prefix <- paste0("gSSURGO_soil_", i)
         new.file <- file.path(outdir, paste0(prefix, ".nc"))
-        #sending it to the func where some new params will be added and then it will be written down as nc file.
         suppressWarnings({
           PEcAn.data.land::soil2netcdf(all.soil.ens[[i]], new.file)
         })
@@ -362,19 +319,16 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
         return(NULL)
       })
     })
-  # removing the nulls or the ones that throw exception in the above trycatch
-  out.ense<- out.ense %>%
+  
+  # remove nulls 
+  out.ense <- out.ense %>%
     purrr::discard(is.null)
   
-  out.ense<-out.ense %>% 
+  out.ense <- out.ense %>% 
     stats::setNames(rep("path", length(out.ense)))
   
   return(out.ense)
-} 
-
-
-
-
+}
 
 
 #' Extract soil data from the gridpoint closest to a location
