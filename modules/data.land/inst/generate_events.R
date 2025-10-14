@@ -49,9 +49,8 @@ if (DESIGN_POINTS) {
 }
 
 ca_fields <- ca_field_attributes |>
-  dplyr::select(site_id, pft, crop) |>
-  dplyr::distinct() |>
-  tidyr::crossing(year = 2016:2024) |>
+  dplyr::select(site_id, year, pft, crop) |>
+  dplyr::filter(year >= 2016 & year <= 2024) |>
   dplyr::group_by(site_id) |>
   dplyr::mutate(first_year = min(year)) |>
   dplyr::ungroup()
