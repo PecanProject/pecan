@@ -7,8 +7,10 @@
 #' @param in.path character: physical path to the folder that contains all the original image tiles.
 #' @param out.path  character: physical path to the folder that contains converted and merged images.
 #' @param band.name character: band name of the image. Default is NULL.
-#' @param just.band.name boolean: if we just want the band names of the image file. Default is TRUE.
-#' @param keep.files Boolean: if we want to keep the image tiles at the end.
+#' @param just.band.name logical: if we just want the band names of the image file. Default is TRUE.
+#' @param keep.files logical: if we want to keep the image tiles at the end.
+#' @param skip.conversion logical: if we want to ignore the image conversion.
+#' Note that this is a experimental feature, which only works when images are all in the GeoTIFF format.
 #' @param image.settings list: settings used during exporting merged image.
 #' Such as image coordinate system (crs), dimension, extents (ext), and average function (fun).
 #' @param computation list: settings used for configuring computation.
@@ -25,17 +27,22 @@ merge_image_tiles <- function(in.path,
                               band.name = NULL,
                               just.band.name = TRUE,
                               keep.files = FALSE, 
+                              skip.conversion = FALSE,
                               image.settings = list(crs = "EPSG:4326",
                                                     dimension = NULL,
                                                     ext = NULL,
                                                     fun = NULL),
                               computation = list(GDAL_CACHEMAX = 1000,                                                        
                                                  wm = "80%",                                                        
-                                                 NUM_THREADS = 16,                                                        
+                                                 NUM_THREADS = parallel::detectCores() - 1,                                                        
                                                  COMPRESS = "DEFLATE")) {
+  # print out computation allocation.
+  PEcAn.logger::logger.info(paste0("Using ", computation$wm, " memory."))
+  PEcAn.logger::logger.info(paste0("Using ", computation$NUM_THREADS, " CPUs."))
+  PEcAn.logger::logger.info(paste0("Using ", computation$COMPRESS, " compression mode."))
   # Detect if we have the gdalwarp module installed.
   # check shell environments.
-  if ("try-error" %in% class(try(temp <- system("which gdalwarp", intern = T), silent = T))) {
+  if (suppressWarnings(system2("which", "gdalwarp", stdout = FALSE)) != 0) {
     PEcAn.logger::logger.info("The gdalwarp function is not detected in shell command.")
     return(NA)
   }
@@ -52,14 +59,28 @@ merge_image_tiles <- function(in.path,
     PEcAn.logger::logger.info("Please provide the output directory to store the converted/mosaic image tiles.")
     return(0)
   }
-  converted.file.paths <- file.paths %>% 
-    purrr::map2(seq_along(file.paths), function(f, tile.id) {
-      gdal_conversion(in_path = f, 
-                      outfolder = out.path, 
-                      band_name = band.name, 
-                      tile_id = tile.id, 
-                      just_band_name = just.band.name)
-    }) %>% unlist
+  # if we want to ignore the image conversion.
+  if (skip.conversion) {
+    # if we have any file that has format other than .tif or .tiff.
+    if (!all(grepl("tif", unique(tools::file_ext(file.paths)), fixed = TRUE))) {
+      PEcAn.logger::logger.info("Can't ignore the image conversion. Please make sure all images are in the .tif or .tiff format and try again!")
+      return(0)
+    } else {
+      # the input files will become converted files.
+      converted.file.paths <- file.paths
+      # band name should be replaced too.
+      band.name <- "all_bands"
+    }
+  } else {
+    converted.file.paths <- file.paths %>% 
+      purrr::map2(seq_along(file.paths), function(f, tile.id) {
+        gdal_conversion(in_path = f, 
+                        outfolder = out.path, 
+                        band_name = band.name, 
+                        tile_id = tile.id, 
+                        just_band_name = just.band.name)
+      }) %>% unlist
+  }
   # write job.sh script.
   # insert image settings.
   gdal.cmd <- "gdalwarp"
@@ -105,7 +126,12 @@ merge_image_tiles <- function(in.path,
            "gdalbuildvrt @VRT@ @TIF@",
            gdal.cmd)
   cmd <- gsub("@VRT@", file.path(out.path, "index.vrt"), cmd)
-  cmd <- gsub("@TIF@", file.path(out.path, "*.tif"), cmd)
+  # if we ignore the conversion, the file should be in the original path.
+  if (skip.conversion) {
+    cmd <- gsub("@TIF@", file.path(in.path, "*.tif"), cmd)
+  } else {
+    cmd <- gsub("@TIF@", file.path(out.path, "*.tif"), cmd)
+  }
   cmd <- gsub("@FINALTIFF@", file.path(out.path, paste0(band.name, ".tif")), cmd)
   writeLines(cmd, con = file.path(out.path, "job.sh"))
   # grand permissions to the job file.
@@ -135,7 +161,7 @@ merge_image_tiles <- function(in.path,
 #' @param outfolder character: physical path to the folder where you want to export the converted image. Default is NULL.
 #' @param band_name character: band name of the image. Default is NULL.
 #' @param tile_id character/numeric: id for differentiate different converted image tiles.
-#' @param just_band_name boolean: if we just want the band names of the image file. Default is TRUE.
+#' @param just_band_name logical: if we just want the band names of the image file. Default is TRUE.
 #' @param target_format character: target image format. Default is .tif.
 #' @export
 #' 

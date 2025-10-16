@@ -22,7 +22,7 @@ gdal_conversion(
 
 \item{tile_id}{character/numeric: id for differentiate different converted image tiles.}
 
-\item{just_band_name}{boolean: if we just want the band names of the image file. Default is TRUE.}
+\item{just_band_name}{logical: if we just want the band names of the image file. Default is TRUE.}
 
 \item{target_format}{character: target image format. Default is .tif.}
 }

@@ -79,7 +79,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 ##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
 ##' @author David LeBauer, Istem Fer
-get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
+get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples, 
                                  method = "random", param.names = NULL, ...) {
 
   # Define supported methods
@@ -203,6 +203,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' a name to distinguish the output files, and the directory to place the files.
 ##'
 ##' @param input_design the input indices for samples 
+##' @param ensemble.size size of ensemble
 ##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
 ##' @param settings list of PEcAn settings
@@ -224,7 +225,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
 ##' @importFrom rlang .data
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
-write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, input_design ,
+write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model, 
                                    clean = FALSE, write.to.db = TRUE, restart = NULL, samples = NULL, rename = FALSE) {
   
   
@@ -319,12 +320,6 @@ for (input_tag in names(settings$run$inputs)) {
     }
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
-    #finding who has a parent
-    parents <- lapply(samp,'[[', 'parent')
-    #order parents based on the need of who has to be first
-    order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
-    #new ordered sampling space
-    samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
     if(is.null(samples)){
        #performing the sampling
       samples <- list()
@@ -345,7 +340,7 @@ for (input_tag in names(settings$run$inputs)) {
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
       purrr::walk(function(r_tag){
-        if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], settings$ensemble$size)
+        if (is.null(samples[[r_tag]]) & r_tag!="parameters") samples[[r_tag]]$samples <<- rep(settings$run$inputs[[tolower(r_tag)]]$path[1], ensemble.size)
       })
     
     # Reading the site.pft specific tags from xml
@@ -373,7 +368,7 @@ for (input_tag in names(settings$run$inputs)) {
     }
     
     # if no ensemble piece was in the xml I replicate n times the first element in params
-    if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, settings$ensemble$size) , ])
+    if ( is.null(samp$parameters) )            samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, ensemble.size) , ])
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg - 
     if ( is.null(samples$parameters$samples) ) samples$parameters$samples <- ensemble.samples
     #------------------------End of generating ensembles-----------------------------------
@@ -383,7 +378,7 @@ for (input_tag in names(settings$run$inputs)) {
     
     # write configuration for each run of the ensemble
     runs <- data.frame()
-    for (i in seq_len(settings$ensemble$size)) {
+    for (i in seq_len(ensemble.size)) {
       if (!is.null(con) && write.to.db) {
         paramlist <- paste("ensemble=", i, sep = "")
         # inserting this into the table and getting an id back
@@ -439,7 +434,7 @@ for (input_tag in names(settings$run$inputs)) {
       cat("runtype     : ensemble\n",
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
           "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
-          "run         : ", i, "/", settings$ensemble$size, "\n",
+          "run         : ", i, "/", ensemble.size, "\n",
           "run id      : ", format(run.id, scientific = FALSE), "\n",
           "pft names   : ", as.character(lapply(settings$pfts, function(x) x[["name"]])), "\n",
           "model       : ", model, "\n",
@@ -464,7 +459,7 @@ for (input_tag in names(settings$run$inputs)) {
   
      if (!input_tag %in% names(samples)) {
         # Use first path (already validated as single path)
-        settings$run$inputs[[input_tag]]$path <- input$path[1]  } 
+        settings$run$inputs[[input_tag]]$path <- unlist(input$path[1])} 
         else {
            # Use sampled path
           settings$run$inputs[[input_tag]]$path <- samples[[input_tag]][["samples"]][[i]]
@@ -517,7 +512,7 @@ for (input_tag in names(settings$run$inputs)) {
     }
     
     # stop and start time are required by bc we are wrtting them down into job.sh
-    for (i in seq_len(settings$ensemble$size)) {
+    for (i in seq_len(ensemble.size)) {
       input_list <- list()
       for (input_tag in names(inputs)) {
         if (!is.null(inputs[[input_tag]]$samples[[i]])) 
@@ -554,6 +549,7 @@ for (input_tag in names(settings$run$inputs)) {
 #' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
+#' @param ensemble_size size of ensemble
 #'
 #' @return For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
 #' @details If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
@@ -563,7 +559,7 @@ for (input_tag in names(settings$run$inputs)) {
 #' @examples
 #' \dontrun{input.ens.gen(settings,"met","sampling")}
 #'
-input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NULL) {
+input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
 
   #-- reading the dots and exposing them to the inside of the function
   samples <- list()
@@ -586,12 +582,12 @@ input.ens.gen <- function(settings, input, method = "sampling", parent_ids = NUL
   } else if (tolower(method) == "sampling") {
     samples$ids <- sample(
       seq_along(input_path),
-      settings$ensemble$size,
+      ensemble_size,
       replace = TRUE)
   } else if (tolower(method) == "looping") {
     samples$ids <- rep_len(
       seq_along(input_path),
-      length.out = settings$ensemble$size)
+      length.out = ensemble_size )
   }
   #using the sample ids
   samples$samples <- input_path[samples$ids]

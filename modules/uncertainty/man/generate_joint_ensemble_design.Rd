@@ -4,14 +4,17 @@
 \alias{generate_joint_ensemble_design}
 \title{Generate joint ensemble design for parameter sampling
 Creates a joint ensemble design that maintains parameter correlations across
-all sites in a multi-site run. This function generates sample indices that are shared across sites to ensure consistent parameter sampling.}
+all sites in a multi-site run. This function generates sample indices that
+are shared across sites to ensure consistent parameter sampling.}
 \usage{
-generate_joint_ensemble_design(settings, ensemble_size)
+generate_joint_ensemble_design(settings, ensemble_size, sobol = FALSE)
 }
 \arguments{
 \item{settings}{A PEcAn settings object containing ensemble configuration}
 
 \item{ensemble_size}{Integer specifying the number of ensemble members}
+
+\item{sobol}{for activating sobol}
 }
 \value{
 A list containing ensemble samples and indices
@@ -19,5 +22,6 @@ A list containing ensemble samples and indices
 \description{
 Generate joint ensemble design for parameter sampling
 Creates a joint ensemble design that maintains parameter correlations across
-all sites in a multi-site run. This function generates sample indices that are shared across sites to ensure consistent parameter sampling.
+all sites in a multi-site run. This function generates sample indices that
+are shared across sites to ensure consistent parameter sampling.
 }

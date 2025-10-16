@@ -39,41 +39,6 @@ mergeNC <- function(
 }
 
 #--------------------------------------------------------------------------------------------------#
-##'
-##' Convert SIPNET DOY to datetime
-##' 
-##' @param sipnet_tval vector of SIPNET DOY values
-##' @param base_year base year to calculate datetime from DOY
-##' @param base_month reference month for converting from DOY to datetime 
-##' @param force_cf force output to follow CF convention. Default FALSE
-##'
-##' @export
-##'
-##' @author Alexey Shiklomanov, Shawn Serbin
-##' 
-sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
-                            force_cf = FALSE) {
-  base_date <- ISOdatetime(base_year, base_month, 1,
-                           0, 0, 0, "UTC")
-  base_date_str <- strftime(base_date, "%F %T %z", tz = "UTC")
-  if (force_cf) {
-    is_cf <- TRUE
-  } else {
-    # HACK: Determine heuristically
-    # Is CF if first time step is zero
-    is_cf <- sipnet_tval[[1]] == 0
-  }
-  
-  if (is_cf) {
-    cfval <- sipnet_tval
-  } else {
-    cfval <- sipnet_tval - 1
-  }
-  
-  PEcAn.utils::cf2datetime(cfval, paste("days since", base_date_str))
-}
-
-#--------------------------------------------------------------------------------------------------#
 ##' Convert SIPNET output to netCDF
 ##'
 ##' Converts all output contained in a folder to netCDF.
@@ -93,12 +58,11 @@ sipnet2datetime <- function(sipnet_tval, base_year, base_month = 1,
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
                                 overwrite = FALSE, conflict = FALSE) {
-
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
   sipnet_output <- utils::read.table(sipnet_out_file, header = T, skip = 1, sep = "")
   #sipnet_output_dims <- dim(sipnet_output)
-
+  
   ### Determine number of years and output timestep
   #start.day <- sipnet_output$day[1]
   num_years <- length(unique(sipnet_output$year))
@@ -106,22 +70,22 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   # get all years that we want data from
   year_seq <- seq(lubridate::year(start_date), lubridate::year(end_date))
-
+  
   # check that specified years and output years match
   if (!all(year_seq %in% simulation_years)) {
     PEcAn.logger::logger.severe("Years selected for model run and SIPNET output years do not match ")
   }
-
+  
   # get number of model timesteps per day
   # outday is the number of time steps in a day - for example 6 hours would have out_day of 4
-
-    out_day <- sum(
-      sipnet_output$year == simulation_years[1] &
-        sipnet_output$day == unique(sipnet_output$day)[1],
-      na.rm = TRUE
-    ) # switched to day 2 in case first day is partial
- 
-
+  
+  out_day <- sum(
+    sipnet_output$year == simulation_years[1] &
+      sipnet_output$day == unique(sipnet_output$day)[1],
+    na.rm = TRUE
+  ) # switched to day 2 in case first day is partial
+  
+  
   timestep.s <- 86400 / out_day
   
   
@@ -138,29 +102,30 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
-
+    
     ## Subset data for processing
     sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
+    
+    raw_time <- sub.sipnet.output[["time"]] # decimal hours (eg 13.75 = 1:45 PM)
+    doy <- sub.sipnet.output[["day"]] # day of year, not of month
+    hr <- floor(raw_time)
+    minsec <- PEcAn.utils::ud_convert(raw_time - hr, "hour", "min")
+    min <- floor(minsec)
+    sec <- PEcAn.utils::ud_convert(minsec - min, "minute", "second")
+    sub_dates <- strptime(
+      paste(y, doy, hr, min, sec),
+      "%Y %j %H %M %S",
+      tz = "UTC"
+    )
+    sub_dates_cf <- PEcAn.utils::datetime2cf(
+      sub_dates,
+      paste0("days since ", y, "-01-01"),
+      tz = "UTC"
+    )
+    
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out_day
-    step <- utils::head(seq(0, 1, by = dayfrac), -1)   ## probably dont want to use
-                                                ## hard-coded "step" because 
-                                                ## leap years may not contain 
-                                                ## all "steps", or
-                                                ## if model run doesnt start 
-                                                ## at 00:00:00
     
-    # try to determine if DOY is CF compliant (i.e. 0 based index) or not (1 base index)
-    pecan_start_doy <- PEcAn.utils::datetime2cf(start_date, paste0("days since ",lubridate::year(start_date),"-01-01"), 
-                                          tz = "UTC")
-    tvals <- sub.sipnet.output[["day"]] + sub.sipnet.output[["time"]] / 24
-    if (sub.sipnet.output[["day"]][1]-pecan_start_doy==1) {
-      sub_dates <- sipnet2datetime(tvals, y, force_cf = FALSE)
-    } else {
-      sub_dates <- sipnet2datetime(tvals, y, force_cf = TRUE)
-    }
-    sub_dates_cf <- PEcAn.utils::datetime2cf(sub_dates, paste0("days since ",paste0(y,"-01-01")))
-
     # create netCDF time.bounds variable
     bounds <- array(data=NA, dim=c(length(sub_dates_cf),2))
     bounds[,1] <- sub_dates_cf
@@ -172,17 +137,17 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output       <- list(
       "GPP" = (sub.sipnet.output$gpp * 0.001) / timestep.s,  # GPP in kgC/m2/s
       "NPP" = (sub.sipnet.output$gpp * 0.001) / timestep.s - ((sub.sipnet.output$rAboveground *
-                                                                       0.001) / timestep.s + (sub.sipnet.output$rRoot * 0.001) / timestep.s), # NPP in kgC/m2/s. Post SIPNET calculation
+                                                                 0.001) / timestep.s + (sub.sipnet.output$rRoot * 0.001) / timestep.s), # NPP in kgC/m2/s. Post SIPNET calculation
       "TotalResp" = (sub.sipnet.output$rtot * 0.001) / timestep.s,  # Total Respiration in kgC/m2/s
       "AutoResp" = (sub.sipnet.output$rAboveground * 0.001) / timestep.s + (sub.sipnet.output$rRoot *
-                                                                               0.001) / timestep.s,  # Autotrophic Respiration in kgC/m2/s
+                                                                              0.001) / timestep.s,  # Autotrophic Respiration in kgC/m2/s
       "HeteroResp" = ((sub.sipnet.output$rSoil - sub.sipnet.output$rRoot) * 0.001) / timestep.s,  # Heterotrophic Respiration in kgC/m2/s
       "SoilResp" = (sub.sipnet.output$rSoil * 0.001) / timestep.s,  # Soil Respiration in kgC/m2/s
       "NEE" = (sub.sipnet.output$nee * 0.001) / timestep.s,  # NEE in kgC/m2/s
       "AbvGrndWood" = (sub.sipnet.output$plantWoodC * 0.001),  # Above ground wood kgC/m2
       "leaf_carbon_content" = (sub.sipnet.output$plantLeafC * 0.001),  # Leaf C kgC/m2
       "TotLivBiom" = (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001) + 
-                                                                                (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC) * 0.001, # Total living C kgC/m2
+        (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC) * 0.001, # Total living C kgC/m2
       "TotSoilCarb" = (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
     )
     if (revision == "unk") {
@@ -193,7 +158,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
       output[["Qle"]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     } else {
-     output[["Qle"]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+      output[["Qle"]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
     }
     output[["Transp"]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
     output[["SoilMoist"]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
@@ -203,8 +168,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["litter_mass_content_of_water"]] <- (sub.sipnet.output$litterWater * 10) # Litter water kgW/m2
     #calculate LAI for standard output
     param <- utils::read.table(file.path(gsub(pattern = "/out/",
-                                 replacement = "/run/", x = outdir),
-                            "sipnet.param"), stringsAsFactors = FALSE)
+                                              replacement = "/run/", x = outdir),
+                                         "sipnet.param"), stringsAsFactors = FALSE)
     id <- which(param[, 1] == "leafCSpWt")
     leafC <- 0.48
     SLA <- 1000 / param[id, 2] #SLA, m2/kgC
@@ -217,11 +182,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
-                   longname = "time",
-                   units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = sub_dates_cf,
-                   calendar = "standard",
-                   unlim = TRUE)
+                          longname = "time",
+                          units = paste0("days since ", y, "-01-01 00:00:00"),
+                          vals = sub_dates_cf,
+                          calendar = "standard",
+                          unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), 
                             longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), 
@@ -232,12 +197,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                       vals = 1:2, units="")
     
     ## ***** Need to dynamically update the UTC offset here *****
-
+    
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0)
         output[[i]] <- rep(-999, length(t$vals))
     }
-
+    
     # ******************** Declare netCDF variables ********************#
     mstmipvar <- PEcAn.utils::mstmipvar
     nc_var <- list(
@@ -264,12 +229,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
       "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                     longname = "Gross Woody Biomass Increment"),
+                                longname = "Gross Woody Biomass Increment"),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                     longname = "Total aboveground biomass"),
+                               longname = "Total aboveground biomass"),
       "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
-                                    longname = "history time interval endpoints", dim=list(time_interval,time = t), 
-                                    prec = "double")              
+                                       longname = "history time interval endpoints", dim=list(time_interval,time = t), 
+                                       prec = "double")              
     )
     
     # ******************** Create netCDF and output variables ********************#
@@ -305,7 +270,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       ncdf4::nc_close(nc)
     }
   }  ### End of year loop
-
+  
   ## Delete raw output, if requested
   if (delete.raw) {
     file.remove(sipnet_out_file)

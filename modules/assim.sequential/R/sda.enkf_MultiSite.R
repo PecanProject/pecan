@@ -31,11 +31,19 @@
 #' `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
 #' `run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
 #' `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
+#' @param cov_dir Directory containing yearly covariate stacks named like "covariates_YYYY.tiff".
+#' @param debias_start_year Integer year (e.g., 2015). If `NULL`, debiasing is OFF.
+#' @param debias_drop_incomplete_covariates Logical; drop sites with any NA covariates
+#' @param debias_enforce_consistent_obs Logical; drop sites that lost any previously
+#' @param debias_require_obs_at_t_for_predict Logical; only make residual predictions
 #' @param ...       Additional arguments, currently ignored
+#' 
 #' 
 #' @return NONE
 #' @import nimble furrr
 #' @export
+#' 
+#' 
 #' 
 sda.enkf.multisite <- function(settings, 
                                obs.mean, 
@@ -56,6 +64,11 @@ sda.enkf.multisite <- function(settings,
                                             forceRun = TRUE,
                                             run_parallel = TRUE,
                                             MCMC.args = NULL),
+                               cov_dir = NULL, 
+                               debias_start_year = NULL,
+                               debias_drop_incomplete_covariates = TRUE,
+                               debias_enforce_consistent_obs = TRUE,
+                               debias_require_obs_at_t_for_predict = FALSE,
                                ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
@@ -84,7 +97,6 @@ sda.enkf.multisite <- function(settings,
   outdir     <- settings$modeloutdir # currently model runs locally, this will change if remote is enabled
   rundir     <- settings$host$rundir
   host       <- settings$host
-  
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
   processvar <- settings$state.data.assimilation$process.variance
@@ -152,6 +164,44 @@ sda.enkf.multisite <- function(settings,
     site.ids <- as.character(settings$run$site$id)
   }
   
+  # Build site coords once (used by covariate extraction)
+  site_coords <- purrr::map_df(settings$run, ~ dplyr::tibble(
+    site = as.character(.x$site$id),
+    lon  = suppressWarnings(as.numeric(.x$site$lon)),
+    lat  = suppressWarnings(as.numeric(.x$site$lat))
+  ))
+  
+  # Memoized cache: one data.frame per year
+  cov_cache <- new.env(parent = emptyenv())
+  
+  .load_cov_year <- function(year) {
+    key <- as.character(year)
+    if (exists(key, cov_cache, inherits = FALSE)) return(get(key, cov_cache))
+    
+    if (is.null(cov_dir)) {
+      stop("Debiasing requires covariates, but `cov_dir` is NULL. Set `cov_dir` or disable debiasing.")
+    }
+    
+    # Reuse the existing extractor; filter to one year
+    df_all <- generate_covariates_df(
+      site_coords = site_coords,
+      cov_dir     = cov_dir,
+      crs         = "EPSG:4326",
+      file_prefix = "covariates_"
+    )
+    df_year <- df_all[df_all$year == as.integer(year), , drop = FALSE]
+    
+    assign(key, df_year, cov_cache)
+    df_year
+  }
+  
+  .cov_df_for_years <- function(years) {
+    yrs <- unique(as.integer(years))
+    dplyr::bind_rows(lapply(yrs, .load_cov_year))
+  }
+  
+  
+  
   
   ###-------------------------------------------------------------------###
   ### check dates before data assimilation                              ###
@@ -165,6 +215,8 @@ sda.enkf.multisite <- function(settings,
     start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
     Start.year <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
+  #Enabling debias feature
+  debias_enabled <- !is.null(debias_start_year)
   
   End.year <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
   assim.sda <- Start.year:End.year
@@ -296,6 +348,7 @@ sda.enkf.multisite <- function(settings,
           library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
           # wrtting configs for each settings - this does not make a difference with the old code
           PEcAn.uncertainty::write.ensemble.configs(
+            ensemble.size = nens,
             defaults = settings$pfts,
             ensemble.samples = ensemble.samples,
             settings = settings,
@@ -354,6 +407,7 @@ sda.enkf.multisite <- function(settings,
       }
       #reformatting params
       new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+      
     }
       
  
@@ -393,15 +447,72 @@ sda.enkf.multisite <- function(settings,
       }
     }
   }
-  
-      
+  #Using our R script to import python functions from debias.py 
+  py <- .get_debias_mod()
+  train_X      <- NULL   # a data.frame or matrix of size (N_past × P_features)
+  train_y      <- numeric()  # a numeric vector of residuals
+  raw_prev     <- NULL   # raw forecast mean from previous step
+  train_buf <- new.env(parent = emptyenv()) 
+  # --- New: containers for storing debias weights over time ---
+  DEBIAS_WEIGHTS <- list()   # nested list: DEBIAS_WEIGHTS[[time]][[var]] = named vector (KNN weight, TREE weight)
+  # Flat, tidy log of learner weights over time (easier to write/export/plot).
+  # Columns:
+  #   time    : character label for the time step (e.g., "2012-12-31")
+  #   var     : state variable name (e.g., "LAI", "AbvGrndWood")
+  #   learner : model id / learner name ("KNN", "TREE", etc.)
+  #   weight  : numeric weight for that learner at that time/variable
+  DEBIAS_WEIGHTS_DF <- data.frame(
+    time    = character(),
+    var     = character(),
+    learner = character(),
+    weight  = numeric(),
+    stringsAsFactors = FALSE
+  )
+  # Small helper to append one row per learner into DEBIAS_WEIGHTS_DF.
+  # Args:
+  #   t_label : time label for the current step (character)
+  #   var     : variable name (character)
+  #   w_named : *named* numeric vector of weights (e.g., c(KNN=0.6, TREE=0.4)).
+  #             If unnamed, we auto-name as "learner_1", "learner_2", ...
+  # Returns:
+  #   A data.frame with columns (time, var, learner, weight) ready to rbind().
 
+  # Should we run debiasing this cycle?
+  # Debiasing requires: debias_mode == TRUE, t > 1, and (if provided) obs.year >= debias_start_year
+  .should_debias <- function(t, enabled, obs_year, start_year) {
+    isTRUE(enabled) && t > 1 && !is.null(start_year) && (as.integer(obs_year) >= as.integer(start_year))
+  }
+  
+  # Flat RMSE tracker across all times and variables.
+  # Columns:
+  #   time      : time label
+  #   var       : variable name
+  #   rmse_pre  : RMSE before debias (raw ensemble mean vs obs)
+  #   rmse_post : RMSE after debias (corrected mean vs obs)
+  DIAG <- list()  # per-time: DIAG[[time]] = list(comp=..., rmse=...)
+  RMSE_DF <- data.frame(
+    time      = character(),
+    var       = character(),
+    rmse_pre  = numeric(), rmse_post = numeric(),
+    mae_pre   = numeric(), mae_post  = numeric(),
+    bias_pre  = numeric(), bias_post = numeric(),
+    r2_pre    = numeric(), r2_post   = numeric(),
+    stringsAsFactors = FALSE
+  )
+  FEATURE_IMP_DF <- data.frame(
+    time    = character(),
+    var     = character(),
+    feature = character(),
+    importance = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
   for(t in 1:nt){
       obs.t <- as.character(lubridate::date(obs.times[t]))
-      obs.year <- lubridate::year(obs.t)
+      obs.year <- lubridate::year(obs.times[t])
       ###-------------------------------------------------------------------------###
       ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
       ###-------------------------------------------------------------------------###-----  
@@ -448,6 +559,7 @@ sda.enkf.multisite <- function(settings,
             library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
             # wrtting configs for each settings - this does not make a difference with the old code
             PEcAn.uncertainty::write.ensemble.configs(
+              ensemble.size = nens,
               defaults = settings$pfts,
               ensemble.samples = ensemble.samples,
               settings = settings,
@@ -476,7 +588,7 @@ sda.enkf.multisite <- function(settings,
         if(control$parallel_qsub){
           if (is.null(control$jobs.per.file)) {
             PEcAn.remote::qsub_parallel(settings, prefix = paste0(obs.year, ".nc"))
-          } else {
+          } else { 
             PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
           }
         }else{
@@ -535,7 +647,53 @@ sda.enkf.multisite <- function(settings,
         }
         
       }  ## end else from restart & t==1
+      
+      
+      
+      raw_mean_t <- colMeans(X)
+      site_index <- attr(X, "Site")
+      col_vars   <- colnames(X)
       FORECAST[[obs.t]] <- X
+      name_map <- debias_name_map
+      # DEBIAS STEP
+      if (.should_debias(t, debias_enabled, obs.year, debias_start_year)) {  # <- removed extra ')'
+        # Load only the years needed for this step (t-1 and t)
+        yrs_needed <- c(lubridate::year(obs.times[t - 1]), lubridate::year(obs.times[t]))
+        covariates_df_tt <- .cov_df_for_years(yrs_needed)
+        
+        out <- sda_apply_debias_step(
+          t = t,
+          obs.t = obs.t,
+          X = X,
+          raw_prev = raw_prev,
+          raw_mean_t = raw_mean_t,
+          site_index = site_index,
+          col_vars = col_vars,
+          obs.times = obs.times,
+          obs.mean = obs.mean,
+          covariates_df = covariates_df_tt,                 # << use the per-step covariates
+          py = py,
+          train_buf = train_buf,
+          name_map = name_map,
+          drop_incomplete_covariates = debias_drop_incomplete_covariates,
+          enforce_consistent_obs     = debias_enforce_consistent_obs,
+          require_obs_at_t_for_predict = debias_require_obs_at_t_for_predict,
+          state.interval = state.interval,
+          clip_lower_bound = 0.01
+        )
+        X <- out$X
+        if (!is.null(out$weights_entry)) DEBIAS_WEIGHTS[[obs.t]] <- out$weights_entry
+        if (nrow(out$weights_df_rows)) DEBIAS_WEIGHTS_DF <- rbind(DEBIAS_WEIGHTS_DF, out$weights_df_rows)
+        DIAG[[obs.t]] <- out$diag
+        if (nrow(out$rmse_rows)) RMSE_DF <- rbind(RMSE_DF, out$rmse_rows)
+        if (!is.null(out$feature_rows) && nrow(out$feature_rows)) {
+          FEATURE_IMP_DF <- rbind(FEATURE_IMP_DF, out$feature_rows)
+        }
+        
+        FORECAST[[obs.t]] <- X
+      }
+      raw_prev <- raw_mean_t
+
       
       ###-------------------------------------------------------------------###
       ###  preparing OBS                                                    ###
@@ -764,6 +922,8 @@ sda.enkf.multisite <- function(settings,
            enkf.params,
            new.state, new.params,params.list, ens_weights,
            out.configs, ensemble.samples, inputs, Viz.output,
+           DIAG, DEBIAS_WEIGHTS, DEBIAS_WEIGHTS_DF, RMSE_DF,
+           FEATURE_IMP_DF,
            file = file.path(settings$outdir, "sda.output.Rdata"))
       
       tictoc::tic(paste0("Visulization for cycle = ", t))

@@ -781,6 +781,40 @@ paths:
           description: Authentication required
         '403':
           description: Access forbidden
+          
+  /api/workflows/{id}/file-multiple/:
+    post:
+      tags:
+        - workflows
+      summary: Download multiple files
+      parameters:
+        - in: path
+          name: id
+          description: ID of the PEcAn Workflow
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowFiles_POST'
+        
+              
+      responses:
+        '200':
+          description: Download the zip file consisting of the desired files
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary    
+        '401':
+          description: Authentication required
+        '415':
+          description: Unsupported request content type
+  
 
   /api/runs/:
     get:
@@ -1075,7 +1109,7 @@ paths:
         '403':
           description: Access forbidden
         '404':
-          description: Workflows not found
+          description: Posteriors not found
   
   /api/posteriors/{posterior_id}:
     get:
@@ -1394,6 +1428,20 @@ components:
             dbfiles:
               type: string
               example: pecan/dbfiles
+              
+    WorkflowFiles_POST:
+      type: object
+      
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+          example: [
+          "pecan.xml",
+          "workflow.R"
+          ]
+            
   securitySchemes:
     basicAuth:
       type: http

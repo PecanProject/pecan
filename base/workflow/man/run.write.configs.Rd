@@ -6,6 +6,7 @@
 \usage{
 run.write.configs(
   settings,
+  ensemble.size,
   input_design,
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
@@ -14,6 +15,8 @@ run.write.configs(
 }
 \arguments{
 \item{settings}{a PEcAn settings list}
+
+\item{ensemble.size}{number of ensemble runs}
 
 \item{input_design}{input indices for samples}
 

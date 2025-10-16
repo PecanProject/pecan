@@ -4,12 +4,13 @@
 
 * Breaking: Renamed the setting used to pass soil and hydrology parameters. `write.config.SIPNET` previously read these from `settings$run$inputs$soilinitcond`, now `settings$run$inputs$soil_physics` to better reflect that these are state factors applicable to the whole run rather than initial conditions. (Quianyu Xuan, #3406)
 * model2netcdf.SIPNET no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+* The `sipnet2datetime` function is no longer used anywhere and therefore has been removed.
 
 ## Fixed
 
 * `write.config.SIPNET` now checks more carefully whether an optional variable exists in an initial condition file before trying to read it, therefore printing fewer messages about (expectedly) missing variables. (#3545)
 * When passed a vector of multiple input paths, `write.config.SIPNET` was choosing one at random; it now throws an error (Blesson Thomas, #3298). Note that a single input path per call has always been the intended usage; being passed many was a second bug in PEcAn.uncertainty that is also now fixed.
-
+* Fixed a bug within the `model2netcdf.SIPNET` function where we assumed the constant calculations of `pecan_start_doy` across years (the calculations should vary depending on the last date from the last loop and the start date of the current loop), which will lead to incorrect calculations of the start `sub_dates` and `sub_dates_cf` if we are jumping between years (e.g., from 2012-12-31 to 2013-01-01).
 
 # PEcAn.SIPNET 1.9.0
 

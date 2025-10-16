@@ -305,26 +305,39 @@ getRunInputs <- function(indir){
 #' @return Output details of the run
 #' @author Tezan Sahu
 
-getRunOutputs <- function(outdir){
+getRunOutputs <- function(outdir) {
   outputs <- list()
-  if(file.exists(paste0(outdir, "/logfile.txt"))){
+  if (file.exists(file.path(outdir, "logfile.txt"))) {
     outputs$logfile <- "logfile.txt"
   }
-  
-  if(file.exists(paste0(outdir, "/README.txt"))){
+
+  if (file.exists(file.path(outdir, "README.txt"))) {
     outputs$info <- "README.txt"
   }
-  
-  year_files <- list.files(outdir, pattern="*.nc$")
+
+  varfile_path <- file.path(outdir, "nc_vars.txt")
+  if (!file.exists(varfile_path)) {
+    PEcAn.utils::nc_write_varfiles(outdir, write_mode = "collected")
+  }
+  whole_run_varlines <- readLines(varfile_path)
+
+  year_files <- list.files(outdir, pattern = "*.nc$")
   years <- stringr::str_replace_all(year_files, ".nc", "")
   years_data <- c()
   outputs$years <- list()
-  for(year in years){
-    var_lines <- readLines(paste0(outdir, "/", year, ".nc.var"))
+  for (year in years) {
+    # Get variable list from a directly paired yyyy.nc.var if it exists,
+    # else use the vars defined in nc_vars.txt
+    paired_varfile <- file.path(outdir, paste0(year, ".nc.var"))
+    if (file.exists(paired_varfile)) {
+      var_lines <- readLines(paired_varfile)
+    } else {
+      var_lines <- whole_run_varlines
+    }
     keys <- stringr::word(var_lines, 1)
     values <- stringr::word(var_lines, 2, -1)
     vars <- list()
-    for(i in 1:length(keys)){
+    for (i in seq_along(keys)) {
       vars[keys[i]] <- values[i]
     }
     years_data <- c(years_data, list(list(
@@ -332,7 +345,7 @@ getRunOutputs <- function(outdir){
       variables = vars
     )))
   }
-  for(i in 1:length(years)){
+  for (i in seq_along(years)) {
     outputs$years[years[i]] <- years_data[i]
   }
   return(outputs)

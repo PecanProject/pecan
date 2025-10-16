@@ -42,6 +42,7 @@
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
+"doSNOW","*","base/utils","Suggests",FALSE
 "doSNOW","*","modules/assim.sequential","Suggests",FALSE
 "doSNOW","*","modules/data.atmosphere","Suggests",FALSE
 "doSNOW","*","modules/data.land","Imports",FALSE
@@ -68,6 +69,7 @@
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
 "foreach","*","base/remote","Imports",FALSE
+"foreach","*","base/utils","Imports",FALSE
 "foreach","*","modules/assim.sequential","Imports",FALSE
 "foreach","*","modules/data.atmosphere","Imports",FALSE
 "foreach","*","modules/data.land","Imports",FALSE
@@ -178,7 +180,6 @@
 "magrittr","*","base/db","Imports",FALSE
 "magrittr","*","base/utils","Imports",FALSE
 "magrittr","*","models/ed","Imports",FALSE
-"magrittr","*","modules/assim.sequential","Imports",FALSE
 "magrittr","*","modules/benchmark","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
@@ -475,6 +476,7 @@
 "reshape2","*","modules/benchmark","Imports",FALSE
 "reshape2","*","modules/data.atmosphere","Imports",FALSE
 "reshape2",">= 1.4.2","modules/assim.sequential","Suggests",FALSE
+"reticulate","*","modules/assim.sequential","Imports",FALSE
 "reticulate","*","modules/data.atmosphere","Suggests",FALSE
 "reticulate","*","modules/data.land","Suggests",FALSE
 "reticulate","*","modules/data.remote","Imports",FALSE
@@ -555,6 +557,7 @@
 "RPostgreSQL","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
+"sensitivity","*","modules/uncertainty","Imports",FALSE
 "sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
 "sf","*","modules/data.atmosphere","Imports",FALSE

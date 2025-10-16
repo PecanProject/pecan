@@ -49,7 +49,6 @@ License stub is invalid DCF.
 * checking for missing documentation entries ... WARNING
 Undocumented code objects:
   ‘runModule.run.ensemble.analysis’
-  ‘runModule.run.sensitivity.analysis’
 Undocumented data sets:
   ‘ensemble.output’ ‘sensitivity.output’ ‘ensemble.samples’
   ‘sa.samples’ ‘settings’ ‘trait.samples’
@@ -57,42 +56,7 @@ All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'ensemble.ts'
-  ‘ensemble.ts’ ‘observations’ ‘window’ ‘...’
-
-Undocumented arguments in documentation object 'flux.uncertainty'
-  ‘...’
-
-Undocumented arguments in documentation object 'get.change'
-  ‘measurement’
-
-Undocumented arguments in documentation object 'get.parameter.samples'
-  ‘settings’ ‘posterior.files’ ‘ens.sample.method’
-
-Undocumented arguments in documentation object 'input.ens.gen'
-  ‘input’
-
-Documented arguments not in \usage in documentation object 'plot_sensitivities':
-  ‘sensitivity.results’
-
-Undocumented arguments in documentation object 'plot_sensitivity'
-  ‘linesize’ ‘dotsize’
-
-Undocumented arguments in documentation object 'read.ameriflux.L2'
-  ‘file.name’ ‘year’
-
-Undocumented arguments in documentation object 'read.ensemble.ts'
-  ‘settings’ ‘ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’
-
-Undocumented arguments in documentation object 'run.ensemble.analysis'
-  ‘settings’ ‘ensemble.id’ ‘variable’ ‘start.year’ ‘end.year’ ‘...’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking contents of ‘data’ directory ... OK

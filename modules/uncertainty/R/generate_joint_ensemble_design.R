@@ -1,34 +1,48 @@
 #' Generate joint ensemble design for parameter sampling
 #' Creates a joint ensemble design that maintains parameter correlations across
-#' all sites in a multi-site run. This function generates sample indices that are shared across sites to ensure consistent parameter sampling.
+#' all sites in a multi-site run. This function generates sample indices that
+#' are shared across sites to ensure consistent parameter sampling.
 #'
-##' @param settings A PEcAn settings object containing ensemble configuration
-##' @param ensemble_size Integer specifying the number of ensemble members
-##' @return  A list containing ensemble samples and indices
-##' 
-##' @export
+#' @param settings A PEcAn settings object containing ensemble configuration
+#' @param sobol for activating sobol
+#' @param ensemble_size Integer specifying the number of ensemble members
+#' @return  A list containing ensemble samples and indices
+#'
+#' @export
 
-generate_joint_ensemble_design <- function(settings, ensemble_size ) {
-  
-  
-  
+generate_joint_ensemble_design <- function(settings,
+                                           ensemble_size,
+                                           sobol = FALSE) {
+  if (sobol) {
+    ensemble_size <- as.numeric(ensemble_size) * 2
+  }
+
   ens.sample.method <- settings$ensemble$samplingspace$parameters$method
   design_list <- list()
   sampled_inputs <- list()
-  posterior.files = rep(NA, length(settings$pfts))
+  posterior.files <- settings$pfts %>%
+    purrr::map_chr("posterior.files", .default = NA_character_)
   samp <- settings$ensemble$samplingspace
-  parents <- lapply(samp, '[[', 'parent')
-  order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()]
+  parents <- lapply(samp, "[[", "parent")
+  order <- names(samp)[
+    lapply(parents, function(tr) which(names(samp) %in% tr)) %>%
+      unlist()
+  ]
   samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
 
   for (i in seq_along(samp.ordered)) {
     input_tag <- names(samp.ordered)[i]
     parent_name <- samp.ordered[[i]]$parent
 
-    parent_ids <- if (!is.null(parent_name)) sampled_inputs[[parent_name]] else NULL
+    parent_ids <- if (!is.null(parent_name)) {
+      sampled_inputs[[parent_name]]
+    } else {
+      NULL
+    }
 
     input_result <- PEcAn.uncertainty::input.ens.gen(
       settings = settings,
+      ensemble_size = ensemble_size,
       input = input_tag,
       method = samp.ordered[[i]]$method,
       parent_ids = parent_ids
@@ -39,7 +53,12 @@ generate_joint_ensemble_design <- function(settings, ensemble_size ) {
   }
 
   # Sample parameters
-  PEcAn.uncertainty::get.parameter.samples(settings, posterior.files, ens.sample.method)
+  PEcAn.uncertainty::get.parameter.samples(
+    settings,
+    ensemble.size = ensemble_size,
+    posterior.files,
+    ens.sample.method
+  )
 
   # Load samples from file
   samples.file <- file.path(settings$outdir, "samples.Rdata")
@@ -56,7 +75,17 @@ generate_joint_ensemble_design <- function(settings, ensemble_size ) {
   } else {
     PEcAn.logger::logger.error(samples.file, "not found, this file is required")
   }
-  design_matrix<- data.frame(design_list)
-  return(design_matrix)
-}
+  design_matrix <- data.frame(design_list)
 
+  if (sobol) {
+    half <- floor(ensemble_size / 2)
+    X1 <- design_matrix[1:half, ]
+    X2 <- design_matrix[(half + 1):ensemble_size, ]
+    sobol_obj <- sensitivity::soboljansen(model = NULL, X1 = X1, X2 = X2)
+    return(sobol_obj)
+  }
+
+
+
+  return(list(X = design_matrix))
+}

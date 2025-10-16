@@ -23,7 +23,7 @@ decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).}
 
 \item{ensemble.id}{ensemble ID}
 
-\item{variable}{which varibable(s) to do sensitivity analysis for. Defaults
+\item{variable}{which variable(s) to do sensitivity analysis for. Defaults
 to all specified in `settings`}
 
 \item{start.year}{defaults to what is specified in `settings`}

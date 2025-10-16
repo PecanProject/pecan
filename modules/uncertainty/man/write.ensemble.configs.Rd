@@ -5,11 +5,12 @@
 \title{Write ensemble config files}
 \usage{
 write.ensemble.configs(
+  input_design,
+  ensemble.size,
   defaults,
   ensemble.samples,
   settings,
   model,
-  input_design,
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
@@ -18,6 +19,10 @@ write.ensemble.configs(
 )
 }
 \arguments{
+\item{input_design}{the input indices for samples}
+
+\item{ensemble.size}{size of ensemble}
+
 \item{defaults}{pft}
 
 \item{ensemble.samples}{list of lists supplied by \link{get.ensemble.samples}}
@@ -25,8 +30,6 @@ write.ensemble.configs(
 \item{settings}{list of PEcAn settings}
 
 \item{model}{name of model to be run, e.g. "ED2" or "SIPNET"}
-
-\item{input_design}{the input indices for samples}
 
 \item{clean}{remove old output first?}
 

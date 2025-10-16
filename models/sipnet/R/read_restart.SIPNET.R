@@ -139,8 +139,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   #remove any remaining NAs from params$restart
   params$restart <- stats::na.omit(params$restart)
   
-  print(runid)
-  
   X_tmp <- list(X = unlist(forecast), params = params)
   
   return(X_tmp)

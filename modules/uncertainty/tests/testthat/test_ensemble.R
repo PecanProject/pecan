@@ -119,6 +119,7 @@ test_that("multiple inputs and multiple samples", {
   result <- expect_silent(
     write.ensemble.configs(
       defaults = defaults,
+      ensemble.size = 5,
       ensemble.samples = ensemble.samples,
       settings = settings,
       model = "SIPNET",
