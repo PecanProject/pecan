@@ -180,7 +180,6 @@
 "magrittr","*","base/db","Imports",FALSE
 "magrittr","*","base/utils","Imports",FALSE
 "magrittr","*","models/ed","Imports",FALSE
-"magrittr","*","modules/assim.sequential","Imports",FALSE
 "magrittr","*","modules/benchmark","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
@@ -477,6 +476,7 @@
 "reshape2","*","modules/benchmark","Imports",FALSE
 "reshape2","*","modules/data.atmosphere","Imports",FALSE
 "reshape2",">= 1.4.2","modules/assim.sequential","Suggests",FALSE
+"reticulate","*","modules/assim.sequential","Imports",FALSE
 "reticulate","*","modules/data.atmosphere","Suggests",FALSE
 "reticulate","*","modules/data.land","Suggests",FALSE
 "reticulate","*","modules/data.remote","Imports",FALSE
