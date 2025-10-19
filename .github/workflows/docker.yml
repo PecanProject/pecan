@@ -36,10 +36,7 @@ on:
 jobs:
   # ----------------------------------------------------------------------
   # Set R version.
-  # This is a hack: We really just want a global env var here, but it seems
-  # `env:` values can't be passed into a `jobs.<jobid>.with` context
-  # (see https://github.com/actions/runner/issues/2372).
-  # As an ugly workaround, we assign it to a job output instead.
+  # ... (unchanged) ...
   # ----------------------------------------------------------------------
   rversion:
     runs-on: ubuntu-latest
@@ -63,9 +60,24 @@ jobs:
         if: github.event_name != 'schedule'
         run: echo "R_VERSION=${{ github.event.inputs.r_version || env.DEFAULT_R_VERSION }}" >> "$GITHUB_OUTPUT"
     outputs:
-      # Note: "steps.*" seems to mean "all step ids", not "all steps"
-      # If seeing weird results here, check that all steps above have an id set.
       R_VERSION: ${{ join(steps.*.outputs.R_VERSION, '') }}
+
+  # ----------------------------------------------------------------------
+  # Helper to determine if we should push images (true for internal/main repo, false for external fork PRs)
+  # ----------------------------------------------------------------------
+  determine_push:
+    runs-on: ubuntu-latest
+    outputs:
+      should_push:
+        value: ${{ steps.push_check.outputs.should_push }}
+    steps:
+      - id: push_check
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
+            echo "should_push=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_push=true" >> "$GITHUB_OUTPUT"
+          fi
 
   # ----------------------------------------------------------------------
   # depends image has all the dependencies installed
@@ -73,7 +85,7 @@ jobs:
   depends:
     permissions:
       packages: write
-    needs: rversion
+    needs: [rversion, determine_push]
     uses: ./.github/workflows/docker-build-image.yml
     with:
       image-name: depends
@@ -81,49 +93,91 @@ jobs:
       dockerfile: docker/depends/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
       platforms: "linux/amd64"
+      enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }} # Pass decision
     secrets: inherit
+    id: depends_build # Give the job an ID to access its outputs
+    outputs: # Expose the image tag
+      image-primary-tag: ${{ fromJson(steps.depends_build.outputs.image-primary-tag) }}
+
 
   # ----------------------------------------------------------------------
   # base image has PEcAn compiled and installed, and depends on depends
   # ----------------------------------------------------------------------
   base:
-    needs: [rversion, depends]
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: base
-      build-context: .
-      dockerfile: docker/base/Dockerfile
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "depends"
-      platforms: "linux/amd64"
-    secrets: inherit
+    needs: [rversion, depends, determine_push]
+    runs-on: ubuntu-latest # Each job needs a runner, even if just for download/load
+    steps:
+      # NEW: If not pushing, download and load the parent image (depends)
+      - name: Download depends image artifact
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: image-depends
+          path: . # Download to current directory on the runner
+
+      - name: Load depends image
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        run: docker load -i depends.tar
+
+      # Call the reusable workflow
+      - uses: ./.github/workflows/docker-build-image.yml
+        id: base_build # Give the workflow call an ID
+        with:
+          image-name: base
+          build-context: .
+          dockerfile: docker/base/Dockerfile
+          r-version: ${{ needs.rversion.outputs.R_VERSION }}
+          parent-image: "depends" # Short name for reference
+          parent-image-full-tag: ${{ needs.depends.outputs.image-primary-tag }} # Pass the full tag
+          platforms: "linux/amd64"
+          enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }}
+        secrets: inherit
+    outputs: # Expose the image tag
+      image-primary-tag: ${{ fromJson(steps.base_build.outputs.image-primary-tag) }}
 
 # ----------------------------------------------------------------------
 # models image has some python installed to run models, depends on base
 # ----------------------------------------------------------------------
   models:
-    needs: [rversion, base]
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: models
-      build-context: docker/models
-      dockerfile: docker/models/Dockerfile
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "base"
-    secrets: inherit
+    needs: [rversion, base, determine_push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download base image artifact
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: image-base
+          path: .
+
+      - name: Load base image
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        run: docker load -i base.tar
+
+      - uses: ./.github/workflows/docker-build-image.yml
+        id: models_build
+        with:
+          image-name: models
+          build-context: docker/models
+          dockerfile: docker/models/Dockerfile
+          r-version: ${{ needs.rversion.outputs.R_VERSION }}
+          parent-image: "base"
+          parent-image-full-tag: ${{ needs.base.outputs.image-primary-tag }}
+          enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }}
+        secrets: inherit
+    outputs:
+      image-primary-tag: ${{ fromJson(steps.models_build.outputs.image-primary-tag) }}
 
 # ----------------------------------------------------------------------
 # Next are images that have models installed
 # ----------------------------------------------------------------------
   modelsbinary:
-    needs: [rversion, models]
+    needs: [rversion, models, determine_push]
     strategy:
       fail-fast: false
       matrix:
         name:
           - basgra
           - biocro
-          # - ed2_2.2.0
           - ed2_git
           - maespa
           - sipnet
@@ -140,12 +194,6 @@ jobs:
             PLATFORM: "linux/amd64"
             MODEL: biocro
             VERSION: "0.95"
-          # - name: ed2_2.2.0
-          #   CONTEXT: models/ed
-          #   DOCKERFILE: models/ed/Dockerfile
-          #   PLATFORM: "linux/amd64"
-          #   MODEL: ed2
-          #   VERSION: "2.2.0"
           - name: ed2_git
             CONTEXT: models/ed
             DOCKERFILE: models/ed/Dockerfile
@@ -164,22 +212,40 @@ jobs:
             PLATFORM: "linux/amd64"
             MODEL: sipnet
             VERSION: "git"
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
-      build-context: ${{ matrix.CONTEXT }}
-      dockerfile: ${{ matrix.DOCKERFILE }}
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "models"
-      model-version: ${{ matrix.VERSION }}
-      platforms: ${{ matrix.PLATFORM }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download models image artifact
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: image-models
+          path: .
 
-  # ----------------------------------------------------------------------
-  # Next are images that depend on base image
-  # ----------------------------------------------------------------------
+      - name: Load models image
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        run: docker load -i models.tar
+
+      - uses: ./.github/workflows/docker-build-image.yml
+        id: modelsbinary_build
+        with:
+          image-name: model-${{ matrix.MODEL }}-${{ matrix.VERSION }}
+          build-context: ${{ matrix.CONTEXT }}
+          dockerfile: ${{ matrix.DOCKERFILE }}
+          r-version: ${{ needs.rversion.outputs.R_VERSION }}
+          parent-image: "models"
+          parent-image-full-tag: ${{ needs.models.outputs.image-primary-tag }}
+          model-version: ${{ matrix.VERSION }}
+          platforms: ${{ matrix.PLATFORM }}
+          enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }}
+        secrets: inherit
+    outputs:
+      image-primary-tag: ${{ fromJson(steps.modelsbinary_build.outputs.image-primary-tag) }}
+
+# ----------------------------------------------------------------------
+# Next are images that depend on base image
+# ----------------------------------------------------------------------
   baseplus:
-    needs: [rversion, base]
+    needs: [rversion, base, determine_push]
     strategy:
       fail-fast: false
       matrix:
@@ -200,21 +266,39 @@ jobs:
             CONTEXT: apps/api
             DOCKERFILE: apps/api/Dockerfile
             PLATFORM: "linux/amd64"
-    uses: ./.github/workflows/docker-build-image.yml
-    with:
-      image-name: ${{ matrix.name }}
-      build-context: ${{ matrix.CONTEXT }}
-      dockerfile: ${{ matrix.DOCKERFILE }}
-      r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      parent-image: "base"
-      platforms: ${{ matrix.PLATFORM }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download base image artifact
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: image-base
+          path: .
+
+      - name: Load base image
+        if: ${{ needs.determine_push.outputs.should_push == 'false' }}
+        run: docker load -i base.tar
+
+      - uses: ./.github/workflows/docker-build-image.yml
+        id: baseplus_build
+        with:
+          image-name: ${{ matrix.name }}
+          build-context: ${{ matrix.CONTEXT }}
+          dockerfile: ${{ matrix.DOCKERFILE }}
+          r-version: ${{ needs.rversion.outputs.R_VERSION }}
+          parent-image: "base"
+          parent-image-full-tag: ${{ needs.base.outputs.image-primary-tag }}
+          platforms: ${{ matrix.PLATFORM }}
+          enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }}
+        secrets: inherit
+    outputs:
+      image-primary-tag: ${{ fromJson(steps.baseplus_build.outputs.image-primary-tag) }}
 
   # ----------------------------------------------------------------------
   # Next are images that do not depend on either depends or base image
   # ----------------------------------------------------------------------
   extras:
-    needs: rversion
+    needs: [rversion, determine_push]
     strategy:
       fail-fast: false
       matrix:
@@ -246,10 +330,12 @@ jobs:
             DOCKERFILE: docker/rstudio-nginx/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
     uses: ./.github/workflows/docker-build-image.yml
+    id: extras_build
     with:
       image-name: ${{ matrix.name }}
       build-context: ${{ matrix.CONTEXT }}
       dockerfile: ${{ matrix.DOCKERFILE }}
       platforms: ${{ matrix.PLATFORM }}
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
+      enable-push: ${{ needs.determine_push.outputs.should_push == 'true' }}
     secrets: inherit
