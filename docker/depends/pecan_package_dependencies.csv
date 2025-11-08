@@ -5,6 +5,7 @@
 "abind",">= 1.4.5","models/ed","Imports",FALSE
 "abind",">= 1.4.5","modules/data.atmosphere","Imports",FALSE
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
+"aqp","*","modules/data.land","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
 "assertthat","*","modules/data.atmosphere","Imports",FALSE
@@ -567,6 +568,7 @@
 "sf","*","modules/data.land","Imports",FALSE
 "sf","*","modules/data.remote","Suggests",FALSE
 "SimilarityMeasures","*","modules/benchmark","Imports",FALSE
+"soilDB","*","modules/data.land","Imports",FALSE
 "sirt","*","modules/data.land","Imports",FALSE
 "sp","*","base/visualization","Suggests",FALSE
 "sp","*","modules/assim.sequential","Suggests",FALSE
