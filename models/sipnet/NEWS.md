@@ -1,3 +1,9 @@
+# Unreleased
+
+## Added
+
+* `write.events.SIPNET()` to generate SIPNET `events.in` files from a `events.json` file.
+
 # PEcAn.SIPNET 1.9.1
 
 ## Changed

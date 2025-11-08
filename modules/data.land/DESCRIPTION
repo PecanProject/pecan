@@ -63,13 +63,15 @@ Imports:
 Suggests:
     dataone,
     datapack,
+    jsonlite,
+    jsonvalidate,
     getPass,
     glue,
     PEcAn.settings,
     redland,
     raster,
     reticulate,
-    testthat (>= 1.0.2),
+    testthat (>= 3.1.0),
     withr,
     MASS
 Remotes:

@@ -19,7 +19,7 @@ jobs:
       PECAN_GIT_BRANCH: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
 
     container: 
-      image: pecan/depends:develop
+      image: pecan/base:develop
 
     steps:
     # Checkout source code

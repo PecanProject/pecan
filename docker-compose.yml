@@ -377,7 +377,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dbsync.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/dbsync/`)"
       - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
-      - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/monitor"
+      - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/dbsync"
     healthcheck:
       test: "curl --silent --fail http://localhost:3838 > /dev/null || exit 1"
       interval: 10s

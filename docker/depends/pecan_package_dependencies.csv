@@ -131,9 +131,12 @@
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "itertools","*","modules/assim.sequential","Suggests",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
+"jsonlite","*","models/sipnet","Imports",FALSE
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
+"jsonlite","*","modules/data.land","Suggests",FALSE
 "jsonlite","*","modules/data.remote","Suggests",FALSE
+"jsonvalidate","*","modules/data.land","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","base/visualization","Suggests",FALSE
 "knitr","*","models/biocro","Suggests",FALSE
@@ -180,7 +183,6 @@
 "magrittr","*","base/db","Imports",FALSE
 "magrittr","*","base/utils","Imports",FALSE
 "magrittr","*","models/ed","Imports",FALSE
-"magrittr","*","modules/assim.sequential","Imports",FALSE
 "magrittr","*","modules/benchmark","Imports",FALSE
 "magrittr","*","modules/data.land","Imports",FALSE
 "magrittr","*","modules/data.remote","Imports",FALSE
@@ -477,6 +479,7 @@
 "reshape2","*","modules/benchmark","Imports",FALSE
 "reshape2","*","modules/data.atmosphere","Imports",FALSE
 "reshape2",">= 1.4.2","modules/assim.sequential","Suggests",FALSE
+"reticulate","*","modules/assim.sequential","Imports",FALSE
 "reticulate","*","modules/data.atmosphere","Suggests",FALSE
 "reticulate","*","modules/data.land","Suggests",FALSE
 "reticulate","*","modules/data.remote","Imports",FALSE
@@ -620,7 +623,6 @@
 "testthat",">= 1.0.2","models/template","Suggests",FALSE
 "testthat",">= 1.0.2","modules/allometry","Suggests",FALSE
 "testthat",">= 1.0.2","modules/assim.batch","Suggests",FALSE
-"testthat",">= 1.0.2","modules/data.land","Suggests",FALSE
 "testthat",">= 1.0.2","modules/data.remote","Suggests",FALSE
 "testthat",">= 1.0.2","modules/meta.analysis","Suggests",FALSE
 "testthat",">= 1.0.2","modules/rtm","Suggests",FALSE
@@ -632,6 +634,7 @@
 "testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
+"testthat",">= 3.1.0","modules/data.land","Suggests",FALSE
 "testthat",">= 3.1.7","modules/data.atmosphere","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
 "tibble","*","models/ed","Imports",FALSE

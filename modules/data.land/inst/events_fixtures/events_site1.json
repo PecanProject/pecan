@@ -1,0 +1,44 @@
+[
+  {
+    "pecan_events_version": "0.1.0",
+    "site_id": "EX1",
+    "events": [
+      {
+        "event_type": "tillage",
+        "date": "2022-02-04",
+        "tillage_eff_0to1": 0.2
+      },
+      {
+        "event_type": "tillage",
+        "date": "2022-02-09",
+        "tillage_eff_0to1": 0.1
+      },
+      {
+        "event_type": "irrigation",
+        "date": "2022-02-09",
+        "amount_mm": 50,
+        "method": "soil"
+      },
+      {
+        "event_type": "fertilization",
+        "date": "2022-02-09",
+        "org_n_kg_m2": 0,
+        "org_c_kg_m2": 0,
+        "nh4_n_kg_m2": 0.01
+      },
+      {
+        "event_type": "planting",
+        "date": "2022-02-19",
+        "leaf_c_kg_m2": 0.01
+      },
+      {
+        "event_type": "harvest",
+        "date": "2022-09-07",
+        "frac_above_removed_0to1": 0.1,
+        "frac_below_removed_0to1": 0.0,
+        "frac_above_to_litter_0to1": 0.0,
+        "frac_below_to_litter_0to1": 0.0
+      }
+    ]
+  }
+]

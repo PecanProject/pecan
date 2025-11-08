@@ -39,18 +39,30 @@ download.file(
 Sys.chmod(dest_path, mode = "0755")
 
 ## Now we are run, lets just check that `sipnet -h` works
-
-status <- suppressWarnings(
-    system2(dest_path, "-h", stderr = TRUE, stdout = TRUE) |>
-        attr("status")
-)
-
-if(status == 1){
-    # 1 is expected for `sipnet -h`
+tryCatch(
+  {
+    # This block runs if system2 succeeds with exit code 0 (status attribute is NULL).
+    # Exit code 0 means successful execution.
+    system2(dest_path, "-h", stderr = TRUE, stdout = TRUE)
     PEcAn.logger::logger.info("SIPNET has been installed!")
-} else {
-    PEcAn.logger::logger.error("SIPNET installation has failed with status:", status)
-}
+  },
+  warning = function(w) {
+    # This block runs if system2 returns a non-zero exit code.
+    # We check the warning message for the expected status of 1.
+    if (grepl("had status 1", w$message, fixed = TRUE)) {
+      PEcAn.logger::logger.info("SIPNET has been installed!")
+    } else {
+      PEcAn.logger::logger.error("SIPNET ran but failed with an unexpected status.", "Details:", w$message)
+    }
+  },
+  error = function(e) {
+    # This block runs if system2 fails to execute the command at all.
+    PEcAn.logger::logger.error(
+      "SIPNET command failed to execute. The binary may be incompatible with your system.",
+      "Details:", e$message
+    )
+  }
+)
 
 dir.create("dbfiles", showWarnings = FALSE)
 # Download demo .clim file

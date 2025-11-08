@@ -76,6 +76,9 @@ run.sensitivity.analysis <- function(settings,
   if (is.null(pfts)) {
     #extract just pft names
     pfts <- purrr::map_chr(settings$pfts, "name")
+    if (!is.null(settings$run$site$site.pft)) {
+      pfts <- pfts[pfts %in% settings$run$site$site.pft]
+    }
   } else {
     # validate pfts argument
     if (!is.character(pfts)) {
@@ -102,20 +105,14 @@ run.sensitivity.analysis <- function(settings,
     samples <- new.env()
     load(fname, envir = samples)
 
-    # Can specify ensemble ids manually. If not, look in settings.
-    # If none there, will use the most recent, which was loaded with samples.Rdata
-    if (!is.null(ensemble.id)) {
-      fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                    ensemble.id = ensemble.id,
-                                    all.var.yr = TRUE)
-    } else if (!is.null(settings$sensitivity.analysis$ensemble.id)) {
-      ensemble.id <- settings$sensitivity.analysis$ensemble.id
-      fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                    ensemble.id = ensemble.id,
-                                    all.var.yr = TRUE)
-    } else {
-      ensemble.id <- NULL
-    }
+    # Ensemble ID is expected to be specified in function args or settings.
+    # If none there, create one specific to this site.
+    ensemble.id <- ensemble.id %||%
+      settings$sensitivity.analysis$ensemble.id %||%
+      rlang::hash(settings)
+    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
+                                  ensemble.id = ensemble.id,
+                                  all.var.yr = TRUE)
     if (file.exists(fname)) {
       load(fname, envir = samples)
     }
@@ -218,8 +215,7 @@ run.sensitivity.analysis <- function(settings,
         grDevices::pdf(fname, height = 12, width = 9)
         ## arrange plots  http://stackoverflow.com/q/10706753/199217
         ncol <- floor(sqrt(length(sensitivity.plots)))
-        print(do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol = ncol)))
-        print(sensitivity.plots) # old method.  depreciated.
+        do.call(gridExtra::grid.arrange, c(sensitivity.plots, ncol = ncol))
         grDevices::dev.off()
 
         ### Generate VD diagnostic plots

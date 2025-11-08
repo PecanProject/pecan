@@ -164,7 +164,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   ### Sensitivity Analysis
   if ("sensitivity.analysis" %in% names(settings)) {
     ### Write out SA config files
-    PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
+    PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
     sa.runs <- PEcAn.uncertainty::write.sa.configs(
       defaults = settings$pfts,
       quantile.samples = sa.samples,

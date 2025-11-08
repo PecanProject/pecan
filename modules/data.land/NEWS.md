@@ -5,7 +5,13 @@
   - **`soilgrids_ic_process`**: A function to extract, process, and generate ensemble members from SoilGrids250m data.
   - **`preprocess_soilgrids_data`**: A helper function to handle missing values and ensure data integrity during preprocessing. 
   - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data.
-* `extract_soil_gssurgo()` -- replaced point-based WFS queries with raster-based WCS approach using `soilDB::mukey.wcs()` for accurate area-weighted sampling. Integrated `soilDB::get_SDA_property()` for depth-integrated soil property retrieval and `soilDB::fetchSDA()` for comprehensive rock fragment data across all size classes. This eliminates spatial coverage gaps and reduces network requests while maintaining backward compatibility.
+- Add events schema and validate_events() function to validate events.json files against the schema (#3623, #3521).
+* `extract_soil_gssurgo()` (#3643)
+  - Replaced point-based WFS queries with raster-based WCS approach using `soilDB::mukey.wcs()`.
+  - Replaced `grid_size`/`grid_spacing` parameters with `radius` (meters) for simpler buffer-based AOI creation.
+  - Switched to single `soilDB::fetchSDA()` call for component-level soil data retrieval, enabling better ensemble uncertainty quantification through within-map-unit variability. Added support for custom AOI polygons. 
+  - This eliminates spatial coverage gaps and reduces network requests while maintaining backward compatibility.
+
 
 # PEcAn.data.land 1.8.2
 - Removed unused parameter `machine` from put_veg_module()

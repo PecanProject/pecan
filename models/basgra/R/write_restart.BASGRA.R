@@ -1,11 +1,11 @@
-##' @title write_restart.SIPNET
-##' 
+##' write_restart.BASGRA
+##'
 ##' @author Istem Fer
 ##'
 ##' @inheritParams PEcAn.ModelName::write_restart.ModelName
 ##'
-##' @description Write restart files for BASGRA 
-##' 
+##' @description Write restart files for BASGRA
+##'
 ##' @return TRUE if successful
 ##' @export
 write_restart.BASGRA <- function(outdir, runid, start.time, stop.time, settings, new.state,

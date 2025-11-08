@@ -120,6 +120,9 @@ authors:
     orcid: 'https://orcid.org/0000-0002-7430-7879'
   - given-names: Harunobu Ishii
     affiliation: Boston University Software & Application Innovation Lab(SAIL)
+  - affiliation: Finnish Meteorological Institute
+    given-names: Quentin Bell
+    orcid: 'https://orcid.org/0009-0005-0253-8642'
   - given-names: Akash BV
     affiliation: CMR Institute of Technology, Bengaluru
 

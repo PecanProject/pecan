@@ -2,7 +2,7 @@
 % Please edit documentation in R/query.data.R
 \name{query.data}
 \alias{query.data}
-\title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
+\title{Function to query data from database for specific species and convert stat to SE}
 \usage{
 query.data(
   trait,
@@ -34,7 +34,8 @@ query.data(
 Function to query data from database for specific species and convert stat to SE
 }
 \seealso{
-used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
+used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}};
+  \code{\link[PEcAn.utils]{transformstats}} performs transformation calculations
 }
 \author{
 David LeBauer, Carl Davidson

@@ -67,3 +67,11 @@ jobs:
 
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
+
+    - name: check package versions
+      run: |
+        tag=$(\
+          curl -s https://api.github.com/repos/pecanproject/pecan/releases/latest \
+          | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
+        git fetch --tags --depth=1
+        ./scripts/ensure_version_bump.sh "$tag"
