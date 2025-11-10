@@ -94,6 +94,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
 #'   by \code{settings$rundir} before writing to it?
 #' @param write.to.db logical: Record this run to BETY? If TRUE, uses connection
 #'   settings specified in \code{settings$database}
+#' @param input_design data.frame coordinating input files across runs
 #'
 #' @return list, containing $runs = data frame of runids,
 #'  and $ensemble.id = the ensemble ID for these runs.
@@ -101,11 +102,11 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
 #' @export
 #' @author David LeBauer, Carl Davidson
 write.sa.configs <- function(defaults, quantile.samples, settings, model,
-                             clean = FALSE, write.to.db = TRUE) {
+                             clean = FALSE, write.to.db = TRUE, input_design = NULL) {
   scipen <- getOption("scipen")
   options(scipen = 12)
   my.write.config <- paste("write.config.", model, sep = "")
-
+  
   if (write.to.db) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
     if (inherits(con, "try-error")) {
@@ -116,23 +117,23 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   } else {
     con <- NULL
   }
-
+  
   # Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
   } else {
     workflow.id <- -1
   }
-
+  
   # find all inputs that have an id
   inputs <- names(settings$run$inputs)
   inputs <- inputs[grepl(".id$", inputs)]
-
+  
   runs <- data.frame()
-
+  
   # Reading the site.pft specific tags from xml
   site.pfts.vec <- as.character(unlist(settings$run$site$site.pft))
-
+  
   if (!is.null(site.pfts.vec)) {
     # find the name of pfts defined in the body of pecan.xml
     defined.pfts <- as.character(unlist(purrr::map(settings$pfts, "name")))
@@ -151,8 +152,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       )
     }
   }
-
-
+  
+  
   ## write median run
   MEDIAN <- "50"
   median.samples <- list()
@@ -160,14 +161,14 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     median.samples[[i]] <- quantile.samples[[i]][MEDIAN, , drop  = FALSE]
   }
   names(median.samples) <- names(quantile.samples)
-
+  
   if (!is.null(con)) {
     # Note: ignores any existing run or ensemble ids in settings
     ensemble.id <- PEcAn.DB::db.query(paste0(
       "INSERT INTO ensembles (runtype, workflow_id) ",
       "VALUES ('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
       "RETURNING id"), con = con)[["id"]]
-
+    
     paramlist <- paste0(
       "quantile=MEDIAN,trait=all,pft=",
       paste(lapply(settings$pfts, function(x) x[["name"]]), sep = ",")
@@ -176,15 +177,15 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       "INSERT INTO runs ",
       "(model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
       "values ('",
-        settings$model$id, "', '",
-        settings$run$site$id, "', '",
-        settings$run$start.date, "', '",
-        settings$run$end.date, "', '",
-        settings$run$outdir, "', ",
-        ensemble.id, ", '",
-        paramlist, "') ",
+      settings$model$id, "', '",
+      settings$run$site$id, "', '",
+      settings$run$start.date, "', '",
+      settings$run$end.date, "', '",
+      settings$run$outdir, "', ",
+      ensemble.id, ", '",
+      paramlist, "') ",
       "RETURNING id"), con = con)[["id"]]
-
+    
     # associate posteriors with ensembles
     for (pft in defaults) {
       PEcAn.DB::db.query(
@@ -194,7 +195,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
         con = con
       )
     }
-
+    
     # associate inputs with runs
     if (!is.null(inputs)) {
       for (x in inputs) {
@@ -214,7 +215,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     ensemble.id <- settings$sensitivity.analysis$ensemble.id %||% rlang::hash(settings)
   }
   medianrun <- run.id
-
+  
   # create folders (cleaning up old ones if needed)
   if (clean) {
     unlink(file.path(settings$rundir, run.id))
@@ -222,7 +223,49 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   }
   dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
   dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
-
+  
+  # I check to make sure the path under the met is a list.
+  # if it's specified what met needs to be used in 'met.id' under sensitivity
+  # analysis of pecan xml we used that otherwise, I use the first met.
+  if (is.list(settings$run$inputs$met$path)) {
+    # This checks for met.id tag in the settings under sensitivity analysis -
+    # if it's not there it creates it. Then it's gonna use what it created.
+    if (is.null(settings$sensitivity.analysis$met.id)) {
+      settings$sensitivity.analysis$met.id <- 1
+    }
+    settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
+  }
+  
+  # Apply input design coordination for median run
+  median_settings <- settings
+  if (!is.null(input_design)) {
+    # Coordinate inputs for median run (use first row)
+    for (input_tag in colnames(input_design)) {
+      if (input_tag != "param" && !is.null(median_settings$run$inputs[[input_tag]]$path)) {
+        input_paths <- median_settings$run$inputs[[input_tag]]$path
+        # Assume list structure (consistent with write.ensemble.configs)
+        if (length(input_paths) > 1) {
+          input_index <- input_design[[input_tag]][1]
+          median_settings$run$inputs[[input_tag]]$path <- input_paths[[input_index]]
+        }
+      }
+    }
+  }
+  
+  median_input_info <- ""
+  for (input_tag in names(median_settings$run$inputs)) {
+    input_data <- median_settings$run$inputs[[input_tag]]
+    
+    # At SA stage, path is ALWAYS a resolved string (thanks to input design)
+    if (!is.null(input_data) && !is.null(input_data$path)) {
+      median_input_info <- paste0(median_input_info, 
+                                  format(input_tag, width = 12, justify = "left"), 
+                                  ": ", 
+                                  input_data$path, 
+                                  "\n")
+    }
+  }
+  
   # write run information to disk TODO need to print list of pft names and trait
   # names
   cat("runtype     : sensitivity analysis\n",
@@ -236,7 +279,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       "model id    : ", settings$model$id, "\n",
       "site        : ", settings$run$site$name, "\n",
       "site  id    : ", settings$run$site$id, "\n",
-      "met data    : ", settings$run$site$met, "\n",
+      median_input_info,
       "start date  : ", settings$run$start.date, "\n",
       "end date    : ", settings$run$end.date, "\n",
       "hostname    : ", settings$host$name, "\n",
@@ -244,26 +287,11 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
       file = file.path(settings$rundir, run.id, "README.txt"),
       sep = "")
-
-
-  # I check to make sure the path under the met is a list.
-  # if it's specified what met needs to be used in 'met.id' under sensitivity
-  # analysis of pecan xml we used that otherwise, I use the first met.
-  if (is.list(settings$run$inputs$met$path)) {
-    # This checks for met.id tag in the settings under sensitivity analysis -
-    # if it's not there it creates it. Then it's gonna use what it created.
-    if (is.null(settings$sensitivity.analysis$met.id)) {
-      settings$sensitivity.analysis$met.id <- 1
-    }
-    settings$run$inputs$met$path <- settings$run$inputs$met$path[[settings$sensitivity.analysis$met.id]]
-
-  }
-
-
+  
   # write configuration
   do.call(my.write.config, args = list(defaults = defaults,
                                        trait.values = median.samples,
-                                       settings = settings,
+                                       settings = median_settings,
                                        run.id = run.id))
   cat(
     run.id,
@@ -271,20 +299,22 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     sep = "\n",
     append = TRUE
   )
-
+  
+  run_index <- 1
+  
   ## loop over pfts
   runs <- list()
-  for (i in seq_along(names(quantile.samples))) {
-    pftname <- names(quantile.samples)[i]
+  for (pft_idx in seq_along(names(quantile.samples))) {
+    pftname <- names(quantile.samples)[pft_idx]
     if (pftname == "env") {
       next
     }
-
-    traits <- colnames(quantile.samples[[i]])
-    quantiles.str <- rownames(quantile.samples[[i]])
-
+    
+    traits <- colnames(quantile.samples[[pft_idx]])
+    quantiles.str <- rownames(quantile.samples[[pft_idx]])
+    
     runs[[pftname]] <- data.frame()
-
+    
     ## loop over variables
     for (trait in traits) {
       for (quantile.str in quantiles.str) {
@@ -293,29 +323,29 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
         } else {
           quantile <- as.numeric(quantile.str) / 100
           trait.samples <- median.samples
-          trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait, drop = FALSE]
-
+          trait.samples[[pft_idx]][trait] <- quantile.samples[[pft_idx]][quantile.str, trait, drop = FALSE]
+          
           if (!is.null(con)) {
             paramlist <- paste0("quantile=", quantile.str, ",trait=", trait, ",pft=", pftname)
             insert_result <- PEcAn.DB::db.query(
               paste0(
                 "INSERT INTO runs (",
-                  "model_id, site_id, start_time, finish_time, outdir,",
-                  " ensemble_id, parameter_list) ",
+                "model_id, site_id, start_time, finish_time, outdir,",
+                " ensemble_id, parameter_list) ",
                 "values ('",
-                  settings$model$id, "', '",
-                  settings$run$site$id, "', '",
-                  settings$run$start.date, "', '",
-                  settings$run$end.date, "', '",
-                  settings$run$outdir, "', ",
-                  ensemble.id, ", '",
-                  paramlist,
+                settings$model$id, "', '",
+                settings$run$site$id, "', '",
+                settings$run$start.date, "', '",
+                settings$run$end.date, "', '",
+                settings$run$outdir, "', ",
+                ensemble.id, ", '",
+                paramlist,
                 "') ",
                 "RETURNING id"),
               con = con
             )
             run.id <- insert_result[["id"]]
-
+            
             # associate posteriors with ensembles
             for (pft in defaults) {
               PEcAn.DB::db.query(
@@ -326,7 +356,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
                 con = con
               )
             }
-
+            
             # associate inputs with runs
             if (!is.null(inputs)) {
               for (x in inputs) {
@@ -343,12 +373,15 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               run.type = "SA",
               index = round(quantile, 3),
               trait = trait,
-              pft.name = names(trait.samples)[i],
+              pft.name = names(trait.samples)[pft_idx],
               site.id = settings$run$site$id
             )
           }
           runs[[pftname]][quantile.str, trait] <- run.id
-
+          
+          # Increment run counter
+          run_index <- run_index + 1
+          
           # create folders (cleaning up old ones if needed)
           if (clean) {
             unlink(file.path(settings$rundir, run.id))
@@ -356,12 +389,40 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           }
           dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
           dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
-
-          # write run information to disk
+          
+          # Apply input design coordination for SA runs
+          settings_copy <- settings
+          if (!is.null(input_design)) {
+            for (input_tag in colnames(input_design)) {
+              if (input_tag != "param" && !is.null(settings_copy$run$inputs[[input_tag]]$path)) {
+                input_paths <- settings_copy$run$inputs[[input_tag]]$path
+                if (length(input_paths) > 1) {
+                  input_index <- input_design[[input_tag]][run_index]
+                  settings_copy$run$inputs[[input_tag]]$path <- input_paths[[input_index]]
+                }
+              }
+            }
+          }
+          
+          
+          # Build dynamic input info string for SA run README
+          sa_input_info <- ""
+          for (input_tag in names(settings_copy$run$inputs)) {
+            input_data <- settings_copy$run$inputs[[input_tag]]
+            if (!is.null(input_data) && !is.null(input_data$path)) {
+              sa_input_info <- paste0(sa_input_info, 
+                                      format(input_tag, width = 12, justify = "left"), 
+                                      ": ", 
+                                      input_data$path, 
+                                      "\n")
+            }
+          }
+          
+          # write SA run information to disk
           cat("runtype     : sensitivity analysis\n",
               "workflow id : ", workflow.id, "\n",
               "ensemble id : ", ensemble.id, "\n",
-              "pft name    : ", names(trait.samples)[i], "\n",
+              "pft name    : ", names(trait.samples)[pft_idx], "\n",
               "quantile    : ", quantile.str, "\n",
               "trait       : ", trait, "\n",
               "run id      : ", run.id, "\n",
@@ -369,7 +430,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               "model id    : ", settings$model$id, "\n",
               "site        : ", settings$run$site$name, "\n",
               "site  id    : ", settings$run$site$id, "\n",
-              "met data    : ", settings$run$site$met, "\n",
+              sa_input_info,
               "start date  : ", settings$run$start.date, "\n",
               "end date    : ", settings$run$end.date, "\n",
               "hostname    : ", settings$host$name, "\n",
@@ -377,12 +438,12 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
               "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
               file = file.path(settings$rundir, run.id, "README.txt"),
               sep = "")
-
-
+          
+          
           # write configuration
           do.call(my.write.config, args = list(defaults = defaults,
                                                trait.values = trait.samples,
-                                               settings = settings,
+                                               settings = settings_copy,
                                                run.id))
           cat(
             run.id,
@@ -394,7 +455,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       }
     }
   }
-
+  
   options(scipen = scipen)
   return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.sa.configs
