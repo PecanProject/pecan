@@ -51,7 +51,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       }
     )
   }
-  
+
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
     ## if posterior.files is specified us that
@@ -60,9 +60,9 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
         # TODO: sometimes `files` is a 0x0 tibble and other operations with it fail.
         files <- PEcAn.DB::dbfile.check("Posterior",
-                                        settings$pfts[[i]]$posteriorid,
-                                        con, settings$host$name,
-                                        return.all = TRUE
+          settings$pfts[[i]]$posteriorid,
+          con, settings$host$name,
+          return.all = TRUE
         )
         pid <- grep("post.distns.*Rdata", files$file_name) ## is there a posterior file?
         if (length(pid) == 0) {
@@ -97,17 +97,22 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       }
     } ## end else
   } ## end for loop over pfts
-  
+
   ## Sample parameters
   model <- settings$model$type
   scipen <- getOption("scipen")
   options(scipen = 12)
-  
+
   samples.file <- file.path(settings$outdir, "samples.Rdata")
+  existing_data <- NULL
   if (file.exists(samples.file)) {
-    samples <- new.env()
-    load(samples.file, envir = samples) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
-    trait.samples <- samples$trait.samples
+    existing_data <- new.env()
+    load(samples.file, envir = existing_data)
+    trait.samples <- existing_data$trait.samples
+    sa.samples <- existing_data$sa.samples
+    runs.samples <- existing_data$runs.samples
+
+    # Generate ensemble.samples for current site
     trait_sample_indices <- input_design[["param"]]
     ensemble.samples <- list()
     for (pft in names(trait.samples)) {
@@ -120,23 +125,21 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       )
       names(ensemble.samples[[pft]]) <- names(pft_traits)
     }
-    sa.samples <- samples$sa.samples
-    runs.samples <- samples$runs.samples
-    ## env.samples <- samples$env.samples
   } else {
-    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    # cannot proceed without sample.Rdata
+    PEcAn.logger::logger.severe(samples.file, "not found, this file is required by the run.write.configs function")
   }
-  
+
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
     PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
-  
+
   PEcAn.utils::load.modelpkg(model)
-  
+
   ## Check for model-specific write configs
-  
+
   my.write.config <- paste0("write.config.", model)
   if (!exists(my.write.config)) {
     PEcAn.logger::logger.error(
@@ -145,22 +148,22 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       my.write.config
     )
   }
-  
+
   ## Prepare for model output.  Clean up any old config files (if exists)
   # TODO: shouldn't this check if the files exist before removing them?
   my.remove.config <- paste0("remove.config.", model)
   if (exists(my.remove.config)) {
     do.call(my.remove.config, args = list(settings$rundir, settings))
   }
-  
+
   # TODO RK : need to write to runs_inputs table
-  
+
   # Save names
   pft.names <- names(trait.samples)
   trait.names <- lapply(trait.samples, names)
-  
+
   ### NEED TO IMPLEMENT: Load Environmental Priors and Posteriors
-  
+
   ### Sensitivity Analysis
   if ("sensitivity.analysis" %in% names(settings)) {
     ### Write out SA config files
@@ -173,18 +176,18 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       input_design = input_design,
       write.to.db = write
     )
-    
+
     # Store output in settings and output variables
     runs.samples$sa <- sa.run.ids <- sa.runs$runs
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
-    
+
     # Save sensitivity analysis info
     fname <- PEcAn.uncertainty::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                                     all.var.yr = TRUE, pft = NULL
+      all.var.yr = TRUE, pft = NULL
     )
     save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
   } ### End of SA
-  
+
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
     ens.runs <- PEcAn.uncertainty::write.ensemble.configs(
@@ -196,111 +199,102 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       input_design = input_design,
       write.to.db = write
     )
-    
+
     # Store output in settings and output variables
     runs.samples$ensemble <- ens.run.ids <- ens.runs$runs
     settings$ensemble$ensemble.id <- ens.ensemble.id <- ens.runs$ensemble.id
     ens.samples <- ensemble.samples # rename just for consistency
-    
+
     # Save ensemble analysis info
     fname <- PEcAn.uncertainty::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
     save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file = fname)
   } else {
     PEcAn.logger::logger.info("not writing config files for ensemble, settings are NULL")
   } ### End of Ensemble
-  
+
   PEcAn.logger::logger.info("###### Finished writing model run config files #####")
   PEcAn.logger::logger.info("config files samples in ", file.path(settings$outdir, "run"))
-  
-  samples.file <- file.path(settings$outdir, "samples.Rdata")
-  
-  if (file.exists(samples.file)) {
-    existing_env <- new.env()
-    load(samples.file, envir = existing_env)
-    if (!is.null(existing_env$ensemble.samples)) {
+
+  ## Use existing_data from earlier load
+  if (!is.null(existing_data)) {
+    # Merge ensemble.samples
+    if (!is.null(existing_data$ensemble.samples)) {
       for (pft_name in names(ensemble.samples)) {
-        if (pft_name %in% names(existing_env$ensemble.samples)) {
+        if (pft_name %in% names(existing_data$ensemble.samples)) {
           # combine parameter samples for same PFT across sites
           ensemble.samples[[pft_name]] <- rbind(
-            existing_env$ensemble.samples[[pft_name]],
+            existing_data$ensemble.samples[[pft_name]],
             ensemble.samples[[pft_name]]
           )
         }
         # New PFTs from current site are automatically preserved
       }
-      
       # preserves existing PFTs -- add PFTs that exist in file but not current site
-      for (existing_pft in names(existing_env$ensemble.samples)) {
+      for (existing_pft in names(existing_data$ensemble.samples)) {
         if (!existing_pft %in% names(ensemble.samples)) {
-          ensemble.samples[[existing_pft]] <- existing_env$ensemble.samples[[existing_pft]]
+          ensemble.samples[[existing_pft]] <- existing_data$ensemble.samples[[existing_pft]]
         }
       }
     }
-    
-    if (!is.null(existing_env$trait.samples)) {
-      trait.samples <- modifyList(existing_env$trait.samples, trait.samples)
+    # Merge trait.samples
+    if (!is.null(existing_data$trait.samples)) {
+      trait.samples <- modifyList(existing_data$trait.samples, trait.samples)
     }
-    
-    if (!is.null(existing_env$sa.samples)) {
-      sa.samples <- modifyList(existing_env$sa.samples, sa.samples)
+    # Merge sa.samples
+    if (!is.null(existing_data$sa.samples)) {
+      sa.samples <- modifyList(existing_data$sa.samples, sa.samples)
     }
-    
-    if (!is.null(existing_env$runs.samples)) {
+    # Merge runs.samples
+    if (!is.null(existing_data$runs.samples)) {
+      # Merge ensemble runs
       if (!is.null(runs.samples$ensemble)) {
-        if (!is.null(existing_env$runs.samples$ensemble)) {
+        if (!is.null(existing_data$runs.samples$ensemble)) {
           runs.samples$ensemble <- rbind(
-            existing_env$runs.samples$ensemble,
+            existing_data$runs.samples$ensemble,
             runs.samples$ensemble
           )
         }
-        # If existing is NULL, current ensemble data is preserved
-      } else if (!is.null(existing_env$runs.samples$ensemble)) {
+      } else if (!is.null(existing_data$runs.samples$ensemble)) {
         # Current site has no ensemble, preserve existing
-        runs.samples$ensemble <- existing_env$runs.samples$ensemble
+        runs.samples$ensemble <- existing_data$runs.samples$ensemble
       }
-      
       # Merge SA runs
       if (!is.null(runs.samples$sa)) {
-        if (!is.null(existing_env$runs.samples$sa)) {
+        if (!is.null(existing_data$runs.samples$sa)) {
           for (pft_name in names(runs.samples$sa)) {
-            if (pft_name %in% names(existing_env$runs.samples$sa)) {
+            if (pft_name %in% names(existing_data$runs.samples$sa)) {
               runs.samples$sa[[pft_name]] <- rbind(
-                existing_env$runs.samples$sa[[pft_name]],
+                existing_data$runs.samples$sa[[pft_name]],
                 runs.samples$sa[[pft_name]]
               )
             }
           }
-          
-          for (existing_pft in names(existing_env$runs.samples$sa)) {
+          for (existing_pft in names(existing_data$runs.samples$sa)) {
             if (!existing_pft %in% names(runs.samples$sa)) {
-              runs.samples$sa[[existing_pft]] <- existing_env$runs.samples$sa[[existing_pft]]
+              runs.samples$sa[[existing_pft]] <- existing_data$runs.samples$sa[[existing_pft]]
             }
           }
         }
-        # If existing SA is NULL, current SA data is preserved
-      } else if (!is.null(existing_env$runs.samples$sa)) {
+      } else if (!is.null(existing_data$runs.samples$sa)) {
         # Current site has no SA, preserve existing
-        runs.samples$sa <- existing_env$runs.samples$sa
+        runs.samples$sa <- existing_data$runs.samples$sa
       }
     }
-
-    if (!is.null(existing_env$pft.names)) {
-      pft.names <- unique(c(existing_env$pft.names, pft.names))
+    # Merge pft.names
+    if (!is.null(existing_data$pft.names)) {
+      pft.names <- unique(c(existing_data$pft.names, pft.names))
     }
-    
-    if (!is.null(existing_env$trait.names)) {
-      trait.names <- modifyList(existing_env$trait.names, trait.names)
+    # Merge trait.names
+    if (!is.null(existing_data$trait.names)) {
+      trait.names <- modifyList(existing_data$trait.names, trait.names)
     }
-    
   }
-  
   ### Save output from SA/Ensemble runs
   # A lot of this is duplicate with the ensemble/sa specific output above, but kept for backwards compatibility.
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, pft.names, trait.names,
-       file = samples.file
+    file = file.path(settings$outdir, "samples.Rdata")
   )
-  
-  PEcAn.logger::logger.info("parameter values for runs in ", samples.file)
+  PEcAn.logger::logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen = scipen)
   invisible(settings)
   return(settings)
