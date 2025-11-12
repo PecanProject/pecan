@@ -238,11 +238,11 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     }
     # Merge trait.samples
     if (!is.null(existing_data$trait.samples)) {
-      trait.samples <- modifyList(existing_data$trait.samples, trait.samples)
+      trait.samples <- utils::modifyList(existing_data$trait.samples, trait.samples)
     }
     # Merge sa.samples
     if (!is.null(existing_data$sa.samples)) {
-      sa.samples <- modifyList(existing_data$sa.samples, sa.samples)
+      sa.samples <- utils::modifyList(existing_data$sa.samples, sa.samples)
     }
     # Merge runs.samples
     if (!is.null(existing_data$runs.samples)) {
@@ -286,7 +286,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     }
     # Merge trait.names
     if (!is.null(existing_data$trait.names)) {
-      trait.names <- modifyList(existing_data$trait.names, trait.names)
+      trait.names <- utils::modifyList(existing_data$trait.names, trait.names)
     }
   }
   ### Save output from SA/Ensemble runs
