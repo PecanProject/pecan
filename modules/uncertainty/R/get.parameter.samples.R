@@ -3,7 +3,14 @@
 #'
 #' @param settings PEcAn settings object
 #' @param ensemble.size number of runs in model ensemble
-#' @param posterior.files list of filenames to read from
+#' @param posterior.files Either:
+#'   - a vector/list of length `length(settings$pfts)` with paths to posterior/ prior
+#'     distribution `.Rdata` files (backwards compatible behavior), OR
+#'   - a list of length `length(settings$pfts)`, where each element is itself a list
+#'     that may contain named elements `distribution` (path to `post.distns.Rdata` or
+#'     `prior.distns.Rdata`) and `mcmc` (path to `trait.mcmc*.Rdata`). When provided,
+#'     these files are used directly and PEcAn will not fall back to `pft$outdir`
+#'     to look for inputs. This avoids mixing read-only inputs in output directories.
 #' @param ens.sample.method one of "halton", "sobol", "torus", "lhc", "uniform"
 #' @export
 #'
@@ -18,7 +25,9 @@ get.parameter.samples <- function(settings,
   pft.names <- list()
   outdirs <- list()
 
-  if (length(pfts) != length(posterior.files)) {
+  # Normalize to list for consistent handling (backwards compatible)
+  posterior_list <- as.list(posterior.files)
+  if (length(pfts) != length(posterior_list)) {
     PEcAn.logger::logger.error(
       "settings$pfts and posterior.files should be the same length"
     )
@@ -36,11 +45,11 @@ get.parameter.samples <- function(settings,
     )
   }
 
-  for (i.pft in seq_along(pfts)) {
+for (i.pft in seq_along(pfts)) {
     # If no name given, use string "NULL" to warn user
     pft.names[i.pft] <- settings$pfts[[i.pft]]$name %||% "NULL"
 
-    ### Get output directory info
+    ### Get output directory info (used for outputs and legacy fallbacks only)
     if (!is.null(settings$pfts[[i.pft]]$outdir)) {
       outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     } else {
@@ -68,10 +77,22 @@ get.parameter.samples <- function(settings,
   for (i in seq_along(pft.names)) {
     distns <- new.env()
 
-    ## Load posteriors
-    if (!is.na(posterior.files[i])) {
+    # Per-PFT overrides (may be NA, a string path, or a list with
+    #   $distribution and/or $mcmc entries)
+    pf_spec <- posterior_list[[i]]
+    dist_file <- NA
+    mcmc_file_arg <- NA
+    if (is.list(pf_spec)) {
+      dist_file <- pf_spec$distribution %||% NA
+      mcmc_file_arg <- pf_spec$mcmc %||% NA
+    } else {
+      dist_file <- pf_spec
+    }
+
+    ## Load distribution (posterior/ prior) file
+    if (!is.na(dist_file)) {
       # Load specified file
-      load(posterior.files[i], envir = distns)
+      load(dist_file, envir = distns)
       if (is.null(distns$prior.distns) && !is.null(distns$post.distns)) {
         distns$prior.distns <- distns$post.distns
       }
@@ -88,7 +109,15 @@ get.parameter.samples <- function(settings,
     }
 
     ### Load trait mcmc data (if exists, either from MA or PDA)
-    if (!is.null(settings$pfts[[i]]$posteriorid) && !is.null(con)) {
+    if (!is.na(mcmc_file_arg)) {
+      # Explicit path provided -> trust it and do not fall back to outdir
+      if (!file.exists(mcmc_file_arg)) {
+        PEcAn.logger::logger.severe("Specified MCMC file does not exist: ", mcmc_file_arg)
+      }
+      ma.results <- TRUE
+      load(mcmc_file_arg, envir = distns)
+      if (grepl("mcmc.pda", mcmc_file_arg)) independent <- FALSE
+    } else if (!is.null(settings$pfts[[i]]$posteriorid) && !is.null(con)) {
       # first check if there are any files associated with posterior ids
       files <- PEcAn.DB::dbfile.check("Posterior",
         settings$pfts[[i]]$posteriorid,
@@ -100,7 +129,6 @@ get.parameter.samples <- function(settings,
         trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
         ma.results <- TRUE
         load(trait.mcmc.file, envir = distns)
-
 
         # PDA samples are fitted together, to preserve correlations downstream
         # let workflow know they should go together
