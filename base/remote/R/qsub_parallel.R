@@ -15,7 +15,7 @@
 #' @importFrom foreach %dopar%
 #' @importFrom dplyr %>%
 qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep = 10, hybrid = TRUE) {
-  if("try-error" %in% class(try(find.package("doSNOW"), silent = T))){
+  if("try-error" %in% class(try(find.package("doSNOW"), silent = TRUE))){
     PEcAn.logger::logger.info("Package doSNOW is not installed! Please install it and rerun the function!")
     return(0)
   }
@@ -71,7 +71,7 @@ qsub_parallel <- function(settings, files = NULL, prefix = "sipnet.out", sleep =
     if(!dir.exists(std_out)){
       dir.create(std_out)
     }else{
-      unlink(list.files(std_out, recursive = T, full.names = T))
+      unlink(list.files(std_out, recursive = TRUE, full.names = TRUE))
     }
     jobids <- foreach::foreach(file = files, .packages="Kendall", .options.snow=opts, settings = rep(settings, length(files))) %dopar% {
       qsub <- settings$host$qsub

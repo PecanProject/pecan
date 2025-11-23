@@ -108,22 +108,22 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
 
   # If we have more columns than we need, randomly subset
   if(ncol(train.data[[2]]) > n.ens) {
-    ens.train <- sample(1:ncol(train.data[[2]]), ncol(train.data[[2]]),replace=T)
+    ens.train <- sample(1:ncol(train.data[[2]]), n.ens, replace = TRUE)
   }
 
   # Setting up cases for dealing with an ensemble of source data to be biased
-  if(pair.ens==T & ncol(train.data[[2]]!=ncol(source.data[[2]]))){
+  if(isTRUE(pair.ens) && (ncol(train.data[[2]]) != ncol(source.data[[2]]))){
     stop("Cannot pair ensembles of different size")
-  } else if(pair.ens==T) {
+  } else if(isTRUE(pair.ens)) {
     ens.src <- ens.train
   }
 
-  if(pair.ens==F & ncol(source.data[[2]])==1){
-    ens.src=1
-  } else if(pair.ens==F & ncol(source.data[[2]]) > n.ens) {
-    ens.src <- sample(1:ncol(source.data[[2]]), ncol(source.data[[2]]),replace=T)
-  } else if(pair.ens==F & ncol(source.data[[2]]) < n.ens){
-    ens.src <- c(1:ncol(source.data[[2]]), sample(1:ncol(source.data[[2]]), n.ens-ncol(source.data[[2]]),replace=T))
+  if(!isTRUE(pair.ens) && ncol(source.data[[2]])==1){
+    ens.src <- 1
+  } else if(!isTRUE(pair.ens) && ncol(source.data[[2]]) > n.ens) {
+    ens.src <- sample(1:ncol(source.data[[2]]), n.ens, replace = TRUE)
+  } else if(!isTRUE(pair.ens) && ncol(source.data[[2]]) < n.ens){
+    ens.src <- c(1:ncol(source.data[[2]]), sample(1:ncol(source.data[[2]]), n.ens-ncol(source.data[[2]]), replace = TRUE))
   }
   # ---------
 
@@ -1020,7 +1020,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         )
       }
 
-      dir.create(path.diagnostics, recursive=T, showWarnings=F)
+      dir.create(path.diagnostics, recursive = TRUE, showWarnings = FALSE)
 
       dat.pred <- source.data$time
       dat.pred$Date <- as.POSIXct(dat.pred$Date)
@@ -1038,7 +1038,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           ggplot2::geom_line(ggplot2::aes(x=.data$Date, y=.data$obs, color="original"), size=0.5) +
           ggplot2::scale_color_manual(values=c("corrected" = "red", "original"="black")) +
           ggplot2::scale_fill_manual(values=c("corrected" = "red", "original"="black")) +
-          ggplot2::guides(fill=F) +
+          ggplot2::guides(fill = FALSE) +
           ggplot2::ggtitle(paste0(v, " - ensemble mean & 95% CI (daily slice)")) +
           ggplot2::theme_bw()
       )

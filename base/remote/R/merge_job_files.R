@@ -15,7 +15,7 @@ merge_job_files <- function(settings, jobs_per_file = 10, outdir = NULL){
   }
   # create folder or delete previous job files.
   if(dir.exists(outdir)){
-    unlink(list.files(outdir, recursive = T, full.names = T))
+    unlink(list.files(outdir, recursive = TRUE, full.names = TRUE))
   }else{
     dir.create(outdir)
   }

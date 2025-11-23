@@ -48,18 +48,20 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
   }
 
   # Test if format name already exists
-  name_test <- dplyr::tbl(con, "formats") %>% dplyr::select("id", "name") %>% dplyr::filter(.data$name %in% !!format_name) %>% dplyr::collect()
-  name_test_df <- as.data.frame(name_test)
-  if(!is.null(name_test_df[1,1])){
+  name_test <- dplyr::tbl(con, "formats") %>%
+    dplyr::select(.data$id, .data$name) %>%
+    dplyr::filter(.data$name %in% !!format_name) %>%
+    dplyr::collect()
+  if(nrow(name_test) > 0){
     PEcAn.logger::logger.error(
       "Name already exists"
     )
   }
 
-   #Test if skip is an integer
-  if(!is.character(skip)){
-  PEcAn.logger::logger.error(
-    "Skip must be of type character"
+   # Test if skip is numeric
+  if(!is.numeric(skip)){
+    PEcAn.logger::logger.error(
+      "Skip must be of type numeric"
     )
   }
 
@@ -71,7 +73,7 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
   }
 
   # Test if notes are a character string
-  if(!is.character(notes)&!is.null(notes)){
+  if(!is.character(notes) & !is.null(notes)){
     PEcAn.logger::logger.error(
       "Notes must be of type character"
     )
@@ -79,39 +81,43 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
 
   ######## Formats-Variables tests ###############
   if(!is.null(formats_variables)){
-    for(i in 1:nrow(formats_variables)){
-      if(!is.numeric(formats_variables[[i,"variable_id"]])){
+    for(i in seq_len(nrow(formats_variables))){
+      row_i <- formats_variables[i, ]
+      if(!is.numeric(row_i[["variable_id"]])){
         PEcAn.logger::logger.error(
           "variable_id must be an integer"
         )
       }
 
-      if(suppress == FALSE){
-        ## Test if variable_id already exists ##
-        var_id_test <- dplyr::tbl(con, "variables") %>% dplyr::select("id") %>% dplyr::filter(.data$id %in% !!formats_variables[[i, "variable_id"]]) %>% dplyr::collect(.data$id)
-        if(!is.null(var_id_test[1,1])){
+      if(identical(suppress, FALSE)){
+        ## Test if variable_id exists in variables table ##
+        var_id_test <- dplyr::tbl(con, "variables") %>%
+          dplyr::select(.data$id) %>%
+          dplyr::filter(.data$id %in% !!row_i[["variable_id"]]) %>%
+          dplyr::collect()
+        if(nrow(var_id_test) == 0){
           PEcAn.logger::logger.error(
-            "variable_id already exists"
+            "variable_id does not exist in 'variables' table"
           )
         }
       }
 
-      if(!is.character(formats_variables[[i, "name"]])&!is.na(formats_variables[[i, "name"]])){
+      if(!is.na(row_i[["name"]]) && !is.character(row_i[["name"]])){
         PEcAn.logger::logger.error(
           "Variable name must be of type character or NA"
         )
       }
-      if(!is.character(formats_variables[[i, "unit"]])&!is.na(formats_variables[[i, "unit"]])){
+      if(!is.na(row_i[["unit"]]) && !is.character(row_i[["unit"]])){
         PEcAn.logger::logger.error(
           "Units must be of type character or NA"
         )
       }
-      if(!is.character(formats_variables[[i, "storage_type"]])&!is.na(formats_variables[[i, "storage_type"]])){
+      if(!is.na(row_i[["storage_type"]]) && !is.character(row_i[["storage_type"]])){
         PEcAn.logger::logger.error(
           "storage_type must be of type character or NA"
         )
       }
-      if(!is.numeric(formats_variables[[i, "column_number"]])&!is.na(formats_variables[[i, "column_number"]])){
+      if(!is.na(row_i[["column_number"]]) && !is.numeric(row_i[["column_number"]])){
         PEcAn.logger::logger.error(
           "column_number must be of type numeric or NA"
         )
@@ -122,32 +128,39 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     formats_variables[is.na(formats_variables)] <- ""
 
     ###  udunit tests ###
-    for(i in 1:nrow(formats_variables)){
-      u1 <- formats_variables[1,"unit"]
-      u2 <- dplyr::tbl(con, "variables") %>% dplyr::select("id", units) %>% dplyr::filter(.data$id %in% !!formats_variables[[1, "variable_id"]]) %>% dplyr::pull("units")
+    for(i in seq_len(nrow(formats_variables))){
+      u1 <- formats_variables[["unit"]][i]
+      vid <- formats_variables[["variable_id"]][i]
+      if(!is.na(u1) && u1 != ""){
+        u2 <- dplyr::tbl(con, "variables") %>%
+          dplyr::select(.data$id, .data$units) %>%
+          dplyr::filter(.data$id %in% !!vid) %>%
+          dplyr::pull(.data$units)
 
-      if(!PEcAn.utils::unit_is_parseable(u1)){
-        PEcAn.logger::logger.error(
-          "Units '", u1,  "' not parseable.",
-          "Please provide a unit that is parseable by the udunits library."
-        )
-      }
-      # Grab the bety units and
-      if(!units::ud_are_convertible(u1, u2)){
-        PEcAn.logger::logger.error(
-          "Units are not convertable."
-        )
+        if(!PEcAn.utils::unit_is_parseable(u1)){
+          PEcAn.logger::logger.error(
+            "Units '", u1,  "' not parseable.",
+            "Please provide a unit that is parseable by the udunits library."
+          )
+        }
+        # Grab the bety units and compare only if we have both units
+        if(length(u2) > 0 && !is.na(u2)){
+          if(!units::ud_are_convertible(u1, u2)){
+            PEcAn.logger::logger.error(
+              "Units are not convertible."
+            )
+          }
+        }
       }
     }
   }
 
     formats_df <- tibble::tibble(
-      header = as.character(header),
+      header = header,
       skip = skip,
       mimetype_id = mimetype_id,
       notes = notes,
-      name = format_name,
-      stringsAsFactors = FALSE
+      name = format_name
     )
 
     ## Insert format record

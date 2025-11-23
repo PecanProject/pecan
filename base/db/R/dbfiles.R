@@ -447,13 +447,13 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname = PE
   hostname <- default_hostname(hostname)
 
   # find appropriate pft
-  pftid <- get.id(table = "pfts", values = "name", colnames = pft, con = con)
+  pftid <- get.id(table = "pfts", colnames = "name", values = pft, con = con)
   if (is.null(pftid)) {
     return (invisible(data.frame()))
   }
 
   # find appropriate format
-  mimetypeid <- get.id(table = "mimetypes", values = "type_string", colnames = mimetype, con = con)
+  mimetypeid <- get.id(table = "mimetypes", colnames = "type_string", values = mimetype, con = con)
   if (is.null(mimetypeid)) {
     PEcAn.logger::logger.error("mimetype ", mimetype, "does not exist")
   }
@@ -728,7 +728,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
   files.indb <- 0
 
   # check for file type and update to make it *.file type
-  if (file.type != "clim" | file.type != "nc") {
+  if (!(file.type %in% c("clim", "nc"))) {
     PEcAn.logger::logger.error("File type not supported by move at this time. Currently only supports NC and CLIM files")
     error <- 1
   }
