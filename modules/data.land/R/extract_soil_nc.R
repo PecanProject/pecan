@@ -36,9 +36,8 @@ extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, siz
   if (is.null(aoi)) {
     aoi <- data.frame(lon = lon, lat = lat) %>%
       terra::vect(crs = "epsg:4326") %>%
-      terra::project("epsg:5070") %>%
-      terra::buffer(width = radius) %>%
-      terra::project("epsg:4326")
+      terra::buffer(width = radius)
+
   }
 
   PEcAn.logger::logger.info("Querying gSSURGO Web Coverage Service for map unit keys")
@@ -111,6 +110,13 @@ extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, siz
         fragvol_r = stats::weighted.mean(fragvol_r, hz_thickness, na.rm = TRUE),
         .groups = "drop"
       ) %>%
+      dplyr::mutate(
+        tex_sum    = sandtotal_r + silttotal_r + claytotal_r,
+        sandtotal_r = sandtotal_r / tex_sum * 100,
+        silttotal_r = silttotal_r / tex_sum * 100,
+        claytotal_r = claytotal_r / tex_sum * 100
+      ) %>%
+      dplyr::select(-tex_sum) %>%
       dplyr::mutate(
         hzdept_r = top_depth,
         hzdepb_r = bottom_depth
