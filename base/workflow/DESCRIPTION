@@ -48,3 +48,4 @@ Suggests:
 Copyright: Authors
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: PEcAn, data-assimilation, ecosystem-modeling, reproducibility

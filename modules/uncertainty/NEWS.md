@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.8.2
 
+* PEcAn.uncertainty is now distributed under the BSD 3-clause license instead of the NCSA Open Source license.
 * Plotting sensitivity now makes less noise in the console and once again
     produces a one-page PDF as intended.
 * `write.ensemble.configs` and `write.sa.configs` now generate an ensemble id

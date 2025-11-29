@@ -18,3 +18,4 @@ BugReports: https://github.com/PecanProject/pecan/issues
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: emulator, gaussian-process

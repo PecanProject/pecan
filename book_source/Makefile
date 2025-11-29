@@ -28,11 +28,10 @@ build: bkdcheck
 	# Remove when this is fixed in Bookdown
 	Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
 
-clean:
-	rm -rf ../book/*
+CLEAN_DIRS = _book extfiles
 
-deploy: build
-	./deploy.sh
+clean:
+	rm -rf $(CLEAN_DIRS)
 
 pdf: bkdcheck
 	Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::pdf_book")'

@@ -15,7 +15,7 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 # (Most need more development first)
 # If you need one of these on your system, add it to the appropriate line above.
 # MODELS: cable preles
-# MODULES: data.mining DART
+# MODULES: data.mining
 
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
@@ -148,7 +148,7 @@ help:
 	@echo "  make .doc/modules/assim.sequential  # Generate documentation for a specific package"
 	@echo ""
 	@echo "Notes:"
-	@echo "  - Components not included by default: cable and preles (models), data.mining and DART (modules)."
+	@echo "  - Components not included by default: cable and preles (models), data.mining (modules)."
 	@echo "      To install any of these, see comments in the Makefile and be aware they may need code updates."
 	@echo "  - Standard workflow: install packages, run checks, test, and document before submitting a PR."
 	@echo "  - Before submitting a PR, please ensure that all tests pass, code is linted, and documentation is up-to-date."

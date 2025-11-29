@@ -17,33 +17,29 @@
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param restart   Used for iterative updating previous forecasts. Default NULL. List object includes file path to previous runs and start date for SDA.
 #' @param pre_enkf_params Used for passing pre-existing time-series of process error into the current SDA runs to ignore the impact by the differences between process errors.
-#' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
+#' @param ensemble.samples list of ensemble parameters across PFTs. Default is NULL.
 #' @param control   List of flags controlling the behavior of the SDA. 
-#' `trace` for reporting back the SDA outcomes; 
 #' `TimeseriesPlot` for post analysis examination; 
-#' `debug` decide if we want to pause the code and examining the variables inside the function;
-#' `pause` decide if we want to pause the SDA workflow at current time point t;
-#' `Profiling` decide if we want to export the temporal SDA outputs in CSV file;
 #' `OutlierDetection` decide if we want to execute the outlier detection each time after the model forecasting;
-#' `parallel_qsub` decide if we want to execute the `qsub` job submission under parallel mode;
 #' `send_email` contains lists for sending email to report the SDA progress;
 #' `keepNC` decide if we want to keep the NetCDF files inside the out directory;
 #' `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
 #' `run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
 #' `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
-#' @param cov_dir Directory containing yearly covariate stacks named like "covariates_YYYY.tiff".
-#' @param debias_start_year Integer year (e.g., 2015). If `NULL`, debiasing is OFF.
-#' @param debias_drop_incomplete_covariates Logical; drop sites with any NA covariates
-#' @param debias_enforce_consistent_obs Logical; drop sites that lost any previously
-#' @param debias_require_obs_at_t_for_predict Logical; only make residual predictions
+#' `merge_nc` determine if we want to merge all netCDF files across sites and ensembles.
+#' If it's set as `TRUE`, we will then combine all netCDF files into the `merged_nc` folder within the `outdir`.
+#' `execution` decide the way we want to execute model 
+#' including `local` ,where we execute the model locally;
+#' `qsub`, where we use the traditional `start_model_runs` function for submission;
+#' `qsub_parallel`, where we first combine jobs and submit them into the SCC.
+#' @param debias List: R list containing the covariance directory and the start year.
+#' covariance directory should include GeoTIFF files named by year.
+#' start year is numeric input which decide when to start the debiasing feature.
 #' @param ...       Additional arguments, currently ignored
-#' 
 #' 
 #' @return NONE
 #' @import nimble furrr
 #' @export
-#' 
-#' 
 #' 
 sda.enkf.multisite <- function(settings, 
                                obs.mean, 
@@ -52,24 +48,16 @@ sda.enkf.multisite <- function(settings,
                                restart = NULL, 
                                pre_enkf_params = NULL,
                                ensemble.samples = NULL,
-                               control=list(trace = TRUE,
-                                            TimeseriesPlot = FALSE,
-                                            debug = FALSE,
-                                            pause = FALSE,
-                                            Profiling = FALSE,
+                               control=list(TimeseriesPlot = FALSE,
                                             OutlierDetection=FALSE,
-                                            parallel_qsub = TRUE,
                                             send_email = NULL,
                                             keepNC = TRUE,
                                             forceRun = TRUE,
                                             run_parallel = TRUE,
-                                            MCMC.args = NULL),
-                               cov_dir = NULL, 
-                               debias_start_year = NULL,
-                               debias_drop_incomplete_covariates = TRUE,
-                               debias_enforce_consistent_obs = TRUE,
-                               debias_require_obs_at_t_for_predict = FALSE,
-                               ...) {
+                                            MCMC.args = NULL,
+                                            merge_nc = TRUE,
+                                            execution = "local"),
+                               debias = list(cov.dir = NULL, start.year = NULL), ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
     old.dir <- restart$filepath
@@ -78,6 +66,7 @@ sda.enkf.multisite <- function(settings,
   }else{
     restart_flag = FALSE
   }
+  # register parallel nodes.
   if(control$run_parallel){
     if (future::supportsMulticore()) {
       future::plan(future::multicore)
@@ -85,8 +74,6 @@ sda.enkf.multisite <- function(settings,
       future::plan(future::multisession)
     }
   }
-  if (control$debug) browser()
-  tictoc::tic("Preparation")
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------###
@@ -99,46 +86,22 @@ sda.enkf.multisite <- function(settings,
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
   nens       <- as.numeric(settings$ensemble$size)
-  processvar <- settings$state.data.assimilation$process.variance
-  if(processvar=="TRUE"){
-    processvar <- TRUE
-  }else{
-    processvar <- FALSE
-  }
-  Localization.FUN <- settings$state.data.assimilation$Localization.FUN # localization function
-  scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
+  processvar <- settings$state.data.assimilation$process.variance %>% as.logical
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   names(var.names) <- NULL
   multi.site.flag <- PEcAn.settings::is.MultiSettings(settings)
-  readsFF <- NULL # this keeps the forward forecast
-  
-  is.local <- PEcAn.remote::is.localhost(settings$host)
-  #------------------Reading up the MCMC settings
-  nitr.GEF <- ifelse(is.null(settings$state.data.assimilation$nitrGEF), 
-                     5e4, 
-                     settings$state.data.assimilation$nitrGEF %>% 
-                       as.numeric)
-  nthin <- ifelse(is.null(settings$state.data.assimilation$nthin), 
-                  10, 
-                  settings$state.data.assimilation$nthin %>% 
-                    as.numeric)
-  nburnin<- ifelse(is.null(settings$state.data.assimilation$nburnin), 
-                   1e4, 
-                   settings$state.data.assimilation$nburnin %>% 
-                     as.numeric)
-  censored.data<-ifelse(is.null(settings$state.data.assimilation$censored.data), 
-                        TRUE, 
-                        settings$state.data.assimilation$censored.data %>% 
-                          as.logical)
+  is.local <- PEcAn.remote::is.localhost(host)
+  # if we want to censor data in the GEF.
+  censored.data<-settings$state.data.assimilation$censored.data
+  if (is.null(censored.data)) censored.data <- TRUE
   #--------Initialization
   FORECAST    <- ANALYSIS <- ens_weights <- list()
   enkf.params <- list()
   restart.list <- NULL
   #create SDA folder to store output
   if(!dir.exists(settings$outdir)) dir.create(settings$outdir, showWarnings = FALSE)
-  
   ##### Creating matrices that describe the bounds of the state variables
-  ##### interval is remade everytime depending on the data at time t
+  ##### interval is remade every time depending on the data at time t
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
@@ -158,51 +121,10 @@ sda.enkf.multisite <- function(settings,
     distances <- sp::spDists(site.locs, longlat = TRUE)
     #turn that into a blocked matrix format
     blocked.dis <- block_matrix(distances %>% as.numeric(), rep(length(var.names), length(site.ids)))
-    
   }else{
     conf.settings <- list(settings)
     site.ids <- as.character(settings$run$site$id)
   }
-  
-  # Build site coords once (used by covariate extraction)
-  site_coords <- purrr::map_df(settings$run, ~ dplyr::tibble(
-    site = as.character(.x$site$id),
-    lon  = suppressWarnings(as.numeric(.x$site$lon)),
-    lat  = suppressWarnings(as.numeric(.x$site$lat))
-  ))
-  
-  # Memoized cache: one data.frame per year
-  cov_cache <- new.env(parent = emptyenv())
-  
-  .load_cov_year <- function(year) {
-    key <- as.character(year)
-    if (exists(key, cov_cache, inherits = FALSE)) return(get(key, cov_cache))
-    
-    if (is.null(cov_dir)) {
-      stop("Debiasing requires covariates, but `cov_dir` is NULL. Set `cov_dir` or disable debiasing.")
-    }
-    
-    # Reuse the existing extractor; filter to one year
-    df_all <- generate_covariates_df(
-      site_coords = site_coords,
-      cov_dir     = cov_dir,
-      crs         = "EPSG:4326",
-      file_prefix = "covariates_"
-    )
-    df_year <- df_all[df_all$year == as.integer(year), , drop = FALSE]
-    
-    assign(key, df_year, cov_cache)
-    df_year
-  }
-  
-  .cov_df_for_years <- function(years) {
-    yrs <- unique(as.integer(years))
-    dplyr::bind_rows(lapply(yrs, .load_cov_year))
-  }
-  
-  
-  
-  
   ###-------------------------------------------------------------------###
   ### check dates before data assimilation                              ###
   ###-------------------------------------------------------------------###----  
@@ -210,14 +132,10 @@ sda.enkf.multisite <- function(settings,
   if (restart_flag) {
     start.cut <- lubridate::ymd_hms(start.cut) #start.cut taken from restart list as date to begin runs
     Start.year <-lubridate::year(start.cut)
-    
   }else{
     start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
     Start.year <- (lubridate::year(settings$state.data.assimilation$start.date))
   }
-  #Enabling debias feature
-  debias_enabled <- !is.null(debias_start_year)
-  
   End.year <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
   assim.sda <- Start.year:End.year
   obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.mean dates against assimyear dates
@@ -241,13 +159,8 @@ sda.enkf.multisite <- function(settings,
   read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times)
   nt  <- length(obs.times) #sets length of for loop for Forecast/Analysis
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
-
-# Model Specific Setup ----------------------------------------------------
-
+  # Model Specific Setup ----------------------------------------------------
   #--get model specific functions
-  #my.write_restart <- paste0("PEcAn.", model, "::write_restart.", model)
-  #my.read_restart <- paste0("PEcAn.", model, "::read_restart.", model)
-  #my.split_inputs  <- paste0("PEcAn.", model, "::split_inputs.", model)
   do.call("library", list(paste0("PEcAn.", model)))
   my.write_restart <- paste0("write_restart.", model)
   my.read_restart <- paste0("read_restart.", model)
@@ -258,19 +171,17 @@ sda.enkf.multisite <- function(settings,
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register <- XML::xmlToList(XML::xmlParse(register.xml))
   no_split <- !as.logical(register$exact.dates)
-  
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
     PEcAn.logger::logger.warn(my.split_inputs, "If your model does not need the split function you can specify that in register.Model.xml in model's inst folder by adding <exact.dates>FALSE</exact.dates> tag.")
-    
   }
   #split met if model calls for it
   #create a folder to store extracted met files
   if(!file.exists(paste0(settings$outdir, "/Extracted_met/"))){
     dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
-  
+  PEcAn.logger::logger.info("Splitting mets!")
   conf.settings <-conf.settings %>%
     `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
     furrr::future_map(function(settings) {
@@ -294,13 +205,12 @@ sda.enkf.multisite <- function(settings,
           # changing the start and end date which will be used for model2netcdf.model
           settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
           settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
-          
         }
       } else{
         inputs.split <- inputs
       }
       settings
-    })
+    }, .progress = F)
   conf.settings<- PEcAn.settings::as.MultiSettings(conf.settings)
   ###-------------------------------------------------------------------###
   ### If this is a restart - Picking up were we left last time          ###
@@ -323,7 +233,7 @@ sda.enkf.multisite <- function(settings,
       #sim.time <-2:nt # if It's restart I added +1 from the start to nt (which is the last year of old sim) to make the first sim in restart time t=2
       #new.params and params.list are already loaded in the environment only need to grab X
       X <-FORECAST[[length(FORECAST)]]
-    }else{
+    } else {
       PEcAn.logger::logger.info("The SDA output from the older simulation doesn't exist, assuming first SDA run with unconstrainded forecast output")
       #loading param info from previous forecast
       if(!exists("ensemble.samples") || is.null(ensemble.samples)){
@@ -341,15 +251,26 @@ sda.enkf.multisite <- function(settings,
       #out.configs object required to build X and restart.list object required for build X
       #TODO: there should be an easier way to do this than to rerun write.ensemble.configs
       restart.list <- vector("list", length(conf.settings))
+      # make sure we have the input_design variable before running the write configuration function.
+      if (!exists("input_design")) {
+        PEcAn.logger::logger.info("The input_design is not found for write configuration function call.")
+        return(0)
+      }
       out.configs <- conf.settings %>%
         `class<-`(c("list")) %>%
         furrr::future_map2(restart.list, function(settings, restart.arg) {
           # Loading the model package - this is required bc of the furrr
           library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
           # wrtting configs for each settings - this does not make a difference with the old code
+          # if we don't specify the input_design.
+          if (!exists("input_design")) {
+            input_design <- NULL
+          }
+          # wrtting configs for each settings - this does not make a difference with the old code
           PEcAn.uncertainty::write.ensemble.configs(
+            input_design = input_design,
             ensemble.size = nens,
-            defaults = settings$pfts,
+            defaults = defaults,
             ensemble.samples = ensemble.samples,
             settings = settings,
             model = settings$model$type,
@@ -369,7 +290,7 @@ sda.enkf.multisite <- function(settings,
                        var.names = var.names, 
                        my.read_restart = my.read_restart,
                        restart_flag = restart_flag)
-    
+      
       #let's read the parameters of each site/ens
       params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
       # Now let's read the state variables of site/ens
@@ -396,549 +317,405 @@ sda.enkf.multisite <- function(settings,
   # weight matrix
   wt.mat <- matrix(NA, nrow = nens, ncol = nt)
   # Reading param samples------------------------------- 
-    #create params object using samples generated from TRAITS functions
-    if(restart_flag){
-      new.params <- new.params
-    }else{
-      if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
-      #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
-      if(is.null(ensemble.samples)){
-        load(file.path(settings$outdir, "samples.Rdata"))
-      }
-      #reformatting params
-      new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
-      
+  #create params object using samples generated from TRAITS functions
+  if(restart_flag){
+    new.params <- new.params
+  } else {
+    if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
+    #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
+    if(is.null(ensemble.samples)){
+      load(file.path(settings$outdir, "samples.Rdata"))
     }
-      
- 
-  #TODO: incorporate Phyllis's restart work
-  #sample all inputs specified in the settings$ensemble
-  #now looking into the xml
-  samp <- conf.settings$ensemble$samplingspace
-  #finding who has a parent
-  parents <- lapply(samp,'[[', 'parent')
-  #order parents based on the need of who has to be first
-  order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
-  #new ordered sampling space
-  samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
-  #performing the sampling
-  inputs <- vector("list", length(conf.settings))
-  #for the tags specified in the xml, do the sampling for a random site and then replicate the same sample ids for the remaining sites for each ensemble member 
-  for (i in seq_along(samp.ordered)) {
-    random_site <- sample(1:length(conf.settings),1)
-    if (is.null(inputs[[random_site]])) {
-      inputs[[random_site]] <- list() 
-    }
-    input_tag<-names(samp.ordered)[i]
-    #call the function responsible for generating the ensemble for the random site
-    inputs[[random_site]][[input_tag]] <- PEcAn.uncertainty::input.ens.gen(settings=conf.settings[[random_site]],
-                                                        input=input_tag,
-                                                        method=samp.ordered[[i]]$method,
-                                                        parent_ids=NULL)
-    #replicate the same ids for the remaining sites
-    for (s in seq_along(conf.settings)) {
-      if (s!= random_site) {
-        if (is.null(inputs[[s]])) {
-          inputs[[s]] <- list() 
-        }
-        input_path <- conf.settings[[s]]$run$inputs[[tolower(input_tag)]]$path
-        inputs[[s]][[input_tag]]$ids<-inputs[[random_site]][[input_tag]]$ids
-        inputs[[s]][[input_tag]]$samples<- input_path[inputs[[random_site]][[input_tag]]$ids]
-      }
-    }
+    #reformatting params
+    new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
+    # if it's not a restart run, we will generate the joint input design.
+    # get the joint input design.
+    input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[1]], 
+                                                                      ensemble_samples = ensemble.samples, 
+                                                                      ensemble_size = nens)[[1]]
   }
-  #Using our R script to import python functions from debias.py 
-  py <- .get_debias_mod()
-  train_X      <- NULL   # a data.frame or matrix of size (N_past × P_features)
-  train_y      <- numeric()  # a numeric vector of residuals
-  raw_prev     <- NULL   # raw forecast mean from previous step
-  train_buf <- new.env(parent = emptyenv()) 
-  # --- New: containers for storing debias weights over time ---
-  DEBIAS_WEIGHTS <- list()   # nested list: DEBIAS_WEIGHTS[[time]][[var]] = named vector (KNN weight, TREE weight)
-  # Flat, tidy log of learner weights over time (easier to write/export/plot).
-  # Columns:
-  #   time    : character label for the time step (e.g., "2012-12-31")
-  #   var     : state variable name (e.g., "LAI", "AbvGrndWood")
-  #   learner : model id / learner name ("KNN", "TREE", etc.)
-  #   weight  : numeric weight for that learner at that time/variable
-  DEBIAS_WEIGHTS_DF <- data.frame(
-    time    = character(),
-    var     = character(),
-    learner = character(),
-    weight  = numeric(),
-    stringsAsFactors = FALSE
-  )
-  # Small helper to append one row per learner into DEBIAS_WEIGHTS_DF.
-  # Args:
-  #   t_label : time label for the current step (character)
-  #   var     : variable name (character)
-  #   w_named : *named* numeric vector of weights (e.g., c(KNN=0.6, TREE=0.4)).
-  #             If unnamed, we auto-name as "learner_1", "learner_2", ...
-  # Returns:
-  #   A data.frame with columns (time, var, learner, weight) ready to rbind().
-
-  # Should we run debiasing this cycle?
-  # Debiasing requires: debias_mode == TRUE, t > 1, and (if provided) obs.year >= debias_start_year
-  .should_debias <- function(t, enabled, obs_year, start_year) {
-    isTRUE(enabled) && t > 1 && !is.null(start_year) && (as.integer(obs_year) >= as.integer(start_year))
-  }
-  
-  # Flat RMSE tracker across all times and variables.
-  # Columns:
-  #   time      : time label
-  #   var       : variable name
-  #   rmse_pre  : RMSE before debias (raw ensemble mean vs obs)
-  #   rmse_post : RMSE after debias (corrected mean vs obs)
-  DIAG <- list()  # per-time: DIAG[[time]] = list(comp=..., rmse=...)
-  RMSE_DF <- data.frame(
-    time      = character(),
-    var       = character(),
-    rmse_pre  = numeric(), rmse_post = numeric(),
-    mae_pre   = numeric(), mae_post  = numeric(),
-    bias_pre  = numeric(), bias_post = numeric(),
-    r2_pre    = numeric(), r2_post   = numeric(),
-    stringsAsFactors = FALSE
-  )
-  FEATURE_IMP_DF <- data.frame(
-    time    = character(),
-    var     = character(),
-    feature = character(),
-    importance = numeric(),
-    stringsAsFactors = FALSE
-  )
-  
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
+  # initialize the lists of covariates for the debias feature.
+  pre.states <- vector("list", length = length(var.names)) %>% purrr::set_names(var.names)
+  # initialize the lists of forecasts for all time points.
+  all.X <- vector("list", length = nt)
   for(t in 1:nt){
-      obs.t <- as.character(lubridate::date(obs.times[t]))
-      obs.year <- lubridate::year(obs.times[t])
-      ###-------------------------------------------------------------------------###
-      ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
-      ###-------------------------------------------------------------------------###-----  
-      #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
-      if (t>1){
-        #for next time step split the met if model requires
-        #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
-        inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
-    
-        #---------------- setting up the restart argument for each site separately and keeping them in a list
-        restart.list <-
-          furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
-                             function(configs, settings, new.params, inputs) {
-                               #if the new state for each site only has one row/col.
-                               #then we need to convert it to matrix to solve the indexing issue.
-                               new_state_site <- new.state[, which(attr(X, "Site") %in% settings$run$site$id)]
-                               if(is.vector(new_state_site)){
-                                 new_state_site <- matrix(new_state_site)
-                               }
-                               list(
-                                 runid = configs$runs$id,
-                                 start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
-                                 stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
-                                 settings = settings,
-                                 new.state = new_state_site,
-                                 new.params = new.params,
-                                 inputs = inputs,
-                                 RENAME = TRUE,
-                                 ensemble.id = settings$ensemble$ensemble.id
-                               )
-                             })
-      } else { ## t == 1
-        restart.list <- vector("list", length(conf.settings))
+    obs.t <- as.character(lubridate::date(obs.times[t]))
+    obs.year <- lubridate::year(obs.t)
+    PEcAn.logger::logger.info(paste("Processing date:", obs.t))
+    ###-------------------------------------------------------------------------###
+    ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
+    ###-------------------------------------------------------------------------###-----  
+    #- Check to see if this is the first run or not and what inputs needs to be sent to write.ensemble configs
+    if (t>1){
+      #for next time step split the met if model requires
+      #-Splitting the input for the models that they don't care about the start and end time of simulations and they run as long as their met file.
+      inputs.split <- metSplit(conf.settings, inputs, settings, model, no_split = FALSE, obs.times, t, nens, restart_flag = FALSE, my.split_inputs)
+      #---------------- setting up the restart argument for each site separately and keeping them in a list
+      restart.list <-
+        furrr::future_pmap(list(out.configs, conf.settings %>% `class<-`(c("list")), params.list, inputs.split),
+                           function(configs, settings, new.params, inputs) {
+                             #if the new state for each site only has one row/col.
+                             #then we need to convert it to matrix to solve the indexing issue.
+                             new_state_site <- new.state[, which(attr(X, "Site") %in% settings$run$site$id)]
+                             if(is.vector(new_state_site)){
+                               new_state_site <- matrix(new_state_site)
+                             }
+                             list(
+                               runid = configs$runs$id,
+                               start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
+                               stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
+                               settings = settings,
+                               new.state = new_state_site,
+                               new.params = new.params,
+                               inputs = inputs,
+                               RENAME = TRUE,
+                               ensemble.id = settings$ensemble$ensemble.id
+                             )
+                           })
+    } else { ## t == 1
+      restart.list <- vector("list", length(conf.settings))
+    }
+    #add flag for restart t=1 to skip model runs
+    if(restart_flag & t == 1){
+      #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
+      X <- X
+    } else {
+      # writing configs for each settings
+      # here we use the foreach instead of furrr
+      # because for some reason, the furrr has problem returning the sample paths.
+      PEcAn.logger::logger.info("Writting configs!")
+      cl <- parallel::makeCluster(parallel::detectCores() - 1)
+      doSNOW::registerDoSNOW(cl)
+      temp.settings <- NULL
+      restart.arg <- NULL
+      out.configs <- foreach::foreach(temp.settings = as.list(conf.settings), 
+                                      restart.arg = restart.list,
+                                      .packages = c("Kendall", 
+                                                    "purrr", 
+                                                    "PEcAn.uncertainty", 
+                                                    paste0("PEcAn.", model), 
+                                                    "PEcAnAssimSequential")) %dopar% {
+                                                      temp <- PEcAn.uncertainty::write.ensemble.configs(
+                                                        input_design = input_design,
+                                                        ensemble.size = nens,
+                                                        defaults = temp.settings$pfts,
+                                                        ensemble.samples = ensemble.samples,
+                                                        settings = temp.settings,
+                                                        model = temp.settings$model$type,
+                                                        write.to.db = temp.settings$database$bety$write,
+                                                        restart = restart.arg,
+                                                        # samples=inputs,
+                                                        rename = TRUE
+                                                      )
+                                                      return(temp)
+                                                    } %>% stats::setNames(site.ids)
+      parallel::stopCluster(cl)
+      foreach::registerDoSEQ()
+      # update the file paths of different inputs when t = 1.
+      if (t == 1) {
+        inputs <- out.configs %>% purrr::map(~.x$samples)
       }
-      #add flag for restart t=1 to skip model runs
-      if(restart_flag & t == 1){
-        #for restart when t=1 do not need to do model runs and X should already exist in environment by this point
-        X <- X
-      }else{
-        if (control$debug) browser()
-        
-        out.configs <-furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")),restart.list, inputs), function(settings, restart.arg, inputs) {
-            # Loading the model package - this is required bc of the furrr
-            library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-            # wrtting configs for each settings - this does not make a difference with the old code
-            PEcAn.uncertainty::write.ensemble.configs(
-              ensemble.size = nens,
-              defaults = settings$pfts,
-              ensemble.samples = ensemble.samples,
-              settings = settings,
-              model = settings$model$type,
-              write.to.db = settings$database$bety$write,
-              restart = restart.arg,
-              samples=inputs,
-              rename = TRUE
-            )
-          }) %>%
-          stats::setNames(site.ids)
-        
-        #if it's a rabbitmq job sumbmission, we will first copy and paste the whole run folder within the SDA to the remote host.
-        if (!is.null(settings$host$rabbitmq)) {
-          settings$host$rabbitmq$prefix <- paste0(obs.year, ".nc")
-          cp2cmd <- gsub("@RUNDIR@", settings$host$rundir, settings$host$rabbitmq$cp2cmd)
-          try(system(cp2cmd, intern = TRUE))
-        }
-        
-        #I'm rewriting the runs because when I use the parallel approach for writing configs the run.txt will get messed up; because multiple cores want to write on it at the same time.
-        runs.tmp <- list.dirs(rundir, full.names = F)
-        runs.tmp <- runs.tmp[grepl("ENS-*|[0-9]", runs.tmp)] 
-        writeLines(runs.tmp[runs.tmp != ''], file.path(rundir, 'runs.txt'))
-        paste(file.path(rundir, 'runs.txt'))  ## testing
-        Sys.sleep(0.01)                       ## testing
-        if(control$parallel_qsub){
-          if (is.null(control$jobs.per.file)) {
-            PEcAn.remote::qsub_parallel(settings, prefix = paste0(obs.year, ".nc"))
-          } else { 
-            PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
-          }
-        }else{
-          PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
-        }
-        #------------- Reading - every iteration and for SDA
-        #put building of X into a function that gets called
-        max_t <- 0
-        while("try-error" %in% class(
-          try(reads <- build_X(out.configs = out.configs, 
-                               settings = settings, 
-                               new.params = new.params, 
-                               nens = nens, 
-                               read_restart_times = read_restart_times, 
-                               outdir = outdir, 
-                               t = t, 
-                               var.names = var.names, 
-                               my.read_restart = my.read_restart,
-                               restart_flag = restart_flag), silent = T))
-        ){
-          Sys.sleep(10)
-          max_t <- max_t + 1
-          if(max_t > 3){
-            PEcAn.logger::logger.info("Can't find outputed NC file! Please rerun the code!")
-            break
-            return(0)
-          }
-          PEcAn.logger::logger.info("Empty folder, try again!")
-        }
-        
-        if (control$debug) browser()
-        #let's read the parameters of each site/ens
-        params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
-        # Now let's read the state variables of site/ens
-        #don't need to build X when t=1
-        X <- reads %>% purrr::map(~.x %>% purrr::map_df(~.x[["X"]] %>% t %>% as.data.frame))
-        
-        
-        #replacing crazy outliers before it's too late
-        if (control$OutlierDetection){
-          X <- outlier.detector.boxplot(X)
-          PEcAn.logger::logger.info("Outlier Detection.")
-        } 
-        
-        # Now we have a matrix that columns are state variables and rows are ensembles.
-        # this matrix looks like this
-        #         GWBI    AbvGrndWood   GWBI    AbvGrndWood
-        #[1,]  3.872521     37.2581  3.872521     37.2581
-        # But therer is an attribute called `Site` which tells yout what column is for what site id - check out attr (X,"Site")
-        if (multi.site.flag){
-          X <- X %>%
-          purrr::map_dfc(~.x) %>% 
-          as.matrix() %>%
-          `colnames<-`(c(rep(var.names, length(X)))) %>%
-          `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-        }
-        
-      }  ## end else from restart & t==1
-      
-      
-      
-      raw_mean_t <- colMeans(X)
-      site_index <- attr(X, "Site")
-      col_vars   <- colnames(X)
-      FORECAST[[obs.t]] <- X
-      name_map <- debias_name_map
-      # DEBIAS STEP
-      if (.should_debias(t, debias_enabled, obs.year, debias_start_year)) {  # <- removed extra ')'
-        # Load only the years needed for this step (t-1 and t)
-        yrs_needed <- c(lubridate::year(obs.times[t - 1]), lubridate::year(obs.times[t]))
-        covariates_df_tt <- .cov_df_for_years(yrs_needed)
-        
-        out <- sda_apply_debias_step(
-          t = t,
-          obs.t = obs.t,
-          X = X,
-          raw_prev = raw_prev,
-          raw_mean_t = raw_mean_t,
-          site_index = site_index,
-          col_vars = col_vars,
-          obs.times = obs.times,
-          obs.mean = obs.mean,
-          covariates_df = covariates_df_tt,                 # << use the per-step covariates
-          py = py,
-          train_buf = train_buf,
-          name_map = name_map,
-          drop_incomplete_covariates = debias_drop_incomplete_covariates,
-          enforce_consistent_obs     = debias_enforce_consistent_obs,
-          require_obs_at_t_for_predict = debias_require_obs_at_t_for_predict,
-          state.interval = state.interval,
-          clip_lower_bound = 0.01
-        )
-        X <- out$X
-        if (!is.null(out$weights_entry)) DEBIAS_WEIGHTS[[obs.t]] <- out$weights_entry
-        if (nrow(out$weights_df_rows)) DEBIAS_WEIGHTS_DF <- rbind(DEBIAS_WEIGHTS_DF, out$weights_df_rows)
-        DIAG[[obs.t]] <- out$diag
-        if (nrow(out$rmse_rows)) RMSE_DF <- rbind(RMSE_DF, out$rmse_rows)
-        if (!is.null(out$feature_rows) && nrow(out$feature_rows)) {
-          FEATURE_IMP_DF <- rbind(FEATURE_IMP_DF, out$feature_rows)
-        }
-        
-        FORECAST[[obs.t]] <- X
+      #if it's a rabbitmq job sumbmission, we will first copy and paste the whole run folder within the SDA to the remote host.
+      if (!is.null(settings$host$rabbitmq)) {
+        settings$host$rabbitmq$prefix <- paste0(obs.year, ".nc")
+        cp2cmd <- gsub("@RUNDIR@", rundir, settings$host$rabbitmq$cp2cmd)
+        try(system(cp2cmd, intern = TRUE))
       }
-      raw_prev <- raw_mean_t
-
-      
-      ###-------------------------------------------------------------------###
-      ###  preparing OBS                                                    ###
-      ###-------------------------------------------------------------------###---- 
-      #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
-      #Then specify the settings$state.data.assimilation$scalef as 0, and settings$state.data.assimilation$free.run as TRUE.
-      if (!is.null(obs.mean[[t]][[1]]) | (as.logical(settings$state.data.assimilation$free.run) & control$forceRun)) {
-        # TODO: as currently configured, Analysis runs even if all obs are NA, 
-        #  which clearly should be triggering the `else` of this if, but the
-        #  `else` has not been invoked in a while an may need updating
-        
-        
-        #decide if we want to estimate the process variance and choose the according function.
-        if(processvar == FALSE) {
-          an.method<-EnKF
-        } else if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("SINGLE", "SITE")) {
-          an.method<-GEF.MultiSite
+      # get ensemble ids for each site.
+      ensemble.ids <- site.ids %>% furrr::future_map(function(i){
+        run.list <- c()
+        for (j in 1:nens) {
+          run.list <- c(run.list, paste0("ENS-", sprintf("%05d", j), "-", i))
         }
-        
-        #decide if we want the block analysis function or multi-site analysis function.
-        if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("vector", "wishart")) {
-          #initialize block.list.all.
-          if (t == 1 | !exists("block.list.all")) {
-            block.list.all <- obs.mean %>% purrr::map(function(l){NULL})
-          }
-          #initialize MCMC arguments.
-          if (is.null(control$MCMC.args)) {
-            MCMC.args <- list(niter = 1e5,
-                              nthin = 10,
-                              nchain = 3,
-                              nburnin = 5e4)
-          } else {
-            MCMC.args <- control$MCMC.args
-          }
-          #running analysis function.
-          enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
-          enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
-          block.list.all <- enkf.params[[obs.t]]$block.list.all
-          #Forecast
-          mu.f <- enkf.params[[obs.t]]$mu.f
-          Pf <- enkf.params[[obs.t]]$Pf
-          #Analysis
-          Pa <- enkf.params[[obs.t]]$Pa
-          mu.a <- enkf.params[[obs.t]]$mu.a
-        } else if (exists("an.method")) {
-          #Making R and Y
-          Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
-          Y <- Obs.cons$Y
-          R <- Obs.cons$R
-          if (length(Y) > 1) {
-            PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
-            diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-          }
-          # making the mapping operator
-          H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
-          #Pass aqq and bqq.
-          aqq <- NULL
-          bqq <- numeric(nt + 1)
-          Pf  <- NULL
-          #if t>1
-          if(is.null(pre_enkf_params) && t>1){
-            aqq <- enkf.params[[t-1]]$aqq
-            bqq <- enkf.params[[t-1]]$bqq
-            X.new<-enkf.params[[t-1]]$X.new
-          }
-          if(!is.null(pre_enkf_params) && t>1){
-            aqq <- pre_enkf_params[[t-1]]$aqq
-            bqq <- pre_enkf_params[[t-1]]$bqq
-            X.new<-pre_enkf_params[[t-1]]$X.new
-          }
-          if(!is.null(pre_enkf_params)){
-            Pf <- pre_enkf_params[[t]]$Pf
-          }
-          recompileTobit = !exists('Cmcmc_tobit2space')     
-          recompileGEF   = !exists('Cmcmc')
-          #weight list
-          # This reads ensemble weights generated by `get_ensemble_weights` function from assim.sequential package
-          weight_list <- list()
-          if(!file.exists(file.path(settings$outdir, "ensemble_weights.Rdata"))){
-            PEcAn.logger::logger.warn("ensemble_weights.Rdata cannot be found. Make sure you generate samples by running the get.ensemble.weights function before running SDA if you want the ensembles to be weighted.")
-            #create null list
-            for(tt in 1:length(obs.times)){
-              weight_list[[tt]] <- rep(1,nens) #no weights
-            }
-          } else{
-            load(file.path(settings$outdir, "ensemble_weights.Rdata"))  ## loads ensemble.samples
-          }
-          wts <- unlist(weight_list[[t]])
-          #-analysis function
-          enkf.params[[obs.t]] <- GEF.MultiSite(
-            settings,
-            FUN = an.method,
-            Forecast = list(Q = Q, X = X),
-            Observed = list(R = R, Y = Y),
-            H = H,
-            extraArg = list(
-              aqq = aqq,
-              bqq = bqq,
-              Pf = Pf,
-              t = t,
-              nitr.GEF = nitr.GEF,
-              nthin = nthin,
-              nburnin = nburnin,
-              censored.data = censored.data,
-              recompileGEF = recompileGEF,
-              recompileTobit = recompileTobit,
-              wts = wts
-            ),
-            choose = choose,
-            nt = nt,
-            obs.mean = obs.mean,
-            nitr = 100000,
-            nburnin = 10000,
-            obs.cov = obs.cov,
-            site.ids = site.ids,
-            blocked.dis = blocked.dis,
-            distances = distances
-          )
-          tictoc::tic(paste0("Preparing for Adjustment for cycle = ", t))
-          #Forecast
-          mu.f <- enkf.params[[obs.t]]$mu.f
-          Pf <- enkf.params[[obs.t]]$Pf
-          #Analysis
-          Pa <- enkf.params[[obs.t]]$Pa
-          mu.a <- enkf.params[[obs.t]]$mu.a
-          #extracting extra outputs
-          if (control$debug) browser()
-          if (processvar) {
-            aqq <- enkf.params[[obs.t]]$aqq
-            bqq <- enkf.params[[obs.t]]$bqq
-          }
-          # Adding obs elements to the enkf.params
-          #This can later on help with diagnostics
-          enkf.params[[obs.t]] <-
-            c(
-              enkf.params[[obs.t]],
-              R = list(R),
-              Y = list(Y),
-              RestartList = list(restart.list %>% stats::setNames(site.ids))
-            )
-        }
-        
-        ###-------------------------------------------------------------------###
-        ### Trace                                                             ###
-        ###-------------------------------------------------------------------###----      
-        #-- writing Trace--------------------
-        if(control$trace) {
-          PEcAn.logger::logger.warn ("\n --------------------------- ",obs.year," ---------------------------\n")
-          PEcAn.logger::logger.warn ("\n --------------Obs mean----------- \n")
-          print(enkf.params[[obs.t]]$Y)
-          PEcAn.logger::logger.warn ("\n --------------Obs Cov ----------- \n")
-          print(enkf.params[[obs.t]]$R)
-          PEcAn.logger::logger.warn ("\n --------------Forecast mean ----------- \n")
-          print(enkf.params[[obs.t]]$mu.f)
-          PEcAn.logger::logger.warn ("\n --------------Forecast Cov ----------- \n")
-          print(enkf.params[[obs.t]]$Pf)
-          PEcAn.logger::logger.warn ("\n --------------Analysis mean ----------- \n")
-          print(t(enkf.params[[obs.t]]$mu.a))
-          PEcAn.logger::logger.warn ("\n --------------Analysis Cov ----------- \n")
-          print(enkf.params[[obs.t]]$Pa)
-          PEcAn.logger::logger.warn ("\n ------------------------------------------------------\n")
-        }
-        if (control$debug) browser()
-        if (control$pause) readline(prompt="Press [enter] to continue \n")
-      } else {
-        ###-------------------------------------------------------------------###
-        ### No Observations --                                                ###----
-        ###-----------------------------------------------------------------### 
-        ### no process variance -- forecast is the same as the analysis ###
-        if (processvar==FALSE) {
-          mu.a <- mu.f
-          Pa   <- Pf + Q
-          ### yes process variance -- no data
+        return(run.list)}, .progress = F) %>% unlist
+      # create folder paths to each ensemble of each site.
+      runs.tmp <- file.path(rundir, ensemble.ids)
+      # start model runs.
+      PEcAn.logger::logger.info("Running models!")
+      # if we want to submit jobs through the combined job file.
+      if(control$execution == "qsub_parallel"){
+        if (is.null(control$jobs.per.file)) {
+          PEcAn.remote::qsub_parallel(settings, prefix = paste0(obs.year, ".nc"))
         } else {
-          mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
-          mu.a <- mu.f
-          if(is.null(Q)){
-            q.bar <- diag(ncol(X))
-            PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
-          }
-          # Pa   <- Pf + matrix(solve(q.bar), dim(Pf)[1], dim(Pf)[2])
-          #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
-          #Pa <- Pf + solve(q.bar)
-          #hack have Pa = Pf for now
-          # if(!is.null(pre_enkf_params)){
-          #   Pf <- pre_enkf_params[[t]]$Pf
-          # }else{
-          #   Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
-          # }
-          Pf <- stats::cov(X)
-          Pa <- Pf
+          PEcAn.remote::qsub_parallel(settings, files=PEcAn.remote::merge_job_files(settings, control$jobs.per.file), prefix = paste0(obs.year, ".nc"))
         }
-        enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
+      } else if (control$execution == "local") {
+        # if we want to execute jobs locally.
+        job.files <- file.path(runs.tmp, "job.sh")
+        temp <- job.files %>% furrr::future_map(function(f){
+          cmd <- paste0("cd ", dirname(f), ";./job.sh")
+          system(cmd, intern = F, ignore.stdout = T, ignore.stderr = T)
+        }, .progress = F)
+      } else if (control$execution == "qsub") {
+        # if we want to submit jobs through the regular job submission function.
+        PEcAn.workflow::start_model_runs(settings, write=settings$database$bety$write)
       }
-      
+      # Reading model outputs.
+      PEcAn.logger::logger.info("Reading forecast outputs!")
+      reads <- build_X(out.configs = out.configs, 
+                       settings = settings, 
+                       new.params = new.params, 
+                       nens = nens, 
+                       read_restart_times = read_restart_times, 
+                       outdir = outdir, 
+                       t = t, 
+                       var.names = var.names, 
+                       my.read_restart = my.read_restart,
+                       restart_flag = restart_flag)
+      #let's read the parameters of each site/ens
+      params.list <- reads %>% purrr::map(~.x %>% purrr::map("params"))
+      # Now let's read the state variables of site/ens
+      #don't need to build X when t=1
+      X <- reads %>% purrr::map(~.x %>% purrr::map_df(~.x[["X"]] %>% t %>% as.data.frame))
+      #replacing crazy outliers before it's too late
+      if (control$OutlierDetection){
+        X <- outlier.detector.boxplot(X)
+        PEcAn.logger::logger.info("Outlier Detection.")
+      } 
+      # convert from forecast list to data frame.
+      X <- seq_along(X) %>% furrr::future_map(function(i){
+        temp <- do.call(cbind, X[i])
+        colnames(temp) <- paste0(var.names, ".", i)
+        return(temp)
+      }) %>% 
+        dplyr::bind_cols() %>%
+        `colnames<-`(c(rep(var.names, length(X)))) %>%
+        `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
+    }  ## end else from restart & t==1
+    all.X[[t]] <- X
+    # start debiasing.
+    debias.out <- NULL
+    if (!is.null(debias$start.year)) {
+      if (obs.year >= debias$start.year) {
+        PEcAn.logger::logger.info("Start debiasing!")
+        debias.out <- sda_bias_correction(site.locs, 
+                                          t, all.X, 
+                                          obs.mean, 
+                                          state.interval, 
+                                          debias$cov.dir,
+                                          pre.states,
+                                          .get_debias_mod)
+        X <- debias.out$X
+        pre.states <- debias.out$pre.states
+      }
+    }
+    FORECAST[[obs.t]] <- all.X[[t]] <- X
+    ###-------------------------------------------------------------------###
+    ###  preparing OBS                                                    ###
+    ###-------------------------------------------------------------------###---- 
+    #To trigger the analysis function with free run, you need to first specify the control$forceRun as TRUE,
+    #Then specify the settings$state.data.assimilation$scalef as 0, and settings$state.data.assimilation$free.run as TRUE.
+    if (!is.null(obs.mean[[t]][[1]]) | (as.logical(settings$state.data.assimilation$free.run) & control$forceRun)) {
+      #decide if we want to estimate the process variance and choose the according function.
+      if(processvar == FALSE) {
+        an.method <- EnKF
+      } else if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("SINGLE", "SITE")) {
+        an.method <- GEF.MultiSite
+      }
+      #initialize MCMC arguments.
+      if (is.null(control$MCMC.args)) {
+        MCMC.args <- list(niter = 1e5,
+                          nthin = 10,
+                          nchain = 1,
+                          nburnin = 5e4)
+      } else {
+        MCMC.args <- control$MCMC.args
+      }
+      #decide if we want the block analysis function or multi-site analysis function.
+      if (processvar == TRUE && settings$state.data.assimilation$q.type %in% c("vector", "wishart")) {
+        #initialize block.list.all.
+        if (t == 1 | !exists("block.list.all")) {
+          block.list.all <- obs.mean %>% purrr::map(function(l){NULL})
+        }
+        #running analysis function.
+        enkf.params[[obs.t]] <- analysis_sda_block(settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, pre_enkf_params)
+        enkf.params[[obs.t]] <- c(enkf.params[[obs.t]], RestartList = list(restart.list %>% stats::setNames(site.ids)))
+        block.list.all <- enkf.params[[obs.t]]$block.list.all
+        #Forecast
+        mu.f <- enkf.params[[obs.t]]$mu.f
+        Pf <- enkf.params[[obs.t]]$Pf
+        #Analysis
+        Pa <- enkf.params[[obs.t]]$Pa
+        mu.a <- enkf.params[[obs.t]]$mu.a
+      } else if (exists("an.method")) {
+        #Making R and Y
+        Obs.cons <- Construct.R(site.ids, var.names, obs.mean[[t]], obs.cov[[t]])
+        Y <- Obs.cons$Y
+        R <- Obs.cons$R
+        if (length(Y) > 1) {
+          PEcAn.logger::logger.info("The zero variances in R and Pf is being replaced by half and one fifth of the minimum variance in those matrices respectively.")
+          diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+        }
+        # making the mapping operator
+        H <- Construct.H.multisite(site.ids, var.names, obs.mean[[t]])
+        #Pass aqq and bqq.
+        aqq <- NULL
+        bqq <- numeric(nt + 1)
+        Pf  <- NULL
+        #if t>1
+        if(is.null(pre_enkf_params) && t>1){
+          aqq <- enkf.params[[t-1]]$aqq
+          bqq <- enkf.params[[t-1]]$bqq
+          X.new<-enkf.params[[t-1]]$X.new
+        }
+        if(!is.null(pre_enkf_params) && t>1){
+          aqq <- pre_enkf_params[[t-1]]$aqq
+          bqq <- pre_enkf_params[[t-1]]$bqq
+          X.new<-pre_enkf_params[[t-1]]$X.new
+        }
+        if(!is.null(pre_enkf_params)){
+          Pf <- pre_enkf_params[[t]]$Pf
+        }
+        recompileTobit = !exists('Cmcmc_tobit2space')     
+        recompileGEF   = !exists('Cmcmc')
+        #weight list
+        # This reads ensemble weights generated by `get_ensemble_weights` function from assim.sequential package
+        weight_list <- list()
+        if(!file.exists(file.path(settings$outdir, "ensemble_weights.Rdata"))){
+          PEcAn.logger::logger.warn("ensemble_weights.Rdata cannot be found. Make sure you generate samples by running the get.ensemble.weights function before running SDA if you want the ensembles to be weighted.")
+          #create null list
+          for(tt in 1:length(obs.times)){
+            weight_list[[tt]] <- rep(1,nens) #no weights
+          }
+        } else{
+          load(file.path(settings$outdir, "ensemble_weights.Rdata"))  ## loads ensemble.samples
+        }
+        wts <- unlist(weight_list[[t]])
+        #-analysis function
+        enkf.params[[obs.t]] <- GEF.MultiSite(
+          settings,
+          FUN = an.method,
+          Forecast = list(Q = Q, X = X),
+          Observed = list(R = R, Y = Y),
+          H = H,
+          extraArg = list(
+            aqq = aqq,
+            bqq = bqq,
+            Pf = Pf,
+            t = t,
+            nitr.GEF = MCMC.args$niter,
+            nthin = MCMC.args$nthin,
+            nburnin = MCMC.args$nburnin,
+            censored.data = censored.data,
+            recompileGEF = recompileGEF,
+            recompileTobit = recompileTobit,
+            wts = wts
+          ),
+          choose = choose,
+          nt = nt,
+          obs.mean = obs.mean,
+          nitr = 100000,
+          nburnin = 10000,
+          obs.cov = obs.cov,
+          site.ids = site.ids,
+          blocked.dis = blocked.dis,
+          distances = distances
+        )
+        tictoc::tic(paste0("Preparing for Adjustment for cycle = ", t))
+        #Forecast
+        mu.f <- enkf.params[[obs.t]]$mu.f
+        Pf <- enkf.params[[obs.t]]$Pf
+        #Analysis
+        Pa <- enkf.params[[obs.t]]$Pa
+        mu.a <- enkf.params[[obs.t]]$mu.a
+        #extracting extra outputs
+        if (processvar) {
+          aqq <- enkf.params[[obs.t]]$aqq
+          bqq <- enkf.params[[obs.t]]$bqq
+        }
+        # Adding obs elements to the enkf.params
+        #This can later on help with diagnostics
+        enkf.params[[obs.t]] <-
+          c(
+            enkf.params[[obs.t]],
+            R = list(R),
+            Y = list(Y),
+            RestartList = list(restart.list %>% stats::setNames(site.ids))
+          )
+      }
+    } else {
       ###-------------------------------------------------------------------###
-      ### adjust/update state matrix                                   ###
-      ###-------------------------------------------------------------------###---- 
-      tictoc::tic(paste0("Adjustment for cycle = ", t))
+      ### No Observations --                                                ###----
+      ###-----------------------------------------------------------------### 
+      ### no process variance -- forecast is the same as the analysis ###
+      if (processvar==FALSE) {
+        mu.a <- mu.f
+        Pa   <- Pf + Q
+        ### yes process variance -- no data
+      } else {
+        mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
+        mu.a <- mu.f
+        if(is.null(Q)){
+          q.bar <- diag(ncol(X))
+          PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
+        }
+        # Pa   <- Pf + matrix(solve(q.bar), dim(Pf)[1], dim(Pf)[2])
+        #will throw an error when q.bar and Pf are different sizes i.e. when you are running with no obs and do not variance for all state variables
+        #Pa <- Pf + solve(q.bar)
+        #hack have Pa = Pf for now
+        # if(!is.null(pre_enkf_params)){
+        #   Pf <- pre_enkf_params[[t]]$Pf
+        # }else{
+        #   Pf <- stats::cov(X) # Cov Forecast - This is used as an initial condition
+        # }
+        Pf <- stats::cov(X)
+        Pa <- Pf
+      }
+      enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
+    }
+    
+    ###-------------------------------------------------------------------###
+    ### adjust/update state matrix                                   ###
+    ###-------------------------------------------------------------------###---- 
+    tictoc::tic(paste0("Adjustment for cycle = ", t))
+    # if we don't have the analysis from the analysis function.
+    if (is.null(enkf.params[[obs.t]]$analysis)) {
       if(adjustment == TRUE){
         analysis <-adj.ens(Pf, X, mu.f, mu.a, Pa)
       } else {
         analysis <- as.data.frame(mvtnorm::rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
       }
-      colnames(analysis) <- colnames(X)
-      ##### Mapping analysis vectors to be in bounds of state variables
-      for(i in 1:ncol(analysis)){
-        int.save <- state.interval[which(colnames(analysis)[i]==var.names),]
-        analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
-      }
-      ## in the future will have to be separated from analysis
-      
-      new.state  <- as.data.frame(analysis)
-      ANALYSIS[[obs.t]] <- analysis
-      ens_weights[[obs.t]] <- PEcAnAssimSequential::sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
-      ###-------------------------------------------------------------------###
-      ### save outputs                                                      ###
-      ###-------------------------------------------------------------------###---- 
-      Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
-      
-      save(site.locs,
-           t,
-           FORECAST,
-           ANALYSIS,
-           enkf.params,
-           new.state, new.params,params.list, ens_weights,
-           out.configs, ensemble.samples, inputs, Viz.output,
-           DIAG, DEBIAS_WEIGHTS, DEBIAS_WEIGHTS_DF, RMSE_DF,
-           FEATURE_IMP_DF,
-           file = file.path(settings$outdir, "sda.output.Rdata"))
-      
-      tictoc::tic(paste0("Visulization for cycle = ", t))
-      
-      #writing down the image - either you asked for it or nor :)
-      if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
-        if (as.logical(settings$state.data.assimilation$free.run)) {
-          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS"))
-        } else {
-          SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
-        }
-      }
-      #Saving the profiling result
-      if (control$Profiling) alltocs(file.path(settings$outdir,"SDA", "Profiling.csv"))
+    } else {
+      analysis <- enkf.params[[obs.t]]$analysis
+    }
+    colnames(analysis) <- colnames(X)
+    ##### Mapping analysis vectors to be in bounds of state variables
+    for(i in 1:ncol(analysis)){
+      int.save <- state.interval[which(colnames(analysis)[i]==var.names),]
+      analysis[analysis[,i] < int.save[1],i] <- int.save[1]
+      analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+    }
+    ## in the future will have to be separated from analysis
     
+    new.state  <- as.data.frame(analysis)
+    ANALYSIS[[obs.t]] <- analysis
+    ens_weights[[obs.t]] <- PEcAnAssimSequential::sda_weights_site(FORECAST, ANALYSIS, t, as.numeric(settings$ensemble$size))
+    ###-------------------------------------------------------------------###
+    ### save outputs                                                      ###
+    ###-------------------------------------------------------------------###---- 
+    Viz.output <- list(settings, obs.mean, obs.cov) #keeping obs data and settings for later visualization in Dashboard
+    # save SDA outputs.
+    save(site.locs,
+         t,
+         FORECAST,
+         ANALYSIS,
+         enkf.params,
+         new.state, new.params,params.list, ens_weights,
+         out.configs, ensemble.samples, inputs, Viz.output,
+         debias.out,
+         file = file.path(settings$outdir, "sda.output.Rdata"))
+    tictoc::tic(paste0("Visulization for cycle = ", t))
+    # writing down the image - either you asked for it or nor :)
+    if ((t%%2 == 0 | t == nt) & (control$TimeseriesPlot)){
+      if (as.logical(settings$state.data.assimilation$free.run)) {
+        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS"))
+      } else {
+        SDA_timeseries_plot(ANALYSIS, FORECAST, obs.mean, obs.cov, settings$outdir, by = "var", types = c("FORECAST", "ANALYSIS", "OBS"))
+      }
+    }
     # remove files as SDA runs
     if (!(control$keepNC) && t == 1){
       unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
@@ -950,12 +727,23 @@ sda.enkf.multisite <- function(settings,
       system2(sendmail, c("-f", paste0("\"", control$send_email$from, "\""), paste0("\"", control$send_email$to, "\""), "<", mailfile))
       unlink(mailfile)
     }
-      gc()
-    # useful for debugging to keep .nc files for assimilated years. T = 2, because this loops removes the files that were run when starting the next loop
-#    if (keepNC && t == 1){
-#      unlink(list.files(outdir, "*.nc", recursive = TRUE, full.names = TRUE))
-#    }
-      ## MCD: I commented the above "if" out because if you are restarting from a previous forecast, this might delete the files in that earlier folder
+    gc()
   } ### end loop over time
+  # merge NC files.
+  if (control$merge_nc) {
+    nc.folder <- file.path(settings$outdir, "merged_nc")
+    if (file.exists(nc.folder)) unlink(nc.folder)
+    dir.create(nc.folder)
+    temp <- PEcAn.utils::nc_merge_all_sites_by_year(model.outdir = outdir, 
+                                                    nc.outdir = nc.folder, 
+                                                    ens.num = nens, 
+                                                    site.ids = as.numeric(site.ids), 
+                                                    start.date = obs.times[1], 
+                                                    end.date = obs.times[length(obs.times)], 
+                                                    time.step = paste(1, settings$state.data.assimilation$forecast.time.step), 
+                                                    cores = parallel::detectCores() - 1)
+    # remove rundir and outdir.
+    unlink(rundir, recursive = T)
+    unlink(outdir, recursive = T)
+  }
 } # sda.enkf
-      

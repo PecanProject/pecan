@@ -50,3 +50,4 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: parameter-estimation, model-calibration

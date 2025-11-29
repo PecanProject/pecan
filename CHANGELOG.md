@@ -33,6 +33,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
  - Directory structure for PEcAn Quarto notebooks under `pecan/documentation/tutorials/Demo_1_Basic_Run`
  - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
 - added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
+- The PEcAn uncertainty analysis tutorial ("Demo 2") has been updated and reimplemented as a Quarto notebook at `documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd`. (#3570)
 
 ### Fixed
 
@@ -47,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Package `PEcAn.uncertainty` has changed licensing. With approval from all its contributors, we now provide it under a BSD 3-clause license rather than the previously used NCSA Open Source license.
 - Ensemble and sensitivity analyses now assign an ensemble ID if one is not specified in the XML, even when running with no DB (#3654).
 - `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
 - `extract_soil_gssurgo` now supports spatial sampling using a grid of user-defined size and spacing. And supports ensemble simulation of soil organic carbon (SOC) stocks, using area-weighted aggregation
@@ -55,6 +57,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Refactor `convert_input` to Perform tasks via helper function. Subtask of [#3307](https://github.com/PecanProject/pecan/issues/3307)
 - Stopped testing on R 4.1, started testing on R 4.5, and updated prebuilt Docker images to match -- they are now available for R releases 4.2 through 4.5 as well as for R under development.
 - `write.config.STICS()` now modifies parameters with vectors rather than individually.
+- Code for DART has been moved from `modules/` to `contrib/` and its license more clearly described.
 
 
 

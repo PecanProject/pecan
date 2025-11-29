@@ -56,3 +56,4 @@ Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: PEcAn, data-visualization, statistical-graphics, ggplot2

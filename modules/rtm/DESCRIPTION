@@ -43,3 +43,4 @@ Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+X-schema.org-keywords: radiative-transfer-modeling, Bayesian-inversion, PEcAn

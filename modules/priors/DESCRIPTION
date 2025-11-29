@@ -28,3 +28,4 @@ Suggests:
 Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
 RoxygenNote: 7.3.2
+X-schema.org-keywords: Bayesian-inference, statistical-validation

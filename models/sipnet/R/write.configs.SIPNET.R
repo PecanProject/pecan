@@ -201,28 +201,27 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     pft.trait.names <- pft.trait.names[pft.traits != "NA" & !is.na(pft.traits)]
     pft.traits <- pft.traits[pft.traits != "NA" & !is.na(pft.traits)]
     pft.traits <- as.numeric(pft.traits)
-    
+
     # Leaf carbon concentration
-    leafC <- NA
     if ("leafC" %in% pft.trait.names) {
-      leafC <- pft.traits[which(pft.trait.names == "leafC")]
+      leafC <- pft.traits[pft.trait.names == "leafC"] |>
+        PEcAn.utils::ud_convert("percent", "1") # percentage to fraction
       id <- which(param[, 1] == "cFracLeaf")
-      param[id, 2] <- PEcAn.utils::ud_convert(leafC, "percent", "1") # Convert from percentage to fraction
+      param[id, 2] <- leafC
     } else {
       leafC <- 0.48 # Fixed value if not available, because it is used in downstream calculations
     }
-    
+
     # Specific leaf area converted to SLW
-    # leafCSpWt [gC/m2 leaf], SLA [m2 leaf/kg C], leafC [percentage C]
-    SLA <- NA
+    # leafCSpWt [gC/m2 leaf], SLA [m2 leaf/kg leaf], leafC [g C / g leaf]
     id <- which(param[, 1] == "leafCSpWt")
     if ("SLA" %in% pft.trait.names) {
       SLA <- pft.traits[which(pft.trait.names == "SLA")]
       param[id, 2] <- PEcAn.utils::ud_convert(leafC / SLA, "kg/m2", "g/m2")
     } else {
-      SLA <- PEcAn.utils::ud_convert(leafC / param[id, 2], "kg", "g")
+      SLA <- PEcAn.utils::ud_convert(leafC / param[id, 2], "m2/g", "m2/kg")
     }
-    
+
     # Maximum photosynthesis
     # SIPNET: aMax [nmol CO2 / g   leaf / sec]
     # PEcAn:  Amax [umol CO2 / m^2 leaf / sec]
@@ -488,18 +487,42 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       leaf_pheno_path <- settings$run$inputs$leaf_phenology$path
       if (!is.null(leaf_pheno_path)) {
         ##read data
-        leafphdata <- utils::read.csv(leaf_pheno_path)
+        leafphdata <- utils::read.csv(leaf_pheno_path) #leaf phenology data starting from 2001-01-01 to current
         leafOnDay <- leafphdata$leafonday[leafphdata$year == obs_year_start
                                           & leafphdata$site_id == settings$run$site$id]
         leafOffDay <- leafphdata$leafoffday[leafphdata$year == obs_year_start
                                             & leafphdata$site_id == settings$run$site$id]
-        # when we have NAs for phenology.
-        if (is.na(leafOnDay)) {
-          leafOnDay <- param[which(param[, 1] == "leafOnDay"), 2]
+        # when we have NAs for phenology (or missing years)
+        if (length(leafOnDay) == 0 || is.na(leafOnDay)) {
+          # 1. Try to calculate the mean across all available years for this site
+          site_phenology_on <- leafphdata$leafonday[leafphdata$site_id == settings$run$site$id]
+          mean_on <- mean(site_phenology_on, na.rm = TRUE)
+          
+          if (!is.nan(mean_on) && !is.na(mean_on)) {
+            leafOnDay <- round(mean_on)
+            PEcAn.logger::logger.info(paste("Missing leafOnDay for current year. Using site mean:", leafOnDay))
+          } else {
+            # 2. If no site history exists, fall back to parameter file
+            leafOnDay <- param[which(param[, 1] == "leafOnDay"), 2]
+            PEcAn.logger::logger.warn("Missing leafOnDay and no site history. Using parameter file default.")
+          }
         }
-        if (is.na(leafOffDay)) {
-          leafOffDay <- param[which(param[, 1] == "leafOffDay"), 2]
+        
+        if (length(leafOffDay) == 0 || is.na(leafOffDay)) {
+          # 1. Try to calculate the mean across all available years for this site
+          site_phenology_off <- leafphdata$leafoffday[leafphdata$site_id == settings$run$site$id]
+          mean_off <- mean(site_phenology_off, na.rm = TRUE)
+          
+          if (!is.nan(mean_off) && !is.na(mean_off)) {
+            leafOffDay <- round(mean_off)
+            PEcAn.logger::logger.info(paste("Missing leafOffDay for current year. Using site mean:", leafOffDay))
+          } else {
+            # 2. If no site history exists, fall back to parameter file
+            leafOffDay <- param[which(param[, 1] == "leafOffDay"), 2]
+            PEcAn.logger::logger.warn("Missing leafOffDay and no site history. Using parameter file default.")
+          }
         }
+        
         # when we have Leaf off date larger than leaf on date.
         # Otherwise the phenology will not be used.
         if (leafOffDay > leafOnDay) {
@@ -536,6 +559,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       if ("volume_fraction_of_water_in_soil_at_saturation" %in% names(soil_IC_list$vals)) {
         #if depth is provided in the file
         if ("depth" %in% names(soil_IC_list$dims)) {
+          # reduce estimates to the pre-defined soil depth.
+          if (!is.null(settings$run$inputs$soil_physics$soil_depth)) {
+            inds.depth <- which(soil_IC_list$dims$depth <= as.numeric(settings$run$inputs$soil_physics$soil_depth))
+            soil_IC_list$dims$depth <- soil_IC_list$dims$depth[inds.depth]
+            for (soil.val in names(soil_IC_list$vals)) {
+              soil_IC_list$vals[[soil.val]] <- soil_IC_list$vals[[soil.val]][inds.depth]
+            }
+          }
           # Calculate the thickness of soil layers based on the assumption that the depth values are at bottoms and the first layer top is at 0
           thickness<-c(soil_IC_list$dims$depth[1],diff(soil_IC_list$dims$depth))
           thickness<-PEcAn.utils::ud_convert(thickness, "m", "cm")

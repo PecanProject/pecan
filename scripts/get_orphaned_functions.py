@@ -31,7 +31,7 @@ color_codes = [
 ENDC = "\033[0m"
 
 # Modules to ignore while checking for orphaned functions
-MODULES_TO_IGNORE = ["DART", "data.mining"]
+MODULES_TO_IGNORE = ["data.mining"]
 
 
 # Function to get a list of all module names in the 'modules' directory, excluding ignored modules and hidden files/directories

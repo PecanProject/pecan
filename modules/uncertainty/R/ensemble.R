@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 ##' Reads output from model ensemble
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
@@ -211,7 +202,6 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @param samples Sampled inputs such as met and parameter files
 ##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
@@ -225,9 +215,10 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' @importFrom rlang .data %||%
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
-write.ensemble.configs <- function(input_design, ensemble.size, defaults, ensemble.samples, settings, model,
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, samples = NULL, rename = FALSE) {
 
+write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model, 
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
+  
   # Check for required paths
   for (input_tag in names(settings$run$inputs)) {
     input <- settings$run$inputs[[input_tag]]
@@ -245,8 +236,6 @@ write.ensemble.configs <- function(input_design, ensemble.size, defaults, ensemb
       )
     }
   }
-
-  
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -320,22 +309,18 @@ write.ensemble.configs <- function(input_design, ensemble.size, defaults, ensemb
     }
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
-    if(is.null(samples)){
-       #performing the sampling
-      samples <- list()
-      input_tags <- names(settings$run$inputs)
-
-      for (input_tag in input_tags) {
-           if (input_tag %in% colnames(input_design)) {
-                  input_paths <- settings$run$inputs[[input_tag]]$path
-                  input_indices <- input_design[[input_tag]]
-
-                 samples[[input_tag]] <- list(
-                   samples = lapply(input_indices, function(idx) input_paths[[idx]])
-                 )
-    }
-
-     }
+    #performing the sampling
+    samples <- list()
+    input_tags <- names(settings$run$inputs)
+    for (input_tag in input_tags) {
+      if (input_tag %in% colnames(input_design)) {
+        input_paths <- settings$run$inputs[[input_tag]]$path
+        input_indices <- input_design[[input_tag]]
+        
+        samples[[input_tag]] <- list(
+          samples = lapply(input_indices, function(idx) input_paths[[idx]])
+        )
+      }
     }
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
@@ -515,6 +500,8 @@ write.ensemble.configs <- function(input_design, ensemble.size, defaults, ensemb
     for (i in seq_len(ensemble.size)) {
       input_list <- list()
       for (input_tag in names(inputs)) {
+        # if it's the parameter list, skip.
+        if (input_tag == "parameters") next
         if (!is.null(inputs[[input_tag]]$samples[[i]])) 
           input_list[[input_tag]] <- list(path = inputs[[input_tag]]$samples[[i]])
       }

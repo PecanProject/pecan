@@ -33,3 +33,5 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr, rmarkdown
+X-schema.org-keywords: allometry, biomass, plant-traits
+

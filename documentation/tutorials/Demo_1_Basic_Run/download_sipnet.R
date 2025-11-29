@@ -15,7 +15,7 @@ if (os == "Linux") {
   PEcAn.logger::logger.error("Unsupported operating system: ", os)
 }
 
-demo_outdir <- here::here("documentation/tutorials/Demo_1_Basic_Run/demo_outdir")
+demo_outdir <- file.path("demo_outdir")
 dest_path <- file.path(demo_outdir, "sipnet")
 if (!dir.exists(demo_outdir)) {
     # using if(!dir.exists) instead of `showWarnings = FALSE`

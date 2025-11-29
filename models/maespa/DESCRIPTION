@@ -33,3 +33,5 @@ Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: MAESPA, ecosystem-modeling
+

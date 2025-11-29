@@ -1,20 +1,22 @@
 ---
 title: "Running Ecosystem Simulations Using PEcAn"
-author: "Aritra Dey"
+author: 
+  - "Aritra Dey"
+  - "David LeBauer"
 format:
   pdf:
     toc: true
-    number-sections: false
+    number-sections: true
     fig-width: 10
     fig-height: 6
     fig-dpi: 300
 ---
 
-# 1. Introduction {#introduction}
+# Introduction {#introduction}
 
 Welcome to this PEcAn workflow notebook! This notebook will guide you through running an ecosystem model using PEcAn's programmatic interface.
 
-## 1.1 What Is PEcAn?
+## What Is PEcAn?
 
 PEcAn (Predictive Ecosystem Analyzer) is a scientific workflow system designed to make ecosystem modeling more transparent, repeatable, and accessible. It helps researchers:
 
@@ -23,7 +25,7 @@ PEcAn (Predictive Ecosystem Analyzer) is a scientific workflow system designed t
 - Compare model predictions with observations
 - Share and reproduce scientific workflows
 
-## 1.2 What This Notebook Does
+## What This Notebook Does
 
 This notebook demonstrates how to:
 
@@ -43,7 +45,7 @@ This run is based on a study by [Moore et. al. (2007)](https://doi.org/10.1016/j
 
 
 
-## 1.3 Prerequisites
+## Prerequisites
 
 Before running this notebook, make sure you have:
 
@@ -62,7 +64,7 @@ install.packages('PEcAn.all')
 
 - A valid `pecan.xml` configuration file or use the example provided: `pecan/documentation/tutorials/Demo_1_Basic_Run/pecan.xml`
 
-## 1.4 How to Use This Notebook
+## How to Use This Notebook
 
 1. Each section is clearly marked with a heading
 2. Code chunks are provided with explanations
@@ -73,7 +75,7 @@ install.packages('PEcAn.all')
 
 This demo illustrates how to run a basic PEcAn workflow using an R-based Quarto notebook. It will cover loading settings, writing model configuration files, and running model simulations. This approach provides a programmatic alternative to the web-based PEcAn interface for executing ecosystem models.
 
-# 2. Session Info
+# Session Info
 
 This section prints your R session information for reproducibility. Having this information at the beginning helps with debugging even if the notebook encounters errors later.
 
@@ -81,7 +83,7 @@ This section prints your R session information for reproducibility. Having this 
 PEcAn.all::pecan_version()
 ```
 
-# 3. Install SIPNET v1.3.0
+# Install SIPNET v1.3.0
 
 If you haven't already installed the SIPNET binary, you can do so by running the following code. This will download the SIPNET binary to `demo_outdir/sipnet` and make it executable.
 
@@ -98,7 +100,7 @@ source(
 
 > Note: You can find the most recent version of the SIPNET binary at: [SIPNET GitHub Releases](https://github.com/PecanProject/sipnet/releases), but this notebook is designed to work with SIPNET v1.3.0.
 
-# 4. Load PEcAn Packages
+# Load PEcAn Packages
 
 First, we need to load the PEcAn R packages. These packages provide all the functions we'll use to run the workflow.
 
@@ -107,7 +109,7 @@ First, we need to load the PEcAn R packages. These packages provide all the func
 library("PEcAn.all")
 ```
 
-# 5. Load PEcAn Settings File
+# Load PEcAn Settings File
 
 PEcAn uses an XML-based settings file (pecan.xml) to configure model runs. This file defines key information about the run including: PFT(s), site location, time period of the run, the location of input files and where outputs will be saved. Other settings outside the scope of this demo include the types of analyses that will be performed, how to connect to a database, and how to run it on a high performance computing cluster  (we are using the default single model run on a single computer). 
 
@@ -122,7 +124,7 @@ This is how PEcAn loads the settings file:
 settings_path <- here::here("documentation/tutorials/Demo_1_Basic_Run/pecan.xml")
 ```
 
-# 6. Prepare and Validate Settings
+# Prepare and Validate Settings
 
 After specifying the path to the `pecan.xml` file, the next step involves reading and preparing these settings. PEcAn provides utilities to process and validate the configurations before execution begins. 
 
@@ -137,7 +139,7 @@ settings <- PEcAn.settings::read.settings(settings_path)
 settings <- PEcAn.settings::prepare.settings(settings)
 ```
 
-# 7. Explore the Settings Object
+# Explore the Settings Object
 
 Once the settings have been read and prepared, it is useful to inspect the structure of the `settings` object. This object is an R list containing all parameters and configurations for the PEcAn workflow.
 
@@ -165,7 +167,7 @@ settings$info <- list(
 
 Editing the more interesting settings to change the PFT (`settings$pfts`) or extend the run (`settings$run$end.date`) is beyond the scope of this demo. You _could_ change the pft or the end date, but you would need a new file containing parameters for that PFT (`settings$pfts$pft$posterior.files`), or a climate file (`settings$run$met$path$path1`) that extends to the desired simulation period.
 
-# 8. Create Output Directory
+# Create Output Directory
 
 Before running the workflow, we need to ensure that the output directory specified in the settings exists. This directory will store all the model outputs, configuration files, and results from the simulation.
 
@@ -175,9 +177,28 @@ Before running the workflow, we need to ensure that the output directory specifi
 dir.create(settings$outdir, recursive = TRUE, showWarnings = FALSE)
 ```
 
-# 9. Write Model Configuration Files
 
-This step generates the model-specific configuration files that will be used to run the ecosystem model. The process involves:
+The directory structure created by PEcAn for this demo run will look like this:
+
+```
+demo_outdir/               # Root output directory
+├── run/                   # Configuration & execution metadata
+│   ├── runs.txt           # List of run IDs (one per model realization)
+│   ├── <runid>/           # Model-specific config copies (sometimes)
+│   └── config.*           # Generated model configs (e.g., SIPNET)
+├── out/                   # Raw model outputs by run ID
+│   └── <runid>/           # E.g., daily or sub-daily SIPNET output files
+```
+
+The root output directory is defined here as `demo_outdir/` by `settings$outdir`. This directory contains log and record files from the PEcAn workflow. They provide a detailed record of how data was generated and are key components of the analysis metadata and provenance. These can be useful for debugging as well as for downstream analysis.
+
+Key subdirectories include `run/` and `out/` that contain files used to configure and run the model, files generated by the underlying ecosystem model, and PEcAn standard outputs used in downstream analyses. These are described in subsequent sections.
+
+Additional outputs include logs, a `STATUS` file that records the steps of the workflow along with timestamps and whether each step was successful, and a copy of the `pecan.*.xml` file.
+
+# Write Model Configuration Files
+
+This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process involves:
 
 1. Disabling database write operations because we are not using a database
 2. Generating SIPNET configuration files using the `runModule.run.write.configs()` function.
@@ -187,7 +208,7 @@ settings$database <- NULL # Disable database operations for this demo
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
 ```
 
-# 10. Run Model Simulations and Fetch Results
+# Run Model Simulations and Fetch Results
 
 This section executes the actual model simulations and retrieves the results. The process is managed by PEcAn's workflow system, which handles the execution of your chosen ecosystem model.
 
@@ -197,7 +218,10 @@ This section executes the actual model simulations and retrieves the results. Th
 PEcAn.workflow::runModule_start_model_runs(settings)
 ```
 
-# 11. Extract Model Results and Prepare for Analysis
+
+This step generates raw model outputs in model-specific format (in this case, `sipnet.out`) as well as log files.
+
+# Extract Model Results and Prepare for Analysis
 
 After the model simulation completes, we need to extract the results and prepare them for analysis. This involves:
 
@@ -205,6 +229,7 @@ After the model simulation completes, we need to extract the results and prepare
 2. Setting up output paths
 3. Defining time period
 4. Loading model output
+5. Convert to a standard format
 
 ```{r get-plot-vars}
 runid <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[1, 1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id
@@ -223,7 +248,9 @@ model_output <- PEcAn.utils::read.output(
 available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
 ```
 
-# 12. Display Available Model Variables
+Running this code will convert model specific output files into a standardized netCDF ([year].nc) that can be downloaded for visualization and analysis (R, Matlab, ncview, panoply, etc). This is a key step, because this standardization enables PEcAn to apply downstream analyses to outputs from different ecosystem models.
+
+# Display Available Model Variables
 
 This section shows all the variables that are available in the model output. These variables represent different ecosystem processes and states that the model has simulated.
 
@@ -246,11 +273,11 @@ vars_df$Description[is.na(vars_df$Description)] <- "(No description available)"
 knitr::kable(vars_df, caption = "Model Output Variables and Descriptions")
 ```
 
-# 13. Visualize Model Results
+# Visualize Model Results
 
 This section provides examples of how to create time series plots of different model variables. The examples cover various ecosystem processes including carbon fluxes, carbon pools, water variables, and structural variables like Leaf Area Index (LAI).
 
-## 13.1 Plot Carbon Fluxes
+## Plot Carbon Fluxes
 
 ```{r plot-carbon-fluxes}
 # Plot Gross Primary Productivity (GPP) and Net Primary Productivity (NPP)
@@ -265,7 +292,7 @@ lines(model_output$posix, model_output$NPP, col = "blue")
 legend("topright", legend = c("GPP", "NPP"), col = c("green", "blue"), lty = 1)
 ```
 
-## 13.2 Plot Carbon Pools
+## Plot Carbon Pools
 
 ```{r plot-carbon-pools}
 # Plot Total Live Biomass and Total Soil Carbon
@@ -280,7 +307,7 @@ lines(model_output$posix, model_output$TotSoilCarb, col = "brown")
 legend("topright", legend = c("Total Live Biomass", "Total Soil Carbon"), col = c("darkgreen", "brown"), lty = 1)
 ```
 
-## 13.3 Plot Water Variables
+## Plot Water Variables
 
 ```{r plot-water-variables}
 # Plot Soil Moisture and Snow Water Equivalent
@@ -295,7 +322,7 @@ lines(model_output$posix, model_output$SWE, col = "lightblue")
 legend("topright", legend = c("Soil Moisture", "Snow Water Equivalent"), col = c("blue", "lightblue"), lty = 1)
 ```
 
-## 13.4 Plot LAI and Biomass
+## Plot LAI and Biomass
 
 ```{r plot-lai-biomass}
 # Plot Leaf Area Index (LAI) and Above Ground Wood
@@ -310,13 +337,13 @@ lines(model_output$posix, model_output$AbvGrndWood, col = "brown")
 legend("topright", legend = c("LAI", "Above Ground Wood"), col = c("darkgreen", "brown"), lty = 1)
 ```
 
-# 14. Conclusion
+# Conclusion
 
 This notebook demonstrated how to set up, run, and analyze a PEcAn ecosystem model workflow programmatically. You can now modify parameters, try different models, or extend the analysis as needed.
 
 Try editing the `pecan.xml` file. Give it a new name and update the **settings_path** variable at the beginning of this Demo to point to the new file. See how the changes affect the model output!
 
-# 15. Clean Up Workflow Output (Optional)
+# Clean Up Workflow Output (Optional)
 
 If you want to remove all files and directories created by this workflow and start fresh, you can run the following code. This will delete the entire output directory specified in your settings. **Use with caution!**
 
@@ -326,10 +353,9 @@ If you want to remove all files and directories created by this workflow and sta
 # fs::dir_delete(settings$outdir)
 ```
 
-# 16. Session Info
+# Session Info
 This section prints your R session information for reproducibility.
 
 ```{r session-info}
 sessionInfo()
 ```
-

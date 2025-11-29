@@ -31,7 +31,7 @@ test_that("write.config.SIPNET", {
 
   res <- write.config.SIPNET(
     defaults = list(pft1 = list(constants = list(SLA = 2.0))),
-    trait.values = list(pft1 = list(Amax = 5, AmaxFrac = 0.99)),
+    trait.values = list(pft1 = list(Amax = 5, AmaxFrac = 0.99, leafC = 47)),
     settings = s,
     run.id = "run1"
   )
@@ -58,4 +58,12 @@ test_that("write.config.SIPNET", {
     fixed = TRUE,
     all = FALSE
   )
+  # leaf C specific weight is leafC / SLA, with units converted to g C/m2 leaf
+  expect_match(
+    param_result,
+    "leafCSpWt 235 ", # space at end to catch unit errors (eg fail on 23500)
+    fixed = TRUE,
+    all = FALSE
+  )
+
 })
