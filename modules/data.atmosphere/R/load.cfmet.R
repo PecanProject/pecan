@@ -51,11 +51,19 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   all.dates <- data.frame(index = seq_along(time.idx), date = date)
   
-  if (start.date + lubridate::days(1) < min(all.dates$date)) {
-   PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
+  delta <- stats::median(diff(all.dates$date), na.rm = TRUE)
+  if (is.na(delta)) {
+    # probably only happens with a one-line met file
+    # fall back to requiring exact match
+    delta <- 0
   }
-  if (end.date > max(all.dates$date)) {
-   PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
+  
+  if (start.date < (min(all.dates$date) - delta)) {
+    PEcAn.logger::logger.severe("run start date", start.date, "before met data starts", min(all.dates$date))
+  }
+  
+  if (end.date > (max(all.dates$date) + delta)) {
+    PEcAn.logger::logger.severe("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
   run.dates <- all.dates %>%

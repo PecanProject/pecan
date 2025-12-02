@@ -1,4 +1,15 @@
-# PEcAn.workflow 1.8.0.9000
+### Joint Ensemble Sampling Implementation
+- **Behavior Change**: Ensemble runs now use shared input samples across all sites instead of independent sampling per site
+- **Affected Components**: 
+  - `get.parameter.samples.R` 
+  - `runModule.run.write.configs.R`
+  - `run.write.configs.R` 
+  - `ensemble.R`
+- **New Default**: The sampling method default has changed from "uniform" to "random"
+- **Impact**: This ensures consistency across sites in ensemble runs but may produce different results compared to previous versions
+
+
+# PEcAn.workflow 1.9.0
 
 * PEcAn.workflow is now distributed under the BSD 3-clause license instead of the NCSA Open Source license.
 * It is now easier to run a workflow without a connection to the PEcAn database by setting `settings$database$bety$write` to FALSE (or undefining it entirely), at the obvious cost that runs set up this way are not recorded in the database (@yinghaoSunn, #3398).

@@ -1,2 +1,3 @@
 Dockerfile
 model_info.json
+^docs$

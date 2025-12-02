@@ -20,18 +20,18 @@ on:
         type: choice
         default: "$DEFAULT_R_VERSION"
         options:
-          - 4.1
           - 4.2
           - 4.3
           - 4.4
+          - 4.5
           - devel
   schedule:
     # 1:30 AM UTC, different R version each day
     - cron: '30 1 * * 1' # Rdevel
-    - cron: '30 1 * * 2' # R4.4
+    - cron: '30 1 * * 2' # R4.2
     - cron: '30 1 * * 3' # R4.3
-    - cron: '30 1 * * 4' # R4.2
-    - cron: '30 1 * * 5' # R4.1
+    - cron: '30 1 * * 4' # R4.4
+    - cron: '30 1 * * 5' # R4.5
 
 jobs:
   # ----------------------------------------------------------------------
@@ -49,23 +49,33 @@ jobs:
         run: echo "R_VERSION=devel" >> "$GITHUB_OUTPUT"
       - id: tue
         if: github.event.schedule == '30 1 * * 2'
-        run: echo "R_VERSION=4.4" >> "$GITHUB_OUTPUT"
+        run: echo "R_VERSION=4.2" >> "$GITHUB_OUTPUT"
       - id: wed
         if: github.event.schedule == '30 1 * * 3'
         run: echo "R_VERSION=4.3" >> "$GITHUB_OUTPUT"
       - id: thu
         if: github.event.schedule == '30 1 * * 4'
-        run: echo "R_VERSION=4.2" >> "$GITHUB_OUTPUT"
+        run: echo "R_VERSION=4.4" >> "$GITHUB_OUTPUT"
       - id: fri
         if: github.event.schedule == '30 1 * * 5'
-        run: echo "R_VERSION=4.1" >> "$GITHUB_OUTPUT"
+        run: echo "R_VERSION=4.5" >> "$GITHUB_OUTPUT"
       - id: default
         if: github.event_name != 'schedule'
         run: echo "R_VERSION=${{ github.event.inputs.r_version || env.DEFAULT_R_VERSION }}" >> "$GITHUB_OUTPUT"
+      - id: platform
+        # upstream rocker/tidyverse image is only on ARM for R 4.5.* (so far)
+        shell: bash
+        run: |
+          if [[ "${{ join(steps.*.outputs.R_VERSION, '') }}" == "4.5" ]]; then
+            echo "PLATFORMS=linux/amd64,linux/arm64" >> "$GITHUB_OUTPUT"
+          else
+            echo "PLATFORMS=linux/amd64" >> "$GITHUB_OUTPUT"
+          fi
     outputs:
       # Note: "steps.*" seems to mean "all step ids", not "all steps"
       # If seeing weird results here, check that all steps above have an id set.
       R_VERSION: ${{ join(steps.*.outputs.R_VERSION, '') }}
+      PLATFORMS: ${{ join(steps.platform.outputs.PLATFORMS, '') }}
 
   # ----------------------------------------------------------------------
   # depends image has all the dependencies installed
@@ -80,7 +90,7 @@ jobs:
       build-context: docker/depends
       dockerfile: docker/depends/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      platforms: "linux/amd64"
+      platforms: ${{ needs.rversion.outputs.PLATFORMS }}
     secrets: inherit
 
   # ----------------------------------------------------------------------
@@ -95,7 +105,7 @@ jobs:
       dockerfile: docker/base/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
       parent-image: "depends"
-      platforms: "linux/amd64"
+      platforms: ${{ needs.rversion.outputs.PLATFORMS }}
     secrets: inherit
 
 # ----------------------------------------------------------------------
@@ -110,6 +120,7 @@ jobs:
       dockerfile: docker/models/Dockerfile
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
       parent-image: "base"
+      platforms: ${{ needs.rversion.outputs.PLATFORMS }}
     secrets: inherit
 
 # ----------------------------------------------------------------------
@@ -131,37 +142,31 @@ jobs:
           - name: basgra
             CONTEXT: models/basgra
             DOCKERFILE: models/basgra/Dockerfile
-            PLATFORM: "linux/amd64"
             MODEL: basgra
             VERSION: BASGRA_N_v1
           - name: biocro
             CONTEXT: models/biocro
             DOCKERFILE: models/biocro/Dockerfile
-            PLATFORM: "linux/amd64"
             MODEL: biocro
             VERSION: "0.95"
           # - name: ed2_2.2.0
           #   CONTEXT: models/ed
           #   DOCKERFILE: models/ed/Dockerfile
-          #   PLATFORM: "linux/amd64"
           #   MODEL: ed2
           #   VERSION: "2.2.0"
           - name: ed2_git
             CONTEXT: models/ed
             DOCKERFILE: models/ed/Dockerfile
-            PLATFORM: "linux/amd64"
             MODEL: ed2
             VERSION: "git"
           - name: maespa
             CONTEXT: models/maespa
             DOCKERFILE: models/maespa/Dockerfile
-            PLATFORM: "linux/amd64"
             MODEL: maespa
             VERSION: "git"
           - name: sipnet
             CONTEXT: models/sipnet
             DOCKERFILE: models/sipnet/Dockerfile
-            PLATFORM: "linux/amd64"
             MODEL: sipnet
             VERSION: "git"
     uses: ./.github/workflows/docker-build-image.yml
@@ -172,7 +177,7 @@ jobs:
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
       parent-image: "models"
       model-version: ${{ matrix.VERSION }}
-      platforms: ${{ matrix.PLATFORM }}
+      platforms: ${{ needs.rversion.outputs.PLATFORMS }}
     secrets: inherit
 
   # ----------------------------------------------------------------------
@@ -191,22 +196,20 @@ jobs:
           - name: docs
             CONTEXT: .
             DOCKERFILE: docker/docs/Dockerfile
-            PLATFORM: "linux/amd64"
           - name: executor
             CONTEXT: docker/executor
             DOCKERFILE: docker/executor/Dockerfile
-            PLATFORM: "linux/amd64"
           - name: api
             CONTEXT: apps/api
             DOCKERFILE: apps/api/Dockerfile
-            PLATFORM: "linux/amd64"
     uses: ./.github/workflows/docker-build-image.yml
     with:
       image-name: ${{ matrix.name }}
       build-context: ${{ matrix.CONTEXT }}
       dockerfile: ${{ matrix.DOCKERFILE }}
       r-version: ${{ needs.rversion.outputs.R_VERSION }}
-      platforms: ${{ matrix.PLATFORM }}
+      parent-image: "base"
+      platforms: ${{ needs.rversion.outputs.PLATFORMS }}
     secrets: inherit
 
   # ----------------------------------------------------------------------
@@ -229,7 +232,7 @@ jobs:
             DOCKERFILE: docker/web/Dockerfile
             PLATFORM: "linux/amd64,linux/arm64"
           - name: shiny-dbsync
-            CONTEXT: .
+            CONTEXT: shiny/dbsync
             DOCKERFILE: shiny/dbsync/Dockerfile
             PLATFORM: "linux/amd64"
           - name: data

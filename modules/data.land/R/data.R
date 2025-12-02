@@ -78,3 +78,35 @@
 #' contains an identical texture.csv, also with no obvious source label.
 #' See also comments in soil_utils.R
 "soil_class"
+
+#' Fertilizer Nutrient Composition Table
+#' 
+#' A dataset of fertilizer and organic matter addition types 
+#' and their nitrogen and carbon composition, based on the SWAT model's
+#' `fertilizer.frt` table and DayCent model defaults for organic matter
+#' C:N ratio parameters.
+#'
+#' @format A tibble with one row per fertilizer type and the following columns:
+#' \describe{
+#'   \item{name}{\code{character}. Short identifier from SWAT (e.g., \code{"urea"}, \code{"manure"}).}
+#'   \item{description}{\code{character}. Longer description of the fertilizer or manure type.}
+#'   \item{fraction_mineral_n}{\code{numeric}. Fraction of total nitrogen in mineral form.}
+#'   \item{fraction_nh3_n}{\code{numeric}. Fraction of fertilizer by mass that is ammonium-n (NH\eqn{_3}-N).}
+#'   \item{fraction_no3_n}{\code{numeric}. Fraction of fertilizer by mass that is nitrate-N (NO\eqn{_3}-N).
+#'     Computed as \code{fraction_mineral_n - fraction_nh3_n}.}
+#'   \item{fraction_organic_n}{\code{numeric}. Fraction of organic matter that is nitrogen.}
+#'   \item{fraction_c}{\code{numeric}. Fraction of mass that is carbon.}
+#'   \item{cn_ratio}{\code{numeric}. Carbon-to-nitrogen ratio for organic matter.
+#'     Assigned based on DayCent organic matter parameterterizations.}
+#' }
+#'
+#' @details
+#' This table is based on SWAT model's \code{fertilizer.frt} file, and uses 
+#' C:N ratios (\code{cn_ratio}) from DayCent model default parameter files.
+#' \code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of 
+#' fertilizer by mass that is ammonium-N and nitrate-N, respectively. This is different from
+#' the SWAT model's definition of \code{fraction_nh3_n} as a fraction of the total mineral N.
+#'
+#' @source https://github.com/swat-model/swatplus
+#' @source DayCent model default parameter file: `omad.100` obtained from the Soil Carbon Solutions Center, https://www.soilcarbonsolutionscenter.com
+"fertilizer_composition_data"

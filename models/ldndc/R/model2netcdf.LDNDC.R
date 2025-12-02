@@ -241,16 +241,13 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
     
     ## Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec = NA)
     
     
     
     for(i in seq_along(nc_var)){
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
-    close(varfile)
     ncdf4::nc_close(nc)
     
   }
@@ -258,5 +255,4 @@ model2netcdf.LDNDC <- function(outdir, sitelat, sitelon, start_date, end_date, d
   if (delete.raw) {
     unlink(output_dir, recursive=TRUE)
   }
-  
 } # model2netcdf.LDNDC

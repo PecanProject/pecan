@@ -9,7 +9,12 @@ logger.setUseConsole(console, stderr = TRUE)
 \arguments{
 \item{console}{set to true to print logging to console.}
 
-\item{stderr}{set to true (default) to use stderr instead of stdout for logging}
+\item{stderr}{set to true (default) to log to stderr instead of stdout}
+}
+\value{
+Invisibly, a list of the previously set values of \code{console}
+and \code{stderr}. This can be used to restore the previous settings after a
+temporary change.
 }
 \description{
 Should the logging to be printed to the console or not.

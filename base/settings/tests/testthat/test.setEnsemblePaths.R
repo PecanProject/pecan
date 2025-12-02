@@ -4,7 +4,10 @@ test_that("setEnsemblePaths sets paths across sites", {
       run = list(
         start.date = "2015-01-01",
         end.date = "2015-12-31",
-        inputs = list("a", "b")
+        inputs = list(
+          met = list(id = "a"),
+          soil_physics = list(name = "b", path = list("overwritten"))
+        )
       )
     )
   )
@@ -32,11 +35,17 @@ test_that("setEnsemblePaths sets paths across sites", {
     )
   }
 
-  # only known input types accepted
-  expect_error(
-    setEnsemblePaths(settings, 3, input_type = "fake"),
-    ".arg. should be one of .met., .poolinitcond., .soilinitcond."
-  )
+  # input block is added if not present in original,
+  # without changing length of existing inputs
+  add_in <- setEnsemblePaths(with_paths, 2, input_type = "novel")
+  for (i in seq_along(add_in)) {
+    expect_named(
+      add_in$run[[i]]$inputs,
+      c("met", "soil_physics", "novel")
+    )
+    expect_length(add_in$run[[i]]$inputs$novel$path, 2)
+    expect_length(add_in$run[[i]]$inputs$met$path, 3)
+  }
 
   # extra vars passed through to glue
   with_extras <- setEnsemblePaths(
@@ -46,4 +55,12 @@ test_that("setEnsemblePaths sets paths across sites", {
     path_template = "../{id}_{foo}{n}.{ext}"
   )
   expect_match(with_extras$run$site.s1$inputs$met$path$path2, "s1_bar2.txt")
+
+  # Ensembles of 1 return bare path not list
+  one_path <- setEnsemblePaths(settings, n_reps = 1)
+  two_path <- setEnsemblePaths(settings, n_reps = 2)
+  expect_identical(
+    one_path$run$site.s1$inputs$met$path,
+    two_path$run$site.s1$inputs$met$path$path1
+  )
 })

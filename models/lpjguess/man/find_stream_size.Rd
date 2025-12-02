@@ -26,3 +26,4 @@ A numeric value representing the size (number of streamed variables).
 \description{
 Determines the size (number of variables) in a stream based on the file content.
 }
+\keyword{internal}

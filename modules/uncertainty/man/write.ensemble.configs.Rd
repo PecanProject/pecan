@@ -5,6 +5,8 @@
 \title{Write ensemble config files}
 \usage{
 write.ensemble.configs(
+  input_design,
+  ensemble.size,
   defaults,
   ensemble.samples,
   settings,
@@ -16,6 +18,10 @@ write.ensemble.configs(
 )
 }
 \arguments{
+\item{input_design}{the input indices for samples}
+
+\item{ensemble.size}{size of ensemble}
+
 \item{defaults}{pft}
 
 \item{ensemble.samples}{list of lists supplied by \link{get.ensemble.samples}}
@@ -43,7 +49,7 @@ a name to distinguish the output files, and the directory to place the files.
 \details{
 The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
 new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
-State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
+The state variables that you can use for setting up initial conditions are model specific. Check the documentation of the write_restart.<modelname> function for the model you are using.
 The units for the state variables need to be in the PEcAn standard units which can be found in \link{standard_vars}.
 new.params also has similar structure to ensemble.samples which is sent as an argument.
 }

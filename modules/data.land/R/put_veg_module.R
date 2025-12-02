@@ -7,7 +7,6 @@
 ##' @param outfolder path to where the processed files will be written
 ##' @param n.ensemble integer, ensemble member number
 ##' @param dir dir path to dbfiles on local machine
-##' @param machine data frame, DB info regarding localhost machine id/hostname etc.
 ##' @param model model name, e.g. "ED2"
 ##' @param start_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$start.date, otherwise start_date of the IC file in DB
 ##' @param end_date date in "YYYY-MM-DD" format, in case of source==FIA it's the settings$run$end.date, otherwise end_date of the IC file in DB
@@ -21,7 +20,7 @@
 put_veg_module <- function(getveg.id, dbparms,
                             input_veg, pfts,
                             outfolder, n.ensemble,
-                            dir, machine, model,
+                            dir, model,
                             start_date, end_date,
                             new_site,
                             host, overwrite){

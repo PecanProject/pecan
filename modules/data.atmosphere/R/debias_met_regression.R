@@ -1012,7 +1012,14 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # -------------
     # Save some diagnostic graphs if useful
     # -------------
-    if(save.diagnostics==TRUE){
+    if (save.diagnostics == TRUE) {
+      if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop(
+          "Package `ggplot2` not found but needed for `save.diagnostics` ",
+          "option of `debias_met_regression()`"
+        )
+      }
+
       dir.create(path.diagnostics, recursive=T, showWarnings=F)
 
       dat.pred <- source.data$time

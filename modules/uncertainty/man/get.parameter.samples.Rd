@@ -2,10 +2,12 @@
 % Please edit documentation in R/get.parameter.samples.R
 \name{get.parameter.samples}
 \alias{get.parameter.samples}
-\title{Convert priors / MCMC samples to chains that can be sampled for model parameters}
+\title{Convert priors / MCMC samples to chains that can be sampled
+  for model parameters}
 \usage{
 get.parameter.samples(
   settings,
+  ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
   ens.sample.method = "uniform"
 )
@@ -13,12 +15,15 @@ get.parameter.samples(
 \arguments{
 \item{settings}{PEcAn settings object}
 
+\item{ensemble.size}{number of runs in model ensemble}
+
 \item{posterior.files}{list of filenames to read from}
 
 \item{ens.sample.method}{one of "halton", "sobol", "torus", "lhc", "uniform"}
 }
 \description{
-Convert priors / MCMC samples to chains that can be sampled for model parameters
+Convert priors / MCMC samples to chains that can be sampled
+  for model parameters
 }
 \author{
 David LeBauer, Shawn Serbin, Istem Fer

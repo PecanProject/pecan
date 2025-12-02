@@ -11,7 +11,8 @@ get.trait.data(
   database,
   forceupdate,
   write = FALSE,
-  trait.names = NULL
+  trait.names = NULL,
+  input_file = NULL
 )
 }
 \arguments{
@@ -35,6 +36,9 @@ BETYdb.  Defaults to FALSE.}
 \item{trait.names}{Character vector of trait names to search. If
 `NULL` (default), use all traits that have a prior for at least
 one of the `pfts`.}
+
+\item{input_file}{Path to a CSV file containing prior information.
+If specified, `database` is not used.}
 }
 \value{
 list of PFTs with update posteriorids
@@ -46,6 +50,12 @@ This will use the following items from settings:
 - `settings$database$bety`
 - `settings$database$dbfiles`
 - `settings$meta.analysis$update`
+}
+\details{
+If either `input_file` or `settings$pfts$file_path` is provided,
+  it should be a valid path to a CSV (with at least columns
+  `name`, `distn`, `parama`, `paramb`, `n`) and will be used instead of
+  `database` for trait lookup.
 }
 \author{
 David LeBauer, Shawn Serbin, Alexey Shiklomanov

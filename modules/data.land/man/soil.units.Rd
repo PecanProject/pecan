@@ -44,6 +44,11 @@ Supported variables are:
 \item \code{soil_thermal_conductivity_at_saturation}
 \item \code{soil_thermal_capacity}
 \item \code{soil_albedo}
+\item \code{slpotwp}
+\item \code{slpotcp}
+\item \code{slcpd}
+\item \code{slden}
+\item \code{soil_organic_carbon_stock}
 }
 }
 \examples{

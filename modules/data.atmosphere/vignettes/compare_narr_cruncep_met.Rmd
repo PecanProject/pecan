@@ -43,7 +43,7 @@ TODO: clean up figure titles, labels, write explanations
 ```{r loading-libraries, eval=FALSE}
 library(PEcAn.data.atmosphere)
 # library(data.table)
-library(ggplot2)
+library(ggplot2, logical.return = TRUE) || stop("this vignette requires ggplot2")
 theme_set(theme_bw())
 data(narr_cruncep_ebifarm)
 

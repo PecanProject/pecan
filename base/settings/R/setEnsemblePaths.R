@@ -15,10 +15,9 @@
 #' replaced with the siteid of each site, and any other variables need to be
 #' passed as named arguments in `...`.
 #'
-#' Note that for consistency, every site in `settings` must contain an
-#' element named `inputs$<input_type>` before you call this.
-#' If `inputs$<input_type>$path` does not exist it will be created;
-#' if it does exist it will be overwritten.
+#' If `inputs$<input_type>` does not exist, it will be created with a `path`
+#' element that matches the requested pattern. If it does exist, any existing
+#' `path` element will be overwritten.
 #'
 #' @param settings a PEcAn MultiSettings object
 #' @param n_reps number of replicates to insert for each path.
@@ -50,7 +49,7 @@
 setEnsemblePaths <- function(
     settings,
     n_reps,
-    input_type = c("met", "poolinitcond", "soilinitcond"),
+    input_type = "met",
     path_template = "./{id}/{n}.nc",
     ...) {
   if (!is.MultiSettings(settings)) {
@@ -58,7 +57,6 @@ setEnsemblePaths <- function(
       "Setting ensemble paths is only implemented for MultiSettings objects"
     )
   }
-  input_type <- match.arg(input_type)
 
   papply(
     settings,
@@ -110,7 +108,8 @@ set_site_paths <- function(settings, input_type, ...) {
 #'  paths, as a `glue::glue()` input (see examples)
 #' @param ... other variables to be interpolated into the path, each with length
 #'  either 1 or equal to `n`.
-#' @return list of paths the same length as `n`, with names set as `path<n>`
+#' @return list of paths the same length as `n`, with names set as `path<n>`,
+#'  or a single path if there is only one of them
 #' @keywords internal
 ### ^ Internal for now, but OK to export later if that proves useful.
 ### If/when exporting, remove the \dontrun{} below along with this comment --
@@ -124,8 +123,14 @@ build_pathset <- function(n, glue_str = "./file_{n}.nc", ...) {
   if (length(n) == 1 && is.numeric(n)) {
     n <- seq_len(n)
   }
-  values <- list(n = n, ...)
-  glue::glue_data(.x = values, glue_str) |>
+  paths <- list(n = n, ...) |>
+    glue::glue_data(glue_str)
+
+  if (length(paths) == 1) {
+    return(as.character(paths))
+  }
+
+  paths |>
     as.list() |>
     stats::setNames(glue::glue("path{n}", n = n))
 }

@@ -22,12 +22,16 @@ write.sa.configs(
 
 \item{model}{name of model to be run}
 
-\item{clean}{logical: Delete any existing contents of the directory specified by \code{settings$rundir} before writing to it?}
+\item{clean}{logical: Delete any existing contents of the directory specified
+by \code{settings$rundir} before writing to it?}
 
-\item{write.to.db}{logical: Record this run to BETY? If TRUE, uses connection settings specified in \code{settings$database}}
+\item{write.to.db}{logical: Record this run to BETY? If TRUE, uses connection
+settings specified in \code{settings$database}}
 }
 \value{
-list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids,
+ and $ensemble.id = the ensemble ID for these runs.
+ Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Writes config files for use in sensitivity analysis.

@@ -1,8 +1,10 @@
-# PEcAn.priors 1.7.3.9000
+# PEcAn.priors 1.7.4
 
 ## License change
 * PEcAn.priors is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
 
+## Fixed
+* Cleaned up many `R CMD check` messsages
 
 # PEcAn.priors 1.7.1
 

@@ -31,4 +31,52 @@ test_that("get.rh RH from dewpoint",{
   expect_equal(getrhtest(25, 10), 38.82, tolerance = 0.2)
   expect_equal(getrhtest(0, -5), 69, tolerance = 0.2)
 })
+
+test_that("different methods of sat_vapor_pressure work correctly", {
+  expect_equal(
+    sat_vapor_pressure(c(-10, 10), method = "Magnus"),
+    c(0.286, 1.228),
+    tolerance = 0.001
+  )
+  expect_equal(
+    sat_vapor_pressure(c(-10, 10), method = "ClausiusClapeyron"),
+    c(0.287, 1.233), 
+    tolerance = 0.001
+  )
+  expect_equal(
+    sat_vapor_pressure(c(-10, 10), method = "GoffGratch"),
+    c(0.286, 1.227),
+    tolerance = 0.001
+  )
+})
+
+test_that("sat_vapor_pressure works with different units", {
+  expect_equal(
+    sat_vapor_pressure(283.15,
+      method = "GoffGratch",
+      temp_units = "K",
+      out_units = "mb"
+    ),
+    12.27,
+    tolerance = 0.01
+  )
   
+    expect_equal(
+      sat_vapor_pressure(283.15,
+        method = "ClausiusClapeyron",
+        temp_units = "K",
+        out_units = "kPa"
+      ),
+      1.227,
+      tolerance = 0.01
+    )
+    expect_equal(
+      sat_vapor_pressure(283.15,
+        method = "Magnus",
+        temp_units = "K",
+        out_units = "Pa"
+      ),
+      1227,
+      tolerance = 1
+    )
+})

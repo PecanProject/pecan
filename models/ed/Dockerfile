@@ -43,7 +43,7 @@ FROM ${PARENT_IMAGE}:${IMAGE_VERSION}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       libhdf5-openmpi-103 \
+       libhdf5-openmpi-103-1t64 \
        libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 

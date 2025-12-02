@@ -10,6 +10,7 @@ met2model.SIPNET(
   outfolder,
   start_date,
   end_date,
+  var.names = NULL,
   overwrite = FALSE,
   verbose = FALSE,
   year.fragment = FALSE,
@@ -28,6 +29,8 @@ met2model.SIPNET(
 
 \item{end_date}{the end date of the data to be downloaded
 (will only use the year part of the date)}
+
+\item{var.names}{character: list of variable names to be extracted. Default is NULL.}
 
 \item{overwrite}{should existing files be overwritten}
 

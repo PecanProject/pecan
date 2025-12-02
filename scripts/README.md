@@ -21,8 +21,9 @@ This folder contains helper scripts used for building, testing, running, and man
 - `confirm_deps.R` – Confirms package dependencies
 - `updateVersion.sh` – Bumps version numbers
 - `check_with_errors.R` – Verifies documentation or build errors
-- `get_orphaned_functions.py` – Detects unused functions
 - `generate_dir_structure.sh` – Lists all folders and subfolders in the project and outputs a Markdown file (documentation/directory_structure.md) for automated directory documentation.
+- `get_orphaned_functions.py` – Detects unused functions
+
 
 ---
 

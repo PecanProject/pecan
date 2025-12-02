@@ -1,10 +1,12 @@
 Package: PEcAn.LDNDC
 Type: Package
 Title: PEcAn package for integration of the LDNDC model
-Version: 1.0.0.9000
+Version: 1.0.2
 Authors@R: c(person("Henri", "Kajasilta", role = c("aut", "cre"),
                     email = "henri.kajasilta@fmi.fi"))
 Description: This module provides functions to link the (LDNDC) to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     dplyr,
     lubridate,
@@ -26,3 +28,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: LDNDC, ecosystem-modeling

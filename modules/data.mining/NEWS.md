@@ -1,6 +1,7 @@
-# PEcAn.data.mining 1.7.3.9000
+# PEcAn.data.mining 1.7.4
 
 ## License change
+
 * PEcAn.data.mining is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
 
 

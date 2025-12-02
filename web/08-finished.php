@@ -42,7 +42,7 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
-$notes = htmlspecialchars($workflow['notes']);
+$notes = htmlspecialchars($workflow['notes'] ?? '');
 if ($workflow['value'] != '') {
   $params = json_decode($workflow['value'], true);
 } else {
@@ -546,11 +546,11 @@ foreach ($status as $line) {
     <div class="spacer"></div>
 <?php whoami(); ?>
 <p>
-  <a href="https://pecanproject.github.io/pecan-documentation/latest/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/documentation/develop/" target="_blank">Documentation</a>
   <br>
-  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Chat Room</a>
+  <a href="https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ" target="_blank">Slack Channel</a>
   <br>
-  <a href="http://pecanproject.github.io/Report_an_issue.html" target="_blank">Bug Report</a>
+  <a href="https://github.com/PecanProject/pecan/issues/new/choose" target="_blank">Bug Report</a>
 </p>
   </div>
   <div id="output">
