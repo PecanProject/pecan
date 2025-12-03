@@ -4,6 +4,7 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   render-notebook:
@@ -39,13 +40,24 @@ jobs:
             }
           '"
 
-      - name: Render Demo 1 notebook to HTML
+      - name: Render Quarto notebooks to HTML
         run: |
           docker run --rm -v ${{ github.workspace }}:/work pecan-base-ci:latest bash -c "
-            quarto render /work/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd --to html
-          "
-      - name: Render Demo 2 notebook to HTML
-        run: |
-          docker run --rm -v ${{ github.workspace }}:/work pecan-base-ci:latest bash -c "
+            quarto render /work/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd --to html &&
             quarto render /work/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd --to html
           "
+
+      - name: Prepare HTML artifacts
+        run: |
+          mkdir quarto_html_build
+          cp documentation/tutorials/Demo_1_Basic_Run/run_pecan.html quarto_html_build/
+          cp -r documentation/tutorials/Demo_1_Basic_Run/run_pecan_files quarto_html_build/
+          cp documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.html quarto_html_build/
+          cp -r documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty_files quarto_html_build/
+
+      - name: Upload rendered HTML as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarto-html
+          path: quarto_html_build/
+          retention-days: 90

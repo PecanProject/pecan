@@ -12,7 +12,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  call-render-quarto:
+    uses: ./.github/workflows/render-quarto.yml
+
   bookdown:
+    needs: call-render-quarto
     runs-on: ubuntu-latest  
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -45,6 +49,11 @@ jobs:
       run: |
         cd book_source
         Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
+    # download quarto artifacts
+    - uses: actions/download-artifact@v4
+      with:
+        name: quarto-html
+        path: book_source/_book/
     # save artifact
     - uses: actions/upload-artifact@v4
       with:

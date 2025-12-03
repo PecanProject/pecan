@@ -1,6 +1,6 @@
-.PHONY: all bkdcheck build clean deploy
+.PHONY: all bkdcheck build clean
 
-all: bkdcheck build deploy
+all: bkdcheck build
 
 bkdcheck:
 	./check_bkd_pkg.R

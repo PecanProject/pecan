@@ -38,7 +38,7 @@ if [ "${TAGS}" == "" ]; then
 fi
 
 # read command line options, overriding any environment variables
-while getopts dfhi:r:s:t: opt; do
+while getopts dfhni:r:s:t: opt; do
     case $opt in
     d)
         DEBUG="echo"
@@ -48,7 +48,7 @@ while getopts dfhi:r:s:t: opt; do
         ;;
     h)
         cat << EOF
-$0 [-dfh] [-i <IMAGE_VERSION>] [-r <R VERSION] [-s <SERVER>] [-t <TAGS>]
+$0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION>] [-s <SERVER>] [-t <TAGS>]
 
 This script is used to create docker images and push these images to 
 a docker repository. This script behind the scenes will use the

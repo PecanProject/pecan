@@ -6,7 +6,7 @@
 set -o pipefail
 set -e
 
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 # Can set the following variables
 DEBUG=${DEBUG:-""}
@@ -35,7 +35,7 @@ else
 fi
 
 # read command line options, overriding any environment variables
-while getopts dfhi:r: opt; do
+while getopts dfhni:r: opt; do
     case $opt in
     d)
         DEBUG="echo"
@@ -45,7 +45,7 @@ while getopts dfhi:r: opt; do
         ;;
     h)
         cat << EOF
-$0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION]
+$0 [-dfhn] [-i <IMAGE_VERSION>] [-r <R VERSION>]
 
 The following script can be used to create all docker images. Without any
 options this will build all images and tag them based on the branch you
@@ -53,7 +53,7 @@ are on. The main branch will be tagged with latest, develop branch will
 be tagged with develop and any other branch will be tagged with testing.
 Most options can be set using either an environment variable or using
 command line options. If both are set, the command line options will
-override the environmnet variables.
+override the environment variables.
 
 You can change the docker image tag using the environment variable
 IMAGE_VERSION or the option -i.
