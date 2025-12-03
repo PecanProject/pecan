@@ -13,7 +13,7 @@ test_that("extract_soil_gssurgo returns valid NetCDF files for valid US coordina
     lon = lon,
     size = 2,
     radius = 500,
-    depths = c(0.15, 0.30)
+    depths = c(0, 0.15, 0.30)
   )
   
   expect_false(is.null(res))
@@ -72,7 +72,7 @@ test_that("extract_soil_gssurgo performance is reasonable", {
     lon = -88.2434,
     size = 1,
     radius = 500,
-    depths = c(0.15)
+    depths = c(0, 0.15)
   )
   end_time <- Sys.time()
   exec_time <- as.numeric(difftime(end_time, start_time, units = "secs"))
@@ -90,7 +90,7 @@ test_that("extract_soil_gssurgo handles ensemble generation", {
     lon = -88.2434,
     size = 3,
     radius = 500,
-    depths = c(0.15, 0.30)
+    depths = c(0, 0.15, 0.30)
   )
   
   expect_false(is.null(res))
@@ -124,7 +124,7 @@ test_that("extract_soil_gssurgo works with custom AOI polygon", {
     outdir = tmp_outdir,
     aoi = aoi,
     size = 2,
-    depths = c(0.15, 0.30)
+    depths = c(0, 0.15, 0.30)
   )
   
   expect_false(is.null(res))
@@ -147,7 +147,7 @@ test_that("extract_soil_gssurgo handles different buffer radii", {
     lon = -88.2434,
     size = 1,
     radius = 200,
-    depths = c(0.15)
+    depths = c(0, 0.15)
   )
   
   # Larger radius (should potentially capture more mukeys)
@@ -157,7 +157,7 @@ test_that("extract_soil_gssurgo handles different buffer radii", {
     lon = -88.2434,
     size = 1,
     radius = 1000,
-    depths = c(0.15)
+    depths = c(0, 0.15)
   )
   
   expect_false(is.null(res_small))
@@ -177,7 +177,7 @@ test_that("extract_soil_gssurgo component-level variability is preserved", {
     lon = -88.2434,
     size = 5,  # Multiple ensemble members to check variability
     radius = 500,
-    depths = c(0.15, 0.30)
+    depths = c(0, 0.15, 0.30)
   )
   
   expect_false(is.null(res))
@@ -198,4 +198,38 @@ test_that("extract_soil_gssurgo component-level variability is preserved", {
     # Ensemble members should show variability (not identical)
     expect_false(all(sand1 == sand2))
   }
+})
+
+test_that("extract_soil_gssurgo requires depths to start with 0", {
+  skip_on_cran()
+  skip_on_ci()
+  tmp_outdir <- withr::local_tempdir("gssurgo_test_")
+  
+  # Disable debugging during error testing
+  withr::local_options(error = NULL)
+  
+  # Should error when depths doesn't start with 0
+  expect_error(
+    extract_soil_gssurgo(
+      outdir = tmp_outdir,
+      lat = 40.1164,
+      lon = -88.2434,
+      size = 1,
+      radius = 500,
+      depths = c(0.15, 0.30)  # Missing 0 at start
+    ),
+    regexp = "First depth must be 0"
+  )
+  
+  # Should work when depths starts with 0
+  res <- extract_soil_gssurgo(
+    outdir = tmp_outdir,
+    lat = 40.1164,
+    lon = -88.2434,
+    size = 1,
+    radius = 500,
+    depths = c(0, 0.15, 0.30)  # Correct format
+  )
+  
+  expect_false(is.null(res))
 })
