@@ -11,7 +11,7 @@ extract_soil_gssurgo(
   aoi = NULL,
   size = 1,
   radius = 500,
-  depths = c(0.15, 0.3, 0.6)
+  depths = c(0, 0.15, 0.3, 0.6)
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ extract_soil_gssurgo(
 
 \item{radius}{Buffer radius in meters around lat/lon point (default: 500)}
 
-\item{depths}{Standard soil depth intervals in meters (default: c(0.15, 0.30, 0.60))}
+\item{depths}{Soil depth breakpoints in meters, must start with 0 (default: c(0, 0.15, 0.30, 0.60))}
 }
 \value{
 It returns the address for the generated soil netcdf file
