@@ -9,7 +9,7 @@
 #' @param aoi Custom area of interest as sf or terra polygon (optional)
 #' @param size Ensemble size (number of ensemble members to generate)
 #' @param radius Buffer radius in meters around lat/lon point (default: 500)
-#' @param depths Standard soil depth intervals in meters (default: c(0.15, 0.30, 0.60))
+#' @param depths Soil depth breakpoints in meters, must start with 0 (default: c(0, 0.15, 0.30, 0.60))
 #'
 #' @return It returns the address for the generated soil netcdf file
 #'
@@ -24,7 +24,7 @@
 #' @author Hamze Dokoohaki, Akash
 #' @export
 #'  
-extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, size = 1, radius = 500, depths = c(0.15, 0.30, 0.60)){
+extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, size = 1, radius = 500, depths = c(0, 0.15, 0.30, 0.60)){
   all.soil.ens <- list()
   
   # Validate inputs
@@ -38,6 +38,14 @@ extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, siz
       terra::vect(crs = "epsg:4326") %>%
       terra::buffer(width = radius)
 
+  }
+
+  # Validate depths parameter (must start with 0, like hist() breaks)
+  if (depths[1] != 0) {
+    PEcAn.logger::logger.severe(
+      "First depth must be 0. Use depths = c(0, 0.15, 0.30, ...) like hist() breaks. ",
+      "This creates n layers from n+1 breakpoints."
+    )
   }
 
   PEcAn.logger::logger.info("Querying gSSURGO Web Coverage Service for map unit keys")
@@ -78,14 +86,10 @@ extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, siz
   depths_cm <- depths * 100
   all_soil_data <- list()
   
-  for (i in seq_along(depths_cm)) {
-    if (i == 1) {
-      top_depth <- 0
-      bottom_depth <- depths_cm[1]
-    } else {
-      top_depth <- depths_cm[i-1]
-      bottom_depth <- depths_cm[i]
-    }
+  # loop through depth intervals (n+1 breaks --> n intervals, like hist())
+  for (i in seq_len(length(depths_cm) - 1)) {
+    top_depth <- depths_cm[i]
+    bottom_depth <- depths_cm[i + 1]
     
     depth_hz <- hz_data %>%
       dplyr::filter(hzdept_r < bottom_depth & hzdepb_r > top_depth)
