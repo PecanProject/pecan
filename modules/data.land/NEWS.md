@@ -9,7 +9,7 @@
 
 ## Deprecated
 
-* `gSSURGO.Query()` is deprecated in favor of `extract_soil_gssurgo()` which uses the modern `soilDB` package. `gSSURGO.Query()` will be removed in a future release.
+* `gSSURGO.Query()` is deprecated in favor of `extract_soil_gssurgo()` which uses the modern `soilDB` package. `gSSURGO.Query()` will be removed in a future release. (#3697)
 
 # PEcAn.data.land 1.8.2
 - Removed unused parameter `machine` from put_veg_module()
