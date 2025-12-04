@@ -167,17 +167,6 @@ settings$info <- list(
 
 Editing the more interesting settings to change the PFT (`settings$pfts`) or extend the run (`settings$run$end.date`) is beyond the scope of this demo. You _could_ change the pft or the end date, but you would need a new file containing parameters for that PFT (`settings$pfts$pft$posterior.files`), or a climate file (`settings$run$met$path$path1`) that extends to the desired simulation period.
 
-# Create Output Directory
-
-Before running the workflow, we need to ensure that the output directory specified in the settings exists. This directory will store all the model outputs, configuration files, and results from the simulation.
-
-> **Note:** All outputs will be written to `settings$outdir`. You can change this directory in your `pecan.xml` file or by modifying `settings$outdir` in the notebook before running the workflow. You can also put the `sipnet` executable anywhere you prefer, as long as you update `settings$model$binary`.
-
-```{r create-outdir}
-dir.create(settings$outdir, recursive = TRUE, showWarnings = FALSE)
-```
-
-
 The directory structure created by PEcAn for this demo run will look like this:
 
 ```
