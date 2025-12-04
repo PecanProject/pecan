@@ -53,10 +53,13 @@
 #' }
 #' @author Hamze Dokohaki, Akash
 #' @export
+#' @deprecated Use [extract_soil_gssurgo()] with soilDB instead.
 gSSURGO.Query <- function(mukeys,
                           fields = c("chorizon.sandtotal_r",
                                      "chorizon.silttotal_r",
                                      "chorizon.claytotal_r")) {
+  .Deprecated("extract_soil_gssurgo")
+
 
   ######### Retrieve soil
 

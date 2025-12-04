@@ -43,3 +43,64 @@ When running `devtools::check()` a common warning relating to `dplyr` code is "n
 In [data-masking](https://dplyr.tidyverse.org/articles/programming.html#data-masking) situations (e.g. `mutate()`, `filter()`), you can eliminate this warning by using the `.data` pronoun.  For example, instead of `df %>% mutate(newvar = oldvar + 2)`, use `df %>% mutate(newvar = .data$oldvar + 2)`.
 
 In [tidy-select](https://dplyr.tidyverse.org/articles/programming.html#data-masking) situations (e.g. `select()`, `rename()`), you can eliminate this warning by using strings instead of naked column names. For example, instead of `df %>% select(y)` use `df %>% select("y")`.  Using `.data` inside of `select()` is [deprecated as of tidyselect v1.2.0](https://tidyselect.r-lib.org/news/index.html#lifecycle-changes-1-2-0)
+
+
+# Function Lifecycle Management
+
+## How to Deprecate a Function {#deprecate-function}
+
+When a function needs to be replaced or removed, follow these steps to properly deprecate it:
+
+1. **Add the `@deprecated` roxygen tag** with a message directing users to the replacement:
+   ```r
+   #' @deprecated Use [new_function_name()] instead.
+   ```
+
+2. **Add `.Deprecated()` call** at the top of the function body:
+   ```r
+   old_function <- function(...) {
+     .Deprecated("new_function_name")
+     # rest of function code
+   }
+   ```
+
+3. **Remove tests** that specifically test the deprecated function (but keep tests for the replacement function).
+
+4. **Update documentation**:
+   - Add a note to the package `NEWS.md` under a `## Deprecated` section
+   - Add a note to the main `CHANGELOG.md` under a `### Deprecated` section
+   - Mention the replacement function and that removal is planned for a future release
+
+5. **Keep the function in the codebase** for at least one release cycle to give users time to update their code.
+
+**Example PR**: See the deprecation of `gSSURGO.Query()` in favor of `extract_soil_gssurgo()` for a complete example of this process.
+
+## Removing Deprecated Functions {#remove-deprecated}
+
+After a function has been deprecated for at least one full release cycle:
+
+1. **Remove the function** from the R source file (usually in `R/` directory)
+
+2. **Update NAMESPACE**: Run `devtools::document()` to regenerate the NAMESPACE file without the removed function
+
+3. **Remove any remaining tests** that reference the function
+
+4. **Remove the `.Rd` documentation file**:
+   ```bash
+   git rm man/old_function_name.Rd
+   ```
+
+5. **Update documentation**:
+   - Add a note to `NEWS.md` under a `## Removed` section
+   - Add a note to `CHANGELOG.md` under a `### Removed` section
+
+6. **Search for any remaining references** to the function in:
+   - Vignettes
+   - Examples in other function documentation
+   - README files
+   - Book chapters
+   
+   Update or remove these references as appropriate.
+
+**Important**: Never remove a function without first deprecating it for at least one release, unless it was never included in a released version or was never exported (not in NAMESPACE).
+

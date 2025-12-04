@@ -7,6 +7,10 @@
   - **`generate_soilgrids_ensemble`**: A function to create ensemble members for a site based on processed soil carbon data. 
 - Add events schema and validate_events() function to validate events.json files against the schema (#3623, #3521).
 
+## Deprecated
+
+* `gSSURGO.Query()` is deprecated in favor of `extract_soil_gssurgo()` which uses the modern `soilDB` package. `gSSURGO.Query()` will be removed in a future release.
+
 # PEcAn.data.land 1.8.2
 - Removed unused parameter `machine` from put_veg_module()
 - Fixed "external pointer is not valid" error and addressed key bugs in `soilgrids_soilC_extract()` function (#3506)
