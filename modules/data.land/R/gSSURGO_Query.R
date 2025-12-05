@@ -1,6 +1,12 @@
 ############ Retrives soil data from gssurgo
 #' This function queries the gSSURGO database for a series of map unit keys
 #'
+#' @description
+#' \lifecycle{deprecated}
+#' 
+#' `gSSURGO.Query()` was deprecated in PEcAn 1.8.0.
+#' Please use `soilDB::extract_soil_gssurgo()` instead (see issue #3697).
+#' 
 #' @param mukeys map unit key from gssurgo
 #' @param fields a character vector of the fields to be extracted. See details and the default argument to find out how to define fields.
 #'
@@ -53,7 +59,6 @@
 #' }
 #' @author Hamze Dokohaki, Akash
 #' @export
-#' @deprecated Use [extract_soil_gssurgo()] with soilDB instead.
 gSSURGO.Query <- function(mukeys,
                           fields = c("chorizon.sandtotal_r",
                                      "chorizon.silttotal_r",
