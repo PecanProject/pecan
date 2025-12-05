@@ -21,7 +21,7 @@ a dataframe with soil properties.
 \lifecycle{deprecated}
 
 \code{gSSURGO.Query()} was deprecated in PEcAn 1.8.0.
-Please use \code{soilDB::extract_soil_gssurgo()} instead (see issue #3697).
+\code{gSSURGO.Query()} is deprecated, please use \code{PEcAn.data.land::extract_soil_gssurgo()} instead (see issue #3697).
 }
 \details{
 This function queries the NRCS gSSURGO database using map unit keys (mukeys).
