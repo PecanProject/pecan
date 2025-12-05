@@ -72,7 +72,3 @@ Full documentation of available tables and their relationships is provided in th
 \author{
 Hamze Dokohaki, Akash
 }
-\section{Deprecated}{
-
-Use \code{\link[=extract_soil_gssurgo]{extract_soil_gssurgo()}} with soilDB instead.
-}
