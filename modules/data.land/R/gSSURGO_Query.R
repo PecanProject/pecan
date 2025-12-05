@@ -5,7 +5,7 @@
 #' \lifecycle{deprecated}
 #' 
 #' `gSSURGO.Query()` was deprecated in PEcAn 1.8.0.
-#' Please use `soilDB::extract_soil_gssurgo()` instead (see issue #3697).
+#' `gSSURGO.Query()` is deprecated, please use `PEcAn.data.land::extract_soil_gssurgo()` instead (see issue #3697).
 #' 
 #' @param mukeys map unit key from gssurgo
 #' @param fields a character vector of the fields to be extracted. See details and the default argument to find out how to define fields.
