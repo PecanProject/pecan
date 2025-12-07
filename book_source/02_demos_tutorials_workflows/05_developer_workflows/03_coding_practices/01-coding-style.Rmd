@@ -59,7 +59,7 @@ When a function needs to be replaced or removed, follow these steps to properly 
 2. **Add `.Deprecated()` call** at the top of the function body:
    ```r
    old_function <- function(...) {
-     .Deprecated("new_function_name")
+     .Deprecated("package_name::new_function_name")
      # rest of function code
    }
    ```
