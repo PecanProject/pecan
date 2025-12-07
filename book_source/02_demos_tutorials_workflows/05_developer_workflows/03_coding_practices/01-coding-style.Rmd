@@ -53,7 +53,7 @@ When a function needs to be replaced or removed, follow these steps to properly 
 
 1. **Add the `@deprecated` roxygen tag** with a message directing users to the replacement:
    ```r
-   #' @deprecated Use [new_function_name()] instead.
+   #' `old_function_name()` is deprecated, please use `package::new_function_name()` instead. 
    ```
 
 2. **Add `.Deprecated()` call** at the top of the function body:
