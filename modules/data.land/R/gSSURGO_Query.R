@@ -58,7 +58,7 @@ gSSURGO.Query <- function(mukeys,
                           fields = c("chorizon.sandtotal_r",
                                      "chorizon.silttotal_r",
                                      "chorizon.claytotal_r")) {
-  .Deprecated("extract_soil_gssurgo")
+  .Deprecated("PEcAn.data.land::extract_soil_gssurgo")
 
 
   ######### Retrieve soil
