@@ -1,61 +1,59 @@
-#' @title Convert TRY database data to PEcAn meta-analysis format
-#' @description Reformats trait data from TRY database for PEcAn MA
-#'
-#' @param try_data Data frame from TRY database export
-#' @param trait_map Named vector mapping TRY trait names to PEcAn variable names       
-#' @param citation_id Citation ID for data attribution (default: 999)
-#' @return Data frame formatted for PEcAn meta-analysis
+#' Convert TRY database data to PEcAn meta-analysis format
+#' 
+#' @param try_data TRY data frame
+#' @param trait_map Named vector: TRY TraitName -> PEcAn vname
+#' @param citation_id Default citation ID
 #' @export
 format_try_for_ma <- function(try_data, trait_map, citation_id = 999) {
-
-  # Input validation
-  if (missing(try_data)) {
-    stop("try_data is required")
-  }
-
-  if (!is.data.frame(try_data)) {
-    stop("try_data must be a data frame")
-  }
-
-  message("TRY to PEcAn MA Formatter")
-  message("==========================")
-  message("Status: Awaiting TRY data format from issue #3717")
-  message("")
-  message("This function will convert TRY database exports to")
-  message("PEcAn meta-analysis format once the TRY data structure")
-  message("is provided in GitHub issue #3717.")
   
-  # Return empty structure with correct columns
+  # Filter trait data only
+  if (!"TraitID" %in% names(try_data)) {
+    stop("TRY data must contain 'TraitID' column")
+  }
+  
+  trait_rows <- !is.na(try_data$TraitID)
+  if (sum(trait_rows) == 0) {
+    warning("No trait data found")
+    return(data.frame())
+  }
+  
+  data <- try_data[trait_rows, ]
+  
+  # Create output
   result <- data.frame(
-    id = integer(0),
-    citation_id = integer(0),
-    site_id = integer(0),
-    treatment_id = integer(0),
-    name = character(0),
-    date = as.Date(character(0)),
-    time = character(0),
-    cultivar_id = integer(0),
-    specie_id = integer(0),
-    mean = numeric(0),
-    statname = character(0),
-    stat = numeric(0),
-    n = numeric(0),
-    vname = character(0),
-    month = integer(0),
-    greenhouse = logical(0),
-    control = logical(0),
+    id = if ("ObsDataID" %in% names(data)) data$ObsDataID else 1:nrow(data),
+    citation_id = citation_id,
+    site_id = 1,
+    treatment_id = NA,
+    name = NA,
+    date = NA,
+    time = NA,
+    cultivar_id = NA,
+    specie_id = NA,
+    mean = if ("StdValue" %in% names(data)) as.numeric(data$StdValue) else NA,
+    statname = if ("ErrorRisk" %in% names(data)) "SE" else NA,
+    stat = if ("ErrorRisk" %in% names(data)) as.numeric(data$ErrorRisk) else NA,
+    n = if ("Replicates" %in% names(data)) as.numeric(data$Replicates) else NA,
+    vname = if ("TraitName" %in% names(data)) {
+      sapply(data$TraitName, function(x) {
+        if (x %in% names(trait_map)) trait_map[x] else x
+      })
+    } else NA,
+    month = NA,
+    greenhouse = FALSE,
+    control = FALSE,
     stringsAsFactors = FALSE
   )
   
+  message("Converted ", nrow(result), " trait records")
   return(result)
 }
 
-#' @title Example TRY trait name mapping
+#' Example trait mapping
 #' @export
-example_trait_mapping <- c(
-  "Leaf nitrogen content per leaf dry mass" = "leaf_N_concentration",
+try_trait_mapping <- c(
+  "Leaf nitrogen (N) content per leaf dry mass" = "leaf_N_concentration",
   "Leaf phosphorus content per leaf dry mass" = "leaf_P_concentration",
   "Leaf carbon content per leaf dry mass" = "leaf_C_concentration",
-  "Leaf mass per area" = "SLA",
-  "Stem nitrogen content per stem dry mass" = "stem_N_concentration"
+  "Leaf mass per area" = "SLA"
 )
