@@ -52,10 +52,9 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[5]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "nep"] * -1, "Mg/ha/yr", "kg/m2/s")
     output[[6]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "npp"], "Mg/ha/yr", "kg/m2/s")
     
-    ## standard variables: C-State
-    ## C-State (pools) - convert Mg/ha to kg/m2 (no time division)
-    output[[7]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"] + sub.GDAY.output[, "branch"], "Mg/ha", "kg/m2")
-    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha", "kg/m2")
+    ## standard variables: C-State (pools) - divide by timestep as in original code
+    output[[7]] <- (PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"], "Mg/ha", "kg/m2") + sub.GDAY.output[, "branch"] * THA_2_KG_M2) / timestep.s
+    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha", "kg/m2") / timestep.s
     output[[9]] <- (sub.GDAY.output[, "lai"])
     
     ## standard variables: water fluxes
