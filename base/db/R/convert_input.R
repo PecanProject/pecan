@@ -489,7 +489,7 @@ convert_input <-
   # Get machine information
   machine.info <- get_machine_info(host, input.args = input.args, input.id = input.id, con = con)
 
-  if (any(sapply(machine.info, is.null))) {
+  if (is.null(machine.info)) {
     PEcAn.logger::logger.error("failed lookup of inputs or dbfiles")
     return(NULL)  
   }

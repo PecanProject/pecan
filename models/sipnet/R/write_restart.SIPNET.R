@@ -51,7 +51,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   analysis.save <- list()
   
   if ("NPP" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  # Unit conversion: kgC/m2/s -> Mg/ha/yr
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
 

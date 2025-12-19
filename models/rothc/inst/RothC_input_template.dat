@@ -1,0 +1,11 @@
+# RothC 2.0 input for @ENSNAME@ (@SITE_LAT@, @SITE_LON@)
+# @START_YEAR@-@START_MONTH@-@START_DAY@ to @END_YEAR@-@END_MONTH@-@END_DAY@
+#
+# opt_RMmoist  opt_SMDbare
+    @OPT_RMMOIST@          @OPT_SDDBARE@
+# (%)     (cm)  (t C/ha)      (-)      (%) (g/m3)     (%)   (-)
+# clay	depth	    iom   nsteps  siltper     BD      OC    minRM_Moist
+@SOIL_PARAMS@
+# (-)    (-)       (%)    (C)     (mm)    (mm)  (t C/ha) (t C/ha) (-)      (-)      (-)       (-)      (-)      (-)      (-) 
+# year  month    modern	Tmp	Rain	Evap   C_inp	FYM	PC    PL_DPM_f PL_RPM_f OA_DPM_f OA_RPM_f OA_BIO_f OA_HUM_f
+@CLIM_DATA@
