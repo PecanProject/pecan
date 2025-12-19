@@ -55,6 +55,7 @@
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
+"dplyr","*","models/rothc","Imports",FALSE
 "dplyr","*","models/sipnet","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
 "dplyr","*","modules/assim.sequential","Imports",FALSE
@@ -171,6 +172,7 @@
 "lubridate",">= 1.6.0","models/lpjguess","Imports",FALSE
 "lubridate",">= 1.6.0","models/maat","Imports",FALSE
 "lubridate",">= 1.6.0","models/maespa","Imports",FALSE
+"lubridate",">= 1.6.0","models/rothc","Imports",FALSE
 "lubridate",">= 1.6.0","models/sipnet","Imports",FALSE
 "lubridate",">= 1.6.0","modules/assim.batch","Imports",FALSE
 "lubridate",">= 1.6.0","modules/assim.sequential","Imports",FALSE
@@ -233,6 +235,7 @@
 "ncdf4","*","models/basgra","Imports",FALSE
 "ncdf4","*","models/dvmdostem","Imports",FALSE
 "ncdf4","*","models/ldndc","Imports",FALSE
+"ncdf4","*","models/rothc","Imports",FALSE
 "ncdf4","*","models/sibcasa","Imports",FALSE
 "ncdf4","*","models/stics","Imports",FALSE
 "ncdf4","*","modules/assim.sequential","Imports",FALSE
@@ -340,6 +343,7 @@
 "PEcAn.logger","*","models/lpjguess","Imports",TRUE
 "PEcAn.logger","*","models/maat","Imports",TRUE
 "PEcAn.logger","*","models/maespa","Imports",TRUE
+"PEcAn.logger","*","models/rothc","Imports",TRUE
 "PEcAn.logger","*","models/sibcasa","Imports",TRUE
 "PEcAn.logger","*","models/sipnet","Imports",TRUE
 "PEcAn.logger","*","models/stics","Imports",TRUE
@@ -433,6 +437,7 @@
 "PEcAn.utils",">= 1.4.8","models/ldndc","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/stics","Imports",TRUE
 "PEcAn.utils",">= 1.4.8","models/template","Imports",TRUE
+"PEcAn.utils",">= 1.8.0","models/rothc","Imports",TRUE
 "PEcAn.visualization","*","modules/assim.sequential","Suggests",TRUE
 "PEcAn.visualization","*","modules/data.land","Imports",TRUE
 "PEcAn.visualization","*","modules/priors","Suggests",TRUE
@@ -497,6 +502,7 @@
 "rlang","*","models/biocro","Imports",FALSE
 "rlang","*","models/ed","Imports",FALSE
 "rlang","*","models/ldndc","Imports",FALSE
+"rlang","*","models/rothc","Imports",FALSE
 "rlang","*","models/sipnet","Imports",FALSE
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
@@ -539,6 +545,7 @@
 "roxygen2","== 7.3.2","models/lpjguess","Roxygen",FALSE
 "roxygen2","== 7.3.2","models/maat","Roxygen",FALSE
 "roxygen2","== 7.3.2","models/maespa","Roxygen",FALSE
+"roxygen2","== 7.3.2","models/rothc","Roxygen",FALSE
 "roxygen2","== 7.3.2","models/sibcasa","Roxygen",FALSE
 "roxygen2","== 7.3.2","models/sipnet","Roxygen",FALSE
 "roxygen2","== 7.3.2","models/stics","Roxygen",FALSE
@@ -574,6 +581,7 @@
 "sp","*","modules/data.land","Imports",FALSE
 "sp","*","modules/data.remote","Imports",FALSE
 "stats","*","base/qaqc","Imports",FALSE
+"stats","*","models/rothc","Imports",FALSE
 "stats","*","models/sipnet","Imports",FALSE
 "stats","*","modules/allometry","Imports",FALSE
 "stats","*","modules/assim.batch","Imports",FALSE
@@ -632,6 +640,7 @@
 "testthat",">= 2.0.0","base/utils","Suggests",FALSE
 "testthat",">= 2.0.0","models/biocro","Suggests",FALSE
 "testthat",">= 2.0.0","modules/benchmark","Suggests",FALSE
+"testthat",">= 3.0.0","models/rothc","Suggests",FALSE
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "testthat",">= 3.1.0","modules/data.land","Suggests",FALSE
@@ -667,6 +676,7 @@
 "utils","*","models/ed","Imports",FALSE
 "utils","*","models/linkages","Imports",FALSE
 "utils","*","models/lpjguess","Imports",FALSE
+"utils","*","models/rothc","Imports",FALSE
 "utils","*","modules/allometry","Imports",FALSE
 "utils","*","modules/assim.batch","Imports",FALSE
 "utils","*","modules/assim.sequential","Suggests",FALSE
@@ -685,6 +695,7 @@
 "withr","*","base/workflow","Suggests",FALSE
 "withr","*","models/basgra","Suggests",FALSE
 "withr","*","models/ed","Suggests",FALSE
+"withr","*","models/rothc","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","models/sipnet","Suggests",FALSE
 "withr","*","modules/allometry","Suggests",FALSE
