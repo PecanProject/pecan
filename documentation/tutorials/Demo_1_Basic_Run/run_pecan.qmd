@@ -203,6 +203,9 @@ This step generates the model-specific configuration files and scripts that will
 1. Disabling database write operations because we are not using a database
 2. Generating SIPNET configuration files using the `runModule.run.write.configs()` function.
 
+> **Note:** This demo uses the SIPNET model. Running this step requires the `PEcAn.SIPNET` package to be installed. If `PEcAn.SIPNET` is not available, this step will fail when attempting to generate SIPNET-specific configuration files.
+To install the SIPNET package, run: `install.packages('PEcAn.SIPNET')`
+
 ```{r write-configs}
 settings$database <- NULL # Disable database operations for this demo
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
