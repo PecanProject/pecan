@@ -22,10 +22,8 @@ test_that("UDUNITS2 recognizes new unit strings", {
 
 test_that("SIPNET flux conversions produce realistic values", {
   
-  # GPP: ~5 g C/m2/d → kg/m2/s (should be very small)
-  gpp_result <- ud_convert(5, "g/m2/d", "kg/m2/s")
-  expect_true(gpp_result > 0)
-  expect_true(gpp_result < 5)  # Should be much smaller
+  # GPP: ~5 g C/m2/d --> kg/m2/s
+  expect_equal(ud_convert(5, "g/m2/d", "kg/m2/s"), 5.79e-8)
   
   # Pool: 1000 g C/m2 → 1 kg/m2
   wood_result <- ud_convert(1000, "g/m2", "kg/m2")
