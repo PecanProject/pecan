@@ -3,7 +3,6 @@
 # for consistent unit conversions across SIPNET, DALEC, GDAY, and FATES models.
 
 test_that("UDUNITS2 recognizes new unit strings", {
-  library(PEcAn.utils)
   
   # Pool conversions (mass only)
   expect_equal(ud_convert(100, "g/m2", "kg/m2"), 0.1)
