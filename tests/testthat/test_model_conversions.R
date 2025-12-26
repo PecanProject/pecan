@@ -21,7 +21,6 @@ test_that("UDUNITS2 recognizes new unit strings", {
 })
 
 test_that("SIPNET flux conversions produce realistic values", {
-  library(PEcAn.utils)
   
   # GPP: ~5 g C/m2/d → kg/m2/s (should be very small)
   gpp_result <- ud_convert(5, "g/m2/d", "kg/m2/s")
