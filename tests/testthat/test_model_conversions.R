@@ -1,4 +1,3 @@
-context("Unit Conversion Refactoring Tests")
 
 # These tests validate the refactoring to use PEcAn.utils::ud_convert()
 # for consistent unit conversions across SIPNET, DALEC, GDAY, and FATES models.
