@@ -84,14 +84,14 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
     ## Fluxes (convert g/m2/day to kg/m2/s)
-    output[[1]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 1], "g/m2/d", "kg/m2/s")
-    output[[2]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 21] + sub.DALEC.output[, 23], "g/m2/d", "kg/m2/s")
-    output[[3]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 31], "g/m2/d", "kg/m2/s")
-    output[[4]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 33], "g/m2/d", "kg/m2/s")
-    output[[5]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7], "g/m2/d", "kg/m2/s")
-    output[[6]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 9], "g/m2/d", "kg/m2/s")
-    output[[7]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 11], "g/m2/d", "kg/m2/s")
-    output[[8]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 13], "g/m2/d", "kg/m2/s")
+    output[[1]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 1], "g/m2/d", "kg/m2/s") # Autotrophic Respiration
+    output[[2]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 21] + sub.DALEC.output[, 23], "g/m2/d", "kg/m2/s") # Heterotrophic Resp
+    output[[3]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 31], "g/m2/d", "kg/m2/s") # GPP
+    output[[4]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 33], "g/m2/d", "kg/m2/s") # NEE
+    output[[5]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7], "g/m2/d", "kg/m2/s") # NPP
+    output[[6]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 9], "g/m2/d", "kg/m2/s") # Leaf Litter Flux
+    output[[7]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 11], "g/m2/d", "kg/m2/s") # Woody Litter Flux
+    output[[8]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 13], "g/m2/d", "kg/m2/s") # Root Litter Flux
     
     ## Pools (convert g/m2 to kg/m2)
     output[[9]]  <- PEcAn.utils::ud_convert(sub.DALEC.output[, 15], "g/m2", "kg/m2")
