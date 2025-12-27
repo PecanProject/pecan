@@ -1,0 +1,30 @@
+## Running Uncertainty Analysis using Quarto {#run-demo-2}
+
+This guide explains how to run the **Uncertainty Analysis** tutorial using the new Quarto notebook format.
+
+### Prerequisites
+
+To run this notebook interactively, you will need:
+
+[**RStudio**](https://posit.co/download/rstudio-desktop/): An integrated development environment for R.
+
+### Steps to Run
+
+1.  **Open in RStudio**:
+    Open the [`uncertainty.qmd`](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd) file in RStudio.
+
+2.  **Run Interactively**:
+    You can run separate chunks and go through the comments of every section to understand the notebook better.
+
+3.  **Render the Notebook**:
+    To render the notebook to HTML, run the following command in your terminal:
+    
+    ```bash
+    quarto render documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd
+    ```
+
+### View Generated Artifact
+
+If you prefer to view the pre-rendered output without running the code yourself, you can access the generated HTML artifact here:
+
+[**View Rendered Notebook (HTML)**](https://pecanproject.github.io/pecan-documentation/develop/rendered-demo-notebooks/uncertainty.html)

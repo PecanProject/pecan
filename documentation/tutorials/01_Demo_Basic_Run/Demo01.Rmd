@@ -1,5 +1,12 @@
 ## Demo 01: Basic Run PEcAn {#demo-1}
 
+> [!WARNING]
+> This web UI tutorial is deprecated. Please refer to the new notebook-based tutorial below.
+
+**New Tutorial:** [Basic Run (Quarto)](#run-demo-1)
+
+You can find the source for this tutorial at [https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd].
+
 ```{r echo = FALSE,warning=FALSE}
 library(knitr)
 opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,

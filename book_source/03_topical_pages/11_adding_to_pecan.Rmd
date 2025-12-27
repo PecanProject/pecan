@@ -597,7 +597,7 @@ The Data-Ingest application is capable of loading data from the DataONE data fed
 <br>
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/D1Ingest-1.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/D1Ingest-1.gif")
 ```
 <br>
 The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the `Import From DataONE` field and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. 
@@ -612,11 +612,11 @@ After this step, the workflow is identical for both methods. However, please not
 <br>
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/Local_loader_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/Local_loader_sm.gif")
 ```
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/local_browse.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/local_browse.gif")
 ```
 ### 2. Creating an Input Record
 Creating an input record requires some basic metadata about the file that is being ingested. Each entry field is briefly explained below. 
@@ -625,7 +625,7 @@ Creating an input record requires some basic metadata about the file that is bei
   - Site: To link the selected file with a site, the user can scroll or type to search all the sites in PEcAn. See Example: 
   <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/Selectize_Input_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/Selectize_Input_sm.gif")
 ```
 <br>
 - Parent: To link the selected file with another dataset, type to search existing datasets in the `Parent` field. 
@@ -640,7 +640,7 @@ knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_
 
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/DateTime.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/DateTime.gif")
 ```
 
 - Notes: Describe the data that is being uploaded. Please include any citations or references. 
@@ -661,7 +661,7 @@ If it is necessary to add a new format to PEcAn, the user should fill out the fo
 Example: 
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/new_format_record.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/new_format_record.gif")
 ```
 ### 4. Formats_Variables Record
 The final step in the ingest process is to register a formats-variables record. This record links pecan variables with variables from the selected data. 
@@ -677,7 +677,7 @@ The final step in the ingest process is to register a formats-variables record. 
 - Column Number: Vector of integers that list the column numbers associated with variables in a dataset. Required for text files that lack headers.
 <br>
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
-knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/data-ingest/D1Ingest-9_sm.gif")
+knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/D1Ingest-9_sm.gif")
 ```
 
 Finally, the path to the ingest data is displayed in the `Select Files` box. 
@@ -710,7 +710,7 @@ If the Format you are looking for is not available, you will need to create a ne
 
 Here is an example using a fake dataset:
 
-![example_data](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/example_data.png)
+![example_data](02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/example_data.png)
 
 
 
@@ -728,7 +728,7 @@ You will need to fill out the following fields:
 
 Here is the Formats record for the example data:
 
-![format_record_1](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/format_record_1.png)
+![format_record_1](02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/format_record_1.png)
 
 When you have finished this section, hit Create. The final record will be displayed on the screen. 
 
@@ -740,7 +740,7 @@ To enter this data, select Edit Record and on the edit screen select View Relate
 
 Here is the record for the example data after adding related variables:
 
-![format_record_2](02_demos_tutorials_workflows/02_user_demos/05_advanced_user_guide/images/format_record_2.png)
+![format_record_2](02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/format_record_2.png)
 
 ##### Name and Unit
 

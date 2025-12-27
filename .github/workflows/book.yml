@@ -12,11 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-render-quarto:
-    uses: ./.github/workflows/render-quarto.yml
-
   bookdown:
-    needs: call-render-quarto
     runs-on: ubuntu-latest  
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -49,11 +45,6 @@ jobs:
       run: |
         cd book_source
         Rscript -e 'options(bookdown.render.file_scope=FALSE); bookdown::render_book("index.Rmd", "bookdown::gitbook")'
-    # download quarto artifacts
-    - uses: actions/download-artifact@v4
-      with:
-        name: quarto-html
-        path: book_source/_book/
     # save artifact
     - uses: actions/upload-artifact@v4
       with:
@@ -88,7 +79,7 @@ jobs:
         fi
         cd pecan-documentation
         mkdir -p $VERSION
-        rsync -a --delete ../book_source/_book/ ${VERSION}/
+        rsync -a --delete --exclude 'rendered-demo-notebooks' ../book_source/_book/ ${VERSION}/
         git add --all *
         git commit -m "Build book from pecan revision ${GITHUB_SHA}" || true
         git push -q origin main

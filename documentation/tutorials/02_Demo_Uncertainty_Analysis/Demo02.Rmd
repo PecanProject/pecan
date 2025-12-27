@@ -1,5 +1,12 @@
 ## Demo 02: Sensitivity and Uncertainty Analysis {#demo-2}
 
+> [!WARNING]
+> This web UI tutorial is deprecated. Please refer to the new notebook-based tutorial below.
+
+**New Tutorial:** [Uncertainty Analysis (Quarto)](#run-demo-2)
+
+You can find the source for this tutorial at [https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd).
+
 In Demo 2 we will be looking at how PEcAn can use information about parameter uncertainty to perform three automated analyses:
 
 *	**Ensemble Analysis**: Repeat numerous model runs, each sampling from the parameter uncertainty, to generate a probability distribution of model projections. **Allows us to put a confidence interval on the model**
