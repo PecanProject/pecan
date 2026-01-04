@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- Add function `PEcAn.MA::meta_analysis_standalone` to run meta-analysis without database or file IO.
 - Add function `clip_and_save_raster_file()` for subsetting rasters to match a polygon of interest (#3537).
 - Add CH4 and N2O to standard_vars in PEcAn.utils
 - New function `sat_vapor_pressure()` added for computing saturation vapor pressure from temperature using various methods.
@@ -34,6 +35,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
  - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
 - added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
 - The PEcAn uncertainty analysis tutorial ("Demo 2") has been updated and reimplemented as a Quarto notebook at `documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd`. (#3570)
+- Added Demo 03: Meta Analysis Quarto notebook (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) to demonstrate how to perform Bayesian meta-analysis and visualize posterior distributions using pre-generated trait data.
 
 ### Fixed
 
@@ -43,6 +45,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- `assign.treatments` has been renamed to `assign_treatments` and moved from `PEcAn.utils` to `PEcAn.MA` since that's the only place where it's used.
+- With new `PEcAn.MA::meta_analysis_standalone` function, `PEcAn.MA::run.meta.analysis.pft` now saves all files all at once _after_ the complete meta-analysis runs (and only if it is successful, including prior and posterior checks), rather than saving intermediate objects (like "JAGS-ified" data) as they are created.
 - Package `PEcAn.uncertainty` has changed licensing. With approval from all its contributors, we now provide it under a BSD 3-clause license rather than the previously used NCSA Open Source license.
 - Ensemble and sensitivity analyses now assign an ensemble ID if one is not specified in the XML, even when running with no DB (#3654).
 - `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
