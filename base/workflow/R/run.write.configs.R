@@ -8,7 +8,8 @@
 #'
 #' @param settings a PEcAn settings list
 #' @param ensemble.size number of ensemble runs
-#' @param input_design input indices for samples
+#' @param input_design data frame containing the design matrix describing parameter and input indices, as
+#'   documented in \code{runModule.run.write.configs()}.
 #' @param write should the runs be written to the database?
 #' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
 #'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
@@ -28,6 +29,15 @@
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
                               overwrite = TRUE) {
+
+  # Validate that input_design matches ensemble.size
+  if (nrow(input_design) != ensemble.size) {
+    stop(
+      "input_design has ", nrow(input_design), " rows, but ensemble.size is ",
+      ensemble.size, ".The design matrix must have exactly one row for each run."
+    )
+  }
+                              
   ## Skip database connection if settings$database is NULL or write is False
   if (!isTRUE(write) && is.null(settings$database)) {
     PEcAn.logger::logger.info("Not writing this run to database, so database connection skipped")

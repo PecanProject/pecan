@@ -4,12 +4,13 @@ author:
   - "Aritra Dey"
   - "David LeBauer"
 format:
-  pdf:
-    toc: true
-    number-sections: true
-    fig-width: 10
-    fig-height: 6
-    fig-dpi: 300
+  html: default
+  pdf: default
+toc: true
+number-sections: true
+fig-width: 10
+fig-height: 6
+fig-dpi: 300
 ---
 
 # Introduction {#introduction}
@@ -58,9 +59,11 @@ options(repos = c(
   pecanproject = 'https://pecanproject.r-universe.dev',
   CRAN = 'https://cloud.r-project.org'))
 # Download and install PEcAn.all in R
-install.packages('PEcAn.all')
+install.packages(c('PEcAn.all', 'PEcAn.SIPNET'))
 
 ```
+
+> Note: This notebook uses the SIPNET model for demonstration purposes.
 
 - A valid `pecan.xml` configuration file or use the example provided: `pecan/documentation/tutorials/Demo_1_Basic_Run/pecan.xml`
 
@@ -167,17 +170,6 @@ settings$info <- list(
 
 Editing the more interesting settings to change the PFT (`settings$pfts`) or extend the run (`settings$run$end.date`) is beyond the scope of this demo. You _could_ change the pft or the end date, but you would need a new file containing parameters for that PFT (`settings$pfts$pft$posterior.files`), or a climate file (`settings$run$met$path$path1`) that extends to the desired simulation period.
 
-# Create Output Directory
-
-Before running the workflow, we need to ensure that the output directory specified in the settings exists. This directory will store all the model outputs, configuration files, and results from the simulation.
-
-> **Note:** All outputs will be written to `settings$outdir`. You can change this directory in your `pecan.xml` file or by modifying `settings$outdir` in the notebook before running the workflow. You can also put the `sipnet` executable anywhere you prefer, as long as you update `settings$model$binary`.
-
-```{r create-outdir}
-dir.create(settings$outdir, recursive = TRUE, showWarnings = FALSE)
-```
-
-
 The directory structure created by PEcAn for this demo run will look like this:
 
 ```
@@ -198,13 +190,9 @@ Additional outputs include logs, a `STATUS` file that records the steps of the w
 
 # Write Model Configuration Files
 
-This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process involves:
-
-1. Disabling database write operations because we are not using a database
-2. Generating SIPNET configuration files using the `runModule.run.write.configs()` function.
+This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process involves generating SIPNET configuration files using the `runModule.run.write.configs()` function.
 
 ```{r write-configs}
-settings$database <- NULL # Disable database operations for this demo
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
 ```
 

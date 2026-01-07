@@ -1,16 +1,24 @@
 # PEcAn.data.atmosphere 1.9.1
 
-* `ERA5_met_process()` can now process ensemble data efficiently in parallel using new option `n_cores`
+## Added
+* New function `sat_vapor_pressure()` computes saturation vapor pressure from temperature (#3597).
+* New function `AmeriFlux_met_ensemble()` generates weather ensembles from Ameriflux data with ERA5 fallback for missing radiation and soil moisture (#3586).
+* `ERA5_met_process()` gains option `n_cores` to process ensemble data efficiently in parallel (#3563).
+* `download.ERA5_cds` gains options `time`, `dataset`, `product_type`, all defaulting to the values previously hard-coded (#3547).
+
+## Fixed
+* Updated `download.NOAA_GEFS` to work with the current (v12.3) release of GEFS (#3349).
+
+## Changed
 * Dependency `ggplot2` is now suggested rather than required. It is used in two vignettes and for optional diagnostic plots from `debias_met_regression`.
-* `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
-* New function `sat_vapor_pressure()` added for computing saturation vapor pressure from temperature using various methods.
-* Added `AmeriFlux_met_ensemble()` function with ERA5 fallback for AmeriFlux meteorological data processing and ensemble generation
-* `extract.nc.ERA5()` and `met2CF.ERA5` now supports both ensemble and reanalysis data processing .
-* added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
-* `download.NOAA_GEFS` is updated to work again with GEFS v12.3,
-	the current release as of this writing in July 2024 (#3349).
+* `download.ERA5_cds` now downloads NetCDF directly (replacing internal conversion from grib) using the R package ecmwfr (replacing python dependency on cdsapi via reticulate) (#3547).
+* `download.ERA5.cds()` now requires a valid Copernicus CDS API key, replacing the previous `.netrc` authentication. See the [ecmwfr package documentation](https://bluegreen-labs.github.io/ecmwfr/) for details.
+* `extract.nc.ERA5()` and `met2CF.ERA5` now support both ensemble and single-member data products (#3584).
+* added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble` (#3586).
 * Removed `sitename` and `username` from the formal arguments of `download.NOAA_GEFS`.
-	Before they were silently ignored, now they're treated as part of `...` (which is also ignored!).
+	Before they were silently ignored, now they're treated as part of `...` (which is also ignored!) (#3349).
+
+
 
 # PEcAn.data.atmosphere 1.9.0
 

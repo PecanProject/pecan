@@ -487,18 +487,42 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       leaf_pheno_path <- settings$run$inputs$leaf_phenology$path
       if (!is.null(leaf_pheno_path)) {
         ##read data
-        leafphdata <- utils::read.csv(leaf_pheno_path)
+        leafphdata <- utils::read.csv(leaf_pheno_path) #leaf phenology data starting from 2001-01-01 to current
         leafOnDay <- leafphdata$leafonday[leafphdata$year == obs_year_start
                                           & leafphdata$site_id == settings$run$site$id]
         leafOffDay <- leafphdata$leafoffday[leafphdata$year == obs_year_start
                                             & leafphdata$site_id == settings$run$site$id]
-        # when we have NAs for phenology.
-        if (is.na(leafOnDay)) {
-          leafOnDay <- param[which(param[, 1] == "leafOnDay"), 2]
+        # when we have NAs for phenology (or missing years)
+        if (length(leafOnDay) == 0 || is.na(leafOnDay)) {
+          # 1. Try to calculate the mean across all available years for this site
+          site_phenology_on <- leafphdata$leafonday[leafphdata$site_id == settings$run$site$id]
+          mean_on <- mean(site_phenology_on, na.rm = TRUE)
+          
+          if (!is.nan(mean_on) && !is.na(mean_on)) {
+            leafOnDay <- round(mean_on)
+            PEcAn.logger::logger.info(paste("Missing leafOnDay for current year. Using site mean:", leafOnDay))
+          } else {
+            # 2. If no site history exists, fall back to parameter file
+            leafOnDay <- param[which(param[, 1] == "leafOnDay"), 2]
+            PEcAn.logger::logger.warn("Missing leafOnDay and no site history. Using parameter file default.")
+          }
         }
-        if (is.na(leafOffDay)) {
-          leafOffDay <- param[which(param[, 1] == "leafOffDay"), 2]
+        
+        if (length(leafOffDay) == 0 || is.na(leafOffDay)) {
+          # 1. Try to calculate the mean across all available years for this site
+          site_phenology_off <- leafphdata$leafoffday[leafphdata$site_id == settings$run$site$id]
+          mean_off <- mean(site_phenology_off, na.rm = TRUE)
+          
+          if (!is.nan(mean_off) && !is.na(mean_off)) {
+            leafOffDay <- round(mean_off)
+            PEcAn.logger::logger.info(paste("Missing leafOffDay for current year. Using site mean:", leafOffDay))
+          } else {
+            # 2. If no site history exists, fall back to parameter file
+            leafOffDay <- param[which(param[, 1] == "leafOffDay"), 2]
+            PEcAn.logger::logger.warn("Missing leafOffDay and no site history. Using parameter file default.")
+          }
         }
+        
         # when we have Leaf off date larger than leaf on date.
         # Otherwise the phenology will not be used.
         if (leafOffDay > leafOnDay) {

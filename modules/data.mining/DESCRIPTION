@@ -4,7 +4,7 @@ Title: PEcAn Functions Used for Exploring Model Residuals and Structures
 Description: (Temporary description) PEcAn functions used for exploring model residuals and structures.
 URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
-Version: 1.7.4.9000
+Version: 1.7.5
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))

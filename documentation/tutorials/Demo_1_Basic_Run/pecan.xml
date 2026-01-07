@@ -11,7 +11,7 @@
   <pft>
    <name>temperate.coniferous</name>
    <posterior.files>pft/temperate.coniferous/prior.distns.Rdata</posterior.files>
-   <outdir>pft/temperate.coniferous/pft/temperate.coniferous</outdir>
+   <outdir>pft/temperate.coniferous</outdir>
   </pft>
  </pfts> 
  <ensemble>

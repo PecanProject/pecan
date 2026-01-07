@@ -28,7 +28,7 @@ In PEcAn, you can tell that it is ready to receive messages if the corresponding
 [*] Waiting for messages. To exit press CTRL+C.
 ```
 
-Our `reciever` is configured by three environment variables:
+Our `receiver` is configured by three environment variables:
 
 - `RABBITMQ_URI` -- This defines the URI where RabbitMQ is running.
 See corresponding argument in the [producer](#rabbitmq-basics-sender)
