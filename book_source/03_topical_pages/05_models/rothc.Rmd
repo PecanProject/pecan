@@ -1,0 +1,67 @@
+## RothC {#models-rothc}
+
+| Model Information ||
+| -- | -- |
+| Home Page | https://www.rothamsted.ac.uk/rothamsted-carbon-model-rothc |
+| Source Code | https://github.com/Rothamsted-Models/RothC_Code |
+| License | Apache 2.0 |
+| Authors | David Jenkinson, James Rayner, Kevin Coleman, Jonah Prout, Alice Milne, Andrew Whitmore, Roberta Farina |
+| PEcAn Integration | Chris Black |
+
+**Introduction**
+
+From the [RothC model description](https://www.rothamsted.ac.uk/rothamsted-carbon-model-rothc):
+
+> RothC is a model for the turnover of organic carbon in non-waterlogged top-soils
+> that allows for the effects of soil type, temperature, moisture content and plant cover on
+> the turnover process. It uses a monthly time step to calculate total organic carbon (t ha -1),
+> microbial biomass carbon (t ha-1) and δ14C (from which the equivalent radiocarbon age of
+> the soil can be calculated) on a years to centuries timescale.
+
+This writeup describes version 2.1 (the current release at this writing in December 2025)
+of the official Fortran version of RothC. There also exists a
+[Python implementation](https://github.com/Rothamsted-Models/RothC_Py) of RothC version 1.0,
+with slightly different input and output formats; PEcAn.RothC has not been tested with RothC 1.0
+but should in principle be able to be adapted to it if needed.
+
+**PEcAn configuration file additions**
+
+None yet.
+
+TODO" add support for setting options `RMmoist` and `SMDbare` via
+`settings$model$opt_RMmoist` and `settings$model$opt_SMDbare`.
+
+**Model specific input files**
+
+RothC takes a single input file with sections for global options, soil constants, and monthly weather and carbon input driver data. This file must be named `RothC_input.dat` and be laid out with:
+
+* Flags for options `RMmoist` and `SMDbare` on line 5,
+* soil parameters (clay, depth, iom, nsteps, siltper, BD, OC, minRM_Moist) on line 8
+* driver variables (year, month, modern, Tmp, Rain, Evap, C_inp, FYM, PC, PL_DPM_f, PL_RPM_f, OA_DPM_f, OA_RPM_f, OA_BIO_f, OA_HUM_f) on lines 11 onward.
+* Lines 1-4, 6-7, 9-10 are ignored by the model but are conventionally used to provide name and unit headers for the lines below them.
+* The first 12 row of monthly driver data (lines 11-22) are used for internal spinup.
+
+**Model configuration files**
+
+PEcAn.RothC builds its `RothC_input.dat` from 5 components:
+
+* Options are taken from the relevant lines of `settings$model`.
+* Soil parameters will be read from `settings$run$inputs$soil_physics`
+* year, month, temperature, rainfall, and evaporation are taken from the met files (`*.dat`) produced by `met2model.RothC()`
+* Plant and organic amendment inputs will be read from a PEcAn events file.
+* Decomposability of plant matter and organic amendments will be read from the PFT parameters
+	(TODO: Or the event file?)
+* All of the above components are string-substituted into a template read from `models/rothc/inst/RothC_input_template.dat`. TODO: Support passing an alternate template in settings.
+
+The fully substituted file is then written into the run folder as `RothC_input.dat`,
+along with a simple job script (`job.sh`), which is created by substituting paths into a template read from `models/rothc/inst/templat.job.`
+
+
+**Installation notes**
+
+```
+git clone https://github.com/Rothamsted-Models/RothC_Code
+cd RothC_Code
+gfortran -std=gnu RothC.for Shell.for -o rothc_bin
+cp rothc_bin /usr/local/bin/rothc_bin
+```

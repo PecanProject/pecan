@@ -1,0 +1,310 @@
+---
+title: "Demo 03: Meta Analysis"
+author: "Aritra Dey"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    fig-width: 10
+    fig-height: 6
+    fig-dpi: 300
+---
+
+# Introduction {#introduction}
+
+Meta-analysis in PEcAn is a hierarchical Bayesian statistical approach that synthesizes plant trait data from literature to constrain ecosystem model parameters. The **PEcAn.MA** module implements this functionality to combine prior information with observational data, generating posterior distributions for model parameters.
+
+The PEcAn Meta-Analysis module runs on tabular data in a specific format. In a standard PEcAn workflow, this data is often obtained by querying the BETYdb database. However, you can also generate this format manually if you have other trait data (e.g., from the TRY database). For this demonstration, we will use pre-generated data files (originally from BETYdb) to simulate the workflow without requiring an active database connection during the notebook execution.
+
+## What This Notebook Does
+
+This notebook demonstrates how to:
+
+1.  Load pre-generated trait data and priors.
+2.  Configure meta-analysis settings directly in R.
+3.  Run the `meta_analysis_standalone` function.
+4.  Analyze and visualize the posterior distributions and MCMC diagnostics.
+5.  (Optional) Run meta-analysis using `pecan.xml` configuration (Workflow approach).
+
+## The Scenario
+
+**Context & modeling scenario:**
+
+This demo supports the modeling scenario introduced in [Demo 01](../Demo_1_Basic_Run/run_pecan.qmd) and [Demo 02](../Demo_02_Uncertainty_Analysis/uncertainty.qmd), which simulated ecosystem carbon balance at the AmeriFlux Niwot Ridge Forest site ([US‑NR1](https://ameriflux.lbl.gov/sites/siteinfo/US-NR1)) using the SIPNET model.
+
+While those demos focused on running the ecosystem model, this notebook zooms in on the **Meta-Analysis** step for the **temperate coniferous** Plant Functional Type (PFT). The goal is to estimate the probability distributions for key model parameters (e.g., SLA, leaf turnover rate) by combining:
+
+*   **Priors**: Existing knowledge about the parameters.
+*   **Data**: Observed trait data from the BETYdb database (pre-generated for this demo).
+
+These informative posterior distributions can then be used to constrain the parameters of the SIPNET model (or other models) to improve prediction accuracy.
+
+# Prerequisites
+
+Before running this notebook, make sure you have:
+
+*   **PEcAn packages installed**:
+*   **For this demo**: You only need a subset of PEcAn packages to run the meta-analysis.
+```
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Install core packages for meta-analysis
+install.packages(c('PEcAn.MA', 'PEcAn.settings', 'PEcAn.utils', 'PEcAn.logger'))
+```
+       
+*   **Pre-generated Data**: This demo relies on `trait.data.Rdata` and `prior.distns.Rdata` files which are included in the `pft/temperate.coniferous` directory.
+
+# Load PEcAn Packages
+
+First, we need to load the PEcAn R packages. These packages provide all the functions we'll use to run the workflow.
+
+```{r libraries}
+# Load necessary PEcAn packages
+# library("PEcAn.all") # Alternatively, load all packages if installed
+library("PEcAn.settings")
+library("PEcAn.MA")
+library("PEcAn.utils")
+library("PEcAn.logger")
+```
+
+# Load Data and Configuration
+
+Instead of using a `pecan.xml` file, we will define the configuration directly in R and load the necessary data files.
+
+## Load Data
+
+We need to load the `trait.data` (observations) and `prior.distns` (priors) for our PFT.
+
+```{r load-data}
+# Define the path to the PFT directory containing the data
+pft_dir <- here::here("documentation/tutorials/Demo_03_Meta_Analysis/pft/temperate.coniferous")
+
+# Load trait data
+load(file.path(pft_dir, "trait.data.Rdata"))
+# This loads an object named 'trait.data'
+
+# Load priors
+load(file.path(pft_dir, "prior.distns.Rdata"))
+# This loads an object named 'prior.distns'
+
+# Check what we loaded
+print(names(trait.data))
+print(head(prior.distns))
+```
+
+## Configure Meta Analysis
+
+We can define the settings for the meta-analysis as an R list. This structure mirrors the `meta.analysis` section of a `pecan.xml` file, making it easy to translate between the two.
+
+You can modify these settings to change the number of MCMC iterations, whether to include random effects, and the convergence threshold.
+
+Key settings include:
+
+*   **iter**: MCMC (Markov Chain Monte Carlo) chain length, i.e. the total number of posterior samples in the meta-analysis, default is 3000. Smaller numbers will run faster but produce larger errors.
+*   **random.effects**: Settings related to whether to include random effects (site, treatment) in meta-analysis model.
+    *   **on**: Default is set to `FALSE` to work around convergence problems caused by an over parameterized model (e.g. too many sites, not enough data). Can be turned to `TRUE` for including hierarchical random effects.
+    *   **use_ghs**: Default is set to `TRUE` to include greenhouse measurements. Can be set to `FALSE` to exclude cases where all data is from greenhouse.
+*   **threshold**: threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2.
+
+```{r config}
+# Define configuration as a list
+ma_settings <- list(
+  iter = 3000,
+  random.effects = list(
+    on = FALSE,
+    use_ghs = TRUE
+  ),
+  threshold = 1.2
+)
+```
+
+# Run Meta Analysis (Standalone)
+
+We use the `meta_analysis_standalone` function to run the analysis. We pass the values from our `ma_settings` list to the function arguments.
+
+```{r run_meta_analysis}
+# Run standalone meta-analysis
+ma_results <- PEcAn.MA::meta_analysis_standalone(
+  trait_data = trait.data,
+  priors = prior.distns,
+  iterations = ma_settings$iter,
+  random = ma_settings$random.effects$on,
+  use_ghs = ma_settings$random.effects$use_ghs,
+  threshold = ma_settings$threshold,
+  pft_name = "temperate.coniferous",
+  outdir = pft_dir
+)
+```
+
+# PEcAn Outputs {#sec-outputs}
+
+The `meta_analysis_standalone` function returns a list containing:
+
+*   `trait.mcmc`: The raw MCMC samples.
+*   `post.distns`: The fitted posterior distributions.
+*   `jagged.data`: The formatted data used in the analysis.
+
+It also saves these results to the output directory (default is a temporary directory, or the one specified in `outdir`).
+
+## Output Directory Structure
+
+The meta-analysis produces several output files in the PFT directory.
+
+The `pft` directory contains all the outputs for the Plant Functional Types included in the analysis. Inside the specific PFT directory (e.g., `temperate.coniferous`), you will find:
+
+*   **Data & Priors**:
+    *   `trait.data.Rdata`: Contains the raw trait data points retrieved from the database.
+    *   `prior.distns.Rdata`: Contains the prior probability distributions for the traits.
+    *   `jagged.data.Rdata`: The trait data formatted for the JAGS model.
+
+*   **Model Files**:
+    *   `*.model.bug` (e.g., `SLA.model.bug`): The BUGS/JAGS model code generated for each trait. This defines the statistical model used for the meta-analysis.
+
+*   **Results**:
+    *   `trait.mcmc.Rdata`: The raw MCMC (Markov Chain Monte Carlo) samples from the Bayesian analysis. This contains the full posterior chains.
+    *   `post.distns.Rdata`: The posterior distributions fitted to the MCMC samples. These are the final parameters used by the ecosystem model.
+    *   `post.distns.MA.Rdata`: A specific version of the posterior distributions generated by the meta-analysis module.
+
+*   **Diagnostics & Plots**:
+    *   `ma.summaryplots.*.pdf` (e.g., `ma.summaryplots.SLA.pdf`): Diagnostic plots for each trait, including trace plots (to check convergence) and density plots (comparing prior, data, and posterior).
+    *   `posteriors.pdf`: A summary PDF showing the posterior distributions for all traits.
+    *   `meta-analysis.log`: A log file recording the details of the meta-analysis execution.
+
+## Posterior Distributions
+
+We can inspect the `post.distns` element of the results to see the estimated parameters.
+
+```{r inspect_posteriors}
+print(ma_results$post.distns)
+```
+
+# Visualize Meta Analysis Results {#sec-visualize}
+
+It is important to check the MCMC chains for convergence. We can visualize the trace plots and density plots for each trait using the `trait.mcmc` object from our results.
+
+The `plot` function for MCMC objects typically produces two types of plots for each parameter:
+
+1.  **Trace Plot**: Shows the value of the parameter at each iteration of the MCMC chain. We look for a "fuzzy caterpillar" shape, indicating good mixing and convergence. There should be no visible trend (drift) up or down.
+2.  **Density Plot**: Shows the estimated posterior probability distribution of the parameter. This represents our updated belief about the parameter value after combining the prior with the data.
+
+```{r plot_mcmc}
+# Adjust plot margins to prevent clipping
+par(mar = c(2, 2, 2, 2))
+
+# Iterate through each trait and plot the MCMC chains
+for (trait in names(ma_results$trait.mcmc)) {
+  print(paste("Plotting", trait))
+  plot(ma_results$trait.mcmc[[trait]], main = paste("MCMC Plots for", trait))
+}
+```
+
+# Conclusion
+
+In this demo, we have successfully run a Bayesian meta-analysis to estimate the posterior distributions of plant traits for a temperate coniferous forest.
+
+## Using these Posteriors
+
+Now that you have generated these posterior distributions, you can use them to constrain the parameters of an ecosystem model. To do this:
+
+1.  **Locate your output**: Note the path to the `post.distns.Rdata` file generated in the `pft/temperate.coniferous` directory.
+2.  **Update your `pecan.xml`**: In your model run configuration (e.g., from Demo 01 or Demo 02), update the `<posterior.files>` tag within the `<pft>` section to point to this file.
+    ```xml
+    <pft>
+      <name>temperate.coniferous</name>
+      <posterior.files>/path/to/your/demo/pft/temperate.coniferous/post.distns.Rdata</posterior.files>
+    </pft>
+    ```
+3.  **Rerun the model**: Execute your PEcAn workflow (e.g., Demo 01 or Demo 02).
+4.  **Compare results**: Observe how the width of the confidence intervals and the overall uncertainty analysis results change when using these informative priors compared to the default uninformative priors.
+
+# Alternative: Running as part of a Workflow (pecan.xml)
+
+The standalone method shown above is great for quick analysis or debugging. However, when running the meta-analysis as part of a larger, automated PEcAn workflow (e.g., connecting to BETYdb, running ecosystem models), it is often more convenient to use the `pecan.xml` configuration file and the `runModule.run.meta.analysis` function.
+
+This approach ensures that all settings are centralized and that outputs are automatically managed and registered in the workflow.
+
+## Load PEcAn Settings File
+
+Use the XML settings file (`pecan.xml`) exactly as in the Demo 1 Basic Run tutorial.
+
+```{r load-settings}
+settings_path <- here::here("documentation/tutorials/Demo_03_Meta_Analysis/pecan.xml")
+
+# Read the settings from the pecan.xml file
+settings <- PEcAn.settings::read.settings(settings_path)
+```
+
+The `meta.analysis` section in `pecan.xml` controls the behavior:
+
+```xml
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>
+      <on>FALSE</on>
+      <use_ghs>TRUE</use_ghs>
+    </random.effects>
+    <update>FALSE</update>
+  </meta.analysis>
+```
+
+Key tags include:
+
+*   **update**: Should previous results of meta.analysis and get.traits be re-used. If set to `TRUE` the meta-analysis and get.trait.data will always be executed. Setting this to `FALSE` will try and reuse existing results. Future versions will allow for AUTO as well which will try and reuse if the PFT/traits have not changed. The default value is `FALSE`.
+
+## Run Meta Analysis (Module)
+
+The `runModule.run.meta.analysis` function handles the entire process: reading data from the PFT directory (which must be populated by `get.trait.data` in a full workflow), running the analysis, and saving results.
+
+```{r run_meta_analysis_module, eval = FALSE}
+# Run meta-analysis using settings
+PEcAn.MA::runModule.run.meta.analysis(settings)
+```
+
+This will produce the same `trait.mcmc.Rdata` and `post.distns.Rdata` files in the output directory specified in the settings.
+
+# Further Exploration
+
+The [next set of tutorials](#demo-table) will focus on the process of data assimilation and parameter estimation. The next two steps are in “.Rmd” files which can be viewed online.
+
+**Assimilation 'by hand'**
+
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/sensitivity/PEcAn_sensitivity_tutorial_v1.0.Rmd) how model error changes as a function of parameter value (i.e. data assimilation ‘by hand’)
+
+
+**MCMC Concepts**
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/MCMC/MCMC_Concepts.Rmd) Bayesian MCMC concepts using the photosynthesis module
+
+**Parameter Data Assimilation (PDA)**
+
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/ParameterAssimilation/PDA.Rmd) how to perform Parameter Data Assimilation (calibration) in PEcAn. While meta-analysis constrains parameters using literature data, PDA constrains parameters by comparing model output directly against field observations (e.g., flux tower data).
+
+**State Data Assimilation (SDA)**
+
+[Explore](https://github.com/PecanProject/pecan/blob/main/documentation/tutorials/StateAssimilation/TreeRingSDA.Rmd) how to perform State Data Assimilation. This tutorial demonstrates how to update the internal states of the model (such as carbon pools) using observations, for example, assimilating tree ring widths to constrain biomass trajectories.
+
+**More info about tools, analyses, and specific tasks…**
+
+Additional information about specific tasks (adding sites, models, data; software updates; etc.) and analyses (e.g. data assimilation) can be found in the PEcAn [documentation](https://pecanproject.github.io/pecan-documentation/)
+
+If you encounter a problem with PEcAn that’s not covered in the documentation, or if PEcAn is missing functionality you need, please search [known bugs and issues](https://github.com/PecanProject/pecan/issues?q=), submit a [bug report](https://github.com/PecanProject/pecan/issues/new/choose), or ask a question in our [chat room](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ).
+
+
+# Session Information
+
+### PEcAn package versions.
+
+```{r version-info}
+if (requireNamespace("PEcAn.all", quietly = TRUE)) {
+  PEcAn.all::pecan_version()
+} else {
+  print("PEcAn.all not installed. See sessionInfo() below for package versions.")
+}
+```
+
+### R session information:
+
+```{r session-info}
+sessionInfo()
+```

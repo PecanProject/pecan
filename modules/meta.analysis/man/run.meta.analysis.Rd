@@ -18,18 +18,18 @@ run.meta.analysis(
 \arguments{
 \item{pfts}{the list of pfts to get traits for}
 
-\item{iterations}{the number of iterations for the mcmc analysis}
+\item{iterations}{(integer) Number of sampler iterations for MCMC analysis}
 
-\item{random}{should random effects be used?}
+\item{random}{(boolean; default = TRUE) Should random effects be used?}
 
 \item{threshold}{Gelman-Rubin convergence diagnostic, passed on to
 \code{\link{pecan.ma.summary}}}
 
-\item{dbfiles}{location where previous results are found}
+\item{dbfiles}{(character) directory where previous results are found}
 
 \item{database}{database connection parameters}
 
-\item{use_ghs}{do not exclude greenhouse data if TRUE}
+\item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
 \item{update}{logical: Rerun the meta-analysis if result files already exist?}
 }

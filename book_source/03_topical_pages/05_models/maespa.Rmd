@@ -6,7 +6,7 @@
 | Source Code | http://maespa.github.io/download.html|
 | License |  |
 | Authors |Belinda Medlyn and Remko Duursma |
-| PEcAn Integration |Tony Gardella, Martim DeKauwe, Remki Duursma |
+| PEcAn Integration |Tony Gardella, Martim DeKauwe, Remko Duursma |
 
 **Introduction**
 

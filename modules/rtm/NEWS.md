@@ -1,3 +1,9 @@
+# PEcAnRTM 1.9.1
+
+* Added keywords and bug reporting URL to DESCRIPTION. No code changes in this version.
+
+
+
 # PEcAnRTM 1.7.4
 
 ## License change
