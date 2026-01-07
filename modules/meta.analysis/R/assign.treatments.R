@@ -3,14 +3,18 @@
 ##' Assigns all control treatments the same value, then assigns unique treatments
 ##' within each site. Each site is required to have a control treatment.
 ##' The algorithm (incorrectly) assumes that each site has a unique set of experimental
-##' treatments. This assumption is required by the data in BETYdb that does not always consistently name treatments or quantity them in the managements table. Also it avoids having the need to estimate treatment by site interactions in the meta analysis model. This model uses data in the control treatment to estimate model parameters so the impact of the assumption is minimal.
-##' @name assign.treatments
-##' @title assign.treatments
+##' treatments. This assumption is required by the data in BETYdb that does not
+##' always consistently name treatments or quantity them in the managements
+##' table. Also it avoids having the need to estimate treatment by site
+##' interactions in the meta analysis model. This model uses data in the control
+##' treatment to estimate model parameters so the impact of the assumption is
+##' minimal.
+##'
 ##' @param data input data
 ##' @return dataframe with sequential treatments
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Alexey Shiklomanov
-assign.treatments <- function(data){
+assign_treatments <- function(data){
   data$trt_id[which(data$control == 1)] <- "control"
   sites <- unique(data$site_id)
   # Site IDs may be returned as `integer64`, which the `for` loop
@@ -31,8 +35,3 @@ assign.treatments <- function(data){
   }
   return(data)
 }
-
-drop.columns <- function(data, columns){
-  return(data[, which(!colnames(data) %in% columns)])
-}
-##=============================================================================#

@@ -9,6 +9,20 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Add function `PEcAn.MA::meta_analysis_standalone` to run meta-analysis without database or file IO.
+- Added Demo 03: Meta Analysis Quarto notebook (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) to demonstrate how to perform Bayesian meta-analysis and visualize posterior distributions using pre-generated trait data.
+
+### Fixed
+
+### Changed
+- `assign.treatments` has been renamed to `assign_treatments` and moved from `PEcAn.utils` to `PEcAn.MA` since that's the only place where it's used.
+- With new `PEcAn.MA::meta_analysis_standalone` function, `PEcAn.MA::run.meta.analysis.pft` now saves all files all at once _after_ the complete meta-analysis runs (and only if it is successful, including prior and posterior checks), rather than saving intermediate objects (like "JAGS-ified" data) as they are created.
+
+
+
+## [1.10.0] - 2026-01-06
+
+### Added
 
 - Add function `clip_and_save_raster_file()` for subsetting rasters to match a polygon of interest (#3537).
 - Add CH4 and N2O to standard_vars in PEcAn.utils
@@ -34,6 +48,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
  - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
 - added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
 - The PEcAn uncertainty analysis tutorial ("Demo 2") has been updated and reimplemented as a Quarto notebook at `documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd`. (#3570)
+- Added the shared `input_design` matrix, generated via 
+ `runModule.run.write.configs()`/`generate_joint_ensemble_design()`, that keeps
+  parameter draws and sampled inputs aligned across `run.write.configs()`,
+  `write.ensemble.configs()`(#3535, #3634, #3677).
 
 ### Fixed
 
@@ -53,7 +71,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Stopped testing on R 4.1, started testing on R 4.5, and updated prebuilt Docker images to match -- they are now available for R releases 4.2 through 4.5 as well as for R under development.
 - `write.config.STICS()` now modifies parameters with vectors rather than individually.
 - Code for DART has been moved from `modules/` to `contrib/` and its license more clearly described.
-
+- Updated docker.sh to mimic more the build for github actions, added options to push to other registries.
+- ED will now use the same configuration (docker GNU) as the official ED repository for building.
 
 
 ## [1.9.0] - 2025-05-25

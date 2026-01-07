@@ -18,7 +18,11 @@ write.ensemble.configs(
 )
 }
 \arguments{
-\item{input_design}{the input indices for samples}
+\item{input_design}{design matrix describing sampled inputs (see
+`run.write.configs()`). Columns named after `settings$run$inputs` tags give
+1-based indices into each input's `path` list and rows follow run order.
+Requires `nrow(input_design) >= ensemble.size`;
+extra rows are ignored.}
 
 \item{ensemble.size}{size of ensemble}
 
