@@ -19,3 +19,6 @@ check
 **/Rprof.out
 
 **/.scratch.R
+/doc/
+/Meta/
+docs/

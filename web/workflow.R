@@ -134,6 +134,19 @@ if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.end()
 }
 
+# Save text summaries of the variables in each *.nc output?
+# Valid write modes are
+# - "paired": save `*.nc.var` beside each `*.nc`
+# - "collected": save one `nc_vars.txt` in the outdir,
+#    containing all vars that appear in any nc in the directory
+if (!is.null(settings$nc_varfile_mode)) {
+  PEcAn.utils::nc_write_varfiles(
+    nc_dir = settings$outdir,
+    write_mode = nc_varfile_mode
+  )
+}
+
+
 # Get results of model runs
 if (PEcAn.utils::status.check("OUTPUT") == 0) {
   PEcAn.utils::status.start("OUTPUT")

@@ -12,6 +12,7 @@ settings <-
   PEcAn.settings::read.settings(file.path(testdir, "outdir", "pecan_checked.xml"))
 settings$outdir <- file.path(testdir, "outdir")
 
+expected_vars <- c("AGB_PFT", "BSEEDS", "DBH", "NPP_PFT", "TRANSP_PFT", "DENS", "PFT")
 
 test_that("read E files without ED2 pft number", {
   pfts_without_number <- list(
@@ -34,8 +35,7 @@ test_that("read E files without ED2 pft number", {
       settings = settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7) #TODO: expectation of number of variables will have to change
-  #TODO: better test would be to check for specific variables in output
+  expect_equal(names(result), expected_vars)
 })
 
 test_that("read E files without settings arg and with ED2 pft number", {
@@ -51,7 +51,7 @@ test_that("read E files without settings arg and with ED2 pft number", {
       pfts = pft_with_number
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7)
+  expect_equal(names(result), expected_vars)
 })
 
 test_that("read E files without only settings arg", {
@@ -66,7 +66,7 @@ test_that("read E files without only settings arg", {
       settings = settings
     )
   expect_type(result, "list")
-  expect_equal(length(result), 7)
+  expect_equal(names(result), expected_vars)
 })
 
 

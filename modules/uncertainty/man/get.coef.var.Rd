@@ -13,5 +13,6 @@ get.coef.var(set)
 coeficient of variance
 }
 \description{
-Given a set of numbers (a numeric vector), this returns the set's coefficient of variance.
+Given a set of numbers (a numeric vector), this returns the set's
+  coefficient of variance.
 }

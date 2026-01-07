@@ -7,7 +7,7 @@
 #'
 #' @return mean and covariance of observations
 #'
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @export
 #'
 Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){

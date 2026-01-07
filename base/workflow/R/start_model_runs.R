@@ -39,18 +39,30 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   is_rabbitmq <- !is.null(settings$host$rabbitmq)
   is_modellauncher <- !is.null(settings$host$modellauncher)
   
-  # Check if Njobmax tag exists in seetings
+  # Check if Njobmax tag exists in settings
   if (is_modellauncher){
     if (!is.null(settings$host$modellauncher$Njobmax)){
       Njobmax <- settings$host$modellauncher$Njobmax
     } else {
       Njobmax <- nruns
     }
+    settings$host$modellauncher$qsub.extra <- gsub(
+      "@NJOBS@",
+      Njobmax,
+      settings$host$modellauncher$qsub.extra
+    )
+
     compt_run <- 0
     compt_run_modellauncher <- 1
     job_modellauncher <- list()
+  } else {
+    Njobmax <- nruns
   }
-  
+
+  if (is_qsub) {
+    settings$host$qsub <- gsub("@NJOBS@", Njobmax, settings$host$qsub)
+  }
+
   # loop through runs and either call start run, or launch job on remote machine
   jobids <- list()
   
@@ -68,7 +80,6 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   # launcher folder
   jobfile <- NULL
-  firstrun <- NULL
   
   #Copy all run directories over if not local
   if (!is_local) {
@@ -115,9 +126,8 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       jobids[run] <- folder
       
     } else if (is_modellauncher) {
-      # set up launcher script if we use modellauncher
-      if (is.null(firstrun)) {
-        firstrun <- run
+      # set up one launcher script for each chunk of up to Njobmax jobs
+      if (is.null(jobfile)) {
         jobfile <- PEcAn.remote::setup_modellauncher(
           run = run,
           rundir = settings$rundir,
@@ -131,6 +141,13 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         c(file.path(settings$host$rundir, run_id_string)),
         con = jobfile)
       pbi <- pbi + 1
+      compt_run <- compt_run + 1
+      # Check if compt_run has reached Njobmax
+      if (compt_run == Njobmax) {
+        close(jobfile)
+        compt_run <- 0
+        jobfile <- NULL
+      }
       
     } else if (is_qsub) {
       out <- PEcAn.remote::start_qsub(
@@ -179,18 +196,6 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       pbi <- pbi + 1
       utils::setTxtProgressBar(pb, pbi)
     }
-    
-    # Check if compt_run has reached Njobmax
-    if (is_modellauncher){
-      compt_run <- compt_run + 1
-      if (compt_run == Njobmax){
-        close(jobfile)
-        firstrun <- NULL
-        compt_run <- 0
-        jobfile <- NULL
-      }      
-    }
-    
   } # end loop over runs
   close(pb)
   
@@ -231,7 +236,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
             stdout_log = "launcher.out.log",
             stderr_log = "launcher.err.log",
             job_script = "launcher.sh",
-            qsub_extra = settings$host$modellauncher$qsub)
+            qsub_extra = settings$host$modellauncher$qsub.extra)
         }
         # HACK: Code below gets 'run' from names(jobids) so need an entry for
         # each run. But when using modellauncher all runs have the same jobid
@@ -239,22 +244,27 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
       }
       
     } else {
+      pb <- utils::txtProgressBar(min = 0, max = nruns, style = 3)
+      pbi <- 0
+      for (run in job_modellauncher) {
         out <- PEcAn.remote::start_serial(
           run = run,
           host = settings$host,
           rundir = settings$rundir,
           host_rundir = settings$host$rundir,
           job_script = "launcher.sh")
-      
-      # check output to see if an error occurred during the model run
-      PEcAn.remote::check_model_run(out = out, stop.on.error = TRUE)
-      
+
+        # check output to see if an error occurred during the model run
+        PEcAn.remote::check_model_run(out = out, stop.on.error = TRUE)
+
+        pbi <- pbi + 1
+        utils::setTxtProgressBar(pb, pbi)
+      }
+      close(pb)
       # write finished time to database
       for (run in run_list) {
         PEcAn.DB::stamp_finished(con = dbcon, run = run)
       }
-      
-      utils::setTxtProgressBar(pb, pbi)
     }
   }
   
@@ -311,12 +321,14 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         
         # Write finish time to database
         #TODO this repeats for every run in `jobids` writing every run's time stamp every time. This actually takes quite a long time with a lot of ensembles and should either 1) not be a for loop (no `for(x in run_list)`) or 2) if `is_modellauncher`, be done outside of the jobids for loop after all jobs are finished.
-        if (is_modellauncher) {
+        if (is_modellauncher && write) {
           for (x in run_list) {
             PEcAn.DB::stamp_finished(con = dbcon, run = x)
           }
         } else {
-          PEcAn.DB::stamp_finished(con = dbcon, run = run)
+          if (write) {
+            PEcAn.DB::stamp_finished(con = dbcon, run = run)
+          }
         }
         
         # move progress bar

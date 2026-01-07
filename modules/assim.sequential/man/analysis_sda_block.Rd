@@ -33,7 +33,7 @@ analysis_sda_block(
 
 \item{MCMC.args}{arguments for the MCMC sampling, details can be found in the roxygen strucutre for control list in the `sda.enkf.multisite` function.}
 
-\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL. Details can be found in the roxygen structure for `pre_enkf_params` of the `sda.enkf.multisite` function}
+\item{block.list.all.pre}{pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL. Details can be found in the roxygen structure for `pre_enkf_params` of the `sda.enkf.multisite` function.}
 }
 \value{
 It returns the `build.block.xy` object and the analysis results.

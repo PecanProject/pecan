@@ -1,7 +1,7 @@
 Package: PEcAn.SIPNET
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.8.0.9000
+Version: 1.10.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -10,8 +10,12 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PECAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     dplyr,
+    jsonlite,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     PEcAn.data.atmosphere,
@@ -31,3 +35,4 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: SIPNET, ecosystem-modeling

@@ -13,8 +13,10 @@ NASA_DAAC_download(
   from,
   to,
   outdir = getwd(),
+  band = NULL,
+  data_version = NULL,
+  credential_path = NULL,
   doi,
-  netrc_file = NULL,
   just_path = FALSE
 )
 }
@@ -38,22 +40,27 @@ NASA_DAAC_download(
 \item{outdir}{Character: path of the directory in which to save the
 downloaded files. Default is the current work directory(getwd()).}
 
+\item{band}{Character: the band name (or vector of band names) of data to be requested. Default is NULL.}
+
+\item{data_version}{Character: the version (typically starts with V) of data to be requested. Default is NULL.}
+
+\item{credential_path}{Character: physical path to the credential file (.netrc file). The default NULL.}
+
 \item{doi}{Character: data DOI on the NASA DAAC server, it can be obtained 
 directly from the NASA ORNL DAAC data portal (e.g., GEDI L4A through 
 https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2056).}
 
-\item{netrc_file}{Character: path to the credential file, default is NULL.}
-
 \item{just_path}{Boolean: if we just want the metadata and URL or proceed the actual download.}
 }
 \value{
-A list containing meta data and physical path for each data downloaded.
+Physical paths of downloaded files (just_path = T) or URLs of the files (just_path = F).
 }
 \description{
 Parallel download data from the NASA ORNL DAAC server given period, spatial bounding box, and data DOI.
 }
 \examples{
 \dontrun{
+# SHIFT Hyper-spectral data.
 ul_lat <- 35
 ul_lon <- -121
 lr_lat <- 33
@@ -61,15 +68,111 @@ lr_lon <- -117
 from <- "2022-02-23"
 to <- "2022-05-30"
 doi <- "10.3334/ORNLDAAC/2183"
-outdir <- "/projectnb/dietzelab/dongchen/SHIFT/test_download"
-metadata <- NASA_DAAC_download(ul_lat = ul_lat, 
-                               ul_lon = ul_lon, 
-                               lr_lat = lr_lat, 
-                               lr_lon = lr_lon, 
-                               from = from, 
-                               to = to, 
-                               doi = doi,
-                               just_path = T)
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to, 
+                            doi = doi,
+                            just_path = T)
+# GEDI level 4A data.
+ul_lat <- 85
+ul_lon <- -179
+lr_lat <- 7
+lr_lon <- -20
+from <- "2020-01-01"
+to <- "2020-12-31"
+doi <- "10.3334/ORNLDAAC/2056"
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to,
+                            data_version = "V2_1", 
+                            doi = doi,
+                            just_path = T)
+# MODIS LAI data.
+ul_lat <- 85
+ul_lon <- -179
+lr_lat <- 7
+lr_lon <- -20
+from <- "2020-01-01"
+to <- "2020-01-31"
+doi <- "10.5067/MODIS/MCD15A3H.061"
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to, 
+                            doi = doi,
+                            just_path = T)
+# SMAP Soil Moisture data.
+ul_lat <- 85
+ul_lon <- -179
+lr_lat <- 7
+lr_lon <- -20
+from <- "2020-01-01"
+to <- "2020-01-31"
+doi <- "10.5067/02LGW4DGJYRX"
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to, 
+                            doi = doi,
+                            just_path = T)
+# GLANCE Phenology and LC data.
+ul_lat <- 85
+ul_lon <- -179
+lr_lat <- 7
+lr_lon <- -20
+from <- "2019-01-01"
+to <- "2019-12-31"
+doi <- "10.5067/MEaSUREs/GLanCE/GLanCE30.001"
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to, 
+                            doi = doi,
+                            just_path = T)
+# HLS reflectance data.
+ul_lat <- 35
+ul_lon <- -121
+lr_lat <- 33
+lr_lon <- -117
+from <- "2022-02-23"
+to <- "2022-05-30"
+doi <- "10.5067/HLS/HLSS30.002"
+paths <- NASA_DAAC_download(ul_lat = ul_lat, 
+                            ul_lon = ul_lon, 
+                            lr_lat = lr_lat, 
+                            lr_lon = lr_lon, 
+                            from = from, 
+                            to = to, 
+                            doi = doi,
+                            just_path = T)
+                            ul_lat <- 35
+# HLS Phenology data.
+ul_lon <- -121
+lr_lat <- 33
+lr_lon <- -117
+from <- "2019-01-01"
+to <- "2019-12-31"
+doi <- "10.5067/Community/MuSLI/MSLSP30NA.011"
+paths <- NASA_DAAC_download(ul_lat = ul_lat,
+                            ul_lon = ul_lon,
+                            lr_lat = lr_lat,
+                            lr_lon = lr_lon,
+                            from = from,
+                            to = to,
+                            doi = doi,
+                            just_path = T)
 }
 }
 \author{

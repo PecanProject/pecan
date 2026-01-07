@@ -1,0 +1,66 @@
+name: Check Documentation Links (Periodic Checks)
+
+on:
+  # Run weekdays at 10:00 UTC
+  schedule:
+    - cron: '0 10 * * 1-5'
+  # Allow manual trigger
+  workflow_dispatch:
+  # Run on PR changes to link checker config
+  pull_request:
+    paths:
+      - '.github/lychee.toml'
+      - '.github/workflows/check-links.yml'
+
+jobs:
+  links-checker:
+    # Only run on main repository for scheduled runs
+    if: ${{ github.repository == 'PecanProject/pecan' || github.event_name != 'schedule' }}
+    
+    env:
+      ISSUE_NAME: 'Documentation: broken links automatic report'
+    
+    runs-on: ubuntu-latest
+    
+    permissions:
+      issues: write  # Required for creating/updating/closing issues
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for complete link checking
+      
+      - name: Links Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config .github/lychee.toml './**/*.md' './**/*.html' './**/*.Rmd' './**/*.R' './**/*.qmd'
+          fail: false
+      
+      # Search for existing open issue to avoid creating duplicates
+      - name: Search for existing issue number
+        id: search-issue
+        run: |
+          encoded_issue_name=$(echo "$ISSUE_NAME" | sed 's/ /%20/g')
+          response=$(curl -s -X GET "https://api.github.com/search/issues?q=$encoded_issue_name+repo:PecanProject/pecan+state:open+label:automated-issue&type=Issues")
+          issue_number=$(echo "$response" | jq -r '.items[0].number // empty')
+          echo "issue_number=$issue_number" >> $GITHUB_OUTPUT
+      
+      # Create new issue or update existing one
+      - name: Create or update issue with report
+        uses: peter-evans/create-issue-from-file@v5
+        if: steps.lychee.outputs.exit_code != 0
+        with:
+          title: ${{ env.ISSUE_NAME }}
+          content-filepath: ./lychee/out.md
+          issue-number: ${{ steps.search-issue.outputs.issue_number }}
+          labels: automated-issue
+      
+      # Auto-close issue when all links are fixed
+      - name: Close automated issue
+        if: steps.lychee.outputs.exit_code == 0 && steps.search-issue.outputs.issue_number != ''
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ steps.search-issue.outputs.issue_number }}
+          comment: '[Periodic links check](https://github.com/PecanProject/pecan/actions/workflows/check-links.yml) no longer finds broken links, closing issue.'

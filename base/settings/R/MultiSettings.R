@@ -60,6 +60,7 @@ is.MultiSettings <- function(x) {
       } else if (length(x) == 1 && length(value) > 1) {
         x <- MultiSettings(replicate(length(value), x[[1]], simplify = FALSE))
         x[[i, global = FALSE]] <- value
+        x <- settingNames(x, names(value))
       } else {
         stop("Length mismatch in assigning to MultiSettings")
       }
@@ -175,25 +176,25 @@ printAll.MultiSettings <- function(x) {
 .expandableItemsTag <- "multisettings"
 
 #' @export
-listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
-  if (collapse && length(item) > 1) {
-    if (.expandableItemsTag %in% names(item)) {
+listToXml.MultiSettings <- function(x, tag = "pecan", collapse = TRUE, ...) {
+  if (collapse) {
+    if (.expandableItemsTag %in% names(x)) {
       stop("Settings can't contain reserved tag 'multisettings'.")
     }
 
     tmp <- list()
     expandableItems <- list()
-    for (setting in names(item)) {
-      value <- item[[setting, setAttributes = TRUE]]
+    for (setting in names(x)) {
+      value <- x[[setting, setAttributes = TRUE]]
       tmp[[setting]] <- value
       if (attr(value, "settingType") == "multi") {
         expandableItems <- c(expandableItems, setting)
       }
     }
-    item <- tmp
+    x <- tmp
 
     names(expandableItems) <- rep(.expandableItemsTag, length(expandableItems))
-    item[[.expandableItemsTag]] <- expandableItems
+    x[[.expandableItemsTag]] <- expandableItems
   }
 
   NextMethod()

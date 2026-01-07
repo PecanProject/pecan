@@ -9,6 +9,14 @@
 This package provides an interface between PEcAn and the BETY database.
 For usage examples, please see \code{vignette("betydb_access")}
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://pecanproject.github.io}
+  \item Report bugs at \url{https://github.com/PecanProject/pecan/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: David LeBauer \email{dlebauer@email.arizona.edu}
 

@@ -5,16 +5,19 @@ Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
              person("Rob", "Kooper", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
-Version: 1.8.0.9000
+Version: 1.9.1.9000
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Require: hdf5
 Description: Contains functions to read PEcAn settings files.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Depends:
     methods
 Imports:
+    glue,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
@@ -30,3 +33,4 @@ Suggests:
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: PEcAn, workflow-configuration

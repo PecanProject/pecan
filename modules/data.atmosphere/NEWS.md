@@ -1,8 +1,41 @@
-# PEcAn.data.atmosphere 1.8.0.9000
+# PEcAn.data.atmosphere 1.9.1
+
+## Added
+* New function `sat_vapor_pressure()` computes saturation vapor pressure from temperature (#3597).
+* New function `AmeriFlux_met_ensemble()` generates weather ensembles from Ameriflux data with ERA5 fallback for missing radiation and soil moisture (#3586).
+* `ERA5_met_process()` gains option `n_cores` to process ensemble data efficiently in parallel (#3563).
+* `download.ERA5_cds` gains options `time`, `dataset`, `product_type`, all defaulting to the values previously hard-coded (#3547).
+
+## Fixed
+* Updated `download.NOAA_GEFS` to work with the current (v12.3) release of GEFS (#3349).
+
+## Changed
+* Dependency `ggplot2` is now suggested rather than required. It is used in two vignettes and for optional diagnostic plots from `debias_met_regression`.
+* `download.ERA5_cds` now downloads NetCDF directly (replacing internal conversion from grib) using the R package ecmwfr (replacing python dependency on cdsapi via reticulate) (#3547).
+* `download.ERA5.cds()` now requires a valid Copernicus CDS API key, replacing the previous `.netrc` authentication. See the [ecmwfr package documentation](https://bluegreen-labs.github.io/ecmwfr/) for details.
+* `extract.nc.ERA5()` and `met2CF.ERA5` now support both ensemble and single-member data products (#3584).
+* added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble` (#3586).
+* Removed `sitename` and `username` from the formal arguments of `download.NOAA_GEFS`.
+	Before they were silently ignored, now they're treated as part of `...` (which is also ignored!) (#3349).
+
+
+
+# PEcAn.data.atmosphere 1.9.0
 
 ## Fixed
 
 * `download.AmerifluxLBL` no longer wrongly re-fetches raw zipfiles when `overwrite = FALSE`
+
+## Changed
+
+* Functions that take argument `site_id` now accept strings as well as BETYdb numeric IDs. 
+* `download.ERA5.old` renamed to `download.ERA5_cds`
+
+## Removed
+
+* Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
+* Removed `browndog.net`; the Browndog service is defunct.
+
 
 # PEcAn.data.atmosphere 1.8.0
 
@@ -32,7 +65,6 @@
 ## Removed
 
 *  Helper function `robustly` has moved to package PEcAn.utils [@meetagrawal, #3096]
-*  Helper function `db.site.lat.lon` has been removed. Users should use `PEcAn.DB::query.site(id, con)[c("lat", "lon")]` instead [@Sweetdevil144, #3308]
 
 
 # PEcAn.data.atmosphere 1.7.1

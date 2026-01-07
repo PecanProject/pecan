@@ -1,7 +1,6 @@
 #' Get Job ID from qsub output
 #'
 #' @inheritParams check_model_run
-#' @inheritParams start.model.runs
 #' @param qsub.jobid (character) Regular expression string for extracting job ID from qsub output.
 #' Usually from `settings$host$qsub.jobid`
 #'

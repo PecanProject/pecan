@@ -13,7 +13,8 @@ met2CF.ERA5(
   outfolder,
   out.xts,
   overwrite = FALSE,
-  verbose = TRUE
+  verbose = TRUE,
+  ens_size = 1
 )
 }
 \arguments{
@@ -29,15 +30,21 @@ met2CF.ERA5(
 
 \item{outfolder}{Path to directory where nc files need to be saved.}
 
-\item{out.xts}{Output of the extract.nc.ERA5 function which is a list of time series of met variables for each ensemble member.}
+\item{out.xts}{Output of the extract.nc.ERA5 function which is a list of time series of met variables for each ensemble member
+or single reanalysis dataset.}
 
 \item{overwrite}{Logical if files needs to be overwritten.}
 
 \item{verbose}{Logical flag defining if ouput of function be extra verbose.}
+
+\item{ens_size}{Number of ensemble members to process. Default is 1.}
 }
 \value{
 list of dataframes
 }
 \description{
 met2cf.ERA5
+}
+\author{
+Hamze Dokohaki, Akash
 }

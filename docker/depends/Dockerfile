@@ -1,4 +1,4 @@
-ARG R_VERSION="4.1"
+ARG R_VERSION="4.4"
 ARG PARENT_IMAGE="rocker/tidyverse"
 
 # ----------------------------------------------------------------------

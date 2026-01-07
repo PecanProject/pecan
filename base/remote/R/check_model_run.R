@@ -1,7 +1,7 @@
 #' Check if model run was successful
 #'
 #' @param out Output from model execution, as a character.
-#' @inheritParams start.model.runs
+#' @param stop.on.error Throw error if _any_ of the runs fails. Default TRUE.
 #'
 #' @return `TRUE` if model run succeeded. If model run failed, throw an error if `stop.on.error`, or return FALSE.
 #' @export

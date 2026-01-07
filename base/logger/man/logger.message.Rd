@@ -18,11 +18,12 @@ logger.message(level, msg, ..., wrap = TRUE)
 for specifically formatted error messages.}
 }
 \description{
-This function will print a message. This is the function that is responsible for
-the actual printing of the message.
+This function will print a message. This is the function that is responsible
+for the actual printing of the message.
 }
 \details{
-This is a place holder and will be later filled in with a more complex logging set
+This is a place holder and will be later filled in with a more complex
+logging set
 }
 \examples{
 \dontrun{

@@ -69,32 +69,111 @@ get.vpd <- function(rh, temp) {
   ## calculate saturation vapor pressure
   es <- get.es(temp)
   ## calculate vapor pressure deficit
-  return(((100 - rh)/100) * es)
+  return(((100 - rh) / 100) * es)
 } # get.vpd
 
-##' Calculate saturation vapor pressure
-##'
-##' @title get es
-##' @param temp temperature in degrees C
-##' @return saturation vapor pressure in mb
-##' @export
-##' @author David LeBauer
-##' @examples
-##' temp <- -30:30
-##' plot(temp, get.es(temp))
+#' Saturation vapor pressure (t2es)
+#'
+#' Compute saturation vapor pressure from temperature using one of the
+#' following methods:
+#' - (Default) Clausius–Clapeyron (FAO-56 style) — Recommended for most applications.
+#'   Commonly used approximation for terrestrial ecosystem models, consistent with Penman-Monteith
+#'   and FAO-56 (Allen et al, 1998).
+#' - Magnus — More accurate in the range −40 to +50 C. Coefficients as in Alduchov & Eskridge (1996).
+#' - Goff–Gratch - Highest accuracy; use when following WMO-style recommendations. Goff–Gratch 1946; WMO, 2014.
+#'
+#' Each method uses different units internally, users can specify units
+#' for both inputs and outputs, with defaults "degC" and "kPa", respectively.
+#' 
+#' @param temp numeric vector of temperatures
+#' @param method one of "Magnus","ClausiusClapeyron" (default), or "GoffGratch".
+#' See details for references.
+#' @param temp_units input temperature units ("degC","K","degF"), default "degC"
+#' @param out_units output pressure units ("kPa","hPa","Pa","mb"), default "kPa"
+#' @return numeric vector in `out_units`
+#' @aliases t2es
+#'
+#' @references
+#' Alduchov, O. A., & Eskridge, R. E. (1996). Improved Magnus Form Approximation of Saturation Vapor Pressure. J. Appl. Meteor.*, 35(4), 601–609. <doi:10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2>
+#'
+#' Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). **Crop evapotranspiration – Guidelines for computing crop water requirements.** FAO Irrigation and Drainage Paper 56.
+#'
+#' Goff, J. A., & Gratch, S. (1946). Low-pressure properties of water from −160 to 212F. Trans. ASHVE, 52, 95–122.
+#'
+#' WMO (2014) Guide to Instruments and Methods of Observation (WMO-No. 8), ch. 4.
+#' @md
+#' @author David LeBauer
+#' @examples
+#' # Calculate saturation vapor pressure at 20°C
+#' sat_vapor_pressure(20)
+#' t2es(20)
+#' 
+#' # Using different methods
+#' t2es(c(10, 20, 30), method = "Magnus")
+#' t2es(283.15, temp_units = "K", method = "GoffGratch")
+#' 
+#' # Different output units
+#' t2es(20, out_units = "hPa")
+#' @export
+sat_vapor_pressure <- function(
+    temp,
+    temp_units = "degC",
+    out_units = "kPa",
+    method = c("ClausiusClapeyron", "Magnus", "GoffGratch")) {
+  method <- match.arg(method)
+  # normalize common alias
+  if (tolower(out_units) == "mb") out_units <- "hPa"
+
+  if (method == "Magnus") {
+    # canonical temp: degC; canonical pressure: kPa
+    Tc <- PEcAn.utils::ud_convert(temp, temp_units, "degC")
+    es_kPa <- 0.61078 * exp((17.27 * Tc) / (Tc + 237.3))
+    return(PEcAn.utils::ud_convert(es_kPa, "kPa", out_units))
+  }
+
+  if (method == "ClausiusClapeyron") {
+    # canonical temp: degC; canonical pressure: hPa
+    Tc <- PEcAn.utils::ud_convert(temp, temp_units, "degC")
+    L <- 2.5e6 # J kg^-1
+    Rv <- 461 # J kg^-1 K^-1
+    es_hPa <- 6.11 * exp((L / Rv) * (1 / 273 - 1 / (273 + Tc)))
+    return(PEcAn.utils::ud_convert(es_hPa, "hPa", out_units))
+  }
+
+  if (method == "GoffGratch") {
+    # canonical temp: K; canonical pressure: hPa
+    Tk <- PEcAn.utils::ud_convert(temp, temp_units, "K")
+    Tst <- 373.15 # K
+    est <- 1013.246 # hPa at steam point
+    lg10 <- function(z) log10(z)
+    log10_es <- -7.90298 * (Tst / Tk - 1) +
+      5.02808 * lg10(Tst / Tk) -
+      1.3816e-7 * (10^(11.344 * (1 - Tk / Tst)) - 1) +
+      8.1328e-3 * (10^(-3.49149 * (Tst / Tk - 1)) - 1) +
+      lg10(est)
+    es_hPa <- 10^log10_es
+    return(PEcAn.utils::ud_convert(es_hPa, "hPa", out_units))
+  }
+}
+
+# ---- Aliases for backward-compatibility ----
+
+#' @rdname sat_vapor_pressure
+#' @export
 get.es <- function(temp) {
-  return(6.11 * exp((2500000/461) * (1/273 - 1/(273 + temp))))
-} # get.es
+  sat_vapor_pressure(
+    temp = temp,
+    method = "ClausiusClapeyron",
+    temp_units = "degC",
+    out_units = "hPa"
+  )
+}
 
-## TODO: merge SatVapPress with get.es; add option to choose method
-SatVapPres <- function(T) {
-  # /estimates saturation vapor pressure (kPa) Goff-Gratch 1946 /input: T = absolute temperature
-  T_st <- 373.15  ##steam temperature (K)
-  e_st <- 1013.25  ##/saturation vapor pressure at steam temp (hPa)
-  return(0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) -
-    1) + 0.0081328 * (10^(-3.49149 * (T_st/T - 1)) - 1) + log(e_st)))
-} # SatVapPres
-
+#' @rdname sat_vapor_pressure
+#' @export
+t2es <- function(temp, temp_units = "degC", out_units = "kPa", method = "ClausiusClapeyron") {
+  sat_vapor_pressure(temp = temp, temp_units = temp_units, out_units = out_units, method = method)
+}
 
 ##' Calculate RH from temperature and dewpoint
 ##'
@@ -201,7 +280,7 @@ sw2ppfd <- function(sw) {
 ##' Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
 ##' See also the chapter radiation basics (10)
 ##' Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
-##' This last value 0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation
+##' This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 ##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
 ##' 1e6 converts from mol to mu mol
 ##' 1/3600 divides the values in hours to seconds

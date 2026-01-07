@@ -35,6 +35,9 @@ on:
         description: 'DockerHub password used to push images'
         required: false
 
+env:
+  DEFAULT_R_VERSION: "4.4"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -73,6 +76,7 @@ jobs:
       - name: Docker meta
         env:
           check_var: ${{ secrets.DOCKERHUB_USERNAME }}
+          is_default_R: ${{ inputs.r-version == env.DEFAULT_R_VERSION }}
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -83,12 +87,12 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
-            type=ref,event=branch,enable=${{ inputs.r-version == '4.1' }}
+            type=ref,event=branch,enable=${{ env.is_default_R }}
             type=ref,event=branch,suffix=-R${{ inputs.r-version }}
             type=ref,event=pr
-            type=semver,pattern={{version}},enable=${{ inputs.r-version == '4.1' }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ inputs.r-version == '4.1' }}
-            type=semver,pattern={{major}},enable=${{ inputs.r-version == '4.1' }}
+            type=semver,pattern={{version}},enable=${{ env.is_default_R }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ env.is_default_R }}
+            type=semver,pattern={{major}},enable=${{ env.is_default_R }}
             type=semver,pattern={{version}},suffix=-R${{ inputs.r-version }}
 
       # setup docker build

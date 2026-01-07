@@ -14,7 +14,6 @@
 ##' @export
 ##' @author Istem Fer, Tony Gardella
 write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id, restart = NULL) {
-  
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   if (!file.exists(rundir)) {
@@ -194,16 +193,20 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   paramsins <- paramsins[-pftindx] 
   paramsins <- c(paramsins, unlist(write2pftblock))
   
+  # # Past version: write clim file names (cf input)
+  # tmp.file <- settings$run$inputs$met$path
+  # pre.file <- gsub(".tmp.nc", ".pre.nc", tmp.file)
+  # cld.file <- gsub(".tmp.nc", ".cld.nc", tmp.file)
+  # 
+  # guessins <- gsub("@TEMP_FILE@", tmp.file, guessins)
+  # guessins <- gsub("@PREC_FILE@", pre.file, guessins)
+  # guessins <- gsub("@INSOL_FILE@", cld.file, guessins)
   
-  # write clim file names
-  
-  tmp.file <- settings$run$inputs$met$path
-  pre.file <- gsub(".tmp.nc", ".pre.nc", tmp.file)
-  cld.file <- gsub(".tmp.nc", ".cld.nc", tmp.file)
-  
-  guessins <- gsub("@TEMP_FILE@", tmp.file, guessins)
-  guessins <- gsub("@PREC_FILE@", pre.file, guessins)
-  guessins <- gsub("@INSOL_FILE@", cld.file, guessins)
+  # when using cru input, lpjguess will not use these clim files
+  cru.file <- settings$run$inputs$met$path
+  misc.file <- sub("\\.bin$", "misc.bin", cru.file)
+  guessins <- gsub("@MET_AND_SOIL_FILE@", cru.file, guessins)
+  guessins <- gsub("@MISC_FILE@", misc.file, guessins)
   
   # create and write CO2 file
   start.year <- lubridate::year(settings$run$start.date)
@@ -232,9 +235,12 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   utils::write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins <- gsub("@CO2_FILE@", co2.file, guessins)
   
-  # write soil file path
-  soil.file <- settings$run$inputs$soil$path
-  guessins <- gsub("@SOIL_FILE@", soil.file, guessins)
+  # # write soil file path
+  # # when using cru input, it's also climate file
+  # soil.file <- settings$run$inputs$soil$path
+  # misc.file <- sub("\\.bin$", "misc.bin", soil.file)
+  # guessins <- gsub("@SOIL_FILE@", soil.file, guessins)
+  # guessins <- gsub("@MISC_FILE@", misc.file, guessins)
   
   settings$model$insfile <- file.path(settings$rundir, run.id, "guess.ins")
   

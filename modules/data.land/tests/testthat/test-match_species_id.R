@@ -22,8 +22,14 @@ test_that("Species matching works", {
     user = "bety",
     password = "bety",
     host = "localhost",
-    driver = "Postgres")
-  con <- PEcAn.DB::db.open(db_params)
+    driver = "Postgres"
+  )
+  con <- tryCatch(
+    PEcAn.DB::db.open(db_params),
+    error = function(e) NULL
+  )
+
+  skip_if(is.null(con), "No database connection available for species matching tests.")
 
   test_merge(c('ACRU', 'TSCA'), 'usda', con)
   test_merge(c(316L, 261L), 'fia', con)
@@ -31,11 +37,13 @@ test_that("Species matching works", {
 
   test_table <- data.frame(
     bety_species_id = c(30L, 1419L),
-    input_code = c('AceRub', 'TsuCan'))
+    input_code = c('AceRub', 'TsuCan')
+  )
 
   test_merge(
     input_codes = test_table$input_code,
     format_name = 'custom',
     bety = con,
-    translation_table = test_table)
+    translation_table = test_table
+  )
 })

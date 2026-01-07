@@ -1,7 +1,18 @@
-# PEcAn.allometry 1.7.2.9000
+# PEcAn.allometry 1.7.5
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* No code changes in this release.
+
+
+# PEcAn.allometry 1.7.4
 
 ## License change
 * PEcAn.allometry is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
+
+
+# PEcAn.allometry 1.7.3
+
+* Fixed many `R CMD check` issues
 
 
 # PEcAn.allometry 1.7.1

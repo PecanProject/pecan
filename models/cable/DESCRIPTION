@@ -1,7 +1,7 @@
 Package: PEcAn.CABLE
 Type: Package
 Title: PEcAn package for integration of the CABLE model
-Version: 1.7.3.9000
+Version: 1.7.5
 Authors@R: c(person("Kaitlin", "Ragosta", role = c("aut")),
              person("Tony", "Gardella", role = c("aut", "cre"),
                      email = "tonygard@bu.edu"),
@@ -9,6 +9,8 @@ Authors@R: c(person("Kaitlin", "Ragosta", role = c("aut")),
 Author: Kaitlin Ragosta
 Maintainer: Tony Gardella <tonygard@bu.edu>
 Description: This module provides functions to link the (CABLE) to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     PEcAn.logger,
     PEcAn.utils (>= 1.4.8)
@@ -22,3 +24,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: CABLE, ecosystem-modeling

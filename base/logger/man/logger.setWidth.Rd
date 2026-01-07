@@ -9,6 +9,10 @@ logger.setWidth(width)
 \arguments{
 \item{width}{number of chars to print before wrapping to next line.}
 }
+\value{
+Invisibly, the previously set width.
+This can be used to restore settings after a temporary change.
+}
 \description{
 The default is for 60 chars per line. Setting this to any value will
 wrap the line when printing a message at that many chars.

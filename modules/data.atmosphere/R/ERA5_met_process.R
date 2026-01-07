@@ -5,32 +5,29 @@
 #' @param out.path output path
 #' @param write.db if write into Bety database
 #' @param write if write the settings into pecan.xml file in the outdir of settings.
+#' @param ncores numeric: the number of CPUs for the parallel compute. Default is 1.
 #'
 #' @return if write.db is True then return input IDs with physical paths; if write.db is False then return just physical paths of extracted ERA5 clim files.
 #' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom dplyr %>%
-#'
-ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write = TRUE){
-  #Initialize the multicore computation.
-  if (future::supportsMulticore()) {
-    future::plan(future::multicore)
-  } else {
-    future::plan(future::multisession)
-  }
-  
+#' @importFrom foreach %dopar%
+ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write = TRUE, ncores = 1){
   #getting site info
+  start_date <- settings$state.data.assimilation$start.date
+  end_date <- settings$state.data.assimilation$end.date
   #grab the site info from Bety DB if we can't get the site info directly from the settings object.
-  if ("try-error" %in% class(try(site_info <- settings$run %>% 
-                                 purrr::map('site')%>% 
+  if ("try-error" %in% class(try(site_info <- settings %>%
+                                 purrr::map(~.x[['run']] ) %>%
+                                 purrr::map('site') %>%
                                  purrr::map(function(site.list){
                                    #conversion from string to number
                                    site.list$lat <- as.numeric(site.list$lat)
                                    site.list$lon <- as.numeric(site.list$lon)
                                    list(site.id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
-                                 }) %>% 
-                                 dplyr::bind_rows() %>% 
+                                 })%>%
+                                 dplyr::bind_rows() %>%
                                  as.list()))) {
     #getting site ID
     observations <- c()
@@ -38,7 +35,6 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
       obs <- settings[[i]]$run$site$id
       observations <- c(observations,obs)
     }
-    
     #query site info
     bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
                                 host     = settings$database$bety$host,
@@ -53,7 +49,6 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
     site_info <- list(site_id=qry_results$id, site_name=qry_results$sitename, lat=qry_results$lat,
                       lon=qry_results$lon, time_zone=qry_results$time_zone)
   }
-  
   #initialize db query elements
   if(write.db){
     mimetype <- "application/x-netcdf"
@@ -61,7 +56,6 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
     hostname <- PEcAn.remote::fqdn()
     # find mimetype, if it does not exist, it will create one
     mimetypeid <- PEcAn.DB::get.id("mimetypes", "type_string", mimetype, con, create = TRUE)
-    
     # find appropriate format, create if it does not exist
     formatid <- PEcAn.DB::get.id(
       table = "formats",
@@ -71,77 +65,53 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
       create = TRUE,
       dates = TRUE
     )
-    
     # setup parent part of query if specified
     parent <- ""
-    
     #initialize Input_IDs object when looping over each site
     Input_IDs <- list()
   }
-  
-  #restructure the site_info into list.
-  site_info$start_date <- start_date <- rep(settings$state.data.assimilation$start.date, length(settings))
-  site_info$end_date <- end_date <- rep(settings$state.data.assimilation$end.date, length(settings))
-  site_info$out.path <- rep(out.path, length(settings))
-  site_info$in.path <- rep(in.path, length(settings))
-  site_info$model.type <- rep(settings$model$type, length(settings))
-  new.site.info <- split(as.data.frame(site_info), seq(nrow(as.data.frame(site_info))))
-  
-  #Extract ERA5 for each site.
+  # Extract ERA5 nc files.
   PEcAn.logger::logger.info("Started extracting ERA5 data!\n")
-  Clim_paths <- furrr::future_map(new.site.info, function(site){
-    #check if sub-folder exists, if doesn't then create a new folder specific for each site
-    site_outFolder <- paste0(site$out.path,'/', site$site.id)
-    #check if folder already exists, if it does, then jump to the next loop
-    if(!file.exists(site_outFolder)){
-      dir.create(site_outFolder)
-    }else{
-      #grab physical paths of existing ERA5 files
-      #need to be generalized when more models come in.
-      clim.paths <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
-      names(clim.paths) <- site$site.id
-      return(clim.paths)
-    }
-    
-    #extract ERA5.nc files
-    PEcAn.data.atmosphere::extract.nc.ERA5(slat = site$lat,
-                                           slon = site$lon,
-                                           in.path = site$in.path,
-                                           start_date = site$start_date,
-                                           end_date = site$end_date,
-                                           outfolder = site_outFolder,
-                                           in.prefix = 'ERA5_',
-                                           newsite = as.character(site$site.id))
-    
-    #starting working on met2model.model function over each ensemble
-    #setting up met2model function depending on model name from settings
-    met2model_method <- do.call("::", list(paste0("PEcAn.", site$model.type), paste0("met2model.", site$model.type)))
-    #grab the rbind.xts function
-    rbind.xts <- do.call("::", list("xts", "rbind.xts"))
-    #find every path associated with each ensemble member
-    ens_nc <- list.files(path = site_outFolder, full.names = T)
-    #loop over each ensemble member
-    for (i in 1:length(ens_nc)) {
-      nc_path <- ens_nc[i]
-      
-      #find a proper in prefix for each ensemble member
-      ens_num <- strsplit(basename(nc_path),"_")[[1]][3]
-      in_prefix <- paste0("ERA5.", ens_num)
-      
-      #preparing for the met2model.SIPNET function
-      met2model_method(in.path = nc_path,
-                       in.prefix = in_prefix,
-                       outfolder = site_outFolder,
-                       start_date = site$start_date,
-                       end_date = site$end_date)
-    }
-    # grab physical paths of ERA5 files
-    clim.paths <- list(in.path=list.files(path=site_outFolder, pattern = '*.clim', full.names = T))
-    names(clim.paths) <- site$site.id
-    return(clim.paths)
-  }, .progress = TRUE)
+  final.nc.files <- extract.nc.ERA5(site_info$lat, 
+                                    site_info$lon, 
+                                    in.path, 
+                                    start_date, 
+                                    end_date, 
+                                    out.path, 
+                                    "ERA5_", 
+                                    site_info$site.id,
+                                    ncores)
+  #Writing CLIM files for each site.
+  PEcAn.logger::logger.info("Writing CLIM files!\n")
+  # initialize parallel.
+  cl <- parallel::makeCluster(ncores)
+  on.exit(parallel::stopCluster(cl), add = TRUE)
+  doSNOW::registerDoSNOW(cl)
+  # setup progress bar.
+  pb <- utils::txtProgressBar(min=1, max=length(final.nc.files), style=3)
+  on.exit(close(pb), add = TRUE)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
+  # grab specific model function.
+  met2model_method <- do.call("::", list(paste0("PEcAn.", settings$model$type), paste0("met2model.", settings$model$type)))
+  pack.name <- paste0("PEcAn.", settings$model$type)
+  ens.folders <- NULL
+  Clim_paths <- 
+    foreach::foreach(ens.folders = final.nc.files, 
+                     .packages=c("Kendall", pack.name), 
+                     .options.snow=opts) %dopar% {
+                       ensemble.clim.files <- c()
+                       for (ens in seq_along(ens.folders)) {
+                         out <- met2model_method(in.path = ens.folders[ens],
+                                                 in.prefix = paste0("ERA5.", ens),
+                                                 outfolder = ens.folders[ens],
+                                                 start_date = start_date,
+                                                 end_date = end_date)
+                         ensemble.clim.files <- c(ensemble.clim.files, out$file)
+                       }
+                       ensemble.clim.files
+                     }
   PEcAn.logger::logger.info("\nFinished!")
-  
   #write the paths into settings.
   if (write) {
     #write paths into settings.
@@ -155,12 +125,10 @@ ERA5_met_process <- function(settings, in.path, out.path, write.db=FALSE, write 
         settings[[i]]$state.data.assimilation$end.date
       settings[[i]]$run$inputs$met$path <- as.list(unlist(Clim_paths[[i]])) %>% purrr::set_names(rep("path", length(Clim_paths[[i]])))
     }
-    
     #write settings into xml file.
     PEcAn.logger::logger.info(paste0("Write updated pecan.xml file into: ", file.path(settings$outdir, "pecan.xml")))
     PEcAn.settings::write.settings(settings, outputfile = "pecan.xml")
   }
-  
   #write into bety
   if(write.db){
     PEcAn.logger::logger.info("Write into database!")

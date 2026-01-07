@@ -17,3 +17,4 @@ A character vector of streamed variable names.
 \description{
 A helper function that lists streamed variables. It returns the names of streamed variables.
 }
+\keyword{internal}
