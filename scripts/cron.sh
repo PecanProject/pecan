@@ -26,7 +26,7 @@ OUTPUT=${OUTPUT:-"$PWD/dump"}
 # END CONFIGURATION SECTION
 # ----------------------------------------------------------------------
 
-SCRIPTS_DIR="$( dirname $0 )"
+SCRIPTS_DIR="$(dirname "$0")"
 
 # parse command line options
 while getopts d:f:hm:o:p: opt; do
@@ -70,7 +70,7 @@ fi
 
 MY_START_ID=$(sudo -u postgres psql ${PG_OPT} -d ${DATABASE} -t -c "SELECT sync_start FROM machines WHERE sync_host_id=${MYSITE};")
 MY_START_ID="${MY_START_ID//[[:space:]]/}"
-MY_LAST_ID=$(sudo -u postgres psql -d bety -t -c "SELECT sync_end FROM machines WHERE sync_host_id=${MYSITE};")
+MY_LAST_ID=$(sudo -u postgres psql ${PG_OPT} -d ${DATABASE} -t -c "SELECT sync_end FROM machines WHERE sync_host_id=${MYSITE};")
 MY_LAST_ID="${MY_LAST_ID//[[:space:]]/}"
 
 if [ "${MY_START_ID}" == "" -o "${MY_LAST_ID}" == "" ]; then
@@ -104,7 +104,7 @@ for y in 0 1 2 5; do
     if [ $y -ne ${MYSITE} ]; then
         sudo -u postgres "${SCRIPTS_DIR}/load.bety.sh" -q -m ${MYSITE} -r $y -l "${OUTPUT}/sync.log"
         if [ $? != 0 ]; then
-            echo "Failed to run load.bety.sh for site ${x}"
+            echo "Failed to run load.bety.sh for site ${y}"
         fi
     fi
 done

@@ -12,12 +12,19 @@ generate_joint_ensemble_design(settings, ensemble_size, sobol = FALSE)
 \arguments{
 \item{settings}{A PEcAn settings object containing ensemble configuration}
 
-\item{ensemble_size}{Integer specifying the number of ensemble members}
+\item{ensemble_size}{Integer specifying the number of ensemble members
+Since the `input_design` will only be generated once for the entire model run,
+the only situation, where we might want to recycle the existing `ensemble_samples`,
+is when we split and submit the larger SDA runs (e.g., 8,000 sites) into 
+smaller SDA experiments (e.g., 100 sites per job), where we want to keep using 
+the same parameters rather than creating new parameters for each job.}
 
 \item{sobol}{for activating sobol}
 }
 \value{
 A list containing ensemble samples and indices
+  If `sobol = TRUE`, the list will be a `sensitivity::soboljansen()` 
+  result and will contain the components documented therein.
 }
 \description{
 Generate joint ensemble design for parameter sampling

@@ -105,7 +105,7 @@ format <- list(
 
 
 ## Download AmerifluxLBL data for selected site and dates (US-WCr, 2000 to 2005)
-```{r download}
+```{r download, eval = FALSE}
 m2mdir <- tempfile("met2model_testing")
 dir.create(m2mdir)
 download.AmerifluxLBL(sitename = "US-WCr", outfolder = m2mdir,
@@ -113,21 +113,21 @@ download.AmerifluxLBL(sitename = "US-WCr", outfolder = m2mdir,
 ```
 
 ## Convert downloaded AmerifluxLBL data to CF format
-```{r met2cf}
+```{r met2cf, eval = FALSE}
 cfdir <- file.path(m2mdir, "CF")
 met2CF.AmerifluxLBL(in.path = m2mdir, in.prefix = "AMF_US-WCr", outfolder = cfdir,
                  start_date = "2000-01-01", end_date = "2005-12-31",format=format)
 ```
 
 ## Gapfill CF met drivers
-```{r metgapfill}
+```{r metgapfill, eval = FALSE}
 gapfilldir <- file.path(cfdir, "gapfill")
 metgapfill(in.path = cfdir, in.prefix = "AMF_US-WCr_BASE_HH_14-5",
            outfolder = gapfilldir, start_date = "2000-01-01", end_date = "2005-12-31")
 ```
 
 ## Create MAAT model-specific met drivers
-```{r met2model}
+```{r met2model, eval = FALSE}
 in.path <- gapfilldir
 in.prefix <- "AMF_US-WCr_BASE_HH_14-5"
 outfolder <- file.path(gapfilldir, "maat_drivers")

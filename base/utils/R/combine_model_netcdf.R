@@ -224,7 +224,7 @@ extract_nc_sda <- function (site.id, start.date, end.date, var.name, nc.path) {
     return(0)
   }
   # grab outputs.
-  res <- ncdf4::ncvar_get(nc, var.name, start = c(time.inds[1], site.ind, 1), count = c(length(time.inds), 1, ensemble.size))
+  res <- ncdf4::ncvar_get(nc, var.name, start = c(site.ind, 1, time.inds[1]), count = c(1, ensemble.size, length(time.inds)))
   # close NC connection.
   ncdf4::nc_close(nc)
   # prepare outputs.

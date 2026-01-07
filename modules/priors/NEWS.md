@@ -1,3 +1,10 @@
+# PEcAn.priors 1.7.5
+
+* Added bug reporting URL and keywords to DESCRIPTION.
+* Updated tests for compatibility with testthat 3.3.0
+
+
+
 # PEcAn.priors 1.7.4
 
 ## License change
@@ -5,6 +12,8 @@
 
 ## Fixed
 * Cleaned up many `R CMD check` messsages
+
+
 
 # PEcAn.priors 1.7.1
 
