@@ -11,9 +11,10 @@ vignette: >
 
 # Overview
 
-This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/latest/met-data.html).
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are described in the [PEcAn met data documentation](https://pecanproject.github.io/pecan-documentation/develop/input-standards.html#meteorology-standards).
 
-In this example we will download 12 years of met data from the [Bondville Ameriflux site](http://ameriflux.ornl.gov/fullsiteinfo.php?sid=44). It has an Ameriflux `SITE_ID` of `US-Bo1`
+We’ll download 12 years of met data from the [Bondville Ameriflux site](https://ameriflux.lbl.gov/sites/siteinfo/US-Bo1), which has a `SITE_ID` of `US-Bo1`.
+
 
 The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/main/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
 
@@ -21,8 +22,6 @@ The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://
 
 ```{r}
 library(knitr)
-library(ggplot2)
-# library(ggthemes)
 library(PEcAn.data.atmosphere)
 
 ```
@@ -73,7 +72,8 @@ bondville.cfmet <- load.cfmet(bondville.nc, lat = 40.0061988830566, lon = -88.29
 ```
 
 
-```{r, eval=FALSE}
+```{r, error=TRUE, eval=FALSE}
+library("ggplot2", logical.return = TRUE)  || stop("Skipping this chunk because ggplot2 not found")
 
 theme_set(theme_tufte())
 p1 <- ggplot() + geom_line(data = bondville.cfmet, aes(x = date, y = surface_downwelling_shortwave_flux_in_air)) + ylab(paste(bondville.nc$var$surface_downwelling_shortwave_flux_in_air$longname, bondville.nc$var$surface_downwelling_shortwave_flux_in_air$units))

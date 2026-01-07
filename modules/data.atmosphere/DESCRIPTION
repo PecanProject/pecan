@@ -1,7 +1,7 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn Functions Used for Managing Climate Driver Data
-Version: 1.8.0.9000
+Version: 1.9.1
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -12,6 +12,9 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("Deepak", "Jaiswal", role = c("aut"),
                      email = "djaiswal@djaiswal.edu"),
+             person("Chris", "Black", role = c("ctb"),
+                    email = "chris@ckblack.org",
+                    comment = c(ORCID="https://orcid.org/0000-0001-8382-298X")),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -19,6 +22,9 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     package converts climate driver data into a standard format for models
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     abind (>= 1.4.5),
     amerifluxr,
@@ -26,8 +32,8 @@ Imports:
     arrow,
     curl,
     dplyr (>= 0.8.1),
+    foreach,
     geonames (> 0.998),
-    ggplot2,
     glue,
     httr,
     jsonlite,
@@ -61,10 +67,12 @@ Imports:
     zoo
 Suggests:
     doParallel,
-    foreach,
+    ecmwfr (>= 2.0.0),
+    doSNOW,
     furrr,
     future,
     getPass,
+    ggplot2,
     knitr,
     mockery,
     parallel,
@@ -86,3 +94,4 @@ LazyData: FALSE
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: climate-data, data-standardization

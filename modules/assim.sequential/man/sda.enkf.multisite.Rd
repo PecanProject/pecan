@@ -12,9 +12,10 @@ sda.enkf.multisite(
   restart = NULL,
   pre_enkf_params = NULL,
   ensemble.samples = NULL,
-  control = list(trace = TRUE, TimeseriesPlot = FALSE, debug = FALSE, pause = FALSE,
-    Profiling = FALSE, OutlierDetection = FALSE, parallel_qsub = TRUE, send_email = NULL,
-    keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL),
+  control = list(TimeseriesPlot = FALSE, OutlierDetection = FALSE, send_email = NULL,
+    keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL, merge_nc =
+    TRUE, execution = "local"),
+  debias = list(cov.dir = NULL, start.year = NULL),
   ...
 )
 }
@@ -31,21 +32,26 @@ sda.enkf.multisite(
 
 \item{pre_enkf_params}{Used for passing pre-existing time-series of process error into the current SDA runs to ignore the impact by the differences between process errors.}
 
-\item{ensemble.samples}{Pass ensemble.samples from outside to avoid GitHub check issues.}
+\item{ensemble.samples}{list of ensemble parameters across PFTs. Default is NULL.}
 
 \item{control}{List of flags controlling the behavior of the SDA. 
-`trace` for reporting back the SDA outcomes; 
 `TimeseriesPlot` for post analysis examination; 
-`debug` decide if we want to pause the code and examining the variables inside the function;
-`pause` decide if we want to pause the SDA workflow at current time point t;
-`Profiling` decide if we want to export the temporal SDA outputs in CSV file;
 `OutlierDetection` decide if we want to execute the outlier detection each time after the model forecasting;
-`parallel_qsub` decide if we want to execute the `qsub` job submission under parallel mode;
 `send_email` contains lists for sending email to report the SDA progress;
 `keepNC` decide if we want to keep the NetCDF files inside the out directory;
 `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
 `run_parallel` decide if we want to run the SDA under parallel mode for the `future_map` function;
-`MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).}
+`MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
+`merge_nc` determine if we want to merge all netCDF files across sites and ensembles.
+If it's set as `TRUE`, we will then combine all netCDF files into the `merged_nc` folder within the `outdir`.
+`execution` decide the way we want to execute model 
+including `local` ,where we execute the model locally;
+`qsub`, where we use the traditional `start_model_runs` function for submission;
+`qsub_parallel`, where we first combine jobs and submit them into the SCC.}
+
+\item{debias}{List: R list containing the covariance directory and the start year.
+covariance directory should include GeoTIFF files named by year.
+start year is numeric input which decide when to start the debiasing feature.}
 
 \item{...}{Additional arguments, currently ignored}
 }

@@ -1,7 +1,34 @@
-# PEcAn.data.land 1.8.0.9000
+# PEcAn.data.land 1.9.0
+
+## Added
+
+* New function `soilgrids_ic_process()`, with helpers `preprocess_soilgrids_data()` and `generate_soilgrids_ensemble()`, generates soil carbon initial conditions from SoilGrids 250m data (#3508).
+* New function `clip_and_save_raster_file()` subsets rasters to match a polygon of interest (#3537).
+* New function `look_up_fertilizer_component()` contains typical carbon and nitrogen composition of common fertilizer types (#3559).
+* New PEcAn standard for `events.json` files. These contain information about management events (planting, harvest, irrigation, etc). The standard is defined in `inst/events_schema_v0.1.0.json` and event files can be validated against the schema with new function `validate_events()` (#3623, #3521).
+
+## Changed
+
+* `Read.IC.info.BADM` now processes both single-site and multi-site settings, and uses more carbon pools (`ROOT_BIOMASS`, `AG_BIOMASS`, `SOIL_STOCK`, `LIT_BIOMASS`) if they are present (#3536).
+* Package `swfscMisc` is no longer imported; it was formerly used in `extract_NEON_veg()` to compute distances and has been replaced by use of `terra::distance()` (#3552).
+* `extract_soil_gssurgo()` now supports spatial grid sampling using new arguments `grid_size` and `grid_spacing`. Previously available argument `radius` has been removed (#3534).
+* `extract_soil_gssurgo()` now reports an estimate of soil organic carbon stocks (#3534).
+
+## Removed
+
+* Removed unused parameter `machine` from `put_veg_module()` (#3575).
+
+## Fixed
+
+* Fixed an invalid external pointer error in `soilgrids_soilC_extract()` (#3506).
+
+
+
+# PEcAn.data.land 1.8.1
 
 * Dependency `datapack` is now optional. It is only used by `dataone_download()` (#3373).
 * `soilgrids_soilC_extract()` no longer returns an empty dataframe when none of the queried locations are missing data. (#3409)
+* Functions that name output folders from `settings$siteID` no longer assume IDs are numeric
 
 
 # PEcAn.data.land 1.8.0
@@ -19,6 +46,7 @@
 
 * `find.land()` has been removed. It is not used anywhere we know if, has apparently not been working for some time, and relied on the `maptools` package which is scheduled for retirement.
 * Removed dependency on `PEcAn.data.atmosphere`, notably by retrieving site latitude and longitude directly from `PEcAn.DB::query.site` instead of custom lookups (#3300, Abhinav Pandey).
+
 
 
 # PEcAn.data.land 1.7.1

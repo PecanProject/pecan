@@ -50,7 +50,9 @@ extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsite
     neonsites <- neonstore::neon_sites(api = "https://data.neonscience.org/api/v0", .token = Sys.getenv("NEON_TOKEN"))
   }
   neonsites <- dplyr::select(neonsites, "siteCode", "siteLatitude", "siteLongitude") #select for relevant columns
-  betyneondist <- swfscMisc::distance(lat1 = lat, lon1 = lon, lat2 = neonsites$siteLatitude, lon2 = neonsites$siteLongitude)
+  pt1 <- terra::vect(matrix(c(lon1 = lon, lat1 = lat) , ncol = 2), type = "points", crs = "EPSG:4326")
+  pt2 <- terra::vect(matrix(c(lon2 = neonsites$siteLongitude, lat2 = neonsites$siteLatitude) , ncol = 2), type = "points", crs = "EPSG:4326")
+  betyneondist <- terra::distance(pt1, pt2)
   mindist <- min(betyneondist)
   distloc <- match(mindist, betyneondist)
   lat <- neonsites$siteLatitude[distloc]

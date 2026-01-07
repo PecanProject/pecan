@@ -1,12 +1,15 @@
 test_that("`fancy_scientific()` converts numbers to scientific expressions with proper formatting", {
   result <- fancy_scientific(1234567890)
-  expect_equal(result, expression("1.234568" %*% 10^+9))
+  expected <- expression("1.234568" %*% 10^+9)
+  expect_equal(deparse(result[[1]]), deparse(expected[[1]]))
 
   result <- fancy_scientific(0.00000123)
-  expect_equal(result, expression("1.23" %*% 10^-6))
+  expected <- expression("1.23" %*% 10^-6)
+  expect_equal(deparse(result[[1]]), deparse(expected[[1]]))
 
   result <- fancy_scientific(1e-20)
-  expect_equal(result, expression("1" %*% 10^-20))
+  expected <- expression("1" %*% 10^-20)
+  expect_equal(deparse(result[[1]]), deparse(expected[[1]]))
 })
 
 test_that("`dplyr.count()` returns the correct count of rows in a dataframe", {

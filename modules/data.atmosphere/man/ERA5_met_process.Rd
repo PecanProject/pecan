@@ -4,7 +4,14 @@
 \alias{ERA5_met_process}
 \title{Met Processes for ERA5 data}
 \usage{
-ERA5_met_process(settings, in.path, out.path, write.db = FALSE, write = TRUE)
+ERA5_met_process(
+  settings,
+  in.path,
+  out.path,
+  write.db = FALSE,
+  write = TRUE,
+  ncores = 1
+)
 }
 \arguments{
 \item{settings}{a multi-settings object}
@@ -16,6 +23,8 @@ ERA5_met_process(settings, in.path, out.path, write.db = FALSE, write = TRUE)
 \item{write.db}{if write into Bety database}
 
 \item{write}{if write the settings into pecan.xml file in the outdir of settings.}
+
+\item{ncores}{numeric: the number of CPUs for the parallel compute. Default is 1.}
 }
 \value{
 if write.db is True then return input IDs with physical paths; if write.db is False then return just physical paths of extracted ERA5 clim files.

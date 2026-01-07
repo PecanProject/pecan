@@ -13,12 +13,15 @@ kurtosis(x)
 numeric value of kurtosis
 }
 \description{
-Note that this calculates the 'excess kurtosis', which is defined as kurtosis - 3.
-This statistic is used in the calculation of the standard deviation of sample variance
-in the function \code{\link{sd.var}}.
+Note that this calculates the 'excess kurtosis',
+ which is defined as kurtosis - 3.
+This statistic is used in the calculation of the standard deviation of
+ sample variance in the function \code{\link{sd.var}}.
 }
 \references{
-NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
+NIST/SEMATECH e-Handbook of Statistical Methods,
+ \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm},
+ 2011-06-20.
 }
 \author{
 David LeBauer

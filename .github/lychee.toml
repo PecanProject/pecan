@@ -1,0 +1,14 @@
+# Lychee link checker configuration for PEcAn project
+# See https://lychee.cli.rs for more options
+
+# Don't fail on certificate issues (some sites have temporary cert problems)
+insecure = true
+
+
+# Exclude patterns (regex) - add domains/URLs that frequently have transient failures
+exclude = [
+  # Localhost URLs (local development only)
+  'localhost/*',
+  '127\.0\.0\.1/*',
+  'pecan\.localhost/*',
+]

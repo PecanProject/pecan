@@ -2,7 +2,7 @@
 % Please edit documentation in R/fetch.stats2se.R
 \name{fetch.stats2se}
 \alias{fetch.stats2se}
-\title{Fetch data and transform stats to SE}
+\title{Queries data from the trait database and transforms statistics to SE}
 \usage{
 fetch.stats2se(connection, query)
 }
@@ -15,14 +15,12 @@ fetch.stats2se(connection, query)
 dataframe with trait data
 }
 \description{
-Queries data from the trait database and transforms statistics to SE
-}
-\details{
 Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 to SE
 }
 \seealso{
-used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
+used in \code{\link{query.trait.data}};
+  \code{\link[PEcAn.utils]{transformstats}} performs transformation calculations
 }
 \author{
 <unknown>

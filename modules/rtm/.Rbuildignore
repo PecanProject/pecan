@@ -2,4 +2,7 @@
 ^\.Rproj\.user$
 ^dev
 ^tests
+^doc$
+^Meta$
+^docs$
 vignettes/.*.rds

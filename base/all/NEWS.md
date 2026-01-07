@@ -1,4 +1,9 @@
-# PEcAn.all 1.8.0.9000
+# PEcAn.all 1.10.10
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* Updated `pecan_version_history` and `pecan_releases` to report the package versions used in PEcAn v1.10.0.
+
+# PEcAn.all 1.9.0
 
 ## License change
 * PEcAn.all is now distributed under the BSD three-clause license instead of the NCSA Open Source license.

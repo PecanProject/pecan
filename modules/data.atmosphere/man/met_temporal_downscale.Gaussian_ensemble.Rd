@@ -51,5 +51,5 @@ takes source data and a training dataset from the same site and temporally
    downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
 }
 \author{
-James Simkins
+James Simkins, Akash
 }

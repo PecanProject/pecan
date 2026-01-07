@@ -34,20 +34,16 @@ test_that("a valid .nc file is produced for each corresponding ED2 output", {
 
   h5_T_files <- dir(outdir, pattern = "-T-.*.h5")
   nc_files <- dir(outdir, pattern = ".nc$")
-  nc_var_files <- dir(outdir, pattern = ".nc.var$")
-  
-  expect_equal(length(h5_T_files), length(nc_files))
-  expect_equal(length(h5_T_files), length(nc_var_files))
 
-  h5years <- str_extract(h5_T_files, "\\d{4}") 
-  ncyears <- str_extract(nc_files, "\\d{4}") 
+  expect_equal(length(h5_T_files), length(nc_files))
+
+  h5years <- str_extract(h5_T_files, "\\d{4}")
+  ncyears <- str_extract(nc_files, "\\d{4}")
   expect_equal(as.numeric(ncyears), as.numeric(h5years))
 
-  ncvaryears <- str_extract(nc_var_files, "\\d{4}")
-  expect_equal(as.numeric(ncvaryears), as.numeric(h5years))
 })
 
-test_that("read.output extracts data from nc file",{
+test_that("read.output extracts data from nc file", {
   vars <- c("GPP", "NEE", "DOC_flux", "Evap", "TVeg", "Qsb", "Rainf")
   x <-
     PEcAn.utils::read.output(runid = runid,

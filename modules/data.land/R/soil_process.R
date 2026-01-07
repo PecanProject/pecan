@@ -31,12 +31,14 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
-  new.site <- data.frame(id = as.numeric(site$id),
-                         lat = latlon$lat,
-                         lon = latlon$lon)
+  if (isTRUE(nzchar(site$lat)) && isTRUE(nzchar(site$lon))) {
+    latlon <- data.frame(lat = site$lat, lon = site$lon)
+  } else {
+    latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
+  }
+  new.site <- list(id = site$id, lat = latlon$lat, lon = latlon$lon)
 
-  if (isTRUE(new.site$id > 1e9)) {
+  if (is.numeric(new.site$id) && isTRUE(new.site$id > 1e9)) {
     # Assume this is a BETYdb id, condense for readability
     str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   } else {
@@ -45,7 +47,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
 
   outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
 
-  if(!dir.exists(outfolder)) dir.create(outfolder)
+  if (!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#
   # if we are reading from gSSURGO
   if (input$source=="gSSURGO"){
@@ -56,9 +58,20 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
     names(newfile) <- rep("path", length(newfile))
 
     if(length(newfile)==0){
-      radiusL <- ifelse(is.null(settings$run$input$soil$radius), 500, as.numeric(settings$run$input$soil$radius))
+      radius <- ifelse(is.null(settings$run$input$soil$radius), 100, 
+                       as.numeric(settings$run$input$soil$radius))
+      grid_size <- max(3, ifelse(is.null(settings$run$input$soil$grid_size), 3, 
+                                 as.numeric(settings$run$input$soil$grid_size)))
 
-      newfile<-extract_soil_gssurgo(outfolder, lat = latlon$lat, lon=latlon$lon, radius = radiusL)
+      grid_extent <- radius * sqrt(pi)
+      grid_spacing <- grid_extent / (grid_size - 1)
+      newfile <- extract_soil_gssurgo(
+        outfolder, 
+        lat = latlon$lat, 
+        lon = latlon$lon,
+        grid_size = grid_size,
+        grid_spacing = grid_spacing
+      )
 
       # register files in DB
       for(i in 1:length(newfile)){

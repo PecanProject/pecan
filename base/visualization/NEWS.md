@@ -1,7 +1,16 @@
-# PEcAn.visualization 1.8.0.9000
+# PEcAn.visualization 1.8.2
+
+Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
+
+
+
+# PEcAn.visualization 1.8.1
 
 ## License change
 * PEcAn.visualization is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
+
+## Fixed
+* fixed vignette compilation
 
 
 # PEcAn.visualization 1.7.1

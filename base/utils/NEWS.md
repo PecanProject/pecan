@@ -1,10 +1,23 @@
-# PEcAn.utils 1.8.0.9000
+# PEcAn.utils 1.8.2
+
+## Added
+
+* New function `nc_write_varfiles()` creates text summaries of the variables in all netCDF files in an output directory, writing either one file named `nc_vars.txt` if `output_mode = "combined"` or a separate `[filename].nc.var` alongside each netCDF if `output_mode = "paired"` (#3611).
+* New function `nc_merge_all_sites_by_year()` combines many netCDFs into one file per year (#3620)
+* New function `extract_nc_sda`() extracts data from a multi-site netCDF created by `nc_merge_all_sites_by_year` (#3620).
+* Added CH4 and N2O variables to `standard_vars`
+
+
+
+# PEcAn.utils 1.8.1
 
 ## License change
 * PEcAn.utils is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
 
-## Added
+## Changed
 * utility function `zero.bounded.density` is now exported.
+* Roxygen fixes
+
 
 
 # PEcAn.utils 1.8.0

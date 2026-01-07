@@ -15,5 +15,6 @@ sa.splinefun(quantiles.input, quantiles.output)
 function
 }
 \description{
-Creates a spline function using the splinefun function that estimates univariate response of parameter input to model output
+Creates a spline function using the splinefun function that estimates
+univariate response of parameter input to model output
 }

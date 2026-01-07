@@ -10,7 +10,8 @@ Prep.MODIS.CSV.from.DAAC(
   from,
   to,
   download.outdir,
-  csv.outdir
+  csv.outdir,
+  credential_path
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ Prep.MODIS.CSV.from.DAAC(
 \item{download.outdir}{character: Where the MODIS tiles will be stored.}
 
 \item{csv.outdir}{character: Where the final CSV file will be stored.}
+
+\item{credential_path}{Character: physical path to the credential file (.netrc file).}
 }
 \value{
 A data frame containing LAI and sd for each site and each time step.

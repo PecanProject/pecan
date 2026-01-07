@@ -49,7 +49,7 @@ test_that("load.cfmet throws error if start/end date out of range",{
                           start.date = "1950-12-31", end.date = "1951-12-31"),
                "run start date .* before met data starts")
   expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88,
-                          start.date = "1951-01-02", end.date = "1952-01-01"),
+                          start.date = "1951-01-02", end.date = "1952-01-15"),
                "run end date .* after met data ends")
 })
 

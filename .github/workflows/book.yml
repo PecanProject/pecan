@@ -79,7 +79,7 @@ jobs:
         fi
         cd pecan-documentation
         mkdir -p $VERSION
-        rsync -a --delete ../book_source/_book/ ${VERSION}/
+        rsync -a --delete --exclude 'rendered-demo-notebooks' ../book_source/_book/ ${VERSION}/
         git add --all *
         git commit -m "Build book from pecan revision ${GITHUB_SHA}" || true
         git push -q origin main

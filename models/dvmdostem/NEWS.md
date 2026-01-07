@@ -1,4 +1,9 @@
-# PEcAn.dvmdostem 1.7.3.9000
+# PEcAn.dvmdostem 1.7.5
+
+* model2netcdf.dvmdostem no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+
+
+# PEcAn.dvmdostem 1.7.4
 
 ## License change
 * PEcAn.dvmdostem is now distributed under the BSD three-clause license instead of the NCSA Open Source license.

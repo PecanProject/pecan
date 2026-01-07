@@ -1,7 +1,7 @@
 Package: PEcAn.MA
 Type: Package
 Title: PEcAn Functions Used for Meta-Analysis
-Version: 1.7.3.9000
+Version: 1.7.5.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -24,6 +24,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation. The PEcAn.MA package contains
     the functions used in the Bayesian meta-analysis of trait data.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
     coda (>= 0.18),
     lattice,
@@ -39,7 +41,8 @@ Suggests:
     knitr (>= 1.42),
     mockery,
     rmarkdown (>= 2.19),
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    tibble
 SystemRequirements: JAGS
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr, rmarkdown
@@ -48,3 +51,4 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: parameter-estimation, model-calibration

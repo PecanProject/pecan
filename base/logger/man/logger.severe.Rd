@@ -2,7 +2,7 @@
 % Please edit documentation in R/logger.R
 \name{logger.severe}
 \alias{logger.severe}
-\title{Prints an severe message and stops execution.}
+\title{Prints a severe message and stops execution.}
 \usage{
 logger.severe(msg, ..., wrap = TRUE)
 }
@@ -20,9 +20,8 @@ This function will print a message and stop execution of the code. This
 should only be used if the application should terminate.
 }
 \details{
-set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
-the session. This is set by default to TRUE if interactive or running
-inside Rstudio.
+Set \code{\link{logger.setQuitOnSevere}(FALSE)} to avoid terminating
+the session. The default is to not quit if running interactively.
 }
 \examples{
 \dontrun{
