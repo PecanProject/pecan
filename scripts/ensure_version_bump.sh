@@ -25,7 +25,7 @@ set -e
 
 # Git tag (or hash or other ref) to compare against.
 # If not given as an argument, defaults to the most recently created tag.
-git_ref=${1:-$(git describe --tags --abbrev=0)}
+git_ref=${1:-$(git tag --sort=-creatordate | head -n1)}
 
 # Directory inside which to check every R package.
 # If not given as an argument, defaults to the current working directory.

@@ -14,12 +14,15 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  samples = NULL,
   rename = FALSE
 )
 }
 \arguments{
-\item{input_design}{the input indices for samples}
+\item{input_design}{design matrix describing sampled inputs (see
+`run.write.configs()`). Columns named after `settings$run$inputs` tags give
+1-based indices into each input's `path` list and rows follow run order.
+Requires `nrow(input_design) >= ensemble.size`;
+extra rows are ignored.}
 
 \item{ensemble.size}{size of ensemble}
 
@@ -36,8 +39,6 @@ write.ensemble.configs(
 \item{write.to.db}{logical: Record this run in BETY?}
 
 \item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
-
-\item{samples}{Sampled inputs such as met and parameter files}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
 }

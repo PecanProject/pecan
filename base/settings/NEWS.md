@@ -2,13 +2,14 @@
 
 ## Fixed
 
-* listToXml.MultiSettings now produces valid XML from a MultiSettings with length 1.
-* setEnsemblePaths no longer wraps single paths in a list, giving `<path>/your/file.here</path>` instead of the previous `<path><path1>/your/file.here</path1></path>`.
+* listToXml.MultiSettings now produces valid XML from a MultiSettings with length 1 (#3546) .
+* setEnsemblePaths no longer wraps single paths in a list, giving `<path>/your/file.here</path>` instead of the previous `<path><path1>/your/file.here</path1></path>` (#3561).
 
 ## Changed
 
-* The `tag` argument to `listToXml()` is now optional and will default to "pecan" if not specified. This sets the name of the root tag of the resulting XML object.
-* The first argument of `listToXml.MultiSettings()` has been renamed from `item` to `x`, and it now accepts but ignores `...`, both for consistency with the generic.
+* The `tag` argument to `listToXml()` is now optional and will default to "pecan" if not specified. This sets the name of the root tag of the resulting XML object (#3558).
+* The first argument of `listToXml.MultiSettings()` has been renamed from `item` to `x`, and it now accepts but ignores `...`, both for consistency with the generic (#3558).
+* `setEnsemblePaths()` no longer restricts the set of values accepted for `input_type` (#3633)
 
 
 # PEcAn.settings 1.9.0
@@ -33,9 +34,11 @@
 * Internal helper function `getRunSettings` is no longer exported. As the documentation has long noted, it was not intended to be called directly.
 
 
+
 # PEcAn.settings 1.8.0
 
 * Bug fixes for ensemble runs.
+
 
 
 # PEcAn.settings 1.7.1

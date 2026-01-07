@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+@CDO_SETUP@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# Convert any relative paths to absolute
+# (otherwise we'd lose track of them when cd'ing into rundir)
+OUTDIR=$(realpath "@OUTDIR@")
+RUNDIR=$(realpath "@RUNDIR@")
+BINARY=$(realpath "@BINARY@")
+
+# see if application needs running
+if [ ! -e "${OUTDIR}/month_results.out" ]; then
+  cd "${RUNDIR}"
+
+  "${BINARY}"
+  STATUS=$?
+
+  mv "${RUNDIR}/month_results.out" "$OUTDIR"
+
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '${OUTDIR}/logfile.txt'" >&3
+    exit $STATUS
+  fi
+
+  # convert to MsTMIP
+  echo "PEcAn.RothC::model2netcdf.RothC('${OUTDIR}', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
+fi
+
+# copy readme with specs to output
+cp  "${RUNDIR}/README.txt" "${OUTDIR}/README.txt"
+
+# run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
+
+# all done
+echo -e "MODEL FINISHED\nLogfile is located at '${OUTDIR}/logfile.txt'" >&3

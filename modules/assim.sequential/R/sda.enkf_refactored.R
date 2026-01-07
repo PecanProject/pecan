@@ -379,7 +379,7 @@ sda.enkf <- function(settings,
     
     #----chaning the extension of nc files to a more specific date related name
    files <-  list.files(
-      path = file.path(settings$outdir, "out"),
+      path = settings$modeloutdir,
       "*.nc$",
       recursive = TRUE,
       full.names = TRUE)

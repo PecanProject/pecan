@@ -14,7 +14,7 @@ DATABASE=bety
 BETYUSER=bety
 
 # Location where backup should be written
-BACKUPDIR=$( dirname $0 )/backup
+BACKUPDIR=$(dirname "$0")/backup
 
 # Set path if needed
 #export PATH=<location to postgresql>/bin;${PATH}

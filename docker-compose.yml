@@ -363,26 +363,30 @@ services:
   # Shiny Apps
   # ----------------------------------------------------------------------
   # PEcAn DB Sync visualization
-  dbsync:
-    hostname: dbsync
-    platform: linux/amd64
-    image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
-    restart: unless-stopped
-    networks:
-      - pecan
-    depends_on:
-      postgres:
-        condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dbsync.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/dbsync/`)"
-      - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
-      - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/dbsync"
-    healthcheck:
-      test: "curl --silent --fail http://localhost:3838 > /dev/null || exit 1"
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  #  Note: We no longer recommend enabling sync by default.
+  #   Only turn this on if you're sure you need it, and only if you know
+  #   which servers you want to sync with. dbsync's built-in server list
+  #   is out of date.
+  # dbsync:
+  #   hostname: dbsync
+  #   platform: linux/amd64
+  #   image: pecan/shiny-dbsync:${PECAN_VERSION:-latest}
+  #   restart: unless-stopped
+  #   networks:
+  #     - pecan
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.dbsync.rule=Host(`${TRAEFIK_HOST:-pecan.localhost}`) && PathPrefix(`/dbsync/`)"
+  #     - "traefik.http.routers.dbsync.middlewares=dbsync-stripprefix"
+  #     - "traefik.http.middlewares.dbsync-stripprefix.stripprefix.prefixes=/dbsync"
+  #   healthcheck:
+  #     test: "curl --silent --fail http://localhost:3838 > /dev/null || exit 1"
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   # ----------------------------------------------------------------------
   # PEcAn API

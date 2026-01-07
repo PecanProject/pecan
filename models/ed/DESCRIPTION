@@ -68,3 +68,4 @@ Encoding: UTF-8
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 2
+X-schema.org-keywords: ED2, ecosystem-modeling

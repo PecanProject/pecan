@@ -23,7 +23,6 @@ jobs:
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
       # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html

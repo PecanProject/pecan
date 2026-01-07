@@ -94,3 +94,4 @@ LazyData: FALSE
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: climate-data, data-standardization

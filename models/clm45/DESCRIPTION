@@ -1,7 +1,7 @@
 Package: PEcAn.CLM45
 Type: Package
 Title: PEcAn Package for Integration of CLM4.5 Model
-Version: 1.7.4.9000
+Version: 1.7.5
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -26,3 +26,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: CLM45, ecosystem-modeling

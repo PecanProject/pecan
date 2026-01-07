@@ -115,3 +115,6 @@ contrib/modellauncher/modellauncher
 # Ignore any folder named demo_outdir (Quarto notebook outputs)
 **/demo_outdir/
 dbfiles/
+**/temperate.coniferous/
+*.sensitivity.analysis.*.pdf
+*.variance.decomposition.*.pdf

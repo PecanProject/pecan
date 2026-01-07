@@ -1,3 +1,9 @@
+# PEcAn.allometry 1.7.5
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* No code changes in this release.
+
+
 # PEcAn.allometry 1.7.4
 
 ## License change
