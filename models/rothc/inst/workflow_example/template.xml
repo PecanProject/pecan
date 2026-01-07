@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<pecan>
+ <info>
+  <notes>Template for demo runs of RothC using PEcAn. This file is not by itself
+    a usable PEcAn settings object, will be further processed by the workflow to
+    create one.</notes>
+  <userid>-1</userid>
+  <username></username>
+ </info>
+ <outdir><!-- altered at config time -->output</outdir>
+ <modeloutdir><!-- altered at config time -->output/out</modeloutdir>
+ <rundir><!-- altered at config time -->output/run</rundir>
+ <pfts>
+  <pft>
+   <name>soil</name>
+   <outdir>data_raw/pfts/soil/</outdir>
+  </pft>
+ </pfts>
+ <ensemble>
+  <size><!-- inserted at config time --></size>
+  <variable>TotSoilCarb</variable>
+  <samplingspace>
+   <parameters>
+    <method>uniform</method>
+   </parameters>
+   <met>
+    <method>sampling</method>
+   </met>
+  <!-- TODO disabled until running right without them
+   <poolinitcond>
+     <method>sampling</method>
+   </poolinitcond>
+   <soilphysics>
+    <method>sampling</method>
+   </soilphysics> -->
+  </samplingspace>
+  <start.year><!-- inserted at config time --></start.year>
+  <end.year><!-- inserted at config time --></end.year>
+ </ensemble>
+ <model>
+  <id>rothc_2_1_0</id>
+  <type>RothC</type>
+  <revision>2.1.0</revision>
+  <delete.raw>FALSE</delete.raw>
+  <binary>/usr/local/bin/RothC_v2.1.0</binary>
+ </model>
+ <run>
+  <site><!-- inserted at config time --></site>
+  <inputs>
+   <met>
+    <id></id>
+    <path><!-- inserted at config time --></path>
+   </met>
+  </inputs>
+  <start.date><!-- inserted at config time --></start.date>
+  <end.date><!-- inserted at config time --></end.date>
+ </run>
+ <host>
+  <name>localhost</name>
+  <outdir><!-- altered at config time -->output/out</outdir>
+  <rundir><!-- altered at config time -->output/run</rundir>
+  <modellauncher>
+    <binary>parallel -j ${NCPUS:-1} --skip-first-line '{}/job.sh' ::::</binary>
+    <Njobmax>1000</Njobmax>
+  </modellauncher>
+ </host>
+</pecan>

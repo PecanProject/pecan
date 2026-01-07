@@ -450,25 +450,27 @@ check.settings <- function(settings, force = FALSE) {
   }
 
   # Check folder where outputs are written before adding to dbfiles
-  if (is.null(settings$database$dbfiles)) {
-    settings$database$dbfiles <- PEcAn.utils::full.path("~/.pecan/dbfiles")
-  } else {
-    if (substr(settings$database$dbfiles, 1, 1) != "/") {
-      PEcAn.logger::logger.warn(
-        "settings$database$dbfiles pathname", settings$database$dbfiles,
-        "is invalid\n",
-        "placing it in the home directory ",
-        Sys.getenv("HOME"))
-      settings$database$dbfiles <- file.path(
-        Sys.getenv("HOME"),
-        settings$database$dbfiles)
-    }
+  if (!is.null(settings$database)) {
+    if (is.null(settings$database$dbfiles)) {
+      settings$database$dbfiles <- PEcAn.utils::full.path("~/.pecan/dbfiles")
+    } else {
+      if (substr(settings$database$dbfiles, 1, 1) != "/") {
+        PEcAn.logger::logger.warn(
+          "settings$database$dbfiles pathname", settings$database$dbfiles,
+          "is invalid\n",
+          "placing it in the home directory ",
+          Sys.getenv("HOME"))
+        settings$database$dbfiles <- file.path(
+          Sys.getenv("HOME"),
+          settings$database$dbfiles)
+      }
 
-    settings$database$dbfiles <- normalizePath(
-      settings$database$dbfiles,
-      mustWork = FALSE)
+      settings$database$dbfiles <- normalizePath(
+        settings$database$dbfiles,
+        mustWork = FALSE)
+    }
+    dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE)
   }
-  dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
   # check all inputs exist
   settings <- papply(settings, check.inputs)

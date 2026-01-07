@@ -51,7 +51,7 @@ submitWorkflow <- function(req, res){
      filepath <- paste0(settings$pfts$pft$outdir, "/post.distns.Rdata")
      e <- new.env(parent = emptyenv())
      load(filepath, envir = e)
-     return(list(status = "Meta Analysis ran successfully", data = as.list(e))
+     return(list(status = "Meta Analysis ran successfully", data = as.list(e)))
     }
   }
   else{

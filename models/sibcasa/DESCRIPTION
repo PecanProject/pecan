@@ -27,3 +27,4 @@ Copyright: Authors
 LazyData: TRUE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: SiBCASA, ecosystem-modeling

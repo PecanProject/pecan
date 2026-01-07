@@ -224,9 +224,9 @@ for (y in 2012:2024) {
 }
 
 # setup parallel downscaling.
-method <- "xgboost" #xgboost; randomForest;
+method <- "randomForest" #xgboost; randomForest;
 base.map.dir <- "/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_NLCD_LC.tif"
-load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis_noGEDI.Rdata")
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis.Rdata")
 variables <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
 settings <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/shapefile/pts.shp"
 outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/"
@@ -236,7 +236,7 @@ date <- seq(as.Date("2012-07-15"), as.Date("2024-07-15"), "1 year")
 for (i in seq_along(date)) {
   print(i)
   # Assemble covariates.
-  covariates.dir <- file.path("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/covariates_lc_ts/covariates_nolatlon/", paste0("covariates_", lubridate::year(date[i]), ".tiff"))
+  covariates.dir <- file.path("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/covariates_lc_ts/covariates_with_LAI", paste0("covariates_", lubridate::year(date[i]), ".tiff"))
   # grab analysis.
   analysis.yr <- analysis.all[[i]]
   time <- date[i]
@@ -244,7 +244,7 @@ for (i in seq_along(date)) {
   for (j in seq_along(variables)) {
     # setup folder.
     variable <- variables[j]
-    folder.path <- file.path(file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_xgboost"), paste0(variables[j], "_", date[i]))
+    folder.path <- file.path(file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_rf"), paste0(variables[j], "_", date[i]))
     dir.create(folder.path)
     saveRDS(list(settings = settings, 
                  analysis.yr = analysis.yr, 
@@ -255,7 +255,7 @@ for (i in seq_along(date)) {
                  base.map.dir = base.map.dir,
                  method = method,
                  cores = cores, 
-                 outdir = file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_xgboost")),
+                 outdir = file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_rf")),
          file = file.path(folder.path, "dat.rds"))
     # prepare for qsub.
     jobsh <- c("#!/bin/bash -l", 

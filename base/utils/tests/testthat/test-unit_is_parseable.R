@@ -11,11 +11,7 @@ test_that("Non-parseable unit", {
   expect_false(unit_is_parseable("kg / fake"))
   expect_false(unit_is_parseable(NULL))
 
-  # Note: This behavior differs from `udunits2::ud.is.parseable("")`
-  #  (which returns TRUE), but is better aligned with PEcAn's usage
-  #  of "parseable" to mean "will work when passed to ud_convert".
-  # Since ud_convert does not support any useful conversions of "",
-  #  we report it as unparseable.
-  expect_false(unit_is_parseable(""))
+  # Note: Deleted test of unit_is_parseable("") here.
+  # It was FALSE with {units} < v1.0, TRUE after that... and the change turned
+  # out not to make any practical difference in PEcAn, so why test it?
 })
-

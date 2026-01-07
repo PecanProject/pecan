@@ -22,7 +22,7 @@ jagify <- function(result, use_ghs = TRUE) {
     r <- r[r$greenhouse != 1, ]
   }
   
-  r <- PEcAn.DB::assign.treatments(r)
+  r <- assign_treatments(r)
   r <- PEcAn.utils::summarize.result(r)
   r$stat <- as.numeric(r$stat)
   r$n <- as.numeric(r$n)

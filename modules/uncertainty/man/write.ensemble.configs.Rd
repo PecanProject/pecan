@@ -14,12 +14,15 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  samples = NULL,
   rename = FALSE
 )
 }
 \arguments{
-\item{input_design}{the input indices for samples}
+\item{input_design}{design matrix describing sampled inputs (see
+`run.write.configs()`). Columns named after `settings$run$inputs` tags give
+1-based indices into each input's `path` list and rows follow run order.
+Requires `nrow(input_design) >= ensemble.size`;
+extra rows are ignored.}
 
 \item{ensemble.size}{size of ensemble}
 
@@ -37,8 +40,6 @@ write.ensemble.configs(
 
 \item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
 
-\item{samples}{Sampled inputs such as met and parameter files}
-
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
 }
 \value{
@@ -52,7 +53,7 @@ a name to distinguish the output files, and the directory to place the files.
 \details{
 The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
 new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
-State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
+The state variables that you can use for setting up initial conditions are model specific. Check the documentation of the write_restart.<modelname> function for the model you are using.
 The units for the state variables need to be in the PEcAn standard units which can be found in \link{standard_vars}.
 new.params also has similar structure to ensemble.samples which is sent as an argument.
 }

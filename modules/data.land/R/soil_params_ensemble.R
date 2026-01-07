@@ -159,9 +159,13 @@ soil_params_ensemble_soilgrids <- function(settings,sand,clay,silt,outdir,write_
   PATH <- foreach::foreach(i = seq_along(dat), .packages = c("Kendall", "purrr", "PEcAn.data.land"), .options.snow=opts) %dopar% {
     samples_ens <- list()
     paths <- c()
-    siteid <- as.numeric(unique(dat[[i]]$siteid))
+    siteid <- unique(dat[[i]]$siteid)
     soil_depth <- unique(dat[[i]]$soil_depth)
-    str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
+    if (is.numeric(siteid) && siteid > 1e9) {
+      str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
+    } else {
+      str_ns <- as.character(siteid)
+    }
     temp_outdir <- file.path(outdir, siteid)
     dir.create(temp_outdir)
     # Estimate Dirichlet parameters for each depth at each site

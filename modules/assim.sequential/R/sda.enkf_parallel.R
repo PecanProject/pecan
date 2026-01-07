@@ -9,7 +9,7 @@
 #' @param obs.cov   Lists of date times named by time points, which contains lists of sites named by site ids, which contains observation covariances for all state variables of each site for each time point. 
 #' @param Q         Process covariance matrix given if there is no data to estimate it.
 #' @param pre_enkf_params Used for passing pre-existing time-series of process error into the current SDA runs to ignore the impact by the differences between process errors.
-#' @param ensemble.samples Pass ensemble.samples from outside to avoid GitHub check issues.
+#' @param ensemble.samples list of ensemble parameters across PFTs. Default is NULL.
 #' @param outdir physical path to the folder that stores the SDA outputs. Default is NULL.
 #' @param control   List of flags controlling the behavior of the SDA. 
 #' `TimeseriesPlot` for post analysis examination; 
@@ -18,6 +18,11 @@
 #' `keepNC` decide if we want to keep the NetCDF files inside the out directory;
 #' `forceRun` decide if we want to proceed the Bayesian MCMC sampling without observations;
 #' `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
+#' `merge_nc` determine if we want to merge all netCDF files across sites and ensembles.
+#' If it's set as `TRUE`, we will then combine all netCDF files into the `merged_nc` folder within the `outdir`.
+#' @param debias List: R list containing the covariance directory and the start year.
+#' covariance directory should include GeoTIFF files named by year.
+#' start year is numeric input which decide when to start the debiasing feature.
 #' 
 #' @return NONE
 #' @export
@@ -34,20 +39,23 @@ sda.enkf_local <- function(settings,
                                         send_email = NULL,
                                         keepNC = TRUE,
                                         forceRun = TRUE,
-                                        MCMC.args = NULL)) {
-  # initialize parallel.
-  if (future::supportsMulticore()) {
-    future::plan(future::multicore)
-  } else {
-    future::plan(future::multisession)
-  }
+                                        MCMC.args = NULL,
+                                        merge_nc = TRUE),
+                           debias = list(cov.dir = NULL, start.year = NULL)) {
   # grab cores from settings.
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   # if we didn't assign number of CPUs in the settings.
-  if (is.null(cores)) {
-    cores <- parallel::detectCores() - 1
-    # if we only have one CPU.
-    if (cores < 1) cores <- 1
+  if (length(cores) == 0 | is.null(cores)) {
+    cores <- parallel::detectCores()
+  }
+  cores <- cores - 1
+  # if we only have one CPU.
+  if (cores < 1) cores <- 1
+  # initialize parallel.
+  if (future::supportsMulticore()) {
+    future::plan(future::multicore, workers = cores)
+  } else {
+    future::plan(future::multisession, workers = cores)
   }
   # Tweak outdir if it's specified from outside.
   if (!is.null(outdir)) {
@@ -140,7 +148,6 @@ sda.enkf_local <- function(settings,
   register.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.", model))
   register <- XML::xmlToList(XML::xmlParse(register.xml))
   no_split <- !as.logical(register$exact.dates)
-  
   if (!exists(my.split_inputs)  &  !no_split) {
     PEcAn.logger::logger.warn(my.split_inputs, "does not exist")
     PEcAn.logger::logger.severe("please make sure that the PEcAn interface is loaded for", model)
@@ -193,40 +200,35 @@ sda.enkf_local <- function(settings,
   }
   #reformatting params
   new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
-  #sample met ensemble members
-  #sample all inputs specified in the settings$ensemble
-  #now looking into the xml
-  samp <- conf.settings$ensemble$samplingspace
-  #finding who has a parent
-  parents <- lapply(samp,'[[', 'parent')
-  #order parents based on the need of who has to be first
-  order <- names(samp)[lapply(parents, function(tr) which(names(samp) %in% tr)) %>% unlist()] 
-  #new ordered sampling space
-  samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
-  #performing the sampling
-  inputs <- vector("list", length(conf.settings))
-  # For the tags specified in the xml I do the sampling
-  for (s in seq_along(conf.settings)){
-    if (is.null(inputs[[s]])) {
-      inputs[[s]] <- list() 
-    }
-    for (i in seq_along(samp.ordered)){
-      #call the function responsible for generating the ensemble
-      inputs[[s]][[names(samp.ordered)[i]]] <- PEcAn.uncertainty::input.ens.gen(settings=conf.settings[[s]],
-                                                                                input=names(samp.ordered)[i],
-                                                                                method=samp.ordered[[i]]$method,
-                                                                                parent_ids=NULL)
+  # get the joint input design.
+  for (i in seq_along(settings)) {
+    # get the input names that are registered for sampling.
+    names.sampler <- names(settings$ensemble$samplingspace)
+    # get the input names for the current site.
+    names.site.input <- names(settings[[i]]$run$inputs)
+    # remove parameters field from the list.
+    names.sampler <- names.sampler[-which(names.sampler == "parameters")]
+    # find a site that has all registered inputs except for the parameter field.
+    if (all(names.sampler %in% names.site.input)) {
+      input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[i]], 
+                                                                        ensemble_samples = ensemble.samples, 
+                                                                        ensemble_size = nens)[[1]]
+      break
     }
   }
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
-  for(t in 1:nt){
+  # initialize the lists of covariates for the debias feature.
+  pre.states <- vector("list", length = length(var.names)) %>% purrr::set_names(var.names)
+  # initialize the lists of forecasts for all time points.
+  all.X <- vector("list", length = nt)
+  for (t in 1:nt) {
     # initialize dat for saving memory usage.
     sda.outputs <- FORECAST <- enkf.params <- ANALYSIS <- ens_weights <- list()
     obs.t <- as.character(lubridate::date(obs.times[t]))
     obs.year <- lubridate::year(obs.t)
-    PEcAn.logger::logger.info(paste("Processing Year:", obs.year))
+    PEcAn.logger::logger.info(paste("Processing date:", obs.t))
     ###-------------------------------------------------------------------------###
     ###  Taking care of Forecast. Splitting /  Writting / running / reading back###
     ###-------------------------------------------------------------------------###-----  
@@ -276,7 +278,7 @@ sda.enkf_local <- function(settings,
                                new.state = new_state_site,
                                new.params = new.params,
                                inputs = inputs,
-                               RENAME = TRUE,
+                               RENAME = FALSE,
                                ensemble.id = settings$ensemble$ensemble.id
                              )
                            })
@@ -286,22 +288,41 @@ sda.enkf_local <- function(settings,
     # release memory.
     gc()
     # submit jobs for writing configs.
+    # writing configs for each settings
     PEcAn.logger::logger.info("Writting configs!")
-    out.configs <- furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")), restart.list, inputs), function(settings, restart.arg, inputs) {
-      # Loading the model package - this is required bc of the furrr
-      library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-      # wrtting configs for each settings - this does not make a difference with the old code
-      PEcAn.uncertainty::write.ensemble.configs(
-        defaults = settings$pfts,
-        ensemble.samples = ensemble.samples,
-        settings = settings,
-        model = settings$model$type,
-        write.to.db = settings$database$bety$write,
-        restart = restart.arg,
-        samples=inputs,
-        rename = F
-      )
-    }) %>% stats::setNames(site.ids)
+    # here we use the foreach instead of furrr
+    # because for some reason, the furrr has problem returning the sample paths.
+    cl <- parallel::makeCluster(cores)
+    doSNOW::registerDoSNOW(cl)
+    temp.settings <- NULL
+    restart.arg <- NULL
+    out.configs <- foreach::foreach(temp.settings = as.list(conf.settings), 
+                                    restart.arg = restart.list,
+                                    .packages = c("Kendall", 
+                                                  "purrr", 
+                                                  "PEcAn.uncertainty", 
+                                                  paste0("PEcAn.", model), 
+                                                  "PEcAnAssimSequential")) %dopar% {
+                                                    temp <- PEcAn.uncertainty::write.ensemble.configs(
+                                                      input_design = input_design,
+                                                      ensemble.size = nens,
+                                                      defaults = temp.settings$pfts,
+                                                      ensemble.samples = ensemble.samples,
+                                                      settings = temp.settings,
+                                                      model = temp.settings$model$type,
+                                                      write.to.db = temp.settings$database$bety$write,
+                                                      restart = restart.arg,
+                                                      # samples=inputs,
+                                                      rename = FALSE
+                                                    )
+                                                    return(temp)
+                                                  } %>% stats::setNames(site.ids)
+    parallel::stopCluster(cl)
+    foreach::registerDoSEQ()
+    # update the file paths of different inputs when t = 1.
+    if (t == 1) {
+      inputs <- out.configs %>% purrr::map(~.x$samples)
+    }
     # collect run info.
     # get ensemble ids for each site.
     ensemble.ids <- site.ids %>% furrr::future_map(function(i){
@@ -350,7 +371,24 @@ sda.enkf_local <- function(settings,
       dplyr::bind_cols() %>%
       `colnames<-`(c(rep(var.names, length(X)))) %>%
       `attr<-`('Site',c(rep(site.ids, each=length(var.names))))
-    FORECAST[[obs.t]] <- X
+    all.X[[t]] <- X
+    # start debiasing.
+    debias.out <- NULL
+    if (!is.null(debias$start.year)) {
+      if (obs.year >= debias$start.year) {
+        PEcAn.logger::logger.info("Start debiasing!")
+        debias.out <- sda_bias_correction(site.locs, 
+                                          t, all.X, 
+                                          obs.mean, 
+                                          state.interval, 
+                                          debias$cov.dir,
+                                          pre.states,
+                                          .get_debias_mod)
+        X <- debias.out$X
+        pre.states <- debias.out$pre.states
+      }
+    }
+    FORECAST[[obs.t]] <- all.X[[t]] <- X
     gc()
     ###-------------------------------------------------------------------###
     ###  preparing OBS                                                    ###
@@ -384,11 +422,26 @@ sda.enkf_local <- function(settings,
       #Analysis
       Pa <- enkf.params[[obs.t]]$Pa
       mu.a <- enkf.params[[obs.t]]$mu.a
+    } else {
+      mu.f <- colMeans(X) #mean Forecast - This is used as an initial condition
+      mu.a <- mu.f
+      if(is.null(Q)){
+        q.bar <- diag(ncol(X))
+        PEcAn.logger::logger.warn('Process variance not estimated. Analysis has been given uninformative process variance')
+      }
+      Pf <- stats::cov(X)
+      Pa <- Pf
+      enkf.params[[obs.t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
     ###-------------------------------------------------------------------###
     ### adjust/update state matrix                                   ###
     ###-------------------------------------------------------------------###---- 
-    analysis <- enkf.params[[obs.t]]$analysis
+    # if we don't have the analysis from the analysis function.
+    if (is.null(enkf.params[[obs.t]]$analysis)) {
+      analysis <- as.data.frame(mvtnorm::rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
+    } else {
+      analysis <- enkf.params[[obs.t]]$analysis
+    }
     enkf.params[[obs.t]]$analysis <- NULL
     ##### Mapping analysis vectors to be in bounds of state variables
     for(i in 1:ncol(analysis)){
@@ -410,7 +463,9 @@ sda.enkf_local <- function(settings,
                         enkf.params = enkf.params[[obs.t]],
                         ens_weights[[obs.t]],
                         params.list = params.list,
-                        restart.list = restart.list)
+                        restart.list = restart.list,
+                        debias.out = debias.out)
+    
     # save file to the out folder.
     save(sda.outputs, file = file.path(settings$outdir, paste0("sda.output", t, ".Rdata")))
     # remove files as SDA runs
@@ -442,6 +497,25 @@ sda.enkf_local <- function(settings,
   names(analysis.all) <- as.character(lubridate::date(obs.times))
   names(forecast.all) <- as.character(lubridate::date(obs.times))
   save(list = c("analysis.all", "forecast.all"), file = file.path(settings$outdir, "sda.all.forecast.analysis.Rdata"))
+  # merge NC files.
+  if (control$merge_nc) {
+    nc.folder <- file.path(settings$outdir, "merged_nc")
+    if (file.exists(nc.folder)) unlink(nc.folder)
+    dir.create(nc.folder)
+    temp <- PEcAn.utils::nc_merge_all_sites_by_year(model.outdir = outdir, 
+                                                    nc.outdir = nc.folder, 
+                                                    ens.num = nens, 
+                                                    site.ids = as.numeric(site.ids), 
+                                                    start.date = obs.times[1], 
+                                                    end.date = obs.times[length(obs.times)], 
+                                                    time.step = paste(1, settings$state.data.assimilation$forecast.time.step), 
+                                                    cores = cores)
+    # remove rundir and outdir.
+    unlink(rundir, recursive = T)
+    unlink(outdir, recursive = T)
+  }
+  # remove met files.
+  unlink(file.path(settings$outdir, "Extracted_met"), recursive = T)
   gc()
 }
 
@@ -466,10 +540,25 @@ sda.enkf_local <- function(settings,
 #' `MCMC.args` include lists for controling the MCMC sampling process (iteration, nchains, burnin, and nthin.).
 #' @param block.index list of site ids for each block, default is NULL. This is used when the localization turns on.
 #' Please keep using the default value because the localization feature is still in development.
+#' @param debias List: R list containing the covariance directory and the start year.
+#' covariance directory should include GeoTIFF files named by year.
+#' start year is numeric input which decide when to start the debiasing feature.
+#' @param prefix character: the desired folder name to store the outputs.
+#' 
 #' @author Dongchen Zhang
 #' @return NONE
 #' @export
-qsub_sda <- function(settings, obs.mean, obs.cov, Q, pre_enkf_params, ensemble.samples, outdir, control, block.index = NULL) {
+qsub_sda <- function(settings, 
+                     obs.mean, 
+                     obs.cov, 
+                     Q, 
+                     pre_enkf_params, 
+                     ensemble.samples, 
+                     outdir, 
+                     control, 
+                     block.index = NULL,
+                     debias = list(cov.dir = NULL, start.year = NULL),
+                     prefix = "batch") {
   # read from settings.
   L <- length(settings)
   # grab info from settings.
@@ -490,7 +579,7 @@ qsub_sda <- function(settings, obs.mean, obs.cov, Q, pre_enkf_params, ensemble.s
     outdir <- settings$outdir
   }
   # create folder for storing job outputs.
-  batch.folder <- file.path(outdir, "batch")
+  batch.folder <- file.path(outdir, prefix)
   # delete the whole folder if it's not empty.
   if (file.exists(batch.folder)){
     PEcAn.logger::logger.info("Deleting batch folder!")
@@ -549,6 +638,7 @@ qsub_sda <- function(settings, obs.mean, obs.cov, Q, pre_enkf_params, ensemble.s
                                              outdir = folder.path, # outdir
                                              cores = cores,
                                              control = control,
+                                             debias = debias,
                                              site.ids = block.site.inds)
                              saveRDS(configs, file = file.path(folder.path, "configs.rds"))
                              # create job file.
@@ -596,7 +686,8 @@ qsub_sda_batch <- function(folder.path) {
                  configs$pre_enkf_params,
                  configs$ensemble.samples,
                  configs$outdir,
-                 configs$control)
+                 configs$control,
+                 configs$debias)
 }
 
 ##' This function can help to assemble sda outputs (analysis and forecasts) from each job execution.

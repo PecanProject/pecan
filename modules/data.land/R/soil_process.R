@@ -31,12 +31,14 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
   # get site info
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
-  new.site <- data.frame(id = as.numeric(site$id),
-                         lat = latlon$lat,
-                         lon = latlon$lon)
+  if (isTRUE(nzchar(site$lat)) && isTRUE(nzchar(site$lon))) {
+    latlon <- data.frame(lat = site$lat, lon = site$lon)
+  } else {
+    latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
+  }
+  new.site <- list(id = site$id, lat = latlon$lat, lon = latlon$lon)
 
-  if (isTRUE(new.site$id > 1e9)) {
+  if (is.numeric(new.site$id) && isTRUE(new.site$id > 1e9)) {
     # Assume this is a BETYdb id, condense for readability
     str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   } else {
@@ -45,7 +47,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
 
   outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
 
-  if(!dir.exists(outfolder)) dir.create(outfolder)
+  if (!dir.exists(outfolder)) dir.create(outfolder)
   #--------------------------------------------------------------------------------------------------#
   # if we are reading from gSSURGO
   if (input$source=="gSSURGO"){

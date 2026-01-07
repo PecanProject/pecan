@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 ##' Reads output from model ensemble
 ##'
 ##' Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
@@ -202,7 +193,11 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
 ##'
-##' @param input_design the input indices for samples 
+##' @param input_design design matrix describing sampled inputs (see
+##'   `run.write.configs()`). Columns named after `settings$run$inputs` tags give
+##'   1-based indices into each input's `path` list and rows follow run order.
+##'   Requires `nrow(input_design) >= ensemble.size`;
+##'   extra rows are ignored.
 ##' @param ensemble.size size of ensemble
 ##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}
@@ -211,45 +206,40 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' @param clean remove old output first?
 ##' @param write.to.db logical: Record this run in BETY?
 ##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @param samples Sampled inputs such as met and parameter files
 ##' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 ##'
 ##' @return list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
 ##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
 ##' new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
-##' State variables that you can use for setting up the intial conditions differs for different models. You may check the documentation of the write_restart.modelname your model.
+##' The state variables that you can use for setting up initial conditions are model specific. Check the documentation of the write_restart.<modelname> function for the model you are using.
 ##' The units for the state variables need to be in the PEcAn standard units which can be found in \link{standard_vars}.
 ##' new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##'
 ##' @importFrom dplyr %>%
-##' @importFrom rlang .data
+##' @importFrom rlang .data %||%
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
+
 write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model, 
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, samples = NULL, rename = FALSE) {
-  
-  
-  # Check if there are NO inputs
- 
-for (input_tag in names(settings$run$inputs)) {
-  input <- settings$run$inputs[[input_tag]]
-  input_paths <- input$path
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
   
   # Check for required paths
-  if (is.null(input_paths) || length(input_paths) == 0) {
-     PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
+  for (input_tag in names(settings$run$inputs)) {
+    input <- settings$run$inputs[[input_tag]]
+    input_paths <- input$path
+    if (is.null(input_paths) || length(input_paths) == 0) {
+      PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
+    }
+    # Check for unsampled multi-path inputs
+    if (length(input_paths) > 1 &&
+          !(input_tag %in% names(settings$ensemble$samplingspace))) {
+      PEcAn.logger::logger.error(
+        "Input", sQuote(input_tag), "has", length(input_paths),
+        "paths but no sampling method.",
+        "Add <samplingspace> for this input in pecan.xml"
+      )
+    }
   }
-  
-  # Check for unsampled multi-path inputs
-  if (length(input_paths) > 1 && 
-     !(input_tag %in% names(settings$ensemble$samplingspace))) {
-    PEcAn.logger::logger.error(
-      "Input", sQuote(input_tag), "has", length(input_paths), "paths but no sampling method.",
-      "Add <samplingspace> for this input in pecan.xml")
-  }
-}
-
-  
   
   con <- NULL
   my.write.config <- paste("write.config.", model, sep = "")
@@ -281,14 +271,14 @@ for (input_tag in names(settings$run$inputs)) {
 
   
   # Get the workflow id
-  if (!is.null(settings$workflow$id)) {
-    workflow.id <- settings$workflow$id
-  } else {
-    workflow.id <- -1
-  }
+  # if workflow$id is null, set to -1
+  # to avoid collision w/ database ids
+  workflow.id <- settings$workflow$id %||% -1
+
   #------------------------------------------------- if this is a new fresh run------------------  
   if (is.null(restart)){
     # create an ensemble id
+    # Note: this ignores any existing settings$ensemble$id
     if (!is.null(con) && write.to.db) {
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
@@ -302,7 +292,10 @@ for (input_tag in names(settings$run$inputs)) {
           "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
       }
     } else {
-      ensemble.id <- NA
+      # Use existing id if provided, or an arbitrary unique value if not
+      # Note: Since write.ensemble.configs is called separately for each site,
+      # a multisite run with no ID provided gives each site its own ensemble id!
+      ensemble.id <- settings$ensemble$id %||% rlang::hash(settings)
     }
     #-------------------------generating met/param/soil/veg/... for all ensembles----
     if (!is.null(con)){
@@ -320,22 +313,18 @@ for (input_tag in names(settings$run$inputs)) {
     }
     #now looking into the xml
     samp <- settings$ensemble$samplingspace
-    if(is.null(samples)){
-       #performing the sampling
-      samples <- list()
-      input_tags <- names(settings$run$inputs)
-
-      for (input_tag in input_tags) {
-           if (input_tag %in% colnames(input_design)) {
-                  input_paths <- settings$run$inputs[[input_tag]]$path
-                  input_indices <- input_design[[input_tag]]
-
-                 samples[[input_tag]] <- list(
-                   samples = lapply(input_indices, function(idx) input_paths[[idx]])
-                 )
-    }
-
-     }
+    #performing the sampling
+    samples <- list()
+    input_tags <- names(settings$run$inputs)
+    for (input_tag in input_tags) {
+      if (input_tag %in% colnames(input_design)) {
+        input_paths <- settings$run$inputs[[input_tag]]$path
+        input_indices <- input_design[[input_tag]]
+        
+        samples[[input_tag]] <- list(
+          samples = lapply(input_indices, function(idx) input_paths[[idx]])
+        )
+      }
     }
     # if there is a tag required by the model but it is not specified in the xml then I replicate n times the first element 
     required_tags%>%
@@ -515,6 +504,8 @@ for (input_tag in names(settings$run$inputs)) {
     for (i in seq_len(ensemble.size)) {
       input_list <- list()
       for (input_tag in names(inputs)) {
+        # if it's the parameter list, skip.
+        if (input_tag == "parameters") next
         if (!is.null(inputs[[input_tag]]$samples[[i]])) 
           input_list[[input_tag]] <- list(path = inputs[[input_tag]]$samples[[i]])
       }

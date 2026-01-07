@@ -1,7 +1,7 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.8.2
+Version: 1.9.0
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut"),
@@ -63,13 +63,15 @@ Imports:
 Suggests:
     dataone,
     datapack,
+    jsonlite,
+    jsonvalidate,
     getPass,
     glue,
     PEcAn.settings,
     redland,
     raster,
     reticulate,
-    testthat (>= 1.0.2),
+    testthat (>= 3.1.0),
     withr,
     MASS
 Remotes:
@@ -79,3 +81,4 @@ Copyright: Authors
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: soil-data, vegetation-data, land-cover

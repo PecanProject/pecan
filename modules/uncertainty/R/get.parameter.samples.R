@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Istem Fer
-#' @importFrom purrr `%||%`
+#' @importFrom rlang %||%
 get.parameter.samples <- function(settings,
                                   ensemble.size = 1,
                                   posterior.files = rep(NA, length(settings$pfts)),

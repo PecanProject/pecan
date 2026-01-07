@@ -1,3 +1,8 @@
+# PEcAn.BASGRA 1.8.2
+
+* Minor documentation fixes
+
+
 # PEcAn.BASGRA 1.8.1
 
 ## License change

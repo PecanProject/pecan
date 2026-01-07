@@ -1,7 +1,7 @@
 Package: PEcAn.assim.batch
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.9.0
+Version: 1.9.1
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Istem", "Fer", role = c("aut", "cre"),
@@ -61,3 +61,4 @@ LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: data-assimilation, parameter-estimation, Bayesian-inference, ecological-modeling, model-calibration

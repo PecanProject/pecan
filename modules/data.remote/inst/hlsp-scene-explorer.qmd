@@ -1,0 +1,384 @@
+---
+title: "HLSP Scene Explorer"
+format: html
+editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+## 1. Setup Environment
+
+```{r}
+librarian::shelf(terra, ncdf4, stringr, ggplot2, maps, readr, DT, knitr, sf, 
+                 leaflet, dplyr, tidyr)
+
+terraOptions(threads = 16)
+
+# Define HLSP data directory
+hls_dir <- "/projectnb/dietzelab/malmborg/CARB/HLS_data/"
+hls_files <- list.files(hls_dir, pattern = "MSLSP.*\\.nc$", full.names = TRUE)
+
+```
+
+## 2. Extract Variables + Scaling Info
+
+```{r}
+# Extract years and tile IDs
+years_available <- sort(unique(stringr::str_extract(hls_files, "(?<=_)\\d{4}(?=\\.nc$)")))
+
+cat("Available years:", years_available, "\n")
+```
+
+```{r}
+tile_ids <- sort(unique(stringr::str_extract(basename(hls_files), "(?<=MSLSP_)\\w{5}(?=_)")))
+ 
+cat(length(hls_files), "available tile IDs:", tile_ids)
+# The HLS box we have contains 110 images, only 70 are within California 
+# '10SDH 10SDJ 10SEF 10SEG 10SEH 10SEJ 10SFE 10SFF  
+# 10SFG 10SFH 10SFJ 10SGD 10SGE 10SGF 10SGG 10SGH  
+# 10SGJ 10TCK 10TCL 10TCM 10TDK 10TDL 10TDM 10TEK  
+# 10TEL 10TEM 10TFK 10TFL 10TFM 10TGK 10TGL 10TGM  
+# 11SKA 11SKB 11SKC 11SKD 11SKT 11SKU 11SKV 11SLA  
+# 11SLB 11SLC 11SLT 11SLU 11SLV 11SMA 11SMB 11SMR  
+# 11SMS 11SMT 11SMU 11SMV 11SNA 11SNS 11SNT 11SNU  
+# 11SNV 11SPS 11SPT 11SPU 11SPV 11SQS 11SQT 11SQU  
+# 11SQV 11TKE 11TKF 11TKG 12STC 12STD'
+```
+
+```{r}
+# ---- 1. Load Centroids from GeoJSON ----
+sf_points <- st_read("/projectnb/dietzelab/skanee/ccmmf-phenology/MSLSP_tileCentroids.geojson")
+
+# ---- 2. Load Grid from GeoJSON ----
+grid <- st_read("/projectnb/dietzelab/skanee/ccmmf-phenology/MSLSP_tileGrid.geojson")
+
+# ---- 3. Leaflet Map ----
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  
+  # Add tile grid outlines
+  addPolylines(data = grid, color = "red", weight = 1, opacity = 0.8) %>%
+  
+  # Add centroid circles
+  addCircleMarkers(
+    data = sf_points,
+    radius = 3,
+    color = "white",
+    stroke = FALSE,
+    fillOpacity = 0.7
+  ) %>%
+  
+  # Add centroid labels
+  addLabelOnlyMarkers(
+    data = sf_points,
+    label = ~tileID,
+    labelOptions = labelOptions(
+      noHide = TRUE,
+      direction = "top",
+      textOnly = TRUE,
+      textsize = "14px",
+      style = list(
+        "font-weight" = "bold",
+        "color" = "white",
+        "text-shadow" = "0px 0px 5px black",
+        "padding" = "2px"
+      )
+    )
+  )
+```
+
+```{r}
+# Open one sample file
+sample_file <- hls_files[1]
+nc <- ncdf4::nc_open(sample_file)
+
+# Extract variable names and scale info
+var_names <- names(nc$var)
+cat("Available variables:\n")
+
+# Extract long names
+for (v in var_names) {
+  longname <- ncatt_get(nc, v, "long_name")$value
+  cat(v, "→", longname, "\n")
+}
+ncdf4::nc_close(nc)
+```
+
+## 3. Load Tile and Cropland Shapefiles
+
+```{r}
+# Set target tile and year
+target_vars <- c("NumCycles", "OGI", "50PCGI", "Peak", "50PCGD", "OGMn", 
+                 "EVImax", "EVIamp", "EVIarea", 
+                 "OGI_2", "50PCGI_2","Peak_2", "50PCGD_2","OGMn_2", 
+                 "EVImax_2", "EVIamp_2", "EVIarea_2")
+
+target_tile <- "10SGD"
+target_year <- "2018"
+
+# Match raster file
+selected_file <- hls_files[
+  stringr::str_detect(hls_files, target_tile) &
+  stringr::str_detect(hls_files, target_year)
+][1]
+
+# Load + reproject raster
+r <- terra::rast(selected_file, subds = target_vars)
+r <- terra::project(r, "EPSG:4326")
+
+cat("Loaded:", basename(selected_file), "\n")
+cat("Loaded layers:", names(r), "\n")
+```
+
+```{r}
+# --- Set paths and year ---
+landiq_dir <- "/projectnb/dietzelab/ccmmf/LandIQ_data"
+pft_table <- read_csv(file.path(landiq_dir, "CARB_PFTs_table.csv"))
+
+# --- Load the LandIQ shapefile with geometry ---
+shp_path <- paste0(
+  landiq_dir, "/LandIQ_shapefiles/i15_Crop_Mapping_",
+  target_year, "_SHP/i15_Crop_Mapping_",
+  target_year, ".shp"
+)
+plots_sf <- sf::st_read(shp_path, quiet = TRUE)
+
+# --- Load crops_all, filter for target year and add PFT column ---
+load(file.path(landiq_dir, "crops_all_years.RData"))  # provides crops_all
+crops_2018 <- crops_all %>% filter(year == target_year) %>% left_join(pft_table 
+                        %>% select(CLASS = crop_type, SUBCLASS = crop_code,
+                        crop_desc, pft_group), by = c("CLASS", "SUBCLASS"))
+
+# --- Ensure ID types match ---
+crops_2018$UniqueID <- as.character(crops_2018$UniqueID)
+plots_sf$UniqueID <- as.character(plots_sf$UniqueID)
+
+# --- Join geometry to long-format attribute table ---
+crops_sf <- crops_2018 %>%
+  left_join(plots_sf %>% select(UniqueID, geometry = geometry), by = "UniqueID") %>%
+  sf::st_as_sf()  # ensures the result is an sf object
+
+# Result: long-format sf object with geometry per season
+print(crops_sf)
+```
+
+```{r}
+# Convert sf to terra
+crops_vect <- terra::vect(crops_sf)
+
+# Reproject to match raster CRS if needed
+crops_vect <- terra::project(crops_vect, terra::crs(r))
+
+# Crop to tile extent
+plots_tile <- terra::crop(crops_vect, r)
+
+# Print result
+cat("\nNumber of cropland polygons in", target_tile, ":", nrow(plots_tile), "\n")
+cat("\nAvailable LandIQ Metadata:\n")
+head(plots_tile)
+```
+
+## **Identification & Location**
+
+| Column | Description |
+|----|----|
+| `UniqueID` | Unique polygon identifier for the cropland parcel |
+| `year` | **Water year** associated with this record (e.g., 2018 means Oct 2017–Sep 2018) |
+| `centx` | X-coordinate (longitude) of the polygon centroid |
+| `centy` | Y-coordinate (latitude) of the polygon centroid |
+
+------------------------------------------------------------------------
+
+### **Administrative / Regional**
+
+| Column | Description |
+|----|----|
+| `REGION` | Broad geographic region (e.g., for water agency or policy zone) |
+| `COUNTY` | California county name where the polygon is located |
+| `HYDRORGN` | Hydrologic region (used for water planning) |
+
+------------------------------------------------------------------------
+
+### **Cropping Information**
+
+| Column | Description |
+|----|----|
+| `season` | Season number (1–4) for this crop instance (based on peak NDVI) |
+| `CLASS` | Primary crop classification code (e.g., P = processing tomato) |
+| `SUBCLASS` | Subtype or secondary classification, often numeric |
+| `SPECOND` | Special condition flag: `"Y"` = yes, `"F"` = fallow, `NA` = none |
+| `crop_desc` | Human-readable crop name or description (derived from CLASS) |
+| `pft_group` | Plant Functional Type group (e.g., for ecological modeling) |
+
+------------------------------------------------------------------------
+
+### **Temporal Information**
+
+| Column | Description |
+|----|----|
+| `ADOY` | Adjusted DOY — day of planting relative to water year (Oct–Sep), can be negative |
+| `DOY` | **Calendar year DOY** — converted from `ADOY`, represents true planting date (1–365) |
+| `YRPLANTED` | Calendar year planting occurred (used when multiple years are covered) |
+
+------------------------------------------------------------------------
+
+### **Other Attributes**
+
+| Column | Description |
+|----|----|
+| `MULTIUSE` | Flag for mixed-use land (e.g., pasture + crop) or multi-crop parcels |
+| `PCNT` | Percent of the field occupied by this crop (in multicrop settings) |
+
+## 4. Static Plot
+
+```{r}
+plot(r[["OGI"]], main = paste("Planting DOY -", target_tile, target_year))
+plot(plots_tile, add = TRUE, border = "red", lwd = 0.5)
+```
+
+```{r}
+plot(r[["OGMn"]], main = paste("Harvesting DOY -", target_tile, target_year))
+plot(plots_tile, add = TRUE, border = "red", lwd = 0.5)
+```
+
+## 5. Interactive Map (Leaflet)
+
+```{r}
+# Downsample and prepare color palettes for each variable
+r_down_list <- lapply(target_vars, function(var) {
+  r_down <- terra::aggregate(r[[var]], fact = 4)
+  terra::minmax(r_down)
+  list(
+    raster = r_down,
+    palette = colorNumeric("viridis", domain = values(r_down), na.color = "transparent")
+  )
+})
+names(r_down_list) <- target_vars
+
+# Start leaflet map with satellite basemap
+m <- leaflet() |>
+  addProviderTiles("Esri.WorldImagery", group = "Satellite") |>
+  addProviderTiles("CartoDB.Positron", group = "Basemap")  # Optional: switchable basemap
+
+# Add each raster layer
+for (var in target_vars) {
+  m <- m |>
+    addRasterImage(
+      r_down_list[[var]]$raster,
+      colors = r_down_list[[var]]$palette,
+      opacity = 0.7,
+      group = var
+    )
+}
+
+# Add cropland polygons
+m <- m |>
+  addPolygons(data = plots_tile, color = "red", weight = 0.7, group = "Cropland") |>
+  addLayersControl(
+    baseGroups = c("Satellite", "Basemap"),
+    overlayGroups = c(target_vars, "Cropland"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) |>
+  addMiniMap(toggleDisplay = TRUE)
+
+m
+
+```
+
+## 8. Extract Events for One Polygon
+
+```{r}
+# Convert to data.frame to inspect values
+plots_df <- as.data.frame(plots_tile)
+
+# Remove any stale HLSP columns if present
+hlsp_raw_vars <- c("OGI", "50PCGI", "Peak", "50PCGD", "OGMn",
+                   "EVImax", "EVIamp", "EVIarea",
+                   "OGI_2", "50PCGI_2", "Peak_2", "50PCGD_2", "OGMn_2",
+                   "EVImax_2", "EVIamp_2", "EVIarea_2")
+plots_df <- plots_df[, !(names(plots_df) %in% hlsp_raw_vars)]
+
+# Extract mean values for all HLSP layers
+hlsp_means <- terra::extract(r, plots_tile, fun = mean, na.rm = TRUE)
+hlsp_means$ID <- NULL
+names(hlsp_means) <- paste0(names(hlsp_means), "_mean")
+
+# Extract standard deviation values for all HLSP layers
+hlsp_sds <- terra::extract(r, plots_tile, fun = sd, na.rm = TRUE)
+hlsp_sds$ID <- NULL
+names(hlsp_sds) <- paste0(names(hlsp_sds), "_sd")
+
+# Merge both mean and sd columns into plots_df
+plots_df <- cbind(plots_df, hlsp_means, hlsp_sds)
+
+# Rescale vegetation index values
+scale_vars <- list(
+  EVImax     = 0.0001,
+  EVIamp     = 0.0001,
+  EVIarea    = 0.01,
+  EVImax_2   = 0.0001,
+  EVIamp_2   = 0.0001,
+  EVIarea_2  = 0.01
+)
+
+# Apply scaling to both mean and sd columns
+for (var in names(scale_vars)) {
+  sf <- scale_vars[[var]]
+  mean_col <- paste0(var, "_mean")
+  sd_col   <- paste0(var, "_sd")
+  
+  if (mean_col %in% names(plots_df)) plots_df[[mean_col]] <- plots_df[[mean_col]] * sf
+  if (sd_col   %in% names(plots_df)) plots_df[[sd_col]]   <- plots_df[[sd_col]] * sf
+}
+
+# (Optional) Drop any columns where all values are NA
+na_cols <- sapply(plots_df, function(col) all(is.na(col)))
+plots_df <- plots_df[, !(names(plots_df) %in% names(na_cols[na_cols]))]
+```
+
+```{r}
+head(plots_df)
+```
+
+```{r}
+doy_to_iso <- function(doy, year) {
+  # For DOY < 1 → previous year
+  # For DOY > 365 → next year
+  base_date <- as.Date(paste0(year, "-01-01"))
+  as.Date(doy - 1, origin = base_date)
+}
+
+date_vars <- c("OGI_mean", "50PCGI_mean", "Peak_mean", "50PCGD_mean", "OGMn_mean",
+               "OGI_2_mean", "50PCGI_2_mean", "Peak_2_mean", "50PCGD_2_mean", "OGMn_2_mean")
+
+# Loop through each variable and add an ISO version
+for (var in date_vars) {
+  new_col <- paste0(var, "_date")
+  plots_df[[new_col]] <- doy_to_iso(plots_df[[var]], plots_df$year)
+}
+
+# 1. Create ADOY_ISO as Date (set NA for ADOY == 0 or NA)
+plots_df$ADOY_ISO <- doy_to_iso(
+  ifelse(plots_df$ADOY == 0 | is.na(plots_df$ADOY), NA, plots_df$ADOY),
+  plots_df$year
+)
+
+# 2. Insert ADOY_ISO right after ADOY (without duplication)
+adoy_index <- which(names(plots_df) == "ADOY")
+col_names <- names(plots_df)
+
+# Reorder: insert ADOY_ISO after ADOY
+new_order <- append(
+  col_names[1:adoy_index],
+  c("ADOY_ISO", col_names[(adoy_index + 1):(ncol(plots_df) - 1)])
+)
+
+# Apply reordered column list
+plots_df <- plots_df[, new_order]
+```
+
+```{r}
+head(plots_df,400)
+```

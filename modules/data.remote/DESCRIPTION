@@ -58,3 +58,4 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: remote-sensing, MODIS, Landsat, earth-observation

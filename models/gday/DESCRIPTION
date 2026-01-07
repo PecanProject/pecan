@@ -29,3 +29,4 @@ LazyLoad: yes
 LazyData: TRUE
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: GDAY, ecosystem-modeling
