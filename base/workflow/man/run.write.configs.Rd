@@ -18,7 +18,8 @@ run.write.configs(
 
 \item{ensemble.size}{number of ensemble runs}
 
-\item{input_design}{input indices for samples}
+\item{input_design}{data frame containing the design matrix describing parameter and input indices, as
+documented in \code{runModule.run.write.configs()}.}
 
 \item{write}{should the runs be written to the database?}
 

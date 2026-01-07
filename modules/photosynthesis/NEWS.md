@@ -1,3 +1,9 @@
+# PEcAn.photosynthesis 1.7.5
+
+* Added bug reporting URL and keywords to DESCRIPTION. No code changes in this version.
+
+
+
 # PEcAn.photosynthesis 1.7.4
 
 ## License change
@@ -6,12 +12,16 @@
 ## Fixed
 * Vignette compilation now works
 
+
+
 # PEcAn.photosynthesis 1.7.3
 
 ## Fixed
 
 * Cleaned up many check warnings (@moki1202, #2821)
 * Fixed vignette compilation
+
+
 
 # PEcAn.photosynthesis 1.7.1
 

@@ -8,8 +8,8 @@ vignette: >
 ---
 
 ```{r}
-use("PEcAn.MA")
-use("tibble", c("tribble"))
+library("PEcAn.MA")
+library("tibble", include.only = "tribble")
 
 set.seed(20251222)
 ```
