@@ -634,6 +634,35 @@ This information is currently used by the following PEcAn workflow functions:
 - `PEcAn.<MODEL>::write.configs.<MODEL>` -- See [above](#pecan-write-configs)
 - `PEcAn.uncertainty::run.sensitivity.analysis` -- Executes the uncertainty analysis
 
+#### Coordinating inputs with the `input_design` design matrix {#xml-input-design}
+
+Multi-site ensembles that sample over input files use an `input_design`
+data.frame to keep parameter draws and input files aligned across runs. The
+design is created up front (typically via `generate_joint_ensemble_design()`)
+and passed to `runModule.run.write.configs()`. It is not saved automatically to
+`samples.Rdata`, so keep your copy if you need to reuse it.
+
+- **Parameter column:** `param` gives the index (i.e. row number) of the
+posterior draw to use for this run. For example, `param = 5` means use the 5th
+parameter sample from `samples.Rdata`.
+- **Input columns:** any name that matches a tag under `run/inputs` (for
+example `met`, `soil`, `veg`, `poolinitcond`). Values are indices into that
+input’s `path` list. Leaving a column out keeps that input fixed across runs.
+- **Row count and order:** must include exactly one row per run. For ensembles 
+  this means `ensemble.size` rows.
+
+Example layout (CSV or `data.frame`):
+
+| param | met | soil |
+|------:|----:|-----:|
+| 1 | 1 | 1 |
+| 2 | 2 | 1 |
+| 3 | 1 | 2 |
+| 4 | 2 | 2 |
+
+In this example, run 2 would reuse the second parameter draw and also switch to
+the second met driver while keeping the first soil file.
+
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
