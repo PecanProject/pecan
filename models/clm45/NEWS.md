@@ -1,3 +1,8 @@
+# PEcAn.CLM45 1.7.5
+
+* Added keywords and project URL to DESCRIPTION
+
+
 # PEcAn.CLM45 1.7.4
 
 ## License change

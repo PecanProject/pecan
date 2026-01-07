@@ -1,0 +1,21 @@
+{
+  "name": "RothC",
+  "type": "Soil C",
+  "version": "@VERSION@",
+  "binary": "@BINARY@",
+  "description": "RothC models the turnover of organic carbon in non-waterlogged top-soil. It accounts for the effects of soil texture, temperature, moisture content and plant cover on the turnover process. It uses a monthly time step to calculate total organic carbon (t ha-1), microbial biomass carbon (t ha-1) and d14C (from which the equivalent radiocarbon age of the soil can be calculated).",
+  "creator": "Model by D.S. Jenkinson and others at Rothamsted Research. PEcAn coupler by Chris Black",
+  "contributors": ["Kevin Coleman", "Jonah Prout", "Alice Milne"],
+  "links": [
+    {
+      "type": "git",
+      "description": "Source code for RothC",
+      "url": "https://github.com/Rothamsted-Models/RothC_Code"
+    },
+  ],
+  "inputs": {},
+  "bibtex": [
+    "How to cite the model, paper 1",
+    "How to cite the model, paper 2"
+  ]
+}

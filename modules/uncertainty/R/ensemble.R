@@ -193,7 +193,11 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
 ##' a name to distinguish the output files, and the directory to place the files.
 ##'
-##' @param input_design the input indices for samples 
+##' @param input_design design matrix describing sampled inputs (see
+##'   `run.write.configs()`). Columns named after `settings$run$inputs` tags give
+##'   1-based indices into each input's `path` list and rows follow run order.
+##'   Requires `nrow(input_design) >= ensemble.size`;
+##'   extra rows are ignored.
 ##' @param ensemble.size size of ensemble
 ##' @param defaults pft
 ##' @param ensemble.samples list of lists supplied by \link{get.ensemble.samples}

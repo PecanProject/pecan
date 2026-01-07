@@ -1,7 +1,7 @@
 Package: PEcAn.MA
 Type: Package
 Title: PEcAn Functions Used for Meta-Analysis
-Version: 1.7.4.9000
+Version: 1.7.5.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -41,7 +41,8 @@ Suggests:
     knitr (>= 1.42),
     mockery,
     rmarkdown (>= 2.19),
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    tibble
 SystemRequirements: JAGS
 License: BSD_3_clause + file LICENSE
 VignetteBuilder: knitr, rmarkdown

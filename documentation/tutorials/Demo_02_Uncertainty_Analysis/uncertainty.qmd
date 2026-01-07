@@ -4,12 +4,13 @@ author:
   - "Aritra Dey"
   - "David LeBauer"
 format:
-  pdf:
-    toc: true
-    number-sections: true
-    fig-width: 10
-    fig-height: 6
-    fig-dpi: 300
+  html: default
+  pdf: default
+toc: true
+number-sections: true
+fig-width: 10
+fig-height: 6
+fig-dpi: 300
 ---
 
 # Introduction {#introduction}
@@ -45,7 +46,7 @@ To run this notebook, you will need to install PEcAn and its dependencies, as we
 options(repos = c(
   pecanproject = 'https://pecanproject.r-universe.dev',
   CRAN = 'https://cloud.r-project.org'))
-install.packages('PEcAn.all')
+install.packages(c('PEcAn.all', 'PEcAn.SIPNET'))
 ```
 
 A valid `pecan.xml` configuration file. Start with the example at `pecan/documentation/tutorials/Demo_02_Uncertainty_Analysis/pecan.xml`.
@@ -120,10 +121,6 @@ See Demo 1 Section 6 for details on what these functions do. Briefly, they read 
 
 This step generates the model-specific configuration files that will be used to run the ecosystem model. The process involves:
 
-1. Disabling database write operations because we are not using a database
-```{r disable-db-write}
-settings$database <- NULL # Disable database operations for this demo
-```
 2. Generating SIPNET configuration files using the `runModule.run.write.configs()` function.
 ```{r write-configs}
 settings <- PEcAn.workflow::runModule.run.write.configs(settings)
