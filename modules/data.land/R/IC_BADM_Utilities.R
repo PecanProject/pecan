@@ -236,50 +236,38 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 BADM_IC_process <- function(settings, dir, overwrite=TRUE){
   
   # check if this is a single-site or multi-site configuration
-  if ("run" %in% names(settings)) {
-    settings <- list(settings)
-  }
+  out.ense <- PEcAn.settings::papply(settings, function(site.settings) {
   
   # create site info.
-  new.site <- 
-    settings %>% 
-    purrr::map(~.x[['run']] ) %>% 
-    purrr::map('site')%>% 
-    purrr::map(function(site.list){
-      #conversion from string to number
-      site.list$lat <- as.numeric(site.list$lat)
-      site.list$lon <- as.numeric(site.list$lon)
-      list(id=site.list$id, lat=site.list$lat, lon=site.list$lon)
-    })%>% 
-    dplyr::bind_rows() %>% 
-    as.list()
-  
-  # process each site configuration
-  out.ense <- list()
-  
-  for (i in seq_along(settings)) {
-    site.settings <- settings[[i]]
-    ens.size <- ens.size <- max(1, site.settings$ensemble$size %||% 1)
+    site <- site.settings$run$site
     
-    # get site info for this specific site
     site.info <- list(
-      id = new.site$id[i],
-      lat = new.site$lat[i], 
-      lon = new.site$lon[i]
+      id  = site$id,
+      lat = as.numeric(site$lat),
+      lon = as.numeric(site$lon)
     )
     
+  # Determine ensemble size safely
+    ens.size <- max(1, site.settings$ensemble$size %||% 1)
+    
+    # ---- 3. Generate IC files for each ensemble member
     site.outputs <- seq_len(ens.size) %>%
-      purrr::map(~ netcdf.writer.BADM(site.info$lat,
-                                      site.info$lon,
-                                      site.info$id,
-                                      outdir=dir,
-                                      ens=.x))
+      purrr::map(~ netcdf.writer.BADM(
+        lat    = site.info$lat,
+        long   = site.info$lon,
+        siteid = site.info$id,
+        outdir = dir,
+        ens    = .x
+      ))
     
-    site.outputs <- site.outputs %>%
-      stats::setNames(rep("path", length(site.outputs)))
+    # Name outputs consistently
+    site.outputs <- stats::setNames(site.outputs, rep("path", length(site.outputs)))
     
-    out.ense <- c(out.ense, site.outputs)
-  }
+    return(site.outputs)
+  })
+  
+  # Flatten output into a single list
+  out.ense <- unlist(out.ense, recursive = FALSE)
   
   return(out.ense)
 }
