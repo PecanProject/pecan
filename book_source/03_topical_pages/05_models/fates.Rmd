@@ -1,0 +1,31 @@
+## FATES {#models-fates}
+
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://fates.forestry.oregonstate.edu/ |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/fates |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.FATES |
+| License           | BSD 3-clause                         |
+| Authors           | Mike Dietze, Shawn Serbin            |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/fates/README.md) |
+
+### Introduction
+
+FATES (Functionally Assembled Terrestrial Ecosystem Simulator) is a dynamic vegetation model integrated into CLM (Community Land Model). The PEcAn package `PEcAn.FATES` provides integration with the PEcAn workflow system.
+
+### Installation
+
+```r
+# Install from r-universe
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+install.packages('PEcAn.FATES')
+```
+
+### Documentation
+
+- [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.FATES)
+- [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/fates)
+- [Package README](https://github.com/PecanProject/pecan/blob/develop/models/fates/README.md)
+- [External Model Documentation](https://fates.forestry.oregonstate.edu/)

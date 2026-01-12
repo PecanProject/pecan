@@ -1,0 +1,30 @@
+## BASGRA {#models-basgra}
+
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://www.basgra.nl                |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/basgra |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.BASGRA |
+| License           | BSD 3-clause                         |
+| Authors           | Istem Fer (PEcAn integration)        |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/basgra/README.md) |
+
+### Introduction
+
+BASGRA is a mechanistic model for grass growth. The PEcAn package `PEcAn.BASGRA` provides integration with the PEcAn workflow system.
+
+### Installation
+
+```r
+# Install from r-universe
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+install.packages('PEcAn.BASGRA')
+```
+
+### Documentation
+
+- [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.BASGRA)
+- [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/basgra)
+- [Package README](https://github.com/PecanProject/pecan/blob/develop/models/basgra/README.md)

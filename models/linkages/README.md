@@ -1,36 +1,49 @@
-A generic template for adding a new model to PEcAn
-==========================================================================
+# PEcAn.LINKAGES
 
-Adding a new model to PEcAn in a few easy steps:
+<!-- badges: start -->
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![PEcAn.LINKAGES status badge](https://pecanproject.r-universe.dev/badges/PEcAn.LINKAGES)](https://pecanproject.r-universe.dev/PEcAn.LINKAGES)
+<!-- badges: end -->
 
-1. add modeltype to BETY
-2. add a model and PFT to BETY for use with modeltype
-3. implement 3 functions as described below
-4. execute pecan with new model
+## Description
 
-There are 3 functions that will need to be implemented, each of these
-functions will need to have MODEL be replaced with the actual modeltype as
-it is defined in the BETY database.
+PEcAn Package for Integration of the LINKAGES Model
 
-* `write.config.MODEL.R`
+LINKAGES is a forest succession and yield model that simulates forest stand dynamics. The PEcAn package `PEcAn.LINKAGES` provides integration with the PEcAn workflow system for parameter estimation, sensitivity analysis, and uncertainty quantification.
 
- This will write the configuratin file as well as the job launcher used by
- PEcAn. There is an example of the job execution script in the template
- folder. The configuration file can also be a template that is found based
- on the revision number of the model. This should use the computed results
- specified in defaults and trait.values to write a configuration file
- based on the PFT and traits found.
+## Installation
 
-* `met2model.MODEL.R`
+You can install the development version of `PEcAn.LINKAGES` from r-universe like so:
 
- This will convert the standard Met CF file to the model specific file
- format. This will allow PEcAn to create metereological files for the
- specific site and model. This will only be called if no meterological
- data is found for that specific site and model combination.
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.LINKAGES in R
+install.packages('PEcAn.LINKAGES')
+```
 
-* `model2netcdf.MODEL.R`
+Or you can install directly from GitHub with the remotes package like so:
 
- This will convert the model specific output to NACP Intercomparison
- format. After this function is finished PEcAn will use the generated
- output and not use the model specific outputs. The outputs should be
- named YYYY.nc
+``` r
+library(remotes)
+install_github('pecanproject/pecan', subdir = "models/linkages")
+```
+
+## Features
+
+- Full integration with PEcAn's parameter estimation workflow
+- Support for Bayesian calibration and sensitivity analysis
+- Restart functionality for data assimilation
+- Prescribed inputs for meteorological forcing
+
+## Documentation
+
+- [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.LINKAGES)
+- [PEcAn Book - LINKAGES Chapter](https://pecanproject.github.io/pecan-documentation/pecan-models.html#models-linkages)
+- [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/linkages)
+
+## References
+
+Linked simulations of vegetation-ecosystem and watershed processes. PEcAn.LINKAGES provides a modern interface to the LINKAGES forest succession model within the PEcAn framework.

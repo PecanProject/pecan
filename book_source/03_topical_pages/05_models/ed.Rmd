@@ -3,10 +3,11 @@
 | Model Information |                                      |
 | --                | --                                   |
 | Home Page         | http://moorcroftlab.oeb.harvard.edu/ |
-| Source Code       | https://github.com/EDmodel/ED2       |
-| License           |                                      |
-| Authors           | Paul Moorcroft, ...                  |
-| PEcAn Integration | Michael Dietze, Rob Kooper           |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/ed |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.ED2 |
+| License           | BSD 3-clause                         |
+| Authors           | Paul Moorcroft (external), Mike Dietze (PEcAn integration) |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/ed/README.md) |
 
 ### Introduction
 

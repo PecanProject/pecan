@@ -4,17 +4,24 @@ This section will contain information about all models and output variables that
 
 | Model Name | Available in the VM | Prescribed Inputs | Input Functions/Values | Restart Function |
 | -- | -- | -- | -- | -- |
+| [BASGRA](#models-basgra) | Yes | Yes | Yes | No |
 | [BioCro](#models-biocro) | Yes | Yes | Yes| No |
+| [CABLE](#models-cable) | No | Yes | No | No |
 | [CLM](#models-clm)| No | No | No| No |
 | [DALEC](#models-dalec)| Yes | Yes | Yes| No |
+| [Dvmdostem](#models-dvmdostem) | No | Yes | Yes | No |
 | [ED2](#models-ed)| Yes | Yes | Yes| Yes |
-| FATES | No | Yes | | No|
+| [FATES](#models-fates) | No | Yes | Yes | No|
 | [GDAY](#models-gday) | No | No | No| No |
+| [JULES](#models-jules) | No | Yes | No | No |
 | [LDNDC](#models-ldndc) | No | Yes | No | No |
 | [LINKAGES](#models-linkages) | Yes | Yes | Yes| Yes |
 | [LPJ-GUESS](#models-lpjguess)| No | Yes | No | No |
+| [MAAT](#models-maat) | Yes | Yes | No | No |
 | [MAESPA](#models-maespa)| Yes | Yes | No | No |
 | [PRELES](#models-preles) | Yes | Yes | Partially | No |
+| [RothC](#models-rothc) | No | Yes | Partially | No |
+| [SiBCASA](#models-sibcasa) | No | Yes | No | No |
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
 | [STICS](#models-stics)| Yes | Yes | No | No |
 

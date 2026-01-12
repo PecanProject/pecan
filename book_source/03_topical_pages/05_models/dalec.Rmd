@@ -1,5 +1,14 @@
 ## DALEC {#models-dalec}
 
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://github.com/QuaifeTHQ/DALEC   |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/dalec |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.DALEC |
+| License           | BSD 3-clause                         |
+| Authors           | Mike Dietze, Tristan Quaife          |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/dalec/README.md) |
+
 | Model Information ||
 | -- | -- |
 | Home Page | |

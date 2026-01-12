@@ -1,5 +1,14 @@
 ## LDNDC {#models-ldndc}
 
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://www.ufz.de/index.php?en=33962 |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/ldndc |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.LDNDC |
+| License           | BSD 3-clause                         |
+| Authors           | Henri Kajasilta (PEcAn integration)   |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/ldndc/README.md) |
+
 | Model Information |                                                      |
 | --                | --                                                   |
 | Home Page         | https://ldndc.imk-ifu.kit.edu/about/model.php        |

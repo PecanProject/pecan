@@ -1,5 +1,14 @@
 ## STICS {#models-stics}
 
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://stics.gitlabpages.inrae.fr/ |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/stics |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.STICS |
+| License           | BSD 3-clause                         |
+| Authors           | Kauea de Sousa (PEcAn integration)    |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/stics/README.md) |
+
 | Model Information ||
 | -- | -- |
 | Home Page | https://www6.paca.inrae.fr/stics/ |

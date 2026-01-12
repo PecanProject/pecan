@@ -1,5 +1,14 @@
 ## CLM {#models-clm}
 
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://github.com/ESCOMP/ctsm      |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/clm45 |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.CLM45 |
+| License           | BSD 3-clause                         |
+| Authors           | Mike Dietze (PEcAn integration)      |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/clm45/README.md) |
+
 | Model Information ||
 | -- | -- |
 | Home Page | |

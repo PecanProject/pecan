@@ -1,5 +1,14 @@
 ## MAESPA {#models-maespa}
 
+| Model Information |                                      |
+| --                | --                                   |
+| Home Page         | https://www.wur.nl/en/show/MAESPA.htm |
+| Source Code       | https://github.com/PecanProject/pecan/tree/develop/models/maespa |
+| Package Docs      | https://pecanproject.r-universe.dev/PEcAn.MAESPA |
+| License           | BSD 3-clause                         |
+| Authors           | Remko Duursma (external), Tony Gardella (PEcAn) |
+| PEcAn Integration | See [Package README](https://github.com/PecanProject/pecan/blob/develop/models/maespa/README.md) |
+
 | Model Information ||
 | -- | -- |
 | Home Page |http://maespa.github.io/ |
