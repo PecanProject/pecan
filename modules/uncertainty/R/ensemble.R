@@ -552,20 +552,25 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #'
 input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
 
-  #-- reading the dots and exposing them to the inside of the function
   samples <- list()
   samples$ids <- c()
-  #
+
   if (is.null(method)) return(NULL)
   # parameter is exceptional it needs to be handled spearatly
   if (input == "parameters") return(NULL)
 
-  #-- assing the sample ids based on different scenarios
   input_path <- settings$run$inputs[[tolower(input)]]$path
+  if (is.null(input_path)) {
+    PEcAn.logger::logger.error(
+      "No paths found for input", sQuote(input), "in settings$run$inputs"
+    )
+  }
+
   if (!is.null(parent_ids)) {
     samples$ids <- parent_ids$ids
     out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
-    #sample for those that our outside the param size - forexample, parent id may send id number 200 but we have only100 sample for param
+    # sample for those that our outside the param size -
+    # for example, parent id may send id number 200 but we have only 100 sample for param
     samples$ids[samples$ids %in% out.of.sample.size] <- sample(
       seq_along(input_path),
       out.of.sample.size,
@@ -578,11 +583,10 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
   } else if (tolower(method) == "looping") {
     samples$ids <- rep_len(
       seq_along(input_path),
-      length.out = ensemble_size )
+      length.out = ensemble_size)
   }
   #using the sample ids
   samples$samples <- input_path[samples$ids]
 
   return(samples)
 }
-
