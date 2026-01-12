@@ -1,6 +1,6 @@
 ## Migrating PEcAn from VM to Docker {#docker-migrate}
 
-This document assumes you have read through the [Introduction to Docker](#docker-intro) as well as [Docker quickstart](#docker-quickstart) and have docker running on the VM.
+This document assumes you have read through the [Introduction to Docker](04_docker/01_introduction.html) as well as [Docker quickstart](04_docker/02_quickstart.html)running on the VM._
 
 This document will slowly replace each of the components with the appropriate docker images. At then end of this document you should be able to use the docker-compose command to bring up the full docker stack as if you had started with this origianally.
 

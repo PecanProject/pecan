@@ -15,9 +15,6 @@
 model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
 
-# Unit conversions are handled via PEcAn.utils::ud_convert()
-# except for water fluxes, which use model-specific daily-to-second scaling
-
   
   ### Read in model output in GDAY format
   GDAY.output <- utils::read.csv(file.path(outdir, "gday_out.csv"), header = TRUE, sep = ",", skip = 1)

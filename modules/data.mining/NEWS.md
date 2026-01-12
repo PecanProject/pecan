@@ -1,3 +1,11 @@
+# PEcAn.data.mining 1.7.5
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* Stored some additional scripts in `inst/` for future development.
+* This release contains no changes to exported code.
+
+
+
 # PEcAn.data.mining 1.7.4
 
 ## License change

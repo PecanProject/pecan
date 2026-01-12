@@ -1,6 +1,8 @@
-# PEcAn.LPJGUESS 1.8.1
+# PEcAn.LPJGUESS 1.9.0
 
 * model2netcdf.LPJGUESS no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+* Support for model restarts via new functions read.restart.LPJGUESS, read.binary.LPJGUESS, write.restart.LPJGUESS and write.binary.LPJGUESS (#3533, @yinghaoSunn)
+* CRU driver tweaks
 
 
 # PEcAn.LPJGUESS 1.8.0
