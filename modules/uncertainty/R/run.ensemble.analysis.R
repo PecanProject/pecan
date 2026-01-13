@@ -241,7 +241,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     for(var in seq_along(variables)){
       out.tmp <- PEcAn.utils::read.output(
         run.id,
-        file.path(settings$outdir, "out", run.id),
+        file.path(settings$modeloutdir, run.id),
         start.year,
         end.year,
         variables[var])

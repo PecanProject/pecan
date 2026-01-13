@@ -21,7 +21,6 @@ This section will contain information about all models and output variables that
 | [MAESPA](#models-maespa)| Yes | Yes | No | No |
 | [PRELES](#models-preles) | Yes | Yes | Partially | No |
 | [RothC](#models-rothc) | No | Yes | Partially | No |
-| [SiBCASA](#models-sibcasa) | No | Yes | No | No |
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
 | [STICS](#models-stics)| Yes | Yes | No | No |
 

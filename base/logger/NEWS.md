@@ -1,15 +1,21 @@
-# PEcAn.logger 1.8.4 (unreleased)
+# PEcAn.logger 1.8.4
 
 - All `logger.set*` functions now invisibly return the previously set value. This can be handy for restoring settings after a temporary change.
 - Multipart logger messages passed in `...` now get a more robust conversion to string before concatenating, hopefully giving nicer results for nontext objects such as dates and lists.
+
+
 
 # PEcAn.logger 1.8.3
 
 - Maintenance release with no user-visible changes.
 
+
+
 # PEcAn.logger 1.8.2
 
 - `PEcAn.logger::setLevel()` now invisibly returns the previously set logger level
+
+
 
 # PEcAn.logger 1.8.1
 
@@ -17,11 +23,15 @@
 
 * PEcAn.logger is now distributed as BSD-3 license. Prior to this the package was released under the NCSA Opensource license from 2009-2021.
 
+
+
 # PEcAn.logger 1.8.0
 
 ## Fixed
 
 * Logger calls no longer create a stray `dump.log` object in the global environment
+
+
 
 # PEcAn.logger 1.7.1
 

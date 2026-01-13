@@ -4,12 +4,13 @@ author:
   - "Aritra Dey"
   - "David LeBauer"
 format:
-  pdf:
-    toc: true
-    number-sections: true
-    fig-width: 10
-    fig-height: 6
-    fig-dpi: 300
+  html: default
+  pdf: default
+toc: true
+number-sections: true
+fig-width: 10
+fig-height: 6
+fig-dpi: 300
 ---
 
 # Introduction {#introduction}
@@ -45,7 +46,7 @@ To run this notebook, you will need to install PEcAn and its dependencies, as we
 options(repos = c(
   pecanproject = 'https://pecanproject.r-universe.dev',
   CRAN = 'https://cloud.r-project.org'))
-install.packages('PEcAn.all')
+install.packages(c('PEcAn.all', 'PEcAn.SIPNET'))
 ```
 
 A valid `pecan.xml` configuration file. Start with the example at `pecan/documentation/tutorials/Demo_02_Uncertainty_Analysis/pecan.xml`.

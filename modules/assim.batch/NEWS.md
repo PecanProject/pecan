@@ -1,3 +1,9 @@
+# PEcAn.assim.batch 1.9.1
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* No code changes in this release.
+
+
 # PEcAn.assim.batch 1.9.0
 
 ## License change

@@ -78,7 +78,7 @@ qle_lower = -50
 
 p <-ggplot(nee.data, aes(group = start_date, ids = start_date, frame = start_date)) + #, label = NEE - Predicted
     geom_ribbon(aes(x = Time, ymin=Lower, ymax=Upper, fill="95% Confidence Interval"), alpha = 0.4)  + 
-    geom_line(aes(x = Time, y = NEE, color = "Observed Data"), size = 1) + 
+    geom_line(aes(x = Time, y = NEE, color = "Observed Data"), linewidth = 1) + 
     geom_line(aes(x = Time, y = Predicted, color = "Predicted Mean")) + 
     ggtitle(paste0("Net Ecosystem Exchange for ", frame_start, " to ", frame_end, ", Willow Creek, Wisconsin")) +
     scale_color_manual(name = "Legend", labels = c("Predicted Mean", "Observed Data"), values=c("Predicted Mean" = "skyblue1", "Observed Data" = "firebrick4")) +
@@ -90,7 +90,7 @@ p <-ggplot(nee.data, aes(group = start_date, ids = start_date, frame = start_dat
 
 q <- ggplot(le.data, aes(group = start_date, ids = start_date, frame = start_date)) + #, label= LE - Predicted
   geom_ribbon(aes(x = Time, ymin=Lower, ymax=Upper, fill="95% Confidence Interval"), alpha = 0.4)  + 
-  geom_line(aes(x = Time, y = LE, color = "Observed Data"), size = 1) + 
+  geom_line(aes(x = Time, y = LE, color = "Observed Data"), linewidth = 1) + 
   geom_line(aes(x = Time, y = Predicted, color = "Predicted Mean")) + 
   ggtitle(paste0("Latent Energy for ", frame_start, " to ", frame_end, ", Willow Creek, Wisconsin")) +
   scale_color_manual(name = "Legend", labels = c("Predicted Mean", "Observed Data"), values=c("Predicted Mean" = "skyblue1", "Observed Data" = "firebrick4")) +
