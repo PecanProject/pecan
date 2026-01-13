@@ -6,14 +6,18 @@
 #'
 #' Process SoilGrids data for initial conditions
 #' 
-#' @param settings PEcAn settings list containing site information
+#' @param settings A single-site PEcAn Settings object
 #' @param dir Output directory for IC files
 #' @param depth Numeric vector of depth values in meters. Can be single value
 #'              or multiple values c(0.3, 2.0). Default: c(0.3, 2.0)
 #' @param overwrite Overwrite existing files? (Default: FALSE)
 #' @param verbose Print detailed progress information? (Default: FALSE)
 #' 
-#' @return List of paths to generated IC files, organized by site ID
+#' @details This function assumes a single-site Settings object.
+#'          Multi-site execution should be handled by a higher-level controller
+#'          (e.g., via papply()).
+#' 
+#' @return Named list with site ID as key; value is list of paths to generated IC files
 #' @export
 #'
 #' @examples
@@ -32,6 +36,10 @@
 soilgrids_ic_process <- function(settings, dir, depth = c(0.3, 2.0), overwrite = FALSE, verbose = FALSE) {
   start_time <- proc.time()
   
+  if (!PEcAn.settings::is.Settings(settings)) {
+    PEcAn.logger::logger.severe("soilgrids_ic_process() expects a single-site Settings object")
+  }
+  
   valid_depths <- c(0.3, 2.0)
   if (!all(depth %in% valid_depths)) {
     PEcAn.logger::logger.severe(sprintf("Invalid depth values. Must be from: %s", 
@@ -45,28 +53,16 @@ soilgrids_ic_process <- function(settings, dir, depth = c(0.3, 2.0), overwrite =
                                       paste(paste0(depth, "m (", depth_layers, ")"), collapse = ", ")))
   }
   
-  site_info <- settings$run$site
-  if (is.list(site_info) && !is.null(site_info$id)) {
-    site_info <- list(site_info)
-  }
-  site_info <- site_info |>
-    purrr::map(function(site) {
-      site$lat <- as.numeric(site$lat)
-      site$lon <- as.numeric(site$lon)
-      data.frame(
-        site_id = site$id,
-        lat = site$lat,
-        lon = site$lon,
-        site_name = site$name,
-        str_id = as.character(site$id),
-        stringsAsFactors = FALSE
-      )
-    }) |>
-    dplyr::bind_rows()
-  n_sites <- nrow(site_info)
-  if (n_sites == 0) {
-    PEcAn.logger::logger.severe("No sites found in the provided input")
-  }
+  site <- settings$run$site
+  
+  site_info <- data.frame(
+    site_id   = site$id,
+    lat       = as.numeric(site$lat),
+    lon       = as.numeric(site$lon),
+    site_name = site$name,
+    str_id    = as.character(site$id),
+    stringsAsFactors = FALSE
+  )
   
   size <- ifelse(is.null(settings$ensemble$size), 1, settings$ensemble$size)
   
@@ -108,84 +104,79 @@ soilgrids_ic_process <- function(settings, dir, depth = c(0.3, 2.0), overwrite =
     PEcAn.logger::logger.severe("No valid sites remain after preprocessing")
   }
   
-  ens_files <- list()
+  # Verify the single site exists in processed data
+  site_row <- which(processed_data$data$Site_ID == site_info$site_id)
+  if (length(site_row) == 0) {
+    PEcAn.logger::logger.warn(sprintf("Site %s not found in processed SoilGrids data", 
+                                      site_info$site_id))
+  }
   
-  for (s in 1:nrow(processed_data$data)) {
-    site_data <- processed_data$data[s, ]
-    
-    site_idx <- which(site_info$site_id == site_data$Site_ID)
-    if (length(site_idx) == 0) {
-      PEcAn.logger::logger.warn(sprintf("Site %s not found in site_info", site_data$Site_ID))
-      next
+  # Create output directory for this site
+  site_folder <- file.path(dir, paste0("SoilGrids_site_", site_info$str_id))
+  if (!dir.exists(site_folder)) {
+    dir.create(site_folder, recursive = TRUE)
+  }
+  
+  # Check for existing files
+  existing_files <- list.files(site_folder, "*.nc$", full.names = TRUE)
+  if (length(existing_files) > 0 && !overwrite) {
+    if (verbose) {
+      PEcAn.logger::logger.info(sprintf("Using existing IC files for site %s", 
+                                        site_info$site_id))
     }
-    current_site <- site_info[site_idx, ]
-    
-    # Create output directory for this site
-    site_folder <- file.path(dir, paste0("SoilGrids_site_", current_site$str_id))
-    if (!dir.exists(site_folder)) {
-      dir.create(site_folder, recursive = TRUE)
-    }
-    
-    # Check for existing files
-    existing_files <- list.files(site_folder, "*.nc$", full.names = TRUE)
-    if (length(existing_files) > 0 && !overwrite) {
-      ens_files[[current_site$str_id]] <- existing_files
-      next
-    }
-    
-    # Generate ensemble members for each requested depth
-    ens_data <- list()
+    return(stats::setNames(list(existing_files), site_info$str_id))
+  }
+  
+  # Generate ensemble members for each requested depth
+  ens_data <- list()
+  for (i in seq_along(depth_layers)) {
+    ens_data[[i]] <- generate_soilgrids_ensemble(
+      processed_data = processed_data,
+      site_id = site_info$site_id,
+      size = size,
+      depth_layer = depth_layers[i],
+      verbose = verbose
+    )
+  }
+  
+  site_files <- list()
+  
+  # Write each ensemble member to NetCDF files
+  for (ens in seq_len(size)) {
+    soil_c_values <- numeric(length(depth_layers))
     for (i in seq_along(depth_layers)) {
-      ens_data[[i]] <- generate_soilgrids_ensemble(
-        processed_data = processed_data,
-        site_id = current_site$site_id,
-        size = size,
-        depth_layer = depth_layers[i],
-        verbose = verbose
-      )
+      soil_c_values[i] <- ens_data[[i]][ens]
     }
     
-    site_files <- list()
-    
-    # Write each ensemble member to NetCDF files
-    for (ens in seq_len(size)) {
-      soil_c_values <- numeric(length(depth_layers))
-      for (i in seq_along(depth_layers)) {
-        soil_c_values[i] <- ens_data[[i]][ens]
-      }
-      
-      ens_input <- list(
-        dims = list(
-          lat = current_site$lat,
-          lon = current_site$lon,
-          time = 1,
-          depth = depth
-        ),
-        vals = list(
-          soil_organic_carbon_content = soil_c_values
-        )
+    ens_input <- list(
+      dims = list(
+        lat = site_info$lat,
+        lon = site_info$lon,
+        time = 1,
+        depth = depth
+      ),
+      vals = list(
+        soil_organic_carbon_content = soil_c_values
       )
-      result <- PEcAn.data.land::pool_ic_list2netcdf(
-        input = ens_input,
-        outdir = site_folder,
-        siteid = current_site$site_id,
-        ens = ens
-      )
-      
-      site_files[[ens]] <- result$file
-    }
+    )
+    result <- PEcAn.data.land::pool_ic_list2netcdf(
+      input = ens_input,
+      outdir = site_folder,
+      siteid = site_info$site_id,
+      ens = ens
+    )
     
-    ens_files[[current_site$str_id]] <- site_files
+    site_files[[ens]] <- result$file
   }
   
   if (verbose) {
     end_time <- proc.time()
     elapsed_time <- end_time - start_time
-    PEcAn.logger::logger.info(sprintf("IC generation completed for %d site(s) in %.2f seconds", 
-                                      n_sites, elapsed_time[3]))
+    PEcAn.logger::logger.info(sprintf("IC generation completed for site %s in %.2f seconds", 
+                                      site_info$site_id, elapsed_time[3]))
   }
   
-  return(ens_files)
+  return(stats::setNames(list(site_files), site_info$str_id))
 }
 
 #' Preprocess SoilGrids data for ensemble generation
