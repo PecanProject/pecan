@@ -13,7 +13,7 @@ soilgrids_ic_process(
 )
 }
 \arguments{
-\item{settings}{PEcAn settings list containing site information}
+\item{settings}{A single-site PEcAn Settings object}
 
 \item{dir}{Output directory for IC files}
 
@@ -25,7 +25,7 @@ or multiple values c(0.3, 2.0). Default: c(0.3, 2.0)}
 \item{verbose}{Print detailed progress information? (Default: FALSE)}
 }
 \value{
-List of paths to generated IC files, organized by site ID
+Named list with site ID as key; value is list of paths to generated IC files
 }
 \description{
 Functions for generating soil carbon IC files from SoilGrids250m data
@@ -36,6 +36,10 @@ This module provides functions for extracting, processing, and generating
          All soil carbon values are in kg/m2.
 
 Process SoilGrids data for initial conditions
+
+This function assumes a single-site Settings object.
+         Multi-site execution should be handled by a higher-level controller
+         (e.g., via papply()).
 }
 \examples{
 \dontrun{
