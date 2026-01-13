@@ -6,7 +6,7 @@
 #' @param clay       percent clay
 #' @param bulk       soil bulk density (optional, kg m-3)
 #'
-#' @details 
+#' @details
 #' * Specify _either_ soil_type or sand/silt/clay. soil_type will be ignored if sand/silt/clay is provided
 #' * If only 2 out of sand/silt/clay are provided, it will be assumed they sum to 100%
 #' * Valid soil class options: "Sand","Loamy sand","Sandy loam","Silt loam","Loam",
@@ -15,16 +15,16 @@
 #'                             "Silt","Heavy clay","Clayey sand","Clayey silt"
 #' * Based on ED2/R-utils/soilutils.r
 #' * Hydraulics based on Cosby et al 1984, using table 4 and equation 1 (which is incorrect it should be saturated moisture potential over moisture potential)
-#' 
+#'
 #'
 #' @return list of soil hydraulic and thermal parameters
 #' @export
 #' @importFrom rlang %||%
-#' @examples 
+#' @examples
 #' sand <- c(0.3, 0.4, 0.5)
 #' clay <- c(0.3, 0.3, 0.3)
 #' soil_params(sand=sand,clay=clay)
-soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL){
+soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL) {
   ## load soil parameters
   mysoil <- list()
   # 'soil_class' is package data, lazy-loaded here when needed
@@ -50,7 +50,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   texture <- PEcAn.data.land::soil_class$texture
   xclay.def <- PEcAn.data.land::soil_class$xclay.def
   xsand.def <- PEcAn.data.land::soil_class$xsand.def
-  
+
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
@@ -216,12 +216,12 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   #---------------------------------------------------------------------------------------#
   
   ## final values to look up
-  for(z in which(!(mysoil$soil_n <= 13))){
+  for(z in which((mysoil$soil_n <= 13))){
     mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
     if(is.null(bulk))  mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
     mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
   }
-  for(z in which(!(mysoil$soil_n > 13))){
+  for(z in which((mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
     mysoil$soil_albedo[z] <- stats::median(texture$albdry)
     if(is.null(bulk)) mysoil$soil_bulk_density[z] <- stats::median(texture$xrobulk)

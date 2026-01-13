@@ -1,10 +1,15 @@
 # PEcAn.data.land 1.9.0.9000
 
-- `extract_soil_gssurgo()` now accepts a polygon area of interest or a circular buffer radius,
+## Changed
+
+* `extract_soil_gssurgo()` now accepts a polygon area of interest or a circular buffer radius,
      replacing the rectangular area previously specified through the `grid_size`/`grid_spacing` parameters.
      It also now performs gSSURGO queries through the `soilDB` package, which should be faster and more
      reliable than the previous hand-rolled XML queries (#3643).
 
+## Fixed
+
+* `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo.
 
 
 # PEcAn.data.land 1.9.0

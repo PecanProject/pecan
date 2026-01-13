@@ -16,11 +16,11 @@ Sites stored in the BETY database can be queried by `sitegroup` to retrieve pred
 ```{r}
 # For this demo:
 site_info <- tibble::tribble(
-	~id, ~lat, ~lon,  ~elev, ~site_group,
-	101, 40.1, -88.2, 10,    "NEON",
-	102, 41.2, -87.9, 1980,  "NEON",
-	201, 39.9, -90.0, 925,   "Ameriflux",
-	202, 38.5, -89.5, 1108,  "Ameriflux"
+  ~id, ~lat, ~lon,  ~elev, ~site_group,
+  101, 40.1, -88.2, 10,    "NEON",
+  102, 41.2, -87.9, 1980,  "NEON",
+  201, 39.9, -90.0, 925,   "Ameriflux",
+  202, 38.5, -89.5, 1108,  "Ameriflux"
 )
 # In a real workflow:
 # site_info <- read.csv("site_info.csv")
@@ -57,11 +57,9 @@ settings <- list(
     id = 1000000022,
     type = "SIPNET"
   ),
-  pfts = list(
-  )
+  pfts = list()
 )
 settings <- as.Settings(settings)
-
 ```
 
 
@@ -69,11 +67,10 @@ settings <- as.Settings(settings)
 
 ```{r}
 # Filter for NEON sites (change "NEON" to your desired group)
-selected_sites <- site_info %>% filter(site_group == "NEON")  
-print(selected_sites)           ## prints demo output (not required in main code) 
+selected_sites <- site_info %>% filter(site_group == "NEON")
+print(selected_sites) ## prints demo output (not required in main code)
 settings_neon <- createMultiSiteSettings(settings, selected_sites) ## populates settings with metadata for each site in the sitegroup
 listToXml(settings_neon, tag = "pecan")
-
 ```
 
 
@@ -86,24 +83,25 @@ Say you're developing a new parameterization for the conifer PFT and you want to
 > Always start with a fresh 'settings' (as a single Settings object) to avoid errors.
 
 ```{r}
-
 settings$pfts <- settings$pfts |>
   append(list(
-    name="new_conifer",
-    posterior.files = "/path/to/new_conifer/post.distns.Rdata"))
+    name = "new_conifer",
+    posterior.files = "/path/to/new_conifer/post.distns.Rdata"
+  ))
 neon_hi_elev <- site_info |>
   filter(
     site_group == "NEON",
-    elev > 1000) |>
+    elev > 1000
+  ) |>
   mutate(site.pft = "new_conifer")
 settings_neon <- createMultiSiteSettings(settings, neon_hi_elev)
+```
 
 ## Shows settings object before and after "createMultiSiteSettings(settings, selected_sites)"
 
 ```{r}
 listToXml(settings, tag = "pecan")
 listToXml(settings_neon, tag = "pecan")
-```
 ```
 
 
