@@ -8,7 +8,7 @@
 #' provided values
 #'
 #' Need to expand to alternatively take soil_type (texture class) as an input
-#' 
+#'
 #' On output, soil_type named class is converted to a number because netCDF is a
 #' pain for storing strings. Conversion back can be done by
 #'  load(system.file ("data/soil_class.RData",package = "PEcAn.data.land"))
@@ -20,34 +20,34 @@
 #'
 #' @return none
 #' @export
-#' 
+#'
 #' @examples
 #' \dontrun{ soil.data <- list(fraction_of_sand_in_soil = c
 #'  (0.3,0.4,0.5), fraction_of_clay_in_soil = c(0.3,0.3,0.3), soil_depth = c
 #'  (0.2,0.5,1.0))
-#'                         
+#'
 #' soil2netcdf(soil.data,"soil.nc") }
-soil2netcdf <- function(soil.data, new.file){
+soil2netcdf <- function(soil.data, new.file) {
   soil.data <- as.list(soil.data)
 
   ## convert soil type to parameters via look-up-table / equations
-  mysoil <- PEcAn.data.land::soil_params(sand=soil.data$fraction_of_sand_in_soil,
-                                         silt=soil.data$fraction_of_silt_in_soil,
-                                         clay=soil.data$fraction_of_clay_in_soil,
-                                         bulk=soil.data$soil_bulk_density,
-                                         soil_type=soil.data$soil_type)
-  
+  mysoil <- PEcAn.data.land::soil_params(sand = soil.data$fraction_of_sand_in_soil,
+                                         silt = soil.data$fraction_of_silt_in_soil,
+                                         clay = soil.data$fraction_of_clay_in_soil,
+                                         bulk = soil.data$soil_bulk_density,
+                                         soil_type = soil.data$soil_type)
+
   ## Merge in new variables
-  for(n in seq_along(mysoil)){
-    if(!(names(mysoil)[n] %in% names(soil.data))){
+  for (n in seq_along(mysoil)) {
+    if (!(names(mysoil)[n] %in% names(soil.data))) {
       soil.data[[names(mysoil)[n]]] <- mysoil[[n]]
     }
   }
-  
+
   ## convert soil_type to number
   soil.data$soil_type <- soil.data$soil_n
   soil.data$soil_n <- NULL
-  
+
   ## create depth dimension
   depth <- ncdf4::ncdim_def(name = "depth", units = "meters", vals = soil.data$soil_depth, create_dimvar = TRUE)  
   soil.data$soil_depth <- NULL ## deleting so don't ALSO write as a variable

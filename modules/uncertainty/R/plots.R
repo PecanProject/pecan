@@ -93,7 +93,7 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
   post.x <- seq(from = min(sa.sample), to = max(sa.sample), length.out = LENGTH_OUT)
   
   saplot <- saplot + ## plot spline function
-    ggplot2::geom_line(ggplot2::aes(x=.data$x, y=.data$y), data = data.frame(x = post.x, y = sa.spline(post.x)), size = linesize) + 
+    ggplot2::geom_line(ggplot2::aes(x=.data$x, y=.data$y), data = data.frame(x = post.x, y = sa.spline(post.x)), linewidth = linesize) + 
     ## plot points used to evaluate spline
     ggplot2::geom_point(ggplot2::aes(x=.data$x, y=.data$y), data = data.frame(x = sa.sample, y = sa.spline(sa.sample)), 
                size = dotsize) + # indicate median with larger point
@@ -115,7 +115,7 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
     prior.x <- seq(from = min(prior.sa.sample), to = max(prior.sa.sample), length.out = LENGTH_OUT)
     saplot <- saplot + ## plot spline
       ggplot2::geom_line(ggplot2::aes(x = .data$x, y= .data$y), data = data.frame(x = prior.x, y = prior.sa.spline(prior.x)), 
-                         size = linesize, color = "grey") + ## plot points used to evaluate spline
+                         linewidth = linesize, color = "grey") + ## plot points used to evaluate spline
       ggplot2::geom_point(ggplot2::aes(x= .data$x, y= .data$y), data = data.frame(x = prior.sa.sample, y = prior.sa.spline(prior.sa.sample)), 
                           size = dotsize, color = "grey") + ## indicate location of medians
       ggplot2::geom_point(ggplot2::aes(x = .data$x, y= .data$y), data = data.frame(x = prior.sa.sample[median.i], y = prior.sa.spline(prior.sa.sample[median.i])), 

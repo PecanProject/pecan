@@ -2,12 +2,13 @@
 title: "Demo 03: Meta Analysis"
 author: "Aritra Dey"
 format:
-  pdf:
-    toc: true
-    number-sections: true
-    fig-width: 10
-    fig-height: 6
-    fig-dpi: 300
+  html: default
+  pdf: default
+toc: true
+number-sections: true
+fig-width: 10
+fig-height: 6
+fig-dpi: 300
 ---
 
 # Introduction {#introduction}
