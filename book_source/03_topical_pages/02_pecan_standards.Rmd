@@ -84,7 +84,7 @@ The key is to process each type of met data (site, reanalysis, forecast, climate
 
 See the [Soil Data] section on more into on creating a standard soil data file.
 
-### Vegetation data
+### Vegetation Data
 
 See the [Vegetation Data] section on more info on creating a standard vegetation data file
 
