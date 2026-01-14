@@ -32,7 +32,7 @@ would execute the following at the Linux command line
 inst/met2model.MODEL.sh in.path/in.prefix outfolder start_date end_date    `
 ```
 
-#### DESCRIPTION file
+#### DESCRIPTION File
 
 Within the module folder open the *DESCRIPTION* file and change the package name to PEcAn.MODEL. Fill out other fields such as Title, Author, Maintainer, and Date.
 
