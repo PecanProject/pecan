@@ -8,8 +8,8 @@ This chapter describes the standard conventions used by PEcAn for input data, ou
 
 ### Defining new input formats
 
--   New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
--   After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file/
+- New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
+- After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file/
 
 ### Time standards
 
@@ -69,12 +69,12 @@ datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
 
 ```
 
--   preferred variables indicated in bold
--   wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
--   standard_name is CF-convention standard names
--   units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
--   soil moisture for the full column, rather than a layer, is soil_moisture_content
--   The list of PEcAn standard variable names, units and dimensions are provided in a table in the [Output Standards]{#OutputStandards} section and maintained in the file: [base/utils/data/standard_vars.csv](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
+- preferred variables indicated in bold
+- wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
+- standard_name is CF-convention standard names
+- units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
+- soil moisture for the full column, rather than a layer, is soil_moisture_content
+- The list of PEcAn standard variable names, units and dimensions are provided in a table in the [Output Standards]{#OutputStandards} section and maintained in the file: [base/utils/data/standard_vars.csv](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
 
 **Example:** in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`. We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
 
@@ -90,9 +90,9 @@ See the [Vegetation Data] section on more info on creating a standard vegetation
 
 ## Output Standards
 
--   created by `model2netcdf` functions
--   based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
--   Can be seen at HERE
+- created by `model2netcdf` functions
+- based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
+- Can be seen at HERE
 
 We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
 
