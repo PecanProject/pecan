@@ -129,7 +129,7 @@ If a new version of the model is developed that is derived from the current vers
 
 The PEcAn database keep track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in. To create a new format see [Formats Documentation](#NewFormat).
 
-### Associate MODEL_TYPE with formats
+### Associate MODEL_TYPE With Formats
 
 For each of the input formats you specify for your model, you will need to edit your MODEL_TYPE record to add an association between the format and the MODEL_TYPE. Go to Runs \> Model Type, select your record and click on the Edit button. Next, click on "Edit Associated Formats" and choose the Format you just defined from the pull down menu. If the *Input* box is checked then all matching Input records will be displayed in the PEcAn site run selection page when you are defining a model run. In other words, the set of model inputs available through the PEcAn web interface is model-specific and dynamically generated from the associations between MODEL_TYPEs and Formats. If you also check the *Required* box, then the Input will be treated as required and PEcAn will not run the model if that input is not available. Furthermore, on the site selection webpage, PEcAn will filter the available sites and only display pins on the Google Map for sites that have a full set of required inputs (or where those inputs could be generated using PEcAn's workflows). Similarly, to make a site appear on the Google Map, all you need to do is specify Inputs, as described in the next section, and the point should automatically appear on the map.
 
