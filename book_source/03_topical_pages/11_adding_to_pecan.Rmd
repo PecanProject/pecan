@@ -36,7 +36,7 @@ inst/met2model.MODEL.sh in.path/in.prefix outfolder start_date end_date    `
 
 Within the module folder open the *DESCRIPTION* file and change the package name to PEcAn.MODEL. Fill out other fields such as Title, Author, Maintainer, and Date.
 
-#### NAMESPACE file
+#### NAMESPACE File
 
 This file is managed by Roxygen and will update automatically when you build the model package. Do not edit it by hand.
 
