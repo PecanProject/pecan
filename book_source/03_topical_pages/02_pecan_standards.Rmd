@@ -80,7 +80,7 @@ datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
 
-### Soil data
+### Soil Data
 
 See the [Soil Data] section on more into on creating a standard soil data file.
 
