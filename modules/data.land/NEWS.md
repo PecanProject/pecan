@@ -2,6 +2,10 @@
 
 * `gSSURGO.Query()` is deprecated in favor of `extract_soil_gssurgo()` which uses the modern `soilDB` package. `gSSURGO.Query()` will be removed in a future release. (#3697)
 
+## Fixed
+
+* `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo.
+
 
 # PEcAn.data.land 1.9.0
 
