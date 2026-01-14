@@ -268,7 +268,10 @@ Note: Unless you are also adding a new model, you will not need to write a scrip
 
 **Single-site meteorological data**
 
-Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to: 1. write a script or function to convert your files into the netcdf PEcAn standard 2. insert that file as an input record for your site following these [instructions](#NewInput)
+Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to: 
+
+1. write a script or function to convert your files into the netcdf PEcAn standard
+2. insert that file as an input record for your site following these [instructions](#NewInput)
 
 **Processing meteorological data outside the workflow**
 
