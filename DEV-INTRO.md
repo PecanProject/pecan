@@ -4,13 +4,19 @@ This is a minimal guide to getting started with PEcAn development under Docker. 
 
 ## Requirements and Recommendations
 
-Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Sonoma, and Windows 10 with Windows Subsystem for Linux 2 (following the Linux instructions).
+Docker is the primary software requirement; it handles all other software dependencies.  
+The following configurations have been tested; other configurations may work but are not supported.
 
+- Operating systems:
+  - Linux (Ubuntu ≥ 18.04)
+  - macOS (≥ 14, Sonoma)
+  - Windows (via Windows Subsystem for Linux 2, following Linux instructions)
+    - Native Windows / PowerShell Docker is not supported
 - Software (installation instructions below):
   - Docker version 26
   - Docker Compose version 2.27
-  - Git (optional until you want to make major changes)
-- Hardware
+  - Git (required for development; not to run PEcAn)
+- Hardware:
   - 100 GB storage (minimum 50 GB)
   - 16 GB RAM (minimum 8 GB)
 
