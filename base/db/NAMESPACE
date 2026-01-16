@@ -2,7 +2,6 @@
 
 export("%>%")
 export(append.covariate)
-export(assign.treatments)
 export(bety2pecan)
 export(betyConnect)
 export(convert_input)

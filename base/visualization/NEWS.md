@@ -1,3 +1,9 @@
+# PEcAn.visualization 1.8.2
+
+Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
+
+
+
 # PEcAn.visualization 1.8.1
 
 ## License change

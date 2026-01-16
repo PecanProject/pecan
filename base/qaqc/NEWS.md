@@ -1,7 +1,14 @@
+# PEcAn.qaqc 1.7.5
+
+* Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
+
+
+
 # PEcAn.qaqc 1.7.4
 
 ## License change
 * PEcAn.qaqc is now distributed under the BSD three-clause license instead of the NCSA Open Source license.
+
 
 
 # PEcAn.qaqc 1.7.1

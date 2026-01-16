@@ -410,7 +410,7 @@ sudo cp sipnet /usr/local/bin/sipnet.r136
 make clean
 
 cd ${HOME}/sipnet/
-git checkout master
+git checkout main
 make clean
 make
 sudo cp sipnet /usr/local/bin/sipnet.git

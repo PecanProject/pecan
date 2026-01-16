@@ -1,22 +1,26 @@
-# Unreleased
+# PEcAn.SIPNET 1.10.0
 
 ## Added
+* `write.events.SIPNET()` generates SIPNET `events.in` files from an `events.json` file (#3623).
+* `met2model.SIPNET` now accepts argument `var.names`, listing which variables should be extracted from the file. If not provided, it extracts all variables in the file (#3563).
 
-* `write.events.SIPNET()` to generate SIPNET `events.in` files from a `events.json` file.
-
-# PEcAn.SIPNET 1.9.1
+## Removed
+* The `sipnet2datetime` function is no longer used anywhere and therefore has been removed (#3622).
 
 ## Changed
-
-* Breaking: Renamed the setting used to pass soil and hydrology parameters. `write.config.SIPNET` previously read these from `settings$run$inputs$soilinitcond`, now `settings$run$inputs$soil_physics` to better reflect that these are state factors applicable to the whole run rather than initial conditions. (Quianyu Xuan, #3406)
-* model2netcdf.SIPNET no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
-* The `sipnet2datetime` function is no longer used anywhere and therefore has been removed.
+* Breaking: Renamed the setting used to pass soil and hydrology parameters. `write.config.SIPNET` previously read these from `settings$run$inputs$soilinitcond`, now `settings$run$inputs$soil_physics` to better reflect that these are state factors applicable to the whole run rather than initial conditions (Quianyu Li, #3406).
+* model2netcdf.SIPNET no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed (#3611).
+* Restart and met2model functions now print less to the console unless `verbose = TRUE` (#3544, #3563).
 
 ## Fixed
-
-* `write.config.SIPNET` now checks more carefully whether an optional variable exists in an initial condition file before trying to read it, therefore printing fewer messages about (expectedly) missing variables. (#3545)
+* `write.config.SIPNET` now checks more carefully whether an optional variable exists in an initial condition file before trying to read it, therefore printing fewer messages about (expectedly) missing variables (#3545).
 * When passed a vector of multiple input paths, `write.config.SIPNET` was choosing one at random; it now throws an error (Blesson Thomas, #3298). Note that a single input path per call has always been the intended usage; being passed many was a second bug in PEcAn.uncertainty that is also now fixed.
-* Fixed a bug within the `model2netcdf.SIPNET` function where we assumed the constant calculations of `pecan_start_doy` across years (the calculations should vary depending on the last date from the last loop and the start date of the current loop), which will lead to incorrect calculations of the start `sub_dates` and `sub_dates_cf` if we are jumping between years (e.g., from 2012-12-31 to 2013-01-01).
+* `model2netcdf.SIPNET` no longer assumes a constant value of `pecan_start_doy` across years, which lead to incorrect calculations of `sub_dates` and `sub_dates_cf` at year boundaries (@DongchenZ, #3622).
+* When phenology inputs contain missing values, `write.config.SIPNET` now tries to use an average across years for that site before falling back to fixed cross-site defaults (Quianyu Li, #3680).
+* `write.config.SIPNET` now adjusts soil water capacity to match the specified soil depth (#3634).
+* Fixed unit errors in `write.config.SIPNET` calculation of `leafCSpWt` and `Amax` (#3608, #3664).
+
+
 
 # PEcAn.SIPNET 1.9.0
 

@@ -46,7 +46,7 @@ check_missing_files <- function(result, existing.input = NULL, existing.dbfile =
   if (is.data.frame(existing.dbfile)) {
     existing.dbfile <- list(existing.dbfile)
   }
-  return(list(existing.input, existing.dbfile))
+  return(list(existing.input = existing.input, existing.dbfile = existing.dbfile))
 }
 
 log_format_df <- function(df) {

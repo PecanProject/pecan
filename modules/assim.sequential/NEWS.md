@@ -1,3 +1,16 @@
+# PEcAnAssimSequential 1.10.0
+
+## Added
+
+* New function `stack_covariates_2_geotiff` stacks data layers from various GeoTIFFs (with different extents, CRS, and resolutions) to a single map (#3450)
+* New functions `qsub_sda()`, `downscale_qsub_main()`, `qsub_sda()`, `qsub_sda_batch()`, `sda.enkf_local()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites and spreading their computation across all cores of multiple HPC nodes (#3634, #3450, #3544).
+
+## Changed
+
+* The entire SDA workflow has been overhauled to support parallel computation throughout.
+
+
+
 # PEcAnAssimSequential 1.9.0
 
 ## Added
@@ -9,6 +22,7 @@
 
 * `NA_downscale` renamed `SDA_downscale_hrly`
 * Documentation improvements
+
 
 
 # PEcAnAssimSequential 1.8.0

@@ -187,7 +187,7 @@ server <- function(input, output, session) {
     p_overlay <- ggplot(rv$plot.data) + geom_line(aes(x=date, y=var, color=met)) + 
       ylab(input$var) + ggtitle(input$var)
     
-    p_facet <-   ggplot(rv$plot.data) + geom_line(aes(x=date, y=var, color=met), size=1) + 
+    p_facet <-   ggplot(rv$plot.data) + geom_line(aes(x=date, y=var, color=met), linewidth=1) + 
       ylab(input$var) + ggtitle(input$var) + 
       facet_grid(met ~ .)
     
