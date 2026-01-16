@@ -257,6 +257,7 @@ Here we visualize the results of the ensemble analysis. It shows the overall dis
 
 This section reproduces the plots saved in the `ensemble.analysis/` folder in order to show the user how to access and visualize the results programmatically so that they can further investigate output and customize plots.
 
+
 ```{r visualize-ensemble-results}
 # --- 1. Define Helper Variables ---
 # Extract key variables from the settings object to simplify file path construction
@@ -265,50 +266,58 @@ variable <- settings$ensemble$variable
 pft <- settings$pfts[[1]]
 start.year <- lubridate::year(settings$run$start.date)
 end.year <- lubridate::year(settings$run$end.date)
-ensemble.id <- if (!is.null(settings$ensemble$id)) settings$ensemble$id else "NOENSEMBLEID"
+
 
 # --- 2. Load and Plot Ensemble Output Distribution ---
 # This section visualizes the distribution of the ensemble model runs.
 # It generates a histogram and a boxplot to show the central tendency, spread,
 # and shape of the output variable's distribution.
 
-# Construct the path to the ensemble output file
-ens_file <- PEcAn.uncertainty::ensemble.filename(
-  settings,
-  prefix = "ensemble.output",
-  ensemble.id = ensemble.id,
-  variable = variable,
-  start.year = start.year,
-  end.year = end.year
-)
+vars <- settings$ensemble[names(settings$ensemble) == "variable"]
+variables <- unlist(vars)
+# Loop through each requested variable
+for (var in variables) {
+  # Construct the path to the ensemble output file
+  ens_file <- PEcAn.uncertainty::ensemble.filename(
+    settings,
+    prefix = "ensemble.output",
+    all.var.yr = FALSE
+  )
 
-# Check if the file exists, then load and plot the data
-if (file.exists(ens_file)) {
-  ens_env <- new.env()
-  load(ens_file, envir = ens_env)
-  ens_data <- as.numeric(unlist(ens_env$ensemble.output))
+  if (file.exists(ens_file)) {
+    PEcAn.logger::logger.info(paste("Plotting ensemble results for variable:", var, "from", basename(ens_file)))
 
-  # Define units for plot labels
-  units <- paste0(variable, " (", PEcAn.utils::mstmipvar(variable, silent = TRUE)$units, ")")
+    ens_env <- new.env()
+    load(ens_file, envir = ens_env)
 
-  # Create side-by-side histogram and boxplot
-  par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))
-  hist(ens_data, xlab = units, main = "Ensemble Distribution", cex.lab = 1.4, col = "grey85")
-  box(lwd = 2.2)
-  boxplot(ens_data, ylab = units, main = "Ensemble Boxplot", col = "grey85", cex.lab = 1.5)
-  box(lwd = 2.2)
-  par(mfrow = c(1, 1))
-} else {
-  PEcAn.logger::logger.warn("Could not find ensemble output file:", ens_file)
+    if (!is.null(ens_env$ensemble.output)) {
+      ens_data <- as.numeric(unlist(ens_env$ensemble.output))
+
+      # Define units for plot labels
+      units <- paste0(var, " (", PEcAn.utils::mstmipvar(var, silent = TRUE)$units, ")")
+
+      # Create side-by-side histogram and boxplot
+      par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))
+      hist(ens_data, xlab = units, main = paste("Ensemble Dist:", var), cex.lab = 1.4, col = "grey85")
+      box(lwd = 2.2)
+      boxplot(ens_data, ylab = units, main = paste("Ensemble Boxplot:", var), col = "grey85", cex.lab = 1.5)
+      box(lwd = 2.2)
+      par(mfrow = c(1, 1))
+    }
+  } else {
+    PEcAn.logger::logger.warn(paste("Could not find ensemble output file for variable:", var))
+  }
 }
-
 
 # --- 3. Plot Ensemble Time Series ---
 # This section visualizes the ensemble results over time, showing the mean,
 # median, and 95% confidence interval of the model output.
-ens_ts_data <- PEcAn.uncertainty::read.ensemble.ts(settings, variable = variable)
-if (!is.null(ens_ts_data)) {
-  PEcAn.uncertainty::ensemble.ts(ens_ts_data)
+# Loop through each variable for time series plots
+for (var in variables) {
+  ens_ts_data <- PEcAn.uncertainty::read.ensemble.ts(settings, variable = var)
+  if (!is.null(ens_ts_data)) {
+    PEcAn.uncertainty::ensemble.ts(ens_ts_data)
+  }
 }
 ```
 
@@ -318,38 +327,50 @@ This block visualizes the results of the sensitivity analysis. The plots show ho
 
 ```{r visualize-sensitivity-results}
 # --- 1. Load Sensitivity Analysis Results ---
-# This section loads the saved sensitivity analysis data, which contains the
-# outputs needed to generate the sensitivity and variance decomposition plots.
+vars <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
+variables <- unlist(vars)
 
-# Construct the path to the sensitivity analysis results file
-sens_file <- file.path(
-  settings$outdir,
-  paste0("sensitivity.results", ".", ensemble.id, ".", variable, ".", start.year, ".", end.year, ".Rdata")
-)
-
-# Check if the file exists, then load the data and generate plots
-if (file.exists(sens_file)) {
-  sens_env <- new.env()
-  load(sens_file, envir = sens_env)
-  sensitivity.results <- sens_env$sensitivity.results
-
-  # --- 2. Generate Sensitivity Plots ---
-  # These plots show how the model output changes as each parameter is varied
-  # one at a time, helping to identify which parameters have the strongest influence.
-  sa_plots <- PEcAn.uncertainty::plot_sensitivities(
-    sensitivity.results[[pft$name]]$sensitivity.output
+for (var in variables) {
+  # Construct the path to the sensitivity analysis results file
+  sens_file <- PEcAn.uncertainty::sensitivity.filename(
+    settings,
+    prefix = "sensitivity.results",
+    all.var.yr = FALSE
   )
-  print(do.call(gridExtra::grid.arrange, c(sa_plots, ncol = floor(sqrt(length(sa_plots))))))
 
-  # --- 3. Generate Variance Decomposition Plots ---
-  # These plots break down the total output variance into contributions from
-  # each parameter, highlighting the most important sources of uncertainty.
-  vd_plots <- PEcAn.uncertainty::plot_variance_decomposition(
-    sensitivity.results[[pft$name]]$variance.decomposition.output
-  )
-  print(do.call(gridExtra::grid.arrange, c(vd_plots, ncol = 4)))
-} else {
-  PEcAn.logger::logger.warn("Could not find sensitivity results file:", sens_file)
+  if (file.exists(sens_file)) {
+    PEcAn.logger::logger.info(paste("Plotting sensitivity results for variable:", var, "from", basename(sens_file)))
+
+    sens_env <- new.env()
+    load(sens_file, envir = sens_env)
+    sensitivity.results <- sens_env$sensitivity.results
+
+    # --- 2. Generate Sensitivity Plots ---
+    if (!is.null(sensitivity.results[[pft$name]]$sensitivity.output)) {
+      sa_plots <- PEcAn.uncertainty::plot_sensitivities(
+        sensitivity.results[[pft$name]]$sensitivity.output
+      )
+      # Explicitly print the plot
+      gridExtra::grid.arrange(
+        grobs = sa_plots, ncol = floor(sqrt(length(sa_plots))),
+        top = paste("Sensitivity Analysis:", var)
+      )
+    }
+
+    # --- 3. Generate Variance Decomposition Plots ---
+    if (!is.null(sensitivity.results[[pft$name]]$variance.decomposition.output)) {
+      vd_plots <- PEcAn.uncertainty::plot_variance_decomposition(
+        sensitivity.results[[pft$name]]$variance.decomposition.output
+      )
+      # Explicitly print the plot
+      gridExtra::grid.arrange(
+        grobs = vd_plots, ncol = 4,
+        top = paste("Variance Decomposition:", var)
+      )
+    }
+  } else {
+    PEcAn.logger::logger.warn(paste("Could not find sensitivity results file for variable:", var))
+  }
 }
 ```
 

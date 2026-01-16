@@ -7,9 +7,9 @@ git stash -u
 # update all remotes
 git fetch --all
 
-# update master
-git checkout master
-git merge upstream/master
+# update main
+git checkout main
+git merge upstream/main
 git push
 
 # update develop
