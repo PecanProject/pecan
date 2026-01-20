@@ -108,13 +108,14 @@ SMAP_SMP_prep <- function(site_info, start_date, end_date, time_points,
 #' @param to character: the end time for searching the MODIS products.
 #' @param download.outdir character: Where the MODIS tiles will be stored.
 #' @param csv.outdir character: Where the final CSV file will be stored.
+#' @param credential_path Character: physical path to the credential file (.netrc file).
 #' 
 #' @return A data frame containing SMP and sd for each site and each time step.
 #' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir) {
+Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir, credential_path) {
   # SMAP CRS, EPSG:6933.
   smap.crs <- "+proj=cea +lat_ts=30 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
   # load previous CSV file.
@@ -143,10 +144,10 @@ Prep.SMAP.CSV.from.DAAC <- function(site_info, extent, from, to, download.outdir
                                  to = to, 
                                  just_path = F,
                                  outdir = download.outdir,
-                                 doi = "10.5067/LWJ6TF5SZRG3",
-                                 ncore = parallel::detectCores()-1)
-  smap.out <- metadata$path
-  file <- smap.out[1] # select the first file.
+                                 doi = "10.5067/02LGW4DGJYRX",
+                                 ncore = parallel::detectCores()-1,
+                                 credential_path = credential_path)
+  file <- metadata[1] # select the first file.
   # grab smap extents, it's from the ArcGIS report using the SMAP H5 file.
   smap.ext <- c(-17363027.292480, 17367529.945160, -7319045.227051, 7310037.171387) %>% terra::ext()
   # convert h5 file to raster.

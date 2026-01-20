@@ -1,14 +1,13 @@
 ##' Function to query yields data from database for specific species and convert stat to SE
 ##'
-##' @name query.yields
-##' @title Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait yield trait to query
 ##' @param spstr species to query for yield data
 ##' @param extra.columns other query terms to pass in. Optional
 ##' @param con database connection
 ##' @param ids_are_cultivars if TRUE, spstr contains cultivar IDs, otherwise they are species IDs
 ##' @param ... extra arguments
-##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
+##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}};
+##'   \code{\link[PEcAn.utils]{transformstats}} performs transformation calculations
 ##' @author <unknown>
 query.yields <- function(trait = 'yield', spstr, extra.columns = '', con = NULL,
                          ids_are_cultivars = FALSE, ...){

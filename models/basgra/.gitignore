@@ -1,4 +1,4 @@
 *.so
 *.o
 *.mod
-
+docs/

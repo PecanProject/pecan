@@ -15,7 +15,6 @@ RUN apt-get update \
         -e 'remotes::install_version("rmarkdown", ">= 2.19", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("knitr", ">= 1.42", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
         -e 'remotes::install_version("bookdown", ">= 0.31", dependencies = TRUE, upgrade = FALSE, repos = repos)' \
-        -e 'install.packages("pkgdown", repos = repos)' \
     && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------------
@@ -51,7 +50,7 @@ RUN apt-get update \
 
 COPY docker/docs/index.html /usr/local/apache2/htdocs/
 COPY --from=pecandocs /src/book_source/_book/ /usr/local/apache2/htdocs/docs/pecan/
-COPY --from=pecandocs /pkgdoc/package_documentation/pkgdocs/ /usr/local/apache2/htdocs/pkgdocs/
+COPY --from=pecandocs /pkgdoc/_pkgdown_docs/ /usr/local/apache2/htdocs/pkgdocs/
 
 # ----------------------------------------------------------------------
 # PEcAn version information

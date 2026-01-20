@@ -11,7 +11,7 @@ MODIS_LAI_prep(
   search_window = 30,
   export_csv = FALSE,
   sd_threshold = 20,
-  skip.download = TRUE,
+  skip_download = FALSE,
   boundary = NULL
 )
 }
@@ -28,7 +28,7 @@ MODIS_LAI_prep(
 
 \item{sd_threshold}{numeric or character: for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.}
 
-\item{skip.download}{boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.}
+\item{skip_download}{boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.}
 
 \item{boundary}{numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., c(0.05, 0.95) or list(0.05, 0.95)). The default is NULL.}
 }

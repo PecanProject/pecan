@@ -54,15 +54,12 @@ jobs:
         curl -L -o sipnet-linux "https://github.com/PecanProject/sipnet/releases/download/v1.3.0/sipnet-linux-v1.3.0"
         chmod +x sipnet-linux
 
-    - name: Download climate file from GitHub
-      run: |
-        curl -L -o niwot.clim "https://raw.githubusercontent.com/PecanProject/sipnet/refs/heads/master/tests/smoke/niwot.clim"
-  
-
     # compile PEcAn code
     - name: build
       run: make -j1
 
     # run SIPNET test
+    - name: copy met file into working directory
+      run: Rscript -e 'file.copy(system.file("niwot.clim", package = "PEcAn.SIPNET"), "niwot.clim")'
     - name: integration test
       run: ./tests/integration.sh ghaction

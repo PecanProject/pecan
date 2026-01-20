@@ -1,3 +1,5 @@
 contrib
 data-raw
 ^data-raw$
+^docs$
+.*venv/

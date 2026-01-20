@@ -15,6 +15,7 @@ This section will contain information about all models and output variables that
 | [LPJ-GUESS](#models-lpjguess)| No | Yes | No | No |
 | [MAESPA](#models-maespa)| Yes | Yes | No | No |
 | [PRELES](#models-preles) | Yes | Yes | Partially | No |
+| [RothC](#models-rothc) | No | Yes | Partially | No |
 | [SiPNET](#models-sipnet)| Yes | Yes | Yes| Yes |
 | [STICS](#models-stics)| Yes | Yes | No | No |
 

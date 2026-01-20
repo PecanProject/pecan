@@ -1,4 +1,10 @@
-# PEcAn.remote 1.8.0.9000
+# PEcAn.remote 1.9.1
+
+* Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
+
+
+
+# PEcAn.remote 1.9.0
 
 * PEcAn.remote is now distributed under the BSD 3-clause license instead of the NCSA Open Source license.
 
@@ -6,6 +12,7 @@
 
 * `start.model.runs` and `runModule.start.model.runs`, defunct since they were
   moved to `PEcAn.workflow` in 2021, have been deleted.
+
 
 # PEcAn.remote 1.8.0
 

@@ -139,15 +139,34 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if(is.null(model)){
     stage$model <- FALSE
   }
-  
-  
+
+
   # setup site database number, lat, lon and name and copy for format.vars if new input
-  latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")] 
-  new.site <- data.frame(id = as.numeric(site$id), 
-                         lat = latlon$lat, 
-                         lon = latlon$lon)
-  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
-  
+  # TODO why are this and the original site object passed around together?
+  # Could we mutate `site` instead of assigning `new.site`?
+  new.site <- list(
+    id = site$id,
+    lat = site$lat,
+    lon = site$lon
+  )
+  if (is.null(new.site$id)) {
+    PEcAn.logger::logger.info(
+      "no site ID provided. Generating one from lat and lon"
+    )
+    new.site$id <- paste0("lat", new.site$lat, "_lon", new.site$lon)
+  }
+  if (is.null(site$lat) || is.null(new.site$lon)) {
+    latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
+    new.site$lat <- latlon$lat
+    new.site$lon <- latlon$lon
+  }
+  if (is.numeric(new.site$id) && new.site$id > 1e9) {
+    # Assume this is a BETY id, format as [server id]-[record number]
+    str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
+  } else {
+    str_ns <- as.character(new.site$id)
+  }
+
   if (is.null(format.vars$lat)) {
     format.vars$lat <- new.site$lat
   }

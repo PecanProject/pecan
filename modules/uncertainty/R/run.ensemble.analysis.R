@@ -1,12 +1,3 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 #' run ensemble.analysis
 #' 
 #' @param settings PEcAn settings object
@@ -250,7 +241,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     for(var in seq_along(variables)){
       out.tmp <- PEcAn.utils::read.output(
         run.id,
-        file.path(settings$outdir, "out", run.id),
+        file.path(settings$modeloutdir, run.id),
         start.year,
         end.year,
         variables[var])

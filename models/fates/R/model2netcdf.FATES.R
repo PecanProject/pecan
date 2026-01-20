@@ -9,8 +9,8 @@
 ##' @param end_date End time of the simulation, not string
 ##' @param vars_names Names of Selected variables in PEcAn format, (e.g. c("",""))
 ##' @param pfts a named vector of PFT numbers where the names are PFT names
-##' 
-##' @examples  
+##'
+##' @examples
 ##' \dontrun{
 ##' example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
 ##' model2netcdf.FATES(outdir="~/",sitelat, sitelon, start_date, end_date, vars_names, pfts)
@@ -155,13 +155,7 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date, v
           }
         } 
       }
-    } ## monthly convert variable into PEcAn format 
-  }
-  ## extract variable and long names to VAR file for PEcAn vis
-  utils::write.table(sapply(ncout$var, function(x) { x$longname }), 
-              file = paste0(oname, ".var"), 
-              col.names = FALSE, 
-              row.names = TRUE, 
-              quote = FALSE)
-  try(ncdf4::nc_close(ncout)) ## end of year for loop
+    } ## monthly convert variable into PEcAn format
+  try(ncdf4::nc_close(ncout))
+  } ## end of year for loop
 } ## model2netcdf.FATES

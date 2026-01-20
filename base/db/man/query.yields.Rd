@@ -2,7 +2,7 @@
 % Please edit documentation in R/query.yields.R
 \name{query.yields}
 \alias{query.yields}
-\title{Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
+\title{Function to query yields data from database for specific species and convert stat to SE}
 \usage{
 query.yields(
   trait = "yield",
@@ -30,7 +30,8 @@ query.yields(
 Function to query yields data from database for specific species and convert stat to SE
 }
 \seealso{
-used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
+used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}};
+  \code{\link[PEcAn.utils]{transformstats}} performs transformation calculations
 }
 \author{
 <unknown>

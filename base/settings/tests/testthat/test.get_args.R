@@ -1,7 +1,7 @@
 test_that("`get_args` throws an error with missing settings file", {
   withr::with_envvar(c(PECAN_SETTINGS = "doesnotexists.xml"), {
     expect_error(
-      get_args(), 
+      get_args(),
       "--settings \"doesnotexists.xml\" not a valid file"
     )
   })

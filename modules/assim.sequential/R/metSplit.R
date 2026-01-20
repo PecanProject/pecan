@@ -31,18 +31,19 @@ metSplit <- function(conf.settings, inputs, settings, model, no_split = FALSE, o
     furrr::future_pmap(list(conf.settings %>% `class<-`(c("list")), inputs, model), function(settings, inputs, model) {
       # Loading the model package - this is required bc of the furrr
       library(paste0("PEcAn.",model), character.only = TRUE)
-      
-      inputs.split <- list()
+
+      #Split function only works for met in inputs
+      inputs.split <- inputs
       if (!no_split) {
         for (i in seq_len(nens)) {
           #---------------- model specific split inputs
-          inputs.split$samples[i] <- do.call(
+          inputs.split$met$samples[[i]] <- do.call(
             my.split_inputs,
             args = list(
               settings = settings,
               start.time = (lubridate::ymd_hms(start.time, truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
               stop.time =   lubridate::ymd_hms(stop.time, truncated = 3),
-              inputs = inputs$samples[[i]])
+              inputs = inputs$met$samples[[i]])
           )
         }
       } else{

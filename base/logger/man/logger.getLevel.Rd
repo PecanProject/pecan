@@ -7,10 +7,16 @@
 logger.getLevel()
 }
 \value{
-level the level of the message (ALL, DEBUG, INFO, WARN, ERROR, OFF)
+A string giving the lowest message level that will be reported, one of
+"ALL", "DEBUG", "INFO", "WARN", "ERROR", "SEVERE", or "OFF".
 }
 \description{
-This will return the current level configured of the logging messages
+This will return the current level configured of the logging messages.
+}
+\details{
+Note that \code{logger.setLevel()} invisibly returns current level, so
+\code{logger.getLevel()} is not required to restore the level after a
+temporary change.
 }
 \examples{
 \dontrun{

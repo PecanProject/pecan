@@ -14,8 +14,10 @@ test_that("MultiSettings constructor works as expected", {
   expect_error(MultiSettings(settings, l))
 
   multiSettings <- MultiSettings(settings, settings, settings)
+  multiSettings1 <- MultiSettings(settings)
   multiSettings2 <- MultiSettings(list(settings, settings, settings))
   multiSettings3 <- MultiSettings(multiSettings)
+  expect_identical(multiSettings1[[1]], settings)
   expect_identical(multiSettings2, multiSettings)
   expect_identical(multiSettings3, multiSettings)
 
@@ -289,6 +291,12 @@ test_that("multiSettings write to and read from xml as expcted (i.e., with colla
   msNew <- expandMultiSettings(listNew)
 
   expect_true(are.equal.possiblyNumericToCharacter(msNew, msOrig))
+})
+
+test_that("length one MultiSettings is collapsed same as longer ones", {
+  ms1 <- MultiSettings(settings)
+  ms1XML <- listToXml(ms1, "pecan")
+  expect_length(XML::getNodeSet(ms1XML, "/pecan/multisettings"), 1)
 })
 
 

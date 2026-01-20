@@ -37,7 +37,9 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
                 file.path(outdir, runid, paste0("sipnet.", as.Date(start.time), ".out")))
     system(paste("rm", file.path(rundir, runid, "sipnet.clim")))
   } else {
-    print(paste("Files not renamed -- Need to rerun timestep", start.time, "before next time step"))
+    if (verbose) {
+      print(paste("Files not renamed -- Need to rerun timestep", start.time, "before next time step"))
+    }
   }
   
   settings$run$start.date <- start.time
@@ -87,6 +89,12 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save[[length(analysis.save) + 1]] <- new.state$litter_mass_content_of_water  ## unitless
     if (new.state$litter_mass_content_of_water < 0 || new.state$litter_mass_content_of_water > 1) analysis.save[[length(analysis.save)]] <- 0.5
     names(analysis.save[[length(analysis.save)]]) <- c("litter_mass_content_of_water")
+  }
+  
+  if ("SoilMoist" %in% variables) {
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoist
+    if (new.state$SoilMoist < 0) analysis.save[[length(analysis.save)]] <- 0
+    names(analysis.save[[length(analysis.save)]]) <- c("soilWater")
   }
   
   if ("SoilMoistFrac" %in% variables) {

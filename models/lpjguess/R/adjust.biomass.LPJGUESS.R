@@ -80,14 +80,14 @@ adjust.biomass.LPJGUESS <- function(individual, biomass.inc, sla, wooddens, life
   
   # leaf
   original.cmass_leaf <- individual$cmass_leaf
-  new.cmass_leaf <- individual$cmass_leaf + (updated.pools[["cmass_leaf_inc"]] * individual$densindiv)
+  new.cmass_leaf <- individual$cmass_leaf + (unname(updated.pools[["cmass_leaf_inc"]] * individual$densindiv))
   leaf.scaling <- new.cmass_leaf / original.cmass_leaf
   individual$cmass_leaf <- new.cmass_leaf
   individual$nmass_leaf <- individual$nmass_leaf * leaf.scaling
   
   # root
   original.cmass_root <- individual$cmass_root
-  new.cmass_root <- individual$cmass_root + (updated.pools[["cmass_root_inc"]] * individual$densindiv)
+  new.cmass_root <- individual$cmass_root + (unname(updated.pools[["cmass_root_inc"]] * individual$densindiv))
   root.scaling <- new.cmass_root / original.cmass_root
   individual$cmass_root <- new.cmass_root
   individual$nmass_root <- individual$nmass_root * root.scaling
@@ -98,7 +98,7 @@ adjust.biomass.LPJGUESS <- function(individual, biomass.inc, sla, wooddens, life
     
     # sap
     original.cmass_sap <- individual$cmass_sap
-    new.cmass_sap <- individual$cmass_sap + (updated.pools[["cmass_sap_inc"]] * individual$densindiv)
+    new.cmass_sap <- individual$cmass_sap + (unname(updated.pools[["cmass_sap_inc"]] * individual$densindiv))
     sap.scaling <- new.cmass_sap / original.cmass_sap
     individual$cmass_sap <- new.cmass_sap
     individual$nmass_sap <- individual$nmass_sap * sap.scaling
@@ -106,14 +106,14 @@ adjust.biomass.LPJGUESS <- function(individual, biomass.inc, sla, wooddens, life
     
     # heart
     original.cmass_heart <- individual$cmass_heart
-    new.cmass_heart <- individual$cmass_heart + (updated.pools[["cmass_heart_inc"]] * individual$densindiv)
+    new.cmass_heart <- individual$cmass_heart + (unname(updated.pools[["cmass_heart_inc"]] * individual$densindiv))
     heart.scaling <- new.cmass_heart / original.cmass_heart
     individual$cmass_heart <- new.cmass_heart
     individual$nmass_heart <- individual$nmass_heart * heart.scaling
     
     # debt - note no equivalant N debt
     original.cmass_debt <- individual$cmass_debt
-    new.cmass_debt <- individual$cmass_debt + (updated.pools[["cmass_debt_inc"]] * individual$densindiv)
+    new.cmass_debt <- individual$cmass_debt + (unname(updated.pools[["cmass_debt_inc"]] * individual$densindiv))
     individual$cmass_debt <- new.cmass_debt
     
   }
@@ -121,8 +121,8 @@ adjust.biomass.LPJGUESS <- function(individual, biomass.inc, sla, wooddens, life
   
   # N labile and long term storage - note no equivalant C pools and they are not determined by allocation upgrade,
   # so simply scale by the overall biomass change
-  individual$nstore_labile <- individual$nstore_labile * rel.change
-  individual$nstore_longterm <- individual$nstore_longterm * rel.change
+  individual$nstore_labile <- unname(individual$nstore_labile * rel.change)
+  individual$nstore_longterm <- unname(individual$nstore_longterm * rel.change)
   
   
   # TODO (potentially): MF - for simulations involving managed forestry and harvest the variable 'cmass_wood_inc_5'

@@ -6,7 +6,7 @@
 #' @param clay       percent clay
 #' @param bulk       soil bulk density (optional, kg m-3)
 #'
-#' @details 
+#' @details
 #' * Specify _either_ soil_type or sand/silt/clay. soil_type will be ignored if sand/silt/clay is provided
 #' * If only 2 out of sand/silt/clay are provided, it will be assumed they sum to 100%
 #' * Valid soil class options: "Sand","Loamy sand","Sandy loam","Silt loam","Loam",
@@ -15,16 +15,16 @@
 #'                             "Silt","Heavy clay","Clayey sand","Clayey silt"
 #' * Based on ED2/R-utils/soilutils.r
 #' * Hydraulics based on Cosby et al 1984, using table 4 and equation 1 (which is incorrect it should be saturated moisture potential over moisture potential)
-#' 
+#'
 #'
 #' @return list of soil hydraulic and thermal parameters
 #' @export
 #' @importFrom rlang %||%
-#' @examples 
+#' @examples
 #' sand <- c(0.3, 0.4, 0.5)
 #' clay <- c(0.3, 0.3, 0.3)
 #' soil_params(sand=sand,clay=clay)
-soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL){
+soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NULL) {
   ## load soil parameters
   mysoil <- list()
   # 'soil_class' is package data, lazy-loaded here when needed
@@ -50,7 +50,7 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   texture <- PEcAn.data.land::soil_class$texture
   xclay.def <- PEcAn.data.land::soil_class$xclay.def
   xsand.def <- PEcAn.data.land::soil_class$xsand.def
-  
+
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
@@ -216,12 +216,12 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   #---------------------------------------------------------------------------------------#
   
   ## final values to look up
-  for(z in which(!(mysoil$soil_n <= 13))){
+  for(z in which((mysoil$soil_n <= 13))){
     mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
     if(is.null(bulk))  mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
     mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
   }
-  for(z in which(!(mysoil$soil_n > 13))){
+  for(z in which((mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
     mysoil$soil_albedo[z] <- stats::median(texture$albdry)
     if(is.null(bulk)) mysoil$soil_bulk_density[z] <- stats::median(texture$xrobulk)
@@ -232,10 +232,10 @@ soil_params <- function(soil_type=NULL, sand=NULL, silt=NULL, clay=NULL, bulk=NU
   mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
   
   ## drop variables that are only meaningful internally
-  #mysoil$slpotcp <- NULL
-  #mysoil$slpotwp <- NULL
-  #mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
-  #mysoil$slcpd <- NULL
+  mysoil$slpotcp <- NULL
+  mysoil$slpotwp <- NULL
+  mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
+  mysoil$slcpd <- NULL
   
   return(mysoil)
 }#end function
@@ -264,7 +264,9 @@ sclass <- function(sandfrac,clayfrac){
   #----- Define the percentage of sand, clay, and silt. ----------------------------------#
   sand <- 100. * sandfrac
   clay <- 100. * clayfrac
-  silt <- 100. - sand - clay
+  # Prevent silt from being negative due to numerical precision issue
+  silt <- pmax(100. - sand - clay, 0)
+  
   #---------------------------------------------------------------------------------------#
   
   #---------------------------------------------------------------------------------------#
@@ -341,3 +343,46 @@ mpot2smoist <- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b
   smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation
   return(smoist)
 }#end function
+
+#' Convert soil organic carbon concentration to organic carbon stock
+#'
+#' @param soc_percent soil organic carbon concentration (percent, 0-100)
+#' @param bulk_density bulk density (g/cm3)
+#' @param thickness layer thickness (cm)
+#' @param coarse_fraction coarse fragment volume fraction (0-1, default = 0)
+#' @return organic carbon stock (kg/m2)
+#' @export
+#' @author Akash
+#' @examples
+#' soc2ocs(2.5, 1.3, 30, 0.15)
+#'
+#' # Multiple soil layers
+#' soc_pct <- c(3.2, 2.1, 1.8)
+#' bd_g_cm3 <- c(1.2, 1.4, 1.5)
+#' thickness_cm <- c(15, 15, 30)
+#' coarse_fraction <- c(0.10, 0.20, 0.25)
+#' soc2ocs(soc_pct, bd_g_cm3, thickness_cm, coarse_fraction)
+
+soc2ocs <- function(soc_percent, bulk_density, thickness, coarse_fraction = 0) {
+  # Convert inputs to standard units for calculation
+  soc_frac <- soc_percent / 100
+  bd_kg_m3 <- PEcAn.utils::ud_convert(bulk_density, "g cm-3", "kg m-3") 
+  thick_m <- PEcAn.utils::ud_convert(thickness, "cm", "m")
+  
+  # organic carbon stock: SOC × BD × thickness × (1 - coarse_fraction)
+  ocs_kg_m2 <- soc_frac * bd_kg_m3 * thick_m * (1 - coarse_fraction)
+  return(ocs_kg_m2)
+} # soc2ocs
+
+#' Convert organic matter to soil organic carbon 
+#'
+#' @description Converts organic matter content to soil organic carbon using the Van Bemmelen factor (1.724).
+#'
+#' @param om_percent organic matter percentage (0-100)
+#' @return soil organic carbon percentage (0-100)
+#' @export
+#' @author Akash
+
+om2soc <- function(om_percent) {
+  return(om_percent / 1.724)
+} # om2soc
