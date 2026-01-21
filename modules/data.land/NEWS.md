@@ -5,6 +5,11 @@
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
 * `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo. (#3776)
 
+## Added
+
+* Datasets
+  *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
+  *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
 
 # PEcAn.data.land 1.9.0
 
