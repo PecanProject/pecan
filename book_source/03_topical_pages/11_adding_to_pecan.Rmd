@@ -617,8 +617,6 @@ The Data-Ingest application is capable of loading data from the DataONE data fed
 
 #### DataONE Upload Example
 
-<br>
-
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/D1Ingest-1.gif")
 ```
@@ -643,7 +641,7 @@ knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_
 
 Creating an input record requires some basic metadata about the file that is being ingested. Each entry field is briefly explained below. <br>
 
--   Site: To link the selected file with a site, the user can scroll or type to search all the sites in PEcAn. See Example: <br>
+-   Site: To link the selected file with a site, the user can scroll or type to search all the sites in PEcAn. See Example:
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/Selectize_Input_sm.gif")
@@ -658,8 +656,6 @@ knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_
 - Mimetype: If the format already exists, select an existing mimetype.
 
 - Start and End Date and Time: Inputs can be entered manually or by using the user interface. See example
-
-<br>
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/DateTime.gif")
@@ -681,7 +677,7 @@ If it is necessary to add a new format to PEcAn, the user should fill out the fo
 
 - Please enter notes that describe the format.
 
-Example: <br>
+Example:
 
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/new_format_record.gif")
