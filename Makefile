@@ -183,7 +183,15 @@ include Makefile.depends
 	+ ./scripts/time.sh "devtools ${1}" Rscript -e ${SETROPTIONS} -e "if(!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools')"
 	echo `date` > $@
 
-.install/roxygen2: | .install .install/devtools
+.install/xfun: | .install .install/devtools
+	+ ./scripts/time.sh "xfun ${1}" Rscript -e ${SETROPTIONS} \
+		-e "if (getRversion() < '4.4.0' && (!requireNamespace('xfun', quietly = TRUE) || packageVersion('xfun') >= '0.40')) {" \
+		-e "  cran <- c(getOption('repos'), 'cloud.r-project.org')" \
+		-e "  remotes::install_version('xfun', '0.39', repos = cran, upgrade = FALSE)" \
+		-e "}"
+	echo `date` > $@
+
+.install/roxygen2: | .install .install/devtools .install/xfun
 	+ ./scripts/time.sh "roxygen2 ${1}" Rscript -e ${SETROPTIONS} \
 		-e "if (!requireNamespace('roxygen2', quietly = TRUE)" \
 		-e "    || packageVersion('roxygen2') != '"${EXPECTED_ROXYGEN_VERSION}"') {" \
