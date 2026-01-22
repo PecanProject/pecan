@@ -169,7 +169,9 @@ Since many of the PEcAn tools are designed to keep track of parameter uncertaint
 
 Create a new PFT entry by selecting Data \> PFTs and then clicking on *New PFT*.
 
-![](03_topical_pages/11_images/bety_pft_1.png) ![](03_topical_pages/11_images/bety_pft_2.png)
+![](03_topical_pages/11_images/bety_pft_1.png) 
+
+![](03_topical_pages/11_images/bety_pft_2.png)
 
 Give the PFT a descriptive name (e.g., temperate deciduous). PFTs are MODEL_TYPE specific, so choose your MODEL_TYPE from the pull down menu.
 
