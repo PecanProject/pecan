@@ -1,43 +1,71 @@
-#' Gap-fill meteorological CF NetCDF using fallback sources
+#' Gap-fill CF meteorological data using a fallback dataset
 #'
-#' High-level helper to gap-fill meteorological drivers using
-#' one or more fallback datasets (e.g. ERA5, ERA5-Land).
+#' Orchestrates coverage checking and conditional merging of a fallback
+#' CF NetCDF file into a primary CF NetCDF file. No files are modified
+#' in place.
 #'
-#' This function orchestrates coverage checking, fallback selection,
-#' and CF-safe merging, but delegates implementation details to
-#' lower-level helpers.
-#'
-#' @param cf_file character. Path to primary CF NetCDF file
-#' @param vars character vector. Meteorological variables to gap-fill
-#' @param fallback character vector. Fallback sources (e.g. "ERA5", "ERA5-Land")
+#' @param primary_cf character. Path to primary CF NetCDF file
+#' @param vars character vector. CF variable names to gap-fill
+#' @param fallback_cf character. Path to fallback CF NetCDF file
 #' @param out_file character. Path to output CF NetCDF file
+#' @param coverage_threshold numeric. Minimum acceptable coverage (0–1)
+#' @param align_time logical. Whether to align CF time axes before merging
 #'
-#' @return character. Path to the newly created CF NetCDF file
+#' @return character. Path to gap-filled CF NetCDF file
 #'
 #' @noRd
 metgapfill_with_fallback <- function(
-  cf_file,
+  primary_cf,
   vars,
-  fallback,
-  out_file
+  fallback_cf,
+  out_file,
+  coverage_threshold = 0.95,
+  align_time = FALSE
 ) {
 
-  # TODO(#3605): detect temporal coverage gaps
-  #   - use check_met_coverage_for_fallback()
-  #   - decide whether fallback is required
-
-  # TODO(#3605): resolve fallback source(s)
-  #   - ERA5 vs ERA5-Land
-  #   - priority order
-
-  # TODO(#3605): prepare fallback CF NetCDF
-  #   - reuse existing ERA5 helpers
-  #   - ensure CF compliance
-
-  # TODO(#3605): merge fallback into primary
-  #   - call merge_cf_met_files()
-
-  cli::cli_abort(
-    "metgapfill_with_fallback() is a design skeleton and not yet implemented"
+  # ---- validate inputs
+  stopifnot(
+    is.character(primary_cf),
+    is.character(fallback_cf),
+    is.character(out_file),
+    is.numeric(coverage_threshold),
+    coverage_threshold >= 0,
+    coverage_threshold <= 1
   )
+  # Ensure no accidental output creation
+  if (file.exists(out_file)) {
+    file.remove(out_file)
+  }
+
+  # ---- check coverage of primary dataset
+  coverage_info <- check_met_coverage_for_fallback(
+    cf_file = primary_cf,
+    threshold = coverage_threshold
+  )
+
+  fill_vars <- intersect(vars, coverage_info$fill_vars)
+  coverage  <- coverage_info$coverage
+
+  # ---- return primary file if no fallback is required
+  if (length(fill_vars) == 0) {
+    return(primary_cf)
+  }
+
+  # ---- perform gap-fill using fallback dataset
+  merged_cf <- PEcAn.data.atmosphere:::merge_cf_met_files(
+    primary_cf   = primary_cf,
+    secondary_cf = fallback_cf,
+    vars         = vars,
+    out_file     = out_file,
+    align_time   = align_time
+  )
+
+  merged_cf
 }
+
+# -------------------------------------------------------------------
+# Deferred work (intentionally out of scope for this function)
+# -------------------------------------------------------------------
+# TODO(#3605): resolve fallback source selection (ERA5 vs ERA5-Land)
+# TODO(#3605): prepare fallback CF NetCDF from raw data sources
+# TODO(#3605): wire into AmeriFlux_met_ensemble() and met.process()
