@@ -157,6 +157,10 @@ AmeriFlux_met_ensemble <- function(site_id,
       na = "NA"
     )
     
+    if (is.null(format)) {
+      format <- list()
+    }
+
     # prepare CF conversion
     site_info <- amerifluxr::amf_site_info()
     format$lat <- site_info$LOCATION_LAT[site_info$SITE_ID == site_id]
@@ -177,241 +181,24 @@ AmeriFlux_met_ensemble <- function(site_id,
         format = format,
         overwrite = overwrite
       )
-    
-    coverage_results <- check_met_coverage_for_fallback(
-      cf_file = cf_results$file,
-      threshold = threshold,
-      verbose = verbose
+    cf_results$file <- metgapfill_with_fallback(
+      primary_cf         = cf_results$file,
+      vars               = NULL,
+      fallback_cf        = NULL,
+      out_file           = file.path(
+        dirs$amf_gapfilled,
+        basename(cf_results$file)
+      ),
+      coverage_threshold = threshold,
+      align_time         = FALSE
     )
 
-    fill_vars <- coverage_results$fill_vars
+    gapfill_file <- cf_results$file
 
-    if (length(fill_vars) > 0) {
-      start_year <- lubridate::year(as.Date(start_date))
-      end_year <- lubridate::year(as.Date(end_date))
-      req_years <- start_year:end_year
-      
-      # find existing ERA5 files
-      era5_files <- list.files(dirs$era5_downloads, pattern = "^ERA5_\\d{4}\\.nc$", full.names = TRUE)
-      exist_years <- as.numeric(gsub(".*ERA5_(\\d{4})\\.nc", "\\1", basename(era5_files)))
-      
-      # check which years need download
-      dl_years <- c()
-      if (overwrite) {
-        dl_years <- req_years
-      } else {
-        dl_years <- req_years[!req_years %in% exist_years]
-        era5_var_map <- list(
-          "surface_solar_radiation_downwards" = "ssrd",
-          "volumetric_soil_water_layer_1" = "swvl1"
-        )
-        for (f in era5_files) {
-          year <- as.numeric(gsub(".*ERA5_(\\d{4})\\.nc", "\\1", basename(f)))
-          if (year %in% req_years) {  
-            tryCatch({
-              nc <- ncdf4::nc_open(f)
-              avail_vars <- names(nc$var)
-              ncdf4::nc_close(nc)
-              req_vars <- sapply(fill_vars, function(v) era5_var_map[[v]])
-              miss_vars <- req_vars[!req_vars %in% avail_vars]
-              if (length(miss_vars) > 0) {
-                dl_years <- c(dl_years, year)
-                if(verbose) {
-                  PEcAn.logger::logger.info(paste("ERA5", year, "missing vars:", paste(miss_vars, collapse=", ")))
-                }
-              }
-            }, error = function(e) {
-              dl_years <<- c(dl_years, year)
-              if(verbose) PEcAn.logger::logger.warn(paste("Cannot read ERA5", year, "- redownloading"))
-            })
-          }
-        }
-      }
-      dl_years <- unique(dl_years)
-      if (length(dl_years) == 0) {
-        if(verbose) PEcAn.logger::logger.info("All ERA5 files exist with required variables")
-      } else {
-        if(verbose) {
-          PEcAn.logger::logger.info(paste("Downloading ERA5 for years:", paste(sort(dl_years), collapse=", ")))
-        }
-        
-        dl_start_date <- paste0(min(dl_years), "-01-01")
-        dl_end_date <- paste0(max(dl_years), "-12-31")
-        lat <- format$lat
-        lon <- format$lon
-        
-        era5_files <- 
-          PEcAn.data.atmosphere::download.ERA5_cds(
-            outfolder = dirs$era5_downloads,
-            start_date = dl_start_date,
-            end_date = dl_end_date,
-            extent = c(lon - 0.375, lon + 0.375, lat - 0.375, lat + 0.375), # 3*3 grid
-            variables = fill_vars,
-            product_type = "reanalysis",
-            user = era5_user,
-            key = era5_key
-          )
-      }
-      if(verbose) {
-        PEcAn.logger::logger.info("Processing ERA5 data to CF format")
-      }
-      era5_cf_dirs <- 
-        PEcAn.data.atmosphere::extract.nc.ERA5(
-          slat = format$lat,
-          slon = format$lon,
-          in.path = dirs$era5_downloads,
-          start_date = start_date, 
-          end_date = end_date,    
-          outfolder = dirs$era5_cf,
-          in.prefix = "ERA5_",
-          newsite = site_id,
-          overwrite = TRUE,
-          verbose = verbose
-        )  
-      # merge ERA5 data with AmeriFlux CF file
-      if(verbose) {
-        PEcAn.logger::logger.info("Merging ERA5 data with AmeriFlux data")
-      }
-      era5_cf_file <- list.files(era5_cf_dirs[[1]], pattern = "\\.nc$", full.names = TRUE)[1]
-      # variable mapping from ERA5 to CF names
-      era5_map <- list(
-        "surface_solar_radiation_downwards" = "surface_downwelling_shortwave_flux_in_air",
-        "volumetric_soil_water_layer_1" = "volume_fraction_of_condensed_water_in_soil"
-      )
-      
-      nc_amf <- ncdf4::nc_open(cf_results$file, write = TRUE)
-      nc_era5 <- ncdf4::nc_open(era5_cf_file)
-      tryCatch({
-        amf_time <- ncdf4::ncvar_get(nc_amf, "time")
-        era5_time <- ncdf4::ncvar_get(nc_era5, "time") 
-        # convert AmeriFlux time (days since 1700-01-01) to seconds since 1970-01-01
-        amf_time_sec <- as.numeric(as.POSIXct(amf_time * 86400, origin = "1700-01-01", tz = "UTC"))
-        for (era5_var in fill_vars) {
-          cf_var <- era5_map[[era5_var]]
-          if (!cf_var %in% names(nc_era5$var)) {
-            if(verbose) PEcAn.logger::logger.warn(paste("ERA5 variable not found:", cf_var))
-            next
-          }
-          era5_data <- ncdf4::ncvar_get(nc_era5, cf_var)
-          if (cf_var %in% names(nc_amf$var)) {
-            amf_data <- ncdf4::ncvar_get(nc_amf, cf_var)
-            
-            na_idx <- which(is.na(amf_data))
-            if (length(na_idx) > 0) {
-              era5_interp <- stats::approx(era5_time, era5_data, 
-                                           xout = amf_time_sec[na_idx], 
-                                           rule = 2)$y
-              
-              # fill missing values with interpolated ERA5 data
-              amf_data[na_idx] <- era5_interp
-              ncdf4::ncvar_put(nc_amf, cf_var, amf_data)
-              
-              if(verbose) {
-                filled_count <- length(na_idx)
-                PEcAn.logger::logger.info(paste("Filled", filled_count, "missing values for", cf_var, "using ERA5 data"))
-                PEcAn.logger::logger.info(paste("Interpolated range:", paste(range(era5_interp, na.rm=TRUE), collapse=" to ")))
-              }
-            }
-          } else {
-            if(verbose) PEcAn.logger::logger.info(paste("Adding new variable from ERA5:", cf_var))
-            lat_dim <- nc_amf$dim$latitude
-            lon_dim <- nc_amf$dim$longitude
-            time_dim <- nc_amf$dim$time
-            var_units <- nc_era5$var[[cf_var]]$units
-            new_var <- ncdf4::ncvar_def(name = cf_var, units = var_units, 
-                                        dim = list(lon_dim, lat_dim, time_dim), 
-                                        missval = -999)
-            
-            nc_amf <- ncdf4::ncvar_add(nc_amf, new_var)
-            era5_interp <- stats::approx(era5_time, era5_data, 
-                                         xout = amf_time_sec, 
-                                         rule = 2)$y
-            ncdf4::ncvar_put(nc_amf, cf_var, era5_interp)
-            
-            if(verbose) {
-              PEcAn.logger::logger.info(paste("Added complete", cf_var, "variable from ERA5 data"))
-              PEcAn.logger::logger.info(paste("Added data range:", paste(range(era5_interp, na.rm=TRUE), collapse=" to ")))
-            }
-          }
-        }
-      }, finally = {
-        ncdf4::nc_close(nc_amf)
-        ncdf4::nc_close(nc_era5)
-      })
-    }
-    
-    # gap filling
-    if(verbose) {
-      PEcAn.logger::logger.info("Running gap filling")
-    }
-    gapfill_results <- 
-      PEcAn.data.atmosphere::metgapfill(
-        in.path = dirs$amf_cf,
-        in.prefix = sub("\\.\\d+$", "", tools::file_path_sans_ext(basename(cf_results$file))),
-        outfolder = dirs$amf_gapfilled,
-        start_date = start_date,
-        end_date = end_date,
-        overwrite = overwrite
-      )
-    
-    tryCatch({
-      # remove extra variables from gapfilled file that are not in CF file
-      gapfill_file <- gapfill_results$file
-      nc_cf <- ncdf4::nc_open(cf_results$file)
-      cf_vars <- names(nc_cf$var)
-      ncdf4::nc_close(nc_cf)
-      nc_gap <- ncdf4::nc_open(gapfill_file)
-      gap_vars <- names(nc_gap$var)
-      extra_vars <- setdiff(gap_vars, cf_vars)
-      ncdf4::nc_close(nc_gap)
-      
-      if (length(extra_vars) > 0) {
-        if (verbose) {
-          PEcAn.logger::logger.info(paste("removing variables from gapfill file:",
-                                          paste(extra_vars, collapse = ", ")))
-        }
-        temp_file <- tempfile(tmpdir = dirs$amf_gapfilled, fileext = ".nc")
-        nc_in <- ncdf4::nc_open(gapfill_file)
-        nc_out <- ncdf4::nc_create(
-          temp_file,
-          vars = nc_in$var[setdiff(names(nc_in$var), extra_vars)],
-          force_v4 = TRUE
-        )
-        global_atts <- ncdf4::ncatt_get(nc_in, 0)
-        for (att in names(global_atts)) {
-          ncdf4::ncatt_put(nc_out, 0, att, global_atts[[att]])
-        }
-        for (dim in names(nc_in$dim)) {
-          if (!dim %in% names(nc_out$dim)) {
-            ncdf4::ncvar_add(nc_out, nc_in$dim[[dim]])
-          }
-        }
-        for (v in names(nc_out$var)) {
-          data <- ncdf4::ncvar_get(nc_in, v)
-          ncdf4::ncvar_put(nc_out, v, data)
-          var_atts <- ncdf4::ncatt_get(nc_in, v)
-          for (att in names(var_atts)) {
-            ncdf4::ncatt_put(nc_out, v, att, var_atts[[att]])
-          }
-        }
-        ncdf4::nc_close(nc_in)
-        ncdf4::nc_close(nc_out)
-        file.remove(gapfill_file)
-        file.rename(temp_file, gapfill_file)
-      }
-    }, error = function(e) {
-      if (file.exists(temp_file)) file.remove(temp_file)
-      PEcAn.logger::logger.severe("variable filtering failed:", e$message)
-    })
-    
-    # generate ensembles
-    if(verbose) {
-      PEcAn.logger::logger.info(paste("Generating", n_ens, "ensemble members"))
-    }
     ensemble_results <- 
       PEcAn.data.atmosphere::met_temporal_downscale.Gaussian_ensemble(
         in.path = dirs$amf_gapfilled,
-        in.prefix = sub("\\.\\d+$", "", tools::file_path_sans_ext(basename(gapfill_results$file))),
+        in.prefix = sub("\\.\\d+$", "", tools::file_path_sans_ext(basename(gapfill_file))),
         outfolder = dirs$ensembles,
         input_met = gapfill_file,
         train_met = gapfill_file,

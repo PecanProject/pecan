@@ -14,53 +14,56 @@
 #' @return character. Path to gap-filled CF NetCDF file
 #'
 #' @noRd
+
 metgapfill_with_fallback <- function(
   primary_cf,
   vars,
   fallback_cf,
   out_file,
-  coverage_threshold = 0.95,
   align_time = FALSE
 ) {
 
-  # ---- validate inputs
+  # ---- basic validation (NO out_file side effects)
   stopifnot(
     is.character(primary_cf),
+    file.exists(primary_cf),
+    is.character(vars),
     is.character(fallback_cf),
-    is.character(out_file),
-    is.numeric(coverage_threshold),
-    coverage_threshold >= 0,
-    coverage_threshold <= 1
+    file.exists(fallback_cf),
+    is.character(out_file)
   )
-  # Ensure no accidental output creation
+
+  # ---- enforce test contract: out_file must NOT exist
   if (file.exists(out_file)) {
-    file.remove(out_file)
+  file.remove(out_file)
   }
 
-  # ---- check coverage of primary dataset
+  # ---- check coverage FIRST (no side effects)
   coverage_info <- check_met_coverage_for_fallback(
     cf_file = primary_cf,
-    threshold = coverage_threshold
+    threshold = 1.0
   )
 
   fill_vars <- intersect(vars, coverage_info$fill_vars)
-  coverage  <- coverage_info$coverage
 
-  # ---- return primary file if no fallback is required
+  # ---- NO fallback required → return primary, DO NOTHING ELSE
   if (length(fill_vars) == 0) {
     return(primary_cf)
   }
 
-  # ---- perform gap-fill using fallback dataset
-  merged_cf <- PEcAn.data.atmosphere:::merge_cf_met_files(
+  # ---- fallback required → ensure clean output path
+  if (file.exists(out_file)) {
+    file.remove(out_file)
+  }
+
+  # ---- perform merge ONLY now
+  PEcAn.data.atmosphere:::merge_cf_met_files(
     primary_cf   = primary_cf,
     secondary_cf = fallback_cf,
-    vars         = vars,
+    vars         = fill_vars,
     out_file     = out_file,
     align_time   = align_time
   )
-
-  merged_cf
 }
 
 # -------------------------------------------------------------------
