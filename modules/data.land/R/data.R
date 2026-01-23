@@ -79,18 +79,34 @@
 #' See also comments in soil_utils.R
 "soil_class"
 
-#' Crop-PFT mapping
+#' LandIQ PFT Mapping by CLASS Code
 #'
-#' A lookup table to assign each LandIQ `crop` into one of three PFT
-#' categories: "woody perennial crop", "non crop", or "herbaceous crop".
+#' A lookup table to assign each LandIQ CLASS code to a PFT category.
+#' This is the primary mapping used for harmonized multi-year data.
 #'
 #' @format A tibble with 2 columns:
 #' \describe{
-#'   \item{crop}{character; the exact LandIQ crop name}
-#'   \item{pft}{character; one of "woody perennial crop", "herbaceous crop", "non-crop"}
+#'   \item{CLASS}{character; the LandIQ CLASS code (e.g., "D", "F", "V")}
+#'   \item{pft}{character; one of "woody", "row", "hay", "rice", "idle", 
+#'              "semi-ag", "urban", "non-crop"}
 #' }
 #' @source data-raw/landiq_pft_map.R
+#' @seealso \code{\link{landiq_pft_subclass_overrides}} for SUBCLASS-level refinements
 "landiq_pft_map"
+
+#' LandIQ PFT Mapping Overrides by SUBCLASS
+#'
+#' A lookup table for specific SUBCLASS codes that require different PFT
+#' assignment than their parent CLASS. Used in conjunction with landiq_pft_map.
+#'
+#' @format A tibble with 3 columns:
+#' \describe{
+#'   \item{CLASS}{character; the LandIQ CLASS code}
+#'   \item{SUBCLASS}{character; the LandIQ SUBCLASS code}
+#'   \item{pft}{character; the PFT assignment for this specific combination}
+#' }
+#' @source data-raw/landiq_pft_map.R
+"landiq_pft_subclass_overrides"
 
 #' Fertilizer Nutrient Composition Table
 #' 
