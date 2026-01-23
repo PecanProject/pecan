@@ -793,6 +793,13 @@ The following tags can be used for state data assimilation. More detailed inform
   <Localization.FUN>Local.support</Localization.FUN>
   <scalef>1</scalef>
   <chains>5</chains>
+  <batch.settings>
+    <general.job>
+      <cores>28</cores>
+      <folder.num>40</folder.num>
+    </general.job>
+    <qsub.cmd>qsub -l h_rt=24:00:00 -l mem_per_core=4G -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub.cmd>
+  </batch.settings>
   <state.variables>
    <variable>
     <variable.name>AbvGrndWood</variable.name>
@@ -887,6 +894,8 @@ The following tags can be used for state data assimilation. More detailed inform
 * **scalef** : [optional] The scale parameter used for the localization operation, the smaller the value is, the sites are more isolated.
 * **chains** : [optional] The number of chains needed to be estimated during the MCMC sampling process.
 * **_NOTE:_** If TRUE, you must also assign a vector of trait names to pick.trait.params within the sda.enkf function.
+* **batch.settings** : [optional] The configurations are used to set up batch job submissions. It will be used only if you use the `qsub_sda` function for the SDA job submissions with a large number of sites (>500). The `general.job` contains the number of CPUs per job and the number of jobs you would like to submit to the entire SDA experiment (e.g., 8,000 sites with 40 folders will end up with 200 sites per job).
+The `qsub.cmd` contains the string for configuring extra qsub arguments.
 * **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format, with pre-specified variable name, unit, and range). Four variables can be assimilated so far: including Aboveground biomass (AbvGrndWood), LAI, SoilMoistFrac, and Soil carbon (TotSoilCarb).
 * **Obs_Prep** : [required] This section will be handled through the SDA_Obs_Assembler function, if you want to proceed with this function, this section is required.
 * **spin.up** : [required] start.date and end.date for model spin up.

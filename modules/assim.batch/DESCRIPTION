@@ -1,7 +1,7 @@
 Package: PEcAn.assim.batch
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.9.1
+Version: 1.9.1.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Istem", "Fer", role = c("aut", "cre"),
@@ -51,7 +51,7 @@ Imports:
     lqmm,
     mvtnorm
 Suggests:
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
 License: BSD_3_clause + file LICENSE
