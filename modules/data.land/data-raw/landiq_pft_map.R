@@ -1,37 +1,56 @@
-non_crop <- c(
-    "Flowers, Nursery and Christmas Tree Farms", "Greenhouse",
-    "Idle", "Managed Wetland", "Urban"
+#!/usr/bin/env Rscript
+# LandIQ PFT mapping
+#
+# This script creates a lookup table mapping LandIQ CLASS/SUBCLASS codes 
+# to PFT categories for use in the package.
+
+landiq_pft_map <- dplyr::tribble(
+  ~CLASS, ~pft,
+  # Woody perennial crops
+  "C",  "woody",  # Citrus and subtropical
+  "D",  "woody",  # Deciduous fruits and nuts
+  "V",  "woody",  # Vineyards
+  "YP", "woody",  # Young perennials
+  
+
+  # Herbaceous/row crops
+  "F",  "row",    # Field crops
+  "G",  "row",    # Grain and hay (predominantly row; some hay subclasses)
+  "P",  "row",    # Pasture (treated as row/herbaceous)
+  "T",  "row",    # Truck, nursery & berry crops (most are row)
+  
+  # Rice (special handling)
+  "R",  "rice",   # Rice
+  
+  # Non-cropland (excluded from SIPNET runs)
+  "I",  "idle",       # Idle land
+  "S",  "semi-ag",    # Semi-agricultural
+  "U",  "urban",      # Urban - generic
+  "UC", "urban",      # Urban - commercial
+  "UI", "urban",      # Urban - industrial
+  "UL", "urban",      # Urban - lawn
+  "UR", "urban",      # Urban - residential
+  "UV", "urban",      # Urban - vacant
+  "NB", "non-crop",   # Barren and wasteland
+  "NC", "non-crop",   # Native class
+  "NR", "non-crop",   # Riparian vegetation
+  "NV", "non-crop",   # Native vegetation
+  "NW", "non-crop",   # Water surface
+  "E",  "non-crop",   # Entry denied
+  "X",  "non-crop",   # Not cropped or unclassified
+  "Z",  "non-crop"    # Outside study area
 )
 
-woody_crop <- c(
-    "Almonds", "Apples", "Avocados", "Bush Berries", "Cherries",
-    "Citrus", "Dates", "Grapes", "Kiwis", "Miscellaneous Deciduous",
-    "Miscellaneous Subtropical Fruits", "Olives", "Peaches/Nectarines",
-    "Pears", "Pistachios", "Plums, Prunes and Apricots", "Pomegranates",
-    "Walnuts", "Young Perennials"
-)   
-
-herbaceous_crop <- c(
-    "Alfalfa and Alfalfa Mixtures", "Beans (Dry)", "Carrots", "Cole Crops",
-    "Corn, Sorghum and Sudan", "Cotton", "Lettuce/Leafy Greens",
-    "Melons, Squash and Cucumbers", "Miscellaneous Field Crops",
-    "Miscellaneous Grain and Hay", "Miscellaneous Grasses", "Miscellaneous Truck Crops",
-    "Mixed Pasture", "Onions and Garlic", "Peppers", "Potatoes and Sweet Potatoes",
-    "Rice", "Safflower", "Strawberries", "Sunflowers", "Tomatoes",
-    "Wheat", "Wild Rice"
+# Add SUBCLASS-level overrides where CLASS-level assignment is insufficient
+# For T (Truck crops): Bush berries and blueberries are woody
+landiq_pft_subclass_overrides <- dplyr::tribble(
+  ~CLASS, ~SUBCLASS, ~pft,
+  "T",    "19",      "woody",  # Bush berries
+  "T",    "28",      "woody",  # Blueberries
+  # G (Grain and hay): hay subclasses
+  "G",    "6",       "hay",    # Miscellaneous grain and hay
+  "G",    "7",       "hay"     # Mixed grain and hay
 )
 
-landiq_pft_map <- dplyr::bind_rows(
-    dplyr::tibble(
-        crop = woody_crops,
-        pft = "woody perennial crop"
-    ),
-    dplyr::tibble(
-        crop = non_crop,
-        pft = "non-crop"
-    ),
-    dplyr::tibble(
-        crop = herbaceous_crop,
-        pft = "herbaceous crop"
-    )
-)
+usethis::use_data(landiq_pft_map, overwrite = TRUE)
+usethis::use_data(landiq_pft_subclass_overrides, overwrite = TRUE)
