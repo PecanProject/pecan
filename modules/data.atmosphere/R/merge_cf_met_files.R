@@ -14,13 +14,13 @@
 #'
 #' @noRd
 
-  merge_cf_met_files <- function(
-    primary_cf,
-    secondary_cf,
-    vars,
-    out_file,
-    align_time = FALSE
-  ) {
+merge_cf_met_files <- function(
+  primary_cf,
+  secondary_cf,
+  vars,
+  out_file,
+  align_time = FALSE
+) {
 
   # TODO(#3605): align CF time axes using PEcAn.utils::cf2datetime()
   # TODO(#3605): error on non-overlapping time axes
@@ -33,7 +33,7 @@
   nc_secondary <- ncdf4::nc_open(secondary_cf)
   on.exit(ncdf4::nc_close(nc_secondary), add = TRUE)
 
-    # ---- extract and align CF time axes (minimal, non-resampling)
+  # ---- extract and align CF time axes (minimal, non-resampling)
   if (align_time) {
 
     # ---- dependency guard (CI-safe)
