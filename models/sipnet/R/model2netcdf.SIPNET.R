@@ -136,8 +136,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ## Setup outputs for netCDF file in appropriate units
     output <- list(
       "GPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp, "g/m2", "kg/m2") / timestep.s,
-      "NPP" = (PEcAn.utils::ud_convert(sub.sipnet.output$gpp, "g/m2", "kg/m2") -
-               PEcAn.utils::ud_convert(sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot, "g/m2", "kg/m2")) / timestep.s,
+      "NPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp - (sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot), "g/m2", "kg/m2") / timestep.s,
       "TotalResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rtot, "g/m2", "kg/m2") / timestep.s,
       "AutoResp" = (PEcAn.utils::ud_convert(sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot, "g/m2", "kg/m2")) / timestep.s,
       "HeteroResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rSoil - sub.sipnet.output$rRoot, "g/m2", "kg/m2") / timestep.s,
