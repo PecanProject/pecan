@@ -325,7 +325,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        # Hd deactivation energy for Jmax - FATES units: J/mol
        if(var == "Hd_Modified_Arrhenius_Jmax"){
          ncdf4::ncvar_put(nc=fates.param.nc, varid='fates_jmaxhd', start = ipft, count = 1,
-                          vals=PEcAn.utils::ud_convert(pft[v], "kJ/mol", "J/mol"))  ## convert from kJ/mol to J/mol (FATES units)
+                          vals = PEcAn.utils::ud_convert(pft[v], "kJ/mol", "J/mol"))
        }
        
        # deltaS Vcmax - BETY units:J/mol/K;  FATES units: J/mol/K
