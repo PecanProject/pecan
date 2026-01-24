@@ -329,6 +329,28 @@ sda.enkf.multisite <- function(settings,
     #reformatting params
     new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     # if it's not a restart run, we will generate the joint input design.
+    # following code tries to catch if there is any mismatch between
+    # samplingspace and site inputs.
+    # get the input names that are registered for sampling.
+    names.sampler <- names(settings$ensemble$samplingspace)
+    # remove parameters field from the list.
+    names.sampler <- names.sampler[-which(names.sampler == "parameters")]
+    mis.match.table <- settings %>% purrr::map(function(s){
+      # get the input names for the current site.
+      names.site.input <- names(s$run$inputs)
+      # check if there is any mismatch.
+      inds <- which(!names.sampler %in% names.site.input)
+      # if this site has missing inputs.
+      if (length(inds) > 0) {
+        return(data.frame(site_id = s$run$site$id, missed.input = names.sampler[inds]))
+      }
+    }) %>% dplyr::bind_rows()
+    # if we see any site that has missing inputs.
+    if (nrow(mis.match.table) > 0) {
+      PEcAn.logger::logger.info("There are sites that have missing inputs than the sampling space.")
+      return(mis.match.table)
+    }
+    
     # get the joint input design.
     input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[1]], 
                                                                       ensemble_samples = ensemble.samples, 
