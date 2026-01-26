@@ -1,7 +1,7 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn Package for Integration of the BioCro Model
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Chris", "Black", role = c("aut"),
@@ -29,7 +29,7 @@ Imports:
     rlang
 Suggests:
     BioCro,
-    knitr,
+    knitr (>= 1.50),
     testthat (>= 2.0.0),
     mockery (>= 0.3.0),
     PEcAn.DB,

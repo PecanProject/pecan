@@ -38,7 +38,7 @@ Imports:
 Suggests:
     ggmcmc,
     ggplot2,
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     mockery,
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2),

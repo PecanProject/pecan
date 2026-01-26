@@ -9,14 +9,20 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
 - Add function `PEcAn.MA::meta_analysis_standalone` to run meta-analysis without database or file IO.
 - Added Demo 03: Meta Analysis Quarto notebook (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) to demonstrate how to perform Bayesian meta-analysis and visualize posterior distributions using pre-generated trait data.
+- Added datasets to `PEcAn.data.land` 
+  *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
+  *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
+
 
 ### Fixed
 
 ### Changed
 - `assign.treatments` has been renamed to `assign_treatments` and moved from `PEcAn.utils` to `PEcAn.MA` since that's the only place where it's used.
 - With new `PEcAn.MA::meta_analysis_standalone` function, `PEcAn.MA::run.meta.analysis.pft` now saves all files all at once _after_ the complete meta-analysis runs (and only if it is successful, including prior and posterior checks), rather than saving intermediate objects (like "JAGS-ified" data) as they are created.
+- SDA workflows now maintain joint input sampling, via internal calls to `generate_joint_ensemble_design()` (#3634).
 
 
 

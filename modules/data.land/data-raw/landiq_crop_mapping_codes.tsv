@@ -1,0 +1,204 @@
+CLASS	class_name	SUBCLASS	subclass_name
+C	Citrus and subtropical	NA	Citrus and subtropical, subclass not specified
+C	Citrus and subtropical	1	Grapefruit
+C	Citrus and subtropical	2	Lemons
+C	Citrus and subtropical	3	Oranges
+C	Citrus and subtropical	4	Dates
+C	Citrus and subtropical	5	Avocados
+C	Citrus and subtropical	6	Olives
+C	Citrus and subtropical	7	Miscellaneous subtropical fruit
+C	Citrus and subtropical	8	Kiwis
+C	Citrus and subtropical	9	Jojoba
+C	Citrus and subtropical	10	Eucalyptus
+C	Citrus and subtropiscal	11	Mixed subtropical fruits
+D	Deciduous fruits and nuts	NA	Deciduous fruits and nuts, subclass not specified
+D	Deciduous fruits and nuts	1	Apples
+D	Deciduous fruits and nuts	2	Apricots
+D	Deciduous fruits and nuts	3	Cherries
+D	Deciduous fruits and nuts	5	Peaches and nectarines
+D	Deciduous fruits and nuts	6	Pears
+D	Deciduous fruits and nuts	7	Plums
+D	Deciduous fruits and nuts	8	Prunes
+D	Deciduous fruits and nuts	9	Figs
+D	Deciduous fruits and nuts	10	Miscellaneous deciduous
+D	Deciduous fruits and nuts	11	Mixed deciduous
+D	Deciduous fruits and nuts	12	Almonds
+D	Deciduous fruits and nuts	13	Walnuts
+D	Deciduous fruits and nuts	14	Pistachios
+D	Deciduous fruits and nuts	15	Pomegranates
+D	Deciduous fruits and nuts	16	Plums, Prunes or Apricots grouped for remote sensing only
+D	Deciduous fruits and nuts	17	Pecans
+E	Entry denied	NA	Entry denied
+F	Field crops	NA	Field crops, subclass not specified
+F	Field crops	1	Cotton
+F	Field crops	2	Safflower
+F	Field crops	3	Flax
+F	Field crops	4	Hops
+F	Field crops	5	Sugar beets
+F	Field crops	6	Corn (field & sweet)
+F	Field crops	7	Grain sorghum
+F	Field crops	8	Sudan
+F	Field crops	9	Castor beans
+F	Field crops	10	Beans (dry)
+F	Field crops	11	Miscellaneous field
+F	Field crops	12	Sunflowers
+F	Field crops	13	Hybrid sorghum/sudan
+F	Field crops	14	Millet
+F	Field crops	15	Sugar cane
+F	Field crops	16	Corn, Sorghum or Sudan grouped for remote sensing only
+G	Grain and hay crops	NA	Grain and hay crops, subclass not specified
+G	Grain and hay crops	1	Barley
+G	Grain and hay crops	2	Wheat
+G	Grain and hay crops	3	Oats
+G	Grain and hay crops	6	Miscellaneous grain and hay
+G	Grain and hay crops	7	Mixed grain and hay
+I	Idle	NA	Idle, subclass not specified
+I	Idle	1	Land not cropped the current or previous crop season, but cropped within the past three years
+I	Idle	2	new lands being prepared for crop production
+I	Idle	4	long term, land consistently idle for four or more years
+NB	Barren and Wasteland	NA	Barren and Wasteland, subclass not specified
+NB	Barren and Wasteland	1	Dry stream channels
+NB	Barren and Wasteland	2	Mine tailings
+NB	Barren and Wasteland	3	Barren land
+NB	Barren and Wasteland	4	Salt flats
+NB	Barren and Wasteland	5	Sand dunes
+NC	Native class - generic nomenclature	NA	Native class - generic nomenclature
+NR	Riparian vegetation	NA	Riparian vegetation, subclass not specified
+NR	Riparian vegetation	1	Marsh lands, tulies and sedges
+NR	Riparian vegetation	2	Natural highwater table meadow
+NR	Riparian vegetation	3	Trees, shrubs or other larger stream side or watercourse vegetation
+NR	Riparian vegetation	4	Seasonal duck marsh, dry or only partially wet during summer
+NR	Riparian vegetation	5	Permanent duck marsh, flooded during summer
+NV	Native vegetation	NA	Native Vegetation, subclass not specified
+NV	Native vegetation	1	Grassland
+NV	Native vegetation	2	Light brush
+NV	Native vegetation	3	Medium brush
+NV	Native vegetation	4	Heavy brush
+NV	Native vegetation	5	Brush and timber
+NV	Native vegetation	6	Forest
+NV	Native vegetation	7	Oak woodland
+NW	Water Surface	NA	Water Surface, subclass not specified
+NW	Water Surface	1	River or stream (natural fresh water channels)
+NW	Water Surface	2	Water channel (all sizes - ditches and canals - delivering water for irrigation and urban use - e.g. State Water Project, Central Valley Project, water district canals, etc.)
+NW	Water Surface	3	Water channel (all sizes - ditches and canals - for removing on-farm drainage water -   surface runoff and subsurface drainage - e.g. Colusa drain, drainage ditches in Imperial)
+NW	Water Surface	4	Freshwater lake, reservoir, or pond (all sizes, includes ponds for stock, recreation, groundwater recharge, managed wetlands, on-farm storage, etc.)
+NW	Water Surface	5	Brackish and saline water (includes areas in estuaries, inland water bodies, the ocean, etc.)
+NW	Water Surface	6	Wastewater pond (dairy, sewage, cannery, winery, etc.)
+NW	Water Surface	7	Paved water conveyance channels within urban areas (mainly for flood control)
+P	Pasture	NA	Pasture, subclass not specified
+P	Pasture	1	Alfalfa & alfalfa mixtures
+P	Pasture	2	Clover
+P	Pasture	3	Mixed pasture
+P	Pasture	4	Native pasture
+P	Pasture	5	Induced high water table native pasture
+P	Pasture	6	Miscellaneous grasses
+P	Pasture	7	Turf farms
+P	Pasture	8	Bermuda grass
+P	Pasture	9	Rye grass
+P	Pasture	10	Klein grass
+R	Rice	NA	Rice, subclass not specified
+R	Rice	1	Rice
+R	Rice	2	Wild Rice
+S	Semi-agricultural & incidental to agriculture	NA	Semi-agricultural & incidental to agriculture, subclass not specified
+S	Semi-agricultural & incidental to agriculture	1	Farmsteads (includes a farm residence)
+S	Semi-agricultural & incidental to agriculture	2	Livestock feed lot operations
+S	Semi-agricultural & incidental to agriculture	3	Dairies
+S	Semi-agricultural & incidental to agriculture	4	Poultry farms
+S	Semi-agricultural & incidental to agriculture	5	Farmsteads (without a farm residence)
+S	Semi-agricultural & incidental to agriculture	6	Miscellaneous semi-agricultural (small roads, ditches, non-planted areas of cropped fields)
+T	Truck, nursery & berry crops	NA	Truck, nursery & berry crops, subclass not specified
+T	Truck, nursery & berry crops	1	Artichokes
+T	Truck, nursery & berry crops	2	Asparagus
+T	Truck, nursery & berry crops	3	Beans (green)
+T	Truck, nursery & berry crops	4	Cole crops (mixture of 22-25)
+T	Truck, nursery & berry crops	6	Carrots
+T	Truck, nursery & berry crops	7	Celery
+T	Truck, nursery & berry crops	8	Lettuce (all types)
+T	Truck, nursery & berry crops	9	Melons, squash, and cucumbers (all types)
+T	Truck, nursery & berry crops	10	Onions & garlic
+T	Truck, nursery & berry crops	11	Peas
+T	Truck, nursery & berry crops	12	Potatoes
+T	Truck, nursery & berry crops	13	Sweet potatoes
+T	Truck, nursery & berry crops	14	Spinach
+T	Truck, nursery & berry crops	15	Tomatoes (processing)
+T	Truck, nursery & berry crops	16	Flowers, nursery & Christmas tree farms
+T	Truck, nursery & berry crops	17	Mixed (four or more)
+T	Truck, nursery & berry crops	18	Miscellaneous truck
+T	Truck, nursery & berry crops	19	Bush berries
+T	Truck, nursery & berry crops	20	Strawberries
+T	Truck, nursery & berry crops	21	Peppers (chili, bell, etc.)
+T	Truck, nursery & berry crops	22	Broccoli
+T	Truck, nursery & berry crops	23	Cabbage
+T	Truck, nursery & berry crops	24	Cauliflower
+T	Truck, nursery & berry crops	25	Brussels sprouts
+T	Truck, nursery & berry crops	26	Tomatoes (market)
+T	Truck, nursery & berry crops	27	Greenhouse
+T	Truck, nursery & berry crops	28	Blueberries
+T	Truck, nursery & berry crops	29	Asian leafy vegetables
+T	Truck, nursery & berry crops	30	Lettuce or Leafy Greens grouped for remote sensing only
+T	Truck, nursery & berry crops	31	Potato or Sweet potato grouped for remote sensing only
+T	Truck, nursery & berry crops	32	Tomato all for remote sensing
+U	Urban - generic nomenclature	NA	Urban - generic nomenclature
+UC	Commercial	NA	Commercial, subclass not specified
+UC	Commercial	1	Offices, retailers, etc.
+UC	Commercial	2	Hotels
+UC	Commercial	3	Motels
+UC	Commercial	4	Recreation vehicle parking, camp sites
+UC	Commercial	5	Institutions (hospitals, prisons, reformatories, asylums, etc., having a reasonably constant 24-hour resident population)
+UC	Commercial	6	Schools (yards to be mapped separately if large enough)
+UC	Commercial	7	Municipal auditoriums, theaters, churches, buildings and stands associated with race tracks, football stadiums, baseball parks, rodeo arenas, amusement parks, etc.
+UC	Commercial	8	Miscellaneous highwater use (to be used to indicate a high water use condition not covered by the above categories)
+UI	Industrial	NA	Industrial, subclass not specified
+UI	Industrial	1	Manufacturing, assembling, and general processing
+UI	Industrial	2	Extractive industries (oil fields, rock quarries, gravel pits, rock and gravel processing plants, etc.)
+UI	Industrial	3	Storage and distribution (warehouses, substations, railroad marshalling yards, tank farms, etc.)
+UI	Industrial	6	Saw mills
+UI	Industrial	7	Oil refineries
+UI	Industrial	8	Paper mills
+UI	Industrial	9	Meat packing plants
+UI	Industrial	10	Steel and aluminum mills
+UI	Industrial	11	Fruit and vegetable canneries and general food processing
+UI	Industrial	12	Miscellaneous highwater use (to be used to indicate a high water use condition not covered by other categories.)
+UI	Industrial	13	Sewage treatment plant including ponds
+UI	Industrial	14	Waste accumulation sites (public dumps, sewage sludge sites, landfill and hazardous waste sites, etc.)
+UI	Industrial	15	Wind farms, solar collector farms, etc.
+UL	Lawn	NA	Lawn, subclass not specified
+UL	Lawn	1	Lawn area – irrigated
+UL	Lawn	2	Golf course – irrigated
+UL	Lawn	3	Ornamental landscape (excluding lawns) – irrigated
+UL	Lawn	4	Cemeteries – irrigated
+UL	Lawn	5	Cemeteries - not irrigated
+UR	Urban residential	NA	Urban residential, subclass not specified
+UR	Urban residential	1	Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)
+UR	Urban residential	2	Single family dwellings with a density of 1 unit/acre up to 8+ units per acre
+UR	Urban residential	3	Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)
+UR	Urban residential	4	Trailer courts
+UR	Urban residential	11	Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.), 0% to 25% area irrigated
+UR	Urban residential	12	Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.), 26% to 50% area irrigated
+UR	Urban residential	13	Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.), 51% to 75% area irrigated
+UR	Urban residential	14	Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.), 76% to 100% area irrigated
+UR	Urban residential	21	Single family dwellings with a density of 1 unit/acre up to 8+ units per acre, 0% to 25% area irrigated
+UR	Urban residential	22	Single family dwellings with a density of 1 unit/acre up to 8+ units per acre, 26% to 50% area irrigated
+UR	Urban residential	23	Single family dwellings with a density of 1 unit/acre up to 8+ units per acre, 51% to 75% area irrigated
+UR	Urban residential	24	Single family dwellings with a density of 1 unit/acre up to 8+ units per acre, 76% to 100% area irrigated
+UR	Urban residential	31	Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.), 0% to 25% area irrigated
+UR	Urban residential	32	Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.), 26% to 50% area irrigated
+UR	Urban residential	33	Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.), 51% to 75% area irrigated
+UR	Urban residential	34	Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.), 76% to 100% area irrigated
+UR	Urban residential	41	Trailer courts, 0% to 25% area irrigated
+UR	Urban residential	42	Trailer courts, 26% to 50% area irrigated
+UR	Urban residential	43	Trailer courts, 51% to 75% area irrigated
+UR	Urban residential	44	Trailer courts, 76% to 100% area irrigated
+UV	Vacant	NA	Vacant, subclass not specified
+UV	Vacant	1	Unpaved areas (vacant lots, graveled surfaces, play yards, developable open lands within urban areas, etc.)
+UV	Vacant	3	Railroad right of way
+UV	Vacant	4	Paved areas (parking lots, paved roads, oiled surfaces, flood control channels, tennis court areas, auto sales lots, etc.)
+UV	Vacant	6	Airport runways
+UV	Vacant	7	Land in urban area that is not developable
+V	Vineyards	NA	Vineyards, subclass not specified
+V	Vineyards	1	Table grapes
+V	Vineyards	2	Wine grapes
+V	Vineyards	3	Raisin grapes
+X	Not cropped or unclassified	NA	Not cropped or unclassified
+YP	Young perennial	NA	Young perennial
+Z	Outside of study area	NA	Outside of study area

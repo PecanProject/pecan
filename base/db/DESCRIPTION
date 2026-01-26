@@ -64,7 +64,7 @@ Suggests:
     bit64,
     data.table,
     here,
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     mockery (>= 0.4.3),
     RPostgreSQL,
     RPostgres,
