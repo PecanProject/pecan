@@ -160,13 +160,15 @@ test_that("extract_soil_gssurgo handles different buffer radii", {
     depths = c(0, 0.15)
   )
   
-  expect_false(is.null(res_small))
-  expect_false(is.null(res_large))
   expect_type(res_small, "list")
   expect_type(res_large, "list")
 })
 
-test_that("extract_soil_gssurgo component-level variability is preserved", {
+test_that("extract_soil_gssurgo generates distinct ensemble members from Dirichlet sampling", {
+  # This test verifies that the Dirichlet-based texture sampling produces 
+
+  # variability across ensemble members, reflecting uncertainty in soil properties.
+  # Different ensemble files should have different texture values (not identical).
   skip_on_cran()
   skip_on_ci()
   tmp_outdir <- withr::local_tempdir("gssurgo_test_")
@@ -232,4 +234,29 @@ test_that("extract_soil_gssurgo requires depths to start with 0", {
   )
   
   expect_false(is.null(res))
+})
+
+test_that("gssurgo_fetch_area returns raw soil data for inspection", {
+  skip_on_cran()
+  skip_on_ci()
+  
+  result <- gssurgo_fetch_area(
+    lat = 40.1164,
+    lon = -88.2434,
+    radius = 500,
+    depths = c(0, 0.15, 0.30)
+  )
+  
+  expect_type(result, "list")
+  expect_true("soilprop" %in% names(result))
+  expect_true("mukey_counts" %in% names(result))
+  expect_true("depths_cm" %in% names(result))
+  
+  # Validate raw data structure
+  expect_s3_class(result$soilprop, "data.frame")
+  expect_true(all(c("sandtotal_r", "silttotal_r", "claytotal_r", 
+                    "mukey", "cokey") %in% names(result$soilprop)))
+  
+  # Values should be in original units (percentages, not fractions)
+  expect_true(all(result$soilprop$sandtotal_r <= 100, na.rm = TRUE))
 })
