@@ -2,48 +2,67 @@
 % Please edit documentation in R/landiq2std.R
 \name{landiq2std}
 \alias{landiq2std}
-\title{Convert a LandIQ Shapefile into a Standardized Format consisting of
-a GeoPackage file to store geospatial information and an associated
-CSV file with attributes}
+\title{Convert a LandIQ Shapefile to Standardized Format}
 \usage{
-landiq2std(input_file, output_gpkg, output_csv)
+landiq2std(
+  input_file,
+  output_gpkg,
+  output_csv,
+  year = NULL,
+  overwrite = TRUE,
+  crs_output = 3310L
+)
 }
 \arguments{
-\item{input_file}{Character. Path to the input Shapefile
-(GeoPackage created by shp2gpkg is also valid)}
+\item{input_file}{Character. Path to the input Shapefile or GeoPackage.}
 
-\item{output_gpkg}{Character. Path to the output GeoPackage}
+\item{output_gpkg}{Character. Path to the output GeoPackage.}
 
 \item{output_csv}{Character. Path to the output CSV.}
+
+\item{year}{Integer. Data year. If NULL, extracted from filename.}
+
+\item{overwrite}{Logical. If TRUE, overwrites existing files.}
+
+\item{crs_output}{Integer. EPSG code for output GeoPackage CRS. Default 3310.}
 }
 \value{
-Invisibly returns a list with paths to the output files.
+Invisibly returns a list with paths to output files and summary statistics.
 }
 \description{
-This function reads a LandIQ crop map shapefile downloaded from
-https://data.cnra.ca.gov/dataset/statewide-crop-mapping and processes the data into
-a standardized GeoPackage and CSV format.
+Reads a LandIQ crop map shapefile (harmonized format, 2016+) and converts it 
+to a standardized GeoPackage and CSV format suitable for downstream analysis.
 }
 \details{
-This function:
-- Reads a Shapefile using the `sf` package.
-- Calculates centroids to extract latitude and longitude.
-- Converts `Acres` column to hectares (`ha`).
-- Extracts crop information and assigns a PFT (Plant Functional Type).
-- Outputs a standardized GeoPackage with columns `id`, `geometry`, `lat`, `lon`, and `area_ha`.
-- Outputs a CSV with columns `year`, `crop`, `pft`, `source`, and `notes`.
+This function standardizes LandIQ shapefiles (harmonized format, 2016+)
+into a consistent format for downstream analysis.
 
-Note: TODO provide crop-->PFT mapping as an external file using either
-defaults stored with the PEcAn.data.land package or an optional custom
-mapping
+**Output GeoPackage** contains spatial data:
+- `site_id`: Unique identifier (LandIQ UniqueID)
+- `geom`: Polygon geometry (California Albers EPSG:3310)
+- `lat`, `lon`: Centroid coordinates (WGS84)
+- `area_ha`: Area in hectares
+- `county`: County name
+
+**Output CSV** contains attribute data:
+- `site_id`, `lat`, `lon`, `year`, `county`
+- `class`, `subclass`: LandIQ classification codes
+- `crop`: Human-readable crop name
+- `pft`: Plant Functional Type
+- `multiuse`: Planting sequence code (S=single, D=double, etc.)
+- `source`, `notes`: Provenance metadata
+
+PFT mapping uses `landiq_pft_map` for CLASS-level assignment and
+`landiq_pft_subclass_overrides` for SUBCLASS-level exceptions (e.g.
+bush berries and blueberries are woody, not row crops).
 }
 \examples{
-# Specify input and output file paths
-input_file <- "path/to/landiq.shp"
-output_gpkg <- "path/to/your_output.gpkg"
-output_csv <- "path/to/your_output.csv"
-
-# Run the conversion function
-landiq2std(input_file, output_gpkg, output_csv)
+\dontrun{
+landiq2std(
+  input_file = "i15_Crop_Mapping_2021.shp",
+  output_gpkg = "ca_fields_2021.gpkg",
+  output_csv = "ca_fields_2021.csv"
+)
+}
 
 }
