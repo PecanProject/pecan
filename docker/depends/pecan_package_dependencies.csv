@@ -139,18 +139,18 @@
 "jsonlite","*","modules/data.remote","Suggests",FALSE
 "jsonvalidate","*","modules/data.land","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
-"knitr","*","base/visualization","Suggests",FALSE
-"knitr","*","models/biocro","Suggests",FALSE
-"knitr","*","models/maat","Suggests",FALSE
-"knitr","*","modules/data.atmosphere","Suggests",FALSE
-"knitr","*","modules/priors","Suggests",FALSE
-"knitr",">= 1.42","base/db","Suggests",FALSE
-"knitr",">= 1.42","base/qaqc","Suggests",FALSE
-"knitr",">= 1.42","modules/allometry","Suggests",FALSE
-"knitr",">= 1.42","modules/assim.batch","Suggests",FALSE
-"knitr",">= 1.42","modules/meta.analysis","Suggests",FALSE
-"knitr",">= 1.42","modules/photosynthesis","Suggests",FALSE
-"knitr",">= 1.42","modules/rtm","Suggests",FALSE
+"knitr",">= 1.50","base/db","Suggests",FALSE
+"knitr",">= 1.50","base/qaqc","Suggests",FALSE
+"knitr",">= 1.50","base/visualization","Suggests",FALSE
+"knitr",">= 1.50","models/biocro","Suggests",FALSE
+"knitr",">= 1.50","models/maat","Suggests",FALSE
+"knitr",">= 1.50","modules/allometry","Suggests",FALSE
+"knitr",">= 1.50","modules/assim.batch","Suggests",FALSE
+"knitr",">= 1.50","modules/data.atmosphere","Suggests",FALSE
+"knitr",">= 1.50","modules/meta.analysis","Suggests",FALSE
+"knitr",">= 1.50","modules/photosynthesis","Suggests",FALSE
+"knitr",">= 1.50","modules/priors","Suggests",FALSE
+"knitr",">= 1.50","modules/rtm","Suggests",FALSE
 "lattice","*","modules/meta.analysis","Imports",FALSE
 "linkages","*","models/linkages","Suggests",FALSE
 "lqmm","*","modules/assim.batch","Imports",FALSE
