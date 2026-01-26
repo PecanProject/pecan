@@ -1,6 +1,9 @@
 #' Convert Shapefile to GeoPackage
 #'
 #' This function converts a Shapefile to a GeoPackage using the `sf` package.
+#' It reads a Shapefile, converts it to an `sf` object, and writes it to a 
+#' GeoPackage. The `sf` package handles the conversion and ensures spatial 
+#' data integrity.
 #'
 #' @param input_shp Character. Path to the input Shapefile (e.g., `"data/myfile.shp"`).
 #' @param output_gpkg Character. Path to the output GeoPackage (e.g., `"output/myfile.gpkg"`).
@@ -8,9 +11,6 @@
 #' @param overwrite Logical. Whether to overwrite an existing layer in the GeoPackage. Defaults to `TRUE`.
 #'
 #' @return Invisibly returns the path to the GeoPackage (`output_gpkg`) upon successful conversion.
-#' @details
-#' This function reads a Shapefile, converts it to an `sf` object, and writes it to a GeoPackage.
-#' The `sf` package handles the conversion and ensures spatial data integrity.
 #'
 #' @examples
 #' # Convert 'roads.shp' to 'roads.gpkg' with the default layer name
