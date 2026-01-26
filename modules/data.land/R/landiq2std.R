@@ -1,145 +1,256 @@
-#' Convert a LandIQ Shapefile into a Standardized Format consisting of
-#' a GeoPackage file to store geospatial information and an associated
-#' CSV file with attributes
+#' Convert a LandIQ Shapefile to Standardized Format
 #'
-#' This function reads a LandIQ crop map shapefile downloaded from
-#' https://data.cnra.ca.gov/dataset/statewide-crop-mapping and processes the data into
-#' a standardized GeoPackage and CSV format.
+#' Reads a LandIQ crop map shapefile (harmonized format, 2016+) and converts it 
+#' to a standardized GeoPackage and CSV format suitable for downstream analysis.
 #'
-#' @param input_file Character. Path to the input Shapefile
-#' (GeoPackage created by shp2gpkg is also valid)
-#' @param output_gpkg Character. Path to the output GeoPackage
+#' @param input_file Character. Path to the input Shapefile or GeoPackage.
+#' @param output_gpkg Character. Path to the output GeoPackage.
 #' @param output_csv Character. Path to the output CSV.
+#' @param year Integer. Data year. If NULL, extracted from filename.
 #' @param overwrite Logical. If TRUE, overwrites existing files.
+#' @param crs_output Integer. EPSG code for output GeoPackage CRS. Default 3310.
 #'
-#' @return Invisibly returns a list with paths to the output files.
+#' @return Invisibly returns a list with paths to output files and summary statistics.
+#'
 #' @details
-#' This function:
-#' - Reads a Shapefile using the `sf` package.
-#' - Calculates centroids to extract latitude and longitude.
-#' - Converts `Acres` column to hectares (`ha`).
-#' - Extracts crop information and assigns a PFT (Plant Functional Type).
-#' - Outputs a standardized GeoPackage (geometry in California Albers,
-#'   EPSG:3310) with columns `id`, `geometry`, `lat`, `lon`, and `area_ha`.
-#' - Outputs a CSV with columns `year`, `crop`, `pft`, `source`, and `notes`.
+#' This function standardizes LandIQ shapefiles (harmonized format, 2016+)
+#' into a consistent format for downstream analysis.
 #'
-#' Note: TODO provide crop-->PFT mapping as an external file using either
-#' defaults stored with the PEcAn.data.land package or an optional custom
-#' mapping
+#' **Output GeoPackage** contains spatial data:
+#' - `site_id`: Unique identifier (LandIQ UniqueID)
+#' - `geom`: Polygon geometry (California Albers EPSG:3310)
+#' - `lat`, `lon`: Centroid coordinates (WGS84)
+#' - `area_ha`: Area in hectares
+#' - `county`: County name
+#'
+#' **Output CSV** contains attribute data:
+#' - `site_id`, `lat`, `lon`, `year`, `county`
+#' - `class`, `subclass`: LandIQ classification codes
+#' - `crop`: Human-readable crop name
+#' - `pft`: Plant Functional Type
+#' - `multiuse`: Planting sequence code (S=single, D=double, etc.)
+#' - `source`, `notes`: Provenance metadata
+#'
+#' PFT mapping uses `landiq_pft_map` for CLASS-level assignment and
+#' `landiq_pft_subclass_overrides` for SUBCLASS-level exceptions (e.g.
+#' bush berries and blueberries are woody, not row crops).
 #'
 #' @examples
-#' # Specify input and output file paths
-#' input_file <- "path/to/landiq.shp"
-#' output_gpkg <- "path/to/your_output.gpkg"
-#' output_csv <- "path/to/your_output.csv"
+#' \dontrun{
+#' landiq2std(
+#'   input_file = "i15_Crop_Mapping_2021.shp",
+#'   output_gpkg = "ca_fields_2021.gpkg",
+#'   output_csv = "ca_fields_2021.csv"
+#' )
+#' }
 #'
-#' # Run the conversion function
-#' landiq2std(input_file, output_gpkg, output_csv)
-#'
+#' @importFrom sf st_read st_write st_transform st_centroid st_coordinates
+#' @importFrom sf st_drop_geometry st_zm st_geometry
+#' @importFrom dplyr mutate select left_join coalesce rename
 #' @export
-landiq2std <- function(input_file, output_gpkg, output_csv, overwrite = TRUE) {
-  # Check input file format
-  # If shapefile, convert to GeoPackage
-  if (grepl(pattern = "\\.shp$", input_file)) {
-    # read in, repair geometries, write out repaired geopackage
-    tempfile <- tempfile(fileext = ".gpkg")
-    shp2gpkg(input_file, tempfile, overwrite = TRUE)
-    input_file <- tempfile # now gpkg is input file
-    on.exit(unlink(input_file), add = TRUE)
+landiq2std <- function(input_file,
+                       output_gpkg,
+                       output_csv,
+                       year = NULL,
+                       overwrite = TRUE,
+                       crs_output = 3310L) {
+
+  # ---------------------------------------------------------------------------
+  # Input validation
+  # ---------------------------------------------------------------------------
+  if (!file.exists(input_file)) {
+    PEcAn.logger::logger.severe("Input file does not exist: ", input_file)
   }
 
-  # Read the Shapefile
-  landiq_polygons <- sf::st_read(input_file, quiet = FALSE)
+  original_filename <- basename(input_file)
 
-  # Determine crop year from column name
-  crop_col <- grep("Crop[0-9]{4}", colnames(landiq_polygons), value = TRUE)
-  year <- gsub("Crop", "", crop_col)
-  # Check required columns
-  required_cols <- c("Acres", crop_col, "Source", "Comments", "County", "geom")
-  missing_cols <- setdiff(required_cols, colnames(landiq_polygons))
+  # ---------------------------------------------------------------------------
+  # Convert shapefile to GeoPackage (with geometry repair)
+  # ---------------------------------------------------------------------------
+  if (grepl("\\.shp$", input_file, ignore.case = TRUE)) {
+    temp_gpkg <- tempfile(fileext = ".gpkg")
+    PEcAn.logger::logger.info("Converting shapefile to GeoPackage with geometry repair...")
+    shp2gpkg(input_file, temp_gpkg, overwrite = TRUE)
+    input_file <- temp_gpkg
+    on.exit(unlink(temp_gpkg), add = TRUE)
+  }
+
+  # ---------------------------------------------------------------------------
+  # Read and validate input
+  # ---------------------------------------------------------------------------
+  landiq <- sf::st_read(input_file, quiet = TRUE) |>
+    sf::st_zm(drop = TRUE, what = "ZM")
+
+  col_names <- names(landiq)
+  PEcAn.logger::logger.info(
+    "Read ", nrow(landiq), " features with ", length(col_names), " columns"
+  )
+
+  # ---------------------------------------------------------------------------
+  # Validate harmonized format (2016+)
+  # ---------------------------------------------------------------------------
+  required_cols <- c("CLASS1", "UniqueID")
+  missing_cols <- setdiff(required_cols, col_names)
+
   if (length(missing_cols) > 0) {
-    PEcAn.logger::logger.error("Input file is missing the following columns: ", paste(missing_cols, collapse = ", "))
-  }
-
-  landiq_polygons_updated <- landiq_polygons |>
-    sf::st_transform(4326) |>
-    dplyr::mutate(
-      coords = sf::st_coordinates(sf::st_centroid(geom))
-    ) |>
-    dplyr::mutate(
-      year = year,
-      lon = coords[, "X"],
-      lat = coords[, "Y"],
-      area_ha = PEcAn.utils::ud_convert(Acres, "acre", "ha")
-    ) |>
-    dplyr::select(-coords) |>
-    # digest step used to create unique site_ids requires rowwise
-    dplyr::rowwise() |>
-    mutate(
-      site_id = digest::digest(geom, algo = "xxhash64")
-    ) |>
-    dplyr::rename(county = County)
-
-  # Process data for GeoPackage in California Albers (EPSG:3310)
-  gpkg_data <- landiq_polygons_updated |>
-    dplyr::select(site_id, geom, lat, lon, area_ha, county) |>
-    sf::st_transform(3310)   # EPSG:3310 = NAD83 / California Albers
-
-  # Process data for CSV
-  csv_data <- landiq_polygons_updated |>
-    tidyr::as_tibble() |>
-    dplyr::mutate(
-      crop = .data[[crop_col]]
-    ) |>
-    # join to external lookup table for pft
-    dplyr::left_join(landiq_pft_map, by = "crop") |>
-    # default any missing pft to "annual crop"
-    dplyr::mutate(
-      pft = dplyr::coalesce(pft, "annual crop")
-    ) |>
-    dplyr::rename(
-      source = Source,
-      notes = Comments
-    ) |>
-    dplyr::select(site_id, lat, lon, year, crop, pft, source, notes)
-
-  # Warn about crops without a PFT
-  unassigned_pft <- csv_data |>
-    dplyr::filter(grepl("no PFT for", pft)) |>
-    dplyr::distinct(crop, pft)
-  if (nrow(unassigned_pft) > 0) {
-    PEcAn.logger::logger.warn( 
-      "The following crops do not have a PFT assigned:",
-      paste(unassigned_pft$crop, collapse = ", ")
+    PEcAn.logger::logger.severe(
+      "Missing required columns: ", paste(missing_cols, collapse = ", "),
+      "\nThis function requires harmonized format (2016+) with CLASS1/SUBCLASS1/UniqueID."
     )
   }
 
-  # Write outputs
-  if(!overwrite) {
-    if (file.exists(output_gpkg)) {
-      PEcAn.logger::logger.error("Output GeoPackage already exists. Set overwrite = TRUE to overwrite.")
+  # ---------------------------------------------------------------------------
+  # Extract year
+  # ---------------------------------------------------------------------------
+  if (is.null(year)) {
+    year_match <- regmatches(original_filename, regexpr("[0-9]{4}", original_filename))
+    if (length(year_match) == 0 || nchar(year_match) != 4) {
+      PEcAn.logger::logger.severe(
+        "Cannot extract year from filename: ", original_filename,
+        "\nProvide year explicitly via the `year` parameter."
+      )
     }
-    if (file.exists(output_csv)) {
-      PEcAn.logger::logger.error("Output CSV already exists. Set overwrite = TRUE to overwrite.")
-    }
-  } else {
-    if (file.exists(output_gpkg)) {
-      PEcAn.logger::logger.info("Overwriting existing file", output_gpkg)
-      file.remove(output_gpkg, showWarnings = FALSE)
-    }
-    if (file.exists(output_csv)) {
-      PEcAn.logger::logger.info("Overwriting existing file", output_csv)
-      file.remove(output_csv, showWarnings = FALSE)
-    }
+    year <- as.integer(year_match)
+  }
+  PEcAn.logger::logger.info("Processing LandIQ data for year: ", year)
+
+  # ---------------------------------------------------------------------------
+  # Standardize geometry column name
+  # ---------------------------------------------------------------------------
+  geom_col <- attr(landiq, "sf_column")
+  if (geom_col != "geom") {
+    names(landiq)[names(landiq) == geom_col] <- "geom"
+    sf::st_geometry(landiq) <- "geom"
   }
 
-  sf::st_write(gpkg_data,
-    output_gpkg,
-    layer = "sites", # analogous to BETYdb table name
-    quiet = FALSE
+  # ---------------------------------------------------------------------------
+  # Find columns (case-insensitive)
+  # ---------------------------------------------------------------------------
+  find_col <- function(pattern, cols, required = FALSE) {
+    match <- grep(pattern, cols, ignore.case = TRUE, value = TRUE)
+    if (length(match) == 0) {
+      if (required) {
+        PEcAn.logger::logger.severe("Required column not found: ", pattern)
+      }
+      return(NA_character_)
+    }
+    match[1]
+  }
+
+  acres_col <- find_col("^ACRES$", col_names, required = TRUE)
+  county_col <- find_col("^COUNTY$", col_names, required = TRUE)
+  multiuse_col <- find_col("^MULTI", col_names)
+  subclass_col <- find_col("^SUBCLASS1$", col_names)
+
+  # ---------------------------------------------------------------------------
+  # Process geometry and compute derived fields
+  # ---------------------------------------------------------------------------
+  PEcAn.logger::logger.info("Computing centroids and standardizing fields...")
+
+  landiq_processed <- landiq |>
+    sf::st_transform(4326) |>
+    dplyr::mutate(
+      .centroid = sf::st_centroid(geom),
+      lon = sf::st_coordinates(.centroid)[, "X"],
+      lat = sf::st_coordinates(.centroid)[, "Y"]
+    ) |>
+    dplyr::select(-.centroid) |>
+    dplyr::mutate(
+      site_id = as.character(UniqueID),
+      area_ha = PEcAn.utils::ud_convert(.data[[acres_col]], "acre", "ha"),
+      year = as.integer(!!year),
+      county = .data[[county_col]],
+      class = CLASS1,
+      subclass = if (!is.na(subclass_col)) as.character(.data[[subclass_col]]) else NA_character_,
+      multiuse = if (!is.na(multiuse_col)) .data[[multiuse_col]] else NA_character_,
+      source = "LandIQ",
+      notes = NA_character_
+    )
+
+  # ---------------------------------------------------------------------------
+  # Join crop names from mapping codes
+  # ---------------------------------------------------------------------------
+  crop_data <- landiq_processed |>
+    sf::st_drop_geometry() |>
+    dplyr::left_join(
+      landiq_crop_mapping_codes |>
+        dplyr::select(CLASS, SUBCLASS, crop_name = subclass_name),
+      by = c("class" = "CLASS", "subclass" = "SUBCLASS")
+    ) |>
+    dplyr::mutate(crop = dplyr::coalesce(crop_name, class)) |>
+    dplyr::select(-crop_name)
+
+  # ---------------------------------------------------------------------------
+  # Apply PFT mapping
+  # ---------------------------------------------------------------------------
+  PEcAn.logger::logger.info("Applying PFT mapping...")
+
+  crop_data <- crop_data |>
+    # CLASS-level mapping
+    dplyr::left_join(landiq_pft_map, by = c("class" = "CLASS")) |>
+    # SUBCLASS-level overrides
+    dplyr::left_join(
+      landiq_pft_subclass_overrides |> dplyr::rename(pft_override = pft),
+      by = c("class" = "CLASS", "subclass" = "SUBCLASS")
+    ) |>
+    dplyr::mutate(pft = dplyr::coalesce(pft_override, pft)) |>
+    dplyr::select(-pft_override)
+
+  # ---------------------------------------------------------------------------
+  # Create output GeoPackage (California Albers)
+  # ---------------------------------------------------------------------------
+  gpkg_data <- landiq_processed |>
+    dplyr::select(site_id, geom, lat, lon, area_ha, county) |>
+    sf::st_transform(crs_output)
+
+  # ---------------------------------------------------------------------------
+  # Create output CSV
+  # ---------------------------------------------------------------------------
+  csv_data <- crop_data |>
+    dplyr::select(
+      site_id, lat, lon, year, county,
+      class, subclass, crop, pft,
+      multiuse, source, notes
+    )
+
+  # ---------------------------------------------------------------------------
+  # Output validation
+  # ---------------------------------------------------------------------------
+  n_records <- nrow(csv_data)
+  n_unique_sites <- length(unique(csv_data$site_id))
+
+  PEcAn.logger::logger.info(
+    "Processed ", n_records, " records for ", n_unique_sites, " unique sites"
   )
+
+  # ---------------------------------------------------------------------------
+  # Write outputs
+  # ---------------------------------------------------------------------------
+  if (!overwrite && (file.exists(output_gpkg) || file.exists(output_csv))) {
+    PEcAn.logger::logger.severe(
+      "Output file(s) exist and overwrite = FALSE."
+    )
+  }
+
+  if (file.exists(output_gpkg)) unlink(output_gpkg)
+  if (file.exists(output_csv)) unlink(output_csv)
+
+  sf::st_write(gpkg_data, output_gpkg, layer = "sites", quiet = TRUE)
   readr::write_csv(csv_data, output_csv)
 
-  # Return success status
-  invisible(TRUE)
+  PEcAn.logger::logger.info("Created GeoPackage: ", output_gpkg)
+  PEcAn.logger::logger.info("Created CSV: ", output_csv)
+
+  # ---------------------------------------------------------------------------
+  # Return summary
+  # ---------------------------------------------------------------------------
+  invisible(list(
+    gpkg = output_gpkg,
+    csv = output_csv,
+    year = year,
+    n_records = n_records,
+    n_sites = n_unique_sites,
+    class_summary = table(csv_data$class, useNA = "ifany"),
+    pft_summary = table(csv_data$pft, useNA = "ifany")
+  ))
 }
