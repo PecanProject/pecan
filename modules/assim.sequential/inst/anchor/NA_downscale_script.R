@@ -244,7 +244,7 @@ for (i in seq_along(date)) {
   for (j in seq_along(variables)) {
     # setup folder.
     variable <- variables[j]
-    folder.path <- file.path(file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_rf"), paste0(variables[j], "_", date[i]))
+    folder.path <- file.path(file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_debias_rf"), paste0(variables[j], "_", date[i]))
     dir.create(folder.path)
     saveRDS(list(settings = settings, 
                  analysis.yr = analysis.yr, 
@@ -254,8 +254,8 @@ for (i in seq_along(date)) {
                  folder.path = folder.path, 
                  base.map.dir = base.map.dir,
                  method = method,
-                 cores = cores, 
-                 outdir = file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_rf")),
+                 cores = cores-1, 
+                 outdir = file.path(outdir, "downscale_maps_analysis_lc_ts_noGEDI_debias_rf")),
          file = file.path(folder.path, "dat.rds"))
     # prepare for qsub.
     jobsh <- c("#!/bin/bash -l", 
@@ -268,7 +268,7 @@ for (i in seq_along(date)) {
     jobsh <- gsub("@FOLDER_PATH@", folder.path, jobsh)
     writeLines(jobsh, con = file.path(folder.path, "job.sh"))
     # qsub command.
-    qsub <- "qsub -l h_rt=24:00:00 -l mem_per_core=4G -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+    qsub <- "qsub -l h_rt=10:00:00 -l mem_per_core=8G -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
     qsub <- gsub("@CORES@", cores, qsub)
     qsub <- gsub("@NAME@", paste0("ds_", i, "_", j), qsub)
     qsub <- gsub("@STDOUT@", file.path(folder.path, "stdout.log"), qsub)
