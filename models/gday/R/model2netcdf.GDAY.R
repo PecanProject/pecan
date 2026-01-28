@@ -41,13 +41,13 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output <- list()
     
     ## standard variables: C-Fluxes
-    # GDAY outputs in Mg/ha/year, convert directly to kgC/m2/s (ud_convert returns per-second)
-    output[[1]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "auto_resp"], "Mg/ha/yr", "kg/m2/s")
-    output[[2]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "hetero_resp"], "Mg/ha/yr", "kg/m2/s")
-    output[[3]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "auto_resp"] + sub.GDAY.output[, "hetero_resp"], "Mg/ha/yr", "kg/m2/s")
-    output[[4]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "gpp"], "Mg/ha/yr", "kg/m2/s")
-    output[[5]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "nep"] * -1, "Mg/ha/yr", "kg/m2/s")
-    output[[6]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "npp"], "Mg/ha/yr", "kg/m2/s")
+    # GDAY outputs in Mg/ha/day, convert directly to kgC/m2/s (ud_convert returns per-second)
+    output[[1]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "auto_resp"], "Mg/ha/day", "kg/m2/s")
+    output[[2]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "hetero_resp"], "Mg/ha/day", "kg/m2/s")
+    output[[3]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "auto_resp"] + sub.GDAY.output[, "hetero_resp"], "Mg/ha/day", "kg/m2/s")
+    output[[4]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "gpp"], "Mg/ha/day", "kg/m2/s")
+    output[[5]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "nep"] * -1, "Mg/ha/day", "kg/m2/s")
+    output[[6]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "npp"], "Mg/ha/day", "kg/m2/s")
     
     ## standard variables: C-State (pools) - divide by timestep as in original code
     output[[7]] <- (PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"], "Mg/ha", "kg/m2") + sub.GDAY.output[, "branch"] * THA_2_KG_M2) / timestep.s

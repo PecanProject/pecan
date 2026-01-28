@@ -163,7 +163,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
     output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[["litter_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litter, "g/m2", "kg/m2")
-    output[["litter_mass_content_of_water"]] <- (sub.sipnet.output$litterWater * 10)  # * 10 converts cm to mm
+    output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")  # labeled elsewhere as kg water m-2 (which is equivalent but ud_convert doesn't know that)
     #calculate LAI for standard output
     param <- utils::read.table(file.path(gsub(pattern = "/out/",
                                               replacement = "/run/", x = outdir),
