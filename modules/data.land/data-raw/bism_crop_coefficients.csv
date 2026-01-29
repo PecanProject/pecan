@@ -1,0 +1,67 @@
+"crop_number","crop_name","landiq_class","landiq_subclass","landiq_subclass_name","percent_season_B","percent_season_C","percent_season_D","KcB","KcC","KcD","KcE","planting_month","planting_day","harvest_month","harvest_day"
+1.01,"Alfalfa (cycle)","P","1","Alfalfa & alfalfa mixtures",7,30,100,0.4,1.15,1.15,0.4,6,20,7,20
+1.02,"Artichokes","T","1","Artichokes",6,19,90,0.65,0.65,0.65,0.65,7,1,5,1
+1.03,"Asparagus","T","2","Asparagus",12,25,95,0.25,1,1,0.25,1,1,12,31
+1.04,"Barley","G","1","Barley",20,45,75,0.7,1.1,1.1,0.15,11,1,5,31
+1.05,"Beans (pinto)","F","10","Beans (dry)",24,40,91,0.2,0.9,0.9,0.1,6,15,9,30
+1.06,"Beans (dry)","F","10","Beans (dry)",24,40,91,0.2,1,1,0.1,6,15,9,30
+1.07,"Beans (green)","T","3","Beans (green)",22,56,89,0.8,1,1,0.85,3,1,5,31
+1.08,"Beets (table)","F","5","Sugar beets",25,60,90,0.3,0.9,0.9,0.9,4,1,6,20
+1.09,"Broccoli","T","22","Broccoli",20,50,83,0.3,1,1,0.8,3,15,7,1
+1.1,"Cabbage","T","23","Cabbage",25,63,88,0.3,1,1,0.85,8,1,11,15
+1.11,"Carrots","T","6","Carrots",20,50,83,0.85,0.95,0.95,0.8,1,15,5,15
+1.12,"Celery","T","7","Celery",15,40,90,0.8,0.95,0.95,0.95,9,15,1,15
+1.13,"Corn (grain)","F","6","Corn (field & sweet)",20,45,75,0.2,1.05,1.05,0.6,5,1,9,30
+1.14,"Corn (silage)","F","6","Corn (field & sweet)",20,45,100,0.2,1,1,1,5,1,8,15
+1.15,"Cotton","F","1","Cotton",15,25,85,0.35,0.95,0.95,0.5,5,15,10,15
+1.16,"Cucumber","T","9","Melons, squash, and cucumbers (all types)",19,47,85,0.8,0.85,0.85,0.85,3,15,6,15
+1.17,"Eggplant","T","18","Miscellaneous truck",23,54,85,0.8,0.9,0.9,0.85,4,1,11,15
+1.18,"Flax","F","3","Flax",17,45,80,0.2,1.1,1.1,0.25,4,1,7,31
+1.19,"Grains (small)","G","6","Miscellaneous grain and hay",20,45,75,0.33,1.1,1.1,0.15,11,1,5,31
+1.2,"Grains (winter)","G","6","Miscellaneous grain and hay",20,45,75,0.33,1.05,1.05,0.15,11,1,5,31
+1.21,"Lentil","F","10","Beans (dry)",24,40,91,0.2,1,1,0.1,6,15,9,30
+1.22,"Lettuce","T","8","Lettuce (all types)",25,65,90,0.8,0.8,0.8,0.8,3,15,7,15
+1.23,"Melon","T","9","Melons, squash, and cucumbers (all types)",21,50,83,0.8,0.95,0.95,0.75,4,1,11,15
+1.24,"Millet","F","14","Millet",14,36,75,0.3,1,1,0.3,11,1,5,31
+1.25,"Mustard","T","4","Cole crops (mixture of 22-25)",25,63,88,0.3,1,1,0.85,8,1,11,15
+1.26,"Oats","G","3","Oats",20,45,75,0.33,1.1,1.1,0.15,11,1,5,31
+1.27,"Onion (dry)","T","10","Onions & garlic",10,26,75,0.55,1.2,1.2,0.55,3,1,10,1
+1.28,"Onion (green)","T","10","Onions & garlic",25,70,90,0.55,1.2,1.2,0.55,3,1,8,1
+1.29,"Peas","T","11","Peas",20,47,83,0.2,1,1,1,3,1,5,31
+1.3,"Peppers","T","21","Peppers (chili, bell, etc.)",20,45,85,0.8,1,1,0.85,3,1,8,31
+1.31,"Potato","T","12","Potatoes",20,45,78,0.8,1.1,1.1,0.7,4,15,8,15
+1.32,"Radishes","T","18","Miscellaneous truck",20,45,85,0.8,0.85,0.85,0.75,4,1,5,1
+1.33,"Rice","R","1","Rice",18,24,78,1.1,1,1,0.6,5,1,9,27
+1.34,"Safflower","F","2","Safflower",17,45,80,0.2,1.05,1.05,0.25,4,1,7,31
+1.35,"Sisal","F","11","Miscellaneous field",17,45,80,0.2,1.05,1.05,0.25,4,1,7,31
+1.36,"Sorghum","F","7","Grain sorghum",16,42,75,0.2,1.05,1.05,0.5,4,1,11,15
+1.37,"Spinach","T","14","Spinach",33,67,92,0.8,0.95,0.95,0.9,11,15,1,31
+1.38,"Squash","T","9","Melons, squash, and cucumbers (all types)",20,50,80,0.52,0.9,0.9,0.7,1,15,4,15
+1.39,"Strawberries w/mulch","T","20","Strawberries",15,45,80,0.2,0.7,0.7,0.7,5,1,9,30
+1.4,"Sugarbeet","F","5","Sugar beets",15,45,80,0.2,1.15,1.15,0.95,3,15,9,30
+1.41,"Sunflower","F","12","Sunflowers",20,45,80,0.2,1.1,1.1,0.4,5,1,9,10
+1.42,"Sweet Potatoes","T","13","Sweet potatoes",20,45,78,0.8,1.1,1.1,0.7,4,15,8,15
+1.43,"Tomato","T","32","Tomato all for remote sensing",25,50,80,0.3,1.1,1.1,0.65,4,1,8,31
+1.44,"Vegetables","T","18","Miscellaneous truck",33,67,92,0.8,0.9,0.9,0.9,3,1,8,31
+1.45,"Wheat","G","2","Wheat",20,45,75,0.33,1.1,1.1,0.15,11,1,5,31
+1.46,"Watermelon","T","9","Melons, squash, and cucumbers (all types)",20,50,75,0.8,1,1,0.75,4,1,11,15
+2.01,"Alfalfa (annual)","P","1","Alfalfa & alfalfa mixtures",25,50,75,1,1,1,1,1,1,12,31
+2.02,"Improved Pasture","P","3","Mixed pasture",25,50,75,0.95,0.95,0.95,0.95,1,1,12,31
+2.03,"Turfgrass (cool-season)","P","6","Miscellaneous grasses",25,50,75,0.8,0.8,0.8,0.8,1,1,12,31
+2.04,"Turfgrass (warm-season)","P","6","Miscellaneous grasses",25,50,75,0.6,0.6,0.6,0.6,1,1,12,31
+3.01,"Almonds","D","12","Almonds",0,50,90,0.55,1.15,1.15,0.65,3,1,10,15
+3.02,"Apple","D","1","Apples",0,50,75,0.55,1.05,1.05,0.8,4,1,11,15
+3.03,"Grapes (wine)","V","2","Wine grapes",0,25,75,0.45,0.8,0.8,0.35,4,1,10,1
+3.04,"Grapes (table)","V","1","Table grapes",0,25,75,0.45,1.1,1.1,0.35,3,15,9,10
+3.05,"Grapes (raisin)","V","3","Raisin grapes",0,25,75,0.45,1.1,1.1,0.35,3,15,9,10
+3.06,"Kiwifruit","C","8","Kiwis",0,22,67,0.3,1.05,1.05,1,5,1,10,31
+3.07,"Stone fruits","D","11","Mixed deciduous",0,50,90,0.55,1.15,1.15,0.65,3,1,10,15
+3.08,"Walnuts","D","13","Walnuts",0,50,75,0.55,1.15,1.15,0.8,4,1,11,15
+4.01,"Avocado","C","5","Avocados",0,33,67,0.7,0.7,0.7,0.7,1,1,12,31
+4.02,"Citrus (>3.8 m tall)","C","NA","Citrus and subtropical, subclass not specified",0,33,67,1,1,1,1,1,1,12,31
+4.03,"Citrus (<3.0 m tall)","C","NA","Citrus and subtropical, subclass not specified",0,33,67,0.7,0.7,0.7,0.7,1,1,12,31
+4.04,"Date Palm","C","4","Dates",0,33,67,0.95,0.95,0.95,0.95,1,1,12,31
+4.05,"Evergreen","C","NA","Citrus and subtropical, subclass not specified",0,33,67,1.15,1.15,1.15,1.15,1,1,12,31
+4.06,"Olives","C","6","Olives",0,33,67,0.7,0.55,0.55,0.7,1,1,12,31
+1.47,"Sudan grass","F","8","Sudan",33,67,87,0.5,1.15,1.15,1.1,7,18,9,30
+3.48,"Sugarcane","F","15","Sugar cane",0,17,68,0.4,1.25,1.25,0.75,5,15,5,14

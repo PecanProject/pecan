@@ -1,5 +1,7 @@
 # (PART) Appendix {-}
 
+This appendix contains additional information and reference material for PEcAn users and developers.
+
 # Miscellaneous
 
 ## TODO 

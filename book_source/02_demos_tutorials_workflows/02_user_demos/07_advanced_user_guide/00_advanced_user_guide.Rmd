@@ -1,3 +1,5 @@
 ## Advanced User Guide {#advanced-user}
 
+Learn advanced techniques for automating and managing PEcAn workflows beyond the web interface.
+
 - [Workflow curl submission](#web-curl-submission)

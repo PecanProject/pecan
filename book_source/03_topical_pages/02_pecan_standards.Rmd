@@ -1,6 +1,16 @@
 # PEcAn standard formats {#pecan-standards}
 
 ## Overview of PEcAn standards
+PEcAn relies on standardized data formats to ensure reproducibility, interoperability, and consistency across models, sites, and workflows. These standards define how inputs, internal representations, and outputs are structured throughout the PEcAn workflows.
+
+**In this chapter**
+
+- [Defining new input formats](#defining-new-input-formats)
+- [Time standards](#time-standard)
+- [Input standards](#input-standards)
+- [Output standards](#output-standards)
+
+## Defining new input formats
 
 This chapter describes the standard conventions used by PEcAn for input data, output data, and metadata to ensure consistency across models and workflows.
 
