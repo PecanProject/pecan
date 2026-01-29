@@ -37,14 +37,14 @@ to a standardized GeoPackage and CSV format suitable for downstream analysis.
 This function standardizes LandIQ shapefiles (harmonized format, 2016+)
 into a consistent format for downstream analysis.
 
-**Output GeoPackage** contains spatial data:
+Output GeoPackage contains spatial data:
 - `site_id`: Unique identifier (LandIQ UniqueID)
 - `geom`: Polygon geometry (California Albers EPSG:3310)
 - `lat`, `lon`: Centroid coordinates (WGS84)
 - `area_ha`: Area in hectares
 - `county`: County name
 
-**Output CSV** contains attribute data:
+Output CSV contains attribute data:
 - `site_id`, `lat`, `lon`, `year`, `county`
 - `class`, `subclass`: LandIQ classification codes
 - `crop`: Human-readable crop name
