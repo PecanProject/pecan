@@ -16,14 +16,14 @@
 #' This function standardizes LandIQ shapefiles (harmonized format, 2016+)
 #' into a consistent format for downstream analysis.
 #'
-#' **Output GeoPackage** contains spatial data:
+#' Output GeoPackage contains spatial data:
 #' - `site_id`: Unique identifier (LandIQ UniqueID)
 #' - `geom`: Polygon geometry (California Albers EPSG:3310)
 #' - `lat`, `lon`: Centroid coordinates (WGS84)
 #' - `area_ha`: Area in hectares
 #' - `county`: County name
 #'
-#' **Output CSV** contains attribute data:
+#' Output CSV contains attribute data:
 #' - `site_id`, `lat`, `lon`, `year`, `county`
 #' - `class`, `subclass`: LandIQ classification codes
 #' - `crop`: Human-readable crop name
@@ -55,18 +55,13 @@ landiq2std <- function(input_file,
                        overwrite = TRUE,
                        crs_output = 3310L) {
 
-  # ---------------------------------------------------------------------------
-  # Input validation
-  # ---------------------------------------------------------------------------
   if (!file.exists(input_file)) {
     PEcAn.logger::logger.severe("Input file does not exist: ", input_file)
   }
 
   original_filename <- basename(input_file)
 
-  # ---------------------------------------------------------------------------
   # Convert shapefile to GeoPackage (with geometry repair)
-  # ---------------------------------------------------------------------------
   if (grepl("\\.shp$", input_file, ignore.case = TRUE)) {
     temp_gpkg <- tempfile(fileext = ".gpkg")
     PEcAn.logger::logger.info("Converting shapefile to GeoPackage with geometry repair...")
@@ -75,9 +70,6 @@ landiq2std <- function(input_file,
     on.exit(unlink(temp_gpkg), add = TRUE)
   }
 
-  # ---------------------------------------------------------------------------
-  # Read and validate input
-  # ---------------------------------------------------------------------------
   landiq <- sf::st_read(input_file, quiet = TRUE) |>
     sf::st_zm(drop = TRUE, what = "ZM")
 
@@ -86,9 +78,7 @@ landiq2std <- function(input_file,
     "Read ", nrow(landiq), " features with ", length(col_names), " columns"
   )
 
-  # ---------------------------------------------------------------------------
   # Validate harmonized format (2016+)
-  # ---------------------------------------------------------------------------
   required_cols <- c("CLASS1", "UniqueID")
   missing_cols <- setdiff(required_cols, col_names)
 
@@ -99,9 +89,7 @@ landiq2std <- function(input_file,
     )
   }
 
-  # ---------------------------------------------------------------------------
   # Extract year
-  # ---------------------------------------------------------------------------
   if (is.null(year)) {
     year_match <- regmatches(original_filename, regexpr("[0-9]{4}", original_filename))
     if (length(year_match) == 0 || nchar(year_match) != 4) {
@@ -114,18 +102,14 @@ landiq2std <- function(input_file,
   }
   PEcAn.logger::logger.info("Processing LandIQ data for year: ", year)
 
-  # ---------------------------------------------------------------------------
   # Standardize geometry column name
-  # ---------------------------------------------------------------------------
   geom_col <- attr(landiq, "sf_column")
   if (geom_col != "geom") {
     names(landiq)[names(landiq) == geom_col] <- "geom"
     sf::st_geometry(landiq) <- "geom"
   }
 
-  # ---------------------------------------------------------------------------
   # Find columns (case-insensitive)
-  # ---------------------------------------------------------------------------
   find_col <- function(pattern, cols, required = FALSE) {
     match <- grep(pattern, cols, ignore.case = TRUE, value = TRUE)
     if (length(match) == 0) {
@@ -142,9 +126,7 @@ landiq2std <- function(input_file,
   multiuse_col <- find_col("^MULTI", col_names)
   subclass_col <- find_col("^SUBCLASS1$", col_names)
 
-  # ---------------------------------------------------------------------------
   # Process geometry and compute derived fields
-  # ---------------------------------------------------------------------------
   PEcAn.logger::logger.info("Computing centroids and standardizing fields...")
 
   landiq_processed <- landiq |>
@@ -167,9 +149,7 @@ landiq2std <- function(input_file,
       notes = NA_character_
     )
 
-  # ---------------------------------------------------------------------------
   # Join crop names from mapping codes
-  # ---------------------------------------------------------------------------
   crop_data <- landiq_processed |>
     sf::st_drop_geometry() |>
     dplyr::left_join(
@@ -180,9 +160,7 @@ landiq2std <- function(input_file,
     dplyr::mutate(crop = dplyr::coalesce(crop_name, class)) |>
     dplyr::select(-crop_name)
 
-  # ---------------------------------------------------------------------------
-  # Apply PFT mapping
-  # ---------------------------------------------------------------------------
+
   PEcAn.logger::logger.info("Applying PFT mapping...")
 
   crop_data <- crop_data |>
@@ -196,16 +174,12 @@ landiq2std <- function(input_file,
     dplyr::mutate(pft = dplyr::coalesce(pft_override, pft)) |>
     dplyr::select(-pft_override)
 
-  # ---------------------------------------------------------------------------
   # Create output GeoPackage (California Albers)
-  # ---------------------------------------------------------------------------
   gpkg_data <- landiq_processed |>
     dplyr::select(site_id, geom, lat, lon, area_ha, county) |>
     sf::st_transform(crs_output)
 
-  # ---------------------------------------------------------------------------
   # Create output CSV
-  # ---------------------------------------------------------------------------
   csv_data <- crop_data |>
     dplyr::select(
       site_id, lat, lon, year, county,
@@ -213,9 +187,6 @@ landiq2std <- function(input_file,
       multiuse, source, notes
     )
 
-  # ---------------------------------------------------------------------------
-  # Output validation
-  # ---------------------------------------------------------------------------
   n_records <- nrow(csv_data)
   n_unique_sites <- length(unique(csv_data$site_id))
 
@@ -223,9 +194,6 @@ landiq2std <- function(input_file,
     "Processed ", n_records, " records for ", n_unique_sites, " unique sites"
   )
 
-  # ---------------------------------------------------------------------------
-  # Write outputs
-  # ---------------------------------------------------------------------------
   if (!overwrite && (file.exists(output_gpkg) || file.exists(output_csv))) {
     PEcAn.logger::logger.severe(
       "Output file(s) exist and overwrite = FALSE."
@@ -241,9 +209,6 @@ landiq2std <- function(input_file,
   PEcAn.logger::logger.info("Created GeoPackage: ", output_gpkg)
   PEcAn.logger::logger.info("Created CSV: ", output_csv)
 
-  # ---------------------------------------------------------------------------
-  # Return summary
-  # ---------------------------------------------------------------------------
   invisible(list(
     gpkg = output_gpkg,
     csv = output_csv,
