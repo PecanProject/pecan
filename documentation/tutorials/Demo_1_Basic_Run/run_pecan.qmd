@@ -6,6 +6,7 @@ author:
 format:
   html: default
   pdf: default
+format-links: false
 toc: true
 number-sections: true
 fig-width: 10

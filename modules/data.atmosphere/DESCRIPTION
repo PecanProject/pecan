@@ -73,7 +73,7 @@ Suggests:
     future,
     getPass,
     ggplot2,
-    knitr,
+    knitr (>= 1.50),
     mockery,
     parallel,
     PEcAn.settings,
