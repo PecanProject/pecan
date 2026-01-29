@@ -20,10 +20,9 @@ Invisibly returns the path to the GeoPackage (`output_gpkg`) upon successful con
 }
 \description{
 This function converts a Shapefile to a GeoPackage using the `sf` package.
-}
-\details{
-This function reads a Shapefile, converts it to an `sf` object, and writes it to a GeoPackage.
-The `sf` package handles the conversion and ensures spatial data integrity.
+It reads a Shapefile, converts it to an `sf` object, and writes it to a 
+GeoPackage. The `sf` package handles the conversion and ensures spatial 
+data integrity.
 }
 \examples{
 # Convert 'roads.shp' to 'roads.gpkg' with the default layer name
