@@ -1,5 +1,26 @@
 # Troubleshooting and Debugging PEcAn
 
+This chapter provides guidance for diagnosing and resolving common issues encountered when installing, configuring, and running PEcAn workflows. Problems may arise from web interface configuration, file system paths, model integration, or internal workflow execution.
+The sections below document frequently encountered errors as well as general debugging techniques that can help identify the source of a problem.
+
+### General troubleshooting approach {-}
+
+When troubleshooting PEcAn issues:
+
+- Identify the error message and where it occurs (web, R, or model).
+- Check logs and console output for details.
+- Verify file paths, permissions, and dependencies.
+- Reproduce the issue with a minimal workflow.
+- Use R debugging tools such as `debug()`, `traceback()`, and `browser()`.
+
+### Common issues covered in this chapter {-}
+
+- [Cookies and PEcAn web pages](#cookies-and-pecan-web-pages)
+- [`mkdir()` warnings](#warning-mkdir-function.mkdir-no-such-file-or-directory)
+- [PFT mapping issues in ED models](#after-creating-a-new-pft-the-tag-for-pft-not-passed-to-config.xml-in-ed)
+- [Debugging](#debugging)
+- [Useful scripts](#useful-scripts)
+
 ## Cookies and pecan web pages
 
 You may need to disable cookies specifically for the pecan webserver in your browser. This is because your installation of php can include a 'PHPSESSID' that is quite long, and this can overflow the params field of the workflows table, depending on how long your hostname, model name, site name, etc are. 
