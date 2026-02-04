@@ -79,17 +79,10 @@ test_that("call_biocro_0.9 passes expected arguments to every supported genus", 
     mockery::mock_args(canemock)[[1]]$willowphenoControl)
 
 
-  # BioGro is called once every invocation to test if BioCro checks input DOY,
-  # plus again for output in Miscanthus and Sorghum, equals six calls in total
-  mockery::expect_called(biomock, 6)
-  for (j in c(1,2,3,5)) {
-    mockery::expect_call(
-      biomock, j,
-      BioCro::BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0), nrow = 1),
-                     day1 = 10, dayn = 10, timestep = 24))
-  }
-  expect_equal(mockery::mock_args(biomock)[[4]]$day1, min(WetDat$doy))
-  expect_equal(mockery::mock_args(biomock)[[4]]$dayn, max(WetDat$doy))
+# BioGro is called for Miscanthus and Sorghum output
+  mockery::expect_called(biomock, 2)
+  expect_equal(mockery::mock_args(biomock)[[1]]$day1, min(WetDat$doy))
+  expect_equal(mockery::mock_args(biomock)[[1]]$dayn, max(WetDat$doy))
 
   expect_error(
     call_biocro_0.9(WetDat = WetDat, genus = "not_a_genus", year_in_run = 1,
@@ -101,22 +94,12 @@ test_that("call_biocro_0.9 passes expected arguments to every supported genus", 
 
 test_that("call_biocro_0.9 adjusts day1 and dayn when weather is not a whole year",{
 
-  # call_biocro_0.9 tests whether to adjust days by passing a one-line file
-  # with DOY > 1 and adjusting iff BioCro::BioGro throws an error.
-  # ==> To test, our BioGro stub needs to provide the error too.
+  # BioCro 0.9x treats day1/dayn as "day of file", so rescaling is always applied
+  # when data doesn't start on DOY 1.
   biomock <- mockery::mock(fake_b0.9_result, cycle = TRUE)
-  mockery::stub(
-    call_biocro_0.9,
-    "BioCro::BioGro",
-    function(WetDat, ...){
-      if(nrow(WetDat)==1 && WetDat$doy > 1){
-        stop("This error should be caught silently")
-      }else{
-        biomock(WetDat, ...)
-      }
-    })
+  mockery::stub(call_biocro_0.9, "BioCro::BioGro", biomock)
 
-  # whole file: day numbers unchanged
+  # whole file starting DOY 1: day numbers unchanged
   res_whole <- call_biocro_0.9(
     WetDat = WetDat, genus = "Miscanthus", year_in_run = 1, config = config,
     lat = 40, lon = -88, tmp.result = list(), HarvestedYield = 0)
@@ -131,16 +114,84 @@ test_that("call_biocro_0.9 adjusts day1 and dayn when weather is not a whole yea
   expect_equal(mockery::mock_args(biomock)[[2]]$day1, 1)
   expect_equal(mockery::mock_args(biomock)[[2]]$dayn, 3)
 
-  # subset starting DOY > 1: day numbers adjusted --
-  # BioCro secretly wants day of *file*, not day of year
+  # subset starting DOY > 1: day numbers adjusted to "day of file"
   res_jan <- call_biocro_0.9(
       WetDat = WetDat[WetDat$doy >= 3 & WetDat$doy <= 6,],
       genus = "Miscanthus", year_in_run = 1, config = config, lat = 40,
       lon = -88, tmp.result = list(), HarvestedYield = 0)
-  expect_equal(round(mockery::mock_args(biomock)[[3]]$day1), 1)
-  expect_equal(round(mockery::mock_args(biomock)[[3]]$dayn), 4)
+  expect_equal(mockery::mock_args(biomock)[[3]]$day1, 1)
+  expect_equal(mockery::mock_args(biomock)[[3]]$dayn, 4)
 })
 
+test_that("adjustments to day1 and dayn work right with live biocro calls", {
+  skip_if_not_installed("BioCro")
+  skip_if_not(packageVersion("BioCro") == "0.95")
+
+  met_2004 <- read.csv("data/US-Bo1.2004.csv") |>
+    dplyr::filter(doy <= 365) # final timepoint is labeled 366, biocro complains
+
+  call_with <- function(met) {
+    PEcAn.BIOCRO:::call_biocro_0.9(
+      WetDat = met,
+      config = config,
+      genus = "Miscanthus",
+      year_in_run = 1,
+      HarvestedYield = 1
+    )$tmp.result
+  }
+
+  # Whole year
+  expect_equal(length(call_with(met_2004)$LAI), 365 * 24)
+
+  # Q2 data, real DOY
+  met_q2_2004 <- met_2004[met_2004$doy %in% 91:180, ]
+  res_q2 <- call_with(met_q2_2004)
+  expect_equal(length(res_q2$LAI), 90 * 24)
+
+  # Q2 data, labeled as if starting DOY 1
+  # If day1/dayn rescaling work right, should give identical growth
+  res_q2_d1 <- call_with(met_q2_2004 |> dplyr::mutate(doy = doy - 90))
+  expect_equal(
+    res_q2 |> purrr::discard_at("doy"),
+    res_q2_d1 |> purrr::discard_at("doy")
+  )
+
+  # two whole years
+  expect_error(
+    call_with(
+      dplyr::bind_rows(
+        met_2004,
+        met_2004 |> dplyr::mutate(year = 2005, Temp = 1)
+      )
+    ),
+    "must contain only one year"
+  )
+
+  # Multiple years starting with partial year
+  expect_error(
+    call_with(
+      dplyr::bind_rows(
+        met_2004 |> dplyr::filter(doy %in% 91:300),
+        met_2004 |>
+          dplyr::mutate(year = 2005)
+      )
+    ),
+    "must contain only one year"
+  )
+
+  # Multiple years, all partial
+  expect_error(
+    call_with(
+      dplyr::bind_rows(
+        met_2004 |> dplyr::filter(doy %in% 91:200),
+        met_2004 |>
+          dplyr::filter(doy %in% 91:300) |>
+          dplyr::mutate(year = 2005)
+      )
+    ),
+    "must contain only one year"
+  )
+})
 
 test_that("call_biocro_1 passes expected arguments", {
   # stub out BioCro::Gro

@@ -1,1 +1,11 @@
 ## Other Vignettes {#othervignettes}
+
+This section contains practical examples and tutorials on advanced PEcAn topics. These vignettes complement the main demos with deeper dives into specific techniques.
+
+| Topic | Description | Level |
+|:-----:|:-----------:|:-----:|
+| [Simple Model-Data Comparisons](#simple-model-data-comparisons) | Compare PEcAn model outputs with observations using RStudio | Beginner |
+| [Data Assimilation Concepts](#data-assimilation-concepts) | Learn the fundamentals of Bayesian calibration and parameter fitting | Intermediate |
+| [Parameter Data Assimilation](#parameter-data-assimilation) | Use MCMC techniques to calibrate ecosystem models with real data | Advanced |
+| [State-Variable Data Assimilation](#state-variable-data-assimilation) | Assimilate tree ring and inventory data using the Ensemble Kalman Filter | Advanced |
+| [Sensitivity vs Observation](#pecan-testing-the-sensitivity-analysis-against-observations) | Compare parameter sensitivity analysis with flux tower observations | Intermediate |
