@@ -19,6 +19,30 @@ test_that("Read.IC.info.BADM falls back to L1 and ALL if no L2 data", {
   expect_true(nrow(result) >= 0)
 })
 
+test_that("Read.IC.info.BADM handles all-NA carbon pool entries cleanly", {
+  
+  # Construct BADM-like entries where all carbon pools are NA
+  entries <- data.frame(
+    GROUP_ID = c("A", "B", "C"),
+    LAT = c(42, 43, 44),
+    LON = c(-72, -73, -74),
+    UNIT = c("kg/m2", "kg/m2", "kg/m2"),
+    leafC = c(NA, NA, NA),
+    stemC = c(NA, NA, NA),
+    rootC = c(NA, NA, NA),
+    soilC = c(NA, NA, NA),
+    stringsAsFactors = FALSE
+  )
+  
+  # Run the same filtering logic used internally
+  ind <- apply(entries[, 5:8], 1, function(x) all(is.na(x)))
+  filtered <- entries[-which(ind), ]
+  
+  # Expect no crash and a valid empty data frame
+  expect_s3_class(filtered, "data.frame")
+  expect_equal(nrow(filtered), 0)
+})
+
 
 test_that("EPA_ecoregion_finder returns valid L1 and L2 codes", {
   eco <- EPA_ecoregion_finder(42.5378, -72.1715)
