@@ -32,6 +32,7 @@ Suggests:
     knitr (>= 1.50),
     testthat (>= 2.0.0),
     mockery (>= 0.3.0),
+    purrr,
     PEcAn.DB,
     rmarkdown,
     RPostgreSQL

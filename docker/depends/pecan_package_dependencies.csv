@@ -455,6 +455,7 @@
 "purrr","*","base/db","Imports",FALSE
 "purrr","*","base/settings","Imports",FALSE
 "purrr","*","base/utils","Imports",FALSE
+"purrr","*","models/biocro","Suggests",FALSE
 "purrr","*","models/ed","Imports",FALSE
 "purrr","*","modules/assim.sequential","Imports",FALSE
 "purrr","*","modules/data.land","Imports",FALSE

@@ -1,1 +1,3 @@
 # (PART) Introduction {-}
+
+Welcome to the PEcAn Book! Here you'll learn about the PEcAn project, our community values, and how to use this book. Whether you're just starting out or you already know your way around, you'll find what you need here.

@@ -74,8 +74,7 @@ skip_if_not(
 )
 
 test_that("read.settings returned correctly", {
-  s <- .get.test.settings()
-  skip("Tests failing due to multisite?")
+  s <- .get.test.settings(testdir)
   expect_true(file.exists(s$outdir))
   expect_true(file.info(s$outdir)$isdir)
 })
