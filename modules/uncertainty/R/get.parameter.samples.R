@@ -117,7 +117,7 @@ get.parameter.samples <- function(settings,
         "Defaulting to trait.mcmc file in the pft directory."
       )
       ma.results <- TRUE
-      load(file.path(outdirs[i], "trait.mcmc.rds"), envir = distns)
+      distns$trait.mcmc <- readRDS(file.path(outdirs[i], "trait.mcmc.rds"))
     } else {
       ma.results <- FALSE
     }

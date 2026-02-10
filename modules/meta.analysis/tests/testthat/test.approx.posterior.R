@@ -1,6 +1,6 @@
 context("test approx.posterior function")
 
-load("data/trait.mcmc.rds")
+trait.mcmc <- readRDS("data/trait.mcmc.rds")
 load("data/prior.distns.RData")
 
 test_that("test data are as expected", {
