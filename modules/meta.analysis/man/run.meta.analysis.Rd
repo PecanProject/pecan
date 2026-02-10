@@ -36,7 +36,7 @@ run.meta.analysis(
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by
 \code{\link{pecan.ma}} and post.distns created by
-\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
+\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.rds
 and post.distns.Rdata, respectively
 }
 \description{

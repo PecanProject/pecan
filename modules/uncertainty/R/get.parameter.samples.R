@@ -95,7 +95,7 @@ get.parameter.samples <- function(settings,
         con, settings$host$name,
         return.all = TRUE
       )
-      tid <- grep("trait.mcmc.*Rdata", files$file_name)
+      tid <- grep("trait.mcmc.*rds", files$file_name)
       if (length(tid) > 0) {
         trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
         ma.results <- TRUE
@@ -112,12 +112,12 @@ get.parameter.samples <- function(settings,
         )
         ma.results <- FALSE
       }
-    } else if ("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
+    } else if ("trait.mcmc.rds" %in% dir(unlist(outdirs[i]))) {
       PEcAn.logger::logger.info(
         "Defaulting to trait.mcmc file in the pft directory."
       )
       ma.results <- TRUE
-      load(file.path(outdirs[i], "trait.mcmc.Rdata"), envir = distns)
+      load(file.path(outdirs[i], "trait.mcmc.rds"), envir = distns)
     } else {
       ma.results <- FALSE
     }

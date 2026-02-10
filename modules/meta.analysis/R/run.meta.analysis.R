@@ -204,7 +204,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   }
   
   # check to see if run.meta.analysis can be skipped
-  if (file.exists(file.path(pft$outdir, "trait.mcmc.Rdata")) && 
+  if (file.exists(file.path(pft$outdir, "trait.mcmc.rds")) && 
       file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
       update != TRUE) {
     PEcAn.logger::logger.info("Assuming get.trait copied results already")
@@ -264,19 +264,13 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   # an error.
   # TODO: We should really use `saveRDS` / `readRDS` for this everywhere...but
   # for now, this is a workaround.
-  jagged.data <- ma_result[["jagged.data"]]
-  save(jagged.data, file = file.path(pft$outdir, "jagged.data.Rdata"))
-  rm(jagged.data)
+  saveRDS(ma_result[["jagged.data"]], file = file.path(pft$outdir, "jagged.data.rds"))
   
   ### Save the meta.analysis output
-  trait.mcmc <- ma_result[["trait.mcmc"]]
-  save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
-  rm(trait.mcmc)
+  saveRDS(ma_result[["trait.mcmc"]], file = file.path(pft$outdir, "trait.mcmc.rds"))
   
-  dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
-  post.distns <- ma_result[["post.distns"]]
-  save(post.distns, file = dist_MA_path)
-  rm(post.distns)
+  dist_MA_path <- file.path(pft$outdir, "post.distns.MA.rds")
+  saveRDS(ma_result[["post.distns"]], file = dist_MA_path)
 
   dist_path <- file.path(pft$outdir, "post.distns.Rdata")
   
@@ -317,7 +311,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##'
 ##' @return nothing, as side effect saves \code{trait.mcmc} created by
 ##' \code{\link{pecan.ma}} and post.distns created by
-##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
+##' \code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.rds
 ##'   and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer

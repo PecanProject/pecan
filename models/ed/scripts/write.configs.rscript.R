@@ -68,8 +68,8 @@ for (i in seq(pft.names)){
   
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
   
-  if("trait.mcmc.Rdata" %in% dir(outdirs)) {
-    load(paste(outdirs[i], 'trait.mcmc.Rdata', sep=''))
+  if ("trait.mcmc.rds" %in% dir(outdirs)) {
+    trait.mcmc <- readRDS(paste(outdirs[i], 'trait.mcmc.rds', sep = ''))
   }
   
   pft.name <- pft.names[i]
