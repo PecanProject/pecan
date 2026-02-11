@@ -226,62 +226,45 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 
 #' BADM_IC_process
 #'
-#' @param settings pecan xml settings
-#' @param dir output dir which you want to store the IC netcdf file
+#' @param settings Single PEcAn Settings object (list with 'run' element)
+#' @param dir Output directory for storing IC netcdf file
 #' @param overwrite Flag for overwriting the IC file.
+#'
+#' @description Process initial conditions for a single site using BADM data.
+#' This function accepts only single Settings objects.
+#' For processing multiple sites, use a higher-level function.
 #'
 #' @return a list of paths to generated and stored IC files.
 #' @export
 #'
-BADM_IC_process <- function(settings, dir, overwrite=TRUE){
-  
-  # check if this is a single-site or multi-site configuration
-  if ("run" %in% names(settings)) {
-    settings <- list(settings)
+BADM_IC_process <- function(settings, dir, overwrite = TRUE) {
+  # This function now only accepts single Settings objects
+  if (!("run" %in% names(settings))) {
+    stop("settings must be a single Settings object with 'run' element")
   }
   
-  # create site info.
-  new.site <- 
-    settings %>% 
-    purrr::map(~.x[['run']] ) %>% 
-    purrr::map('site')%>% 
-    purrr::map(function(site.list){
-      #conversion from string to number
-      site.list$lat <- as.numeric(site.list$lat)
-      site.list$lon <- as.numeric(site.list$lon)
-      list(id=site.list$id, lat=site.list$lat, lon=site.list$lon)
-    })%>% 
-    dplyr::bind_rows() %>% 
-    as.list()
-  
-  # process each site configuration
-  out.ense <- list()
-  
-  for (i in seq_along(settings)) {
-    site.settings <- settings[[i]]
-    ens.size <- ens.size <- max(1, site.settings$ensemble$size %||% 1)
-    
-    # get site info for this specific site
-    site.info <- list(
-      id = new.site$id[i],
-      lat = new.site$lat[i], 
-      lon = new.site$lon[i]
-    )
-    
-    site.outputs <- seq_len(ens.size) %>%
-      purrr::map(~ netcdf.writer.BADM(site.info$lat,
-                                      site.info$lon,
-                                      site.info$id,
-                                      outdir=dir,
-                                      ens=.x))
-    
-    site.outputs <- site.outputs %>%
-      stats::setNames(rep("path", length(site.outputs)))
-    
-    out.ense <- c(out.ense, site.outputs)
+  # extract and normalise site info
+  site.info <- settings[['run']][['site']]
+  site.id <- site.info$id
+  site.lat <- suppressWarnings(as.numeric(site.info$lat))[1]
+  site.lon <- suppressWarnings(as.numeric(site.info$lon))[1]
+
+  if (is.na(site.lat) || is.na(site.lon)) {
+    stop("Invalid site coordinates")
   }
-  
-  return(out.ense)
+
+  ens.size <- max(1, (settings$ensemble$size %||% 1))
+
+  # generate ensemble IC files for this site
+  site.outputs <- seq_len(ens.size) %>%
+    purrr::map(~ netcdf.writer.BADM(site.lat,
+                                    site.lon,
+                                    site.id,
+                                    outdir = dir,
+                                    ens = .x))
+
+  # name each entry "path" to match previous behaviour
+  stats::setNames(site.outputs, rep("path", length(site.outputs)))
 }
 
 #' EPA_ecoregion_finder
