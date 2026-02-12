@@ -163,7 +163,7 @@ Read.IC.info.BADM <-function(lat, long){
   
  #cleaning
 ind <- apply(entries[,5:8], 1, function(x) all(is.na(x)))
-entries <- entries[-which(ind),]
+entries <- entries[!ind, , drop = FALSE]
 
   return(entries)
 }

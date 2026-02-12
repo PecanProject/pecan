@@ -455,6 +455,7 @@
 "purrr","*","base/db","Imports",FALSE
 "purrr","*","base/settings","Imports",FALSE
 "purrr","*","base/utils","Imports",FALSE
+"purrr","*","models/biocro","Suggests",FALSE
 "purrr","*","models/ed","Imports",FALSE
 "purrr","*","modules/assim.sequential","Imports",FALSE
 "purrr","*","modules/data.land","Imports",FALSE
@@ -664,7 +665,7 @@
 "tidyverse","*","base/db","Suggests",FALSE
 "tools","*","base/remote","Suggests",FALSE
 "tools","*","modules/allometry","Imports",FALSE
-"traits","*","modules/data.land","Imports",FALSE
+"traits","*","modules/data.land","Suggests",FALSE
 "TruncatedNormal",">= 2.2","modules/assim.batch","Imports",FALSE
 "truncnorm","*","modules/data.atmosphere","Imports",FALSE
 "units","*","base/db","Imports",FALSE
