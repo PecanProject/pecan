@@ -1,7 +1,5 @@
 context("model2netcdf.SIPNET unit conversion")
 
-# Skip all tests if PEcAn.utils is not available
-skip_if_not_installed("PEcAn.utils")
 
 test_that("litterWater conversion works correctly", {
   # Test that PEcAn.utils::ud_convert is properly called for litterWater
