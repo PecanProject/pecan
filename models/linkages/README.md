@@ -41,7 +41,7 @@ install_github('pecanproject/pecan', subdir = "models/linkages")
 ## Documentation
 
 - [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.LINKAGES)
-- [PEcAn Book - LINKAGES Chapter](https://pecanproject.github.io/pecan-documentation/pecan-models.html#models-linkages)
+- [PEcAn Book - Models Reference](https://pecanproject.github.io/pecan-documentation/pecan-models.html#pecan-models)
 - [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/linkages)
 
 ## References

@@ -47,7 +47,7 @@ Contributing developers should refer to the main SIBCASA documentation and colla
 ## Documentation
 
 - [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.SIBCASA)
-- [PEcAn Book - SiBCASA Chapter](https://pecanproject.github.io/pecan-documentation/pecan-models.html#models-sibcasa)
+- [PEcAn Book - Models Reference](https://pecanproject.github.io/pecan-documentation/pecan-models.html#pecan-models)
 - [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/sibcasa)
 - [External Model Documentation](https://daac.ornl.gov/MODELS/guides/SiBCASA.html)
 
