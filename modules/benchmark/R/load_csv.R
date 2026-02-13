@@ -1,9 +1,19 @@
 ##' load_csv
 ##'
-##' @param data.path character
-##' @param format list
-##' @param site list
+##' @param data.path character, file path to the .csv file
+##' @param format list, config list containing 
+##' \itemize{
+##'   \item \code{header},    numeric for number of header rows in file
+##'   \item \code{skip},       numeric for skip argument of utils::read.csv 
+##'   \item \code{na.strings}, character vector for na.strings argument
+##'                           of utils::read.csv
+##'   }
+##' @param site list, currently ignored
 ##' @param vars column names to return. If NULL, returns all columns
+##' 
+
+##' @return a data frame with the processed data of the .csv file
+
 ##' 
 ##' @author Betsy Cowdery
 ##' @export

@@ -665,7 +665,7 @@
 "tidyverse","*","base/db","Suggests",FALSE
 "tools","*","base/remote","Suggests",FALSE
 "tools","*","modules/allometry","Imports",FALSE
-"traits","*","modules/data.land","Imports",FALSE
+"traits","*","modules/data.land","Suggests",FALSE
 "TruncatedNormal",">= 2.2","modules/assim.batch","Imports",FALSE
 "truncnorm","*","modules/data.atmosphere","Imports",FALSE
 "units","*","base/db","Imports",FALSE
