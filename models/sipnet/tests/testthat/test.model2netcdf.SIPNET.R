@@ -1,5 +1,38 @@
 context("model2netcdf.SIPNET unit conversion")
 
+test_that("model2netcdf.SIPNET runs without error and produces netCDF", {
+  outdir <- withr::local_tempdir()
+  file.copy("data/sipnet.out", outdir)
+  
+  # Run the function
+  expect_silent(
+    model2netcdf.SIPNET(
+      outdir = outdir,
+      sitelat = 0,
+      sitelon = 0,
+      start_date = "2002-01-01",
+      end_date = "2002-12-31"
+    )
+  )
+  
+  # Check that netCDF file is created
+  nc_file <- file.path(outdir, "2002.nc")
+  expect_true(file.exists(nc_file))
+  
+  # Check that we can read the output
+  output <- PEcAn.utils::read.output(
+    ncfiles = nc_file,
+    variables = c("litter_carbon_content", "litterWater"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+  expect_true(nrow(output) > 0)
+  # litter_carbon_content should be in kg/m2 (converted from g/m2)
+  expect_true(all(output$litter_carbon_content < 1))  # g/m2 values are ~400, kg/m2 ~0.4
+  # litterWater should be in mm (converted from cm)
+  expect_true(all(output$litterWater > 1000))  # cm values ~400, mm ~4000
+})
 
 test_that("litterWater conversion works correctly", {
   # Test that PEcAn.utils::ud_convert is properly called for litterWater
