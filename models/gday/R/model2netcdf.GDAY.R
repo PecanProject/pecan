@@ -44,7 +44,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## NOTE: GDAY outputs daily accumulated values in Mg/ha/day (NOT per year!)
     ## timestep.s = 86400 seconds = 1 day
     ## Unit conversion: 1 Mg/ha/day = 0.1 kg/m2 ÷ 86400 s = 1.157407e-6 kg/m2/s
-    ## Reference: https://github.com/PecanProject/pecan/issues/XXXX
+    ## Reference: https://github.com/PecanProject/pecan/issues/3712
     ## The ud_convert function handles the unit transformation to per-second basis
     output[[1]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "auto_resp"], "Mg/ha/day", "kg/m2/s")
     output[[2]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "hetero_resp"], "Mg/ha/day", "kg/m2/s")

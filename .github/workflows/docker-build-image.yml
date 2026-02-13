@@ -129,13 +129,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # build the docker images
-      # Only push to registry on the main repository, not on forks
       - name: Build and push ${{ steps.name.outputs.image_name }}
         uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.build-context }}
           file: ${{ inputs.dockerfile }}
-          push: ${{ github.repository == 'pecanproject/pecan' }}
+          push: true
           platforms: ${{ inputs.platforms }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
