@@ -1,3 +1,4 @@
+Package: PEcAn.LINKAGES
 Type: Package
 Title: PEcAn Package for Integration of the LINKAGES Model
 Version: 1.7.5
@@ -17,7 +18,6 @@ Imports:
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-Package: PEcAn.LINKAGES
     utils
 Suggests:
     testthat (>= 1.0.2),
