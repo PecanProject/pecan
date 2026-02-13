@@ -90,23 +90,28 @@ test_that("GDAY timestep is correctly set to daily (86400 seconds)", {
 test_that("GDAY flux variables are converted from Mg/ha/day not Mg/ha/yr", {
   # GDAY outputs are daily accumulations, not annual
   # The conversion should use "Mg/ha/day" not "Mg/ha/yr"
+  # Verify the conversion factor is approximately 0.1/86400 = 1.157e-6
   
-  # Test with a realistic GDAY value
-  # Example: auto_resp (autotrophic respiration) ~ 0.02-0.05 Mg/ha/day
-  auto_resp_daily <- 0.035
-  
-  # Correct conversion: Mg/ha/day -> kg/m2/s
   if (requireNamespace("PEcAn.utils", quietly = TRUE)) {
-    correct_result <- PEcAn.utils::ud_convert(auto_resp_daily, "Mg/ha/day", "kg/m2/s")
+    # Test with a realistic GDAY value
+    # Example: auto_resp (autotrophic respiration) ~ 0.02-0.05 Mg/ha/day
+    auto_resp_daily <- 0.035
     
-    # Incorrect conversion (old code): Mg/ha/yr -> kg/m2/s
-    # This would give a much larger value (365 times larger!)
-    incorrect_result <- PEcAn.utils::ud_convert(auto_resp_daily, "Mg/ha/yr", "kg/m2/s")
+    # Correct conversion: Mg/ha/day -> kg/m2/s
+    converted_value <- PEcAn.utils::ud_convert(auto_resp_daily, "Mg/ha/day", "kg/m2/s")
     
-    # The incorrect result should be ~365x larger
-    ratio <- incorrect_result / correct_result
-    expect_true(ratio > 300 & ratio < 400, 
-                label = "Incorrect Mg/ha/yr conversion would be ~365x larger")
+    # Expected value using manual calculation
+    # 1 Mg/ha = 0.1 kg/m2; 1 day = 86400 seconds
+    # So 1 Mg/ha/day = 0.1/86400 kg/m2/s = 1.157407e-6 kg/m2/s
+    manual_conversion <- auto_resp_daily * 0.1 / 86400
+    
+    # Check the conversion matches expected factor within tolerance
+    expect_equal(converted_value, manual_conversion, tolerance = 1e-12,
+                 label = "GDAY daily auto_resp conversion factor is correct")
+    
+    # Verify the converted value is positive and small (as expected from daily flux)
+    expect_true(converted_value > 0, "Converted value should be positive")
+    expect_true(converted_value < 1e-5, "Converted daily flux should be small (< 1e-5 kg/m2/s)")
   }
 })
 
