@@ -12,6 +12,39 @@
 
 context("GDAY model2netcdf unit conversions")
 
+test_that("model2netcdf.GDAY runs without error and produces netCDF", {
+  outdir <- withr::local_tempdir()
+  file.copy("data/gday_out.csv", outdir)
+  
+  # Run the function
+  expect_silent(
+    model2netcdf.GDAY(
+      outdir = outdir,
+      sitelat = 40,
+      sitelon = -88,
+      start_date = "2004-01-01",
+      end_date = "2004-12-31"
+    )
+  )
+  
+  # Check that netCDF file is created
+  nc_file <- file.path(outdir, "2004.nc")
+  expect_true(file.exists(nc_file))
+  
+  # Check that we can read the output
+  output <- PEcAn.utils::read.output(
+    ncfiles = nc_file,
+    variables = c("GPP", "NEE", "NPP"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+  expect_true(nrow(output) > 0)
+  # GPP should be in kg/m2/s (converted from Mg/ha/day)
+  expect_true(all(output$GPP > 0))  # Positive values
+  expect_true(all(output$GPP < 1e-5))  # Small values due to conversion
+})
+
 test_that("GDAY Mg/ha/day to kg/m2/s conversion is correct", {
   # Test data - using simple round numbers for verification
   # GDAY example output: https://github.com/mdekauwe/GDAY/blob/master/example/outputs/D1GDAYDUKEAMB.csv
