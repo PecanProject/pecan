@@ -106,17 +106,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ## Subset data for processing
     sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     
-    raw_time <- sub.sipnet.output[["time"]] # decimal hours (eg 13.75 = 1:45 PM)
-    doy <- sub.sipnet.output[["day"]] # day of year, not of month
-    hr <- floor(raw_time)
-    minsec <- PEcAn.utils::ud_convert(raw_time - hr, "hour", "min")
-    min <- floor(minsec)
-    sec <- PEcAn.utils::ud_convert(minsec - min, "minute", "second")
-    sub_dates <- strptime(
-      paste(y, doy, hr, min, sec),
-      "%Y %j %H %M %S",
-      tz = "UTC"
-    )
+    sub_dates <- sipnet2datetime(y,
+                                 sub.sipnet.output[["day"]],
+                                 sub.sipnet.output[["time"]])
+    
     sub_dates_cf <- PEcAn.utils::datetime2cf(
       sub_dates,
       paste0("days since ", y, "-01-01"),
@@ -278,3 +271,34 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 } # model2netcdf.SIPNET
 #--------------------------------------------------------------------------------------------------#
 ### EOF
+
+# Helper Function 
+
+sipnet2datetime <- function(year, doy, hod){
+  
+  hr <- floor(hod)
+  minsec <- PEcAn.utils::ud_convert(hod - hr, "hour", "min") 
+  minute <- floor(minsec)
+  
+  sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
+  
+  minute <- ifelse(sec == 60, minute + 1, minute)
+  sec <- ifelse(sec == 60, 0, sec)
+  
+  hr <- ifelse(minute == 60, hr + 1, hr)
+  minute <- ifelse(minute == 60, 0, minute)
+  
+  datetime <- strptime(
+    paste(year, doy, hr, minute, sec),
+    "%Y %j %H %M %S", 
+    tz = "UTC"
+  )
+  
+  return(as.POSIXct(datetime))
+}
+
+
+
+
+
+
