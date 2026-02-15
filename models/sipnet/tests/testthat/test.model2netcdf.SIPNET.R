@@ -11,7 +11,8 @@ test_that("model2netcdf.SIPNET runs without error and produces netCDF", {
       sitelat = 0,
       sitelon = 0,
       start_date = "2002-01-01",
-      end_date = "2002-12-31"
+      end_date = "2002-12-31",
+      revision = "102319"
     )
   )
   
@@ -73,6 +74,6 @@ test_that("ud_convert rejects incompatible units", {
   
   expect_error(
     PEcAn.utils::ud_convert(10, "cm", "kg"),
-    "not convertible"
+    "units::ud_are_convertible\\(u1, u2\\) is not TRUE"
   )
 })
