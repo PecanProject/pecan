@@ -106,9 +106,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ## Subset data for processing
     sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     
-    sub_dates <- sipnet2datetime(y,
-                                 sub.sipnet.output[["day"]],
-                                 sub.sipnet.output[["time"]])
+    sub_dates <- sipnet2datetime(
+      y,
+      sub.sipnet.output[["day"]],
+      sub.sipnet.output[["time"]]
+    )
     
     sub_dates_cf <- PEcAn.utils::datetime2cf(
       sub_dates,
@@ -274,10 +276,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
 # Helper Function 
 
-sipnet2datetime <- function(year, doy, hod){
+sipnet2datetime <- function(year, doy, hour){
   
-  hr <- floor(hod)
-  minsec <- PEcAn.utils::ud_convert(hod - hr, "hour", "min") 
+  hr <- floor(hour)
+  minsec <- PEcAn.utils::ud_convert(hour - hr, "hour", "min") 
   minute <- floor(minsec)
   
   sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
@@ -294,7 +296,7 @@ sipnet2datetime <- function(year, doy, hod){
     tz = "UTC"
   )
   
-  return(as.POSIXct(datetime))
+  as.POSIXct(datetime)
 }
 
 
