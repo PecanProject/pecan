@@ -19,29 +19,22 @@ test_that("Read.IC.info.BADM falls back to L1 and ALL if no L2 data", {
   expect_true(nrow(result) >= 0)
 })
 
-test_that("Read.IC.info.BADM handles all-NA carbon pool entries cleanly", {
+test_that("Read.IC.info.BADM correctly filters rows with all NA carbon pools", {
+  lat <- 42.5378
+  lon <- -72.1715
   
-  # Construct BADM-like entries where all carbon pools are NA
-  entries <- data.frame(
-    GROUP_ID = c("A", "B", "C"),
-    LAT = c(42, 43, 44),
-    LON = c(-72, -73, -74),
-    UNIT = c("kg/m2", "kg/m2", "kg/m2"),
-    leafC = c(NA, NA, NA),
-    stemC = c(NA, NA, NA),
-    rootC = c(NA, NA, NA),
-    soilC = c(NA, NA, NA),
-    stringsAsFactors = FALSE
-  )
+  result <- Read.IC.info.BADM(lat, lon)
   
-  # Run the same filtering logic used internally
-  ind <- apply(entries[, 5:8], 1, function(x) all(is.na(x)))
-  filtered <- entries[-which(ind), ]
+  expect_s3_class(result, "data.frame")
   
-  # Expect no crash and a valid empty data frame
-  expect_s3_class(filtered, "data.frame")
-  expect_equal(nrow(filtered), 0)
+  if (nrow(result) > 0) {
+    carbon_cols <- c("AGB", "soil_organic_carbon_content", "litter_carbon_content", "root_carbon_content")
+    
+    has_data <- apply(result[, carbon_cols], 1, function(x) any(!is.na(x)))
+    expect_true(all(has_data), info = "All rows should have at least one non-NA carbon value")
+  }
 })
+
 
 
 test_that("EPA_ecoregion_finder returns valid L1 and L2 codes", {
