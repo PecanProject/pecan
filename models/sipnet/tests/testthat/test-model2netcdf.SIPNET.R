@@ -27,8 +27,8 @@ test_that("sipnet2datetime - decimal accuracy", {
   expect_equal(format(sipnet2datetime(2023, 1, 13.75), "%H:%M:%S"),
                "13:45:00")
   
-  expect_equal(format(sipnet2datetime(2023, 1, 23.9999), "%Y-%m-%d %H:%M"),
-               "2023-01-01 23:59")
+  expect_equal(format(sipnet2datetime(2023, 1, 23.9999), "%Y-%m-%d %H:%M:%S"),
+               "2023-01-01 23:59:59")
   
   }
 )
