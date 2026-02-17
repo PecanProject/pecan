@@ -16,8 +16,8 @@
 #' @param overwrite Logical if files needs to be overwritten.
 #' @param verbose Decide if we want to stop printing info.
 #' @param ... other inputs.
-#' @details For the list of variables check out the documentation at \url{
-#'  https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
+#' @details For the list of variables check out the documentation at
+#'  \url{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 #'
 #' @return a list of xts objects with all the variables for the requested years
 #' @export
@@ -142,7 +142,7 @@ extract.nc.ERA5 <-
       ncfile <- file.path(in.path, paste0(in.prefix, year, ".nc"))
       # open the file
       nc_data <- ncdf4::nc_open(ncfile)
-      time_var <- if ("time" %in% names(nc_data$var)) "time" else "valid_time"
+      time_var <- if ("time" %in% names(nc_data$dim)) "time" else "valid_time"
       t <- ncdf4::ncvar_get(nc_data, time_var)
       tunits <- ncdf4::ncatt_get(nc_data, time_var)
       tustr <- strsplit(tunits$units, " since ")
@@ -164,7 +164,7 @@ extract.nc.ERA5 <-
           vars <- all_vars[sapply(all_vars, function(v) {
             var_info <- nc_data$var[[v]]
             var_info$ndims == 4 && 
-              var_info$prec %in% c("float", "double", "integer") &&
+              var_info$prec %in% c("float", "double", "integer", "short") &&
               !v %in% c("expver") 
           })]
         } else {
@@ -197,32 +197,12 @@ extract.nc.ERA5 <-
                            ens.out <- vector("list", length = length(ensemblesN))
                            for (ens in ensemblesN) {
                              if (is_ensemble) {
-                               var_data <- ncdf4::ncvar_get(nc_data, vname)
-                               # NEW FORMAT- [longitude, latitude, valid_time, number]
-                               var_subset <- if (nc_data$var[[vname]]$ndims == 4) {
-                                 var_data[, , , ens]
-                               } else {
-                                 # OLD FORMAT - [longitude, latitude, time*ens]
-                                 # time slice boundaries for specific ensemble member
-                                 time_steps_per_ens <- dim(var_data)[3] / ens_size
-                                 start_idx <- (ens - 1) * time_steps_per_ens + 1
-                                 end_idx <- ens * time_steps_per_ens
-                                 var_data[, , start_idx:end_idx]
-                               }
+                               brick.tmp <-
+                                 raster::brick(ncfile, varname = vname, level = ens)
                              } else {
                                # Direct brick creation for reanalysis
-                               var_subset <- NULL
-                             }
-                             
-                             brick.tmp <- if (is.null(var_subset)) {
-                               raster::brick(ncfile, varname = vname)
-                             } else {
-                               raster::brick(var_subset, 
-                                             xmn = min(nc_data$dim$longitude$vals),
-                                             xmx = max(nc_data$dim$longitude$vals),
-                                             ymn = min(nc_data$dim$latitude$vals),
-                                             ymx = max(nc_data$dim$latitude$vals),
-                                             crs = "+proj=longlat +datum=WGS84")
+                               brick.tmp <- 
+                                 raster::brick(ncfile, varname = vname)
                              }
                              raster::setZ(brick.tmp, timestamp)
                              nn <-

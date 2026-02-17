@@ -58,7 +58,6 @@ Imports:
     terra,
     tidyr,
     tidyselect,
-    traits,
     XML (>= 3.98-1.4)
 Suggests:
     dataone,
@@ -72,6 +71,7 @@ Suggests:
     raster,
     reticulate,
     testthat (>= 3.1.0),
+    traits,
     withr,
     MASS
 Remotes:

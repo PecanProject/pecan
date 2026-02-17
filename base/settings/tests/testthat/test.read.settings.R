@@ -2,9 +2,6 @@ context("tests for read.settings and related functions")
 
 PEcAn.logger::logger.setQuitOnSevere(FALSE)
 PEcAn.logger::logger.setLevel("OFF")
-testdir <- tempfile()
-dir.create(testdir, showWarnings = FALSE)
-teardown(unlink(testdir, recursive = TRUE))
 
 test_that("`strip_comments()` function removes comments from nested lists", {
   nestedList <- list(
@@ -74,20 +71,21 @@ skip_if_not(
 )
 
 test_that("read.settings returned correctly", {
-  s <- .get.test.settings()
-  skip("Tests failing due to multisite?")
+  testdir <- withr::local_tempdir()
+  s <- .get.test.settings(testdir)
   expect_true(file.exists(s$outdir))
   expect_true(file.info(s$outdir)$isdir)
 })
 
-
 test_that("check.settings throws error if pft has different type than model", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s[["model"]]$model_type <- "SIPNET"
   expect_error(check.settings(update.settings(s)))
 })
 
 test_that("check.settings gives sensible defaults", {
+  testdir <- withr::local_tempdir()
   ## This provides the minimum inputs
   s1 <- list(
           pfts = list(
@@ -131,6 +129,7 @@ test_that("check.settings gives sensible defaults", {
 })
 
 test_that("pfts are defined and are in database", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$outdir <- testdir
 
@@ -145,6 +144,7 @@ test_that("pfts are defined and are in database", {
 })
 
 test_that("check.settings uses run dates if dates not given in ensemble or sensitivity analysis", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
 
   for (node in c("ensemble", "sensitivity.analysis")) {
@@ -164,6 +164,7 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
 })
 
 test_that("sensitivity.analysis and ensemble use other's settings if null", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$run$start.date <- s$run$end.date <- NULL # Otherwise these would be used
   s$database$bety$write <- FALSE # otherwise will error for trying to add with no run dates
@@ -184,6 +185,7 @@ test_that("sensitivity.analysis and ensemble use other's settings if null", {
 })
 
 test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s1 <- check.settings(update.settings(s))
   expect_is(s1$workflow$id, c("character", "numeric"))
@@ -194,6 +196,7 @@ test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
 })
 
 test_that("check.settings will fail if db does not exist", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   expect_true(PEcAn.DB::db.exists(s$database$bety))
   s$database$bety$dbname <- "blabla"
@@ -202,9 +205,8 @@ test_that("check.settings will fail if db does not exist", {
   expect_error(check.settings(update.settings(s)))
 })
 
-
-
 test_that("check.settings handles userid and username properly", {
+  testdir <- withr::local_tempdir()
   s1 <- .get.test.settings(testdir)
   s1$database$bety[["userid"]] <- "bety"
   s1$database$bety[["user"]] <- NULL
@@ -233,6 +235,7 @@ test_that("check.settings handles userid and username properly", {
 })
 
 test_that("check settings sets model$type based on model$name and model$model_type", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$model <- list(name = "BIOCRO")
   s1 <- check.settings(update.settings(s))
@@ -254,6 +257,7 @@ test_that("check settings sets model$type based on model$name and model$model_ty
 })
 
 test_that("check settings runs with only model$name and no database", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$model <- list(name = "BIOCRO")
   s$database <- NULL
@@ -262,6 +266,7 @@ test_that("check settings runs with only model$name and no database", {
 })
 
 test_that("invalid pathname is placed in home directory", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$database$dbfiles <- "foo/bar"
   s1 <- check.settings(update.settings(s))
@@ -271,6 +276,7 @@ test_that("invalid pathname is placed in home directory", {
 })
 
 test_that("update.settings only runs once unless forced", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   expect_null(s$model$type)
 
@@ -289,8 +295,8 @@ test_that("update.settings only runs once unless forced", {
   expect_equal(s$model$type, "BIOCRO")
 })
 
-
 test_that("check.settings only runs once unless forced", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   s$database$bety$driver <- NULL
   s <- check.settings(update.settings(s))
@@ -309,8 +315,8 @@ test_that("check.settings only runs once unless forced", {
   expect_equal(s$database$bety$driver, "PostgreSQL")
 })
 
-
 test_that("fix.deprecated.settings only runs once unless forced", {
+  testdir <- withr::local_tempdir()
   s <- .get.test.settings(testdir)
   expected <- s$database$dbfiles
   s$run$dbfiles <- s$database$dbfiles
@@ -333,8 +339,8 @@ test_that("fix.deprecated.settings only runs once unless forced", {
   expect_null(s$run$dbfiles)
 })
 
-
 test_that("check.settings works for a MultiSettings", {
+  testdir <- withr::local_tempdir()
   s1 <- .get.test.settings(testdir)
   s1 <- check.settings(update.settings(s1)) # Make sure all other settings OK
   s1$database$bety$driver <- NULL
