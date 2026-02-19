@@ -54,6 +54,6 @@ LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 X-schema.org-keywords: PEcAn, data-visualization, statistical-graphics, ggplot2

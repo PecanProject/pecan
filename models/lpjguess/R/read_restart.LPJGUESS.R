@@ -11,13 +11,15 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   rx <- read_restart.LPJGUESS(
-#'            outdir   = "/projectnb/…/LPJ_output",
-#'            runid    = "123456",
-#'            stop.time = as.POSIXct("2001-12-31 23:59:59", tz = "UTC"),
-#'            settings = settings,
-#'            var.names = c("AGB.pft"),
-#'            params = params)
+#' settings <- PEcAn.settings::read.settings("pecan.xml")
+#' params <- list()
+#' rx <- read_restart.LPJGUESS(
+#'          outdir   = "/projectnb/…/LPJ_output",
+#'          runid    = "123456",
+#'          stop.time = as.POSIXct("2001-12-31 23:59:59", tz = "UTC"),
+#'          settings = settings,
+#'          var.names = c("AGB.pft"),
+#'          params = params)
 #' }
 #' @author Istem Fer, Yinghao Sun
 read_restart.LPJGUESS <- function(outdir, runid, stop.time, settings, var.names, params){

@@ -38,10 +38,18 @@ If none is found, both will return NA.
 }}
 \examples{
 \dontrun{
-  dbfile.file('Input', 7, dbcon)
+  type <- "Input"
+  id <- 7
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
+  dbfile.file(type, id, dbcon)
 }
 \dontrun{
-  dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
+  type <- "Model"
+  file <- "/usr/local/bin/sipnet"
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
+  dbfile.id(type, file, dbcon)
 }
 }
 \author{
