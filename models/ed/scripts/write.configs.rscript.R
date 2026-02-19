@@ -68,8 +68,14 @@ for (i in seq(pft.names)){
   
   load(paste(outdirs[i], 'prior.distns.Rdata', sep=''))
   
-  if ("trait.mcmc.rds" %in% dir(outdirs)) {
-    trait.mcmc <- readRDS(paste(outdirs[i], 'trait.mcmc.rds', sep = ''))
+  possible_options <- c("trait.mcmc.rds", "trait.mcmc.RData")
+
+  for (fname in possible_options) {
+    full_path <- file.path(outdirs[i], fname)
+    if (file.exists(full_path)) {
+      trait.mcmc <- read_pft_file(full_path)
+      break
+    }
   }
   
   pft.name <- pft.names[i]

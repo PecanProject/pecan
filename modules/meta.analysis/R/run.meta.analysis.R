@@ -204,9 +204,14 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   }
   
   # check to see if run.meta.analysis can be skipped
-  if (file.exists(file.path(pft$outdir, "trait.mcmc.rds")) && 
-      file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
-      update != TRUE) {
+  trait_exists <- file.exists(file.path(pft$outdir, "trait.mcmc.rds")) ||
+                  file.exists(file.path(pft$outdir, "trait.mcmc.RData"))
+
+  post_exists  <- file.exists(file.path(pft$outdir, "post.distns.MA.rds")) ||
+                  file.exists(file.path(pft$outdir, "post.distns.RData"))
+
+  # check to see if run.meta.analysis can be skipped
+  if (trait_exists && post_exists && !isTRUE(update)) {
     PEcAn.logger::logger.info("Assuming get.trait copied results already")
     return(pft)
   }

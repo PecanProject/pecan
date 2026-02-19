@@ -87,6 +87,8 @@ get.parameter.samples <- function(settings,
       }
     }
 
+    trait_mcmc_rds_path <- file.path(outdirs[i], "trait.mcmc.rds")
+    trait_mcmc_rdata_path <- file.path(outdirs[i], "trait.mcmc.RData")
     ### Load trait mcmc data (if exists, either from MA or PDA)
     if (!is.null(settings$pfts[[i]]$posteriorid) && !is.null(con)) {
       # first check if there are any files associated with posterior ids
@@ -112,12 +114,19 @@ get.parameter.samples <- function(settings,
         )
         ma.results <- FALSE
       }
-    } else if ("trait.mcmc.rds" %in% dir(unlist(outdirs[i]))) {
+    } else if (file.exists(trait_mcmc_rds_path) || file.exists(trait_mcmc_rdata_path)) {
+
       PEcAn.logger::logger.info(
         "Defaulting to trait.mcmc file in the pft directory."
       )
+
       ma.results <- TRUE
-      distns$trait.mcmc <- readRDS(file.path(outdirs[i], "trait.mcmc.rds"))
+
+      if (file.exists(trait_mcmc_rds_path)) {
+        distns$trait.mcmc <- read_pft_file(trait_mcmc_rds_path)
+      } else {
+        distns$trait.mcmc <- read_pft_file(trait_mcmc_rdata_path)
+      }
     } else {
       ma.results <- FALSE
     }
