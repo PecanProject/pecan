@@ -59,7 +59,7 @@ dbstatus <- remotedata_db_check(
   out_get_data,
   algorithm,
   out_process_data,
-  overwrite
+  overwrite,
   dbcon)
 }
 }

@@ -19,7 +19,7 @@
 ##' @author David LeBauer, Alexey Shiklomanov
 ##' @examples
 ##' \dontrun{
-##'   con <- db.open(...)
+##'   con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 ##'   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 ##' }
 query.priors <- function(pft, trstr = NULL, con = NULL, ...){
@@ -95,7 +95,7 @@ query.priors <- function(pft, trstr = NULL, con = NULL, ...){
 #'   PFTs and traits.
 #' @examples
 #' \dontrun{
-#'   con <- db.open(...)
+#'   con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 #'
 #'   # No trait provided, so return all available traits
 #'   pdat <- query_priors(

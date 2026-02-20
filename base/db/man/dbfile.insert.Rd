@@ -40,7 +40,15 @@ This will write into the dbfiles and machines the required data to store the fil
 }
 \examples{
 \dontrun{
-  dbfile.insert('somefile.txt', 'Input', 7, dbcon)
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
+  dbfile.insert(
+    in.path = "/data/files",
+    in.prefix = "somefile.txt",
+    type = "Input",
+    id = 7,
+    con = dbcon
+  )
 }
 }
 \author{

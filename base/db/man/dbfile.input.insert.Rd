@@ -56,14 +56,21 @@ data to store the file
 }
 \examples{
 \dontrun{
+  siteid <- 1
+  startdate <- as.Date("2000-01-01")
+  enddate <- as.Date("2001-01-01")
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
   dbfile.input.insert(
     in.path = 'trait.data.Rdata',
-    in.prefix = siteid,
+    in.prefix = 'trait.data',
+    siteid = siteid,
     startdate = startdate,
     enddate = enddate,
     mimetype = 'application/x-RData',
     formatname = 'traits',
-    con = dbcon)
+    con = dbcon
+  )
 }
 }
 \author{

@@ -31,7 +31,7 @@ If neither `con` nor `...` are provided, this will try to
 }
 \examples{
 \dontrun{
-  con <- db.open(...)
+  con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
   query.priors("ebifarm.pavi", c("SLA", "Vcmax", "leaf_width"), con = con)
 }
 }

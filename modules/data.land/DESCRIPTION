@@ -58,7 +58,6 @@ Imports:
     terra,
     tidyr,
     tidyselect,
-    traits,
     XML (>= 3.98-1.4)
 Suggests:
     dataone,
@@ -72,6 +71,7 @@ Suggests:
     raster,
     reticulate,
     testthat (>= 3.1.0),
+    traits,
     withr,
     MASS
 Remotes:
@@ -80,5 +80,5 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: soil-data, vegetation-data, land-cover
