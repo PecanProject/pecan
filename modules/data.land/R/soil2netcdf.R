@@ -24,9 +24,9 @@
 #' @examples
 #' \dontrun{ 
 #' soil.data <- list(
-#'   fraction_of_sand_in_soil = c(0.3,0.4,0.5),
-#'   fraction_of_clay_in_soil = c(0.3,0.3,0.3),
-#'   soil_depth = c(0.2,0.5,1.0)
+#'  fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+#'  fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+#'  soil_depth = c(0.2,0.5,1.0)
 #' )
 #'
 #' soil2netcdf(soil.data,"soil.nc")
@@ -86,10 +86,22 @@ soil2netcdf <- function(soil.data, new.file) {
 
   ## create new file
   nc <- ncdf4::nc_create(new.file, vars = ncvar)
-  on.exit(ncdf4::nc_close(nc), add = TRUE)
+   write_error <- NULL
 
-  ## add data
-  for (vn in names(soil.data)) {
-    ncdf4::ncvar_put(nc, ncvar[[vn]], soil.data[[vn]])
+  tryCatch({
+    for (vn in names(soil.data)) {
+      ncdf4::ncvar_put(nc, ncvar[[vn]], soil.data[[vn]])
+    }
+  }, error = function(e) {
+    write_error <<- e
+  })
+
+  ncdf4::nc_close(nc)
+
+  if (!is.null(write_error)) {
+    if (file.exists(new.file)) {
+      unlink(new.file)
+      }
+    stop(write_error)
   }
 }
