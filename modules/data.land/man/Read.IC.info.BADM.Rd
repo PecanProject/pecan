@@ -22,7 +22,5 @@ If no data found in the BADM database for the given lat/longs eco-regions, then 
 All the variables are also converted to kg/m^2.
 }
 \examples{
-\dontrun{
-  badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
-}
+badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
 }

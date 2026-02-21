@@ -30,16 +30,7 @@ is passed through a higher priority method.
 }
 \examples{
 \dontrun{
-## bash shell:
-## example workflow.R and pecan.xml files in pecan/tests
-R --vanilla -- --settings path/to/mypecan.xml < workflow.R
-
-## R:
-
-settings <- read.settings()
 settings <- read.settings(file="willowcreek.xml")
-test.settings.file <- system.file("tests/test.xml", package = "PEcAn.settings")
-settings <- read.settings(test.settings.file)
 }
 }
 \author{

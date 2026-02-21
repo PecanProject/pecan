@@ -35,6 +35,9 @@ file exists
 }
 \examples{
 \dontrun{
+  pft <- "temp_pft"
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 }
 }

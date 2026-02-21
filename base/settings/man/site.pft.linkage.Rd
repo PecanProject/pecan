@@ -37,7 +37,7 @@ site.pft.links <-tribble(
  "763", "temperate.broadleaf.deciduous4"
 )
 
-# sending a multi- setting xml file to the function
-site.pft.linkage(settings,site.pft.links)
+settings <- PEcAn.settings::read_settings("pecan.xml")
+site.pft.linkage(settings, site.pft.links)
 }
 }

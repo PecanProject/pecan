@@ -34,6 +34,14 @@ If for example met was a parent and it's sampling method resulted in choosing th
 parent_ids to this function.
 }
 \examples{
-\dontrun{input.ens.gen(settings,"met","sampling")}
+\dontrun{
+  settings <- PEcAn.settings::read.settings("pecan.xml")
+  input.ens.gen(
+    settings, 
+    ensemble_size = 50,
+    input = "met",
+    method = "sampling"
+  )
+}
 
 }

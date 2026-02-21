@@ -38,6 +38,11 @@ Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
 }
 \examples{
 \dontrun{
-result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+result <- download.NEONmet(
+   sitename = 'HARV',
+   outfolder = '~/',
+   start_date = '2017-01-01',
+   end_date = '2017-01-31',
+   overwrite = TRUE)
 }
 }

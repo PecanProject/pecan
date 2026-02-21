@@ -1,7 +1,7 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process Emulator
-Version: 1.8.2
+Version: 1.8.2.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -17,5 +17,5 @@ URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: emulator, gaussian-process
