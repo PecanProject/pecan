@@ -17,6 +17,7 @@ Removes previous model run output from worker node local scratch directories on 
 }
 \examples{
 \dontrun{
+settings <- PEcAn.settings::read_settings("pecan.xml")
 clear.scratch(settings)
 }
 }

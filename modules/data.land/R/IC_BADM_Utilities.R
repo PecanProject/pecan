@@ -13,9 +13,8 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#'   badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
-#'}
+#' badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
+
 Read.IC.info.BADM <-function(lat, long){
   cov.factor <-1
   #Reading in the DB
@@ -236,11 +235,19 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #'
 #' @return a list of paths to generated and stored IC files.
 #' @export
-#'
-BADM_IC_process <- function(settings, dir, overwrite = TRUE) {
-  # This function now only accepts single Settings objects
-  if (!("run" %in% names(settings))) {
-    stop("settings must be a single Settings object with 'run' element")
+#' 
+#' @examples
+#' \dontrun{
+#' settings <- PEcAn.settings::read.settings("pecan.xml")
+#' output_dir <- withr::local_tempdir()
+#' 
+#' ic_files <- BADM_IC_process(settings, dir = output_dir)
+#' }
+BADM_IC_process <- function(settings, dir, overwrite=TRUE){
+  
+  # check if this is a single-site or multi-site configuration
+  if ("run" %in% names(settings)) {
+    settings <- list(settings)
   }
   
   # extract and normalise site info

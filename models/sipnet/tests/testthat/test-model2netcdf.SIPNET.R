@@ -1,0 +1,98 @@
+setup_sipnet_test <- function(sipnet_dat, delete.raw = FALSE) {
+  base <- withr::local_tempdir(pattern = "sipnet_test_", .local_envir = parent.frame())
+  outdir <- file.path(base, "out", "run1")
+  rundir <- file.path(base, "run", "run1")
+  dir.create(outdir, recursive = TRUE)
+  dir.create(rundir, recursive = TRUE)
+
+  writeLines("leafCSpWt\t32", file.path(rundir, "sipnet.param"))
+
+  out_path <- file.path(outdir, "sipnet.out")
+  writeLines("Notes: units in g/m2 per timestep; water in cm", out_path)
+  write.table(sipnet_dat, file = out_path, append = TRUE,
+              row.names = FALSE, quote = FALSE, sep = "\t")
+
+
+  model2netcdf.SIPNET(
+    outdir     = outdir,
+    sitelat    = 38.0,
+    sitelon    = -121.0,
+    start_date = "2002-01-01",
+    end_date   = "2002-12-31",
+    delete.raw = delete.raw,
+    revision   = "r136"
+  )
+
+  list(outdir = outdir, rundir = rundir, out_path = out_path)
+}
+
+make_base_sipnet <- function(n = 4L) {
+  data.frame(
+    year = 2002,
+    day = rep(c(1, 2), each = n / 2, length.out = n),
+    time = rep(c(6, 18), length.out = n),
+    plantWoodC = 5000, plantLeafC = 200, woodCreation = 0.5,
+    soil = 10000, microbeC = 8, coarseRootC = 1200, fineRootC = 800,
+    litter = 400, soilWater = 14, soilWetnessFrac = 0.85, snow = 0,
+    npp = 0.05, nee = 0.10, cumNEE = cumsum(rep(0.1, n)),
+    gpp = 0.30, rAboveground = 0.04, rSoil = 0.09, rRoot = 0.01,
+    ra = 0.05, rh = 0.08, rtot = 0.13,
+    evapotranspiration = 0.005, fluxestranspiration = 0.003
+  )
+}
+
+
+test_that("model2netcdf.SIPNET converts v2 output including N2O and CH4 fluxes", {
+  n <- 4L
+  ts_s <- 43200
+  sipnet_dat <- make_base_sipnet(n)
+  sipnet_dat$n2o <- 0.002
+  sipnet_dat$ch4 <- 0.001
+  paths <- setup_sipnet_test(sipnet_dat)
+  nc_file <- file.path(paths$outdir, "2002.nc")
+  expect_true(file.exists(nc_file))
+
+  nc <- ncdf4::nc_open(nc_file)
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+  vars <- names(nc$var)
+
+  expect_true("N2O_flux" %in% vars)
+  expect_true("CH4_flux" %in% vars)
+  expect_true(all(c("GPP", "NEE", "TotalResp", "TotSoilCarb") %in% vars))
+
+  n2o <- as.vector(ncdf4::ncvar_get(nc, "N2O_flux"))
+  ch4 <- as.vector(ncdf4::ncvar_get(nc, "CH4_flux"))
+  gpp <- as.vector(ncdf4::ncvar_get(nc, "GPP"))
+
+  expect_equal(n2o, rep(0.002 * 1e-3 / ts_s, n), tolerance = 1e-12)
+  expect_equal(ch4, rep(0.001 * 1e-3 / ts_s, n), tolerance = 1e-12)
+  expect_equal(gpp, rep(0.30  * 1e-3 / ts_s, n), tolerance = 1e-12)
+
+  expect_equal(nc$var$N2O_flux$units, "kg N m-2 s-1")
+  expect_equal(nc$var$CH4_flux$units, "kg C m-2 s-1")
+  expect_equal(nc$var$GPP$units,      "kg C m-2 s-1")
+
+  expect_equal(nc$dim$time$len, n)
+  expect_match(nc$dim$time$units, "days since 2002")
+})
+
+
+test_that("model2netcdf.SIPNET omits N2O/CH4 when columns absent", {
+  paths <- setup_sipnet_test(make_base_sipnet(n = 2L))
+
+  nc <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+  vars <- names(nc$var)
+
+  expect_false("N2O_flux" %in% vars)
+  expect_false("CH4_flux" %in% vars)
+  expect_true("GPP" %in% vars)
+})
+
+
+test_that("delete.raw removes sipnet.out after conversion", {
+  paths <- setup_sipnet_test(make_base_sipnet(n = 2L), delete.raw = TRUE)
+
+  expect_false(file.exists(paths$out_path))
+  expect_true(file.exists(file.path(paths$outdir, "2002.nc")))
+})

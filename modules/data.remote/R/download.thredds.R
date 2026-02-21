@@ -10,15 +10,6 @@
 ##' \dontrun{
 ##' settings <- PEcAn.settings::read.settings("/path/to/pecan.xml")
 ##' site_info <- get_site_info(settings)
-##' results <- download_thredds(
-##'   site_info = site_info,
-##'   dates = c("19950201", "19961215"),
-##'   varid = "LAI",
-##'   dir_url = "https://www.ncei.noaa.gov/thredds/catalog/cdr/lai/files",
-##'   data_url = "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files",
-##'   run_parallel = TRUE,
-##'   outdir = NULL)
-##'            run_parallel = TRUE, ncores = 8)
 ##' }
 ##' @export
 ##' @author Bailey Morrison
@@ -81,6 +72,8 @@ get_site_info <- function(settings) {
 ##'
 ##' @examples
 ##' \dontrun{
+##' settings <- PEcAn.settings::read.settings("/path/to/pecan.xml")
+##' site_info <- get_site_info(settings)
 ##' results <- download_thredds(
 ##'   site_info = site_info,
 ##'   dates = c("19950201", "19961215"),
@@ -225,6 +218,8 @@ download_thredds <- function(site_info,
 ##'
 ##' @examples
 ##' \dontrun{
+##' settings <- PEcAn.settings::read.settings("/path/to/pecan.xml")
+##' site_info <- get_site_info(settings)
 ##' thredds_url = paste0( # breaking up long URL for readability
 ##'   "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1995/",
 ##'   "AVHRR-Land_v005_AVH15C1_NOAA-14_19950201_c20180831220722.nc")

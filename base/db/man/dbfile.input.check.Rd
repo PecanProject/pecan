@@ -53,6 +53,11 @@ file exists
 }
 \examples{
 \dontrun{
+  siteid <- 1
+  startdate <- as.Date("2000-01-01")
+  enddate <- as.Date("2001-01-01")
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 }
 }

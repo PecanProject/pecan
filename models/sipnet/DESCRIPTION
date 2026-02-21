@@ -34,5 +34,5 @@ OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: SIPNET, ecosystem-modeling

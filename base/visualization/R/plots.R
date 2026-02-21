@@ -194,7 +194,10 @@ iqr <- function(x) {
 ##' @export
 ##' @importFrom rlang .data
 ##' @examples
-##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
+##' \dontrun{
+##'   trait.data <- data.frame(Y = c(1, 2), se = c(1,2))
+##'   plot_data(trait.data, base.plot = NULL, ymax = 10)
+##' }
 plot_data <- function(trait.data, base.plot = NULL, ymax) {
   
   if (is.null(base.plot)) {

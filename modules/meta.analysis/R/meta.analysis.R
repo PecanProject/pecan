@@ -34,7 +34,7 @@
 ##' @examples
 ##' \dontrun{
 ##'   # Setup
-##'   con <- PEcAn.DB::db.open(...)
+##'   con <- PEcAn.DB::db.open(list(host = "postgres", user = "bety", password = "carya"))
 ##'   pft <- "temperate.Early_Hardwood"
 ##'   pft_id <- PEcAn.DB::db.query("SELECT id FROM pfts WHERE name = $1", con,
 ##'   values = list(pft))[[1]]

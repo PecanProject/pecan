@@ -17,8 +17,8 @@
 ##' @export query.trait.data
 ##' @examples
 ##' \dontrun{
-##' settings <- read.settings()
-##' query.trait.data("Vcmax", "938", con = con)
+##'   con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+##'   query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
 query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE, ids_are_cultivars = FALSE, ...){

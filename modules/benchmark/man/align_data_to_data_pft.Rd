@@ -58,16 +58,18 @@ Can align:
 \examples{
 \dontrun{
 
-observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-observation_two<-c("a", "b", "a", "a")
+con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 
-table<-list()
-table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table<-as.data.frame(table)
+observation_one <- c("AMCA3","AMCA3","AMCA3","AMCA3")
+observation_two <- c("a", "b", "a", "a")
 
-format_one<-"species_USDA_symbol"
-format_two<-"plant_functional_type"
+table <- list()
+table$plant_functional_type_one <- c("AMCA3","AMCA3","ARHY", "ARHY")
+table$plant_functional_type_two <- c('a','a','b', 'b') # PFT groupings
+table <- as.data.frame(table)
+
+format_one <- "species_USDA_symbol"
+format_two <- "plant_functional_type"
 
 aligned <- align_data_to_data_pft(
  con = con,

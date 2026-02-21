@@ -21,3 +21,11 @@ Process initial conditions for a single site using BADM data.
 This function accepts only single Settings objects.
 For processing multiple sites, use a higher-level function.
 }
+\examples{
+\dontrun{
+settings <- PEcAn.settings::read.settings("pecan.xml")
+output_dir <- withr::local_tempdir()
+
+ic_files <- BADM_IC_process(settings, dir = output_dir)
+}
+}

@@ -27,15 +27,20 @@ download.NARR(
 
 \item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.}
 
-\item{...}{other inputs
-example options(download.ftp.method="ncftpget")}
+\item{...}{other inputs}
 }
 \description{
 Download NARR files
 }
 \examples{
 \dontrun{
-download.NARR("~/",'2000/01/01','2000/01/02', overwrite = TRUE, verbose = TRUE)
+options(download.ftp.method = "ncftpget")
+download.NARR(
+   outfolder = "~/",
+   start_date = "2000/01/01",
+   end_date = "2000/01/02",
+   overwrite = TRUE,
+   verbose = TRUE)
 }
 
 }

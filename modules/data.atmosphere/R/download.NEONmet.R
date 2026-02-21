@@ -16,7 +16,12 @@
 ##'
 ##' @examples 
 ##' \dontrun{
-##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+##' result <- download.NEONmet(
+##'    sitename = 'HARV',
+##'    outfolder = '~/',
+##'    start_date = '2017-01-01',
+##'    end_date = '2017-01-31',
+##'    overwrite = TRUE)
 ##' }
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {

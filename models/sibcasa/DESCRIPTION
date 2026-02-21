@@ -1,7 +1,7 @@
 Package: PEcAn.SIBCASA
 Type: Package
 Title: PEcAn Package for Integration of the SiBCASA Model
-Version: 0.0.3
+Version: 0.0.3.9000
 Authors@R: c(person("Rob", "Kooper", role = "cre",
                 email = "kooper@illinois.edu"),
              person("Tony", "Gardella", role = c("aut"),
@@ -26,5 +26,5 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: TRUE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: SiBCASA, ecosystem-modeling

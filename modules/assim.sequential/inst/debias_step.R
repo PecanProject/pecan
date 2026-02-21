@@ -86,9 +86,14 @@ debias_weights_rows <- function(time_label, var, w_named) {
 #' @return Character vector of sites that have no missing covariates in `year`.
 #'
 #' @examples
-#' \dontrun{
-#' ok <- debias_sites_with_complete_covariates_year(cov_df, 2012, sites)
-#' }
+#' cov_df <- data.frame(
+#'   site = c("A", "A", "B", "B"),
+#'   year = c(2012, 2013, 2012, 2013),
+#'   cov1 = c(1, NA, 2, 3),
+#'   cov2 = c(4, 5, 6, NA)
+#' )
+#'
+#' debias_sites_with_complete_covariates_year(cov_df, 2012, c("A", "B"))
 #'
 #' @rdname debias_helpers
 #' @keywords internal

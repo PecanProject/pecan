@@ -38,8 +38,8 @@ converted from measurement temperature to \eqn{25^oC} via the arrhenius equation
 }
 \examples{
 \dontrun{
-settings <- read.settings()
-query.trait.data("Vcmax", "938", con = con)
+  con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+  query.trait.data("Vcmax", "938", con = con)
 }
 }
 \author{
