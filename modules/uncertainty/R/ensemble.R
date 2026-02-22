@@ -548,7 +548,15 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #' @export
 #'
 #' @examples
-#' \dontrun{input.ens.gen(settings,"met","sampling")}
+#' \dontrun{
+#'   settings <- PEcAn.settings::read.settings("pecan.xml")
+#'   input.ens.gen(
+#'     settings, 
+#'     ensemble_size = 50,
+#'     input = "met",
+#'     method = "sampling"
+#'   )
+#' }
 #'
 input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
 

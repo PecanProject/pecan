@@ -13,6 +13,7 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
+##'   settings <- PEcAn.settings::read.settings("pecan.xml")
 ##'   write.config.JULES(defaults, trait.values, settings, run.id)
 ##' }
 ##-------------------------------------------------------------------------------------------------#

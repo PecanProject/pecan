@@ -7,7 +7,9 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{./web/workflow.R -h}
+#' ## Example using a script called from your bash terminal:
+#' ## If workflow.R contains `get_args()` and settings are in foo.xml, run as
+#' ## ./workflow.R -s settings.xml
 get_args <- function() {
   option_list <- list(
     optparse::make_option(

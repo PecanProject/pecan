@@ -28,7 +28,15 @@ State data assimilation read-restart for ED2
   runid <- "99000000020"
   settings_file <- "outputs/pecan.CONFIGS.xml"
   settings <- PEcAn.settings::read.settings(settings_file)
-  forecast <- read_restart.ED2(...)
+  var.names <- c("AbvGrndWood", "GWBI", "TotLivBiom", "leaf_carbon_content")
+  params <- list()
+  forecast <- read_restart.ED2(
+    outdir = outdir,
+    runid = runid,
+    stop.time = 2000,
+    settings = settings,
+    var.names = var.names,
+    params = params)
 }
 
 }

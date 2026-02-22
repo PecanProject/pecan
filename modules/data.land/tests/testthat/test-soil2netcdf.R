@@ -35,3 +35,14 @@ test_that("parameters estimated if missing, but not overwritten", {
     array(1.0)
   )
 })
+
+test_that("component length recycling enforced before netcdf write", {
+  soil.data <- list(
+    soil_depth = c(0.1, 0.3, 0.6),              # length 3
+    fraction_of_sand_in_soil = c(0.4, 0.5),     # length 2 (mismatch)
+    fraction_of_clay_in_soil = c(0.2, 0.2, 0.2) # length 3
+  )
+  path <- withr::local_tempfile()
+  expect_error(soil2netcdf(soil.data, path), "arguments imply differing number of rows")
+  expect_false(file.exists(path))
+})

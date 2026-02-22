@@ -24,6 +24,7 @@
 ##'
 ##' @examples
 ##' \dontrun{
+##' options(download.ftp.method = "ncftpget")
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
 ##' }
 ##'

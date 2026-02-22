@@ -24,6 +24,8 @@ extract_thredds_nc
 }
 \examples{
 \dontrun{
+settings <- PEcAn.settings::read.settings("/path/to/pecan.xml")
+site_info <- get_site_info(settings)
 thredds_url = paste0( # breaking up long URL for readability
   "https://www.ncei.noaa.gov/thredds/dodsC/cdr/lai/files/1995/",
   "AVHRR-Land_v005_AVH15C1_NOAA-14_19950201_c20180831220722.nc")
