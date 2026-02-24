@@ -50,7 +50,7 @@ SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
-EXPECTED_ROXYGEN_VERSION := 7.3.2
+EXPECTED_ROXYGEN_VERSION := 7.3.3
 INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
 	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
 	-e   "cat(as.character(packageVersion('roxygen2')))" \

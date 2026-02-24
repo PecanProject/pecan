@@ -42,7 +42,11 @@ List files associated with a container and machine exist in
 }
 \examples{
 \dontrun{
-  dbfile.check("Input", 7, dbcon)
+  type <- "Input"
+  container.id <- 7
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
+  dbfile.check(type, container.id, dbcon)
 }
 }
 \author{

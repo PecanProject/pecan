@@ -6,6 +6,7 @@
 #' @export
 #' @examples
 #' \dontrun{
+#'   settings <- PEcAn.settings::read.settings("pecan.xml")
 #'   start_model_runs(settings)
 #' }
 #' @author Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov

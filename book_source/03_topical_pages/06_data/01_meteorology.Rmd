@@ -1,6 +1,8 @@
 # Available Meteorological Drivers {#met-drivers}
 
-Meteorological (met) drivers provide the climate forcing data required by ecosystem models in PEcAn. Available drivers include site-level observations, regional and global reanalysis products, and climate model projections.
+Meteorological (met) drivers provide the climate forcing data required by
+ecosystem models in PEcAn. Available drivers include site-level observations,
+regional and global reanalysis products, and climate model projections.
 
 ### How to choose a meteorological driver {-}
 
@@ -9,10 +11,17 @@ location, and time period of interest.
 
 General guidance:
 
-- **Site-level analyses** should use flux tower–based datasets (e.g. Ameriflux, Fluxnet, ICOS) when their goal is to precisely match observations from that tower and they are prepared to make analysis-specific choices on how to handle gaps or inconsistencies in the data. Site-level analyses where completeness and timeseries consistency is more important than matching specific days may prefer to use a gridded product.
-- **Regional analyses** commonly use gridded reanalysis or model outputs (such as NARR or NLDAS) whose coverage matches the scale of the analysis.
-- **Global or long-term analyses** typically rely on products with broad spatial and temporal coverage like CRUNCEP, ERA5, or GLDAS.
-- **Future simulations** require climate model outputs (e.g. CMIP5).
+- Site-level analyses should use flux tower–based datasets (e.g. Ameriflux,
+  Fluxnet, ICOS) when their goal is to precisely match observations from that
+  tower and they are prepared to make analysis-specific choices on how to handle
+  gaps or inconsistencies in the data.
+- Site-level analyses where completeness and timeseries consistency is more
+  important than matching specific days may prefer to use a gridded product.
+- Regional analyses commonly use gridded reanalysis or model outputs (such as
+  NARR or NLDAS) whose coverage matches the scale of the analysis.
+- Global or long-term analyses typically rely on products with broad spatial and
+  temporal coverage like CRUNCEP, ERA5, or GLDAS.
+- Future simulations require climate model outputs (e.g. CMIP5).
 
 ### Summary of available drivers {-}
 

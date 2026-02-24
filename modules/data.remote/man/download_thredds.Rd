@@ -40,6 +40,8 @@ download.thredds
 }
 \examples{
 \dontrun{
+settings <- PEcAn.settings::read.settings("/path/to/pecan.xml")
+site_info <- get_site_info(settings)
 results <- download_thredds(
   site_info = site_info,
   dates = c("19950201", "19961215"),
