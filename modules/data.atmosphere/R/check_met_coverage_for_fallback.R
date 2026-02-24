@@ -25,31 +25,65 @@ check_met_coverage_for_fallback <- function(cf_file,
   nc <- ncdf4::nc_open(cf_file)
   on.exit(ncdf4::nc_close(nc), add = TRUE)
 
-  time_vals <- ncdf4::ncvar_get(nc, "time")
-  n_total <- length(time_vals)
+  # ---- helper: compute coverage respecting CF missing attributes
+  detect_coverage_fraction <- function(nc, varname) {
+
+    vals <- ncdf4::ncvar_get(nc, varname)
+
+    # get _FillValue or missing_value if present
+    get_fill_attr <- function(nc, varname) {
+      a <- ncdf4::ncatt_get(nc, varname, "_FillValue")
+      if (!is.null(a) && isTRUE(a$hasatt) && !is.na(a$value)) return(a$value)
+
+      a2 <- ncdf4::ncatt_get(nc, varname, "missing_value")
+      if (!is.null(a2) && isTRUE(a2$hasatt) && !is.na(a2$value)) return(a2$value)
+
+      return(NULL)
+    }
+
+    fill_val <- get_fill_attr(nc, varname)
+
+    is_missing <- rep(FALSE, length(vals))
+
+    if (!is.null(fill_val)) {
+      is_missing <- is_missing | (!is.na(vals) & vals == fill_val)
+    }
+
+    is_missing <- is_missing | is.na(vals) | is.nan(vals)
+
+    n <- length(vals)
+    if (n == 0) return(0)
+    return(sum(!is_missing) / n)
+  }
 
   # ---- Radiation (Rg)
   has_rg <- "surface_downwelling_shortwave_flux_in_air" %in% names(nc$var)
   rg_coverage <- 0
   if (has_rg) {
-    rg_data <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
-    rg_coverage <- sum(!is.na(rg_data)) / n_total
+    rg_coverage <- detect_coverage_fraction(
+      nc,
+      "surface_downwelling_shortwave_flux_in_air"
+  )
   }
 
   # ---- PAR
   has_par <- "surface_downwelling_photosynthetic_photon_flux_in_air" %in% names(nc$var)
   par_coverage <- 0
   if (has_par) {
-    par_data <- ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air")
-    par_coverage <- sum(!is.na(par_data)) / n_total
+    par_coverage <- detect_coverage_fraction(
+      nc,
+      "surface_downwelling_photosynthetic_photon_flux_in_air"
+    )
   }
 
   # ---- Soil moisture
   has_swc <- "volume_fraction_of_condensed_water_in_soil" %in% names(nc$var)
   swc_coverage <- 0
   if (has_swc) {
-    swc_data <- ncdf4::ncvar_get(nc, "volume_fraction_of_condensed_water_in_soil")
-    swc_coverage <- sum(!is.na(swc_data)) / n_total
+    swc_coverage <- detect_coverage_fraction(
+      nc,
+      "volume_fraction_of_condensed_water_in_soil"
+    )
   }
 
   if (verbose) {
