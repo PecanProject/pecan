@@ -1,6 +1,4 @@
-context("merge_cf_met_files")
-
-test_that("merge_cf_met_files fills NA values only", {
+test_that("coalesce_na_cf_met fills NA values only", {
 
   skip_if_not_installed("ncdf4")
 
@@ -43,8 +41,8 @@ test_that("merge_cf_met_files fills NA values only", {
   )
   ncdf4::nc_close(nc_secondary)
 
-  # ---- run merge
-  result <- merge_cf_met_files(
+  # ---- run coalesce
+  result <- coalesce_na_cf_met(
     primary_cf   = primary,
     secondary_cf = secondary,
     vars         = "air_temperature",
@@ -56,7 +54,7 @@ test_that("merge_cf_met_files fills NA values only", {
   expect_identical(result, out)
   expect_true(file.exists(out))
 
-  # ---- verify merged values
+  # ---- verify only missing values were filled (no overwrite of valid data)
   nc_out <- ncdf4::nc_open(out)
   vals <- ncdf4::ncvar_get(nc_out, "air_temperature")
   ncdf4::nc_close(nc_out)
