@@ -1,15 +1,31 @@
 ##' Reads model output and runs sensitivity and ensemble analyses
 ##'
-##' Output is placed in model output directory (settings$outdir).
+##' Processes completed model runs and generates results for sensitivity
+##' and/or ensemble analyses, depending on what is specified in \code{settings}.
+##' Results are saved to the model output directory (\code{settings$outdir}).
+##'
 ##' @export
-##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
-##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
-##'   analysis and ensemble analysis.
-##'   If not provided, they are first looked up from `settings`,
-##'   then if not found they are not used and the most recent set of results
-##'   is read from \code{samples.Rdata} in directory \code{settings$outdir}
-##' @param variable variables to retrieve, as vector of names or expressions
-##' @param start.year,end.year first and last years to retrieve
+##' @param settings A PEcAn \code{Settings} or \code{MultiSettings} object
+##' @param sa.ensemble.id Optional sensitivity analysis ensemble ID.
+##' @param ens.ensemble.id Optional ensemble analysis ensemble ID.
+##' @param variable Variable(s) to retrieve, as a vector of names or expressions.
+##' @param start.year First year to retrieve.
+##' @param end.year Last year to retrieve.
+##'
+##' @details
+##' Loads sensitivity or ensemble sample metadata (from settings or
+##' \code{samples.Rdata} for backwards compatibility), reads model output
+##' files, computes aggregated statistics, and saves processed results
+##' as \code{.Rdata} files.
+##'
+##' @return Invisibly returns NULL. Results are written to disk.
+##'
+##' @seealso \code{start_model_runs}
+##' @examples
+##' \dontrun{
+##'   settings <- PEcAn.settings::read.settings("pecan.xml")
+##'   get.results(settings)
+##' }
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL, 
                         variable = NULL, start.year = NULL, end.year = NULL) {
