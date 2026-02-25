@@ -86,7 +86,7 @@ if (length(fill_vars) == 0) {
   }
 
   # ---- perform coalescing ONLY now
-  PEcAn.data.atmosphere:::coalesce_na_cf_met(
+  coalesce_na_cf_met(
     primary_cf   = primary_cf,
     secondary_cf = fallback_cf,
     vars         = fill_vars,
