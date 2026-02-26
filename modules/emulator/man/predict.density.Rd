@@ -4,18 +4,20 @@
 \alias{predict.density}
 \title{predict.density}
 \usage{
-\method{predict}{density}(den, xnew)
+\method{predict}{density}(object, xnew, ...)
 }
 \arguments{
-\item{den}{density object}
+\item{object}{a \code{density} object (as returned by \code{\link[stats]{density}})}
 
-\item{xnew}{new x coordinate}
+\item{xnew}{numeric vector of new x coordinates at which to evaluate the density}
+
+\item{...}{additional arguments (currently unused)}
 }
 \value{
-ynew
+numeric vector of interpolated density values at \code{xnew}
 }
 \description{
-Simple interpolation of a density object to new points
+Simple interpolation of a density object to new points.
 }
 \author{
 Michael Dietze

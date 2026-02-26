@@ -63,7 +63,7 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
   ##calc distance matrix
   d <- NULL
   if (isotropic) {
-    d <- distance.matrix(x.compact, 2)
+    d <- distance_matrix(x.compact, 2)
   } else {
     d <- distance(x.compact, 2)
   }

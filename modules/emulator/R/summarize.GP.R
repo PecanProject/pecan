@@ -1,5 +1,5 @@
-##' @name summarize.GP
-##' @title summarize.GP
+##' @name summarize_GP
+##' @title summarize_GP
 ##' @export
 ##' 
 ##' @param gp Gaussian Process
@@ -7,7 +7,7 @@
 ##' @param txt_file filename you want figures written out to
 ##' 
 ##' @author Michael Dietze
-summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
+summarize_GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
   nugget    <- gp$nugget
   isotropic <- gp$isotropic
   d         <- gp$d

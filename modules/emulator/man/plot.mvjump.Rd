@@ -4,13 +4,20 @@
 \alias{plot.mvjump}
 \title{plot.mvjump}
 \usage{
-\method{plot}{mvjump}(jmp)
+\method{plot}{mvjump}(x, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{x}{object of class \code{mvjump}}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+Invisible \code{NULL}; called for its side-effect of producing a plot.
 }
 \description{
-plot.mvjump
+Plot diagnostic history for a \code{mvjump} tuning object.
+
+Displays the multivariate jump parameter trace and acceptance rate over MCMC iterations.
 }
 \author{
 Michael Dietze

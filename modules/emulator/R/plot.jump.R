@@ -1,11 +1,15 @@
-##' @name plot.jump
+##' Plot diagnostic history for a \code{jump} tuning object
+##'
+##' Displays the jump parameter trace and acceptance rate over MCMC iterations.
+##'
 ##' @title plot.jump
-##' @export plot.jump
-##' 
-##' @param jmp jump parameter
-##' 
+##' @param x object of class \code{jump}
+##' @param ... additional arguments (currently unused)
+##' @return Invisible \code{NULL}; called for its side-effect of producing a plot.
 ##' @author Michael Dietze
-plot.jump <- function(jmp) {
+##' @exportS3Method graphics plot
+plot.jump <- function(x, ...) {
+  jmp <- x
   graphics::par(mfrow = c(1, 2))
   plot(attr(jmp, "history"), 
        ylab = "Jump Parameter",
@@ -17,18 +21,21 @@ plot.jump <- function(jmp) {
        ylab = "Acceptance Rate")
   graphics::abline(h = mean(attr(jmp, "arate"), na.rm = TRUE))
   graphics::abline(h = attr(jmp, "target"), col = 2)
+  invisible(NULL)
 } # plot.jump
 
-
-
-##' @name plot.mvjump
+##' Plot diagnostic history for a \code{mvjump} tuning object
+##'
+##' Displays the multivariate jump parameter trace and acceptance rate over MCMC iterations.
+##'
 ##' @title plot.mvjump
-##' @export
-##'
-##' @param jmp jump parameter
-##'
+##' @param x object of class \code{mvjump}
+##' @param ... additional arguments (currently unused)
+##' @return Invisible \code{NULL}; called for its side-effect of producing a plot.
 ##' @author Michael Dietze
-plot.mvjump <- function(jmp) {
+##' @exportS3Method graphics plot
+plot.mvjump <- function(x, ...) {
+  jmp <- x
   graphics::par(mfrow = c(1, 2))
   plot(
     attr(jmp, "history")[, 1],
@@ -47,4 +54,5 @@ plot.mvjump <- function(jmp) {
     ylim = c(0, 1))
   graphics::abline(h = attr(jmp, "target"))
   graphics::abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
+  invisible(NULL)
 } # plot.mvjump

@@ -4,13 +4,20 @@
 \alias{plot.jump}
 \title{plot.jump}
 \usage{
-\method{plot}{jump}(jmp)
+\method{plot}{jump}(x, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{x}{object of class \code{jump}}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+Invisible \code{NULL}; called for its side-effect of producing a plot.
 }
 \description{
-plot.jump
+Plot diagnostic history for a \code{jump} tuning object.
+
+Displays the jump parameter trace and acceptance rate over MCMC iterations.
 }
 \author{
 Michael Dietze

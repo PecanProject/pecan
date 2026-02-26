@@ -4,13 +4,18 @@
 \alias{p.jump}
 \title{p.jump}
 \usage{
-\method{p}{jump}(jmp)
+\method{p}{jump}(x, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{x}{object of class \code{jump}}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+The most recent jump parameter value.
 }
 \description{
-p.jump
+Extract current jump parameter value for a \code{jump} object.
 }
 \author{
 Michael Dietze

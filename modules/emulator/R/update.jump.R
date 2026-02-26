@@ -1,14 +1,17 @@
-##' @name update.jump
+##' Update method for adaptive MCMC jump-tuning objects
+##'
+##' Adapts the jump standard deviation based on recent acceptance rate
+##' to keep acceptance near the target rate.
+##'
 ##' @title update.jump
-##' @export
-##' 
-##' @param jmp jump parameter
-##' @param chain mcmc chain
-##' 
-##' @return jmp updated jump parameter
-##' 
+##' @param object object of class \code{jump}
+##' @param chain numeric matrix of recent MCMC chain values used to compute acceptance rate
+##' @param ... additional arguments (currently unused)
+##' @return Updated \code{jump} object with adjusted history and acceptance rate.
 ##' @author Michael Dietze
-update.jump <- function(jmp, chain) {
+##' @exportS3Method stats update
+update.jump <- function(object, chain, ...) {
+  jmp <- object
   ## check for valid typing
   if (is.null(jmp)) {
     stop("jump is NULL")
@@ -31,13 +34,20 @@ update.jump <- function(jmp, chain) {
 }
 
 ## multivariate version
-##' @title update.mvjump 
-##' @export
-##' 
-##' @param jmp jump parameter
-##' @param chain mcmc chain
-
-update.mvjump <- function(jmp, chain) {
+##' Update method for adaptive MCMC multivariate jump-tuning objects
+##'
+##' Adapts each dimension of the multivariate jump standard deviation based on
+##' recent acceptance rate for each dimension to keep acceptance near the target rate.
+##'
+##' @title update.mvjump
+##' @param object object of class \code{mvjump}
+##' @param chain numeric matrix of recent MCMC chain values used to compute acceptance rates
+##' @param ... additional arguments (currently unused)
+##' @return Updated \code{mvjump} object with adjusted history and acceptance rates.
+##' @author Michael Dietze
+##' @exportS3Method stats update
+update.mvjump <- function(object, chain, ...) {
+  jmp <- object
   ## check for valid typing
   if (is.null(jmp)) {
     stop("jump is NULL")
@@ -63,4 +73,4 @@ update.mvjump <- function(jmp, chain) {
     attr(jmp, "arate")[l + 1] <- a
   }
   return(jmp)
-} # update.jump
+} # update.mvjump
