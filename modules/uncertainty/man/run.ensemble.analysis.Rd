@@ -32,7 +32,7 @@ taken as a vector in case of multiple variables}
 }
 \value{
 nothing, creates ensemble plots as ensemble.analysis.pdf.
-  If /code{plot.timeseries = TRUE}, creates ensemble.ts.pdf and 
+  If \code{plot.timeseries = TRUE}, creates ensemble.ts.pdf and 
   also saves ts analysis object as \code{.Rdata} file
 }
 \description{
