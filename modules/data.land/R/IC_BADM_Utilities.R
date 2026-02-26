@@ -245,11 +245,6 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #' }
 BADM_IC_process <- function(settings, dir, overwrite=TRUE){
   
-  # check if this is a single-site or multi-site configuration
-  if ("run" %in% names(settings)) {
-    settings <- list(settings)
-  }
-  
   # extract and normalise site info
   site.info <- settings[['run']][['site']]
   site.id <- site.info$id
