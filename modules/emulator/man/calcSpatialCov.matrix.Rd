@@ -4,20 +4,25 @@
 \alias{calcSpatialCov.matrix}
 \title{calcSpatialCov.matrix}
 \usage{
-\method{calcSpatialCov}{matrix}(d, psi, tau)
+\method{calcSpatialCov}{matrix}(x, psi, tau, ...)
 }
 \arguments{
-\item{d}{spatial distance matrix}
+\item{x}{spatial distance matrix}
 
 \item{psi}{spatial corr}
 
 \item{tau}{spatial var}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+spatial covariance matrix
 }
 \description{
 Currently assumes an exponential spatial dependency
 }
 \details{
-can make gaussian by passing squared distance matrix
+Can make gaussian by passing squared distance matrix
 }
 \author{
 Michael Dietze
