@@ -14,20 +14,40 @@ get.results(
 )
 }
 \arguments{
-\item{settings}{list, read from settings file (xml) using \code{\link{read.settings}}}
+\item{settings}{A PEcAn \code{Settings} or \code{MultiSettings} object}
 
-\item{sa.ensemble.id, ens.ensemble.id}{ensemble IDs for the sensitivity
-analysis and ensemble analysis.
-If not provided, they are first looked up from `settings`,
-then if not found they are not used and the most recent set of results
-is read from \code{samples.Rdata} in directory \code{settings$outdir}}
+\item{sa.ensemble.id}{Optional sensitivity analysis ensemble ID.}
 
-\item{variable}{variables to retrieve, as vector of names or expressions}
+\item{ens.ensemble.id}{Optional ensemble analysis ensemble ID.}
 
-\item{start.year, end.year}{first and last years to retrieve}
+\item{variable}{Variable(s) to retrieve, as a vector of names or expressions.}
+
+\item{start.year}{First year to retrieve.}
+
+\item{end.year}{Last year to retrieve.}
+}
+\value{
+Invisibly returns NULL. Results are written to disk.
 }
 \description{
-Output is placed in model output directory (settings$outdir).
+Processes completed model runs and generates results for sensitivity
+and/or ensemble analyses, depending on what is specified in \code{settings}.
+Results are saved to the model output directory (\code{settings$outdir}).
+}
+\details{
+Loads sensitivity or ensemble sample metadata (from settings or
+\code{samples.Rdata} for backwards compatibility), reads model output
+files, computes aggregated statistics, and saves processed results
+as \code{.Rdata} files.
+}
+\examples{
+\dontrun{
+  settings <- PEcAn.settings::read.settings("pecan.xml")
+  get.results(settings)
+}
+}
+\seealso{
+\code{start_model_runs}
 }
 \author{
 David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly

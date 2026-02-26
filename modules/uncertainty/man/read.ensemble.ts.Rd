@@ -19,13 +19,21 @@ read.ensemble.ts(
 
 \item{variable}{variable name to process. Required}
 
-\item{start.year, end.year}{taken from settings if not specified}
+\item{start.year}{first year of analysis, taken from settings if not specified}
+
+\item{end.year}{last year of analysis, taken from settings if not specified}
 }
 \value{
-list
+named list of matrices (ensemble members × time)
 }
 \description{
-Reads ensemble time-series from PEcAn for the selected target variable
+Loads ensemble member outputs for a specified variable and time range,
+and returns a matrix of ensemble members by time.#'
+}
+\details{
+Reads model output files for each ensemble member, applies any
+requested derived variable expressions, and saves the resulting
+time-series object to disk (as \code{.Rdata} file).
 }
 \author{
 Michael Dietze, Ryan Kelly

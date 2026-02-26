@@ -10,14 +10,32 @@ start_model_runs(settings, write = TRUE, stop.on.error = TRUE)
 runModule_start_model_runs(settings, stop.on.error = TRUE)
 }
 \arguments{
-\item{settings}{pecan settings object}
+\item{settings}{A PEcAn \code{Settings} or \code{MultiSettings} object.}
 
-\item{write}{(logical) Whether or not to write to the database. Default TRUE.}
+\item{write}{Logical. If TRUE, write run start and finish timestamps
+to the database. Default TRUE.}
 
-\item{stop.on.error}{Throw error if _any_ of the runs fails. Default TRUE.}
+\item{stop.on.error}{Logical. If TRUE, stop execution if any run fails.
+Default TRUE.}
+}
+\value{
+Invisibly returns NULL. Side effects include launching model
+runs and updating database records.
 }
 \description{
-Start selected ecosystem model runs within PEcAn workflow
+Executes model runs listed in `runs.txt` after configuration and input
+preparation are complete. Supports local execution, HPC submission
+via qsub, distributed execution via RabbitMQ, and batched parallel
+execution via modellauncher.
+}
+\details{
+Handles remote file synchronization, job submission, monitoring,
+progress reporting, and optional database timestamp updates.
+
+
+Assumes model configuration and run directories have already been
+created (e.g., via \code{run.write.configs()}). Does not perform input
+conversion or parameter sampling.
 }
 \section{Functions}{
 \itemize{
@@ -30,6 +48,9 @@ Start selected ecosystem model runs within PEcAn workflow
   settings <- PEcAn.settings::read.settings("pecan.xml")
   start_model_runs(settings)
 }
+}
+\seealso{
+\code{\link{do_conversions}}, \code{\link{run.write.configs}}
 }
 \author{
 Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
