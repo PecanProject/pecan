@@ -38,11 +38,17 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     )
   }
                               
-  ## Skip database connection if settings$database is NULL or write is False
-  if (!isTRUE(write) && is.null(settings$database)) {
+  ## Skip database connection if no Bety params given or write is False
+  # Historical note: Conceptually it'd be cleaner to skip when all of
+  # settings$database is NULL. But many scripts in the wild call
+  # prepare.settings(), which insists on creating a database section to put
+  # settings$database$dbfiles into.
+  # Checking only for Bety parameters prevents the dbfiles entry from causing
+  # undesired connection attempts. 
+  if (!isTRUE(write) && is.null(settings$database$bety)) {
     PEcAn.logger::logger.info("Not writing this run to database, so database connection skipped")
     con <- NULL # Set con to NULL to avoid errors in subsequent code
-  } else if (is.null(settings$database)) {
+  } else if (is.null(settings$database$bety)) {
     PEcAn.logger::logger.error(
       "Database is NULL but writing is enabled. Provide valid database settings in pecan.xml."
     )
