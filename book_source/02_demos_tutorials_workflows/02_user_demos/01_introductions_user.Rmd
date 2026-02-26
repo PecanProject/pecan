@@ -9,16 +9,14 @@ The following Tutorials assume you have installed PEcAn. If you have not, please
 
 |Type|Title|Web Link| Source Rmd/qmd|
 |:--:|:---:|:------:|:-------------:|
-|Demo| Basic Run (Quarto)| <a href="rendered-demo-notebooks/run_pecan.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd" target = "_blank">qmd</a> |
-|Demo| Uncertainty Analysis (Quarto)| <a href="rendered-demo-notebooks/uncertainty.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd" target = "_blank">qmd</a> |
-|Demo| Meta Analysis (Quarto)| <a href="rendered-demo-notebooks/meta_analysis.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd" target = "_blank">qmd</a> |
-|Demo| Basic Run| [html](#demo-1) | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd" target = "_blank">Rmd</a> |
-|Demo| Uncertainty Analysis| [html](#demo-2)| <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/02_Demo_Uncertainty_Analysis/Demo02.Rmd" target = "_blank">Rmd</a> |
-|Demo| Output Analysis|html | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd" target="_blank">Rmd</a> |
-|Demo| MCMC |html| <a href= "https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/MCMC/MCMC_Concepts.Rmd" target = "_blank">Rmd</a> |
+|Demo|Basic Run| <a href="rendered-demo-notebooks/run_pecan.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_1_Basic_Run/run_pecan.qmd" target = "_blank">qmd</a> |
+|Demo|Uncertainty Analysis| <a href="rendered-demo-notebooks/uncertainty.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd" target = "_blank">qmd</a> |
+|Demo|Meta Analysis| <a href="rendered-demo-notebooks/meta_analysis.html" target = "_blank">html</a> | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd" target = "_blank">qmd</a> |
+|Demo|Output Analysis|html | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd" target="_blank">Rmd</a> |
+|Demo|MCMC |html| <a href= "https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/MCMC/MCMC_Concepts.Rmd" target = "_blank">Rmd</a> |
 |Demo|Parameter Assimilation |html | <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/ParameterAssimilation/PDA.Rmd" target = "_blank">Rmd</a> |
 |Demo|State Assimilation|html| <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/StateAssimilation/TreeRingSDA.Rmd" target = "_blank">Rmd</a> |
-|Demo| Sensitivity|html| <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/sensitivity/PEcAn_sensitivity_tutorial_v1.0.Rmd" target = "_blank">Rmd</a> |
+|Demo|Sensitivity|html| <a href="https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/sensitivity/PEcAn_sensitivity_tutorial_v1.0.Rmd" target = "_blank">Rmd</a> |
 |Vignette|Allometries|html| <a href="https://github.com/PecanProject/pecan/blob/develop/modules/allometry/vignettes/AllomVignette.Rmd" target = "_blank">Rmd</a> |
 |Vignette|MCMC|html| <a href="https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/vignettes/AssimBatchVignette.Rmd" target = "_blank">Rmd</a> |
 |Vignette|Meteorological Data|html| <a href="https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/vignettes" target = "_blank">Rmd</a> |
