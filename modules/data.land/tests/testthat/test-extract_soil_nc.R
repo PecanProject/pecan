@@ -15,7 +15,6 @@ test_that("extract_soil_gssurgo returns valid NetCDF files for valid US coordina
     radius = 500,
     depths = c(0, 0.15, 0.30)
   )
-  
   expect_false(is.null(res))
   
   expect_type(res, "list")
