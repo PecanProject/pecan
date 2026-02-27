@@ -7,14 +7,14 @@
 summarize_GP(gp, pdf_file = NULL, txt_file = NULL)
 }
 \arguments{
-\item{gp}{Gaussian Process object}
+\item{gp}{Gaussian Process}
 
-\item{pdf_file}{filename for PDF output of figures (optional)}
+\item{pdf_file}{filename you want figures written out to}
 
-\item{txt_file}{filename for text output of summaries (optional)}
+\item{txt_file}{filename you want figures written out to}
 }
 \description{
-Produces diagnostic plots and summary statistics for a fitted Gaussian Process object.
+summarize_GP
 }
 \author{
 Michael Dietze
