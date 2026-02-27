@@ -39,7 +39,6 @@ test_that("sites are counted separately", {
 })
 
 test_that("reads from JSON", {
-  skip("needs schema update")
   path <- system.file(
     "events_fixtures/events_site1.json",
     package = "PEcAn.data.land"
