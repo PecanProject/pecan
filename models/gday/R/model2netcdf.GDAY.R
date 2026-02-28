@@ -50,9 +50,11 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[5]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "nep"] * -1, "Mg/ha/day", "kg/m2/s")
     output[[6]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "npp"], "Mg/ha/day", "kg/m2/s")
     
-    ## standard variables: C-State (pools) - divide by timestep as in original code
-    output[[7]] <- (PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"], "Mg/ha", "kg/m2") + PEcAn.utils::ud_convert(sub.GDAY.output[, "branch"], "Mg/ha", "kg/m2")) / timestep.s
-    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha", "kg/m2") / timestep.s
+    ## standard variables: C-State (pools)
+    # TODO 2026-02-27 CKB: Why are these scaled by timestep?
+    # They look to me like stocks (mass/area), not fluxes (mass/area/time).
+    output[[7]] <- (PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"] + sub.GDAY.output[, "branch"], "Mg/ha/day", "kg/m2/s")
+    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha/day", "kg/m2/s")
     output[[9]] <- (sub.GDAY.output[, "lai"])
     
     ## standard variables: water fluxes
