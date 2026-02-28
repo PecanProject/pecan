@@ -3,13 +3,12 @@
 ##' Adapts the jump standard deviation based on recent acceptance rate
 ##' to keep acceptance near the target rate.
 ##'
-##' @title update.jump
 ##' @param object object of class \code{jump}
 ##' @param chain numeric matrix of recent MCMC chain values used to compute acceptance rate
 ##' @param ... additional arguments (currently unused)
 ##' @return Updated \code{jump} object with adjusted history and acceptance rate.
 ##' @author Michael Dietze
-##' @exportS3Method stats update
+##' @export
 update.jump <- function(object, chain, ...) {
   jmp <- object
   ## check for valid typing
@@ -39,13 +38,12 @@ update.jump <- function(object, chain, ...) {
 ##' Adapts each dimension of the multivariate jump standard deviation based on
 ##' recent acceptance rate for each dimension to keep acceptance near the target rate.
 ##'
-##' @title update.mvjump
 ##' @param object object of class \code{mvjump}
 ##' @param chain numeric matrix of recent MCMC chain values used to compute acceptance rates
 ##' @param ... additional arguments (currently unused)
 ##' @return Updated \code{mvjump} object with adjusted history and acceptance rates.
 ##' @author Michael Dietze
-##' @exportS3Method stats update
+##' @export
 update.mvjump <- function(object, chain, ...) {
   jmp <- object
   ## check for valid typing

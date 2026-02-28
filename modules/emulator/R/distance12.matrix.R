@@ -1,12 +1,11 @@
-##' @name distance12_matrix
-##' @title distance12_matrix
+##' distance12_matrix
 ##' @export
 ##'
 ##' @param x matrix of locations in parameter space
 ##' @param n1 number of rows in the original dataset
 ##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##' 
-##' @return d cross-distance matrix of dimensions n x (n - n1)
+##' @return cross-distance matrix of dimensions n x (n - n1)
 ##' 
 ##' @author Michael Dietze
 distance12_matrix <- function(x, n1, power = 1) {

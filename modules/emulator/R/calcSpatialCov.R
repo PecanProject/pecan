@@ -1,9 +1,10 @@
-##' @name calcSpatialCov
-##' @title calcSpatialCov 
+##' calcSpatialCov
 ##' @export
 ##'
-##' @param x either a spatial distance matrix or a list of component spatial distance matrices
+##' @param d either a spatial distance matrix or a list of component spatial distance matrices
+##' @param psi spatial corr
+##' @param tau spatial var
 ##' @param ... Additional arguments
-##' 
+##'
 ##' @author Michael Dietze
-calcSpatialCov <- function(x, ...) UseMethod("calcSpatialCov", x)
+calcSpatialCov <- function(d, psi, tau, ...) UseMethod("calcSpatialCov", d)

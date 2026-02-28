@@ -1,12 +1,11 @@
-##' @name distance_matrix
-##' @title distance_matrix
+##' distance_matrix
 ##' @export
 ##'
 ##' @param x matrix of locations in physical or parameter space
 ##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##' @param dim dimension
 ##' 
-##' @return d symmetric matrix of pairwise squared distances
+##' @return symmetric matrix of pairwise squared distances
 ##' 
 ##' @author Michael Dietze
 distance_matrix <- function(x, power = 1, dim = 2) {

@@ -1,5 +1,4 @@
-##' @name GaussProcess
-##' @title GaussProcess
+##' GaussProcess
 ##' @export
 ##'
 ##' @param x set of independent variables

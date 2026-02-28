@@ -1,5 +1,4 @@
-##' @name summarize_GP
-##' @title summarize_GP
+##' summarize_GP
 ##' @export
 ##' 
 ##' @param gp Gaussian Process

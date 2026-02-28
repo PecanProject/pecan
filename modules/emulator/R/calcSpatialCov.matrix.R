@@ -2,17 +2,14 @@
 ##'
 ##' Can make gaussian by passing squared distance matrix
 ##'
-##' @name calcSpatialCov.matrix
-##' @title calcSpatialCov.matrix
-##' @param x spatial distance matrix
+##' @param d spatial distance matrix
 ##' @param psi spatial corr
 ##' @param tau spatial var
 ##' @param ... additional arguments (currently unused)
 ##' @return spatial covariance matrix
 ##' @author Michael Dietze
-##' @exportS3Method PEcAn.emulator calcSpatialCov
-calcSpatialCov.matrix <- function(x, psi, tau, ...) {
-  d <- x
+##' @export
+calcSpatialCov.matrix <- function(d, psi, tau, ...) {
   nl <- nrow(d)
   H  <- matrix(0, nl, nl)
   for (i in seq_len(nl)) {

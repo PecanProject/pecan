@@ -2,7 +2,7 @@
 ##'
 ##' Performs kriging prediction from a fitted Gaussian Process model.
 ##'
-##' @title predict.GP
+##'
 ##' @param object a Gaussian Process object (class \code{GP}) as returned by \code{\link{GaussProcess}}
 ##' @param xpred value of x where prediction should be made
 ##' @param cI credible interval quantiles, or \code{NULL} to skip
@@ -11,7 +11,7 @@
 ##' @param ... additional arguments (currently unused)
 ##' @return Kriged predictions or a list of credible/prediction interval quantiles.
 ##' @author Michael Dietze
-##' @exportS3Method stats predict
+##' @export
 predict.GP <- function(object, xpred, cI = NULL, pI = NULL, splinefcns = NULL, ...) {
   gp <- object
   

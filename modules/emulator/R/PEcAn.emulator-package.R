@@ -2,8 +2,7 @@
 #' Supports both likelihood and bayesian approaches for kriging and model
 #'  emulation. Includes functions for sampling design and prediction.
 #' @keywords internal
-#' @import methods
-#' @import mvtnorm
-#' @import coda
-#' @import MCMCpack
+#' @importFrom coda mcmc
+#' @importFrom MCMCpack rinvgamma
+#' @importFrom mvtnorm dmvnorm rmvnorm
 "_PACKAGE"
