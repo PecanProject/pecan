@@ -34,103 +34,19 @@ test_that("model2netcdf.GDAY runs without error and produces netCDF", {
   # Check that we can read the output
   output <- PEcAn.utils::read.output(
     ncfiles = nc_file,
-    variables = c("GPP", "NEE", "NPP"),
+    variables = c("GPP", "AbvGrndWood"),
     dataframe = TRUE,
     verbose = FALSE,
     print_summary = FALSE
   )
-  expect_true(nrow(output) > 0)
   # GPP should be in kg/m2/s (converted from Mg/ha/day)
-  expect_true(all(output$GPP > 0))  # Positive values
-  expect_true(all(output$GPP < 1e-5))  # Small values due to conversion
-})
-
-test_that("GDAY Mg/ha/day to kg/m2/s conversion is correct", {
-  # Test data - using simple round numbers for verification
-  # GDAY example output: https://github.com/mdekauwe/GDAY/blob/master/example/outputs/D1GDAYDUKEAMB.csv
-  
-  # Manual conversion test
-  # 1 Mg/ha/day -> kg/m2/s conversion factor
-  conversion_factor <- 0.1 / 86400  # ~1.157e-6
-  
-  # Test value from GDAY output (example: 0.05 Mg/ha/day)
-  gday_value_mgha_day <- 0.05
-  expected_value_kgm2s <- gday_value_mgha_day * conversion_factor
-  
-  # Verify using ud_convert (if available)
-  if (requireNamespace("PEcAn.utils", quietly = TRUE)) {
-    converted_value <- PEcAn.utils::ud_convert(gday_value_mgha_day, "Mg/ha/day", "kg/m2/s")
-    expect_equal(converted_value, expected_value_kgm2s, tolerance = 1e-10,
-                 label = "GDAY daily output conversion")
-  }
-  
-  # More realistic test values based on GDAY Duke Ambient output
-  # From D1GDAYDUKEAMB.csv: GPP ~= 3.5 Mg/ha/day for summer months
-  gday_gpp <- 3.5
-  converted_gpp <- gday_gpp * conversion_factor
-  
-  # This should be approximately 4.05e-6 kg/m2/s
-  expect_true(converted_gpp > 0, "Conversion should result in positive value")
-  expect_true(converted_gpp < 1e-5, "Converted value should be small (< 1e-5 kg/m2/s)")
-})
-
-test_that("GDAY timestep is correctly set to daily (86400 seconds)", {
-  # The timestep.s in model2netcdf.GDAY should be 86400 seconds (1 day)
-  # This is different from SIPNET which uses 86400/out_day for more flexible timesteps
-  timestep_s <- 86400
-  
-  expect_equal(timestep_s, 86400, 
-               label = "GDAY timestep should be 86400 seconds (daily data)")
-  
-  # Verify that this matches the conversion (since ud_convert assumes per-second)
-  seconds_per_day <- 86400
-  expect_equal(timestep_s, seconds_per_day)
-})
-
-test_that("GDAY flux variables are converted from Mg/ha/day not Mg/ha/yr", {
-  # GDAY outputs are daily accumulations, not annual
-  # The conversion should use "Mg/ha/day" not "Mg/ha/yr"
-  # Verify the conversion factor is approximately 0.1/86400 = 1.157e-6
-  
-  if (requireNamespace("PEcAn.utils", quietly = TRUE)) {
-    # Test with a realistic GDAY value
-    # Example: auto_resp (autotrophic respiration) ~ 0.02-0.05 Mg/ha/day
-    auto_resp_daily <- 0.035
-    
-    # Correct conversion: Mg/ha/day -> kg/m2/s
-    converted_value <- PEcAn.utils::ud_convert(auto_resp_daily, "Mg/ha/day", "kg/m2/s")
-    
-    # Expected value using manual calculation
-    # 1 Mg/ha = 0.1 kg/m2; 1 day = 86400 seconds
-    # So 1 Mg/ha/day = 0.1/86400 kg/m2/s = 1.157407e-6 kg/m2/s
-    manual_conversion <- auto_resp_daily * 0.1 / 86400
-    
-    # Check the conversion matches expected factor within tolerance
-    expect_equal(converted_value, manual_conversion, tolerance = 1e-12,
-                 label = "GDAY daily auto_resp conversion factor is correct")
-    
-    # Verify the converted value is positive and small (as expected from daily flux)
-    expect_true(converted_value > 0, "Converted value should be positive")
-    expect_true(converted_value < 1e-5, "Converted daily flux should be small (< 1e-5 kg/m2/s)")
-  }
-})
-
-test_that("GDAY respiration outputs consistency check", {
-  # Test that total respiration = auto_resp + hetero_resp (within floating point precision)
-  if (requireNamespace("PEcAn.utils", quietly = TRUE)) {
-    # Test values
-    auto_resp <- 0.03
-    hetero_resp <- 0.02
-    total_resp <- auto_resp + hetero_resp
-    
-    # All should convert to same scale (kg/m2/s)
-    auto_resp_kgm2s <- PEcAn.utils::ud_convert(auto_resp, "Mg/ha/day", "kg/m2/s")
-    hetero_resp_kgm2s <- PEcAn.utils::ud_convert(hetero_resp, "Mg/ha/day", "kg/m2/s")
-    total_resp_kgm2s <- PEcAn.utils::ud_convert(total_resp, "Mg/ha/day", "kg/m2/s")
-    
-    # Total should equal sum of components
-    expect_equal(total_resp_kgm2s, auto_resp_kgm2s + hetero_resp_kgm2s, 
-                 tolerance = 1e-15,
-                 label = "Total respiration should equal sum of components")
-  }
+  secs_day <- 86400
+  kg_Mg <- 1000
+  m2_ha <- 10000
+  gday2pecan <- kg_Mg/m2_ha/secs_day
+  expect_equal(nrow(output), 5)
+  expect_equal(output$GPP, rep(0.5, 5) * gday2pecan, tolerance = 1e-6)
+  # TODO 2026-02-27: Adding this to match currently observed behavior that has been in place for 10 yr,
+  # but dividing AbvGrndWood by time seems weird. Is this really the desired behavior?
+  expect_equal(output$AbvGrndWood, rep(150, 5) * gday2pecan, tolerance = 1e-6)
 })
