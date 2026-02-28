@@ -1,5 +1,12 @@
 name: Docker GHA
 
+permissions:
+  contents: read
+  packages: write
+  checks: write
+  pull-requests: write
+  issues: read
+
 env:
   DEFAULT_R_VERSION: 4.4
 
