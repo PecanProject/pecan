@@ -115,6 +115,7 @@ Once the package is defined, you will also want to make the rest of PEcAn notice
 * Once the package is working and merged into the develop branch of PEcAn, open a pull request to add it to the `packages.json` file of [https://github.com/PecanProject/pecanproject.r-universe.dev]. This will cue R-Universe to start building and distributing the package as part of the PEcAn collection.
 * Announce it in the CHANGELOG!
 
+
 ### Add model info to PEcAn Database
 
 Note: As support for running PEcAn with no database expands, this step has become less important, but keep reading -- this section is still the best summary of what information needs to be _available to_ the model, whether looked up from the database on the fly or passed in by hand.
@@ -168,7 +169,7 @@ After a file Format has been created then input files can be registered with the
 
 Since many of the PEcAn tools are designed to keep track of parameter uncertainties and assimilate data into models, to use PEcAn with a model it is important to define Plant Functional Types for the sites or regions that you will be running the model.
 
-Create a new PFT entry by selecting Data \> PFTs and then clicking on *New PFT*.
+Create a new PFT entry by selecting Data > PFTs and then clicking on *New PFT*.
 
 ![](03_topical_pages/11_images/bety_pft_1.png) 
 
@@ -210,13 +211,13 @@ Save this by scrolling to the bottom of the PFT page and hitting the Update butt
 
 A new prior distribution can be created for a pre-existing variable, if a more constrained or specific one is known.
 
--   Select Data \> Priors then “New Prior”
--   In the *Citation* box, type in or select an existing reference that indicates how the prior was defined. There are a number of unpublished citations in current use that simply state the expert opinion of an individual
--   Fill the *Variable* box by typing in part or all of a pre-existing variable's name and selecting it
--   The *Phylogeny* box allows one to specify what taxonomic grouping the prior is defined for, at it is important to note that this is just for reference and doesn’t have to be specified in any standard way nor does it have to be monophyletic (i.e. it can be a functional grouping)
--   The prior distribution is defined by choosing an option from the drop-down *Distribution* box, and then specifying values for both *Parameter a* and *Parameter b*. The exact meaning of the two parameters depends on the distribution chosen. For example, for the Normal distribution a and b are the mean and standard deviation while for the Uniform they are the minimum and maximum. All parameters are defined based on their standard parameterization in the R language
--   Specify the prior sample size in *N* if the prior is based on observed data (independent of data in the PEcAn database)
--   When this is done, scroll down and hit the Create button
+* Select Data \> Priors then “New Prior”
+* In the *Citation* box, type in or select an existing reference that indicates how the prior was defined. There are a number of unpublished citations in current use that simply state the expert opinion of an individual
+* Fill the *Variable* box by typing in part or all of a pre-existing variable's name and selecting it
+* The *Phylogeny* box allows one to specify what taxonomic grouping the prior is defined for, at it is important to note that this is just for reference and doesn’t have to be specified in any standard way nor does it have to be monophyletic (i.e. it can be a functional grouping)
+* The prior distribution is defined by choosing an option from the drop-down *Distribution* box, and then specifying values for both *Parameter a* and *Parameter b*. The exact meaning of the two parameters depends on the distribution chosen. For example, for the Normal distribution a and b are the mean and standard deviation while for the Uniform they are the minimum and maximum. All parameters are defined based on their standard parameterization in the R language
+* Specify the prior sample size in *N* if the prior is based on observed data (independent of data in the PEcAn database)
+* When this is done, scroll down and hit the Create button
 
 ![](03_topical_pages/11_images/bety_priors_4.png)
 
@@ -414,7 +415,7 @@ Vegetation data will be required to parameterize your model. In these examples w
 
 The main function to process cohort data is the `ic_process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
 
-**Example: Processing vegetation data from local files**
+**Example 1: Processing vegetation data from local files**
 
 In the following example we will process vegetation data that you have in hand using PEcAn.
 

@@ -86,7 +86,8 @@ datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
 * soil moisture for the full column, rather than a layer, is soil_moisture_content
 * The list of PEcAn standard variable names, units and dimensions are provided in a table in the [Output Standards]{#OutputStandards} section and maintained in the file: [base/utils/data/standard_vars.csv](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
 
-For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`. We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
+For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
+We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
 
