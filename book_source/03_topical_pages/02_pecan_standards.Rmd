@@ -33,9 +33,11 @@ To aid in the conversion between PEcAn internal ISO_8601 standard and CF convent
 | longitude        | degrees_east                       |
 | latitude         | degrees_north                      |
 
-::: callout-note
-dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
-:::
+
+> **Note:**
+> Dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+
+
 
 #### Variable names should be `standard_name`
 
