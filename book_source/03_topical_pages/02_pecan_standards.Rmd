@@ -1,33 +1,27 @@
 # PEcAn standard formats {#pecan-standards}
 
-## Overview of PEcAn standards
 PEcAn relies on standardized data formats to ensure reproducibility, interoperability, and consistency across models, sites, and workflows. These standards define how inputs, internal representations, and outputs are structured throughout the PEcAn workflows.
 
 **In this chapter**
 
 - [Defining new input formats](#defining-new-input-formats)
-- [Time standards](#time-standard)
+- [Time standards](#time-standards)
 - [Input standards](#input-standards)
 - [Output standards](#output-standards)
 
+
 ## Defining new input formats
-
-This chapter describes the standard conventions used by PEcAn for input data, output data, and metadata to ensure consistency across models and workflows.
-
-## Core data standards
-
-### Defining new input formats
 
 * New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
 * After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file.
 
-### Time standards
+## Time standards
 
 Internal PEcAn standard time follows ISO_8601 format for dates and time (<https://en.wikipedia.org/wiki/ISO_8601>). For example ordinal dates go from 1 365/366 (<https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates>). However, time used in met drivers or model outputs follows CF convention with julian dates following the 0 to 364/365 format
 
 To aid in the conversion between PEcAn internal ISO_8601 standard and CF convention used in all met drivers and PEcAn standard output you can utilize the functions: "cf2datetime","datetime2doy",and "cf2doy"
 
-### Input Standards
+## Input Standards
 
 ### Meteorology Data
 
