@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.jump.R
 \name{plot.jump}
 \alias{plot.jump}
-\title{plot.jump}
+\title{Plot diagnostic history for a \code{jump} tuning object}
 \usage{
 \method{plot}{jump}(x, ...)
 }
@@ -11,12 +11,7 @@
 
 \item{...}{additional arguments (currently unused)}
 }
-\value{
-Invisible \code{NULL}; called for its side-effect of producing a plot.
-}
 \description{
-Plot diagnostic history for a \code{jump} tuning object.
-
 Displays the jump parameter trace and acceptance rate over MCMC iterations.
 }
 \author{

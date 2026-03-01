@@ -14,7 +14,7 @@ distance_matrix(x, power = 1, dim = 2)
 \item{dim}{dimension}
 }
 \value{
-d symmetric matrix of pairwise squared distances
+symmetric matrix of pairwise squared distances
 }
 \description{
 distance_matrix

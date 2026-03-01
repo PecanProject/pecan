@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.density.R
 \name{predict.density}
 \alias{predict.density}
-\title{predict.density}
+\title{Simple interpolation of a density object to new points}
 \usage{
 \method{predict}{density}(object, xnew, ...)
 }
@@ -17,7 +17,7 @@
 numeric vector of interpolated density values at \code{xnew}
 }
 \description{
-Simple interpolation of a density object to new points.
+Simple interpolation of a density object to new points
 }
 \author{
 Michael Dietze

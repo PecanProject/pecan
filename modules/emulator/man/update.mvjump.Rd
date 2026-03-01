@@ -2,7 +2,7 @@
 % Please edit documentation in R/update.jump.R
 \name{update.mvjump}
 \alias{update.mvjump}
-\title{update.mvjump}
+\title{Update method for adaptive MCMC multivariate jump-tuning objects}
 \usage{
 \method{update}{mvjump}(object, chain, ...)
 }
@@ -17,8 +17,6 @@
 Updated \code{mvjump} object with adjusted history and acceptance rates.
 }
 \description{
-Update method for adaptive MCMC multivariate jump-tuning objects.
-
 Adapts each dimension of the multivariate jump standard deviation based on
 recent acceptance rate for each dimension to keep acceptance near the target rate.
 }

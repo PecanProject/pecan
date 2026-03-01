@@ -2,7 +2,7 @@
 % Please edit documentation in R/update.jump.R
 \name{update.jump}
 \alias{update.jump}
-\title{update.jump}
+\title{Update method for adaptive MCMC jump-tuning objects}
 \usage{
 \method{update}{jump}(object, chain, ...)
 }
@@ -17,8 +17,6 @@
 Updated \code{jump} object with adjusted history and acceptance rate.
 }
 \description{
-Update method for adaptive MCMC jump-tuning objects.
-
 Adapts the jump standard deviation based on recent acceptance rate
 to keep acceptance near the target rate.
 }

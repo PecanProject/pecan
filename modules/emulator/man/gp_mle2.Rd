@@ -18,5 +18,5 @@ gp_mle2(theta, d, nugget, myY, maxval = Inf)
 \item{maxval}{maximum value}
 }
 \description{
-zero mean version
+gp_mle2
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/p.jump.R
 \name{p.jump}
 \alias{p.jump}
-\title{p.jump}
+\title{Extract current jump parameter value for a \code{jump} object}
 \usage{
 \method{p}{jump}(x, ...)
 }
@@ -15,7 +15,7 @@
 The most recent jump parameter value.
 }
 \description{
-Extract current jump parameter value for a \code{jump} object.
+Extract current jump parameter value for a \code{jump} object
 }
 \author{
 Michael Dietze

@@ -14,7 +14,7 @@ distance12_matrix(x, n1, power = 1)
 \item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 }
 \value{
-d cross-distance matrix of dimensions n x (n - n1)
+cross-distance matrix of dimensions n x (n - n1)
 }
 \description{
 distance12_matrix

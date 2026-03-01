@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.GP.R
 \name{predict.GP}
 \alias{predict.GP}
-\title{predict.GP}
+\title{Predict method for Gaussian Process objects}
 \usage{
 \method{predict}{GP}(object, xpred, cI = NULL, pI = NULL, splinefcns = NULL, ...)
 }
@@ -23,8 +23,6 @@
 Kriged predictions or a list of credible/prediction interval quantiles.
 }
 \description{
-Predict method for Gaussian Process objects.
-
 Performs kriging prediction from a fitted Gaussian Process model.
 }
 \author{

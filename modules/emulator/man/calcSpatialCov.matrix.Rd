@@ -2,12 +2,12 @@
 % Please edit documentation in R/calcSpatialCov.matrix.R
 \name{calcSpatialCov.matrix}
 \alias{calcSpatialCov.matrix}
-\title{calcSpatialCov.matrix}
+\title{Currently assumes an exponential spatial dependency}
 \usage{
-\method{calcSpatialCov}{matrix}(x, psi, tau, ...)
+\method{calcSpatialCov}{matrix}(d, psi, tau, ...)
 }
 \arguments{
-\item{x}{spatial distance matrix}
+\item{d}{spatial distance matrix}
 
 \item{psi}{spatial corr}
 
@@ -19,9 +19,6 @@
 spatial covariance matrix
 }
 \description{
-Currently assumes an exponential spatial dependency
-}
-\details{
 Can make gaussian by passing squared distance matrix
 }
 \author{

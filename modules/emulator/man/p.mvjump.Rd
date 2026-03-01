@@ -2,7 +2,7 @@
 % Please edit documentation in R/p.jump.R
 \name{p.mvjump}
 \alias{p.mvjump}
-\title{p.mvjump}
+\title{Extract current jump parameter values for a \code{mvjump} object}
 \usage{
 \method{p}{mvjump}(x, ...)
 }
@@ -15,7 +15,7 @@
 The most recent row of the multivariate jump parameter history.
 }
 \description{
-Extract current jump parameter values for a \code{mvjump} object.
+Extract current jump parameter values for a \code{mvjump} object
 }
 \author{
 Michael Dietze
