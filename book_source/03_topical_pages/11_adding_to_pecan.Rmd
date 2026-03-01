@@ -40,7 +40,7 @@ PEcAn assumes that the interface modules are available as an R package in the mo
 
 If you do not want to write the interface modules in R then it is fairly simple to set up the R functions describe below to just call the script you want to run using R's `system` command. Scripts that are not R functions should be placed in the `inst` folder and R can look up the location of these files using the function `system.file` which takes as arguments the `local` path of the file within the package folder and the name of the package (typically PEcAn.MODEL). For example
 
-```         
+```r
 ## Example met conversion wrapper function
 met2model.MODEL <- function(in.path, in.prefix, outfolder, start_date, end_date){
    myMetScript <- system.file("inst/met2model.MODEL.sh", "PEcAn.MODEL")
@@ -50,7 +50,7 @@ met2model.MODEL <- function(in.path, in.prefix, outfolder, start_date, end_date)
 
 would execute the following at the Linux command line
 
-```         
+```sh
 inst/met2model.MODEL.sh in.path/in.prefix outfolder start_date end_date    `
 ```
 
@@ -171,7 +171,7 @@ Since many of the PEcAn tools are designed to keep track of parameter uncertaint
 
 Create a new PFT entry by selecting Data > PFTs and then clicking on *New PFT*.
 
-![](03_topical_pages/11_images/bety_pft_1.png) 
+![](03_topical_pages/11_images/bety_pft_1.png)
 
 ![](03_topical_pages/11_images/bety_pft_2.png)
 
@@ -211,7 +211,7 @@ Save this by scrolling to the bottom of the PFT page and hitting the Update butt
 
 A new prior distribution can be created for a pre-existing variable, if a more constrained or specific one is known.
 
-* Select Data \> Priors then “New Prior”
+* Select Data > Priors then “New Prior”
 * In the *Citation* box, type in or select an existing reference that indicates how the prior was defined. There are a number of unpublished citations in current use that simply state the expert opinion of an individual
 * Fill the *Variable* box by typing in part or all of a pre-existing variable's name and selecting it
 * The *Phylogeny* box allows one to specify what taxonomic grouping the prior is defined for, at it is important to note that this is just for reference and doesn’t have to be specified in any standard way nor does it have to be monophyletic (i.e. it can be a functional grouping)
@@ -227,7 +227,7 @@ The new prior distribution can then be added a PFT as described in the "Adding P
 
 It is important to note that the priors are defined for the variable name and units as specified in the Variables table. **If the variable name or units is different within the model it is the responsibility of write.configs.MODEL function to handle name and unit conversions** (see Interface Modules below). This can also include common but nonlinear transformations, such as converting SLA to LMA or changing the reference temperature for respiration rates.
 
-To add a new variable, select Data \> Variables and click the New Variable button. Fill in the *Name* field with the desired name for the variable and the units in the *Units* field. There are additional fields, such as *Standard Units*, *Notes*, and *Description*, that can be filled out if desired. When done, hit the Create button.
+To add a new variable, select Data > Variables and click the New Variable button. Fill in the *Name* field with the desired name for the variable and the units in the *Units* field. There are additional fields, such as *Standard Units*, *Notes*, and *Description*, that can be filled out if desired. When done, hit the Create button.
 
 ![](03_topical_pages/11_images/bety_priors_5.png)
 
@@ -270,7 +270,7 @@ From your BETY interface:
   - Parent ID is an optional variable to indicated that one dataset was derived from another.
   - Click “Create”
 * Associate the DBFILE with the INPUT
-  - In the RUNS -\> INPUTS table, search and find the input record you just created
+  - In the RUNS -> INPUTS table, search and find the input record you just created
   - Click on the EDIT icon
   - Select “View related Files”
   - In the Search window, search for the DBFILE you just created
@@ -314,9 +314,10 @@ Perhaps you would like to obtain data from one of the sources coupled to PEcAn o
 
 Download Amerifluxlbl from Niwot Ridge for the year 2004:
 
-raw.file <-PEcAn.data.atmosphere::download.AmerifluxLBL(sitename = "US-NR1", 
-                                             outfolder = ".", 
-                                             start_date = "2004-01-01", 
+```r
+raw.file <-PEcAn.data.atmosphere::download.AmerifluxLBL(sitename = "US-NR1",
+                                             outfolder = ".",
+                                             start_date = "2004-01-01",
                                              end_date = "2004-12-31")
 ```
 
@@ -324,7 +325,7 @@ Using the information returned as the object `raw.file` you will then convert th
 
 Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
-
+```r
 con <- PEcAn.DB::db.open(
   params = list(
     driver = RPostgres::Postgres(),
@@ -337,6 +338,7 @@ con <- PEcAn.DB::db.open(
 
 Next you will set up the arguments for the function
 
+```r
 in.path <- '.'
 in.prefix <- raw.file$dbfile.name
 outfolder <- '.'
@@ -351,14 +353,15 @@ Note: The format.id can be pulled from the BETY database if you know the format 
 
 Once these arguments are defined you can execute the `met2CF.csv` function
 
-PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
+```r
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
                                   in.prefix =in.prefix,
-                                  outfolder = ".", 
+                                  outfolder = ".",
                                   start_date ="2004-01-01",
                                   end_date = "2004-12-01",
                                   lat= lat,
                                   lon = lon,
-                                  format = format) 
+                                  format = format)
 ```
 
 **Example 2: Processing data from data already in hand**
@@ -371,6 +374,7 @@ If your data is in a csv format you can use the `met2CF.csv`function to convert 
 
 Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
+```r
 con <- PEcAn.DB::db.open(
   params = list(
     driver = RPostgres::Postgres(),
@@ -383,6 +387,7 @@ con <- PEcAn.DB::db.open(
 
 Prepare the arguments you need to execute the met2CF.csv function
 
+```r
 in.path <- 'path/where/the/raw/file/lives'
 in.prefix <- 'prefix_of_the_raw_file'
 outfolder <- 'path/to/where/you/want/to/output/thecsv/'
@@ -397,10 +402,10 @@ end_date <- End date of your data in "y-m-d"
 
 Next you can execute the function:
 
-```         
-PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
-                                  in.prefix =in.prefix, 
-                                  outfolder = ".", 
+```r
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
+                                  in.prefix =in.prefix,
+                                  outfolder = ".",
                                   start_date = start_date,
                                   end_date = end_date,
                                   lat= lat,
@@ -425,7 +430,7 @@ Once you have created an input record you must take note of the input id of your
 
 With the input id in hand you can now edit a pecan XML so that the PEcAn function `ic_process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic_process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `useic` flag.
 
-```         
+```xml
 <inputs>
       <css>
         <source>FFT</source>
@@ -474,7 +479,7 @@ With the input id in hand you can now edit a pecan XML so that the PEcAn functio
 
 This IC workflow also supports generating ensembles of initial conditions from posterior estimates of DBH. To do this the tags below can be inserted to the pecan.xml:
 
-```         
+```xml
        <css>
         <source>PalEON</source>
         <output>css</output>
@@ -490,7 +495,7 @@ This IC workflow also supports generating ensembles of initial conditions from p
 
 Here the `id` should point to a file that has MCMC samples to generate the ensemble from. The number between the `<ensemble>` tag defines the number of ensembles requested. The workflow will populate the settings list `run$inputs` tag with ensemble member information. E.g.:
 
-```         
+```xml
   <inputs>
    <css>
     <path1>...</path1>
@@ -527,12 +532,14 @@ Here the `id` should point to a file that has MCMC samples to generate the ensem
 
 Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.
 
+```r
 settings <- PEcAn.settings::read.settings("pecan.xml")
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 ```
 
 You can then execute the `ic_process` function to convert data into a standard Rds file:
 
+```r
 input <- settings$run$inputs
 dir <- "."
 ic_process(settings, input, dir, overwrite = FALSE)
@@ -546,6 +553,7 @@ If you have pool vegetation data, you'll need the [`pool_ic_list2netcdf.R`](http
 
 The function stands alone and requires that you provide a named list of netcdf dimensions and values, and a named list of variables and values. Names and units need to match the standard_vars.csv table found [here](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
 
+```r
 #Create a list object with necessary dimensions for your site
 input<-list()
 dims<- list(lat=-115,lon=45, time= 1)
@@ -556,6 +564,7 @@ input$vals <- variables
 
 Once this is done, set `outdir` to where you'd like the file to write out to and a siteid. Siteid in this can be used as an file name identifier. Once part of the automated workflow siteid will reflect the site id within the BET db.
 
+```r
 outdir  <- "."
 siteid <- 772
 pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
@@ -569,10 +578,10 @@ You should now have a netcdf file with initial conditions.
 
 Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
 
+```r
 soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
                   volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
                   soil_depth = c(0.2,0.5,1.0))
-                         
 soil2netcdf(soil.data,"soil.nc")
 ```
 
@@ -582,7 +591,7 @@ At the moment this file would need to be inserted into Inputs manually. By defau
 
 In addition to location-specific soil data, PEcAn can extract soil texture information from the PalEON regional soil product, which itself is a subset of the MsTMIP Unified North American Soil Map. If this product is installed on your machine, the appropriate step in the do_conversions workflow is enabled by adding the following tag under `<inputs>` in your pecan.xml
 
-```{xml}
+```xml
    <soil>
      <id>1000012896</id>
    </soil>
@@ -594,7 +603,7 @@ In the future we aim to extend this extraction to a wider range of soil products
 
 In addition to location-specific soil data, PEcAn can extract soil texture information from the gSSURGO data product. This product needs no installation and it extract soil proeprties for the lower 48 states in U.S. In order to let the pecan know that you're planning to use gSSURGO, you can the following XML tag under input in your pecan xml file.
 
-```{xml}
+```xml
 <inputs>
    <soil>
      <source>gSSURGO</source>
@@ -621,7 +630,7 @@ The Data-Ingest application is capable of loading data from the DataONE data fed
 knitr::include_graphics("02_demos_tutorials_workflows/02_user_demos/07_advanced_user_guide/images/data-ingest/D1Ingest-1.gif")
 ```
 
-<br> The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the `Import From DataONE` field and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table. <br>
+The DataONE download feature allows the user to download data at a given doi or DataONE specific package id. To do so, enter the doi or identifier in the `Import From DataONE` field and select `download`. The download process may take a couple of minutes to run depending on the number of files in the dataONE package. This may be a convenient option if the user does not wish to download files directly to their local machine. Once the files have been successfully downloaded from DataONE, they are displayed in a table. Before proceeding to the next step, the user can select a file to ingest by clicking on the corresponding row in the data table.
 
 ### Local Upload Example
 
@@ -798,8 +807,9 @@ A list of date formats can be found in the [R documentation for the function `st
 
 Below are some commonly used codes:
 
+| Code | Interpretation |
+|:----|:------------------------------------|
 | %d | Day of the month as decimal number (01–31). |
-|------------------------------------|------------------------------------|
 | %D | Date format such as %m/%d/%y. |
 | %H | Hours as decimal number (00–23). |
 | %m | Month as decimal number (01–12). |
