@@ -51,10 +51,10 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[6]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "npp"], "Mg/ha/day", "kg/m2/s")
     
     ## standard variables: C-State (pools)
-    # TODO 2026-02-27 CKB: Why are these scaled by timestep?
-    # They look to me like stocks (mass/area), not fluxes (mass/area/time).
-    output[[7]] <- (PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"] + sub.GDAY.output[, "branch"], "Mg/ha/day", "kg/m2/s")
-    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha/day", "kg/m2/s")
+    # NOTE: GDAY outputs stocks in Mg/ha. 
+    # Transform to kg/m2 for PEcAn output
+    output[[7]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "stem"] + sub.GDAY.output[, "branch"], "Mg/ha", "kg/m2")
+    output[[8]] <- PEcAn.utils::ud_convert(sub.GDAY.output[, "soilc"], "Mg/ha", "kg/m2")
     output[[9]] <- (sub.GDAY.output[, "lai"])
     
     ## standard variables: water fluxes

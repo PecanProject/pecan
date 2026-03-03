@@ -174,17 +174,17 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
     SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
     output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA
-    output[["fine_root_carbon_content"]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
-    output[["coarse_root_carbon_content"]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-    output[["GWBI"]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
-    output[["AGB"]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
+    output[["fine_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fineRootC, "g/m2", "kg/m2")
+    output[["coarse_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$coarseRootC, "g/m2", "kg/m2")
+    output[["GWBI"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$woodCreation, "g/m2/day", "kg/m2/s")
+    output[["AGB"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC, "g/m2", "kg/m2")
     # columns only present in sipnet >= v2 with N and methane turned on
     if ("n2o" %in% names(sub.sipnet.output)) {
-      output[["N2O_flux"]] <- (sub.sipnet.output$n2o * 0.001) / timestep.s
+      output[["N2O_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$n2o, "g/m2", "kg/m2") / timestep.s
       # convert g N m-2 per timestep -> kg N m-2 s-1
     }
     if ("ch4" %in% names(sub.sipnet.output)) {
-      output[["CH4_flux"]] <- (sub.sipnet.output$ch4 * 0.001) / timestep.s
+      output[["CH4_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$ch4, "g/m2", "kg/m2") / timestep.s
       # convert g C m-2 per timestep -> kg C m-2 s-1
     }
     output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))

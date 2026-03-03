@@ -2,7 +2,7 @@
 ##' 
 ##' This test verifies that the unit conversions in model2netcdf.GDAY are correct.
 ##' 
-##' Reference: https://github.com/PecanProject/pecan/pull/XXXX
+##' Reference: https://github.com/PecanProject/pecan/pull/3719
 ##' GDAY outputs daily values in Mg/ha/day, which should be converted to kg/m2/s
 ##'
 ##' Conversion factors:
@@ -46,7 +46,9 @@ test_that("model2netcdf.GDAY runs without error and produces netCDF", {
   gday2pecan <- kg_Mg/m2_ha/secs_day
   expect_equal(nrow(output), 5)
   expect_equal(output$GPP, rep(0.5, 5) * gday2pecan, tolerance = 1e-6)
-  # TODO 2026-02-27: Adding this to match currently observed behavior that has been in place for 10 yr,
-  # but dividing AbvGrndWood by time seems weird. Is this really the desired behavior?
-  expect_equal(output$AbvGrndWood, rep(150, 5) * gday2pecan, tolerance = 1e-6)
+  
+  # AbvGrndWood is a stock (Mg/ha), not a flux (Mg/ha/day).
+  # Conversion: 1 Mg/ha = 0.1 kg/m2
+  stock_conv <- 0.1
+  expect_equal(output$AbvGrndWood, rep(150, 5) * stock_conv, tolerance = 1e-6)
 })
