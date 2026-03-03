@@ -181,19 +181,42 @@ AmeriFlux_met_ensemble <- function(site_id,
         format = format,
         overwrite = overwrite
       )
-    cf_results$file <- metgapfill_with_fallback(
+    coverage_info <- check_met_coverage_for_fallback(
+      cf_file  = cf_results$file,
+      threshold = threshold
+    )
+
+    fill_vars <- coverage_info$fill_vars
+
+    # Prepare ERA5 fallback CF (dataset-layer)
+    fallback_cf <- NULL
+    if (length(fill_vars) > 0) {
+      fallback_cf <- prepare_era5_fallback_cf(
+        fill_vars  = fill_vars,
+        start_date = start_date,
+        end_date   = end_date,
+        site_id    = site_id,
+        site_lat   = format$lat,
+        site_lon   = format$lon,
+        dirs       = dirs,
+        era5_user  = era5_user,
+        era5_key   = era5_key,
+        overwrite  = overwrite,
+        verbose    = verbose
+      )
+    }
+
+    # Perform CF-level coalescing
+    gapfill_file <- metgapfill_with_fallback(
       primary_cf         = cf_results$file,
-      vars               = NULL,
-      fallback_cf        = NULL,
+      vars               = fill_vars,
+      fallback_cf        = fallback_cf,
       out_file           = file.path(
         dirs$amf_gapfilled,
         basename(cf_results$file)
       ),
-      coverage_threshold = threshold,
       align_time         = FALSE
     )
-
-    gapfill_file <- cf_results$file
 
     ensemble_results <- 
       PEcAn.data.atmosphere::met_temporal_downscale.Gaussian_ensemble(
@@ -209,11 +232,17 @@ AmeriFlux_met_ensemble <- function(site_id,
         force_v4 = TRUE
       )
     
+    host_name <- if (requireNamespace("PEcAn.remote", quietly = TRUE)) {
+      PEcAn.remote::fqdn()
+    } else {
+      Sys.info()[["nodename"]]
+    }
+    
     # return ensemble paths with metadata
     results <- do.call(rbind, lapply(seq_along(ensemble_results), function(e) {
       data.frame(
         file = ensemble_results[[e]]$file,
-        host = rep(PEcAn.remote::fqdn(), 1),
+        host = rep(host_name, 1),
         mimetype = "application/x-netcdf",
         formatname = "CF Meteorology",
         startdate = format(as.Date(start_date), "%Y-01-01 00:00:00"),
