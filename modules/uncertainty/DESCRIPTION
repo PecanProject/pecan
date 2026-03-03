@@ -45,7 +45,8 @@ Imports:
     sensitivity
 Suggests:
     testthat (>= 1.0.2),
-    mockery
+    mockery,
+    withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes

@@ -25,8 +25,15 @@ get.parameter.samples <- function(settings,
   }
 
   ## Open database connection
-  con <- try(PEcAn.DB::db.open(settings$database$bety))
-  on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  if (!is.null(settings$database$bety)) {
+    con <- try(PEcAn.DB::db.open(settings$database$bety))
+    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
+  } else {
+    PEcAn.logger::logger.info(
+      "No database connection parameters provided. Will not use Bety for parameter lookup."
+    )
+    con <- NULL
+  }
 
   # If we fail to connect to DB then we set to NULL
   if (inherits(con, "try-error")) {

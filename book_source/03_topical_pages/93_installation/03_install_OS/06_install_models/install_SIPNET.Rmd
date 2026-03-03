@@ -11,7 +11,7 @@ make
 sudo cp sipnet /usr/local/bin/sipnet.runk
 ```
 
-##### SIPNET testrun
+**SIPNET testrun**
 
 ```bash
 cd
