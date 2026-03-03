@@ -1,13 +1,11 @@
 ##' Log-dinvgamma, based on MCMCpack
 ##' 
-##' @name ldinvgamma
-##' @title ldinvgamma
 ##' @export
 ##'
 ##' @param x vector of quantiles
 ##' @param shape,scale shape and scale parameters for the inverse Gamma distribution
 ##' 
-##' @return log.density
+##' @return log density of the inverse Gamma distribution evaluated at \code{x}
 ##' 
 ##' @author Michael Dietze
 ldinvgamma <- function(x, shape, scale = 1) {

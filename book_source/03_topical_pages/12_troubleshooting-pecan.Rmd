@@ -1,9 +1,11 @@
 # Troubleshooting and Debugging PEcAn
 
 This chapter provides guidance for diagnosing and resolving common
-issues encountered when running PEcAn workflows. Problems may arise
-from configuration errors, data availability issues, model failures,
-or system-level dependencies.
+issues encountered when running PEcAn workflows.
+Problems may arise from web interface configuration, file system paths,
+model failures, or system-level dependencies.
+The sections below document frequently encountered errors as well as general
+debugging techniques that can help identify the source of a problem.
 
 Start with the general troubleshooting guidance below, then refer to
 specific sections for detailed solutions.
