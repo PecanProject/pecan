@@ -40,6 +40,7 @@ Imports:
     PEcAn.uncertainty,
     PEcAn.utils,
     purrr (>= 0.2.3),
+    rlang,
     XML
 Suggests:
     mockery,

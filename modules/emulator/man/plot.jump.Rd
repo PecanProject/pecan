@@ -2,15 +2,17 @@
 % Please edit documentation in R/plot.jump.R
 \name{plot.jump}
 \alias{plot.jump}
-\title{plot.jump}
+\title{Plot diagnostic history for a \code{jump} tuning object}
 \usage{
-\method{plot}{jump}(jmp)
+\method{plot}{jump}(x, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{x}{object of class \code{jump}}
+
+\item{...}{additional arguments (currently unused)}
 }
 \description{
-plot.jump
+Displays the jump parameter trace and acceptance rate over MCMC iterations.
 }
 \author{
 Michael Dietze
