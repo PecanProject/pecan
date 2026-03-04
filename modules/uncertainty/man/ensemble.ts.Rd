@@ -7,19 +7,23 @@
 ensemble.ts(ensemble.ts, observations = NULL, window = 1, ...)
 }
 \arguments{
-\item{ensemble.ts}{ensemble timeseries to be plotted, as returned by [read.ensemble.ts()]}
+\item{ensemble.ts}{ensemble timeseries to be plotted, as returned by [\code{\link{read.ensemble.ts}}]}
 
 \item{observations}{observed data to plot over timeseries predictions}
 
-\item{window}{number of timepoints to average across}
+\item{window}{Integer, number of timepoints to average across}
 
 \item{...}{additional arguments, currently ignored}
 }
 \value{
-nothing, generates an ensemble time-series plot
+Invisibly returns a list containing ensemble mean and confidence intervals,
+  generates an ensemble time-series plot
 }
 \description{
 Plots an ensemble time-series from PEcAn for the selected target variable
+}
+\seealso{
+\code{\link{read.ensemble.ts}}
 }
 \author{
 Michael Dietze, Ryan Kelly

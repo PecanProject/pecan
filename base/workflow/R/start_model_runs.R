@@ -1,8 +1,28 @@
 #' Start selected ecosystem model runs within PEcAn workflow
 #'
-#' @param settings pecan settings object
-#' @param write (logical) Whether or not to write to the database. Default TRUE.
-#' @param stop.on.error Throw error if _any_ of the runs fails. Default TRUE.
+#' Executes model runs listed in `runs.txt` after configuration and input
+#' preparation are complete. Supports local execution, HPC submission
+#' via qsub, distributed execution via RabbitMQ, and batched parallel
+#' execution via modellauncher.
+#'
+#' Handles remote file synchronization, job submission, monitoring,
+#' progress reporting, and optional database timestamp updates.
+#'
+#' @param settings A PEcAn \code{Settings} or \code{MultiSettings} object.
+#' @param write Logical. If TRUE, write run start and finish timestamps
+#'   to the database. Default TRUE.
+#' @param stop.on.error Logical. If TRUE, stop execution if any run fails.
+#'   Default TRUE.
+#'
+#' @details
+#' Assumes model configuration and run directories have already been
+#' created (e.g., via \code{run.write.configs()}). Does not perform input
+#' conversion or parameter sampling.
+#'
+#' @return Invisibly returns NULL. Side effects include launching model
+#' runs and updating database records.
+#' 
+#' @seealso \code{\link{do_conversions}}, \code{\link{run.write.configs}}
 #' @export
 #' @examples
 #' \dontrun{
