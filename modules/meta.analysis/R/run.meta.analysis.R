@@ -32,13 +32,18 @@ meta_analysis_standalone <- function(
   random = TRUE,
   threshold = 1.2,
   use_ghs = TRUE,
-  gamma_tau = 0.01
+  prior_n  = 0.02,
+  prior_cv = sqrt(0.001),
+  tauA     = NULL,
+  tauB     = NULL
 ) {
   stopifnot(
     is.list(trait_data),
     is.logical(use_ghs),
-    is.numeric(gamma_tau),
-    gamma_tau > 0
+    is.numeric(prior_n),  prior_n > 0,
+    is.numeric(prior_cv), prior_cv > 0,
+    is.null(tauA) || (is.numeric(tauA) && tauA > 0),
+    is.null(tauB) || is.numeric(tauB)
   )
 
   # Create output directory if it doesn't already exist
@@ -101,14 +106,19 @@ meta_analysis_standalone <- function(
   )
 
   ## Set gamma distribution prior
+  resolved_tauA <- if (!is.null(tauA)) tauA else prior_n / 2
+  
   prior_variances <- as.data.frame(rep(1, nrow(priors)))
   row.names(prior_variances) <- row.names(priors)
-  prior_variances[names(trait_average), ] <- 0.001 * trait_average ^ 2
-  prior_variances["seedling_mortality", 1] <- 1
-  taupriors <- list(
-    tauA = gamma_tau,
-    tauB = apply(prior_variances, 1, function(x) min(gamma_tau, x))
-  )
+  prior_variances[names(trait_average), ] <- prior_cv ^ 2 * trait_average ^ 2
+  
+  resolved_tauB <- if (!is.null(tauB)) {
+    tauB
+  } else {
+    apply(prior_variances, 1, function(x) resolved_tauA * x)
+  }
+  
+  taupriors <- list(tauA = resolved_tauA, tauB = resolved_tauB)
 
   ### Run the meta-analysis
   trait_mcmc <- pecan.ma(jagged_data,
