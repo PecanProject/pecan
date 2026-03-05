@@ -13,7 +13,17 @@
 #' @param pft_name (character; default = NA) Name of PFT (for logging purposes).
 #' @param random (boolean; default = TRUE) Should random effects be used?
 #' @param use_ghs (boolean; default = TRUE) If TRUE, do not exclude greenhouse data
-#' @param gamma_tau (numeric; default = 0.01) Prior on gamma tau parameter
+#' @param prior_n (numeric; default = 0.02) Prior effective sample size (n0),
+#'   where `tauA = prior_n / 2`. Ignored if `tauA` is provided directly.
+#' @param prior_cv (numeric; default = `sqrt(0.001)`) Prior coefficient of
+#'   variation (SD / mean), used to set `prior_variance = prior_cv^2 * mean^2`.
+#'   Ignored if `tauB` is provided directly.
+#' @param tauA (numeric or NULL; default = NULL) Direct override for the first
+#'   Gamma prior parameter (`tauA = n0 / 2`). If NULL, derived from `prior_n`.
+#' @param tauB (numeric or NULL; default = NULL) Direct override for the second
+#'   Gamma prior parameter (`tauB = tauA * prior_variance`). If NULL, derived
+#'   from `prior_n` and `prior_cv`. Must be a named numeric vector with names
+#'   matching trait names in `trait_data`.
 #' @inheritParams pecan.ma
 #' @inheritParams pecan.ma.summary
 #'
@@ -205,7 +215,10 @@ check_consistent <- function(point, prior,
 #'  posteriors with new ones
 #'
 #' @inheritParams meta_analysis_standalone
-run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update = FALSE) {
+run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2,
+                                  dbfiles, dbcon, use_ghs = TRUE, update = FALSE,
+                                  prior_n = 0.02, prior_cv = sqrt(0.001),
+                                  tauA = NULL, tauB = NULL) {
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
