@@ -698,6 +698,7 @@
 "withr","*","base/workflow","Suggests",FALSE
 "withr","*","models/basgra","Suggests",FALSE
 "withr","*","models/ed","Suggests",FALSE
+"withr","*","models/gday","Suggests",FALSE
 "withr","*","models/rothc","Suggests",FALSE
 "withr","*","models/sibcasa","Suggests",FALSE
 "withr","*","models/sipnet","Suggests",FALSE
