@@ -163,7 +163,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
     output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[["litter_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litter, "g/m2", "kg/m2")
-    output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")  # labeled elsewhere as kg water m-2 (which is equivalent but ud_convert doesn't know that)
+    # litterWater was removed in SIPNET v2; only extract if present
+    if ("litterWater" %in% names(sub.sipnet.output)) {
+      # Units are labeled elsewhere as kg water m-2 (which is equivalent to mm, but ud_convert doesn't know that)
+      output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")
+    } else {
+      # Hack to merge PR #3719: Preserving old behavior expected by some downstream code.
+      # Currently open PR 3813 will fix this properly.
+      output[["litter_mass_content_of_water"]] <- numeric(0)
+    }
     #calculate LAI for standard output
     # LAI = plantLeafC / leafCSpWt
     # both operands are in carbon units (gC/m2 and gC/m2_leaf),
