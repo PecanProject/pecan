@@ -752,19 +752,6 @@ put_T_values <-
   umol2kg_C <- Mc * PEcAn.utils::ud_convert(1, "umol", "mol") * PEcAn.utils::ud_convert(1, "g", "kg")
   yr2s      <- PEcAn.utils::ud_convert(1, "s", "yr")
   
-  # TODO - remove this function and replace with ifelse statements inline below (SPS)
-  conversion <- function(col, mult) {
-    ## make sure only to convert those values that are not -999
-    out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
-    return(out)
-  }
-  
-  checkTemp <- function(col) {
-    out[[col]][out[[col]] == 0] <- -999
-    return(out)
-  }
-  
-  
   # ----- define ncdf dimensions
   #### setup output time and time bounds
   ## Create a date vector that contains each day of the model run for each output year (e.g. "2001-07-15", "2001-07-16"....)
@@ -815,10 +802,10 @@ put_T_values <-
 
   # ----- fill list
   
-  out <- conversion(1, PEcAn.utils::ud_convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
+  out[[1]] <- ifelse(out[[1]] != -999, out[[1]] * PEcAn.utils::ud_convert(1, "t ha-1", "kg m-2"), out[[1]])  ## tC/ha -> kg/m2
   nc_var[[s + 1]] <- ncdf4::ncvar_def("AbvGrndWood", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Above ground woody biomass")
-  out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
+  out[[2]] <- ifelse(out[[2]] != -999, out[[2]] * umol2kg_C, out[[2]])  ## umol/m2 s-1 -> kg/m2 s-1
   nc_var[[s + 2]] <- ncdf4::ncvar_def("AutoResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Autotrophic Respiration")
   nc_var[[s + 3]] <- ncdf4::ncvar_def("CarbPools", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
@@ -827,19 +814,19 @@ put_T_values <-
                                     longname = "CO2CAS")
   nc_var[[s + 5]] <- ncdf4::ncvar_def("CropYield", units = "kg m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Crop Yield")
-  out <- conversion(6, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[6]] <- ifelse(out[[6]] != -999, out[[6]] * yr2s, out[[6]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 6]] <- ncdf4::ncvar_def("GPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Gross Primary Productivity")
-  out <- conversion(7, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[7]] <- ifelse(out[[7]] != -999, out[[7]] * yr2s, out[[7]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 7]] <- ncdf4::ncvar_def("HeteroResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Heterotrophic Respiration")
-  out <- conversion(8, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[8]] <- ifelse(out[[8]] != -999, out[[8]] * yr2s, out[[8]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 8]] <-  ncdf4::ncvar_def("NEE", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Net Ecosystem Exchange")
-  out <- conversion(9, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[9]] <- ifelse(out[[9]] != -999, out[[9]] * yr2s, out[[9]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 9]] <- ncdf4::ncvar_def("NPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Net Primary Productivity")
-  out <- conversion(10, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[10]] <- ifelse(out[[10]] != -999, out[[10]] * yr2s, out[[10]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 10]] <- ncdf4::ncvar_def("TotalResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Total Respiration")
   nc_var[[s + 11]] <- ncdf4::ncvar_def("TotLivBiom", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, 
@@ -865,7 +852,7 @@ put_T_values <-
                                      longname = "Rainfall rate")
   nc_var[[s + 22]] <- ncdf4::ncvar_def("SWdown", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Surface incident shortwave radiation")
-  out <- checkTemp(23)
+  out[[23]] <- ifelse(out[[23]] == 0, -999, out[[23]])
   nc_var[[s + 23]] <- ncdf4::ncvar_def("Tair", units = "K", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Near surface air temperature")
   nc_var[[s + 24]] <- ncdf4::ncvar_def("Wind", units = "m s-1", dim = list(lon, lat, t), missval = -999, 
@@ -876,7 +863,7 @@ put_T_values <-
                                      longname = "Ground heat")
   nc_var[[s + 27]] <- ncdf4::ncvar_def("Qh", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Sensible heat")
-  out <- conversion(28, PEcAn.data.atmosphere::get.lv())  ## kg m-2 s-1 -> W m-2
+  out[[28]] <- ifelse(out[[28]] != -999, out[[28]] * PEcAn.data.atmosphere::get.lv(), out[[28]])  ## kg m-2 s-1 -> W m-2
   nc_var[[s + 28]] <- ncdf4::ncvar_def("Qle", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Latent heat")
   nc_var[[s + 29]] <- ncdf4::ncvar_def("SWnet", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
@@ -894,17 +881,17 @@ put_T_values <-
   nc_var[[s + 36]] <- PEcAn.utils::mstmipvar("SMLiqFrac", lat, lon, t, zg)   # not standard
   nc_var[[s + 37]] <- ncdf4::ncvar_def("SoilMoist", units = "kg m-2", dim = list(lon, lat, zg, t), missval = -999, 
                                      longname = "Average Layer Soil Moisture")
-  out <- checkTemp(38)
+  out[[38]] <- ifelse(out[[38]] == 0, -999, out[[38]])
   nc_var[[s + 38]] <- ncdf4::ncvar_def("SoilTemp", units = "K", dim = list(lon, lat, zg, t), missval = -999, 
                                      longname = "Average Layer Soil Temperature")
   nc_var[[s + 39]] <- ncdf4::ncvar_def("SoilWet", units = "", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Total Soil Wetness")
   nc_var[[s + 40]] <- PEcAn.utils::mstmipvar("Albedo", lat, lon, t, zg)      # not standard
-  out <- checkTemp(41)
+  out[[41]] <- ifelse(out[[41]] == 0, -999, out[[41]])
   nc_var[[s + 41]] <- PEcAn.utils::mstmipvar("SnowT", lat, lon, t, zg)       # not standard
   nc_var[[s + 42]] <- ncdf4::ncvar_def("SWE", units = "kg m-2", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Snow Water Equivalent")
-  out <- checkTemp(43)
+  out[[43]] <- ifelse(out[[43]] == 0, -999, out[[43]])
   nc_var[[s + 43]] <- PEcAn.utils::mstmipvar("VegT", lat, lon, t, zg)        # not standard
   nc_var[[s + 44]] <- ncdf4::ncvar_def("Evap", units = "kg m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Total Evaporation")
@@ -912,7 +899,7 @@ put_T_values <-
                                      longname = "Surface runoff")
   nc_var[[s + 46]] <- ncdf4::ncvar_def("Qsb", units = "kg m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                      longname = "Subsurface runoff")
-  out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  out[[47]] <- ifelse(out[[47]] != -999, out[[47]] * yr2s, out[[47]])  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s + 47]] <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
   # Remove SLZ from output before finalizing list.  replace with time_bounds
