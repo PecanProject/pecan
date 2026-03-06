@@ -31,6 +31,11 @@
 #' @export
 #'  
 extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spacing=100, depths=c(0.15,0.30,0.60)){
+  if (!requireNamespace("sirt", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'sirt' is required for Dirichlet distribution functions but is not installed.",
+      "Please install it with: install.packages('sirt')")
+  }
   # I keep all the ensembles here 
   all.soil.ens <-list()
 
@@ -250,13 +255,11 @@ extract_soil_gssurgo <- function(outdir, lat, lon, size=1, grid_size=3, grid_spa
       split(list(soilprop.new.grouped$DepthL, soilprop.new.grouped$mukey)) %>%
       purrr::map_df(function(DepthL.Data){
         tryCatch({
-          # I model the soil properties for this depth
-          dir.model <-DepthL.Data[,c(1:3)] %>%
+          dir.model <- DepthL.Data[,c(1:3)] %>%
             as.matrix() %>%
             sirt::dirichlet.mle(.)
-          # Monte Carlo sampling based on my dirichlet model
           alpha <- dir.model$alpha
-          alpha <- matrix(alpha, nrow= size, ncol=length(alpha), byrow=TRUE )
+          alpha <- matrix(alpha, nrow= size, ncol=length(alpha), byrow=TRUE)
           simulated.soil <- sirt::dirichlet.simul(alpha)
           # Validate SOC data before processing
           if (any(is.na(DepthL.Data$soil_organic_carbon_stock))) {

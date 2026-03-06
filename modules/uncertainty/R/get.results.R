@@ -2,7 +2,7 @@
 ##'
 ##' Output is placed in model output directory (settings$outdir).
 ##' @export
-##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' @param settings list, read from settings file (xml) using \code{\link[PEcAn.settings]{read.settings}}
 ##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
 ##'   analysis and ensemble analysis.
 ##'   If not provided, they are first looked up from `settings`,

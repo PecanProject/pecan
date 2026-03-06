@@ -25,6 +25,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
 - Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)
 - SDA workflows now maintain joint input sampling, via internal calls to `generate_joint_ensemble_design()` (#3634).
+* `PEcAn.data.land`: Moved optional dependencies `doSNOW`, `dplR`, `httr`,
+  `MCMCpack`, `mvtnorm`, `neonUtilities`, `neonstore`, `PEcAn.benchmark`,
+  `PEcAn.visualization`, `rjags`, `sirt`, and `sp` from `Imports` to
+  `Suggests` (@omkarrr2533, #3599).
 
 
 

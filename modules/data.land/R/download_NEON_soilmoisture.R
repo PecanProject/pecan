@@ -37,7 +37,12 @@ download_NEON_soilmoist <- function(site, avg = "all", var = "all",
                                     outdir) {
   
   
-  #################### Data Download from NEON #################### 
+  if (!requireNamespace("neonUtilities", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'neonUtilities' is required for downloading NEON soil moisture data but is not installed.",
+      "Please install it with: install.packages('neonUtilities')")
+  }
+   #################### Data Download from NEON #################### 
   soil.raw = neonUtilities::loadByProduct(dpID = "DP1.00094.001", site = site, avg = avg, startdate = startdate, enddate = enddate, check.size = FALSE)
   
   # Export into new folder in outdir

@@ -5,8 +5,12 @@
 ##' @author Michael Dietze
 ##' @export 
 InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
-  
-  out      <- as.matrix(jags.out)
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'PEcAn.visualization' is required for diagnostic plots but is not installed.",
+      "Please install it via the PEcAn project: https://github.com/PecanProject/pecan")
+  }
+  out <- as.matrix(jags.out)
   x.cols   <- which(substr(colnames(out), 1, 1) == "x")
   if(length(x.cols) > 0){
     ci       <- apply(out[, x.cols], 2, stats::quantile, c(0.025, 0.5, 0.975))
