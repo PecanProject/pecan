@@ -167,10 +167,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     if ("litterWater" %in% names(sub.sipnet.output)) {
       # Units are labeled elsewhere as kg water m-2 (which is equivalent to mm, but ud_convert doesn't know that)
       output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")
-    } else {
-      # Hack to merge PR #3719: Preserving old behavior expected by some downstream code.
-      # Currently open PR 3813 will fix this properly.
-      output[["litter_mass_content_of_water"]] <- numeric(0)
     }
     #calculate LAI for standard output
     # LAI = plantLeafC / leafCSpWt
@@ -184,7 +180,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA
     output[["fine_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fineRootC, "g/m2", "kg/m2")
     output[["coarse_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$coarseRootC, "g/m2", "kg/m2")
-    output[["GWBI"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$woodCreation, "g/m2/day", "kg/m2/s")
+    if ("woodCreation" %in% names(sub.sipnet.output)) {
+      output[["GWBI"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$woodCreation, "g/m2/day", "kg/m2/s")
+    }
     output[["AGB"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC, "g/m2", "kg/m2")
     # columns only present in sipnet >= v2 with N and methane turned on
     if ("n2o" %in% names(sub.sipnet.output)) {
@@ -241,19 +239,22 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "SoilMoistFrac" = PEcAn.utils::to_ncvar("SoilMoistFrac", dims),
       "SWE" = PEcAn.utils::to_ncvar("SWE", dims),
       "litter_carbon_content" = PEcAn.utils::to_ncvar("litter_carbon_content", dims),
-      "litter_mass_content_of_water" = PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims),
       "LAI" = PEcAn.utils::to_ncvar("LAI", dims),
       "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
-      "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                longname = "Gross Woody Biomass Increment"),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                longname = "Total aboveground biomass"),
       "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
-
+    if ("litter_mass_content_of_water" %in% names(output)) {
+      nc_var[["litter_mass_content_of_water"]] <- PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims)
+    }
+    if ("litter_mass_content_of_water" %in% names(output)) {
+      nc_var[["GWBI"]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                           longname = "Gross Woody Biomass Increment")
+    }
     if ("N2O_flux" %in% names(output)) {
       nc_var[["N2O_flux"]] <- PEcAn.utils::to_ncvar("N2O_flux", dims)
     }
