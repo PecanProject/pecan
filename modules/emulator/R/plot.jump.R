@@ -1,11 +1,13 @@
-##' @name plot.jump
-##' @title plot.jump
-##' @export plot.jump
-##' 
-##' @param jmp jump parameter
-##' 
+##' Plot diagnostic history for a \code{jump} tuning object
+##'
+##' Displays the jump parameter trace and acceptance rate over MCMC iterations.
+##'
+##' @param x object of class \code{jump}
+##' @param ... additional arguments (currently unused)
 ##' @author Michael Dietze
-plot.jump <- function(jmp) {
+##' @export
+plot.jump <- function(x, ...) {
+  jmp <- x
   graphics::par(mfrow = c(1, 2))
   plot(attr(jmp, "history"), 
        ylab = "Jump Parameter",
@@ -19,16 +21,16 @@ plot.jump <- function(jmp) {
   graphics::abline(h = attr(jmp, "target"), col = 2)
 } # plot.jump
 
-
-
-##' @name plot.mvjump
-##' @title plot.mvjump
-##' @export
+##' Plot diagnostic history for a \code{mvjump} tuning object
 ##'
-##' @param jmp jump parameter
+##' Displays the multivariate jump parameter trace and acceptance rate over MCMC iterations.
 ##'
+##' @param x object of class \code{mvjump}
+##' @param ... additional arguments (currently unused)
 ##' @author Michael Dietze
-plot.mvjump <- function(jmp) {
+##' @export
+plot.mvjump <- function(x, ...) {
+  jmp <- x
   graphics::par(mfrow = c(1, 2))
   plot(
     attr(jmp, "history")[, 1],

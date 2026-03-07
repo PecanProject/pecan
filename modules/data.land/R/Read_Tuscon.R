@@ -57,10 +57,15 @@ Read_Tucson <- function(folder) {
   if (length(corrected) > 0) {
     filenames <- filenames[-corrected]
   }
+  if (!requireNamespace("dplR", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'dplR' is required for reading Tucson format files but is not installed.",
+      "Please install it with: install.packages('dplR')")
+  }
   filedata <- list()
   for (file in filenames) {
     file <- Clean_Tucson(file)
-    filedata[[file]] <- dplR::read.tucson(file, header = FALSE)
+     filedata[[file]] <- dplR::read.tucson(file, header = FALSE)
   }
   
   return(filedata)

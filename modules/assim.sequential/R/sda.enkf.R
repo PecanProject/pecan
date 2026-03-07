@@ -116,12 +116,15 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
       ### get only necessary ensemble inputs. Do not change in analysis
       #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
       ### model specific split inputs
-      inputs[[i]] <- do.call(my.split_inputs, 
-                             args = list(settings = settings, 
-                                         start.time = settings$run$start.date, 
-                                         stop.time = as.Date(names(obs.mean)[1]),#settings$run$end.date,
-                                         inputs = ens.inputs[[i]]))#,
-      #                                       outpath = file.path(rundir,paste0("met",i))))
+      split_args <- list(
+        start.time = settings$run$start.date,
+        stop.time = as.Date(names(obs.mean)[1]),
+        inputs = ens.inputs[[i]]
+      )
+      if (model != "SIPNET") {
+        split_args <- c(list(settings = settings), split_args)
+      }
+      inputs[[i]] <- do.call(my.split_inputs, args = split_args)
     }
 
 #     ### get only necessary ensemble inputs. Do not change in analysis

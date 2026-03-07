@@ -2,15 +2,24 @@
 % Please edit documentation in R/update.jump.R
 \name{update.mvjump}
 \alias{update.mvjump}
-\title{update.mvjump}
+\title{Update method for adaptive MCMC multivariate jump-tuning objects}
 \usage{
-\method{update}{mvjump}(jmp, chain)
+\method{update}{mvjump}(object, chain, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{object}{object of class \code{mvjump}}
 
-\item{chain}{mcmc chain}
+\item{chain}{numeric matrix of recent MCMC chain values used to compute acceptance rates}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+Updated \code{mvjump} object with adjusted history and acceptance rates.
 }
 \description{
-update.mvjump
+Adapts each dimension of the multivariate jump standard deviation based on
+recent acceptance rate for each dimension to keep acceptance near the target rate.
+}
+\author{
+Michael Dietze
 }
