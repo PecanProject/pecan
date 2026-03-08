@@ -3,7 +3,6 @@
 ##' @name  split_inputs.SIPNET
 ##' @author Mike Dietze and Ann Raiho
 ##' 
-##' @param settings PEcAn settings object
 ##' @param start.time start date and time for each SDA ensemble
 ##' @param stop.time stop date and time for each SDA ensemble
 ##' @param inputs list of model inputs to use in write.configs.SIPNET
@@ -15,7 +14,7 @@
 ##' @importFrom rlang .data
 ##' @importFrom dplyr %>%
 ##' @export
-split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
+split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
   #### Get met paths
   met <- inputs
   path <- dirname(met)

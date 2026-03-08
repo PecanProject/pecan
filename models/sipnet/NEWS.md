@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Updated README with a more complete model description and instructions for installing SIPNET (#3705)
 * Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.
 
 

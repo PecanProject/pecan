@@ -117,8 +117,13 @@ git push -u origin GH-issuenumber-title-of-issue
   - The license listed at PR opening time for the code you are contributing to,
   - and/or the BSD 3-clause license.
 
-## Additional Resources
+## Repository Labels
 
+PEcAn uses [labels](https://github.com/PecanProject/pecan/labels) to keep issues and pull requests organized. We aim to keep label names simple and have few enough of them for the tag system to be understood by reading the list without consulting external documentation.
+
+The `.github/labeler.yml` action automatically applies labels to PRs based on the files modified. If additional labels beyond these are applicable they can be added manually as needed, but this is not mandatory; we do _not_ expect every issue to need a label.
+
+## Additional Resources
 - [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/develop/adding-model.html)
 - [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html)
 - [Development help](https://pecanproject.github.io/pecan-documentation/latest/developer-guide.html)
