@@ -12,7 +12,11 @@ run.meta.analysis(
   dbfiles,
   database,
   use_ghs = TRUE,
-  update = FALSE
+  update = FALSE,
+  prior_n = 0.02,
+  prior_cv = sqrt(0.001),
+  tauA = NULL,
+  tauB = NULL
 )
 }
 \arguments{
@@ -32,6 +36,18 @@ run.meta.analysis(
 \item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
 \item{update}{logical: Rerun the meta-analysis if result files already exist?}
+
+\item{prior_n}{(numeric; default = 0.02) Passed to \code{run.meta.analysis.pft}.
+Prior effective sample size (n0), where \code{tauA = prior_n / 2}.}
+
+\item{prior_cv}{(numeric; default = \code{sqrt(0.001)}) Passed to
+\code{run.meta.analysis.pft}. Prior coefficient of variation (SD / mean).}
+
+\item{tauA}{(numeric or NULL; default = NULL) Passed to
+\code{run.meta.analysis.pft}. Direct override for first Gamma prior parameter.}
+
+\item{tauB}{(numeric or NULL; default = NULL) Passed to
+\code{run.meta.analysis.pft}. Direct override for second Gamma prior parameter.}
 }
 \value{
 nothing, as side effect saves \code{trait.mcmc} created by

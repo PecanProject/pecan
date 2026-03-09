@@ -4,13 +4,22 @@
 \alias{runModule.run.meta.analysis}
 \title{Run meta-analysis on all PFTs in a (list of) PEcAn settings}
 \usage{
-runModule.run.meta.analysis(settings)
+runModule.run.meta.analysis(settings, prior_n = 0.02, prior_cv = sqrt(0.001))
 }
 \arguments{
 \item{settings}{a PEcAn settings or MultiSettings object}
+
+\item{prior_n}{(numeric; default = 0.02) Prior effective sample size (n0).
+Can also be set via \code{settings$meta.analysis$prior_n} in \code{pecan.xml}.
+If both are provided, the \code{settings} value takes precedence.}
+
+\item{prior_cv}{(numeric; default = \code{sqrt(0.001)}) Prior coefficient of
+variation (SD / mean). Can also be set via
+\code{settings$meta.analysis$prior_cv} in \code{pecan.xml}.
+If both are provided, the \code{settings} value takes precedence.}
 }
 \value{
-list of PFTs, invisibly;
+list of PFTs, invisibly;mo
 saves MA results to \code{settings$pft$outdir} as a side effect
 }
 \description{

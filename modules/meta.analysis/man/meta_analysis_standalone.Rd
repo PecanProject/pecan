@@ -43,20 +43,7 @@ default = 1.2 following Bolker 2008 Ecological Models and Data in R}
 
 \item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
-\item{prior_n}{(numeric; default = 0.02) Prior effective sample size (n0),
-where \code{tauA = prior_n / 2}. Ignored if \code{tauA} is provided directly.}
-
-\item{prior_cv}{(numeric; default = \code{sqrt(0.001)}) Prior coefficient of
-variation (SD / mean), used to set \code{prior_variance = prior_cv^2 * mean^2}.
-Ignored if \code{tauB} is provided directly.}
-
-\item{tauA}{(numeric or NULL; default = NULL) Direct override for the first
-Gamma prior parameter (\code{tauA = n0 / 2}). If NULL, derived from \code{prior_n}.}
-
-\item{tauB}{(numeric or NULL; default = NULL) Direct override for the second
-Gamma prior parameter (\code{tauB = tauA * prior_variance}). If NULL, derived
-from \code{prior_n} and \code{prior_cv}. Must be a named numeric vector with names
-matching trait names in \code{trait_data}.}
+\item{gamma_tau}{(numeric; default = 0.01) Prior on gamma tau parameter}
 }
 \value{
 (list) List of trait meta-analysis results, including:
