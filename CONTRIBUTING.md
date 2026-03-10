@@ -62,6 +62,8 @@ PEcAn uses two protected branches, the main branch and the develop branch. The m
 
 When you add a new feature always create an issue first, this allows others to comment and give you tips. It will also help us keep track of what people are adding and with new releases helps us to write new release notes and give you credit for your work.
 
+> **Important Requirement:** For new features or workflow changes, please open an issue first to discuss the idea before submitting a pull request. This helps ensure the change aligns with project priorities and avoids unnecessary development work.
+
 Secondly always work in a  branch, never work on the main or develop branch. Keep your main and develop branch in sync with the main and develop of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
 
 Finally try to keep your branches focused on fixing/adding only one feature and try not fall in the trap of doing a lot of things in a  single branch. This will not only make it harder for us to process your pull request but makes it take longer before you can submit your pull request. Small pull requests are more likely to be looked at faster and pulled into the develop branch faster.
