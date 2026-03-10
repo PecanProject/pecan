@@ -134,21 +134,19 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     bounds <- round(bounds,4) 
     
     ## Setup outputs for netCDF file in appropriate units
-    output       <- list(
-      "GPP" = (sub.sipnet.output$gpp * 0.001) / timestep.s,  # GPP in kgC/m2/s
-      "NPP" = (sub.sipnet.output$gpp * 0.001) / timestep.s - ((sub.sipnet.output$rAboveground *
-                                                                 0.001) / timestep.s + (sub.sipnet.output$rRoot * 0.001) / timestep.s), # NPP in kgC/m2/s. Post SIPNET calculation
-      "TotalResp" = (sub.sipnet.output$rtot * 0.001) / timestep.s,  # Total Respiration in kgC/m2/s
-      "AutoResp" = (sub.sipnet.output$rAboveground * 0.001) / timestep.s + (sub.sipnet.output$rRoot *
-                                                                              0.001) / timestep.s,  # Autotrophic Respiration in kgC/m2/s
-      "HeteroResp" = ((sub.sipnet.output$rSoil - sub.sipnet.output$rRoot) * 0.001) / timestep.s,  # Heterotrophic Respiration in kgC/m2/s
-      "SoilResp" = (sub.sipnet.output$rSoil * 0.001) / timestep.s,  # Soil Respiration in kgC/m2/s
-      "NEE" = (sub.sipnet.output$nee * 0.001) / timestep.s,  # NEE in kgC/m2/s
-      "AbvGrndWood" = (sub.sipnet.output$plantWoodC * 0.001),  # Above ground wood kgC/m2
-      "leaf_carbon_content" = (sub.sipnet.output$plantLeafC * 0.001),  # Leaf C kgC/m2
-      "TotLivBiom" = (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001) + 
-        (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC) * 0.001, # Total living C kgC/m2
-      "TotSoilCarb" = (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
+    output <- list(
+      "GPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp, "g/m2", "kg/m2") / timestep.s,
+      "NPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp - (sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot), "g/m2", "kg/m2") / timestep.s,
+      "TotalResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rtot, "g/m2", "kg/m2") / timestep.s,
+      "AutoResp" = (PEcAn.utils::ud_convert(sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot, "g/m2", "kg/m2")) / timestep.s,
+      "HeteroResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rSoil - sub.sipnet.output$rRoot, "g/m2", "kg/m2") / timestep.s,
+      "SoilResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rSoil, "g/m2", "kg/m2") / timestep.s,
+      "NEE" = PEcAn.utils::ud_convert(sub.sipnet.output$nee, "g/m2", "kg/m2") / timestep.s,
+      "AbvGrndWood" = PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC, "g/m2", "kg/m2"),
+      "leaf_carbon_content" = PEcAn.utils::ud_convert(sub.sipnet.output$plantLeafC, "g/m2", "kg/m2"),
+      "TotLivBiom" = (PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
+                                              sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC, "g/m2", "kg/m2")),
+      "TotSoilCarb" = PEcAn.utils::ud_convert(sub.sipnet.output$soil + sub.sipnet.output$litter, "g/m2", "kg/m2")
     )
     if (revision == "unk") {
       ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
@@ -164,8 +162,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[["SoilMoist"]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
     output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
     output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
-    output[["litter_carbon_content"]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
-    output[["litter_mass_content_of_water"]] <- (sub.sipnet.output$litterWater * 10) # Litter water kgW/m2
+    output[["litter_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litter, "g/m2", "kg/m2")
+    # litterWater was removed in SIPNET v2; only extract if present
+    if ("litterWater" %in% names(sub.sipnet.output)) {
+      # Units are labeled elsewhere as kg water m-2 (which is equivalent to mm, but ud_convert doesn't know that)
+      output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")
+    }
     #calculate LAI for standard output
     # LAI = plantLeafC / leafCSpWt
     # both operands are in carbon units (gC/m2 and gC/m2_leaf),
@@ -176,17 +178,19 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
     SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
     output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA
-    output[["fine_root_carbon_content"]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
-    output[["coarse_root_carbon_content"]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-    output[["GWBI"]] <- (sub.sipnet.output$woodCreation * 0.001) / 86400 ## kgC/m2/s - this is daily in SIPNET
-    output[["AGB"]] <- (sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC) * 0.001 # Total aboveground biomass kgC/m2
+    output[["fine_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fineRootC, "g/m2", "kg/m2")
+    output[["coarse_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$coarseRootC, "g/m2", "kg/m2")
+    if ("woodCreation" %in% names(sub.sipnet.output)) {
+      output[["GWBI"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$woodCreation, "g/m2/day", "kg/m2/s")
+    }
+    output[["AGB"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC, "g/m2", "kg/m2")
     # columns only present in sipnet >= v2 with N and methane turned on
     if ("n2o" %in% names(sub.sipnet.output)) {
-      output[["N2O_flux"]] <- (sub.sipnet.output$n2o * 0.001) / timestep.s
+      output[["N2O_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$n2o, "g/m2", "kg/m2") / timestep.s
       # convert g N m-2 per timestep -> kg N m-2 s-1
     }
     if ("ch4" %in% names(sub.sipnet.output)) {
-      output[["CH4_flux"]] <- (sub.sipnet.output$ch4 * 0.001) / timestep.s
+      output[["CH4_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$ch4, "g/m2", "kg/m2") / timestep.s
       # convert g C m-2 per timestep -> kg C m-2 s-1
     }
     output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
@@ -235,19 +239,22 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "SoilMoistFrac" = PEcAn.utils::to_ncvar("SoilMoistFrac", dims),
       "SWE" = PEcAn.utils::to_ncvar("SWE", dims),
       "litter_carbon_content" = PEcAn.utils::to_ncvar("litter_carbon_content", dims),
-      "litter_mass_content_of_water" = PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims),
       "LAI" = PEcAn.utils::to_ncvar("LAI", dims),
       "fine_root_carbon_content" = PEcAn.utils::to_ncvar("fine_root_carbon_content", dims),
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
-      "GWBI" = ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
-                                longname = "Gross Woody Biomass Increment"),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                longname = "Total aboveground biomass"),
       "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
-
+    if ("litter_mass_content_of_water" %in% names(output)) {
+      nc_var[["litter_mass_content_of_water"]] <- PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims)
+    }
+    if ("litter_mass_content_of_water" %in% names(output)) {
+      nc_var[["GWBI"]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                           longname = "Gross Woody Biomass Increment")
+    }
     if ("N2O_flux" %in% names(output)) {
       nc_var[["N2O_flux"]] <- PEcAn.utils::to_ncvar("N2O_flux", dims)
     }

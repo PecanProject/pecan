@@ -14,7 +14,10 @@
 ## Changed
 
 * Package `traits`, used by `match_pft()` and `match_species_id()` only when no database connection is provided, is now suggested rather than required.
-
+* Packages `doSNOW`, `dplR`, `httr`, `MCMCpack`, `mvtnorm`, `neonUtilities`,
+  `neonstore`, `PEcAn.benchmark`, `PEcAn.visualization`, `rjags`, `sirt`, and
+  `sp` are now suggested rather than required. They are only needed for
+  specific optional functionality. (#3599)
 
 # PEcAn.data.land 1.9.0
 
