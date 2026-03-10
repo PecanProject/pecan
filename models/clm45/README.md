@@ -1,41 +1,22 @@
-
-# PEcAn.CLM45
-
-<!-- badges: start -->
+# PEcAn.CLM
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![PEcAn.CLM45 status badge](https://pecanproject.r-universe.dev/badges/PEcAn.CLM45)](https://pecanproject.r-universe.dev/PEcAn.CLM45)
+[![PEcAn.CLM status badge](https://pecanproject.r-universe.dev/badges/PEcAn.CLM)](https://pecanproject.r-universe.dev/PEcAn.CLM)
 
-<!-- badges: end -->
+PEcAn Coupler for the Community Land Model (CLM)
 
-PEcAn Package for Integration of CLM4.5 Model
+## Introduction
 
-## Installation
+The Community Land Model (CLM) is the land component of the Community Earth System Model (CESM). It simulates a wide range of ecological and hydrological processes.
 
-You can install the development version of `PEcAn.CLM45` from r-universe like so:
+### PEcAn configuration file additions
 
-``` r
-# Enable repository from pecanproject
-options(repos = c(
-  pecanproject = 'https://pecanproject.r-universe.dev',
-  CRAN = 'https://cloud.r-project.org'))
-# Download and install PEcAn.CLM45 in R
-install.packages('PEcAn.CLM45')
-```
+None specific yet.
 
-Or you can install directly from GitHub with the remotes package like so:
+### Model specific input files
 
-``` r
-library(remotes)
-install_github('pecanproject/pecan',  subdir = "models/clm45")
-```
+CLM requires several input files, including atmospheric forcing, surface datasets, and parameter files.
 
-## Example
+### Installation notes
 
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(PEcAn.CLM45)
-## basic example code
-```
-
+Installation varies by version and hosting system. Usually requires building within the CESM framework.

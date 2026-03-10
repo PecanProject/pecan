@@ -1,18 +1,14 @@
-#### LDNDC
+# PEcAn.LDNDC
 
-Most up-to-date information from LandscapeDNDC can be found here, as well as the authors, <br/>
-users guide and documentation of the model: https://ldndc.imk-ifu.kit.edu/index.php
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![PEcAn.LDNDC status badge](https://pecanproject.r-universe.dev/badges/PEcAn.LDNDC)](https://pecanproject.r-universe.dev/PEcAn.LDNDC)
 
+PEcAn Coupler for the LandscapeDNDC Model
 
-Obtaining LDNDC program requires credentials, which one is able to request from the <br/>
-authors of the model. With the credentials, the pre-compiled  LDNDC program can be <br/>
-downloaded here: https://ldndc.imk-ifu.kit.edu/download/download-model.php
+## Introduction
 
-Instructions for setting up the LDNDC simulations are described in the users guide.
+LandscapeDNDC is a ecosystem model for simulating C and N cycling, as well as greenhouse gas emissions from terrestrial ecosystems.
 
+### Installation notes
 
-
-#### Module PEcAn Integration Contact
-
-Corresponding author: Henri Kajasilta <br/>
-Contact email: henri.kajasilta@fmi.fi
+LandscapeDNDC is typically provided as a binary executable.

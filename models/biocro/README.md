@@ -7,11 +7,37 @@
 
 <!-- badges: end -->
 
+## What is BioCro?
+
 BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosystem levels and determines plant biomass allocation and crop yields, using underlying physiological and ecological processes to do so.
+
+### PEcAn Integration
+
+The BioCro model is integrated into the PEcAn workflow, allowing for large-scale simulations and data assimilation.
+
+### PEcAn configuration file additions
+
+The following sections of the PEcAn XML are relevant to the BioCro model: 
+
+- `model`
+  - `revision` -- Model version number
+- `run`
+  - `site/id` -- ID associated with desired site from BETYdb site entry
+  - `inputs`
+    - `met/output` -- Set as BIOCRO
+    - `met/path` -- Path to file containing meteorological data
+
+### Model configuration files
+
+Genus-specific parameter files are required and stored within the PEcAn.BIOCRO package. `write.configs.BIOCRO` handles these automatically based on genus name.
+
+When adding a new genus, provide a new default parameter file in PEcAn.BIOCRO [`inst/extdata/defaults`](https://github.com/PecanProject/pecan/tree/develop/models/biocro/inst/extdata/defaults).
 
 ## Installation
 
-You can install the development version of `PEcAn.BIOCRO` from r-universe like so:
+### Install PEcAn.BIOCRO Package
+
+You can install the development version of `PEcAn.BIOCRO` from r-universe:
 
 ``` r
 # Enable repository from pecanproject
@@ -22,16 +48,22 @@ options(repos = c(
 install.packages('PEcAn.BIOCRO')
 ```
 
-Or you can install directly from GitHub with the `remotes` package like so:
+Or install directly from GitHub:
 
 ``` r
 library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/biocro")
 ```
 
-## Example
+### Install BioCro Model
 
-This is a basic example which shows you how to solve a common problem:
+BioCro can be run standalone using the model's R package. To install version 0.951 (most robustly supported by PEcAn):
+
+```r
+remotes::install_github('ebimodeling/biocro@0.951')
+```
+
+## Example
 
 ``` r
 library(PEcAn.BIOCRO)
