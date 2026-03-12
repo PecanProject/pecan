@@ -60,7 +60,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                 overwrite = FALSE, conflict = FALSE) {
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
-  sipnet_output <- utils::read.table(sipnet_out_file, header = T, skip = 1, sep = "")
+  # SIPNET v1 had a "Notes" comment line before the header; v2 removed it.
+  # if the first line starts with "year", there is no Notes line.
+  first_line <- readLines(sipnet_out_file, n = 1)
+  skip_n <- if (grepl("^year", first_line)) 0 else 1
+  sipnet_output <- utils::read.table(sipnet_out_file, header = T, skip = skip_n, sep = "")
   #sipnet_output_dims <- dim(sipnet_output)
   
   ### Determine number of years and output timestep
@@ -148,26 +152,25 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                               sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC, "g/m2", "kg/m2")),
       "TotSoilCarb" = PEcAn.utils::ud_convert(sub.sipnet.output$soil + sub.sipnet.output$litter, "g/m2", "kg/m2")
     )
-    if (revision == "unk") {
-      ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
-      ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
-      ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
-      ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
-      ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
-      output[["Qle"]] <- (sub.sipnet.output$npp * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
-    } else {
-      output[["Qle"]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
-    }
-    output[["Transp"]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
-    output[["SoilMoist"]] <- (sub.sipnet.output$soilWater * 10)  # Soil moisture kgW/m2
-    output[["SoilMoistFrac"]] <- (sub.sipnet.output$soilWetnessFrac)  # Fractional soil wetness
-    output[["SWE"]] <- (sub.sipnet.output$snow * 10)  # SWE
+
+    # Water variables:
+    # Liquid water units are cm in Sipnet; in PEcAn they're kg water m-2
+    #  (which is equivalent to mm, but ud_convert doesn't know that)
+    # Evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
+    #  0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
+    # Latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
+    output[["Qle"]] <- (PEcAn.utils::ud_convert(sub.sipnet.output$evapotranspiration, "cm", "mm") * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
+    # Note that Sipnet reports transpiration, and no other variables, in cm/day not cm/timestep.
+    output[["Transp"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fluxestranspiration, "cm/day", "mm/sec") # Transpiration
+    output[["SoilMoist"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$soilWater, "cm", "mm")  # Soil moisture kgW/m2
+    output[["SoilMoistFrac"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$soilWetnessFrac, "cm", "mm")  # Fractional soil wetness
+    output[["SWE"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$snow, "cm", "mm")  # Snow Water Equivalent
     output[["litter_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litter, "g/m2", "kg/m2")
     # litterWater was removed in SIPNET v2; only extract if present
     if ("litterWater" %in% names(sub.sipnet.output)) {
-      # Units are labeled elsewhere as kg water m-2 (which is equivalent to mm, but ud_convert doesn't know that)
       output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")
     }
+
     #calculate LAI for standard output
     # LAI = plantLeafC / leafCSpWt
     # both operands are in carbon units (gC/m2 and gC/m2_leaf),
@@ -185,9 +188,27 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     output[["AGB"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC, "g/m2", "kg/m2")
     # columns only present in sipnet >= v2 with N and methane turned on
+    if ("minN" %in% names(sub.sipnet.output)) {
+      output[["mineral_N"]] <- sub.sipnet.output$minN * 0.001  # gN/m2 -> kgN/m2
+    }
+    if ("soilOrgN" %in% names(sub.sipnet.output)) {
+      output[["soil_organic_N"]] <- sub.sipnet.output$soilOrgN * 0.001  # kgN/m2
+    }
+    if ("litterN" %in% names(sub.sipnet.output)) {
+      output[["litter_N"]] <- sub.sipnet.output$litterN * 0.001  # kgN/m2
+    }
     if ("n2o" %in% names(sub.sipnet.output)) {
       output[["N2O_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$n2o, "g/m2", "kg/m2") / timestep.s
       # convert g N m-2 per timestep -> kg N m-2 s-1
+    }
+    if ("nLeaching" %in% names(sub.sipnet.output)) {
+      output[["N_leaching"]] <- (sub.sipnet.output$nLeaching * 0.001) / timestep.s  # kgN/m2/s
+    }
+    if ("nFixation" %in% names(sub.sipnet.output)) {
+      output[["N_fixation"]] <- (sub.sipnet.output$nFixation * 0.001) / timestep.s  # kgN/m2/s
+    }
+    if ("nUptake" %in% names(sub.sipnet.output)) {
+      output[["N_uptake"]] <- (sub.sipnet.output$nUptake * 0.001) / timestep.s  # kgN/m2/s
     }
     if ("ch4" %in% names(sub.sipnet.output)) {
       output[["CH4_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$ch4, "g/m2", "kg/m2") / timestep.s
@@ -248,15 +269,40 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
+
     if ("litter_mass_content_of_water" %in% names(output)) {
       nc_var[["litter_mass_content_of_water"]] <- PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims)
     }
-    if ("litter_mass_content_of_water" %in% names(output)) {
+    if ("GWBI" %in% names(output)) {
       nc_var[["GWBI"]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                            longname = "Gross Woody Biomass Increment")
     }
+    if ("mineral_N" %in% names(output)) {
+      nc_var[["mineral_N"]] <- ncdf4::ncvar_def("mineral_N", units = "kg N m-2",
+        dim = list(lon, lat, t), missval = -999, longname = "Soil mineral nitrogen")
+    }
+    if ("soil_organic_N" %in% names(output)) {
+      nc_var[["soil_organic_N"]] <- ncdf4::ncvar_def("soil_organic_N", units = "kg N m-2",
+        dim = list(lon, lat, t), missval = -999, longname = "Soil organic nitrogen")
+    }
+    if ("litter_N" %in% names(output)) {
+      nc_var[["litter_N"]] <- ncdf4::ncvar_def("litter_N", units = "kg N m-2",
+        dim = list(lon, lat, t), missval = -999, longname = "Litter nitrogen")
+    }
     if ("N2O_flux" %in% names(output)) {
       nc_var[["N2O_flux"]] <- PEcAn.utils::to_ncvar("N2O_flux", dims)
+    }
+    if ("N_leaching" %in% names(output)) {
+      nc_var[["N_leaching"]] <- ncdf4::ncvar_def("N_leaching", units = "kg N m-2 s-1",
+        dim = list(lon, lat, t), missval = -999, longname = "Nitrogen leaching flux")
+    }
+    if ("N_fixation" %in% names(output)) {
+      nc_var[["N_fixation"]] <- ncdf4::ncvar_def("N_fixation", units = "kg N m-2 s-1",
+        dim = list(lon, lat, t), missval = -999, longname = "Nitrogen fixation flux")
+    }
+    if ("N_uptake" %in% names(output)) {
+      nc_var[["N_uptake"]] <- ncdf4::ncvar_def("N_uptake", units = "kg N m-2 s-1",
+        dim = list(lon, lat, t), missval = -999, longname = "Plant nitrogen uptake flux")
     }
     if ("CH4_flux" %in% names(output)) {
       nc_var[["CH4_flux"]] <- PEcAn.utils::to_ncvar("CH4_flux", dims)

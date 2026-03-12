@@ -17,6 +17,7 @@
 "coda","*","modules/assim.sequential","Imports",FALSE
 "coda","*","modules/data.land","Imports",FALSE
 "coda","*","modules/rtm","Imports",FALSE
+"coda","*","modules/uncertainty","Imports",FALSE
 "coda",">= 0.18","base/utils","Suggests",FALSE
 "coda",">= 0.18","modules/allometry","Imports",FALSE
 "coda",">= 0.18","modules/assim.batch","Imports",FALSE

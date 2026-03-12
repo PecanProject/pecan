@@ -75,56 +75,28 @@ get.parameter.samples <- function(settings,
   for (i in seq_along(pft.names)) {
     distns <- new.env()
 
-    ## Load posteriors
-    if (!is.na(posterior.files[i])) {
-      # Load specified file
-      load(posterior.files[i], envir = distns)
-      if (is.null(distns$prior.distns) && !is.null(distns$post.distns)) {
-        distns$prior.distns <- distns$post.distns
-      }
-    } else {
-      # Default to most recent posterior in the workflow,
-      # or the prior if there is none
-      fname <- file.path(outdirs[i], "post.distns.Rdata")
-      if (file.exists(fname)) {
-        load(fname, envir = distns)
-        distns$prior.distns <- distns$post.distns
-      } else {
-        load(file.path(outdirs[i], "prior.distns.Rdata"), envir = distns)
-      }
+    ## Load posteriors using unified loader
+    ## Detects posterior type by content (not filename).
+    ## Monte Carlo samples take precedence over distribution summaries.
+    posterior <- load.posteriors(
+      posterior.file = posterior.files[i],
+      outdir = unlist(outdirs[i]),
+      posteriorid = settings$pfts[[i]]$posteriorid,
+      con = con,
+      hostname = settings$host$name
+    )
+
+    # Populate the distns environment for downstream compatibility
+    if (!is.null(posterior$prior.distns)) {
+      distns$prior.distns <- posterior$prior.distns
     }
-
-    ### Load trait mcmc data (if exists, either from MA or PDA)
-    if (!is.null(settings$pfts[[i]]$posteriorid) && !is.null(con)) {
-      # first check if there are any files associated with posterior ids
-      files <- PEcAn.DB::dbfile.check("Posterior",
-        settings$pfts[[i]]$posteriorid,
-        con, settings$host$name,
-        return.all = TRUE
-      )
-      tid <- grep("trait.mcmc.*Rdata", files$file_name)
-      if (length(tid) > 0) {
-        trait.mcmc.file <- file.path(files$file_path[tid], files$file_name[tid])
-        ma.results <- TRUE
-        load(trait.mcmc.file, envir = distns)
-
-
-        # PDA samples are fitted together, to preserve correlations downstream
-        # let workflow know they should go together
-        if (grepl("mcmc.pda", trait.mcmc.file)) independent <- FALSE
-        # NOTE: Global MA samples will also be together, right?
-      } else {
-        PEcAn.logger::logger.info(
-          "No trait.mcmc file is associated with this posterior ID."
-        )
-        ma.results <- FALSE
-      }
-    } else if ("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
-      PEcAn.logger::logger.info(
-        "Defaulting to trait.mcmc file in the pft directory."
-      )
+    if (!is.null(posterior$trait.mcmc)) {
+      distns$trait.mcmc <- posterior$trait.mcmc
       ma.results <- TRUE
-      load(file.path(outdirs[i], "trait.mcmc.Rdata"), envir = distns)
+      # Joint posteriors (e.g. from PDA) should preserve correlations
+      if (posterior$is.joint) {
+        independent <- FALSE
+      }
     } else {
       ma.results <- FALSE
     }

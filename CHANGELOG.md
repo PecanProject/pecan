@@ -16,6 +16,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added datasets to `PEcAn.data.land` 
   *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
+- PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 
 ### Fixed
 
@@ -26,7 +27,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
 - Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)
 - SDA workflows now maintain joint input sampling, via internal calls to `generate_joint_ensemble_design()` (#3634).
-* `PEcAn.data.land`: Moved optional dependencies `doSNOW`, `dplR`, `httr`,
+- `PEcAn.data.land`: Moved optional dependencies `doSNOW`, `dplR`, `httr`,
   `MCMCpack`, `mvtnorm`, `neonUtilities`, `neonstore`, `PEcAn.benchmark`,
   `PEcAn.visualization`, `rjags`, `sirt`, and `sp` from `Imports` to
   `Suggests` (@omkarrr2533, #3599).
