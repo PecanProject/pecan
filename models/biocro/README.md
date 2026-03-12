@@ -15,23 +15,17 @@ BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosyst
 
 The BioCro model is integrated into the PEcAn workflow, allowing for large-scale simulations and data assimilation.
 
-### PEcAn configuration file additions
-
-The following sections of the PEcAn XML are relevant to the BioCro model: 
-
-- `model`
-  - `revision` -- Model version number
-- `run`
-  - `site/id` -- ID associated with desired site from BETYdb site entry
-  - `inputs`
-    - `met/output` -- Set as BIOCRO
-    - `met/path` -- Path to file containing meteorological data
 
 ### Model configuration files
 
-Genus-specific parameter files are required and stored within the PEcAn.BIOCRO package. `write.configs.BIOCRO` handles these automatically based on genus name.
+BioCro uses a `config.xml` file for its core settings, similar to the ED2 model. 
 
-When adding a new genus, provide a new default parameter file in PEcAn.BIOCRO [`inst/extdata/defaults`](https://github.com/PecanProject/pecan/tree/develop/models/biocro/inst/extdata/defaults).
+Genus-specific parameter files are required and stored within the PEcAn.BIOCRO package. `write.configs.BIOCRO` handles these automatically. The lookup order for defaults is:
+1.  Any file specified by `settings$pft$constants$file`.
+2.  Matching the genus name in datasets exported by the `BioCro` package.
+3.  Matching the genus name in PEcAn.BIOCRO [`inst/extdata/defaults`](https://github.com/PecanProject/pecan/tree/develop/models/biocro/inst/extdata/defaults).
+
+**Note:** When adding a new genus for BioCro versions prior to v1.0, it is also necessary to update the `call_biocro()` function in the package source.
 
 ## Installation
 

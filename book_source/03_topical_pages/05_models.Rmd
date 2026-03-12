@@ -4,25 +4,25 @@ This section provides an overview of all models and output variables supported b
 
 | Model Name | Available in Docker | Prescribed Inputs | Input Conversion | Restart/DA |
 | -- | -- | -- | -- | -- |
-| [BASGRA](https://pecanproject.r-universe.dev/PEcAn.BASGRA) | Yes | Yes | Yes | No |
-| [BioCro](https://pecanproject.r-universe.dev/PEcAn.BIOCRO) | Yes | Yes | Yes| No |
+| [BASGRA](https://github.com/PecanProject/pecan/tree/develop/models/basgra) | Yes | Yes | Yes | No |
+| [BioCro](https://github.com/PecanProject/pecan/tree/develop/models/biocro) | Yes | Yes | Yes| No |
 | [CABLE](https://github.com/PecanProject/pecan/tree/develop/models/cable) | No | Yes | No | No |
 | [CLM](https://github.com/PecanProject/pecan/tree/develop/models/clm45)| No | No | No| No |
-| [DALEC](https://pecanproject.r-universe.dev/PEcAn.DALEC)| Yes | Yes | Yes| No |
+| [DALEC](https://github.com/PecanProject/pecan/tree/develop/models/dalec)| Yes | Yes | Yes| No |
 | [Dvmdostem](https://github.com/PecanProject/pecan/tree/develop/models/dvmdostem) | No | Yes | Yes | No |
-| [ED2](https://pecanproject.r-universe.dev/PEcAn.ED2)| Yes | Yes | Yes| Yes |
+| [ED2](https://github.com/PecanProject/pecan/tree/develop/models/ed)| Yes | Yes | Yes| Yes |
 | [FATES](https://github.com/PecanProject/pecan/tree/develop/models/fates) | No | Yes | Yes | No|
 | [GDAY](https://github.com/PecanProject/pecan/tree/develop/models/gday) | No | No | No| No |
 | [JULES](https://github.com/PecanProject/pecan/tree/develop/models/jules) | No | Yes | No | No |
-| [LDNDC](https://pecanproject.r-universe.dev/PEcAn.LDNDC) | No | Yes | No | No |
-| [LINKAGES](https://pecanproject.r-universe.dev/PEcAn.LINKAGES) | Yes | Yes | Yes| Yes |
+| [LDNDC](https://github.com/PecanProject/pecan/tree/develop/models/ldndc) | No | Yes | No | No |
+| [LINKAGES](https://github.com/PecanProject/pecan/tree/develop/models/linkages) | Yes | Yes | Yes| Yes |
 | [LPJ-GUESS](https://github.com/PecanProject/pecan/tree/develop/models/lpjguess)| No | Yes | No | No |
 | [MAAT](https://github.com/PecanProject/pecan/tree/develop/models/maat) | Yes | Yes | No | No |
 | [MAESPA](https://github.com/PecanProject/pecan/tree/develop/models/maespa)| Yes | Yes | No | No |
-| [PRELES](https://pecanproject.r-universe.dev/PEcAn.PRELES) | Yes | Yes | Partially | No |
-| [RothC](https://pecanproject.r-universe.dev/PEcAn.ROTHC) | No | Yes | Partially | No |
-| [SiPNET](https://pecanproject.r-universe.dev/PEcAn.SIPNET)| Yes | Yes | Yes| Yes |
-| [STICS](https://pecanproject.r-universe.dev/PEcAn.STICS)| Yes | Yes | No | No |
+| [PRELES](https://github.com/PecanProject/pecan/tree/develop/models/preles) | Yes | Yes | Partially | No |
+| [RothC](https://github.com/PecanProject/pecan/tree/develop/models/rothc) | No | Yes | Partially | No |
+| [SiPNET](https://github.com/PecanProject/pecan/tree/develop/models/sipnet)| Yes | Yes | Yes| Yes |
+| [STICS](https://github.com/PecanProject/pecan/tree/develop/models/stics)| Yes | Yes | No | No |
 
 **Column Definitions**
 

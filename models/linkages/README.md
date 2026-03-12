@@ -9,6 +9,39 @@ PEcAn Coupler for the LINKAGES Model
 
 LINKAGES is a forest gap model designed to simulate the growth and death of individual trees on a small plot.
 
+## Installation
+
+### Install PEcAn.LINKAGES Package
+
+You can install the development version of `PEcAn.LINKAGES` from r-universe:
+
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.LINKAGES in R
+install.packages('PEcAn.LINKAGES')
+```
+
+Or install directly from GitHub:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "models/linkages")
+```
+
+### Install LINKAGES Model
+
+The LINKAGES model code is included within the PEcAn package and is compiled during installation.
+
+## Example
+
+``` r
+library(PEcAn.LINKAGES)
+## basic example code
+```
+
 ### Model configuration files
 
 - **file1**: template at `models/linkages/inst/file1`

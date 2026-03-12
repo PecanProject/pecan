@@ -29,11 +29,6 @@ This package is following PEcAn's standard iterative process toward full model c
 - [ ] read/write restart
 - [ ] non-met inputs
 
-## PEcAn configuration file additions
-
-None yet.
-
-TODO: Add support for setting options `RMmoist` and `SMDbare` via `settings$model$opt_RMmoist` and `settings$model$opt_SMDbare`.
 
 ## Model specific input files
 

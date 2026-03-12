@@ -5,7 +5,11 @@
   "binary": "@BINARY@",
   "description": "A version of the BASic GRAssland model (BASGRA) that includes simulation of the N-cycle and digestibility.",
   "creator": "Marcel van Oijen",
-  "contributors": ["Marcel van Oijen", "Mats Hoglind", "David Cameron"],
+  "contributors": [
+    "Marcel van Oijen",
+    "Mats Hoglind",
+    "David Cameron"
+  ],
   "links": [
     {
       "type": "git",
@@ -23,9 +27,9 @@
       "url": "https://github.com/MarcelVanOijen/BASGRA_N/blob/master/documentation/BASGRA_N_UserGuide.docx"
     },
     {
-      "type": "documentation",
-      "description": "PEcAn documentation for BASGRA integration",
-      "url": "https://pecanproject.r-universe.dev/PEcAn.BASGRA"
+      "type": "docker",
+      "description": "docker image of the BASGRA_N model",
+      "url": "pecan/models-basgra"
     }
   ],
   "inputs": {},

@@ -9,10 +9,35 @@ PEcAn Coupler for the DALEC Model
 
 DALEC (Data Assimilation Linked Ecosystem Carbon) is a simplified ecosystem model designed for carbon cycle data assimilation.
 
-### PEcAn configuration file additions
+## Installation
 
-None specific yet.
+### Install PEcAn.DALEC Package
 
-### Installation notes
+You can install the development version of `PEcAn.DALEC` from r-universe:
+
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.DALEC in R
+install.packages('PEcAn.DALEC')
+```
+
+Or install directly from GitHub:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "models/dalec")
+```
+
+### Install DALEC Model
 
 DALEC is typically provided as a simple executable or script.
+
+## Example
+
+``` r
+library(PEcAn.DALEC)
+## basic example code
+```
