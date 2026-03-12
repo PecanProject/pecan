@@ -81,4 +81,4 @@ cp rothc_bin /usr/local/bin/rothc_bin
 
 ## Example
 
-See `inst/example_workflow` for a set of scripts to run multisite ensemble simulations of soil organic carbon content.
+See `inst/workflow_example` for a set of scripts to run multisite ensemble simulations of soil organic carbon content.
