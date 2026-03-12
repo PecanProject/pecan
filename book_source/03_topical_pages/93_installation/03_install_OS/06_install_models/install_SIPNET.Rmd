@@ -1,23 +1,33 @@
-#### SIPNET {inst-sipnet}
+#### SIPNET {#inst-sipnet}
+
+You can download a compiled binary from the [SIPNET releases page](https://github.com/PecanProject/sipnet/releases). 
+
+You can also install SIPNET is from the repository:
+
 
 ```bash
-cd
-curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-tar zxf sipnet_unk.tar.gz
-rm sipnet_unk.tar.gz
+# Clone the SIPNET repository
+git clone https://github.com/PecanProject/sipnet.git
+cd sipnet
 
-cd sipnet_unk
+# Build SIPNET
 make
-sudo cp sipnet /usr/local/bin/sipnet.runk
+
+# Install the executable (optional - adjust path as needed)
+sudo cp sipnet /usr/local/bin/sipnet
 ```
 
-##### SIPNET testrun
+For detailed installation instructions, build options, and dependencies,
+please see the [SIPNET Installation Guide](https://pecanproject.github.io/sipnet/install.html).
+
+**Note:** Previous installation methods using tarballs (`sipnet_unk.tar.gz`, `sipnet_r136.tar.gz`) are deprecated.
+Please use the repository method above for the most up-to-date version.
+All previous tagged releases are available as source code and compiled binaries from the SIPNET releases page.
+
+**SIPNET testrun**
 
 ```bash
-cd
-curl -o testrun.sipnet.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.sipnet.tar.gz
-tar zxf testrun.sipnet.tar.gz
-rm testrun.sipnet.tar.gz
-cd testrun.sipnet
-sipnet.runk
+/usr/local/bin/sipnet --version
+/usr/local/bin/sipnet --help
 ```
+

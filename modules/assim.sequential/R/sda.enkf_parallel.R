@@ -245,14 +245,15 @@ sda.enkf_local <- function(settings,
           if (!no_split) {
             for (i in seq_len(nens)) {
               #---------------- model specific split inputs
-              inputs.split$met$samples[i] <- do.call(
-                my.split_inputs,
-                args = list(
-                  settings = settings,
-                  start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
-                  stop.time =   lubridate::ymd_hms(obs.times[t], truncated = 3),
-                  inputs = inputs$met$samples[[i]])
+              split_args <- list(
+                start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                stop.time = lubridate::ymd_hms(obs.times[t], truncated = 3),
+                inputs = inputs$met$samples[[i]]
               )
+              if (model != "SIPNET") {
+                split_args <- c(list(settings = settings), split_args)
+              }
+              inputs.split$met$samples[i] <- do.call(my.split_inputs, args = split_args)
             }
           } else{
             inputs.split <- inputs

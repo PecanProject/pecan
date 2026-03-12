@@ -1,16 +1,20 @@
-## SiPNET {#models-sipnet}
+## SIPNET {#models-sipnet}
 
 | Model Information ||
 | -- | -- |
-| Home Page | |
-| Source Code | |
-| License |  |
-| Authors | |
+| Home Page | https://pecanproject.github.io/sipnet |
+| Source Code | https://github.com/PecanProject/sipnet |
+| License | BSD 3-Clause |
+| Authors | Michael Longfritz, William Sacks, David Moore, John M. Zobitz, Bobby H. Braswell, David S. Schimel, Rob Kooper, Michael C. Dietze, Istem Fer, Chris Black, David S. LeBauer|
 | PEcAn Integration | Michael Dietze, Rob Kooper |
 
 **Introduction**
 
-Introduction about model
+SIPNET (Simplified Photosynthesis and Evapotranspiration Model) is a lightweight ecosystem model designed to simulate complex environmental dynamics. It tracks carbon, water, nitrogen, and trace greenhouse-gas (N₂O, CH₄) interactions, supporting applications from forest carbon inventories to managed croplands.
+
+Key features include simulation of photosynthesis, respiration, allocation, soil water, soil temperature, and nitrogen cycling on sub-daily time steps. The model tracks vegetation, litter, soil, and mineral-N pools, and includes event-based management for agricultural processes.
+
+For model documentation including model structure, user guide, and developer guide, see the [SIPNET documentation](https://pecanproject.github.io/sipnet). For PEcAn.SIPNET documentation, see the [package website](https://pecanproject.github.io/package-documentation/develop/PEcAn.SIPNET/).
 
 **PEcAn configuration file additions**
 
@@ -30,39 +34,4 @@ SIPNET is configured using 3 files which are placed in the run folder, as well a
 
 **Installation notes**
 
-This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
-
-SIPNET version unk:
-
-```
-if [ ! -e ${HOME}/sipnet_unk ]; then
-  cd
-  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz
-  tar zxf sipnet_unk.tar.gz
-  rm sipnet_unk.tar.gz
-fi
-cd ${HOME}/sipnet_unk/
-make clean
-make
-sudo cp sipnet /usr/local/bin/sipnet.runk
-make clean
-```
-
-SIPNET version 136:
-
-```
-if [ ! -e ${HOME}/sipnet_r136 ]; then
-  cd
-  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_r136.tar.gz
-  tar zxf sipnet_r136.tar.gz
-  rm sipnet_r136.tar.gz
-  sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet_r136/Makefile
-fi
-cd ${HOME}/sipnet_r136/
-make clean
-make
-sudo cp sipnet /usr/local/bin/sipnet.r136
-make clean
-```
-
-**VM**
+For current SIPNET installation instructions, please see the [SIPNET Installation Guide](https://pecanproject.github.io/sipnet/install.html) or install binaries from the official [releases](https://github.com/PecanProject/sipnet/releases) page.

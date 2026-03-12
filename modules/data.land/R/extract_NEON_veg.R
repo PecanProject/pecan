@@ -20,7 +20,11 @@
 #' start_date = as.Date("2020-01-01") 
 #' end_date = as.Date("2021-09-01")
 extract_NEON_veg <- function(lon, lat, start_date, end_date, store_dir, neonsites = NULL, ...){
-  
+  if (!requireNamespace("neonstore", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'neonstore' is required for extracting NEON vegetation data but is not installed.",
+      "Please install it with: install.packages('neonstore')")
+  }
   #Function to grab the first measurements for each plot between start and end date.
   Grab_First_Measurements_of_Each_Plot <- function(temp_data){
     Plot_Year <- paste0(temp_data$plot, temp_data$year)

@@ -9,7 +9,7 @@ neff <- function(x, ...) {
 }
 
 #' @export
-neff.default <- function(x, lag.max = NULL, min_rho = 0.1) {
+neff.default <- function(x, lag.max = NULL, min_rho = 0.1, ...) {
     x_use <- x[!is.na(x)]
     nx <- length(x_use)
     if (is.null(lag.max)) {

@@ -17,7 +17,7 @@ write.sa.configs(
 \arguments{
 \item{defaults}{named list with default parameter values}
 
-\item{quantile.samples}{list of lists supplied by \link{get.sa.samples}}
+\item{quantile.samples}{list of lists supplied by \link[PEcAn.utils]{get.sa.samples}}
 
 \item{settings}{list of settings}
 

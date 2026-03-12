@@ -1,13 +1,13 @@
 #' Print method for spectra S3 class
 #' 
-#' @inheritParams wavelengths
+#' @param x A spectra object
 #' @param n Max number of rows to print (show first `n/2` and last `n/2` rows)
 #' @param ... Additional arguments to `print`
 #' @export
-print.spectra <- function(spectra, n = 10, ...) {
-  out <- spectra
+print.spectra <- function(x, n = 10, ...) {
+  out <- x
   class(out) <- "matrix"
-  rownames(out) <- as.character(wavelengths(spectra))
+  rownames(out) <- as.character(wavelengths(x))
   attr(out, "wavelengths") <- NULL
   if (nrow(out) > n) {
     head_str <- head(out, ceiling(n / 2))

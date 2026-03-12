@@ -47,12 +47,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   
   ## Converting to sipnet units
   prior.sla <- new.params[[which(!names(new.params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
-  unit.conv <- 2 * (10000 / 1) * (1 / 1000) * (3.154 * 10^7)  # kgC/m2/s -> Mg/ha/yr
   
   analysis.save <- list()
   
   if ("NPP" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
 
