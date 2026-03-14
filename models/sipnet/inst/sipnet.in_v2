@@ -2,20 +2,14 @@
 
 ! --- INPUTS FOR ALL RUN TYPES ---
 
-RUNTYPE = standard
-! RUNTYPE must be one of 'standard', 'senstest', or 'montecarlo'
-
 FILENAME = sipnet
 ! FILENAME.param is the file of parameter values & initial conditions
-! FILENAME.param-spatial is the file of spatially-varying parameters
-!  (first line must contain a single integer: # of locations)
 ! FILENAME.clim is the file of climate data for each time step
 
 DO_MAIN_OUTPUT = 1
 ! If 1, do the primary output to FILENAME.out (time series of all output
 !  variables)
 ! If 0, suppress this output
-! Ignored for montecarlo run with statsonly (treated as 1)
 
 PRINT_HEADER = 1
 ! If 1, print header on main output file; if 0, don't print header
@@ -25,13 +19,6 @@ DO_SINGLE_OUTPUTS = 0
 ! If 1, do extra outputs: one variable per file (e.g. FILENAME.NEE)
 ! If 0, don't do these extra outputs
 ! (These extra outputs are setup in sipnet.c : setupOutputItems)
-! Ignored for montecarlo run with statsonly (treated as 0)
-! For a spatial run (LOCATION = -1), with RUNTYPE = standard, the first
-!  value on each line is the location, followed by the time series
-! For RUNTYPE = senstest, the first value on each line is the parameter
-!  value, followed by the time series
-! For RUNTYPE = montecarlo, there is no leading label value - these
-!  files just contain the time series
 
 ! --- V2 MODEL FLAGS ---
 

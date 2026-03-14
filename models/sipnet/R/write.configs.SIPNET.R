@@ -1,17 +1,80 @@
-##' Writes a configuration files for your model
-##' @name write.config.SIPNET
-##' @title Writes a configuration files for SIPNET model
-##' @param defaults pft
-##' @param trait.values vector of samples for a given trait
-##' @param settings PEcAn settings object
-##' @param run.id run ID
-##' @param inputs list of model inputs
-##' @param IC initial condition
-##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @param spinup currently unused, included for compatibility with other models
-##' @export
-##' @importFrom rlang %||%
-##' @author Michael Dietze
+#' Writes configuration files for one invocation of the SIPNET model
+#'
+#' @description
+#' Creates the following SIPNET files:
+#'
+#' - `job.sh` --- Job submission script. Populated from `inst/template.job`
+#' - `sipnet.in` --- Sipnet configuration file. Populated from `inst/sipnet.in_v*`
+#' - `events.in` --- Copied from `inputs$events$path` or
+#' `settings$run$inputs$events$path`. This needs to be in the SIPNET event
+#' format; see [write.events.SIPNET()] for generating these files
+#' - `*.param` --- SIPNET parameter file. Includes both traits and initial
+#' conditions.
+#' - `*.clim` --- SIPNET meteorology driver (from
+#' `settings$run$inputs$met$path`, overriden by `inputs$met$path`).
+#' Note that the dates in this file determine the SIPNET start and end dates.
+#'
+#' If you relocate files between config generation and Sipnet runtime,
+#' note that write.configs() does not copy `*.clim`. Instead it records the
+#' path to its current location. At Sipnet runtime, `job.sh` then creates
+#' a symbolic link to that path.
+#'
+#' @details
+#' 
+#' # Model version specification
+#'
+#' `write.config.SIPNET()` matches its output format to the version of Sipnet
+#' listed in `settings$model$revision`. This should be a numeric version
+#' (e.g. `2.0.1`) and needs to match the version of your Sipnet binary.
+#' You can check your binary's version by running
+#' `./path/to/your/sipnet --version`, which should report something similar
+#' to `SIPNET version 2.0.0 (4baf19a66c)`. If it says "illegal option" then you
+#' have Sipnet 1.x and can report the version as "v1".
+#'
+#' # Command line arguments
+#'
+#' SIPNET run-time options can be passed through a named list via
+#' `settings$model$options`. For example, this...
+#'
+#' <model>
+#'  <binary>path/to/sipnet</binary>
+#'  <revision>2.0.2</revision>
+#'  <options>
+#'    <RESTART_IN>path/to/restart.in</RESTART_IN>
+#'    <RESTART_OUT>path/to/restart.in</RESTART_OUT>
+#'    <GDD>0</GDD>
+#'    <ANAEROBIC>1</ANAEROBIC>
+#'  </options>
+#' [...]
+#' </model>
+#' ```
+#'
+#' ...will be rendered in `sipnet.in` as...:
+#'
+#' ```
+#' RESTART_IN = path/to/restart.in
+#' RESTART_OUT = path/to/restart.out
+#' GDD = 0
+#' ANAEROBIC = 1
+#' ```
+#'
+#' ...though not necessarily in this order. If the `sipnet.in` template already
+#' defines an option specified in settings$model$options, its value will be
+#' updated in place; options not already in the file will be added to the bottom.
+#'
+#' @param defaults nested list of named constant parameter values. The
+#' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
+#' Only `defaults[[1]]$constants` is used; all other elements are silently ignored. 
+#' @param trait.values vector of samples for a given trait
+#' @param settings PEcAn settings object
+#' @param run.id run ID
+#' @param inputs list of model inputs
+#' @param IC initial condition
+#' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+#' @param spinup currently unused, included for compatibility with other models
+#' @export
+#' @importFrom rlang %||%
+#' @author Michael Dietze, Alexey Shiklomanov
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
 
@@ -37,34 +100,20 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     package = "PEcAn.SIPNET"
   )
   config.text <- readLines(con = template.in, n = -1)
-  writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
 
-  # for v2, allow settings$model to override runtime flags in sipnet.in
-  if (rev_str == "v2") {
-    sipnet_in_path <- file.path(settings$rundir, run.id, "sipnet.in")
-    nc <- as.integer(settings$model$nitrogen_cycle %||% 1)
-    lp <- as.integer(settings$model$litter_pool %||% 1)
-    an <- as.integer(settings$model$anaerobic %||% 1)
-    # NITROGEN_CYCLE requires both LITTER_POOL and ANAEROBIC
-    if (nc == 1 && !(lp == 1 && an == 1)) {
-      PEcAn.logger::logger.warn(
-        "NITROGEN_CYCLE requires LITTER_POOL and ANAEROBIC; enabling both")
-      lp <- 1L
-      an <- 1L
-    }
-    flag_lines <- c(
-      paste("NITROGEN_CYCLE =", nc),
-      paste("LITTER_POOL =", lp),
-      paste("ANAEROBIC =", an)
-    )
-    # overwrite template flags with settings driven values
-    existing <- readLines(sipnet_in_path)
-    for (fl in flag_lines) {
-      flag_name <- trimws(sub("=.*", "", fl))
-      existing <- existing[!grepl(paste0("^\\s*", flag_name, "\\s*="), existing)]
-    }
-    writeLines(c(existing, "", flag_lines), sipnet_in_path)
+  # Update model runtime settings with any user-specified values.
+  # Note that all checks for valid flags or flag combinations
+  # (e.g. NITROGEN_CYCLE requires LITTER_POOL and ANAEROBIC)
+  # are handled by Sipnet at run time.
+  user_flags <- settings$model$options
+  if (length(user_flags) > 0 && rev_str == "v1") {
+    PEcAn.logger::logger.warn(
+      "Got model options", names(user_flags),
+      "but sipnet version", rev_raw, "will ignore them.")
   }
+  config.text <- update_flag_lines(config.text, user_flags)
+
+  writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
   
   ### WRITE *.clim
   template.clim <- settings$run$inputs$met$path  ## read from settings
@@ -147,7 +196,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
-  
+
   jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
   jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
   jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
@@ -909,3 +958,33 @@ remove.config.SIPNET <- function(main.outdir, settings) {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
 } # remove.config.SIPNET 
+
+
+
+
+
+#' Helper to pass user-specified runtime options into sipnet.in
+#'
+#' Unnamed flags are ignored.
+#'
+#' NB just writes "NAME = value" strings;
+#' does not check whether Sipnet will recognize either the name or the value.
+#' In v2 all are either a filename or a binary flag passed as 0 or 1,
+#' but we don't enforce that here.
+#'
+#' @param text vector of lines from sipnet.in
+#' @param flags named vector of flag values
+#' @return updated text with existing flags updated and new ones added
+#' @noRd
+update_flag_lines <- function(text, flags) {
+  flags <- flags[names(flags) != ""]
+  for (name in names(flags)) {
+    flag_txt <- paste(name, "=", flags[name])
+    line_num <- grep(paste0("^", name, " ="), text)
+    if (length(line_num) == 0) {
+      line_num <- length(text) + 1
+    }
+    text[line_num] <- flag_txt
+  }
+  text
+}
