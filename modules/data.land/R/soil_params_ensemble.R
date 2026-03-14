@@ -23,7 +23,11 @@
 #' @return The individual alphas that work best to fit the observed quantiles
 #' @author Qianyu Li
 estimate_dirichlet_parameters <- function(means, quantiles) {
-  
+  if (!requireNamespace("MCMCpack", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'MCMCpack' is required for Dirichlet sampling but is not installed.",
+      "Please install it with: install.packages('MCMCpack')")
+  }
   # A function to optimize alpha0, which is the sum of individual alphas.
   estimate_alpha0 <- function(means, quantiles) {
     # Objective function to minimize the difference between observed and simulated quantiles with means as a known moment
@@ -32,7 +36,7 @@ estimate_dirichlet_parameters <- function(means, quantiles) {
         return(Inf) # alpha0 couldn't be zero or negative as it is the sum of individual alpha which are positive reals
       # Estimate individual alpha based on that the means of each categorical data are individual alpha divided by alpha0 in Dirichlet distribution
       alpha <- means * alpha0
-      # Generate samples based on estimated alpha
+       # Generate samples based on estimated alpha
       samples <- MCMCpack::rdirichlet(10000, alpha) # Generate samples
       # Compute differences with observed quantiles
       estimated_quantiles <- apply(
@@ -97,6 +101,16 @@ estimate_dirichlet_parameters <- function(means, quantiles) {
 
 soil_params_ensemble_soilgrids <- function(settings,sand,clay,silt,outdir,write_into_settings=TRUE){
   
+  if (!requireNamespace("doSNOW", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'doSNOW' is required for parallel processing but is not installed.",
+      "Please install it with: install.packages('doSNOW')")
+  }
+  if (!requireNamespace("MCMCpack", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'MCMCpack' is required for Dirichlet sampling but is not installed.",
+      "Please install it with: install.packages('MCMCpack')")
+  }
   # A function to rescale the sums of mean texture fractions to 1 as the original sums are slightly different from 1 for some layers
   rescale_sum_to_one <- function(sand, clay, silt) {
     total <- sand + clay + silt
@@ -202,7 +216,6 @@ soil_params_ensemble_soilgrids <- function(settings,sand,clay,silt,outdir,write_
       
       # Estimate Dirichlet parameters
       alpha_est <- estimate_dirichlet_parameters(as.matrix(means), quantiles)
-      
       # Generate the ensemble soil texture data based on the ensemble size (ens_n) defined in the settings
       samples <- MCMCpack::rdirichlet(ens_n, alpha_est)
       colnames(samples) <-c("fraction_of_sand_in_soil","fraction_of_clay_in_soil","fraction_of_silt_in_soil")

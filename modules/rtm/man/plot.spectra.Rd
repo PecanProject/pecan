@@ -4,10 +4,12 @@
 \alias{plot.spectra}
 \title{Plot spectra vs. wavelength}
 \usage{
-\method{plot}{spectra}(spectra, type = "l", ...)
+\method{plot}{spectra}(x, y = NULL, type = "l", ...)
 }
 \arguments{
-\item{spectra}{Vector (\code{length = length(wavelengths)}) or matrix (\code{ncol = length(wavelengths)})}
+\item{x}{A spectra object}
+
+\item{y}{Ignored.}
 
 \item{type}{plot style, e.g. "l" for lines, "b" for lines and points}
 
