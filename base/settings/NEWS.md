@@ -1,3 +1,9 @@
+# PEcAn.settings 1.9.1.9000
+
+* Breaking: `loadPath.SitePFT(path)` now takes only one argument, removing the previously required but ignored `settings` (@Thomas-Sedhom, #3834).
+* `check.model.settings()` now skips lookup of the model binary path if no DB connection is provided (#3863).
+
+
 # PEcAn.settings 1.9.1
 
 ## Fixed

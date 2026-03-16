@@ -29,9 +29,9 @@ Even if a \code{file} argument is passed, it will be ignored if a file
 is passed through a higher priority method.
 }
 \examples{
-\dontrun{
-settings <- read.settings(file="willowcreek.xml")
-}
+test.settings.file <- system.file("test.xml", package = "PEcAn.settings")
+settings <- read.settings(test.settings.file)
+
 }
 \author{
 Shawn Serbin

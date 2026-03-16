@@ -5,7 +5,6 @@
 \title{split_inputs.SIPNET}
 \usage{
 split_inputs.SIPNET(
-  settings,
   start.time,
   stop.time,
   inputs,
@@ -14,8 +13,6 @@ split_inputs.SIPNET(
 )
 }
 \arguments{
-\item{settings}{PEcAn settings object}
-
 \item{start.time}{start date and time for each SDA ensemble}
 
 \item{stop.time}{stop date and time for each SDA ensemble}

@@ -29,6 +29,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
 URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
 Imports:
+    coda,
     dplyr,
     ggplot2,
     gridExtra,

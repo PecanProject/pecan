@@ -97,7 +97,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
 #' Writes config files for use in sensitivity analysis.
 #'
 #' @param defaults named list with default parameter values
-#' @param quantile.samples list of lists supplied by \link{get.sa.samples}
+#' @param quantile.samples list of lists supplied by \link[PEcAn.utils]{get.sa.samples}
 #' @param settings list of settings
 #' @param model name of model to be run
 #' @param clean logical: Delete any existing contents of the directory specified
