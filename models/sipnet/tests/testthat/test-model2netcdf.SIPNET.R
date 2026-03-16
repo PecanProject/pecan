@@ -227,3 +227,5 @@ test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
   expect_equal(pec$GPP, sip$gpp / 1000 / ts)
   expect_equal(pec$Transp, sip$fluxestranspiration * 10 / ts, tolerance = 1e-6)
 })
+
+# Add back after lost in merge
