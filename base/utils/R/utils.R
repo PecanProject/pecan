@@ -617,7 +617,7 @@ convert.expr <- function(expression) {
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
   
-  non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
+  non.match <- gregexpr('[^a-zA-Z0-9_.]', deri.eqn) # match characters that are not "a-zA-Z0-9_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
   if(length(split.chars)!=0){

@@ -19,7 +19,7 @@ ud_convert <- function(x, u1, u2) {
       warning("Units of `x` don't match `u1`, using '", units::deparse_unit(x1), "' instead")
     }
   } else {
-    x1 <- units::set_units(x, value = u1, mode = "standard")
+    x1 <- units::set_units(as.numeric(x), value = u1, mode = "standard")
   }
   x2 <- units::set_units(x1, value = u2, mode = "standard")
   

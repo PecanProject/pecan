@@ -671,9 +671,9 @@
 "TruncatedNormal",">= 2.2","modules/assim.batch","Imports",FALSE
 "truncnorm","*","modules/data.atmosphere","Imports",FALSE
 "units","*","base/db","Imports",FALSE
-"units","*","base/utils","Imports",FALSE
 "units","*","modules/benchmark","Imports",FALSE
 "units","*","modules/data.atmosphere","Imports",FALSE
+"units",">= 0.8.7","base/utils","Imports",FALSE
 "urltools","*","base/remote","Imports",FALSE
 "utils","*","base/all","Imports",FALSE
 "utils","*","base/logger","Imports",FALSE

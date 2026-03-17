@@ -45,8 +45,8 @@ Imports:
     rlang,
     sensitivity
 Suggests:
-    testthat (>= 1.0.2),
     mockery,
+    testthat (>= 1.0.2),
     withr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors

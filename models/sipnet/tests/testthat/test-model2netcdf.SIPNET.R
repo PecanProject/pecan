@@ -10,9 +10,16 @@ setup_sipnet_test <- function(sipnet_dat, delete.raw = FALSE,
 
   out_path <- file.path(outdir, "sipnet.out")
   if (!is.null(notes_line)) {
-    writeLines(notes_line, out_path)
+    # Write notes line AND provide our own column header
+    # (write.table complains when append and col.names are both TRUE)
+    writeLines(
+      c(notes_line,
+        paste(colnames(sipnet_dat), collapse = " ")),
+      out_path
+    )
     write.table(sipnet_dat, file = out_path, append = TRUE,
-                row.names = FALSE, quote = FALSE, sep = "\t")
+                row.names = FALSE, col.names = FALSE,
+                quote = FALSE, sep = "\t")
   } else {
     # v2 format: no Notes line, header is first line
     write.table(sipnet_dat, file = out_path, append = FALSE,
@@ -188,4 +195,35 @@ test_that("model2netcdf.SIPNET handles v1 format with Notes line", {
 
   litter_water <- as.vector(ncdf4::ncvar_get(nc, "litter_mass_content_of_water"))
   expect_equal(litter_water, rep(5.0 * 10, n), tolerance = 1e-12)
+})
+
+test_that("pools are converted from gC/m2 to kgC/m2", {
+  sip <- make_base_sipnet()
+  out_dir <- setup_sipnet_test(sip)$outdir
+  pec <- PEcAn.utils::read.output(
+    ncfiles = file.path(out_dir, "2002.nc"),
+    variables = c("litter_carbon_content", "SoilMoist"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+
+  expect_equal(pec$litter_carbon_content, sip$litter / 1000) # g -> kg
+  expect_equal(pec$SoilMoist, sip$soilWater * 10) # cm -> mm AKA kg H2O/m2
+})
+
+test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
+  sip <- make_base_sipnet()
+  out_dir <- setup_sipnet_test(sip)$outdir
+  pec <- PEcAn.utils::read.output(
+    ncfiles = file.path(out_dir, "2002.nc"),
+    variables = c("GPP", "Transp"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+  ts <- 8 * 60 * 60 # 8 hrs -> secs
+
+  expect_equal(pec$GPP, sip$gpp / 1000 / ts)
+  expect_equal(pec$Transp, sip$fluxestranspiration * 10 / ts, tolerance = 1e-6)
 })
