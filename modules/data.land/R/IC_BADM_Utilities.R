@@ -315,7 +315,11 @@ EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
   U.S.SB.sp <-
     data.frame(Lati = Lat %>% as.numeric(),
                Long = Lon %>% as.numeric())
-  
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'sp' is required for spatial data processing but is not installed.",
+      "Please install it with: install.packages('sp')")
+  }
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
   # L1 layer
   L1 <-

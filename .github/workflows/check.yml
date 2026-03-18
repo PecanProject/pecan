@@ -70,7 +70,7 @@ jobs:
     - name: check package versions
       run: |
         tag=$(\
-          curl -s https://api.github.com/repos/pecanproject/pecan/releases/latest \
+          curl -s https://api.github.com/repos/PecanProject/pecan/releases/latest \
           | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
-        git fetch --tags --depth=1
+        git fetch https://github.com/PecanProject/pecan.git "refs/tags/${tag}:refs/tags/${tag}" --depth=1
         ./scripts/ensure_version_bump.sh "$tag"

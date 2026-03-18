@@ -7,10 +7,10 @@
 write.events.SIPNET(events_json, outdir)
 }
 \arguments{
-\item{events_json}{character. Path to an `events.json` file containing an
-array of site objects with `site_id`, optional `pft`, and `events`.}
+\item{events_json}{character. Path to an \code{events.json} file containing an
+array of site objects with \code{site_id}, optional \code{pft}, and \code{events}.}
 
-\item{outdir}{character. Output directory where per-site `events-<site>.in`
+\item{outdir}{character. Output directory where per-site \verb{events-<site>.in}
 files are written.}
 }
 \value{
@@ -18,17 +18,18 @@ Invisibly, a vector of files written.
 }
 \description{
 Reads a single PEcAn events.json containing one or more site objects and
-writes one SIPNET `events.in` file per site. Events are translated according to [SIPNET's `events.in`
-specification](https://pecanproject.github.io/sipnet/parameters/#agronomic-events).
+writes one SIPNET \code{events.in} file per site. Events are translated according to \href{https://pecanproject.github.io/sipnet/parameters/#agronomic-events}{SIPNET's \code{events.in} specification}.
 The writer expects inputs to already match the PEcAn MVP schema v0.1.0 naming and units where applicable.
 }
 \details{
-- Supported `event_type` values: `tillage`, `planting`, `fertilization`,
-  `irrigation`, `harvest`.
-- Units translated from PEcAn standard_vars to SIPNET events.in specification:
-  `kg/m^2` to `g/m^2`; irrigation `amount_mm` to `cm`.
-- Planting allocation uses fixed internal parameters. Future work should use the same values
-  that are written to `sipnet.parms` (e.g. after integrating this into `write.configs.SIPNET`)
+\itemize{
+\item Supported \code{event_type} values: \code{tillage}, \code{planting}, \code{fertilization},
+\code{irrigation}, \code{harvest}.
+\item Units translated from PEcAn standard_vars to SIPNET events.in specification:
+\code{kg/m^2} to \code{g/m^2}; irrigation \code{amount_mm} to \code{cm}.
+\item Planting allocation uses fixed internal parameters. Future work should use the same values
+that are written to \code{sipnet.parms} (e.g. after integrating this into \code{write.configs.SIPNET})
+}
 }
 \examples{
 # Example with two events for a single site

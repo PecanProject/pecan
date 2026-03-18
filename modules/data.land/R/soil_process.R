@@ -11,25 +11,27 @@
 #' @export
 #'
 #' 
-soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
+soil_process <- function(settings, input, dbfiles, overwrite = FALSE, run.local = TRUE) {
 
   # This tries to avoid the problem of having the soil tag under input but not having source in it.
-  if(is.null(input$source)){
+  if (is.null(input$source)) {
     input$source <- "gSSURGO"  ## temporarily hardcoding in the only source
     ## in the future this should throw an error
-  }else if(input$source=="PalEON_soil" && is.null(input$id)){
+  } else if (input$source == "PalEON_soil" && is.null(input$id)) {
     PEcAn.logger::logger.severe("currently soil_process requires an input ID to be specified")
     return(NULL)
   }
 
   # Extract info from settings and setup
-  site       <- settings$run$site
-  model      <- settings$model$type
-  host       <- settings$host
-  dbparms    <- settings$database
+  site    <- settings$run$site
+  model   <- settings$model$type
+  host    <- settings$host
+  dbparms <- settings$database
+
   # set up bety connection
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
+
   # get site info
   if (isTRUE(nzchar(site$lat)) && isTRUE(nzchar(site$lon))) {
     latlon <- data.frame(lat = site$lat, lon = site$lon)
@@ -48,86 +50,155 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=T
   outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
 
   if (!dir.exists(outfolder)) dir.create(outfolder)
+
   #--------------------------------------------------------------------------------------------------#
   # if we are reading from gSSURGO
-  if (input$source=="gSSURGO"){
+  if (input$source == "gSSURGO") {
 
-    #see if there is already files generated there
-    newfile <-list.files(outfolder, "*.nc$", full.names = TRUE) %>%
+    # see if there are already files generated there
+    newfile <- list.files(outfolder, "*.nc$", full.names = TRUE) %>%
       as.list()
     names(newfile) <- rep("path", length(newfile))
 
-    if(length(newfile)==0){
-      radius <- ifelse(is.null(settings$run$input$soil$radius), 100, 
+    if (length(newfile) == 0) {
+      # No files exist yet — extract from gSSURGO
+      radius <- ifelse(is.null(settings$run$input$soil$radius), 100,
                        as.numeric(settings$run$input$soil$radius))
-      grid_size <- max(3, ifelse(is.null(settings$run$input$soil$grid_size), 3, 
+      grid_size <- max(3, ifelse(is.null(settings$run$input$soil$grid_size), 3,
                                  as.numeric(settings$run$input$soil$grid_size)))
 
-      grid_extent <- radius * sqrt(pi)
+      grid_extent  <- radius * sqrt(pi)
       grid_spacing <- grid_extent / (grid_size - 1)
+
       newfile <- extract_soil_gssurgo(
-        outfolder, 
-        lat = latlon$lat, 
-        lon = latlon$lon,
-        grid_size = grid_size,
+        outfolder,
+        lat          = latlon$lat,
+        lon          = latlon$lon,
+        grid_size    = grid_size,
         grid_spacing = grid_spacing
       )
+    } else {
+      PEcAn.logger::logger.info(
+        paste0("Found ", length(newfile), " existing soil.nc file(s) in ", outfolder,
+               ". Skipping extraction and registering existing file(s) in BETY.")
+      )
+    }
 
-      # register files in DB
-      for(i in 1:length(newfile)){
-        in.path = paste0(dirname(newfile[i]$path), '/')
-        in.prefix = stringr::str_remove(basename(newfile[i]$path), ".nc")
+    # Register ALL files in BETY — whether newly extracted or pre-existing.
+    # We explicitly check for DB connection and pre-existing files to avoid 
+    # relying on `dbfile.input.insert` which can generate duplicate inputs.
+    if (!is.null(con)) {
+      for (i in seq_along(newfile)) {
+        fpath     <- as.character(newfile[[i]])
+        in.path   <- paste0(dirname(fpath), "/")
+        in.prefix <- stringr::str_remove(basename(fpath), "\\.nc$")
 
-        PEcAn.DB::dbfile.input.insert (in.path,
-                             in.prefix,
-                             new.site$id,
-                             startdate = NULL,
-                             enddate = NULL,
-                             mimetype =  "application/x-netcdf",
-                             formatname = "pecan_soil_standard",
-                             con = con,
-                             ens=TRUE)
+        # Check if this exact file is already in dbfiles
+        existing_dbfiles <- PEcAn.DB::db.query(
+          paste0(
+            "SELECT id FROM dbfiles WHERE ",
+            "file_path='", in.path, "' AND file_name='", basename(in.prefix), "'"
+          ),
+          con
+        )
+        
+        if (nrow(existing_dbfiles) == 0) {
+          PEcAn.DB::dbfile.input.insert(
+            in.path,
+            in.prefix,
+            new.site$id,
+            startdate  = NULL,
+            enddate    = NULL,
+            mimetype   = "application/x-netcdf",
+            formatname = "pecan_soil_standard",
+            con        = con,
+            ens        = TRUE
+          )
+        }
       }
-
-
-      }
+    }
 
     return(newfile)
   }
+
   #--------------------------------------------------------------------------------------------------#
-  # if we are reading  PalEON_soil
+  # if we are reading from PalEON_soil
   # get existing input info
-  source.input <- PEcAn.DB::db.query(paste0("SELECT * from Inputs where id =",input$id),con)
-  if(run.local){
-    source.dbfiles <- PEcAn.DB::dbfile.check("Input",input$id,con,hostname='localhost')
-  }else{
-    source.dbfiles <- PEcAn.DB::dbfile.check("Input",input$id,con,hostname=host$name)
+  source.input <- PEcAn.DB::db.query(
+    paste0("SELECT * from Inputs where id =", input$id), con
+  )
+  if (run.local) {
+    source.dbfiles <- PEcAn.DB::dbfile.check("Input", input$id, con, hostname = "localhost")
+  } else {
+    source.dbfiles <- PEcAn.DB::dbfile.check("Input", input$id, con, hostname = host$name)
   }
-  source.file <- file.path(source.dbfiles$file_path,source.dbfiles$file_name)
-  if(source.input$site_id == site$id){
-    ## Input is alreadly local
-    if(!is.null(input$path)){
+  source.file <- file.path(source.dbfiles$file_path, source.dbfiles$file_name)
+
+  if (source.input$site_id == site$id) {
+    ## Input is already local
+    if (!is.null(input$path)) {
       return(input$path) ## path already exists, just return
     } else { ## path doesn't exist, see if we can find the relevant dbfile
       return(source.file)
     }
   }  ## otherwise continue to process soil
 
-    # set up host information
+  # set up host information
   if (host$name == "localhost" || run.local) {
     machine.host <- PEcAn.remote::fqdn()
   } else {
     machine.host <- host$name
   }
-  machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+  machine <- PEcAn.DB::db.query(
+    paste0("SELECT * from machines where hostname = '", machine.host, "'"), con
+  )
 
   # retrieve model type info
-  if(is.null(model)){
-    modeltype_id <- PEcAn.DB::db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
-    model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+  if (is.null(model)) {
+    modeltype_id <- PEcAn.DB::db.query(
+      paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con
+    )[[1]]
+    model <- db.query(
+      paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con
+    )[[1]]
   }
 
-  newfile <- PEcAn.data.land::extract_soil_nc(source.file,outfolder,lat = latlon$lat,lon=latlon$lon)
+  newfile <- PEcAn.data.land::extract_soil_nc(
+    source.file, outfolder, lat = latlon$lat, lon = latlon$lon
+  )
+
+  # Register the extracted PalEON_soil file(s) in BETY.
+  # Previously missing: this path had no BETY registration at all.
+  if (!is.null(con) && !is.null(newfile) && length(newfile) > 0) {
+    for (i in seq_along(newfile)) {
+      fpath     <- as.character(newfile[[i]])
+      in.path   <- paste0(dirname(fpath), "/")
+      in.prefix <- stringr::str_remove(basename(fpath), "\\.nc$")
+
+      # Check if this exact file is already in dbfiles
+      existing_dbfiles <- PEcAn.DB::db.query(
+        paste0(
+          "SELECT id FROM dbfiles WHERE ",
+          "file_path='", in.path, "' AND file_name='", basename(in.prefix), "'"
+        ),
+        con
+      )
+
+      if (nrow(existing_dbfiles) == 0) {
+        PEcAn.DB::dbfile.input.insert(
+          in.path,
+          in.prefix,
+          new.site$id,
+          startdate  = NULL,
+          enddate    = NULL,
+          mimetype   = "application/x-netcdf",
+          formatname = "pecan_soil_standard",
+          con        = con,
+          ens        = TRUE
+        )
+      }
+    }
+  }
 
   return(newfile)
-} # ic_process
+} # soil_process
