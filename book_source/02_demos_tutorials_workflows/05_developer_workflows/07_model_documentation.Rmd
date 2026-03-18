@@ -11,38 +11,25 @@ This guide describes how to maintain and update the documentation for PEcAn mode
 To avoid duplication, follows these guidelines:
 
 ### 1. Package README (`README.md`)
-The README should be the most comprehensive source for a specific model coupler. It should include:
+The README should serve as a concise entry point for a specific model coupler. It should include:
 -   **What is [MODEL]?**: A brief summary of the standalone model.
 -   **Standalone Documentation Link**: Point users to the official docs for the underlying model logic.
 -   **Homepage & Source**: Links to the model's primary home and repository.
--   **Using via PEcAn**: A high-level description of what the PEcAn coupler does (inputs/outputs).
+-   **Using via PEcAn**: A high-level description of what the PEcAn coupler does.
 -   **Installation**: Clear steps for installing both the R package and the underlying model binary.
--   **Documentation Links**: Links to the `pkgdown` site, book chapter, and source code.
+-   **Documentation Links**: Links to the `pkgdown` site, and most importantly, the PEcAn book chapter for detailed information.
 
 ### 2. PEcAn Book Chapter
-The book chapter should be a concise summary. **Do not duplicate long descriptions from the README.** Instead:
+The book is the right place to present detailed information about the model coupler. It should be the comprehensive source. It should include:
 -   Provide the standard "Model Information" table.
--   Give a short introductory paragraph.
--   List model-specific configuration file patterns.
--   Link out to the `README.md` and the `pkgdown` site for detailed usage information and tutorials.
+-   Give a comprehensive introduction explaining how the model fits into PEcAn.
+-   List and detail model-specific configuration and input file patterns.
+-   Link out to standalone model documentation or vignettes if available. Do not link out to the README for detailed information—the book itself should be the master resource.
 
 ### 3. Pkgdown Site
 This is automatically generated. Ensure that your `README.md` is well-formatted and that your R functions have complete Roxygen documentation.
 
-## Updating a Model Coupler's Documentation
-
-If you are updating documentation for a model (like SIPNET), follow these steps:
-
-1.  **Locate the README:** Usually found at `models/[modelname]/README.md`. 
-    - *Tip:* Use the [models/template/README.md](https://github.com/PecanProject/pecan/tree/develop/models/template/README.md) as a starting point.
-2.  **Locate the Book Source:** Found in `book_source/03_topical_pages/05_models/[modelname].Rmd`.
-3.  **Consolidate and Clean:**
-    -   Combine relevant info from old book text into the new README.
-    -   Add links to standalone model docs (e.g., [https://pecanproject.github.io/sipnet](https://pecanproject.github.io/sipnet)).
-    -   Ensure the "Using via PEcAn" section includes a link to the [Basic Run Demo](https://pecanproject.github.io/pecan-documentation/develop/rendered-demo-notebooks/run_pecan.html).
-4.  **Verify and Build:**
-    -   Commit changes and check that links point to the `develop` branch.
-    -   Ensure the book and pkgdown site render correctly (build instructions below).
+When updating an existing model coupler's documentation, ensure it follows the structure described above. After making changes, verify that your links point to the `develop` branch where appropriate, and ensure both the book and pkgdown site render correctly (build instructions below).
 
 ## Build Instructions
 

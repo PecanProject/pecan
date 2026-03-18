@@ -10,7 +10,9 @@
 
 **Introduction**
 
-SIPNET (Simplified Photosynthesis and Evapotranspiration Model) is a lightweight ecosystem model for coupled carbon, water, nitrogen, and trace greenhouse-gas (N₂O, CH₄) dynamics. It was built for data-assimilation workflows with eddy-covariance observations.
+SIPNET (Simplified Photosynthesis and Evapotranspiration Model) is a lightweight ecosystem model designed to simulate complex environmental dynamics. It tracks carbon, water, nitrogen, and trace greenhouse-gas (N₂O, CH₄) interactions, supporting applications from forest carbon inventories to managed croplands. It was built for data-assimilation workflows with eddy-covariance observations.
+
+Key features include simulation of photosynthesis, respiration, allocation, soil water, soil temperature, and nitrogen cycling on sub-daily time steps. The model tracks vegetation, litter, soil, and mineral-N pools, and includes event-based management for agricultural processes.
 
 For comprehensive information about the standalone model structure, configuring it directly, and input/output descriptions, please visit the [Standalone SIPNET Documentation](https://pecanproject.github.io/sipnet/). 
 
@@ -22,7 +24,9 @@ For basic SIPNET usage via PEcAn, please refer to the [PEcAn Basic Run Demo](htt
 
 **Model specific input files**
 
-SIPNET requires meteorology files to be translated into its specific driver format. The `PEcAn.SIPNET` package handles this translation via its functions documented on the pkgdown site.
+SIPNET requires meteorology files to be translated into its specific driver format (`.clim`). The `PEcAn.SIPNET` package handles this translation via its functions (`met2model.SIPNET`) documented on the pkgdown site. The `.clim` format is a space-delimited text file that includes variables like temperature, precipitation, vapor pressure deficit, and radiation at each timestep.
+
+Additionally, SIPNET understands event files (e.g. `events.in`) for management actions such as planting, harvest, and irrigation. When configured within the PEcAn workflow, the coupler will also read from and properly initialize state variables based on input files for phenology, soil carbon/nitrogen, and initial condition (IC) pools.
 
 **Model configuration files**
 
