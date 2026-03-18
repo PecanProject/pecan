@@ -58,7 +58,7 @@ install_github('pecanproject/pecan', subdir = "models/sipnet")
 
 ### Install SIPNET Model
 
-To use PEcAn.SIPNET, you also need the SIPNET model executable installed on your system. You can download precompiled versions from the SIPNET [releases page](https://github.com/PecanProject/sipnet/releases), or [download the code](https://github.com/PecanProject/sipnet) from Github and compile it yourself following the official [instructions](https://github.com/PecanProject/sipnet/blob/master/docs/user-guide/getting-started.md).
+To use PEcAn.SIPNET, you also need the SIPNET model executable installed on your system. You can download precompiled versions from the SIPNET [releases page](https://github.com/PecanProject/sipnet/releases), or [download the code](https://github.com/PecanProject/sipnet) from Github and compile it yourself following the official [SIPNET Quick-Start Guide](https://pecanproject.github.io/sipnet/user-guide/getting-started/).
 
 ## Documentation
 
