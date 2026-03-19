@@ -20,7 +20,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' con <- PEcAn.DB::betyConnect()
+#' con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 #'
 #' formats_variables_tibble <- tibble::tibble(
 #'   variable_id = c(411, 135, 382),

@@ -7,12 +7,18 @@
 ##' @param start_date desired start date YYYY-MM-DD
 ##' @param end_date desired end date YYYY-MM-DD
 ##' @param ... other inputs
-##' example options(download.ftp.method="ncftpget")
+##'
 ##' @importFrom dplyr %>%
 ##' 
 ##' @examples
 ##' \dontrun{
-##' download.NARR("~/",'2000/01/01','2000/01/02', overwrite = TRUE, verbose = TRUE)
+##' options(download.ftp.method = "ncftpget")
+##' download.NARR(
+##'    outfolder = "~/",
+##'    start_date = "2000/01/01",
+##'    end_date = "2000/01/02",
+##'    overwrite = TRUE,
+##'    verbose = TRUE)
 ##' }
 ##' 
 ##' @export

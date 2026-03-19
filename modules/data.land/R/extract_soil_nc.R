@@ -27,7 +27,13 @@
 extract_soil_gssurgo <- function(outdir, lat = NULL, lon = NULL, aoi = NULL, 
                                   size = 1, radius = 500, 
                                   depths = c(0, 0.15, 0.30, 0.60)) {
-  all.soil.ens <- list()
+  if (!requireNamespace("sirt", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'sirt' is required for Dirichlet distribution functions but is not installed.",
+      "Please install it with: install.packages('sirt')")
+  }
+  # I keep all the ensembles here 
+  all.soil.ens <-list()
   
   fetch_result <- gssurgo_fetch_area(
     lat = lat, lon = lon, aoi = aoi, 

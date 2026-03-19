@@ -17,36 +17,42 @@
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year, 
                                  variable, ens.run.ids = NULL) {
+  
+  # load manifest
   if (is.null(ens.run.ids)) {
-    samples.file <- file.path(pecandir, "samples.Rdata")
-    if (file.exists(samples.file)) {
-      samples = new.env()
-      load(samples.file, envir = samples)
-      ens.run.ids <- samples$runs.samples$ensemble
-    } else {
-      stop(samples.file, "not found required by read.ensemble.output")
-    }
+    manifest <- utils::read.csv(file.path(pecandir, "runs_manifest.csv"), stringsAsFactors = FALSE)
+    ens.run.ids <- manifest[manifest$type == "Ensemble", ]
   }
   
   expr <- variable$expression
   variables <- variable$variables
   
   ensemble.output <- list()
-  for (row in rownames(ens.run.ids)) {
-    run.id <- ens.run.ids[row, "id"]
-    PEcAn.logger::logger.info("reading ensemble output from run id: ", format(run.id, scientific = FALSE))
+  
+  # handles both (manifest has 'run_id', legacy 'ens.run.ids' might have 'id')
+  run_ids <- ens.run.ids$run_id %||% ens.run.ids$id
+  for (i in seq_along(run_ids)) {
+    run.id <- run_ids[i]
 
-    for(var in seq_along(variables)){
-      out.tmp <- PEcAn.utils::read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
-      assign(variables[var], out.tmp[[variables[var]]])
+    # We pass the whole 'variables' vector once, avoiding repeated file open/close.
+    out.tmp <- PEcAn.utils::read.output(
+      runid = run.id, 
+      outdir = file.path(outdir, run.id), 
+      start.year = start.year, 
+      end.year = end.year, 
+      variables = variables
+    )
+    
+    # Assign loaded variables to local environment for evaluation
+    for (var in names(out.tmp)) {
+      assign(var, out.tmp[[var]])
     }
     
-    # derivation
+    # derivation & aggregation
     out <- eval(parse(text = expr))
-    
-    ensemble.output[[row]] <- mean(out, na.rm= TRUE) 
-    
+    ensemble.output[[as.character(i)]] <- mean(out, na.rm = TRUE) 
   }
+  
   return(ensemble.output)
 } # read.ensemble.output
 
@@ -212,7 +218,7 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 ##' @details The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
 ##' new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
 ##' The state variables that you can use for setting up initial conditions are model specific. Check the documentation of the write_restart.<modelname> function for the model you are using.
-##' The units for the state variables need to be in the PEcAn standard units which can be found in \link{standard_vars}.
+##' The units for the state variables need to be in the PEcAn standard units which can be found in \link[PEcAn.utils]{standard_vars}.
 ##' new.params also has similar structure to ensemble.samples which is sent as an argument.
 ##'
 ##' @importFrom dplyr %>%
@@ -268,7 +274,15 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     }
   }
 
-
+  manifest_df <- data.frame(
+    run_id = character(),
+    site_id = character(),
+    pft_name = character(),
+    trait = character(),
+    quantile = character(),
+    type = character(),
+    stringsAsFactors = FALSE
+  )
   
   # Get the workflow id
   # if workflow$id is null, set to -1
@@ -398,6 +412,16 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       }
       runs[i, "id"] <- run.id
       
+      manifest_df <- rbind(manifest_df, data.frame(
+        run_id = run.id,
+        site_id = settings$run$site$id,
+        pft_name = "NA",
+        trait = "NA",
+        quantile = "NA",
+        type = "Ensemble",
+        stringsAsFactors = FALSE
+      ))
+      
       # create folders (cleaning up old ones if needed)
       if (clean) {
         unlink(file.path(settings$rundir, run.id))
@@ -467,7 +491,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       cat(format(run.id, scientific = FALSE), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
 
     }
-    return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples=samples)))
+    return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples = samples, manifest = manifest_df)))
     #------------------------------------------------- if we already have everything ------------------        
   }else{
     #reading retstart inputs
@@ -521,15 +545,21 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
                            inputs = input_list,
                            RENAME = rename)#for restart from previous model runs, not sharing the same outdir
       )
+      
+      manifest_df <- rbind(manifest_df, data.frame(
+        run_id = run.id[[i]],
+        site_id = settings$run$site$id,
+        pft_name = "NA",
+        trait = "NA",
+        quantile = "NA",
+        type = "Ensemble",
+        stringsAsFactors = FALSE
+      ))
     }
     params<-new.params
-    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=inputs
-    )
-    ))
+    return(invisible(list(runs = data.frame(id=run.id), ensemble.id = ensemble.id, samples=inputs, manifest=manifest_df)))
   }
-  
-  
-  
+
 } # write.ensemble.configs
 
 
@@ -548,7 +578,15 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #' @export
 #'
 #' @examples
-#' \dontrun{input.ens.gen(settings,"met","sampling")}
+#' \dontrun{
+#'   settings <- PEcAn.settings::read.settings("pecan.xml")
+#'   input.ens.gen(
+#'     settings, 
+#'     ensemble_size = 50,
+#'     input = "met",
+#'     method = "sampling"
+#'   )
+#' }
 #'
 input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
 

@@ -82,6 +82,11 @@ gSSURGO.Query <- function(mukeys,
                </soap:Body>
                </soap:Envelope>')
 
+  if (!requireNamespace("httr", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'httr' is required for gSSURGO queries but is not installed.",
+      "Please install it with: install.packages('httr')")
+  }
   out <- httr::POST(
     url = "https://SDMDataAccess.nrcs.usda.gov/Tabular/SDMTabularService.asmx",
     config = list(

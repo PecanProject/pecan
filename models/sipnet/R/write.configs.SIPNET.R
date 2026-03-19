@@ -1,22 +1,118 @@
-##' Writes a configuration files for your model
-##' @name write.config.SIPNET
-##' @title Writes a configuration files for SIPNET model
-##' @param defaults pft
-##' @param trait.values vector of samples for a given trait
-##' @param settings PEcAn settings object
-##' @param run.id run ID
-##' @param inputs list of model inputs
-##' @param IC initial condition
-##' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
-##' @param spinup currently unused, included for compatibility with other models
-##' @export
-##' @importFrom rlang %||%
-##' @author Michael Dietze
+#' Writes configuration files for one invocation of the SIPNET model
+#'
+#' @description
+#' Creates the following SIPNET files:
+#'
+#' - `job.sh` --- Job submission script. Populated from `inst/template.job`
+#' - `sipnet.in` --- Sipnet configuration file. Populated from `inst/sipnet.in_v*`
+#' - `events.in` --- Copied from `inputs$events$path` or
+#' `settings$run$inputs$events$path`. This needs to be in the SIPNET event
+#' format; see [write.events.SIPNET()] for generating these files
+#' - `*.param` --- SIPNET parameter file. Includes both traits and initial
+#' conditions.
+#' - `*.clim` --- SIPNET meteorology driver (from
+#' `settings$run$inputs$met$path`, overriden by `inputs$met$path`).
+#' Note that the dates in this file determine the SIPNET start and end dates.
+#'
+#' If you relocate files between config generation and Sipnet runtime,
+#' note that write.configs() does not copy `*.clim`. Instead it records the
+#' path to its current location. At Sipnet runtime, `job.sh` then creates
+#' a symbolic link to that path.
+#'
+#' @details
+#' 
+#' # Model version specification
+#'
+#' `write.config.SIPNET()` matches its output format to the version of Sipnet
+#' listed in `settings$model$revision`. This should be a numeric version
+#' (e.g. `2.0.1`) and needs to match the version of your Sipnet binary.
+#' You can check your binary's version by running
+#' `./path/to/your/sipnet --version`, which should report something similar
+#' to `SIPNET version 2.0.0 (4baf19a66c)`. If it says "illegal option" then you
+#' have Sipnet 1.x and can report the version as "v1".
+#'
+#' # Command line arguments
+#'
+#' SIPNET run-time options can be passed through a named list via
+#' `settings$model$options`. For example, this...
+#'
+#' <model>
+#'  <binary>path/to/sipnet</binary>
+#'  <revision>2.0.2</revision>
+#'  <options>
+#'    <RESTART_IN>path/to/restart.in</RESTART_IN>
+#'    <RESTART_OUT>path/to/restart.in</RESTART_OUT>
+#'    <GDD>0</GDD>
+#'    <ANAEROBIC>1</ANAEROBIC>
+#'  </options>
+#' [...]
+#' </model>
+#' ```
+#'
+#' ...will be rendered in `sipnet.in` as...:
+#'
+#' ```
+#' RESTART_IN = path/to/restart.in
+#' RESTART_OUT = path/to/restart.out
+#' GDD = 0
+#' ANAEROBIC = 1
+#' ```
+#'
+#' ...though not necessarily in this order. If the `sipnet.in` template already
+#' defines an option specified in settings$model$options, its value will be
+#' updated in place; options not already in the file will be added to the bottom.
+#'
+#' @param defaults nested list of named constant parameter values. The
+#' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
+#' Only `defaults[[1]]$constants` is used; all other elements are silently ignored. 
+#' @param trait.values vector of samples for a given trait
+#' @param settings PEcAn settings object
+#' @param run.id run ID
+#' @param inputs list of model inputs
+#' @param IC initial condition
+#' @param restart In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.
+#' @param spinup currently unused, included for compatibility with other models
+#' @export
+#' @importFrom rlang %||%
+#' @author Michael Dietze, Alexey Shiklomanov
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
+
+  rev_raw <- settings$model$revision
+  legacy_v1 <- c("102319", "136", "r136", "ssr", "git")
+  if (is.null(rev_raw) || rev_raw %in% legacy_v1) {
+    sipnet_version <- numeric_version("1.0")
+  } else {
+    rev_clean <- sub("^v", "", rev_raw, ignore.case = TRUE)
+    sipnet_version <- numeric_version(rev_clean, strict = FALSE)
+    if (is.na(sipnet_version)) {
+      PEcAn.logger::logger.warn(
+        "Unrecognized model revision '", rev_raw, "'; defaulting to SIPNET v1")
+      sipnet_version <- numeric_version("1.0")
+    }
+  }
+  rev_str <- if (sipnet_version >= "2.0") "v2" else "v1"
+
+
   ### WRITE sipnet.in
-  template.in <- system.file("sipnet.in", package = "PEcAn.SIPNET")
+  template.in <- system.file(
+    paste0("sipnet.in_", rev_str),
+    package = "PEcAn.SIPNET"
+  )
   config.text <- readLines(con = template.in, n = -1)
+
+  # Update model runtime settings with any user-specified values.
+  # Note that all checks for valid flags or flag combinations
+  # (e.g. NITROGEN_CYCLE requires LITTER_POOL and ANAEROBIC)
+  # are handled by Sipnet at run time.
+  user_flags <- settings$model$options
+  if (length(user_flags) > 0 && rev_str == "v1") {
+    PEcAn.logger::logger.warn(
+      "Got model options", names(user_flags),
+      "but sipnet version", rev_raw, "will ignore them.")
+  }
+  config.text <- update_flag_lines(config.text, user_flags)
+
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
   
   ### WRITE *.clim
@@ -100,7 +196,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
-  
+
   jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
   jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
   jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
@@ -143,11 +239,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
 
   ### WRITE *.param-spatial
-  template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
-  file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
+  if (rev_str == "v1") {
+    template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
+    file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
+  }
   
   ### WRITE *.param
-  template.param <- system.file("template.param", package = "PEcAn.SIPNET")
+  template.param <- system.file(
+    paste0("template.param_", rev_str),
+    package = "PEcAn.SIPNET"
+  )
   if ("default.param" %in% names(settings$model)) {
     template.param <- settings$model$default.param
   }
@@ -293,8 +394,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "halfSatPar"), 2] <- pft.traits[which(pft.trait.names == "half_saturation_PAR")]
     }
     
-    # Ball-berry slomatal slope parameter m
-    if ("stomatal_slope.BB" %in% pft.trait.names) {
+    # Ball-berry stomatal slope parameter m (v1 only; m_ballBerry removed in v2)
+    if ("stomatal_slope.BB" %in% pft.trait.names && "m_ballBerry" %in% param[, 1]) {
       id <- which(param[, 1] == "m_ballBerry")
       param[id, 2] <- pft.traits[which(pft.trait.names == "stomatal_slope.BB")]
     }
@@ -432,7 +533,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
-    if(TRUE){
+    # 2025-07-22 CKB: soilRespQ10Cold and baseSoilRespCold were removed from Sipnet V2.0
+    if (rev_str == "v1") {
       # assume soil resp Q10 cold == soil resp Q10
       param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
       # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
@@ -472,6 +574,53 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # Leaf growth.  Amount of C added to the leaf during the greenup period
     if ("leafGrowth" %in% pft.trait.names) {
       param[which(param[, 1] == "leafGrowth"), 2] <- pft.traits[which(pft.trait.names == "leafGrowth")]
+    }
+
+    ### ----- Nitrogen cycle parameters (SIPNET v2)
+    # C:N ratios
+    if ("c2n_leaf" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_leaf")]
+    }
+    if ("c2n_wood" %in% pft.trait.names) {
+      param[which(param[, 1] == "woodCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_wood")]
+    }
+    if ("c2n_fineroot" %in% pft.trait.names) {
+      param[which(param[, 1] == "fineRootCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_fineroot")]
+    }
+    # Decomposition C:N half-saturation parameter
+    if ("kCN" %in% pft.trait.names) {
+      param[which(param[, 1] == "kCN"), 2] <- pft.traits[which(pft.trait.names == "kCN")]
+    }
+    # N loss parameters
+    if ("n_volatilization_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "nVolatilizationFrac"), 2] <- pft.traits[which(pft.trait.names == "n_volatilization_rate")]
+    }
+    if ("n_leaching_frac" %in% pft.trait.names) {
+      param[which(param[, 1] == "nLeachingFrac"), 2] <- pft.traits[which(pft.trait.names == "n_leaching_frac")]
+    }
+    # N fixation parameters
+    if ("n_fixation_frac_max" %in% pft.trait.names) {
+      param[which(param[, 1] == "nFixationFracMax"), 2] <- pft.traits[which(pft.trait.names == "n_fixation_frac_max")]
+    }
+    if ("n_fix_half_sat" %in% pft.trait.names) {
+      param[which(param[, 1] == "halfNFixationMax"), 2] <- pft.traits[which(pft.trait.names == "n_fix_half_sat")]
+    }
+    # Anaerobic moisture parameters
+    if ("f_anoxia" %in% pft.trait.names) {
+      param[which(param[, 1] == "fAnoxia"), 2] <- pft.traits[which(pft.trait.names == "f_anoxia")]
+    }
+    if ("anaerobic_decomp_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "anaerobicDecompRate"), 2] <- pft.traits[which(pft.trait.names == "anaerobic_decomp_rate")]
+    }
+    if ("anaerobic_trans_exp" %in% pft.trait.names) {
+      param[which(param[, 1] == "anaerobicTransExp"), 2] <- pft.traits[which(pft.trait.names == "anaerobic_trans_exp")]
+    }
+    # Methane production parameters
+    if ("soil_methane_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "soilMethaneRate"), 2] <- pft.traits[which(pft.trait.names == "soil_methane_rate")]
+    }
+    if ("litter_methane_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "litterMethaneRate"), 2] <- pft.traits[which(pft.trait.names == "litter_methane_rate")]
     }
 
     #update LeafOnday and LeafOffDay
@@ -574,7 +723,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           soilWHC_total <- sum(unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])*thickness)
           if (thickness[1]<=10) {
             #LitterWHC in cm, assuming the litter depth is within the top 10 cm
-            param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*thickness[1]
+            if ("litterWHC" %in% param[, 1]) {
+              param[which(param[, 1] == "litterWHC"), 2] <- unlist(soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"])[1]*thickness[1]
+            }
           }
         } else {
           #if no depth/thickness is provided
@@ -585,8 +736,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         param[which(param[, 1] == "soilWHC"), 2] <- soilWHC_total
       }
       if ("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)) {
-         #litwaterDrainrate in cm/day
-         param[which(param[, 1] == "litWaterDrainRate"), 2] <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1], "m s-1", "cm day-1")
+         #litwaterDrainrate in cm/day (v1 only; litWaterDrainRate removed in v2)
+         if ("litWaterDrainRate" %in% param[, 1]) {
+           param[which(param[, 1] == "litWaterDrainRate"), 2] <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1], "m s-1", "cm day-1")
+         }
        }
     }
   }
@@ -634,8 +787,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("soil" %in% ic.names) {
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
-    ## litterWFracInit fraction
-    if ("litter_mass_content_of_water" %in% ic.names) {
+    ## litterWFracInit fraction (v1 only; removed in v2)
+    if ("litter_mass_content_of_water" %in% ic.names && "litterWFracInit" %in% param[, 1]) {
       #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
       param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
@@ -651,8 +804,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("SWE" %in% ic.names) {
       param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
-    ## microbeInit mgC/g soil
-    if ("microbe" %in% ic.names) {
+    ## microbeInit mgC/g soil (v1 only; removed in v2)
+    if ("microbe" %in% ic.names && "microbeInit" %in% param[, 1]) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
 
@@ -769,7 +922,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           param[param[, 1] == "leafOffDay", 2] <- leafOffDay
         }
       }
-      if (ic_has_ncvars[["Microbial Biomass C"]]) {
+      if (ic_has_ncvars[["Microbial Biomass C"]] && "microbeInit" %in% param[, 1]) {
         microbe <- ncdf4::ncvar_get(IC.nc, "Microbial Biomass C")
         if (!is.na(microbe) && is.numeric(microbe)) {
           param[param[, 1] == "microbeInit", 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
@@ -852,3 +1005,33 @@ remove.config.SIPNET <- function(main.outdir, settings) {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
 } # remove.config.SIPNET 
+
+
+
+
+
+#' Helper to pass user-specified runtime options into sipnet.in
+#'
+#' Unnamed flags are ignored.
+#'
+#' NB just writes "NAME = value" strings;
+#' does not check whether Sipnet will recognize either the name or the value.
+#' In v2 all are either a filename or a binary flag passed as 0 or 1,
+#' but we don't enforce that here.
+#'
+#' @param text vector of lines from sipnet.in
+#' @param flags named vector of flag values
+#' @return updated text with existing flags updated and new ones added
+#' @noRd
+update_flag_lines <- function(text, flags) {
+  flags <- flags[names(flags) != ""]
+  for (name in names(flags)) {
+    flag_txt <- paste(name, "=", flags[name])
+    line_num <- grep(paste0("^", name, " ="), text)
+    if (length(line_num) == 0) {
+      line_num <- length(text) + 1
+    }
+    text[line_num] <- flag_txt
+  }
+  text
+}

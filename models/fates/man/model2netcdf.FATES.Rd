@@ -34,8 +34,14 @@ Code to convert FATES netcdf output into into CF standard
 }
 \examples{
 \dontrun{
-example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
-model2netcdf.FATES(outdir="~/",sitelat, sitelon, start_date, end_date, vars_names, pfts)
+model2netcdf.FATES(
+  outdir = "~/",
+  sitelat = 42.54,
+  sitelon = -72.17,
+  start_date = as.POSIXct("2001-01-01", tz = "UTC"),
+  end_date = as.POSIXct("2005-12-31", tz = "UTC"),
+  vars_names = c("AGB", "NPP"),
+  pfts = c(needleleaf = 1, broadleaf = 2)
 }
 
 }

@@ -7,6 +7,7 @@
 #' @export
 #' @examples
 #' \dontrun{
+#' settings <- PEcAn.settings::read_settings("pecan.xml")
 #' clear.scratch(settings)
 #' }
 clear.scratch <- function(settings) {

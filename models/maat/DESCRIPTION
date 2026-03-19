@@ -29,5 +29,5 @@ VignetteBuilder: knitr, rmarkdown
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: MAAT, ecosystem-modeling

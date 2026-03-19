@@ -337,13 +337,11 @@ pdf.stats <- function(distn, A, B) {
 #' @export
 #' @examples
 #' # convert parameter name to a string appropriate for end-use plotting
-#' \dontrun{
 #' trait.lookup('growth_resp_factor')
 #' trait.lookup('growth_resp_factor')$figid
 #'
 #' # get a list of all traits and units in dictionary
 #' trait.lookup()[,c('figid', 'units')]
-#' }
 trait.lookup <- function(traits = NULL) {
   if (is.null(traits)) {
     return(PEcAn.utils::trait.dictionary)
@@ -519,7 +517,9 @@ tryl <- function(FUN) {
 #' @return FALSE if function returns error; else TRUE
 #' @export
 #' @examples
-#' \dontrun{require.modelpkg(BioCro)}
+#' \dontrun{
+#'   load.modelpkg(BioCro)
+#' }
 #' @author David LeBauer
 load.modelpkg <- function(model) {
   pecan.modelpkg <- paste0("PEcAn.", model)
@@ -617,7 +617,7 @@ convert.expr <- function(expression) {
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
   
-  non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
+  non.match <- gregexpr('[^a-zA-Z0-9_.]', deri.eqn) # match characters that are not "a-zA-Z0-9_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
   if(length(split.chars)!=0){

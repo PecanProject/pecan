@@ -1,0 +1,41 @@
+! Input file to set up a forward run of SIPNET
+
+! --- INPUTS FOR ALL RUN TYPES ---
+
+FILENAME = sipnet
+! FILENAME.param is the file of parameter values & initial conditions
+! FILENAME.clim is the file of climate data for each time step
+
+DO_MAIN_OUTPUT = 1
+! If 1, do the primary output to FILENAME.out (time series of all output
+!  variables)
+! If 0, suppress this output
+
+PRINT_HEADER = 1
+! If 1, print header on main output file; if 0, don't print header
+!  (default: 0)
+
+DO_SINGLE_OUTPUTS = 0
+! If 1, do extra outputs: one variable per file (e.g. FILENAME.NEE)
+! If 0, don't do these extra outputs
+! (These extra outputs are setup in sipnet.c : setupOutputItems)
+
+! --- V2 MODEL FLAGS ---
+
+NITROGEN_CYCLE = 1
+! Enable nitrogen cycle modeling (requires LITTER_POOL and ANAEROBIC)
+
+LITTER_POOL = 1
+! Enable separate litter carbon pool (required by NITROGEN_CYCLE)
+
+ANAEROBIC = 1
+! Enable anaerobic respiration & CH4 production (required by NITROGEN_CYCLE)
+
+GROWTH_RESP = 0
+! Explicitly model growth respiration (0 = included in maintenance resp)
+
+WATER_HRESP = 1
+! Enable soil moisture effect on heterotrophic respiration
+
+LEAF_WATER = 0
+! Leaf water interception pool (0 = disabled)

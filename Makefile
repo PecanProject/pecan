@@ -4,7 +4,8 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				ldndc lpjguess maat maespa rothc sibcasa sipnet stics template
+				ldndc lpjguess maat maespa peprmt rothc sibcasa sipnet stics \
+				template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.land data.remote \
@@ -50,7 +51,7 @@ SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
-EXPECTED_ROXYGEN_VERSION := 7.3.2
+EXPECTED_ROXYGEN_VERSION := 7.3.3
 INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
 	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
 	-e   "cat(as.character(packageVersion('roxygen2')))" \

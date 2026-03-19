@@ -18,8 +18,9 @@ run.write.configs(
 
 \item{ensemble.size}{number of ensemble runs}
 
-\item{input_design}{data frame containing the design matrix describing parameter and input indices, as
-documented in \code{runModule.run.write.configs()}.}
+\item{input_design}{Input design data.frame coordinating input files across runs.
+Contains columns for each sampled input (met, param, etc.) with row indices,
+as documented in \code{runModule.run.write.configs()}.}
 
 \item{write}{should the runs be written to the database?}
 
@@ -45,5 +46,5 @@ The default value for \code{posterior.files} is NA, in which case the
    files within this workflow, to avoid confusion.
 }
 \author{
-David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
 }

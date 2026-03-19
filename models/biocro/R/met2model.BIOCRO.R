@@ -98,7 +98,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##-------------------------------------------------------------------------------------------------#
 #' Converts a CF data frame into a BioCro met input
 #'
-#' @param met data.table object  with met for a single site; output from \code{\link{load.cfmet}}
+#' @param met data.table object  with met for a single site; output from \code{\link[PEcAn.data.atmosphere]{load.cfmet}}
 #' \describe{
 #' \item{year}{int}
 #' \item{month}{int}

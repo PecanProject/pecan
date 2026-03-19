@@ -1,3 +1,8 @@
 # Installation details
 
+This page describes advanced installation options and system
+requirements for running PEcAn outside of Docker-based setups.
+Most users should follow the standard installation guide unless
+custom configurations are required.
+
 This chapter contains details about installing and maintaining the uncontainerized version of PEcAn on a virtual machine or a server. If you are running PEcAn inside of Docker, many of the particulars will be different and you should refer to the [docker](developer-workflows/docker-index.html) chapter instead of this one.

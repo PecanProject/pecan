@@ -87,8 +87,14 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
         translation,
         data.frame(input_code = input_codes, stringsAsFactors = FALSE),
         by = "input_code")
-    }else{
+    } else {
       # use traits package
+      if (!requireNamespace("traits", quietly = TRUE)) {
+        PEcAn.logger::logger.severe(
+          "Using match_species_id without a Bety connection",
+          "requires the `traits` package, which is not installed."
+        )
+      }
 
       # can call traits::betydb_query one at a time?
       # reduce the number of calls

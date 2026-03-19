@@ -130,7 +130,7 @@ test_that("multiple inputs and multiple samples", {
   
   # Verify outputs
   expect_type(result, "list")
-  expect_named(result, c("runs", "ensemble.id", "samples"))
+  expect_named(result, c("runs", "ensemble.id", "samples", "manifest"))
   expect_equal(nrow(result$runs), settings$ensemble$size)
 })
 

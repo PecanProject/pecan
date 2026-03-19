@@ -28,29 +28,19 @@ Imports:
     aqp,
     coda,
     curl,
-    doSNOW,
     dplyr,
-    dplR,
     foreach,
     fs,
     future,
     furrr,
-    httr,
     lubridate,
     magrittr,
-    MCMCpack,
-    mvtnorm,
     ncdf4 (>= 1.15),
-    neonUtilities,
-    neonstore,
-    PEcAn.benchmark,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
     PEcAn.utils,
-    PEcAn.visualization,
     purrr,
-    rjags,
     rlang,
     sf,
     sirt,
@@ -60,27 +50,39 @@ Imports:
     terra,
     tidyr,
     tidyselect,
-    traits,
     XML (>= 3.98-1.4)
 Suggests:
     dataone,
     datapack,
-    jsonlite,
-    jsonvalidate,
+    doSNOW,
+    dplR,
     getPass,
     glue,
+    httr,
+    jsonlite,
+    jsonvalidate,
+    MASS,
+    MCMCpack,
+    mvtnorm,
+    neonUtilities,
+    neonstore,
+    PEcAn.benchmark,
     PEcAn.settings,
-    redland,
+    PEcAn.visualization,
     raster,
+    redland,
     reticulate,
+    rjags,
+    sirt,
+    sp,
     testthat (>= 3.1.0),
-    withr,
-    MASS
+    traits,
+    withr
 Remotes:
     github::ropensci/traits
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: soil-data, vegetation-data, land-cover

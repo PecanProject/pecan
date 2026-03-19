@@ -1,29 +1,44 @@
 # PEcAn standard formats {#pecan-standards}
 
+PEcAn relies on standardized data formats to ensure reproducibility, interoperability, and consistency across models, sites, and workflows. These standards define how inputs, internal representations, and outputs are structured throughout the PEcAn workflows.
+
+**In this chapter**
+
+- [Defining new input formats](#defining-new-input-formats)
+- [Time standards](#time-standards)
+- [Input standards](#input-standards)
+- [Output standards](#output-standards)
+
+
 ## Defining new input formats
 
 * New formats can be defined on the ['formats' page of BETYdb](http://betydb.org/formats)
-* After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file/
+* After creating a new format, the contents should be defined by specifying the BETYdb variable name and the name used in the file.
 
-## Time Standard
-Internal PEcAn standard time follows ISO_8601 format for dates and time (https://en.wikipedia.org/wiki/ISO_8601).  For example ordinal dates go from 1 365/366 (https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates). However, time used in met drivers or model outputs follows CF convention with julian dates following the 0 to 364/365 format
+## Time standards
+
+Internal PEcAn standard time follows ISO_8601 format for dates and time (<https://en.wikipedia.org/wiki/ISO_8601>). For example ordinal dates go from 1 365/366 (<https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates>). However, time used in met drivers or model outputs follows CF convention with julian dates following the 0 to 364/365 format
 
 To aid in the conversion between PEcAn internal ISO_8601 standard and CF convention used in all met drivers and PEcAn standard output you can utilize the functions: "cf2datetime","datetime2doy",and "cf2doy"
 
 ## Input Standards
 
-### Meteorology Standards 
+### Meteorology Data
+
+
 
 #### Dimensions
 
+| CF standard-name | units                              |
+|:-----------------|:-----------------------------------|
+| time             | days since 1700-01-01 00:00:00 UTC |
+| longitude        | degrees_east                       |
+| latitude         | degrees_north                      |
 
-|CF standard-name | units |
-|:------------------------------------------|:------|
-| time | days since 1700-01-01 00:00:00 UTC|
-| longitude | degrees_east|
-| latitude |degrees_north|
 
-General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+> **Note:**
+> Dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+
 
 
 #### Variable names should be `standard_name`
@@ -74,17 +89,15 @@ We want to standardize the units as well as part of the `met2CF.<product>` step.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
 
-### Soils and Vegetation Inputs
-
-#### Soil Data 
+### Soil Data
 
 See the [Soil Data] section on more into on creating a standard soil data file.
 
-#### Vegetation Data
+### Vegetation Data
 
 See the [Vegetation Data] section on more info on creating a standard vegetation data file
 
-## Output Standards {#OutputStandards}
+## Output Standards
 
 * created by `model2netcdf` functions
 * based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
