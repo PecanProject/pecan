@@ -46,7 +46,11 @@ Imports:
     terra,
     tidyr,
     tidyselect,
-    XML (>= 3.98-1.4)
+    XML (>= 3.98-1.4),
+    data.table,
+    tibble,
+    xgboost,
+    doParallel
 Suggests:
     dataone,
     datapack,
