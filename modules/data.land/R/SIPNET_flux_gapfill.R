@@ -1,3 +1,9 @@
+utils::globalVariables(c(
+  "Site_ID", "variable", "value", "missing_count", "total_obs",
+  "missing_pct", "filtered_variables", "is_night_suncalc",
+  "TIMESTAMP_START", "GF_QC", "Avg_R2", "site", ":="
+))
+
 #' @description
 #' This function reads the site information table and returns the selected
 #' site IDs for downstream modeling.
@@ -39,7 +45,7 @@ read_pred_data <- function(pred.var.dir, site_ids) {
     dplyr::mutate(is_night_suncalc = as.integer(is_night_suncalc))
   
   resimet.df <- resimet.df |>
-    dplyr::filter(Site_ID %in% site_ids)
+    dplyr::filter(.data$Site_ID %in% site_ids)
   
   return(resimet.df)
 }
@@ -70,20 +76,20 @@ build_sitecov_df <- function(resimet.df,
                              outdir = NULL,
                              missing_threshold = 40) {
   missing_summary <- resimet.df |>
-    dplyr::select(Site_ID, dplyr::all_of(vars_to_check)) |>
+    dplyr::select(.data$Site_ID, dplyr::all_of(vars_to_check)) |>
     tidyr::pivot_longer(
-      cols = -Site_ID,
+      cols = -.data$Site_ID,
       names_to = "variable",
       values_to = "value"
     ) |>
-    dplyr::group_by(Site_ID, variable) |>
+    dplyr::group_by(.data$Site_ID, .data$variable) |>
     dplyr::summarise(
       total_obs = dplyr::n(),
-      missing_count = sum(is.na(value)),
-      missing_pct = missing_count / total_obs * 100,
+      missing_count = sum(is.na(.data$value)),
+      missing_pct = .data$missing_count / .data$total_obs * 100,
       .groups = "drop"
     ) |>
-    dplyr::arrange(Site_ID, dplyr::desc(missing_pct))
+    dplyr::arrange(.data$Site_ID, dplyr::desc(.data$missing_pct))
   
   if (!is.null(outdir)) {
     if (!file.exists(outdir)) {
@@ -96,15 +102,15 @@ build_sitecov_df <- function(resimet.df,
   }
   
   high_staying_vars <- missing_summary |>
-    dplyr::filter(missing_pct < missing_threshold) |>
-    dplyr::group_by(Site_ID) |>
+    dplyr::filter(.data$missing_pct < missing_threshold) |>
+    dplyr::group_by(.data$Site_ID) |>
     dplyr::summarise(
-      filtered_variables = list(variable),
+      filtered_variables = list(.data$variable),
       .groups = "drop"
     )
   
   sitecov.df <- high_staying_vars |>
-    tidyr::unnest(filtered_variables)
+    tidyr::unnest(.data$filtered_variables)
   
   return(list(
     missing_summary = missing_summary,
@@ -334,29 +340,32 @@ xgb_gapfill <- function(site.dir,
                         cores = max(1L, parallel::detectCores() - 1L),
                         overwrite = TRUE) {
   
+  # ------------------------------------------------------------
+  # Check required packages
+  # ------------------------------------------------------------
   if (!requireNamespace("xgboost", quietly = TRUE)) {
-    stop("Package 'xgboost' is required for cv_xgb_site_cv_gapfill() but is not installed.")
+    stop("Package 'xgboost' is required but not installed.")
   }
   if (!requireNamespace("doParallel", quietly = TRUE)) {
-    stop("Package 'doParallel' is required for parallel execution but is not installed.")
+    stop("Package 'doParallel' is required but not installed.")
   }
   if (!requireNamespace("foreach", quietly = TRUE)) {
-    stop("Package 'foreach' is required for parallel execution but is not installed.")
+    stop("Package 'foreach' is required but not installed.")
   }
   
-  # Read target site IDs
-  site_ids <- read_site_ids(
-    site.dir = site.dir,
-    n_sites = n_sites
-  )
+  # ------------------------------------------------------------
+  # Read site IDs and input data
+  # ------------------------------------------------------------
+  site_ids <- read_site_ids(site.dir = site.dir, n_sites = n_sites)
   
-  # Read predictor and flux data for selected sites
   resimet.df <- read_pred_data(
     pred.var.dir = pred.var.dir,
     site_ids = site_ids
   )
   
-  # Build site-specific predictor table
+  # ------------------------------------------------------------
+  # Build site-specific predictor sets
+  # ------------------------------------------------------------
   sitecov_res <- build_sitecov_df(
     resimet.df = resimet.df,
     vars_to_check = vars_to_check,
@@ -365,7 +374,9 @@ xgb_gapfill <- function(site.dir,
   )
   sitecov.df <- sitecov_res$sitecov.df
   
-  # Map flux type to variable names
+  # ------------------------------------------------------------
+  # Define response and QC variables
+  # ------------------------------------------------------------
   flux_var <- toupper(flux_var)
   if (flux_var == "LE") {
     response_var <- "LE_F_MDS"
@@ -376,55 +387,60 @@ xgb_gapfill <- function(site.dir,
     qc_var <- "NEE_CUT_USTAR50_QC"
     gapfill_var <- "NEE_gapfill"
   } else {
-    stop("Unsupported flux_var. Currently only 'LE' and 'NEE' are supported.")
+    stop("flux_var must be 'LE' or 'NEE'")
   }
   
-  # Validate required columns in input data
+  # ------------------------------------------------------------
+  # Check required columns
+  # ------------------------------------------------------------
   required_cols <- c("Site_ID", "TIMESTAMP_START", response_var, qc_var)
   missing_cols <- setdiff(required_cols, names(resimet.df))
   if (length(missing_cols) > 0) {
-    stop(
-      sprintf(
-        "Missing required columns in resimet.df: %s",
-        paste(missing_cols, collapse = ", ")
-      )
-    )
-  }
-  if (!file.exists(outdir)) {
-    dir.create(outdir, recursive = TRUE)
+    stop(sprintf("Missing columns: %s", paste(missing_cols, collapse = ", ")))
   }
   
-  # Filter high-quality observations for training (QC = 0)
+  if (!file.exists(outdir)) dir.create(outdir, recursive = TRUE)
+  
+  # ------------------------------------------------------------
+  # Filter QC=0 data for training
+  # ------------------------------------------------------------
   data_good <- resimet.df |>
     dplyr::filter(.data[[qc_var]] == 0)
   
   ensemble_results <- vector("list", nens)
   
-  # Loop over ensemble members
+  # ------------------------------------------------------------
+  # Ensemble loop
+  # ------------------------------------------------------------
   for (m in seq_len(nens)) {
     message(sprintf("Ensemble %d/%d", m, nens))
     
-    # Stratified Sampling: Sample 95% from within each site for training.
+    # Sample within each site
     train_df <- data_good |>
-      dplyr::group_by(Site_ID) |>
+      dplyr::group_by(.data$Site_ID) |>
       dplyr::slice_sample(prop = nsamp) |>
       dplyr::ungroup()
     
-    # Build site-specific training datasets
+    # ------------------------------------------------------------
+    # Build site-level datasets
+    # ------------------------------------------------------------
     site_dfs <- lapply(site_ids, function(site) {
+      
+      # Select predictors for this site
       feats0 <- sitecov.df |>
-        dplyr::filter(Site_ID == site) |>
-        dplyr::pull(filtered_variables) |>
+        dplyr::filter(.data$Site_ID == .env$site) |>
+        dplyr::pull(.data$filtered_variables) |>
         unique()
       
       feats <- unique(c(feats0, "is_night_suncalc"))
       feats <- intersect(feats, names(train_df))
       
+      # Subset training data
       df <- train_df |>
-        dplyr::filter(Site_ID == site) |>
+        dplyr::filter(.data$Site_ID == .env$site) |>
         dplyr::select(
-          TIMESTAMP_START,
-          Site_ID,
+          .data$TIMESTAMP_START,
+          .data$Site_ID,
           dplyr::all_of(response_var),
           dplyr::all_of(feats)
         ) |>
@@ -433,95 +449,90 @@ xgb_gapfill <- function(site.dir,
       attr(df, "features") <- feats
       df
     })
+    
     names(site_dfs) <- site_ids
     
-    # Parallel model fitting and gap-filling by site   
+    # ------------------------------------------------------------
+    # Parallel fitting
+    # ------------------------------------------------------------
     use_cores <- min(as.numeric(cores), length(site_ids))
     cl <- parallel::makeCluster(use_cores, type = "PSOCK")
     doParallel::registerDoParallel(cl)
+    
     results <- tryCatch({
       foreach::foreach(
         site = site_ids,
         .packages = c("dplyr", "xgboost", "tibble"),
-        .combine = dplyr::bind_rows,
-        .errorhandling = "pass"
+        .combine = dplyr::bind_rows
       ) %dopar% {
-        tryCatch({
-          df <- site_dfs[[site]]
-          feats <- attr(df, "features")
-          
-          # Fit XGBoost model with CV
-          fit <- fit_site_xgb_cv(
-            subdf = df,
-            feats = feats,
-            site_name = site,
-            response_var = response_var,
-            nfolds = nfolds,
-            params = params,
-            nrounds = nrounds,
-            r2_threshold = r2_threshold
+        
+        df <- site_dfs[[site]]
+        feats <- attr(df, "features")
+        
+        # Fit model
+        fit <- fit_site_xgb_cv(
+          subdf = df,
+          feats = feats,
+          site_name = site,
+          response_var = response_var,
+          nfolds = nfolds,
+          params = params,
+          nrounds = nrounds,
+          r2_threshold = r2_threshold
+        )
+        
+        # --------------------------------------------------------
+        # Gap-fill candidates
+        # --------------------------------------------------------
+        gap_cands <- resimet.df |>
+          dplyr::filter(
+            .data$Site_ID == .env$site,
+            is.na(.data[[response_var]]) | .data[[qc_var]] != 0
+          ) |>
+          dplyr::select(
+            .data$TIMESTAMP_START,
+            .data$Site_ID,
+            dplyr::all_of(feats)
+          ) |>
+          tibble::as_tibble()
+        
+        pd <- gap_cands
+        
+        # Predict
+        if (!is.null(fit$model) && nrow(pd) > 0) {
+          dtest <- xgboost::xgb.DMatrix(
+            data = as.matrix(dplyr::select(pd, dplyr::all_of(feats))),
+            missing = NA
           )
-          
-          # Identify gap-fill candidates
-          gap_cands <- resimet.df |>
-            dplyr::filter(
-              Site_ID == site,
-              is.na(.data[[response_var]]) | .data[[qc_var]] != 0
-            ) |>
-            dplyr::select(TIMESTAMP_START, Site_ID, dplyr::all_of(feats)) |>
-            tibble::as_tibble()
-          
-          pd <- gap_cands
-          
-          # Gap fill flux if model is valid
-          if (!is.null(fit$model) && nrow(pd) > 0) {
-            dtest <- xgboost::xgb.DMatrix(
-              data = as.matrix(dplyr::select(pd, dplyr::all_of(feats))),
-              missing = NA
-            )
-            pd[[gapfill_var]] <- stats::predict(fit$model, dtest)
-            pd$GF_QC <- 0L
-          } else if (nrow(pd) > 0) {
-            pd[[gapfill_var]] <- NA_real_
-            pd$GF_QC <- 1L
-          }
-          
-          # Return site-level results
-          tibble::tibble(
-            Site_ID = site,
-            Avg_R2 = fit$r2,
-            pred_df = list(pd),
-            folds_df = list(dplyr::mutate(fit$folds_df, Site_ID = site))
-          )
-        }, error = function(e) {
-          message(sprintf("[Site %s] ERROR: %s", site, conditionMessage(e)))
-          tibble::tibble(
-            Site_ID = site,
-            Avg_R2 = NA_real_,
-            pred_df = list(NULL),
-            folds_df = list(tibble::tibble())
-          )
-        })
+          pd[[gapfill_var]] <- stats::predict(fit$model, dtest)
+          pd$GF_QC <- 0L
+        } else if (nrow(pd) > 0) {
+          pd[[gapfill_var]] <- NA_real_
+          pd$GF_QC <- 1L
+        }
+        
+        tibble::tibble(
+          Site_ID = site,
+          Avg_R2 = fit$r2,
+          pred_df = list(pd),
+          folds_df = list(dplyr::mutate(fit$folds_df, Site_ID = .env$site))
+        )
       }
-    }, error = function(e) {
-      message(sprintf("Parallel loop error in ensemble %d: %s", m, conditionMessage(e)))
-      NULL
     }, finally = {
       parallel::stopCluster(cl)
       foreach::registerDoSEQ()
     })
     
-    # Skip ensemble if no results
     if (is.null(results) || nrow(results) == 0) {
       ensemble_results[[m]] <- NULL
       next
     }
     
-    # Combine gap-fill predictions across sites
-    pred_list <- results$pred_df
-    gap_all <- dplyr::bind_rows(pred_list)
+    # ------------------------------------------------------------
+    # Merge predictions
+    # ------------------------------------------------------------
+    gap_all <- dplyr::bind_rows(results$pred_df)
     
-    # Merge predictions back to full dataset
     resimet_filled <- resimet.df |>
       dplyr::left_join(gap_all, by = c("Site_ID", "TIMESTAMP_START")) |>
       dplyr::mutate(
@@ -530,58 +541,47 @@ xgb_gapfill <- function(site.dir,
           .data[[gapfill_var]],
           .data[[response_var]]
         ),
-        GF_QC = dplyr::if_else(is.na(GF_QC), 1L, GF_QC)
+        GF_QC = dplyr::if_else(is.na(.data$GF_QC), 1L, .data$GF_QC)
       )
     
-    # Extract CV performance
+    # ------------------------------------------------------------
+    # Select good sites
+    # ------------------------------------------------------------
     cv_results <- results |>
-      dplyr::select(Site_ID, Avg_R2)
+      dplyr::select(.data$Site_ID, .data$Avg_R2)
     
-    # Select well-performing sites
     good_sites <- cv_results |>
-      dplyr::filter(!is.na(Avg_R2) & Avg_R2 >= r2_threshold) |>
-      dplyr::pull(Site_ID)
+      dplyr::filter(!is.na(.data$Avg_R2) & .data$Avg_R2 >= r2_threshold) |>
+      dplyr::pull(.data$Site_ID)
     
-    # Subset final output for good sites
     sub.df <- resimet_filled |>
-      dplyr::filter(Site_ID %in% good_sites) |>
+      dplyr::filter(.data$Site_ID %in% good_sites) |>
       dplyr::select(
-        Site_ID,
-        TIMESTAMP_START,
+        .data$Site_ID,
+        .data$TIMESTAMP_START,
         dplyr::all_of(response_var),
         dplyr::all_of(gapfill_var),
-        GF_QC,
+        .data$GF_QC,
         dplyr::all_of(qc_var)
       )
     
-    # Aggregate fold-level CV diagnostics
-    folds_all <- dplyr::bind_rows(results$folds_df) |>
-      dplyr::mutate(ensemble_id = m)
-    
+    # ------------------------------------------------------------
+    # Save outputs
+    # ------------------------------------------------------------
     ens_tag <- sprintf("ens%02d", m)
     flux_tag <- tolower(flux_var)
     
-    data_path <- file.path(outdir, sprintf("%s_gfed_dat_%s.csv", flux_tag, ens_tag))
-    folds_path <- file.path(outdir, sprintf("%s_gfed_cv_folds_%s.csv", flux_tag, ens_tag))
+    data.table::fwrite(
+      sub.df,
+      file.path(outdir, sprintf("%s_gfed_dat_%s.csv", flux_tag, ens_tag))
+    )
     
-    if (overwrite || !file.exists(data_path)) {
-      data.table::fwrite(sub.df, data_path)
-    }
-    
-    if (overwrite || !file.exists(folds_path)) {
-      data.table::fwrite(folds_all, folds_path)
-    }
-    
-    # Store ensemble results
     ensemble_results[[m]] <- list(
       cv_results = cv_results,
       filled_data = resimet_filled,
-      exported_data = sub.df,
-      folds_all = folds_all
+      exported_data = sub.df
     )
     
-    rm(results, pred_list, gap_all, resimet_filled, cv_results, good_sites,
-       sub.df, folds_all, site_dfs, train_df)
     gc(FALSE)
   }
   
