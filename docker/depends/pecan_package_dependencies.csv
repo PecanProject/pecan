@@ -33,6 +33,7 @@
 "data.table","*","base/utils","Suggests",FALSE
 "data.table","*","base/visualization","Imports",FALSE
 "data.table","*","models/biocro","Imports",FALSE
+"data.table","*","modules/data.land","Imports",FALSE
 "data.table","*","modules/data.remote","Suggests",FALSE
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Suggests",FALSE
@@ -41,6 +42,7 @@
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
 "doParallel","*","modules/data.atmosphere","Suggests",FALSE
+"doParallel","*","modules/data.land","Imports",FALSE
 "doParallel","*","modules/data.remote","Imports",FALSE
 "doSNOW","*","base/remote","Suggests",FALSE
 "doSNOW","*","base/utils","Suggests",FALSE
@@ -667,6 +669,7 @@
 "tibble","*","models/fates","Imports",FALSE
 "tibble","*","models/lpjguess","Imports",FALSE
 "tibble","*","modules/data.atmosphere","Imports",FALSE
+"tibble","*","modules/data.land","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE
 "tibble","*","modules/meta.analysis","Suggests",FALSE
 "tictoc","*","modules/assim.sequential","Suggests",FALSE
@@ -722,6 +725,7 @@
 "withr","*","modules/data.land","Suggests",FALSE
 "withr","*","modules/uncertainty","Suggests",FALSE
 "xgboost","*","modules/assim.sequential","Suggests",FALSE
+"xgboost","*","modules/data.land","Imports",FALSE
 "XML","*","base/workflow","Imports",FALSE
 "XML","*","models/biocro","Imports",FALSE
 "XML","*","models/maat","Imports",FALSE

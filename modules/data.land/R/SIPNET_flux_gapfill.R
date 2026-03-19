@@ -263,44 +263,45 @@ fit_site_xgb_cv <- function(subdf,
   )
 }
 
-#########Need to add sub-functions to add site_ids, resimet.df, and sitecov.df
 #' @description
-#' This function performs site-level XGBoost gap-filling with CV
-#' for eddy-covariance flux data. For each ensemble iteration, it samples
-#' observed data(QC=0) within each site, fits site-specific XGBoost models
-#' using k-fold CV, predicts missing or low-quality flux values,
-#' and exports both gap-filled outputs and fold-level CV diagnostics.
+#' Perform site-level XGBoost gap-filling with cross-validation for
+#' eddy-covariance flux data. For each ensemble iteration, the function
+#' samples high-quality observations (QC = 0) within each site, fits a
+#' site-specific XGBoost model using k-fold cross-validation, predicts
+#' missing or low-quality flux values, and exports both gap-filled outputs
+#' and fold-level CV diagnostics.
 #'
 #' @title xgb_gapfill
 #'
-#' @param site_ids character: a character vector of site IDs to be modeled.
-#' @param resimet.df data.frame: a data frame containing eddy-covariance
-#' observations, QC flags, timestamps, and predictor variables.
-#' @param sitecov.df data.frame: a data frame containing site-specific selected
-#' predictor names, with columns including `Site_ID` and `filtered_variables`.
-#' @param flux_var character: the target flux type to be gap-filled. Currently
-#' supported values are `"LE"` and `"NEE"`.
-#' @param outdir character: the output directory where the exported CSV files
-#' will be written.
-#' @param nfolds numeric: number of folds used in CV, default is 10.
-#' @param nrounds numeric: number of boosting rounds used in XGBoost training,
-#' default is 200.
-#' @param nens numeric: number of ensemble iterations, default is 25.
-#' @param nsamp numeric: proportion of high-quality observations sampled within
-#' each site for training in each ensemble, default is 0.95.
-#' @param r2_threshold numeric: minimum average validation R2 required to
-#' fit the final model and retain a site in the exported gap-filled output
-#' @param cores numeric: how many CPUs to be used in the calculation
-#' @param overwrite boolean: decide if existing output files should be overwritten,
-#' the default is TRUE.
+#' @param site.dir character. Path to the site information table.
+#' @param pred.var.dir character. Path to the predictor/flux data file.
+#' @param flux_var character. Flux type to be gap-filled. Currently supports
+#' `"LE"` and `"NEE"`.
+#' @param outdir character. Output directory for exported CSV files.
+#' @param vars_to_check character vector. Candidate predictor variables used
+#' to build site-specific predictor sets.
+#' @param n_sites numeric. Number of sites to keep from the site table.
+#' @param missing_threshold numeric. Maximum allowed percentage of missingness
+#' when selecting predictors for each site.
+#' @param nfolds numeric. Number of folds used in cross-validation. Default is 10.
+#' @param nrounds numeric. Number of boosting rounds for XGBoost training.
+#' Default is 200.
+#' @param nens numeric. Number of ensemble iterations. Default is 25.
+#' @param nsamp numeric. Proportion of QC = 0 observations sampled within each
+#' site for training in each ensemble. Default is 0.95.
+#' @param params list. XGBoost model parameters.
+#' @param r2_threshold numeric. Minimum average validation R2 required to keep
+#' a site in the exported gap-filled output.
+#' @param cores numeric. Number of CPUs used for parallel site-level fitting.
+#' @param overwrite logical. Whether existing output files should be overwritten.
 #'
-#' @return list containing ensemble-level outputs. Each element corresponds to
-#' one ensemble iteration and includes:
+#' @return A list of length `nens`. Each element corresponds to one ensemble
+#' iteration and contains:
 #' \describe{
-#'   \item{cv_results}{a data frame of site-level average CV R2.}
-#'   \item{filled_data}{a data frame of the full input dataset with merged gap-filled values.}
-#'   \item{exported_data}{a data frame of filtered gap-filled results for well-performing sites only.}
-#'   \item{folds_all}{a data frame of fold-level CV diagnostics across sites.}
+#'   \item{cv_results}{data frame of site-level average CV R2.}
+#'   \item{filled_data}{data frame of the full input dataset with merged gap-filled values.}
+#'   \item{exported_data}{data frame of filtered gap-filled results for well-performing sites only.}
+#'   \item{folds_all}{data frame of fold-level CV diagnostics across sites.}
 #' }
 #'
 #' @author Yang Gu
