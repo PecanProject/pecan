@@ -46,11 +46,7 @@ Imports:
     terra,
     tidyr,
     tidyselect,
-    XML (>= 3.98-1.4),
-    data.table,
-    tibble,
-    xgboost,
-    doParallel
+    XML (>= 3.98-1.4)
 Suggests:
     dataone,
     datapack,
@@ -77,7 +73,11 @@ Suggests:
     sp,
     testthat (>= 3.1.0),
     traits,
-    withr
+    withr,
+    xgboost,
+    doParallel,
+    data.table,
+    tibble
 Remotes:
     github::ropensci/traits
 License: BSD_3_clause + file LICENSE
