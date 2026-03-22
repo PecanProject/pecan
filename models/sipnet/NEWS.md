@@ -18,6 +18,8 @@
   litterWFracInit, microbeInit, m_ballBerry) from being set when using v2 templates.
 * Removed workarounds for column naming bugs in output from long-outdated legacy
   Sipnet version `sipnet.unk`.
+* Added trait to parameter mappings for 13 nitrogen cycle parameters in `write.config.SIPNET`,
+  including tissue C:N ratios, N volatilization/leaching, fixation, and methane rates.
   
 
 # PEcAn.SIPNET 1.10.0

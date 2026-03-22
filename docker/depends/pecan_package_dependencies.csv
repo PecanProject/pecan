@@ -56,6 +56,7 @@
 "dplyr","*","models/biocro","Imports",FALSE
 "dplyr","*","models/ed","Imports",FALSE
 "dplyr","*","models/ldndc","Imports",FALSE
+"dplyr","*","models/peprmt","Imports",FALSE
 "dplyr","*","models/rothc","Imports",FALSE
 "dplyr","*","models/sipnet","Imports",FALSE
 "dplyr","*","models/stics","Imports",FALSE
@@ -67,6 +68,8 @@
 "dplyr","*","modules/uncertainty","Imports",FALSE
 "dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
+"dygraphs","*","models/peprmt","Suggests",FALSE
+"earthdatalogin","*","models/peprmt","Suggests",FALSE
 "ecmwfr",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
 "ellipse","*","modules/assim.batch","Imports",FALSE
 "exactextractr","*","modules/assim.sequential","Suggests",FALSE
@@ -131,6 +134,7 @@
 "httr","*","modules/data.land","Suggests",FALSE
 "httr","*","modules/data.remote","Suggests",FALSE
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
+"imager","*","models/peprmt","Suggests",FALSE
 "itertools","*","modules/assim.sequential","Suggests",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
 "jsonlite","*","models/sipnet","Imports",FALSE
@@ -173,6 +177,7 @@
 "lubridate",">= 1.6.0","models/lpjguess","Imports",FALSE
 "lubridate",">= 1.6.0","models/maat","Imports",FALSE
 "lubridate",">= 1.6.0","models/maespa","Imports",FALSE
+"lubridate",">= 1.6.0","models/peprmt","Imports",FALSE
 "lubridate",">= 1.6.0","models/rothc","Imports",FALSE
 "lubridate",">= 1.6.0","models/sipnet","Imports",FALSE
 "lubridate",">= 1.6.0","modules/assim.batch","Imports",FALSE
@@ -254,6 +259,7 @@
 "ncdf4",">= 1.15","models/lpjguess","Imports",FALSE
 "ncdf4",">= 1.15","models/maat","Imports",FALSE
 "ncdf4",">= 1.15","models/maespa","Imports",FALSE
+"ncdf4",">= 1.15","models/peprmt","Imports",FALSE
 "ncdf4",">= 1.15","models/sipnet","Imports",FALSE
 "ncdf4",">= 1.15","modules/assim.batch","Imports",FALSE
 "ncdf4",">= 1.15","modules/benchmark","Imports",FALSE
@@ -344,6 +350,7 @@
 "PEcAn.logger","*","models/lpjguess","Imports",TRUE
 "PEcAn.logger","*","models/maat","Imports",TRUE
 "PEcAn.logger","*","models/maespa","Imports",TRUE
+"PEcAn.logger","*","models/peprmt","Imports",TRUE
 "PEcAn.logger","*","models/rothc","Imports",TRUE
 "PEcAn.logger","*","models/sibcasa","Imports",TRUE
 "PEcAn.logger","*","models/sipnet","Imports",TRUE
@@ -380,6 +387,7 @@
 "PEcAn.remote","*","models/lpjguess","Imports",TRUE
 "PEcAn.remote","*","models/maat","Imports",TRUE
 "PEcAn.remote","*","models/maespa","Imports",TRUE
+"PEcAn.remote","*","models/peprmt","Imports",TRUE
 "PEcAn.remote","*","models/sipnet","Imports",TRUE
 "PEcAn.remote","*","models/stics","Imports",TRUE
 "PEcAn.remote","*","modules/assim.batch","Imports",TRUE
@@ -422,6 +430,7 @@
 "PEcAn.utils","*","models/lpjguess","Imports",TRUE
 "PEcAn.utils","*","models/maat","Imports",TRUE
 "PEcAn.utils","*","models/maespa","Imports",TRUE
+"PEcAn.utils","*","models/peprmt","Imports",TRUE
 "PEcAn.utils","*","models/sipnet","Imports",TRUE
 "PEcAn.utils","*","modules/assim.batch","Imports",TRUE
 "PEcAn.utils","*","modules/assim.sequential","Suggests",TRUE
@@ -445,6 +454,7 @@
 "PEcAn.workflow","*","base/all","Depends",TRUE
 "PEcAn.workflow","*","modules/assim.batch","Imports",TRUE
 "PEcAn.workflow","*","modules/assim.sequential","Imports",TRUE
+"PEPRMT","*","models/peprmt","Imports",FALSE
 "plotrix","*","base/qaqc","Imports",FALSE
 "plotrix","*","modules/assim.sequential","Suggests",FALSE
 "plyr",">= 1.8.4","base/visualization","Imports",FALSE
@@ -548,6 +558,7 @@
 "roxygen2","== 7.3.3","models/lpjguess","Roxygen",FALSE
 "roxygen2","== 7.3.3","models/maat","Roxygen",FALSE
 "roxygen2","== 7.3.3","models/maespa","Roxygen",FALSE
+"roxygen2","== 7.3.3","models/peprmt","Roxygen",FALSE
 "roxygen2","== 7.3.3","models/rothc","Roxygen",FALSE
 "roxygen2","== 7.3.3","models/sibcasa","Roxygen",FALSE
 "roxygen2","== 7.3.3","models/sipnet","Roxygen",FALSE
@@ -570,6 +581,7 @@
 "RPostgreSQL","*","base/db","Suggests",FALSE
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
+"rstac","*","models/peprmt","Suggests",FALSE
 "sensitivity","*","modules/uncertainty","Imports",FALSE
 "sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
@@ -605,6 +617,7 @@
 "stringr",">= 1.1.0","models/ed","Imports",FALSE
 "stringr",">= 1.1.0","modules/data.atmosphere","Imports",FALSE
 "suntools","*","modules/data.atmosphere","Imports",FALSE
+"terra","*","models/peprmt","Suggests",FALSE
 "terra","*","modules/assim.sequential","Suggests",FALSE
 "terra","*","modules/data.atmosphere","Imports",FALSE
 "terra","*","modules/data.land","Imports",FALSE
@@ -629,6 +642,7 @@
 "testthat",">= 1.0.2","models/lpjguess","Suggests",FALSE
 "testthat",">= 1.0.2","models/maat","Suggests",FALSE
 "testthat",">= 1.0.2","models/maespa","Suggests",FALSE
+"testthat",">= 1.0.2","models/peprmt","Suggests",FALSE
 "testthat",">= 1.0.2","models/sipnet","Suggests",FALSE
 "testthat",">= 1.0.2","models/stics","Suggests",FALSE
 "testthat",">= 1.0.2","modules/allometry","Suggests",FALSE
@@ -722,6 +736,7 @@
 "XML",">= 3.98-1.4","modules/data.atmosphere","Imports",FALSE
 "XML",">= 3.98-1.4","modules/data.land","Imports",FALSE
 "xtable","*","base/utils","Suggests",FALSE
+"xts","*","models/peprmt","Suggests",FALSE
 "xts","*","modules/data.atmosphere","Imports",FALSE
 "zoo","*","modules/benchmark","Imports",FALSE
 "zoo","*","modules/data.atmosphere","Imports",FALSE

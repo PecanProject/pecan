@@ -576,6 +576,53 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "leafGrowth"), 2] <- pft.traits[which(pft.trait.names == "leafGrowth")]
     }
 
+    ### ----- Nitrogen cycle parameters (SIPNET v2)
+    # C:N ratios
+    if ("c2n_leaf" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_leaf")]
+    }
+    if ("c2n_wood" %in% pft.trait.names) {
+      param[which(param[, 1] == "woodCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_wood")]
+    }
+    if ("c2n_fineroot" %in% pft.trait.names) {
+      param[which(param[, 1] == "fineRootCN"), 2] <- pft.traits[which(pft.trait.names == "c2n_fineroot")]
+    }
+    # Decomposition C:N half-saturation parameter
+    if ("kCN" %in% pft.trait.names) {
+      param[which(param[, 1] == "kCN"), 2] <- pft.traits[which(pft.trait.names == "kCN")]
+    }
+    # N loss parameters
+    if ("n_volatilization_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "nVolatilizationFrac"), 2] <- pft.traits[which(pft.trait.names == "n_volatilization_rate")]
+    }
+    if ("n_leaching_frac" %in% pft.trait.names) {
+      param[which(param[, 1] == "nLeachingFrac"), 2] <- pft.traits[which(pft.trait.names == "n_leaching_frac")]
+    }
+    # N fixation parameters
+    if ("n_fixation_frac_max" %in% pft.trait.names) {
+      param[which(param[, 1] == "nFixationFracMax"), 2] <- pft.traits[which(pft.trait.names == "n_fixation_frac_max")]
+    }
+    if ("n_fix_half_sat" %in% pft.trait.names) {
+      param[which(param[, 1] == "halfNFixationMax"), 2] <- pft.traits[which(pft.trait.names == "n_fix_half_sat")]
+    }
+    # Anaerobic moisture parameters
+    if ("f_anoxia" %in% pft.trait.names) {
+      param[which(param[, 1] == "fAnoxia"), 2] <- pft.traits[which(pft.trait.names == "f_anoxia")]
+    }
+    if ("anaerobic_decomp_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "anaerobicDecompRate"), 2] <- pft.traits[which(pft.trait.names == "anaerobic_decomp_rate")]
+    }
+    if ("anaerobic_trans_exp" %in% pft.trait.names) {
+      param[which(param[, 1] == "anaerobicTransExp"), 2] <- pft.traits[which(pft.trait.names == "anaerobic_trans_exp")]
+    }
+    # Methane production parameters
+    if ("soil_methane_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "soilMethaneRate"), 2] <- pft.traits[which(pft.trait.names == "soil_methane_rate")]
+    }
+    if ("litter_methane_rate" %in% pft.trait.names) {
+      param[which(param[, 1] == "litterMethaneRate"), 2] <- pft.traits[which(pft.trait.names == "litter_methane_rate")]
+    }
+
     #update LeafOnday and LeafOffDay
     if (!is.null(settings$run$inputs$leaf_phenology)) {
       obs_year_start <- lubridate::year(settings$run$start.date)
