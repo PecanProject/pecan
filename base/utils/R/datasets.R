@@ -25,3 +25,21 @@
 #'}
 #'
 "standard_vars"
+
+#' Trait dictionary for PEcAn trait and parameter names
+#'
+#' Lookup table mapping canonical PEcAn trait identifiers to display labels,
+#' unit or scale strings, and model aliases where available.
+#'
+#' @format A data frame with four columns:
+#' \describe{
+#'   \item{id}{Canonical PEcAn trait or parameter identifier. This is the
+#'   lookup key used by [trait.lookup()].}
+#'   \item{figid}{Human-readable label used for figures, plot titles, and
+#'   tables.}
+#'   \item{units}{Unit or scale label for the trait or parameter.}
+#'   \item{model.id}{Model-specific parameter identifier.}
+#' }
+#'
+#' @name trait.dictionary
+NULL
