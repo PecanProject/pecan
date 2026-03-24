@@ -83,11 +83,12 @@ trait_sample_bank_size <- function(trait.samples) {
 #' randomly or quasi-randomly, while generate_OAT_SA_design holds all
 #' non-parameter inputs constant to isolate parameter effects.
 #'
-#' When \code{sobol = TRUE}, every input listed in
-#' \code{settings$ensemble$samplingspace} (other than \code{parameters})
-#' becomes an independent Sobol factor. This allows variance-based
-#' sensitivity analysis to attribute output variance to each source
-#' (parameters, met, initial conditions, events, etc.) independently.
+#' When \code{sobol = TRUE}, every input in
+#' \code{settings$ensemble$samplingspace} that does NOT declare a
+#' \code{parent} becomes an independent Sobol factor. Inputs that DO
+#' declare a parent inherit the parent's sampled indices via
+#' \code{\link{input.ens.gen}}, and appear in the design matrix but are
+#' not independent Sobol factors.
 #'
 #' @param settings PEcAn settings object. This function directly uses:
 #'   \itemize{
@@ -132,10 +133,23 @@ generate_joint_ensemble_design <- function(settings,
     purrr::map_chr("posterior.files", .default = NA_character_)
   samp <- settings$ensemble$samplingspace
 
+  # order inputs so parents are processed before children
+  parents <- purrr::map(samp, "parent")
+  order <- names(samp)[
+    purrr::map(parents, function(tr) which(names(samp) %in% tr)) |>
+      unlist()
+  ]
+  samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
+
   if (sobol) {
-    # every input in samplingspace (except parameters) is an independent factor
-    input_names <- setdiff(names(samp), "parameters")
-    sobol_factors <- c("param", input_names)
+    # only inputs without a parent become independent Sobol factors
+    sobol_factors <- c(
+      "param",
+      names(samp.ordered)[
+        names(samp.ordered) != "parameters" &
+          purrr::map_lgl(samp.ordered, function(x) is.null(x$parent))
+      ]
+    )
 
     total_runs <- as.integer(ensemble_size) * (length(sobol_factors) + 2L)
     samples_file <- file.path(settings$outdir, "samples.Rdata")
@@ -165,8 +179,8 @@ generate_joint_ensemble_design <- function(settings,
     )
     sampled_inputs[["parameters"]] <- list(ids = sobol_indices[["param"]])
 
-    # map each input to its available paths
-    for (input_tag in input_names) {
+    # map independent (non-child) inputs to their Sobol columns
+    for (input_tag in setdiff(sobol_factors, "param")) {
       input_paths <- settings$run$inputs[[tolower(input_tag)]]$path
       if (is.null(input_paths) || length(input_paths) == 0) {
         PEcAn.logger::logger.error(
@@ -177,8 +191,34 @@ generate_joint_ensemble_design <- function(settings,
         sobol_design[[input_tag]],
         length(input_paths)
       )
-      sampled_inputs[[input_tag]] <- list(ids = sobol_indices[[input_tag]])
-      design_list[[input_tag]] <- sobol_indices[[input_tag]]
+    }
+
+    # assign indices; independent inputs use Sobol columns,
+    # child inputs inherit from their parent via input.ens.gen
+    for (i in seq_along(samp.ordered)) {
+      input_tag <- names(samp.ordered)[i]
+
+      if (identical(input_tag, "parameters")) {
+        next
+      }
+
+      parent_name <- samp.ordered[[i]]$parent
+      if (!is.null(parent_name)) {
+        # child input inherit from parent
+        input_result <- PEcAn.uncertainty::input.ens.gen(
+          settings = settings,
+          ensemble_size = total_runs,
+          input = input_tag,
+          method = samp.ordered[[i]]$method,
+          parent_ids = sampled_inputs[[parent_name]]
+        )
+        sampled_inputs[[input_tag]] <- input_result
+        design_list[[input_tag]] <- input_result$ids
+      } else if (input_tag %in% names(sobol_indices)) {
+        # independent input use sobol column
+        sampled_inputs[[input_tag]] <- list(ids = sobol_indices[[input_tag]])
+        design_list[[input_tag]] <- sobol_indices[[input_tag]]
+      }
     }
 
     design_list[["param"]] <- sobol_indices[["param"]]
@@ -206,12 +246,25 @@ generate_joint_ensemble_design <- function(settings,
 
   # for non-Sobol path, simple sequential or sampled design
   sampled_inputs[["parameters"]] <- list(ids = seq_len(ensemble_size))
-  for (input_tag in setdiff(names(samp), "parameters")) {
+  for (i in seq_along(samp.ordered)) {
+    input_tag <- names(samp.ordered)[i]
+    if (identical(input_tag, "parameters")) {
+      next
+    }
+
+    parent_name <- samp.ordered[[i]]$parent
+    parent_ids <- if (!is.null(parent_name)) {
+      sampled_inputs[[parent_name]]
+    } else {
+      NULL
+    }
+
     input_result <- PEcAn.uncertainty::input.ens.gen(
       settings = settings,
       ensemble_size = ensemble_size,
       input = input_tag,
-      method = samp[[input_tag]]$method
+      method = samp.ordered[[i]]$method,
+      parent_ids = parent_ids
     )
     sampled_inputs[[input_tag]] <- input_result
     design_list[[input_tag]] <- input_result$ids
