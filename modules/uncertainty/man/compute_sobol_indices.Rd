@@ -4,23 +4,57 @@
 \alias{compute_sobol_indices}
 \title{Compute Sobol indices from a finished PEcAn run}
 \usage{
-compute_sobol_indices(outdir, sobol_obj, var = "GPP", stat_fun = mean)
+compute_sobol_indices(outdir, sobol_obj, var = "GPP")
 }
 \arguments{
-\item{outdir}{PEcAn run output directory that contains runs.txt}
+\item{outdir}{PEcAn run output directory containing \code{ensemble.output.*.Rdata}
+files.}
 
-\item{sobol_obj}{object produced by PEcAn.uncertainty::generate_joint_ensemble_design()}
+\item{sobol_obj}{object produced by
+\code{PEcAn.uncertainty::generate_joint_ensemble_design(..., sobol = TRUE)}.}
 
-\item{var}{Variable name to summarise (default "GPP").}
-
-\item{stat_fun}{Summary statistic applied to var default mean .}
+\item{var}{Variable name to summarize (default \code{"GPP"}).}
 }
 \value{
-sobol_obj 
-.
+A tibble of Sobol first-order and total-order indices with attached
+  factor metadata.
 }
 \description{
-Loads model outputs from a Sobol ensemble, calculates summary
-statistics for a chosen variable, feeds them to \code{sensitivity::tell()},
-and returns the updated Sobol object.
+Loads standardized ensemble output for a Sobol run, computes first-order and
+total-order Sobol indices with \code{sensobol}, and saves both the Sobol design
+metadata and the computed indices using PEcAn-style filenames.
+}
+\details{
+First-order indices quantify the share of output variance attributable to a
+factor alone, while total-order indices summarize the full contribution of
+that factor including its interactions with other factors. PEcAn uses
+\code{sensobol} for these variance-based estimators; see Saltelli et al. (2008)
+for methodological background and Puy et al. (2022) for package details.
+
+This function handles one output variable at a time. To compute indices for
+multiple variables, call it in a loop (see examples).
+}
+\examples{
+\dontrun{
+  # single variable
+  result <- compute_sobol_indices(outdir, sobol_obj, var = "GPP")
+
+  # multiple variables
+  vars <- c("GPP", "NPP", "TotSoilCarb")
+  all_results <- purrr::map_dfr(vars, function(v) {
+    compute_sobol_indices(outdir, sobol_obj, var = v) |>
+      dplyr::mutate(variable = v)
+  })
+}
+
+}
+\references{
+Saltelli, A., Ratto, M., Andres, T., Campolongo, F., Cariboni,
+  J., Gatelli, D., et al. (2008). Global Sensitivity Analysis: The Primer.
+  John Wiley & Sons.
+
+  Puy, A., Lo Piano, S., Saltelli, A., and Levin, S. A. (2022).
+  sensobol: An R Package to Compute Variance-Based Sensitivity Indices.
+  Journal of Statistical Software, 102(5), 1-37.
+  \doi{10.18637/jss.v102.i05}
 }
