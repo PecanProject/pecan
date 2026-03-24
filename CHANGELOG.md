@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added `sensobol` based global sensitivity design and postprocessing support in `PEcAn.uncertainty`, including saved Sobol design and index outputs.
 - Added PEcAn.PEPRMT model, including a demo run with example data
 - Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
 - Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
@@ -18,6 +19,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added datasets to `PEcAn.data.land` 
   *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
+
+### Fixed
+- Fixed joint ensemble design and workflow configuration handling to preserve parent-child input alignment and validate `input_design$param` indices before writing configs.
 - PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 
 ### Fixed
