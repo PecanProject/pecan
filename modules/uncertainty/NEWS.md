@@ -1,7 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
 * Switched Sobol global sensitivity workflows to `sensobol`, including explicit design metadata and saved Sobol index outputs.
-* Treat all inputs (met, initial conditions, events, etc..) as independent Sobol factors.
+* Treat all inputs (met, initial conditions, events, etc..) as independent Sobol factors; removed parent-child filter that previously confounded events with meteorology.
 * run.ensemble.analysis() now respects `settings$modeloutdir` rather than assuming an `out/` folder inside `settings$outdir` (@Akash-paluvai, #3722).
 * Added `generate_OAT_SA_design()` for creating input design matrices for
 sensitivity analysis. This function ensures non-parameter inputs
