@@ -9,6 +9,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added PEcAn.PEPRMT model, including a demo run with example data
+- Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
 - Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
 - Add function `PEcAn.MA::meta_analysis_standalone` to run meta-analysis without database or file IO.
 - Added Demo 03: Meta Analysis Quarto notebook (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) to demonstrate how to perform Bayesian meta-analysis and visualize posterior distributions using pre-generated trait data.

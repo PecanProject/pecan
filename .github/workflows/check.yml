@@ -37,7 +37,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         set-safe-directory: false
 

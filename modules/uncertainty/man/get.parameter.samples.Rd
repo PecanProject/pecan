@@ -2,14 +2,14 @@
 % Please edit documentation in R/get.parameter.samples.R
 \name{get.parameter.samples}
 \alias{get.parameter.samples}
-\title{Convert priors / MCMC samples to chains that can be sampled
-  for model parameters}
+\title{Convert priors / MCMC samples to parameter sample chains}
 \usage{
 get.parameter.samples(
   settings,
   ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
-  ens.sample.method = "uniform"
+  ens.sample.method = "uniform",
+  save_to_disk = TRUE
 )
 }
 \arguments{
@@ -20,11 +20,21 @@ get.parameter.samples(
 \item{posterior.files}{list of filenames to read from}
 
 \item{ens.sample.method}{one of "halton", "sobol", "torus", "lhc", "uniform"}
+
+\item{save_to_disk}{logical. If TRUE (default), saves samples.Rdata.}
+}
+\value{
+named list with: trait.samples, sa.samples, ensemble.samples, runs.samples, env.samples
 }
 \description{
-Convert priors / MCMC samples to chains that can be sampled
-  for model parameters
+Loads prior distributions and MCMC results from disk, generates parameter
+samples for ensemble and sensitivity analysis runs, and saves results
+to \code{samples.Rdata}.
+}
+\details{
+This is the backward-compatible wrapper. Delegates computation to
+\code{\link{get_parameter_samples}}.
 }
 \author{
-David LeBauer, Shawn Serbin, Istem Fer
+David LeBauer, Shawn Serbin, Istem Fer, Om Kapale
 }

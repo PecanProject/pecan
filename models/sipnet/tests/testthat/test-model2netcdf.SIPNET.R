@@ -10,9 +10,16 @@ setup_sipnet_test <- function(sipnet_dat, delete.raw = FALSE,
 
   out_path <- file.path(outdir, "sipnet.out")
   if (!is.null(notes_line)) {
-    writeLines(notes_line, out_path)
+    # Write notes line AND provide our own column header
+    # (write.table complains when append and col.names are both TRUE)
+    writeLines(
+      c(notes_line,
+        paste(colnames(sipnet_dat), collapse = " ")),
+      out_path
+    )
     write.table(sipnet_dat, file = out_path, append = TRUE,
-                row.names = FALSE, quote = FALSE, sep = "\t")
+                row.names = FALSE, col.names = FALSE,
+                quote = FALSE, sep = "\t")
   } else {
     # v2 format: no Notes line, header is first line
     write.table(sipnet_dat, file = out_path, append = FALSE,
@@ -189,3 +196,73 @@ test_that("model2netcdf.SIPNET handles v1 format with Notes line", {
   litter_water <- as.vector(ncdf4::ncvar_get(nc, "litter_mass_content_of_water"))
   expect_equal(litter_water, rep(5.0 * 10, n), tolerance = 1e-12)
 })
+
+test_that("pools are converted from gC/m2 to kgC/m2", {
+  sip <- make_base_sipnet()
+  out_dir <- setup_sipnet_test(sip)$outdir
+  pec <- PEcAn.utils::read.output(
+    ncfiles = file.path(out_dir, "2002.nc"),
+    variables = c("litter_carbon_content", "SoilMoist"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+
+  expect_equal(pec$litter_carbon_content, sip$litter / 1000) # g -> kg
+  expect_equal(pec$SoilMoist, sip$soilWater * 10) # cm -> mm AKA kg H2O/m2
+})
+
+test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
+  sip <- make_base_sipnet()
+  out_dir <- setup_sipnet_test(sip)$outdir
+  pec <- PEcAn.utils::read.output(
+    ncfiles = file.path(out_dir, "2002.nc"),
+    variables = c("GPP", "Transp"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+  ts <- 8 * 60 * 60 # 8 hrs -> secs
+
+  expect_equal(pec$GPP, sip$gpp / 1000 / ts)
+  expect_equal(pec$Transp, sip$fluxestranspiration * 10 / ts, tolerance = 1e-6)
+})
+
+
+test_that("sipnet2datetime - standard vectorised input", {
+  years <- c(2023, 2023)
+  doys <- c(1, 32)
+  hours <- c(0, 10.5)
+
+  datetimes <- sipnet2datetime(years, doys, hours)
+
+  expect_equal(length(datetimes), 2)
+  expect_equal(datetimes[1], as.POSIXct("2023-01-01 00:00:00", tz = "UTC"))
+  expect_equal(datetimes[2], as.POSIXct("2023-02-01 10:30:00", tz = "UTC"))
+  }
+)
+
+test_that("sipnet2datetime - leap years",{
+
+  expect_equal(
+    format(sipnet2datetime(2024, 60, 0), "%Y-%m-%d"), "2024-02-29")
+
+  expect_equal(
+    format(sipnet2datetime(2023, 60, 0), "%Y-%m-%d"), "2023-03-01")
+  }
+)
+
+test_that("sipnet2datetime - decimal accuracy", {
+  expect_equal(format(sipnet2datetime(2023, 1, 13.75), "%H:%M:%S"),
+               "13:45:00")
+
+  expect_equal(format(sipnet2datetime(2023, 1, 23.9999), "%Y-%m-%d %H:%M:%S"),
+               "2023-01-01 23:59:59")
+
+  }
+)
+
+test_that("sipnet2datetime - UTC timezone", {
+  expect_equal(attr(sipnet2datetime(2023, 1, 1), "tzone"), "UTC")
+  }
+)

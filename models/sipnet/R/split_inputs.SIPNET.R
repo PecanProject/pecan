@@ -22,7 +22,7 @@ split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE
   if(is.null(outpath)){
     outpath <- path
   }
-  if(!dir.exists(outpath)) dir.create(outpath)
+  if(!dir.exists(outpath)) dir.create(outpath, recursive = TRUE)
   
 
   file <- NA
@@ -40,12 +40,17 @@ split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE
   input.dat <- utils::read.table(met, header = FALSE)
 
 
-  #@Hamze, I added the Date variable by using year, doy, and hour and filtered the clim based that and then removed it afterwards.
-  dat<-input.dat %>% 
-    dplyr::mutate(Date = strptime(paste(.data$V2, .data$V3), format = "%Y %j",   tz = "UTC")%>% as.POSIXct()) %>%
-    dplyr::mutate(Date = as.POSIXct(paste0(.data$Date,  ceiling(.data$V4), ":00"), format = "%Y-%m-%d %H:%M", tz = "UTC")) %>% 
-    dplyr::filter(.data$Date >= start.time, .data$Date < stop.time) %>% 
-    dplyr::select(-.data$Date)
+  if (ncol(input.dat) == 14) {
+    # V1 format
+    in_posix <- sipnet2datetime(input.dat$V2, input.dat$V3, input.dat$V4)
+  } else if (ncol(input.dat) == 12) {
+    in_posix <- sipnet2datetime(input.dat$V1, input.dat$V2, input.dat$V3)
+  } else {
+    PEcAn.logger::logger.error("Unknown clim format; can't split met files.")
+    return(NA_character_)
+  }
+
+  dat <- input.dat[in_posix >= start.time & in_posix < stop.time, ]
   
   
   ###### Write Met to file
