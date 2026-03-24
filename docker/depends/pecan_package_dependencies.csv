@@ -582,7 +582,7 @@
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
 "rstac","*","models/peprmt","Suggests",FALSE
-"sensitivity","*","modules/uncertainty","Imports",FALSE
+"sensobol","*","modules/uncertainty","Imports",FALSE
 "sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
 "sf","*","modules/data.atmosphere","Imports",FALSE
@@ -669,6 +669,7 @@
 "tibble","*","modules/data.atmosphere","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE
 "tibble","*","modules/meta.analysis","Suggests",FALSE
+"tibble","*","modules/uncertainty","Imports",FALSE
 "tictoc","*","modules/assim.sequential","Suggests",FALSE
 "tidyr","*","base/db","Imports",FALSE
 "tidyr","*","models/ed","Imports",FALSE
