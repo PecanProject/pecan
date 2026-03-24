@@ -26,6 +26,34 @@ make_sobol_settings <- function(outdir) {
   )
 }
 
+make_parent_sobol_settings <- function(outdir) {
+  samples_file <- file.path(outdir, "samples.Rdata")
+  trait.samples <- list(
+    temperate = list(
+      SLA = seq_len(40)
+    )
+  )
+  save(trait.samples, file = samples_file)
+
+  PEcAn.settings::Settings(
+    outdir = outdir,
+    pfts = list(list(name = "temperate", posterior.files = "post.distns.Rdata")),
+    run = list(inputs = list(
+      met = list(path = c("met1", "met2", "met3")),
+      poolinitcond = list(path = c("ic1", "ic2")),
+      events = list(path = c("evt1", "evt2", "evt3"))
+    )),
+    ensemble = list(
+      samplingspace = list(
+        parameters = list(method = "uniform"),
+        met = list(method = "sampling"),
+        poolinitcond = list(method = "looping"),
+        events = list(method = "sampling", parent = "met")
+      )
+    )
+  )
+}
+
 make_mixed_bank_sobol_settings <- function(outdir) {
   samples_file <- file.path(outdir, "samples.Rdata")
   trait.samples <- list(
@@ -53,7 +81,7 @@ make_mixed_bank_sobol_settings <- function(outdir) {
   )
 }
 
-test_that("Sobol design treats all inputs as independent factors", {
+test_that("Sobol design treats parentless inputs as independent factors", {
   withr::with_tempdir({
     settings <- make_sobol_settings(getwd())
 
@@ -63,7 +91,7 @@ test_that("Sobol design treats all inputs as independent factors", {
       sobol = TRUE
     )
 
-    # 4 independent factors -- param, met, poolinitcond, events
+    # 4 independent factors -- param, met, poolinitcond, events (no parent)
     # total runs = N * (k + 2) = 4 * (4 + 2) = 24
     expect_equal(nrow(result$X), 24)
     expect_equal(result$N, 4)
@@ -103,6 +131,41 @@ test_that("Sobol design treats all inputs as independent factors", {
       result$factor_metadata$source_type,
       c("param", "met", "poolinitcond", "events")
     )
+  })
+})
+
+test_that("Sobol design respects parent-child relationships", {
+  withr::with_tempdir({
+    settings <- make_parent_sobol_settings(getwd())
+
+    result <- generate_joint_ensemble_design(
+      settings = settings,
+      ensemble_size = 4,
+      sobol = TRUE
+    )
+
+    # 3 independent factors -- param, met, poolinitcond
+    # events has parent = "met" so it is NOT an independent factor
+    # total runs = N * (k + 2) = 4 * (3 + 2) = 20
+    expect_equal(nrow(result$X), 20)
+    expect_equal(result$N, 4)
+    expect_identical(
+      result$params,
+      c("param", "met", "poolinitcond")
+    )
+
+    # events column should still be in the design matrix (as a child)
+    expect_true("events" %in% names(result$X))
+
+    # events should NOT be in sobol_factors / factor_metadata
+    expect_false("events" %in% result$params)
+    expect_false("events" %in% result$factor_metadata$factor)
+
+    # met and poolinitcond bounds
+    expect_true(all(result$X$met >= 1 & result$X$met <= 3))
+    expect_true(all(result$X$poolinitcond >= 1 & result$X$poolinitcond <= 2))
+    # events bounds (inherited from met, but mapped to events paths)
+    expect_true(all(result$X$events >= 1 & result$X$events <= 3))
   })
 })
 
