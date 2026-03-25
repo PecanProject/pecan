@@ -61,7 +61,7 @@ make_mixed_bank_sobol_settings <- function(outdir) {
       SLA = seq_len(20)
     ),
     conifer = list(
-      SLA = seq_len(10)
+      SLA = seq_len(9)
     )
   )
   save(trait.samples, file = samples_file)
@@ -113,9 +113,9 @@ test_that("Sobol design treats parentless inputs as independent factors", {
     # (quasi-random design makes exact equality extremely unlikely)
     expect_false(identical(result$X$events, result$X$met))
 
-    # parameter indices stay within bank range
+    # parameter indices stay within bank range (2*N = 8)
     expect_true(all(result$X$param >= 1))
-    expect_true(all(result$X$param <= 24))
+    expect_true(all(result$X$param <= 8))
 
     # input indices stay within available paths
     expect_true(all(result$X$met >= 1 & result$X$met <= 3))
@@ -208,8 +208,8 @@ test_that("Sobol regenerates parameter bank when any PFT bank is too short", {
     )
 
     # only param factor here (no inputs in samplingspace)
-    # total = N * (k + 2) = 5 * (1 + 2) = 15
-    expect_equal(captured$ensemble.size, 15)
+    # param bank = 2*N = 10, total runs = N*(k+2) = 15
+    expect_equal(captured$ensemble.size, 10)
     expect_identical(
       captured$posterior.files,
       c("post1.distns.Rdata", "post2.distns.Rdata")
@@ -217,7 +217,7 @@ test_that("Sobol regenerates parameter bank when any PFT bank is too short", {
     expect_identical(captured$ens.sample.method, "uniform")
     expect_equal(nrow(result$X), 15)
     expect_true(all(result$X$param >= 1))
-    expect_true(all(result$X$param <= 15))
+    expect_true(all(result$X$param <= 10))
   })
 })
 
