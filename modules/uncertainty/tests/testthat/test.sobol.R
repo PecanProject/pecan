@@ -222,6 +222,12 @@ test_that("Sobol regenerates parameter bank when any PFT bank is too short", {
 })
 
 test_that("compute_sobol_indices matches direct sensobol results", {
+  # sobol_indices() -> sobol_boot() -> Rfast::colsums(); on ci images
+  # lacking libgsl, loading Rfast fails (RcppZiggurat -> libgsl.so.27)
+  skip_if_not(
+    tryCatch({ loadNamespace("Rfast"); TRUE }, error = function(e) FALSE),
+    "Rfast not loadable (likely missing libgsl system library)"
+  )
   withr::with_tempdir({
     sobol_obj <- list(
       N = 4L,
