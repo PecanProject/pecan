@@ -142,7 +142,8 @@ generate_joint_ensemble_design <- function(settings,
   samp.ordered <- samp[c(order, names(samp)[!(names(samp) %in% order)])]
 
   if (sobol) {
-    # only inputs without a parent become independent Sobol factors
+    # in this branch we identify factors, generate design, map indices;
+    # only inputs without a parent become independent sobol factors
     sobol_factors <- c(
       "param",
       names(samp.ordered)[
@@ -151,12 +152,15 @@ generate_joint_ensemble_design <- function(settings,
       ]
     )
 
-    total_runs <- as.integer(ensemble_size) * (length(sobol_factors) + 2L)
+    # Saltelli cross matrices recombine columns from A and B (Puy et al. 2022,
+    # eq. 10), so the param column only ever contains values drawn from A or B.
+    # we need at most 2*N unique MCMC parameter draws, not N*(k+2)
+    param_bank_size <- 2L * as.integer(ensemble_size)
     samples_file <- file.path(settings$outdir, "samples.Rdata")
-    if (.sobol_parameter_bank_size(samples_file) < total_runs) {
+    if (.sobol_parameter_bank_size(samples_file) < param_bank_size) {
       PEcAn.uncertainty::get.parameter.samples(
         settings = settings,
-        ensemble.size = total_runs,
+        ensemble.size = param_bank_size,
         posterior.files = posterior.files,
         ens.sample.method = ens.sample.method
       )
@@ -171,15 +175,13 @@ generate_joint_ensemble_design <- function(settings,
     )
     sobol_design <- as.data.frame(sobol_design)
 
-    # map param column to trait bank indices
     sobol_indices <- list()
     sobol_indices[["param"]] <- .map_sobol_to_indices(
       sobol_design[["param"]],
-      total_runs
+      param_bank_size
     )
     sampled_inputs[["parameters"]] <- list(ids = sobol_indices[["param"]])
 
-    # map independent (non-child) inputs to their Sobol columns
     for (input_tag in setdiff(sobol_factors, "param")) {
       input_paths <- settings$run$inputs[[tolower(input_tag)]]$path
       if (is.null(input_paths) || length(input_paths) == 0) {
@@ -192,35 +194,47 @@ generate_joint_ensemble_design <- function(settings,
         length(input_paths)
       )
     }
+  } else {
+    sampled_inputs[["parameters"]] <- list(ids = seq_len(ensemble_size))
+  }
 
-    # assign indices; independent inputs use Sobol columns,
-    # child inputs inherit from their parent via input.ens.gen
-    for (i in seq_along(samp.ordered)) {
-      input_tag <- names(samp.ordered)[i]
+  # his is shared input loop which assign indices for all non-parameter inputs;
+  # in Sobol path, independent factors use pre computed quasi-random
+  # indices; child inputs and all non sobol inputs delegate to input.ens.gen
+  n_design_rows <- if (sobol) nrow(sobol_design) else ensemble_size
 
-      if (identical(input_tag, "parameters")) {
-        next
-      }
+  for (i in seq_along(samp.ordered)) {
+    input_tag <- names(samp.ordered)[i]
+    if (identical(input_tag, "parameters")) next
 
-      parent_name <- samp.ordered[[i]]$parent
-      if (!is.null(parent_name)) {
-        # child input inherit from parent
-        input_result <- PEcAn.uncertainty::input.ens.gen(
-          settings = settings,
-          ensemble_size = total_runs,
-          input = input_tag,
-          method = samp.ordered[[i]]$method,
-          parent_ids = sampled_inputs[[parent_name]]
-        )
-        sampled_inputs[[input_tag]] <- input_result
-        design_list[[input_tag]] <- input_result$ids
-      } else if (input_tag %in% names(sobol_indices)) {
-        # independent input use sobol column
-        sampled_inputs[[input_tag]] <- list(ids = sobol_indices[[input_tag]])
-        design_list[[input_tag]] <- sobol_indices[[input_tag]]
-      }
+    parent_name <- samp.ordered[[i]]$parent
+
+    # independent Sobol factor use pre computed quasi-random indices
+    if (sobol && is.null(parent_name) && input_tag %in% names(sobol_indices)) {
+      sampled_inputs[[input_tag]] <- list(ids = sobol_indices[[input_tag]])
+      design_list[[input_tag]] <- sobol_indices[[input_tag]]
+      next
     }
 
+    # child or non sobol input delegate to input.ens.gen
+    parent_ids <- if (!is.null(parent_name)) {
+      sampled_inputs[[parent_name]]
+    } else {
+      NULL
+    }
+    input_result <- PEcAn.uncertainty::input.ens.gen(
+      settings = settings,
+      ensemble_size = n_design_rows,
+      input = input_tag,
+      method = samp.ordered[[i]]$method,
+      parent_ids = parent_ids
+    )
+    sampled_inputs[[input_tag]] <- input_result
+    design_list[[input_tag]] <- input_result$ids
+  }
+
+
+  if (sobol) {
     design_list[["param"]] <- sobol_indices[["param"]]
     design_matrix <- tibble::as_tibble(design_list)
 
@@ -242,32 +256,6 @@ generate_joint_ensemble_design <- function(settings,
       total = "jansen",
       factor_metadata = factor_metadata
     ))
-  }
-
-  # for non-Sobol path, simple sequential or sampled design
-  sampled_inputs[["parameters"]] <- list(ids = seq_len(ensemble_size))
-  for (i in seq_along(samp.ordered)) {
-    input_tag <- names(samp.ordered)[i]
-    if (identical(input_tag, "parameters")) {
-      next
-    }
-
-    parent_name <- samp.ordered[[i]]$parent
-    parent_ids <- if (!is.null(parent_name)) {
-      sampled_inputs[[parent_name]]
-    } else {
-      NULL
-    }
-
-    input_result <- PEcAn.uncertainty::input.ens.gen(
-      settings = settings,
-      ensemble_size = ensemble_size,
-      input = input_tag,
-      method = samp.ordered[[i]]$method,
-      parent_ids = parent_ids
-    )
-    sampled_inputs[[input_tag]] <- input_result
-    design_list[[input_tag]] <- input_result$ids
   }
 
   if (!file.exists(file.path(settings$outdir, "samples.Rdata"))) {
