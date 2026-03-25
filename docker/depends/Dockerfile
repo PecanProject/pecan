@@ -23,6 +23,7 @@ RUN apt-get update \
        librdf0-dev \
        libnetcdf-dev \
        libudunits2-dev \
+       libgsl-dev \
        libgl1-mesa-dev \
        libglu1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
