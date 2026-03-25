@@ -1,12 +1,13 @@
 ---
 title: "SiteConfig"
 author: "MCD"
-date: "`r Sys.Date()`"
+date: "2026-03-25"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+set.seed(20260325)
 ```
 
 ## 2. Build a *default pecan.xml settings* file at the patch level

@@ -18,15 +18,15 @@ library(PEcAn.priors)
 # library(DEoptim)
 library(dplyr)
 
-set.seed(1)
+set.seed(20260325)
 iter <-10000 #jags chain and misc simulation length; 1k for test, 10k for real
-inits <- list(list(.RNG.seed = 1,
+inits <- list(list(.RNG.seed = 20260325,
                    .RNG.name = "base::Mersenne-Twister"),
-              list(.RNG.seed = 2,
+              list(.RNG.seed = 20260326,
                    .RNG.name = "base::Mersenne-Twister"),
-              list(.RNG.seed = 3,
+              list(.RNG.seed = 20260327,
                    .RNG.name = "base::Mersenne-Twister"),
-              list(.RNG.seed = 4,
+              list(.RNG.seed = 20260328,
                    .RNG.name = "base::Mersenne-Twister"))
 
 ```

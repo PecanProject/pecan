@@ -75,6 +75,7 @@ First, we need to load the PEcAn R packages. These packages provide all the func
 
 ```{r libraries}
 # Load the PEcAn.all package, which includes all necessary PEcAn functionality
+set.seed(20260325)
 library("PEcAn.all")
 ```
 

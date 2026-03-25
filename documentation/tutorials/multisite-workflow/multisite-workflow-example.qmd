@@ -14,6 +14,7 @@ Sites stored in the BETY database can be queried by `sitegroup` to retrieve pred
 ## Example `site_info.csv`
 
 ```{r}
+set.seed(20260325)
 # For this demo:
 site_info <- tibble::tribble(
   ~id, ~lat, ~lon,  ~elev, ~site_group,

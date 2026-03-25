@@ -1,7 +1,7 @@
 ---
 title: "FIA allometeries"
 author: "Michael Dietze, Joshua Mantooth , Adrien Finzi"
-date: '`r Sys.Date()`'
+date: '2026-03-25'
 output: html_document
 ---
 

@@ -1,5 +1,8 @@
-## Demo 02: Sensitivity and Uncertainty Analysis {#demo-2}
+```{r setup, include=FALSE}
+set.seed(20260325)
+```
 
+## Demo 02: Sensitivity and Uncertainty Analysis {#demo-2}
 > [!WARNING]
 > This web UI tutorial is deprecated. Please refer to the new notebook-based tutorial below.
 

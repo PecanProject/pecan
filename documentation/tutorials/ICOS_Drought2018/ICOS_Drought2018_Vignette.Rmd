@@ -10,6 +10,7 @@ date: "July 1, 2021"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+set.seed(20260325)
 ```
 
 ## Drought-2018 ecosystem eddy covariance flux product

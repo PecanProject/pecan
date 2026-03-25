@@ -14,6 +14,13 @@ fig-height: 6
 fig-dpi: 300
 ---
 
+```{r setup, include=FALSE}
+# Set random seed at the very top so ALL downstream chunks are reproducible.
+# This prevents plots from changing between renders, avoiding binary diffs
+# accumulating in the pecan-documentation git repo.
+set.seed(20260325)
+```
+
 # Introduction {#introduction}
 
 Welcome to this PEcAn workflow notebook! This notebook will guide you through running an ecosystem model using PEcAn's programmatic interface.
@@ -164,7 +171,7 @@ Now you can update each of these settings. Here is a simple example:
 ```{r add-info-to-settings}
 settings$info <- list(
   author = "Aritra Dey",
-  date = Sys.Date(),
+  date = as.character("2026-03-25"),
   description = "Demo run of PEcAn using SIPNET"
 )
 ```

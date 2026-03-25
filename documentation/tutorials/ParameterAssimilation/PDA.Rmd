@@ -1,3 +1,7 @@
+```{r setup, include=FALSE}
+set.seed(20260325)
+```
+
 ### Parameter Data Assimilation
 
 
