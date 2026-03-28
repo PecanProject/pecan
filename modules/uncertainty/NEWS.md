@@ -5,6 +5,13 @@
 sensitivity analysis. This function ensures non-parameter inputs
 (met, IC, soil) are held constant, which is required for valid 
 variance decomposition in one-at-a-time (OAT) sensitivity analysis (#3729)
+* Fixed `read.sa.output()` dropping the median (q50) row when using the
+  manifest-based OAT sensitivity path. `write.sa.configs()` writes a single
+  shared median run with `pft_name = "NA"` and `trait = "NA"`, but the lookup
+  previously required an exact per-trait/per-PFT match, so the cell was always
+  `NA`. The fix adds a fallback: when `quantile == "50"` and no exact match is
+  found, the function now resolves the shared median entry before emitting a
+  warning.
 
 
 
