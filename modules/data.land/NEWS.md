@@ -1,5 +1,12 @@
 # PEcAn.data.land 1.9.0.9000
 
+## Changed
+
+* `extract_soil_gssurgo()` now accepts a polygon area of interest or a circular buffer radius,
+     replacing the rectangular area previously specified through the `grid_size`/`grid_spacing` parameters.
+     It also now performs gSSURGO queries through the `soilDB` package, which should be faster and more
+     reliable than the previous hand-rolled XML queries (#3643).
+
 ## Fixed
 
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)

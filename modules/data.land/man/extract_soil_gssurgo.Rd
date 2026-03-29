@@ -6,28 +6,28 @@
 \usage{
 extract_soil_gssurgo(
   outdir,
-  lat,
-  lon,
+  lat = NULL,
+  lon = NULL,
+  aoi = NULL,
   size = 1,
-  grid_size = 3,
-  grid_spacing = 100,
-  depths = c(0.15, 0.3, 0.6)
+  radius = 500,
+  depths = c(0, 0.15, 0.3, 0.6)
 )
 }
 \arguments{
-\item{outdir}{Output directory for writing down the netcdf file}
+\item{outdir}{Output directory for writing NetCDF files}
 
-\item{lat}{Latitude of center point (single numeric value)}
+\item{lat}{Latitude of center point (optional if aoi provided)}
 
-\item{lon}{Longitude of center point (single numeric value)}
+\item{lon}{Longitude of center point (optional if aoi provided)}
 
-\item{size}{Ensemble size}
+\item{aoi}{Custom area of interest as sf or terra polygon (optional)}
 
-\item{grid_size}{Size of the spatial sampling grid around the center point (default: 3)}
+\item{size}{Ensemble size (number of ensemble members to generate)}
 
-\item{grid_spacing}{Spacing between grid cells in meters (default: 100)}
+\item{radius}{Buffer radius in meters around lat/lon point (default: 500)}
 
-\item{depths}{Standard set of soil depths in m to create the ensemble of soil profiles with.}
+\item{depths}{Soil depth breakpoints in meters, must start with 0 (default: c(0, 0.15, 0.30, 0.60))}
 }
 \value{
 It returns the address for the generated soil netcdf file
@@ -36,18 +36,10 @@ It returns the address for the generated soil netcdf file
 Extract soil data from gssurgo
 }
 \details{
-This function takes a single lat/lon point and creates a spatial grid 
-around it for sampling soil variability. The grid_size parameter determines 
-how many grid points (grid_size x grid_size) are created around the center point.
+This function extracts soil property data from the USDA gSSURGO database
+for a specified area of interest. It can work with either a lat/lon point 
+(creating a circular buffer) or a custom polygon AOI.
 }
-\section{Current Limitations}{
-
-- MUKEY frequency weighting treats occurrence counts as proportional to area coverage
-- This approximation may introduce geometric bias for irregular polygon data
-- Buffer radius is set to grid_spacing/2 to reduce overlapping queries, but may still miss coverage
-- True area-weighted aggregation using polygon geometries is planned (see issue #3609)
-}
-
 \examples{
 \dontrun{
    outdir  <- "~/paleon/envTest"

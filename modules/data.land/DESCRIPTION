@@ -25,6 +25,7 @@ URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
 Depends: R (>= 4.1.0)
 Imports:
+    aqp,
     coda,
     curl,
     dplyr,
@@ -42,6 +43,9 @@ Imports:
     purrr,
     rlang,
     sf,
+    sirt,
+    soilDB,
+    sp,
     stringr,
     terra,
     tidyr,
