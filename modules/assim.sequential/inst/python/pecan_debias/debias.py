@@ -14,7 +14,7 @@ def _fit_knn(X, y):
     grid = GridSearchCV(
         pipe,
         {'kneighborsregressor__n_neighbors': list(range(1, 31))},
-        cv=max(2, min(5, len(y))),
+        cv=min(5, max(2, len(y)//2)),
         scoring='neg_root_mean_squared_error',
         n_jobs=-1
     )
@@ -35,13 +35,12 @@ def _fit_extratrees(X, y):
     base = ExtraTreesRegressor(random_state=42, n_jobs=-1)
     grid = GridSearchCV(
         base, param_grid,
-        cv=max(2, min(5, len(y))),
+        cv=min(5, max(2, len(y)//2)),
         scoring='neg_root_mean_squared_error',
         n_jobs=-1
     )
     grid.fit(X, y)
     tree = grid.best_estimator_
-    tree.fit(X, y)
     return tree
 
 def _fit_one(X, y):
@@ -51,11 +50,10 @@ def _fit_one(X, y):
     knn_pred  = knn.predict(X)
     tree_pred = tree.predict(X)
     weights = np.linspace(0, 1, 101)
-    best_w, best_rmse = 0.5, np.inf
-    for w in weights:
-        rmse = np.sqrt(mean_squared_error(y, w*knn_pred + (1-w)*tree_pred))
-        if rmse < best_rmse:
-            best_rmse, best_w = rmse, w
+    # replacing the loop based RMSE search over blend weights with a vectorised approach.
+    preds = weights[:, None]*knn_pred[None, :]+(1-weights[:, None])*tree_pred[None, :]
+    rmses = np.sqrt(((preds-y)**2).mean(axis=1))
+    best_w = weights[np.argmin(rmses)]
     return knn, tree, float(best_w)
 
 def train_full_model(name, X, y, feature_names=None):
