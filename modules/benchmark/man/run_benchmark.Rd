@@ -4,7 +4,12 @@
 \alias{run_benchmark}
 \title{Run a simple benchmark pipeline}
 \usage{
-run_benchmark(model_path, obs_path, metrics = c("RMSE", "MAE"), tolerance_secs = 3600)
+run_benchmark(
+  model_path,
+  obs_path,
+  metrics = c("RMSE", "MAE"),
+  tolerance_secs = 3600
+)
 }
 \arguments{
 \item{model_path}{path to model output CSV file (must have 'time' and 'value' columns)}
@@ -23,5 +28,5 @@ Loads model output and observations, aligns by time,
 computes RMSE and MAE, and returns a results table with a plot.
 }
 \author{
-Your Name
+Anshul Jain
 }

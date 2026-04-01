@@ -11,7 +11,7 @@
 ##' @return list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
 ##' @export
 ##'
-##' @author Your Name
+##' @author Anshul Jain
 run_benchmark <- function(model_path, obs_path,
                           metrics = c("RMSE", "MAE"),
                           tolerance_secs = 3600) {
