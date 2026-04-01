@@ -5,27 +5,30 @@
 \title{Run a simple benchmark pipeline}
 \usage{
 run_benchmark(
-  model_path,
-  obs_path,
+  model_df,
+  obs_df,
   metrics = c("RMSE", "MAE"),
-  tolerance_secs = 3600
+  tolerance_secs = 3600,
+  method = "nearest"
 )
 }
 \arguments{
-\item{model_path}{path to model output CSV file (must have 'time' and 'value' columns)}
+\item{model_df}{data.frame with columns: time (POSIXct), value (numeric)}
 
-\item{obs_path}{path to observations CSV file (must have 'time' and 'value' columns)}
+\item{obs_df}{data.frame with columns: time (POSIXct), value (numeric)}
 
 \item{metrics}{character vector of metrics to compute. Options: "RMSE", "MAE"}
 
 \item{tolerance_secs}{nearest-neighbor time tolerance in seconds (default 1 hour)}
+
+\item{method}{alignment method: "nearest" or "interpolate"}
 }
 \value{
 list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
 }
 \description{
-Loads model output and observations, aligns by time,
-computes RMSE and MAE, and returns a results table with a plot.
+Takes two validated dataframes, aligns by time,
+computes metrics, and returns a results table with a plot.
 }
 \author{
 Anshul Jain
