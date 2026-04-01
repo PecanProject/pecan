@@ -91,9 +91,9 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE")) {
 ##' @param aligned data.frame with columns: time, model, obs
 ##' @return ggplot object
 plot_time_series <- function(aligned) {
-  ggplot2::ggplot(aligned, ggplot2::aes(x = time)) +
-    ggplot2::geom_line(ggplot2::aes(y = model, color = "Model")) +
-    ggplot2::geom_line(ggplot2::aes(y = obs,   color = "Obs")) +
+  ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$obs, color = "Obs")) +
     ggplot2::labs(color = "", y = "value", title = "Model vs Observations") +
     ggplot2::theme_bw()
 }
