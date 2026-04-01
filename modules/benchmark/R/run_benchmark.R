@@ -1,53 +1,51 @@
 ##' Run a simple benchmark pipeline
 ##'
-##' Loads model output and observations, aligns by time,
-##' computes RMSE and MAE, and returns a results table with a plot.
+##' Takes two validated dataframes, aligns by time,
+##' computes metrics, and returns a results table with a plot.
 ##'
-##' @param model_path path to model output CSV file (must have 'time' and 'value' columns)
-##' @param obs_path path to observations CSV file (must have 'time' and 'value' columns)
+##' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+##' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
 ##' @param metrics character vector of metrics to compute. Options: "RMSE", "MAE"
 ##' @param tolerance_secs nearest-neighbor time tolerance in seconds (default 1 hour)
+##' @param method alignment method: "nearest" or "interpolate"
 ##'
 ##' @return list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
 ##' @export
-##'
 ##' @author Anshul Jain
-run_benchmark <- function(model_path, obs_path,
+run_benchmark <- function(model_df, obs_df,
                           metrics = c("RMSE", "MAE"),
-                          tolerance_secs = 3600) {
+                          tolerance_secs = 3600,
+                          method = "nearest") {
 
-  # --- Load data ---
-  model_df <- read.csv(model_path, stringsAsFactors = FALSE)
-  obs_df   <- read.csv(obs_path,   stringsAsFactors = FALSE)
+  # Stage 1: Validate schema
+  bm_validate(model_df, obs_df)
 
-  # --- Ensure time column is POSIXct ---
-  model_df$time <- as.POSIXct(model_df$time, tz = "UTC")
-  obs_df$time   <- as.POSIXct(obs_df$time,   tz = "UTC")
-
-  # --- Align by nearest time ---
+  # Stage 2: Align by time
   aligned <- align_by_time(model_df, obs_df, tolerance_secs = tolerance_secs)
 
-  # --- Compute metrics ---
-  results <- list()
-  for (m in toupper(metrics)) {
-    results[[m]] <- switch(m,
-      "RMSE" = sqrt(mean((aligned$model - aligned$obs)^2, na.rm = TRUE)),
-      "MAE"  = mean(abs(aligned$model - aligned$obs),     na.rm = TRUE),
-      stop("Unknown metric: ", m)
-    )
-  }
-  metrics_df <- data.frame(metric = names(results),
-                           value  = unlist(results, use.names = FALSE))
+  # Stage 3: Compute metrics via registry
+  results <- compute_metrics(aligned, metrics)
 
-  # --- Plot ---
-  plot <- ggplot2::ggplot(aligned, ggplot2::aes(x = time)) +
-    ggplot2::geom_line(ggplot2::aes(y = model, color = "model")) +
-    ggplot2::geom_line(ggplot2::aes(y = obs,   color = "obs")) +
-    ggplot2::labs(color = "", y = "value", title = "Model vs Observations")
+  # Stage 4: Plot
+  plot <- plot_time_series(aligned)
 
-  list(metrics = metrics_df, aligned = aligned, plot = plot)
+  list(metrics = results, aligned = aligned, plot = plot)
 }
 
+##' Validate benchmark input dataframes
+##'
+##' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+##' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
+##' @return invisible(TRUE)
+bm_validate <- function(model_df, obs_df) {
+  for (df in list(model_df, obs_df)) {
+    if (!inherits(df$time, "POSIXct"))
+      stop("Column 'time' must be POSIXct, got: ", class(df$time))
+    if (!is.numeric(df$value))
+      stop("Column 'value' must be numeric, got: ", class(df$value))
+  }
+  invisible(TRUE)
+}
 
 ##' Align model and observation data frames by nearest time
 ##'
@@ -69,4 +67,33 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
     }
   }))
   aligned
+}
+
+##' Compute benchmark metrics
+##'
+##' @param aligned data.frame with columns: time, model, obs
+##' @param metrics character vector of metric names
+##' @return data.frame with columns: metric, value
+compute_metrics <- function(aligned, metrics = c("RMSE", "MAE")) {
+  METRIC_REGISTRY <- list(
+    RMSE = function(x, y) sqrt(mean((x - y)^2, na.rm = TRUE)),
+    MAE  = function(x, y) mean(abs(x - y), na.rm = TRUE)
+  )
+  results <- lapply(toupper(metrics), function(m) {
+    if (!m %in% names(METRIC_REGISTRY)) stop("Unknown metric: ", m)
+    METRIC_REGISTRY[[m]](aligned$model, aligned$obs)
+  })
+  data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
+}
+
+##' Plot model vs observations time series
+##'
+##' @param aligned data.frame with columns: time, model, obs
+##' @return ggplot object
+plot_time_series <- function(aligned) {
+  ggplot2::ggplot(aligned, ggplot2::aes(x = time)) +
+    ggplot2::geom_line(ggplot2::aes(y = model, color = "Model")) +
+    ggplot2::geom_line(ggplot2::aes(y = obs,   color = "Obs")) +
+    ggplot2::labs(color = "", y = "value", title = "Model vs Observations") +
+    ggplot2::theme_bw()
 }
