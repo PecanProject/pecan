@@ -381,13 +381,17 @@ downscale_metrics <- function(downscale_output) {
     mean <- mean(actual)
     RMSE <- sqrt(mean((actual - predicted)^2))
     MAE <- mean(abs(actual - predicted))
-    R2 <- 1 - sum((actual - predicted)^2) /
-      sum((actual - mean(actual))^2)
 
-    CV <- 100 * RMSE / mean
+    ss_res <- sum((actual - predicted)^2)
+    ss_tot <- sum((actual - mean(actual))^2)
+    R2 <- if (ss_tot == 0) NA_real_ else 1 - ss_res / ss_tot
 
-    if (CV > 500) {
-      PEcAn.logger::logger.error("Mean / RMSE > 500, indicating CV may not be an appropriate metric")
+    CV <- if (mean == 0) NA_real_ else 100 * RMSE / mean
+
+    if (!is.na(CV) && CV > 500) {
+      PEcAn.logger::logger.warn(
+        "CV > 500 (", round(CV, 1), "), indicating CV may not be an appropriate metric"
+      )
       CV <- NA
     }
 
