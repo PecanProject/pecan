@@ -59,7 +59,8 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  jobsh <- gsub("@DELETE_RAW@", as.logical(settings$model$delete.raw %||% FALSE), jobsh)
+  delete_raw <- if (is.null(settings$model$delete.raw)) FALSE else settings$model$delete.raw
+  jobsh <- gsub("@DELETE_RAW@", as.logical(delete_raw), jobsh)
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
