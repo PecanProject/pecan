@@ -53,6 +53,7 @@
               "no3_n_kg_m2": { "type": "number", "minimum": 0 },
 
               "tillage_eff_0to1": { "type": "number", "minimum": 0 },
+              "incorporation_frac_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
               "intensity_category": { "type": "string" },
               "depth_m": { "type": "number", "minimum": 0 }
             },
