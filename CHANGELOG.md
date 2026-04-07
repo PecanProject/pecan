@@ -23,6 +23,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added lookup functions to `PEcAn.data.land`: `look_up_ca_n_rate()` and `look_up_ca_compost_amendment()` for querying crop-specific fertilization and compost data.
 - PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 - Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
+- `write.events.SIPNET()` supports optional `incorporation_frac_0to1` for tillage events (physical litter-to-soil mixing, separate from decomposition rate effects). Events schema updated to match.
 
 ### Fixed
 
