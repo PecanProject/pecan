@@ -76,8 +76,13 @@ write.events.SIPNET <- function(events_json, outdir) {
             type <- e$event_type
             if (type == "tillage") {
                 f <- if (is.null(e$tillage_eff_0to1)) 0 else e$tillage_eff_0to1
+                incorp <- e$incorporation_frac_0to1
                 # TODO: consider validating up front against schema rather than here
-                lines <- c(lines, sprintf("%d  %d  till  %s", year, day, f))
+                if (is.null(incorp)) {
+                    lines <- c(lines, sprintf("%d  %d  till  %s", year, day, f))
+                } else {
+                    lines <- c(lines, sprintf("%d  %d  till  %s %s", year, day, f, incorp))
+                }
             } else if (type == "planting") {
                 # infer total planted biomass from leaf pool and allocation fraction
                 leaf_g <- as.numeric(if (is.null(e$leaf_c_kg_m2)) 0 else e$leaf_c_kg_m2) * kg2g
