@@ -2,6 +2,8 @@
 
 ## Added
 
+* Events schema v0.1.0 gains optional `incorporation_frac_0to1` property for tillage events, representing fraction of litter physically mixed into the soil pool.
+
 ## Fixed
 
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
