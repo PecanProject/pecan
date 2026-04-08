@@ -34,6 +34,5 @@ write.config.PRELES <- function(defaults, trait.values, settings, run.id) {
                   "'",settings$run$end.date,"') ",
                   '" | R --vanilla'
   )
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
 } # write.config.PRELES
