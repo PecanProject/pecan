@@ -1,4 +1,5 @@
 
+
 #-------------------------------------------------------------------------------------------------#
 #' Writes a SIBCASA config file.
 #'
@@ -60,8 +61,7 @@ write.config.SIBCASA <- function(defaults, trait.values, settings, run.id) {
 
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
 
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
 
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
