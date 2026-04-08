@@ -69,8 +69,11 @@ check_met_coverage_for_fallback <- function(cf_file,
     fill_vars <- c(fill_vars, "volumetric_soil_water_layer_1")
   }
 
+  fill_vars_cf <- unname(cds_to_cf_varnames(fill_vars))
+
   list(
-    fill_vars = fill_vars,
+    fill_vars_cds = fill_vars,
+    fill_vars_cf  = fill_vars_cf,
     coverage = list(
       rg = rg_coverage,
       par = par_coverage,
