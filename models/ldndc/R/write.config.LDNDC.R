@@ -133,8 +133,7 @@ write.config.LDNDC <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
   # Write job.sh file to rundir
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(rundir, "job.sh")) # Permissions
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
   
   
   
