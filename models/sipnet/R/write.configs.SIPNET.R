@@ -224,8 +224,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
   
 
   ### Copy event file
