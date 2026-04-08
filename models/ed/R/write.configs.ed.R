@@ -122,8 +122,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   jobsh <- write.config.jobsh.ED2(settings = settings, run.id = run.id)
   
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
   
   ## Write ED2 config.xml file
   xml <- write.config.xml.ED2(defaults = defaults, settings = settings, trait.values = trait.values)
