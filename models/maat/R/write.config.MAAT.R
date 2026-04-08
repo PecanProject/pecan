@@ -243,8 +243,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   }  #End if/else
   
   # Write the job.sh script
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
   
 } # write.config.MAAT
 ##-------------------------------------------------------------------------------------------------#
