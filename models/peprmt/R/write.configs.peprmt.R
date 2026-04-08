@@ -105,6 +105,5 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
     dplyr::filter(.data$site == settings$run$site$id)
 
   utils::write.csv(run_data, file.path(rundir, "run_data.csv"), row.names = FALSE)
-  writeLines(jobsh, con = file.path(rundir, "job.sh"))
-  Sys.chmod(file.path(rundir, "job.sh"))
+  PEcAn.utils::write_job_sh(rundir, run.id, jobsh)
 } # write.config.PEPRMT
