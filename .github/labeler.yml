@@ -7,7 +7,7 @@
   - any-glob-to-any-file: 'book_source/**'
   - any-glob-to-any-file: 'documentation/**'
   - any-glob-to-any-file: 'CONTRIBUTING.md'
-  - any-glob-to-any-file: 'DEBUGING.md'
+  - any-glob-to-any-file: 'DEBUGGING.md'
   - any-glob-to-any-file: 'DEV-INTRO.md'
   - any-glob-to-any-file: 'README.md'
 

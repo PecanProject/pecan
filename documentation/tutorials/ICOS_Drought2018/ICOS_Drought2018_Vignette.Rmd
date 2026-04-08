@@ -22,6 +22,7 @@ The following sites and years are available within this dataset:
 
 ```{r icos_d2018, echo=FALSE}
 library(ggplot2)
+set.seed(20260325)
 icos_d2018 <- read.csv('extfiles/ICOS_Drought2018_Sites.csv')
 knitr::kable(icos_d2018)
 world_map <- ggplot2::map_data("world")

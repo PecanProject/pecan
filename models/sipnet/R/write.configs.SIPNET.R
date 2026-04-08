@@ -234,7 +234,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if (!file.exists(event_file)) {
       PEcAn.logger::logger.warn("Event file not found at", event_file)
     }
-    file.copy(event_file, file.path(rundir, "events.in"))
+    file.copy(event_file, file.path(rundir, "events.in"), overwrite = TRUE)
   }
 
 

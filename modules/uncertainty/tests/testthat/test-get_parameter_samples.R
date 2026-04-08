@@ -160,6 +160,9 @@ test_that("multiple PFTs are handled correctly", {
   expect_true("conifer"  %in% names(result$trait.samples))
   expect_true("SLA"   %in% names(result$trait.samples[["hardwood"]]))
   expect_true("Vcmax" %in% names(result$trait.samples[["conifer"]]))
+  expect_false("SLA"   %in% names(result$trait.samples[["conifer"]]))
+  expect_false("Vcmax" %in% names(result$trait.samples[["hardwood"]]))
+
 })
 
 

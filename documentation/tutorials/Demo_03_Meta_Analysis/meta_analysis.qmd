@@ -69,6 +69,7 @@ library("PEcAn.settings")
 library("PEcAn.MA")
 library("PEcAn.utils")
 library("PEcAn.logger")
+set.seed(20260325)
 ```
 
 # Load Data and Configuration

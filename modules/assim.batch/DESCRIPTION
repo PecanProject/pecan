@@ -54,6 +54,8 @@ Suggests:
     knitr (>= 1.50),
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
+Additional_repositories:
+    https://florianhartig.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
