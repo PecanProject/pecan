@@ -64,8 +64,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@RUNID@", run.id, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  writeLines(jobsh, con = file.path(local.rundir, "job.sh"))
-  Sys.chmod(file.path(local.rundir, "job.sh"))
+  PEcAn.utils::write_job_sh(local.rundir, run.id, jobsh)
 
   #-----------------------------------------------------------------------
   ### Copy templated NAMELIST files to local rundir
