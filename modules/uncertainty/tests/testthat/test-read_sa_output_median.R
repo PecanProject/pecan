@@ -8,7 +8,7 @@
 # The fix adds a fallback: when quantile == "50" and no exact match is found,
 # look for the shared median entry before giving up.
 #
-# Reference: https://github.com/pecanproject/pecan/issues/<issue-number>
+# Reference: https://github.com/pecanproject/pecan/issues/3882
 
 test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
   withr::with_tempdir({
