@@ -919,8 +919,7 @@ write.config.STICS <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@MODFILE@", paste0("mod_s", basename(usmdirs[1]), ".sti"), jobsh)
   jobsh <- gsub("@STICSEXE@", stics_exe, jobsh)
   
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  PEcAn.utils::write_job_sh(settings$rundir, run.id, jobsh)
   
   
 } # write.config.STICS
