@@ -268,7 +268,7 @@ write_restart.ED2 <- function(outdir, runid, start.time, stop.time,
   mod2cf_string      <- gsub(begin_from, begin_to, mod2cf_string) # e.g. change from (...'1961/01/01', '1963/01/01'...) to (...'1962/01/01', '1963/01/01'...)
   jobsh[mod2cf_line] <- mod2cf_string
   
-  writeLines(jobsh, file.path(rundir, runid, "job.sh"))
+  PEcAn.utils::write_job_sh(rundir, runid, jobsh)
   
   PEcAn.logger::logger.info("Finished --", runid)
   
