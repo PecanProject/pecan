@@ -16,7 +16,12 @@ exec &> "$(realpath @OUTDIR@)/logfile.txt"
 # Run PEPRMT
 Rscript \
   -e 'dat <- read.csv(file.path("@RUNDIR@", "run_data.csv"))' \
-  -e 'res <- PEPRMT::run_PEPRMT(dat, wetland_type = 2)' \
+  -e 'res <- PEPRMT::run_PEPRMT(dat,
+    GPP_theta =  c(@GPP_THETA@),
+    Reco_theta = c(@RECO_THETA@),
+    CH4_theta = c(@CH4_THETA@),
+    wetland_type = 2
+  )' \
   -e 'write.csv(res, file.path("@OUTDIR@", "out.csv"), row.names = FALSE)'
 
 # convert output to PEcAn format

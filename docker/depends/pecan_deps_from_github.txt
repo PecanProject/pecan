@@ -4,8 +4,8 @@ araiho/linkages_package
 chuhousen/amerifluxr
 ebimodeling/biocro@0.951
 RemkoDuursma/Maeswrap
+ropensci-archive/nneo
 ropensci/geonames
-ropensci/nneo
 ropensci/traits
 SticsRPacks/SticsOnR
 SticsRPacks/SticsRFiles

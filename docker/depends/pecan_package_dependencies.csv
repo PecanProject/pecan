@@ -268,7 +268,7 @@
 "neonstore","*","modules/data.land","Suggests",FALSE
 "neonUtilities","*","modules/data.land","Suggests",FALSE
 "nimble","*","modules/assim.sequential","Imports",FALSE
-"nneo","*","modules/data.atmosphere","Imports",FALSE
+"nneo","*","modules/data.atmosphere","Suggests",FALSE
 "optparse","*","base/settings","Imports",FALSE
 "parallel","*","modules/assim.batch","Imports",FALSE
 "parallel","*","modules/data.atmosphere","Suggests",FALSE
@@ -604,6 +604,7 @@
 "stats","*","modules/data.remote","Suggests",FALSE
 "stats","*","modules/photosynthesis","Imports",FALSE
 "stats","*","modules/rtm","Imports",FALSE
+"SticsOnR","*","models/stics","Suggests",FALSE
 "SticsRFiles","*","models/stics","Suggests",FALSE
 "stringi","*","base/logger","Imports",FALSE
 "stringi","*","base/utils","Imports",FALSE

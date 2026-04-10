@@ -13,7 +13,11 @@
  <pfts>
   <pft>
    <name>soil</name>
-   <outdir>raw-data/pfts/soil/</outdir>
+   <posterior.files>raw-data/pfts/soil/trait.mcmc.RData</posterior.files>
+  </pft>
+  <pft>
+   <name>default</name>
+   <posterior.files>data/pfts/default/post.distns.RData</posterior.files>
   </pft>
  </pfts>
  <ensemble>
