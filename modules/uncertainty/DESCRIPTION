@@ -46,6 +46,7 @@ Imports:
     sensitivity
 Suggests:
     mockery,
+    ncdf4,
     testthat (>= 1.0.2),
     withr
 License: BSD_3_clause + file LICENSE

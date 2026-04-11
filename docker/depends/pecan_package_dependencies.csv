@@ -246,6 +246,7 @@
 "ncdf4","*","models/stics","Imports",FALSE
 "ncdf4","*","modules/assim.sequential","Imports",FALSE
 "ncdf4","*","modules/data.remote","Imports",FALSE
+"ncdf4","*","modules/uncertainty","Suggests",FALSE
 "ncdf4",">= 1.15","base/utils","Imports",FALSE
 "ncdf4",">= 1.15","base/visualization","Imports",FALSE
 "ncdf4",">= 1.15","models/biocro","Imports",FALSE

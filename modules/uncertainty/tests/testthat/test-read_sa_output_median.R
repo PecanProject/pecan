@@ -54,7 +54,7 @@ test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
         pft.name   = pft,
         start.year = yr,
         end.year   = yr,
-        variable   = PEcAn.utils::convert.expr("NPP")
+        variable   = PEcAn.utils::convert.expr("NPP")$variable.eqn
       ),
       regexp = "Run ID invalid or missing"
     )
@@ -91,7 +91,7 @@ test_that("read.sa.output still warns when no median fallback row exists", {
         pft.name   = "temperate.coniferous",
         start.year = 2004,
         end.year   = 2004,
-        variable   = PEcAn.utils::convert.expr("NPP")
+        variable   = PEcAn.utils::convert.expr("NPP")$variable.eqn
       ),
       regexp = "No run found in manifest"
     )
