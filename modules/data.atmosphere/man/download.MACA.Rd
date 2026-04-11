@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.MACA.R
 \name{download.MACA}
 \alias{download.MACA}
-\title{download.MACA}
+\title{Download MACA CMIP5 outputs for a single grid point using OPeNDAP and convert to CF}
 \usage{
 download.MACA(
   outfolder,

@@ -1,35 +1,28 @@
-##' nc.merge
-##' Parses multiple netCDF files into one central document for temporal downscaling procedure
-# -----------------------------------
-# Description
-# -----------------------------------
-##' @title nc.merge
-##' @family tdm - Temporally Downscale Meteorology
-##' @author James Simkins, Christy Rollinson
-##' @description This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
-##'              parses multiple netCDF files into one central training data file called 'dat.train_file'. This netCDF
-##'              file will be used to generate the subdaily models in the next step of the workflow, generate.subdaily.models(). 
-##'              It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow. 
-# -----------------------------------
-# Parameters
-# -----------------------------------
-##' @param outfolder - directory where output will be stored
-##' @param in.path - path of coarse model (e.g. GCM output)
-##' @param in.prefix - prefix of model string as character (e.g. IPSL.r1i1p1.rcp85)
-##' @param start_date - yyyy-mm-dd
-##' @param end_date - yyyy-mm-dd
-##' @param upscale - Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
-#                    options are: "year", "doy" (day of year), or "hour"
-##' @param overwrite logical: replace output file if it already exists?
-##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
-##'   functions print debugging information as they run?
-##' @param ... further arguments, currently ignored
-##'
-##' @export
-# -----------------------------------
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
+#' Parses multiple netCDF files into one central document for temporal downscaling procedure
+#'
+#' This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow.
+#' The nc2dat.train function parses multiple netCDF files into one central training data file called 'dat.train_file'.
+#' This netCDF file will be used to generate the subdaily models in the next step of the workflow,
+#'   generate.subdaily.models().
+#' It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
+#'
+#' @family tdm - Temporally Downscale Meteorology
+#' @author James Simkins, Christy Rollinson
+#'
+#' @param outfolder - directory where output will be stored
+#' @param in.path - path of coarse model (e.g. GCM output)
+#' @param in.prefix - prefix of model string as character (e.g. IPSL.r1i1p1.rcp85)
+#' @param start_date - yyyy-mm-dd
+#' @param end_date - yyyy-mm-dd
+#' @param upscale - Upscale can either be set for FALSE (leave alone) or to the
+#'   temporal resolution you want to aggregate to.
+#'   options are: "year", "doy" (day of year), or "hour"
+#' @param overwrite logical: replace output file if it already exists?
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+#'   functions print debugging information as they run?
+#' @param ... further arguments, currently ignored
+#'
+#' @export
 nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date, 
     upscale = FALSE, overwrite = FALSE, verbose = FALSE, ...) {
     

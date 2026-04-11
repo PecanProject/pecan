@@ -25,7 +25,8 @@ download.FACE(
 
 \item{overwrite}{overwrite existing files? Default is FALSE}
 
-\item{method}{Optional. Passed to download_file() function.  Use this to set custom programs such as ncftp to use when
+\item{method}{Optional. Passed to download_file() function.
+Use this to set custom programs such as ncftp to use when
 downloading files from FTP sites}
 
 \item{...}{other inputs}

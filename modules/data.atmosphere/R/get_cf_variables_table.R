@@ -23,6 +23,8 @@ get_cf_variables_table <- function(cf_url = build_cf_variables_table_url(57)) {
       dplyr::everything()
     )
 }
+
+
 #' Construct a URL to a specific version of the CF variables table XML
 #'
 #' This uses [sprintf] to construct the URL with the version number as

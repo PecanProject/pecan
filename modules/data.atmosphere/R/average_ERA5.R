@@ -1,14 +1,14 @@
-#' @description
+#' Average_ERA5_2_GeoTIFF
+#'
 #' This function helps to average the ERA5 data based on the start and end dates, and convert it to the GeoTIFF file.
-#' @title Average_ERA5_2_GeoTIFF
-#' 
+#'
 #' @param start.date character: start point of when to average the data (e.g., 2012-01-01).
 #' @param end.date character: end point of when to average the data (e.g., 2021-12-31).
 #' @param in.path character: the directory where your ERA5 data stored (they should named as ERA5_YEAR.nc).
 #' @param outdir character: the output directory where the averaged GeoTIFF file will be generated.
 #'
 #' @return character: path to the exported GeoTIFF file.
-#' 
+#'
 #' @export
 #' @author Dongchen Zhang
 Average_ERA5_2_GeoTIFF <- function (start.date, end.date, in.path, outdir) {

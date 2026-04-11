@@ -6,21 +6,19 @@ download.Ameriflux.site <- function(site_id) {
 } # download.Ameriflux.site
 
 
-##' Download Ameriflux L2 netCDF files
-##'
-##' @name download.Ameriflux
-##' @title download.Ameriflux
-##' @export
-##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-##' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose should the function be very verbose
-##' @param ... further arguments, currently ignored
-##' 
-##' @author Josh Mantooth, Rob Kooper, Ankur Desai
+#' Download Ameriflux L2 netCDF files
+#'
+#' @export
+#' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix.
+#' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose should the function be very verbose
+#' @param ... further arguments, currently ignored
+#'
+#' @author Josh Mantooth, Rob Kooper, Ankur Desai
 download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...) {
   # get start/end year code works on whole years only

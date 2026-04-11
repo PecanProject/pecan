@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{solarMJ2ppfd}
 \alias{solarMJ2ppfd}
-\title{MJ to PPFD}
+\title{Solar Radiation to PPFD}
 \usage{
 solarMJ2ppfd(solarMJ)
 }
@@ -13,9 +13,6 @@ solarMJ2ppfd(solarMJ)
 PPFD umol /m2 / s
 }
 \description{
-Solar Radiation to PPFD
-}
-\details{
 There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR).
 Note: 1 Watt = 1J/s
 The above conversion is based on the following reasoning
@@ -23,6 +20,8 @@ The above conversion is based on the following reasoning
 2.07 is a coefficient which converts from MJ to mol photons (it is approximate and it is taken from ...
 Campbell and Norman (1998). Introduction to Environmental Biophysics. pg 151 'the energy content of solar radiation in the PAR waveband is 2.35 x 10^5 J/mol'
 See also the chapter radiation basics (10)
+}
+\details{
 Here the input is the total solar radiation so to obtain in the PAR spectrum need to multiply by 0.486
 This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 This means that 1e6 / (2.35e6) * 0.486 = 2.07

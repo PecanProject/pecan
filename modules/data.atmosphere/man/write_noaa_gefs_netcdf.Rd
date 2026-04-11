@@ -15,8 +15,8 @@ write_noaa_gefs_netcdf(
 )
 }
 \arguments{
-\item{df}{data frame of meterological variables to be written to netcdf.  Columns
-must start with time with the following columns in the order of `cf_units`}
+\item{df}{data frame of meterological variables to be written to netcdf.
+Columns must start with time with the following columns in the order of `cf_units`}
 
 \item{ens}{ensemble index used for subsetting df}
 

@@ -1,15 +1,15 @@
-##' @title Download PalEON met ensemble files
-##'
-##' @export
-##'
-##' @param outfolder desired output folder
-##' @param start_date desired start date YYYY-MM-DD
-##' @param end_date desired end date YYYY-MM-DD
-##' @param sitename sitename
-##' @param overwrite overwrite existing files? Default is FALSE
-##' @param ... Other inputs
-##' 
-##' @author Betsy Cowdery, Mike Dietze
+#' Download PalEON met ensemble files
+#'
+#' @export
+#'
+#' @param outfolder desired output folder
+#' @param start_date desired start date YYYY-MM-DD
+#' @param end_date desired end date YYYY-MM-DD
+#' @param sitename sitename
+#' @param overwrite overwrite existing files? Default is FALSE
+#' @param ... Other inputs
+#'
+#' @author Betsy Cowdery, Mike Dietze
 download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
   
   ## parse dates

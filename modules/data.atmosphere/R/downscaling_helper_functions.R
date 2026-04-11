@@ -1,13 +1,15 @@
-#' @title Downscale spline to hourly
+#' Downscale spline to hourly
+#'
 #' @param df, dataframe of data to be downscales
 #' @param VarNames, variable names to be downscaled
 #' @param hr, hour to downscale to- default is 1
+#'
 #' @return A dataframe of downscaled state variables
+#'
 #' @importFrom rlang .data
 #' @author Laura Puckett
 #' @export
 #'
-
 downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
   # --------------------------------------
   # purpose: interpolates debiased forecasts from 6-hourly to hourly
@@ -33,20 +35,19 @@ downscale_spline_to_hrly <- function(df,VarNames, hr = 1){
   return(noaa_data_interp)
 }
 
-#' @title Downscale shortwave to hourly
-#' @return A dataframe of downscaled state variables
+#' Downscale shortwave to hourly
 #'
 #' @param df, data frame of variables
 #' @param lat, lat of site
 #' @param lon, long of site
 #' @param hr, hour to downscale to- default is 1
+#'
+#' @return A dataframe of downscaled state variables
+#'
 #' @importFrom rlang .data
-#' @return ShortWave.ds
 #' @author Laura Puckett
 #' @export
 #'
-#'
-
 downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
 
   ## downscale shortwave to hourly
@@ -94,16 +95,18 @@ downscale_ShortWave_to_hrly <- function(df,lat, lon, hr = 1){
 }
 
 
-#' @title Downscale repeat to hourly
+#' Downscale repeat to hourly
+#'
 #' @param df, dataframe of data to be downscaled (Longwave)
 #' @param varName, variable names to be downscaled
 #' @param hr, hour to downscale to- default is 1
+#'
 #' @return A dataframe of downscaled data
+#'
 #' @importFrom rlang .data
 #' @author Laura Puckett
 #' @export
 #'
-
 downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
 
   #bind variables
@@ -151,11 +154,12 @@ downscale_repeat_6hr_to_hrly <- function(df, varName, hr = 1){
 
 
 
-#' @title Calculate potential shortwave radiation
+#' Calculate potential shortwave radiation
 #'
 #' @param doy, day of year in decimal
 #' @param lon, longitude
 #' @param lat, latitude
+#'
 #' @return vector of potential shortwave radiation for each doy
 #'
 #' @author Quinn Thomas

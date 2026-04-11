@@ -2,21 +2,20 @@ substrRight <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
-##' debias.met takes input_met and debiases it based on statistics from a train_met dataset
-##' @name debias_met
-##' @title debias_met
-##' @export
-##'
-##' @param outfolder location where output is stored
-##' @param input_met - the source_met dataset that will be altered by the training dataset in NC format. 
-##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format
-##' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
-##' @param overwrite logical: replace output file if it already exists? Currently ignored.
-##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
-##' @param site_id BETY site id
-##' @param ... other inputs
-##'   functions print debugging information as they run?
-##' @author James Simkins
+#' Takes input_met and debiases it based on statistics from a train_met dataset
+#'
+#' @param outfolder location where output is stored
+#' @param input_met - the source_met dataset that will be altered by the training dataset in NC format.
+#' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format
+#' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
+#' @param overwrite logical: replace output file if it already exists? Currently ignored.
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+#'   functions print debugging information as they run?
+#' @param site_id BETY site id
+#' @param ... other inputs
+#'
+#' @author James Simkins
+#' @export
 debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "linear", 
                        overwrite = FALSE, verbose = FALSE, ...) {
   if (is.numeric(site_id) && site_id > 1e+09) {

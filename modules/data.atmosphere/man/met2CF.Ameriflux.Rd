@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.Ameriflux.R
 \name{met2CF.Ameriflux}
 \alias{met2CF.Ameriflux}
-\title{met2CF.Ameriflux}
+\title{Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format}
 \usage{
 met2CF.Ameriflux(
   in.path,

@@ -13,7 +13,7 @@ noaa_stage2(
 )
 }
 \arguments{
-\item{cycle}{Hour at which forecast was made, as character string 
+\item{cycle}{Hour at which forecast was made, as character string
 (`"00"`, `"06"`, `"12"` or `"18"`). Only `"00"` (default) has 30 days horizon.}
 
 \item{version}{GEFS forecast version. Prior versions correspond to forecasts
@@ -27,7 +27,7 @@ among other changes, and are not made available here. Leave as default.}
 \item{start_date}{forecast start date yyyy-mm-dd format}
 }
 \description{
-noaa_stage2
+code taken from https://github.com/eco4cast/neon4cast/blob/main/R/noaa_gefs.R
 }
 \author{
 Alexis Helgeson (taken from neon4cast package)
