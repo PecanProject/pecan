@@ -39,24 +39,25 @@ mergeNC <- function(
 }
 
 #--------------------------------------------------------------------------------------------------#
-##' Convert SIPNET output to netCDF
-##'
-##' Converts all output contained in a folder to netCDF.
-##'
-##' @param outdir Location of SIPNET model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @param revision model revision
-##' @param overwrite Flag for overwriting nc files or not
-##' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
-##' @param prefix prefix to read the output files
-##' @param delete.raw logical: remove sipnet.out files after converting?
-##'
-##' @export
-##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision, prefix = "sipnet.out",
+#' Convert SIPNET output to netCDF
+#'
+#' Converts all output contained in a folder to netCDF.
+#'
+#' @param outdir Location of SIPNET model output
+#' @param sitelat Latitude of the site
+#' @param sitelon Longitude of the site
+#' @param start_date Start time of the simulation
+#' @param end_date End time of the simulation
+#' @param revision model revision.
+#'  Ignored: PEcAn detects all relevant version differences from the format of the output file.
+#' @param overwrite Flag for overwriting nc files or not
+#' @param conflict Flag for dealing with conflicted nc files, if T we then will merge those, if F we will jump to the next.
+#' @param prefix prefix to read the output files
+#' @param delete.raw logical: remove sipnet.out files after converting?
+#'
+#' @export
+#' @author Shawn Serbin, Michael Dietze
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision = NULL, prefix = "sipnet.out",
                                 overwrite = FALSE, conflict = FALSE) {
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
@@ -118,7 +119,75 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   
   timestep.s <- 86400 / out_day
-  
+
+
+  ## Unit conversions
+  #
+  # CKB 20260407: Not using ud_convert here is intentional!
+  # This step is a consistent bottleneck to whole-run speed, and tests using
+  # ud_convert show a surprisingly large slowdown:
+  # In a test batch with ~500 rundirs run in parallel on a 2022-era SSD Macbook,
+  # the model stage took ~4.5x(!) longer with ud_convert than with simple scalars.
+  g_to_kg <- function(x) x / 1000
+  g_step_to_kg_sec <- function(x) x / 1000 / timestep.s
+  cm_to_mm <- function(x) x * 10
+  cm_step_to_mm_sec <- function(x) x * 10 / timestep.s
+  sipnet_output <- sipnet_output |>
+    dplyr::mutate(
+
+      # C and N pools
+      dplyr::across(
+        .cols = c(
+          # C pools are mandatory
+          dplyr::all_of(c("plantWoodC", "plantLeafC", "coarseRootC", "fineRootC", "soil", "litter")),
+          # N only present when turned on
+          dplyr::any_of(c("minN", "soilOrgN", "litterN"))
+        ),
+        .fns = g_to_kg
+      ),
+
+      # C and N fluxes
+      dplyr::across(
+        .cols = c(
+          dplyr::all_of(c("gpp", "nee", "npp", "rAboveground", "rRoot", "rtot", "rSoil")),
+          dplyr::any_of(c("woodCreation", "n2o", "nLeaching", "nFixation", "nUptake", "ch4"))
+        ),
+        .fns = g_step_to_kg_sec
+      ),
+
+      # Water pools
+      dplyr::across(
+        .cols = c(
+          dplyr::all_of(c("soilWater", "soilWetnessFrac", "snow")),
+          dplyr::any_of("litterWater") # Only present in V1 output
+        ),
+        .fns = cm_to_mm
+      ),
+
+      # Water fluxes
+      dplyr::across(
+        .cols = dplyr::all_of("evapotranspiration"),
+        .fns = cm_step_to_mm_sec
+      ),
+      # Water flux special case:
+      # Sipnet reports transpiration, and no other variables, in cm/day not cm/timestep.
+      fluxestranspiration = cm_to_mm(.data$fluxestranspiration) / 86400, # cm/day -> mm/sec
+
+      # Date and time
+      datetime = sipnet2datetime(.data$year, .data$day, .data$time)
+    )
+
+
+  # calculate LAI for standard output
+  # LAI = plantLeafC / leafCSpWt
+  # both operands are in carbon units (gC/m2 and gC/m2_leaf),
+  # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
+  param <- utils::read.table(file.path(gsub(pattern = "/out/",
+                                            replacement = "/run/", x = outdir),
+                                       "sipnet.param"), stringsAsFactors = FALSE)
+  leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
+  SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
+
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
@@ -133,18 +202,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
-    
+
     ## Subset data for processing
     sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     
-    sub_dates <- sipnet2datetime(
-      y,
-      sub.sipnet.output[["day"]],
-      sub.sipnet.output[["time"]]
-    )
-    
     sub_dates_cf <- PEcAn.utils::datetime2cf(
-      sub_dates,
+      sub.sipnet.output$datetime,
       paste0("days since ", y, "-01-01"),
       tz = "UTC"
     )
@@ -161,81 +224,71 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list(
-      "GPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp, "g/m2", "kg/m2") / timestep.s,
-      "NPP" = PEcAn.utils::ud_convert(sub.sipnet.output$gpp - (sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot), "g/m2", "kg/m2") / timestep.s,
-      "TotalResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rtot, "g/m2", "kg/m2") / timestep.s,
-      "AutoResp" = (PEcAn.utils::ud_convert(sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot, "g/m2", "kg/m2")) / timestep.s,
-      "HeteroResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rSoil - sub.sipnet.output$rRoot, "g/m2", "kg/m2") / timestep.s,
-      "SoilResp" = PEcAn.utils::ud_convert(sub.sipnet.output$rSoil, "g/m2", "kg/m2") / timestep.s,
-      "NEE" = PEcAn.utils::ud_convert(sub.sipnet.output$nee, "g/m2", "kg/m2") / timestep.s,
-      "AbvGrndWood" = PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC, "g/m2", "kg/m2"),
-      "leaf_carbon_content" = PEcAn.utils::ud_convert(sub.sipnet.output$plantLeafC, "g/m2", "kg/m2"),
-      "TotLivBiom" = (PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
-                                              sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC, "g/m2", "kg/m2")),
-      "TotSoilCarb" = PEcAn.utils::ud_convert(sub.sipnet.output$soil + sub.sipnet.output$litter, "g/m2", "kg/m2")
+      "GPP" = sub.sipnet.output$gpp,
+      "NPP" = sub.sipnet.output$npp,
+      "TotalResp" = sub.sipnet.output$rtot,
+      "AutoResp" = sub.sipnet.output$rAboveground + sub.sipnet.output$rRoot,
+      "HeteroResp" = sub.sipnet.output$rSoil - sub.sipnet.output$rRoot,
+      "SoilResp" = sub.sipnet.output$rSoil,
+      "NEE" = sub.sipnet.output$nee,
+      "AbvGrndWood" = sub.sipnet.output$plantWoodC,
+      "leaf_carbon_content" = sub.sipnet.output$plantLeafC,
+      "litter_carbon_content" = sub.sipnet.output$litter,
+      "fine_root_carbon_content" = sub.sipnet.output$fineRootC,
+      "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
+      "LAI" = sub.sipnet.output$plantLeafC * SLA,
+      "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
+                       sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
+      "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
+      "AGB" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC,
+
+      # Water variables:
+      # Liquid water units are cm in Sipnet; in PEcAn they're kg water m-2
+      #  (which is equivalent to mm: (water density = 1000 kg m-3) * (1 m/ 1000 mm) = (1 kg m-2)/mm
+      # Evapotranspiration in SIPNET is cm^3 water per cm^2 of area,
+      #   already converted above to mm sec-1.
+      #   To convert it to latent heat units W/m2 multiply by latent heat of vaporization (J kg-1)
+      # Latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
+      "Qle" = sub.sipnet.output$evapotranspiration * PEcAn.data.atmosphere::get.lv(),  # Qle W/m2/sec
+      "Transp" = sub.sipnet.output$fluxestranspiration,
+      "SoilMoist" = sub.sipnet.output$soilWater,
+      "SoilMoistFrac" = sub.sipnet.output$soilWetnessFrac,
+      "SWE" = sub.sipnet.output$snow  # Snow Water Equivalent
     )
 
-    # Water variables:
-    # Liquid water units are cm in Sipnet; in PEcAn they're kg water m-2
-    #  (which is equivalent to mm, but ud_convert doesn't know that)
-    # Evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
-    #  0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1)
-    # Latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default
-    output[["Qle"]] <- (PEcAn.utils::ud_convert(sub.sipnet.output$evapotranspiration, "cm", "mm") * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
-    # Note that Sipnet reports transpiration, and no other variables, in cm/day not cm/timestep.
-    output[["Transp"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fluxestranspiration, "cm/day", "mm/sec") # Transpiration
-    output[["SoilMoist"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$soilWater, "cm", "mm")  # Soil moisture kgW/m2
-    output[["SoilMoistFrac"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$soilWetnessFrac, "cm", "mm")  # Fractional soil wetness
-    output[["SWE"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$snow, "cm", "mm")  # Snow Water Equivalent
-    output[["litter_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litter, "g/m2", "kg/m2")
-    # litterWater was removed in SIPNET v2; only extract if present
-    if ("litterWater" %in% names(sub.sipnet.output)) {
-      output[["litter_mass_content_of_water"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$litterWater, "cm", "mm")
+    if ("litterWater" %in% names(sub.sipnet.output)) { # Removed in SIPNET v2; only extract if present
+      output[["litter_mass_content_of_water"]] <- sub.sipnet.output$litterWater
+    }
+    if ("woodCreation" %in% names(sub.sipnet.output)) { # Added in SIPNET v2; only extract if present
+      output[["GWBI"]] <- sub.sipnet.output$woodCreation
     }
 
-    #calculate LAI for standard output
-    # LAI = plantLeafC / leafCSpWt
-    # both operands are in carbon units (gC/m2 and gC/m2_leaf),
-    # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
-    param <- utils::read.table(file.path(gsub(pattern = "/out/",
-                                              replacement = "/run/", x = outdir),
-                                         "sipnet.param"), stringsAsFactors = FALSE)
-    leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
-    SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-    output[["LAI"]] <- output[["leaf_carbon_content"]] * SLA
-    output[["fine_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$fineRootC, "g/m2", "kg/m2")
-    output[["coarse_root_carbon_content"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$coarseRootC, "g/m2", "kg/m2")
-    if ("woodCreation" %in% names(sub.sipnet.output)) {
-      output[["GWBI"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$woodCreation, "g/m2/day", "kg/m2/s")
-    }
-    output[["AGB"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC, "g/m2", "kg/m2")
     # columns only present in sipnet >= v2 with N and methane turned on
     if ("minN" %in% names(sub.sipnet.output)) {
-      output[["mineral_N"]] <- sub.sipnet.output$minN * 0.001  # gN/m2 -> kgN/m2
+      output[["mineral_N"]] <- sub.sipnet.output$minN
     }
     if ("soilOrgN" %in% names(sub.sipnet.output)) {
-      output[["soil_organic_N"]] <- sub.sipnet.output$soilOrgN * 0.001  # kgN/m2
+      output[["soil_organic_N"]] <- sub.sipnet.output$soilOrgN
     }
     if ("litterN" %in% names(sub.sipnet.output)) {
-      output[["litter_N"]] <- sub.sipnet.output$litterN * 0.001  # kgN/m2
+      output[["litter_N"]] <- sub.sipnet.output$litterN
     }
     if ("n2o" %in% names(sub.sipnet.output)) {
-      output[["N2O_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$n2o, "g/m2", "kg/m2") / timestep.s
-      # convert g N m-2 per timestep -> kg N m-2 s-1
+      output[["N2O_flux"]] <- sub.sipnet.output$n2o
     }
     if ("nLeaching" %in% names(sub.sipnet.output)) {
-      output[["N_leaching"]] <- (sub.sipnet.output$nLeaching * 0.001) / timestep.s  # kgN/m2/s
+      output[["N_leaching"]] <- sub.sipnet.output$nLeaching
     }
     if ("nFixation" %in% names(sub.sipnet.output)) {
-      output[["N_fixation"]] <- (sub.sipnet.output$nFixation * 0.001) / timestep.s  # kgN/m2/s
+      output[["N_fixation"]] <- sub.sipnet.output$nFixation
     }
     if ("nUptake" %in% names(sub.sipnet.output)) {
-      output[["N_uptake"]] <- (sub.sipnet.output$nUptake * 0.001) / timestep.s  # kgN/m2/s
+      output[["N_uptake"]] <- sub.sipnet.output$nUptake
     }
     if ("ch4" %in% names(sub.sipnet.output)) {
-      output[["CH4_flux"]] <- PEcAn.utils::ud_convert(sub.sipnet.output$ch4, "g/m2", "kg/m2") / timestep.s
-      # convert g C m-2 per timestep -> kg C m-2 s-1
+      output[["CH4_flux"]] <- sub.sipnet.output$ch4
     }
+
     output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
@@ -376,10 +429,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 sipnet2datetime <- function(year, doy, hour){
   
   hr <- floor(hour)
-  minsec <- PEcAn.utils::ud_convert(hour - hr, "hour", "min") 
+  # minsec <- PEcAn.utils::ud_convert(hour - hr, "hour", "min")
+  minsec <- (hour - hr) * 60
   minute <- floor(minsec)
   
-  sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
+  # sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
+  sec <- (minsec - minute) * 60
   
   minute <- ifelse(sec == 60, minute + 1, minute)
   sec <- ifelse(sec == 60, 0, sec)

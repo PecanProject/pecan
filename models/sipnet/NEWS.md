@@ -1,5 +1,9 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Fixed a unit error in model2netcdf.SIPNET's calculation of `AGBI` (kgC/m2/sec)
+    from `woodCreation` (actually gC/m2/timestep, was being treated as gC/m2/day).
+* `model2netcdf.SIPNET` now takes NPP directly from sipnet.out rather than repeat
+    Sipnet's internal calculation (as GPP - Ra) with identical results.
 * Updated README with a more complete model description and instructions for installing SIPNET (#3705)
 * Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.
 * Initial support for SIPNET v2.0, whose features include simplified input files,

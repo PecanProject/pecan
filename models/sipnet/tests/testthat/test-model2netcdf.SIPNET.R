@@ -44,7 +44,7 @@ make_base_sipnet <- function(n = 4L) {
     year = 2002,
     day = rep(c(1, 2), each = n / 2, length.out = n),
     time = rep(c(6, 18), length.out = n),
-    plantWoodC = 5000, plantLeafC = 200, woodCreation = 0.5,
+    plantWoodC = 5000, plantLeafC = 200,
     soil = 10000, microbeC = 8, coarseRootC = 1200, fineRootC = 800,
     litter = 400, soilWater = 14, soilWetnessFrac = 0.85, snow = 0,
     npp = 0.05, nee = 0.10, cumNEE = cumsum(rep(0.1, n)),
@@ -226,6 +226,17 @@ test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
 
   expect_equal(pec$GPP, sip$gpp / 1000 / ts)
   expect_equal(pec$Transp, sip$fluxestranspiration * 10 / ts, tolerance = 1e-6)
+
+  sip2 <- make_v2_sipnet()
+  out2 <- out_dir <- setup_sipnet_test(sip2)$outdir
+  pec2 <- PEcAn.utils::read.output(
+    ncfiles = file.path(out2, "2002.nc"),
+    variables = c("GPP", "GWBI", "Transp"),
+    dataframe = TRUE,
+    verbose = FALSE,
+    print_summary = FALSE
+  )
+  expect_equal(pec2$GWBI, sip2$woodCreation / 1000 / ts, tolerance = 1e-6)
 })
 
 
