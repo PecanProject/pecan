@@ -41,6 +41,7 @@ General guidance:
 | [CMIP5](#cmip5) | Global | 3 hr | 2006–2100 |
 | [PalEON](#paleon) | Regional | 6 hr, 0.5° | 850–2010 |
 | [Geostreams](#geostreams) | Site | Varies | Varies |
+| [Cal-Adapt WRF](#caladaptwrf) | Regional (Western US) | 1 hr, 45/9/3 km | 1980--2100 |
 
 
 ## Ameriflux
@@ -175,3 +176,23 @@ Resolution: 30 min
 Availability: Varies by [site](https://meta.icos-cp.eu/collections/q4V7P1VLZevIrnlsW6SJO1Rz)
 
 Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `etc` in `pecan.xml`
+
+## Cal-Adapt WRF {#caladaptwrf}
+
+Scale: Regional (Western US)
+
+Resolution: 1 hr, 45 km (d01), 9 km (d02), 3 km (d03)
+
+Availability: 1980--2100
+
+Notes: CMIP6 dynamically downscaled projections from the Cal-Adapt Analytics Engine (WUS-D3 dataset, Rahimi et al. 2024). Eight GCMs available under SSP3-7.0; CESM2 also has SSP2-4.5 and SSP5-8.5. Data is publicly available on AWS S3 (no authentication required). Requires the `caladaptR` package from GitHub. To use this option, set `source` as `CalAdaptWRF` and specify `model` and `scenario` in the `met` section of `pecan.xml`:
+
+```xml
+<met>
+  <source>CalAdaptWRF</source>
+  <model>CESM2</model>
+  <scenario>ssp370</scenario>
+</met>
+```
+
+Available GCMs: CESM2, CNRM-ESM2-1, EC-Earth3, EC-Earth3-Veg, FGOALS-g3, MPI-ESM1-2-HR, MIROC6, TaiESM1. See `caladaptR::ca_models(activity = "WRF")` for the current list.
