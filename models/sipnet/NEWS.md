@@ -1,13 +1,13 @@
 # PEcAn.SIPNET 1.10.0.9000
 
-* Fixed a unit error in model2netcdf.SIPNET's calculation of `AGBI` (kgC/m2/sec)
+* Fixed a unit error in model2netcdf.SIPNET's calculation of `GWBI` (kgC/m2/sec)
     from `woodCreation` (actually gC/m2/timestep, was being treated as gC/m2/day).
 * `model2netcdf.SIPNET` now takes NPP directly from sipnet.out rather than repeat
     Sipnet's internal calculation (as GPP - Ra) with identical results.
 * Updated README with a more complete model description and instructions for installing SIPNET (#3705)
 * Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.
 * Initial support for SIPNET v2.0, whose features include simplified input files,
-    simulation of management events, tracking of N cycle components, and anaerobic CH4 generation.
+    simulation of management events, tracking of N cycle components, flooded soils, and anaerobic CH4 generation.
 * Breaking: `met2model.SIPNET` now writes 12-column clim files (as expected by Sipnet >= v2.0) by default.
 	To get the previously standard 14-column output, set `clim_format_version = "v1"`.
 * NITROGEN_CYCLE, LITTER_POOL, and ANAEROBIC enabled by default for SIPNET v2 runs.
