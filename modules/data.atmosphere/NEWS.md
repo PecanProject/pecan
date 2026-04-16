@@ -1,6 +1,8 @@
 # PEcAn.data.atmosphere 1.9.1
 
 ## Added
+* New function `download.CalAdaptWRF()` fetches hourly WRF dynamically downscaled CMIP6 data from the Cal-Adapt Analytics Engine (CADCAT S3 bucket) via the `caladaptR` package. Supports 8 GCMs under SSP3-7.0 at 45 km resolution, with session-level grid caching to cut S3 round trips when processing multiple sites.
+* Added `caladapt_wrf` column to `pecan_standard_met_table` for Cal-Adapt WRF variable mapping.
 * New function `sat_vapor_pressure()` computes saturation vapor pressure from temperature (#3597).
 * New function `AmeriFlux_met_ensemble()` generates weather ensembles from Ameriflux data with ERA5 fallback for missing radiation and soil moisture (#3586).
 * `ERA5_met_process()` gains option `n_cores` to process ensemble data efficiently in parallel (#3563).
