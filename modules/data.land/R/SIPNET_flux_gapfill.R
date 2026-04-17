@@ -313,7 +313,7 @@ fit_site_xgb_cv <- function(subdf,
 #' @author Yang Gu
 #' @importFrom foreach %dopar%
 #' @export
-xgb_gapfill <- function(site.dir,
+xgb_flux_gapfill <- function(site.dir,
                         pred.var.dir,
                         flux_var,
                         outdir,
