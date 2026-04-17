@@ -5,6 +5,7 @@
 sensitivity analysis. This function ensures non-parameter inputs
 (met, IC, soil) are held constant, which is required for valid 
 variance decomposition in one-at-a-time (OAT) sensitivity analysis (#3729)
+* `get.parameter.samples()` now consistently accepts PFTs with no `outdir` specified. These previously failed when no database connection was available.
 
 
 

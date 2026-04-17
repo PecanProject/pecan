@@ -71,7 +71,7 @@ get.parameter.samples <- function(settings,
     ### Get output directory info
     if (!is.null(pfts[[i.pft]]$outdir)) {
       outdirs[i.pft] <- pfts[[i.pft]]$outdir
-    } else {
+    } else if (!is.null(con)) {
       outdirs[i.pft] <- unique(
         PEcAn.DB::dbfile.check(
           type = "Posterior",
@@ -79,7 +79,8 @@ get.parameter.samples <- function(settings,
           con = con
         )$file_path
       )
-    }
+    } # else do nothing: outdirs[i.pft] stays NULL and load.posteriors will handle it
+
   } ### End of for loop to extract pft names
 
   PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)

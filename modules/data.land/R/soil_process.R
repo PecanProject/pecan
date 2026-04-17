@@ -62,10 +62,10 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE, run.local 
 
     if (length(newfile) == 0) {
       # No files exist yet — extract from gSSURGO
-      radius <- ifelse(is.null(settings$run$input$soil$radius), 100,
-                       as.numeric(settings$run$input$soil$radius))
-      grid_size <- max(3, ifelse(is.null(settings$run$input$soil$grid_size), 3,
-                                 as.numeric(settings$run$input$soil$grid_size)))
+      radius <- ifelse(is.null(settings$run$inputs$soil$radius), 100,
+                       as.numeric(settings$run$inputs$soil$radius))
+      grid_size <- max(3, ifelse(is.null(settings$run$inputs$soil$grid_size), 3,
+                                 as.numeric(settings$run$inputs$soil$grid_size)))
 
       grid_extent  <- radius * sqrt(pi)
       grid_spacing <- grid_extent / (grid_size - 1)
