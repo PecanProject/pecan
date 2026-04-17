@@ -18,7 +18,7 @@ gp_mle(theta, d, nugget, myY, maxval = Inf)
 \item{maxval}{maximum value}
 }
 \value{
-val
+negative log-likelihood value, or \code{maxval} if the computation fails
 }
 \description{
 gp_mle

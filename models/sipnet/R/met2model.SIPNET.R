@@ -1,11 +1,9 @@
 #' met2model wrapper for SIPNET
 #'
 #' Reads weather data from CF-formatted NetCDFs and writes it in the `.clim`
-#' format expected by SIPNET: a 14-column tab-separated table with no headers.
+#' format expected by SIPNET: a 12-column tab-separated table with no headers.
 #'
 #' The columns of the output file are:
-#'    * Grid index. Always 0 from this function; PEcAn configures SIPNET not to
-#'      use this.
 #'    * 4-digit year
 #'    * Day of year
 #'    * Hour of day
@@ -18,9 +16,19 @@
 #'    * VPD of soil (Pa)
 #'    * Canopy vapor pressure (Pa)
 #'    * Wind speed (m/s)
-#'    * Soil moisture (fraction of saturation).
-#'      Always  0.6 from this function; PEcAn configures SIPNET to calculate it
-#'      internally.
+#'
+#' When clim_format_version is "v1", the table has 14 columns:
+#'
+#'  * column 1 is a spatial grid index, always set to 0
+#'  * columns 2-13 are the 12 described above
+#'  * column 14 is soil wetness as a fraction of saturation, always set to 0.6
+#'
+#' These were needed by older versions of Sipnet, but never had any effect on
+#'  PEcAn runs: PEcAn never used gridded runs and always configured Sipnet to
+#'  calculate soil moisture internally.
+#' Model support for both the spatial index and soil moisture columns was removed from Sipnet >= v2.0.
+#' Newer versions now accept 14-column files, but ignore the first
+#'  and last columns with a warning.
 #'
 #' SIPNET does not allow missing values in its inputs. If the result contains
 #' NAs after conversion, no file is written and the process returns an error.
@@ -38,16 +46,32 @@
 #'  (will only use the year part of the date)
 #' @param end_date the end date of the data to be downloaded
 #'  (will only use the year part of the date)
-#' @param var.names character: list of variable names to be extracted. Default is NULL.
+#' @param var.names character: list of variable names to be extracted.
+#'  Default NULL uses all variables from input file
 #' @param overwrite should existing files be overwritten
 #' @param verbose should the function be very verbose
 #' @param year.fragment the function should ignore whether or not the data is
 #'  stored as a set of complete years (such as for forecasts).
+#' @param clim_format_version SIPNET clim file format to generate.
+#'  Default "v2" writes 12 columns, "v1" writes the legacy 14-column format.
 #' @param ... Additional arguments, currently ignored
 #' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
-met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date, var.names = NULL,
-                             overwrite = FALSE, verbose = FALSE, year.fragment = FALSE, ...) {
- 
+met2model.SIPNET <- function(in.path,
+                             in.prefix,
+                             outfolder,
+                             start_date,
+                             end_date,
+                             var.names = NULL,
+                             overwrite = FALSE,
+                             verbose = FALSE,
+                             year.fragment = FALSE,
+                             clim_format_version = c("v2", "v1"),
+                             ...) {
+
+  use_legacy_format <- isTRUE(match.arg(clim_format_version) == "v1")
+
+  seconds_per_day <- PEcAn.utils::ud_convert(1, "day", "s")
+
   if (verbose) {
     PEcAn.logger::logger.info("START met2model.SIPNET")
   }
@@ -157,8 +181,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       } else {
         dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       }
-      tstep <- round(86400 / dt)
-      dt <- 86400 / tstep
+      tstep <- round(seconds_per_day / dt)
+      dt <- seconds_per_day / tstep
       
       ## extract variables
       lat <- ncdf4::ncvar_get(nc, "latitude")
@@ -235,14 +259,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
     
     ## build time variables (year, month, day of year)
-    nyr <- floor(length(sec) / 86400 / 365 * dt)
+    nyr <- floor(length(sec) / seconds_per_day / 365 * dt)
     yr <- NULL
     doy <- NULL
     hr <- NULL
     asec <- sec
     for (y in year + 1:nyr - 1) {
-      ytmp <- rep(y, diy * 86400 / dt)
-      dtmp <- rep(seq_len(diy), each = 86400 / dt)
+      ytmp <- rep(y, diy * seconds_per_day / dt)
+      dtmp <- rep(seq_len(diy), each = seconds_per_day / dt)
       if (is.null(yr)) {
         yr <- ytmp
         doy <- dtmp
@@ -259,7 +283,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng] <- (asec[rng] - (dtmp - 1) * 86400) / 86400 * 24
+      hr[rng] <- (asec[rng] - (dtmp - 1) * seconds_per_day) / seconds_per_day * 24
     }
     if (length(yr) < length(sec)) {
       rng <- (length(yr) + 1):length(sec)
@@ -269,36 +293,40 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         break
       }
       yr[rng] <- rep(y + 1, length(rng))
-      doy[rng] <- rep(1:366, each = 86400 / dt)[1:length(rng)]
-      hr[rng] <- rep(seq(0, length = 86400 / dt, by = dt/86400 * 24), 366)[1:length(rng)]
+      doy[rng] <- rep(1:366, each = seconds_per_day / dt)[1:length(rng)]
+      hr[rng] <- rep(seq(0, length = seconds_per_day / dt, by = dt/seconds_per_day * 24), 366)[1:length(rng)]
     }
     if (skip) {
       PEcAn.logger::logger.info("Skipping to next year")
       next
     }
-    
-    ## 0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM build data
+
+    ## [loc] YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND [SoilM]
+    # loc and SoilM were previously required by Sipnet but never used by PEcAn,
+    # now accepted but ignored with a warning by Sipnet >= v2.0
     ## matrix
     n <- length(Tair)
-    tmp <- cbind(rep(0, n),
-                 yr[1:n],
-                 doy[1:n],
-                 hr[1:n],
-                 rep(dt / 86400, n),
-                 Tair_C,
-                 soilT,
-                 PAR * dt,  # mol/m2/hr
-                 Rain * dt, # converts from mm/s to mm
-                 VPD,
-                 VPDsoil,
-                 e_a,
-                 ws, # wind
-                 rep(0.6, n)) # put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
-    
+    tmp <- cbind(
+      if (use_legacy_format) rep(0, n),
+      yr[1:n],
+      doy[1:n],
+      hr[1:n],
+      rep(dt / seconds_per_day, n),
+      Tair_C,
+      soilT,
+      PAR * dt,  # mol/m2/hr
+      Rain * dt, # converts from mm/s to mm
+      VPD,
+      VPDsoil,
+      e_a,
+      ws, # wind
+      if (use_legacy_format) rep(0.6, n) # put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
+    )
+
     ## quick error check, sometimes get a NA in the last hr
     hr.na <- which(is.na(tmp[, 4]))
     if (length(hr.na) > 0) {
-      tmp[hr.na, 4] <- tmp[hr.na - 1, 4] + dt/86400 * 24
+      tmp[hr.na, 4] <- tmp[hr.na - 1, 4] + dt/seconds_per_day * 24
     }
     
     ## filter out days not included in start or end date if not a year fragment. (This procedure would be nonsensible for a year
@@ -307,7 +335,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
       if (extra.days > 1){
         PEcAn.logger::logger.info("Subsetting SIPNET met to match start date")
-        start.row <-  ((extra.days - 1) * 86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+        start.row <-  ((extra.days - 1) * seconds_per_day / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
         tmp <- tmp[start.row:nrow(tmp),]
       }
     }
@@ -316,14 +344,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         extra.days  <- length(as.Date(start_date):as.Date(end_date))
         if (extra.days > 1){
           PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
-          end.row <-  extra.days * 86400 / dt  #subtract to include end.date
+          end.row <-  extra.days * seconds_per_day / dt  #subtract to include end.date
           tmp <- tmp[1:end.row,]
         }
       } else{
         extra.days <- length(as.Date(end_date):as.Date(paste0(end_year, "-12-31"))) #extra days length includes the end date
         if (extra.days > 1){
           PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
-          end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+          end.row <-  nrow(tmp) - ((extra.days - 1) * seconds_per_day / dt)  #subtract to include end.date
           tmp <- tmp[1:end.row,]
         }
       }
@@ -334,16 +362,16 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     doy.start.index <- which(doy == lubridate::yday(start_date))  #which part of full doy set matches the start and end date
     doy.end.index <- which(doy == lubridate::yday(end_date))
     #need to use the start and end time to figure out how many time steps to include in the doy subset 
-    doy.start <- doy.start.index[ifelse(lubridate::hour(start_date) == 0, 1, lubridate::hour(start_date) / (24 / (86400 / dt)))] 
-    doy.end <- doy.end.index[ifelse(lubridate::hour(end_date) == 0, 1, lubridate::hour(end_date) / (24 / (86400 / dt)))]
+    doy.start <- doy.start.index[ifelse(lubridate::hour(start_date) == 0, 1, lubridate::hour(start_date) / (24 / (seconds_per_day / dt)))] 
+    doy.end <- doy.end.index[ifelse(lubridate::hour(end_date) == 0, 1, lubridate::hour(end_date) / (24 / (seconds_per_day / dt)))]
     #check to see if doy matches with downloaded data dims, if not last time is removed
     if(length(doy) != n){d<-doy[doy.start:(doy.end - 1)] }else{d<-(doy[doy.start:(doy.end)])  }
     
     if(year.fragment){ #gets correct DOY for fragmented years using start date, time since start date and end date
       doy.seq <- as.Date(seq(from = start_date + sec[1], to = end_date, length.out = length(sec)))
       doy <- as.numeric(strftime(doy.seq, format = "%j")) #starts with 1 on 1-01
-      #doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
-      #doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (86400 / dt)
+      #doy.start <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) * (seconds_per_day / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+      #doy.end <-  length(as.Date(paste0(start_year, "-01-01")):as.Date(end_date)) * (seconds_per_day / dt)
       #doy <- doy[doy.start:doy.end]
       year <- as.numeric(strftime(doy.seq, format = "%Y"))
       tmp[,3] <- doy
@@ -359,8 +387,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   if (!is.null(out)) {
 
     # Sipnet does not know how to handle missing values in clim files.
-    # -- No, say it louder: Missing values send Sipnet into _infinite loops_.
-    # Let's not do that, hmm?
     if (anyNA(out)) {
       n_bad <- nrow(out) - nrow(stats::na.omit(out))
       PEcAn.logger::logger.error(

@@ -5,8 +5,12 @@
 ##' @author Michael Dietze
 ##' @export 
 InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
-  
-  out      <- as.matrix(jags.out)
+  if (!requireNamespace("PEcAn.visualization", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'PEcAn.visualization' is required for diagnostic plots but is not installed.",
+      "Please install it via the PEcAn project: https://github.com/PecanProject/pecan")
+  }
+  out <- as.matrix(jags.out)
   x.cols   <- which(substr(colnames(out), 1, 1) == "x")
   if(length(x.cols) > 0){
     ci       <- apply(out[, x.cols], 2, stats::quantile, c(0.025, 0.5, 0.975))
@@ -73,21 +77,6 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
     vars <- c(vars,which(colnames(out)=="deviance"))
   }
   
-  
-  ## rebuild coda for just vars
-  var.out <- coda::as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
-  
-  ## convergence
-  coda::gelman.diag(var.out)
-  
-  #### Diagnostic plots
-  plot(var.out)
-  
-  if("deviance" %in% colnames(out)){
-    graphics::hist(out[,"deviance"])
-    vars <- c(vars,which(colnames(out)=="deviance"))
-  }
-  
   ## rebuild coda for just vars
   var.out <- coda::as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
   
@@ -109,19 +98,6 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
   
   ### alpha
   graphics::par(mfrow = c(1, 1))
-  alpha.cols <- grep("alpha", colnames(out))
-  if (length(alpha.cols) > 0) {
-    alpha.ord <- 1:length(alpha.cols)
-    ci.alpha <- apply(out[, alpha.cols], 2, stats::quantile, c(0.025, 0.5, 0.975))
-    plot(alpha.ord, ci.alpha[2, ], type = "n", 
-         ylim = range(ci.alpha, na.rm = TRUE), ylab = "Random Effects")
-    PEcAn.visualization::ciEnvelope(alpha.ord, ci.alpha[1, ], ci.alpha[3, ], col = "lightBlue")
-    graphics::lines(alpha.ord, ci.alpha[2, ], lty = 1, lwd = 2)
-    graphics::abline(h = 0, lty = 2)
-  }
-  
-  graphics::par(mfrow = c(1, 1))
-  ### alpha
   alpha.cols <- grep("alpha", colnames(out))
   if (length(alpha.cols) > 0) {
     alpha.ord <- 1:length(alpha.cols)

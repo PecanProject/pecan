@@ -1,7 +1,7 @@
 Package: PEcAn.PRELES
 Type: Package
 Title: PEcAn Package for Integration of the PRELES Model
-Version: 1.7.4
+Version: 1.7.5
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Tony", "Gardella", role = c("aut", "cre"),
@@ -32,3 +32,4 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
 RoxygenNote: 7.3.2
+X-schema.org-keywords: PRELES, ecosystem-modeling

@@ -12,7 +12,7 @@ This set of instructions will help facilitate your path and the steps necessary 
 ## Docker {#install-docker}
 
 This is a short documentation on how to start with Docker and PEcAn.
-This will not go into much detail about about how to use Docker -- for more details, see the main [Docker topical page](#docker-intro).
+This will not go into much detail about about how to use Docker -- for more details, see the main [Docker topical page](docker-intro.html).
 
 1. **Install Docker**. Follow the instructions for your operating system at https://www.docker.com/community-edition#/download.
     Once Docker is installed, make sure it is running.
@@ -119,7 +119,7 @@ This will not go into much detail about about how to use Docker -- for more deta
     - Monitor, service that monitors models and shows all models that are online as well as how many instances are online and the number of jobs waiting. The output is in JSON -- http://pecan.localhost/monitor/
 
 To shut down the docker images run `docker-compose stop`.
-For troubleshooting and advanced configuration, see our [Docker topical pages](#docker-index).
+For troubleshooting and advanced configuration, see our [Docker topical pages](developer-workflows/docker-index.html).
 
 ## Installation From r-universe {#r-universe}
 

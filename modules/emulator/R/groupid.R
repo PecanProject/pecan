@@ -1,5 +1,4 @@
-##' @name groupid
-##' @title groupid
+##' groupid
 ##' @export
 ##' 
 ##' @param x matrix of parameter values

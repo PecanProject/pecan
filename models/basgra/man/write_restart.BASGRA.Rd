@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_restart.BASGRA.R
 \name{write_restart.BASGRA}
 \alias{write_restart.BASGRA}
-\title{write_restart.SIPNET}
+\title{write_restart.BASGRA}
 \usage{
 write_restart.BASGRA(
   outdir,

@@ -22,7 +22,7 @@ gdal_conversion(
 
 \item{tile_id}{character/numeric: id for differentiate different converted image tiles.}
 
-\item{just_band_name}{boolean: if we just want the band names of the image file. Default is TRUE.}
+\item{just_band_name}{logical: if we just want the band names of the image file. Default is TRUE.}
 
 \item{target_format}{character: target image format. Default is .tif.}
 }
@@ -45,13 +45,13 @@ band_names <-
   gdal_conversion(in_path = in_path, 
     outfolder = outfolder, 
     band_name = NULL, 
-    just_band_name = T)
+    just_band_name = TRUE)
 # try convert the first band of the available band names to GeoTIFF file.
 f <- 
   gdal_conversion(in_path = in_path, 
     outfolder = outfolder, 
     band_name = band_names[1], 
-    just_band_name = F, 
+    just_band_name = FALSE, 
     target_format = ".tif")
 }
 }

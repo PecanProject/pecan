@@ -2,23 +2,28 @@
 % Please edit documentation in R/predict.GP.R
 \name{predict.GP}
 \alias{predict.GP}
-\title{predict.GP}
+\title{Predict method for Gaussian Process objects}
 \usage{
-\method{predict}{GP}(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL)
+\method{predict}{GP}(object, xpred, cI = NULL, pI = NULL, splinefcns = NULL, ...)
 }
 \arguments{
-\item{gp}{Gaussian Process}
+\item{object}{a Gaussian Process object (class \code{GP}) as returned by \code{\link{GaussProcess}}}
 
 \item{xpred}{value of x where prediction should be made}
 
-\item{cI}{credible interval}
+\item{cI}{credible interval quantiles, or \code{NULL} to skip}
 
-\item{pI}{prediction interval}
+\item{pI}{prediction interval quantiles, or \code{NULL} to skip}
 
-\item{splinefcns}{spline functions}
+\item{splinefcns}{optional list of spline functions for trend-surface adjustment}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+Kriged predictions or a list of credible/prediction interval quantiles.
 }
 \description{
-predict.GP
+Performs kriging prediction from a fitted Gaussian Process model.
 }
 \author{
 Michael Dietze

@@ -19,9 +19,6 @@ build.block.xy(settings, block.list.all, X, obs.mean, obs.cov, t)
 
 \item{t}{time point.}
 }
-\value{
-It returns the `build.block.xy` object with data and constants filled in.
-}
 \description{
 This function split long vector and covariance matrix into blocks corresponding to the localization.
 }

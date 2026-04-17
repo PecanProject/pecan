@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pecan>
+ <pfts>
+  <pft>
+   <name>temperate.coniferous</name>
+   <outdir>pft/temperate.coniferous</outdir>
+  </pft>
+ </pfts> 
+ <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>
+      <on>FALSE</on>
+      <use_ghs>TRUE</use_ghs>
+    </random.effects><threshold>1.2</threshold>
+  </meta.analysis>
+</pecan>

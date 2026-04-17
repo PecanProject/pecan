@@ -4,7 +4,8 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				ldndc lpjguess maat maespa sibcasa sipnet stics template
+				ldndc lpjguess maat maespa peprmt rothc sibcasa sipnet stics \
+				template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.land data.remote \
@@ -15,7 +16,7 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 # (Most need more development first)
 # If you need one of these on your system, add it to the appropriate line above.
 # MODELS: cable preles
-# MODULES: data.mining DART
+# MODULES: data.mining
 
 SHINY := $(dir $(wildcard shiny/*/.))
 SHINY := $(SHINY:%/=%)
@@ -50,7 +51,7 @@ SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
-EXPECTED_ROXYGEN_VERSION := 7.3.2
+EXPECTED_ROXYGEN_VERSION := 7.3.3
 INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
 	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
 	-e   "cat(as.character(packageVersion('roxygen2')))" \
@@ -105,7 +106,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document clean shiny pkgdocs \
+.PHONY: all install check test document clean clean-src shiny pkgdocs \
             check_base check_models check_modules help
 
 all: install document
@@ -139,6 +140,12 @@ clean:
 		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
 	done
 
+clean-src:
+	@echo "Removing compiled source artifacts..."
+	for p in $(SRCS_TO_CLEAN); do \
+		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
+	done
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -148,7 +155,7 @@ help:
 	@echo "  make .doc/modules/assim.sequential  # Generate documentation for a specific package"
 	@echo ""
 	@echo "Notes:"
-	@echo "  - Components not included by default: cable and preles (models), data.mining and DART (modules)."
+	@echo "  - Components not included by default: cable and preles (models), data.mining (modules)."
 	@echo "      To install any of these, see comments in the Makefile and be aware they may need code updates."
 	@echo "  - Standard workflow: install packages, run checks, test, and document before submitting a PR."
 	@echo "  - Before submitting a PR, please ensure that all tests pass, code is linted, and documentation is up-to-date."
@@ -166,6 +173,7 @@ help:
 	@echo "  book           Render the PEcAn bookdown documentation"
 	@echo "  pkgdocs        Build package documentation websites using pkgdown"
 	@echo "  clean          Remove build artifacts"
+	@echo "  clean-src      Remove compiled source artifacts (.o, .so, .mod) without full rebuild"
 	@echo "  help           Show this help message"
 
 ### Dependencies

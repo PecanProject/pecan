@@ -4,10 +4,18 @@
 \alias{input.ens.gen}
 \title{Function for generating samples based on sampling method, parent or etc}
 \usage{
-input.ens.gen(settings, input, method = "sampling", parent_ids = NULL)
+input.ens.gen(
+  settings,
+  ensemble_size,
+  input,
+  method = "sampling",
+  parent_ids = NULL
+)
 }
 \arguments{
 \item{settings}{list of PEcAn settings}
+
+\item{ensemble_size}{size of ensemble}
 
 \item{input}{name of input to sample, e.g. "met", "veg", "pss"}
 
@@ -26,6 +34,14 @@ If for example met was a parent and it's sampling method resulted in choosing th
 parent_ids to this function.
 }
 \examples{
-\dontrun{input.ens.gen(settings,"met","sampling")}
+\dontrun{
+  settings <- PEcAn.settings::read.settings("pecan.xml")
+  input.ens.gen(
+    settings,
+    ensemble_size = 50,
+    input = "met",
+    method = "sampling"
+  )
+}
 
 }

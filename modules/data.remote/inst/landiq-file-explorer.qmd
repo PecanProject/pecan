@@ -1,0 +1,246 @@
+---
+title: "LandIQ File Explorer"
+format: html
+editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+## Context and Purpose
+
+This script supports a broader workflow to estimate crop phenology using HLS data. While the \`hlsp-scene-explorer.qmd\` script focuses on loading HLS tiles and extracting phenology metrics (e.g. EVImax, OGI, OGMn), this script analyzes the LandIQ cropland dataset to:
+
+\- Understand crop types, cropping intensity (single, double, etc.), and seasonal timing.
+
+\- Clarify the use of adjusted day-of-year (ADOY) and seasonal labels.
+
+\- Build a 2018-only \*\*mastersheet\*\* for integration with phenology metrics.
+
+## 1. Setup
+
+```{r}
+librarian::shelf(dplyr, tidyr, readr, stringr, ggplot2, terra, sf, DT, knitr)
+landiq_dir <- "/projectnb/dietzelab/ccmmf/LandIQ_data"
+```
+
+## 2. Load Data
+
+### 2.1 Load Long-Format Crop Metadata (2018 only)
+
+```{r}
+load(file.path(landiq_dir, "crops_all_years.RData"))  # provides `crops_all`
+crops_2018 <- crops_all %>% filter(year == 2018)
+```
+
+### 2.2 Load Crop Type Descriptions (PFTs)
+
+```{r}
+pft_table <- read_csv(file.path(landiq_dir, "CARB_PFTs_table.csv"))
+
+# Join with 2018 crops for description
+crops_2018_joined <- crops_2018 %>%
+  left_join(pft_table %>% select(CLASS = crop_type, SUBCLASS = crop_code, crop_desc, pft_group),
+            by = c("CLASS", "SUBCLASS"))
+```
+
+## 3. Explore Cropping Intensity and Seasonal Use
+
+```{r}
+# Define labels again for safety
+multiuse_labels <- c(
+  S = "Single Crop",
+  D = "Double Crop",
+  T = "Triple Crop",
+  Q = "Quadruple Crop",
+  I = "Intercropped",
+  M = "Mixed Use"
+)
+
+plot_data <- crops_2018_joined %>%
+  filter(MULTIUSE %in% names(multiuse_labels)) %>%
+  filter(!is.na(CLASS), PCNT > 0) %>%   # 👈 Keep only actual planted crops
+  select(season, MULTIUSE) %>%
+  ungroup() %>%
+  count(season, MULTIUSE) %>%
+  mutate(
+    MULTIUSE = factor(MULTIUSE, levels = names(multiuse_labels), labels = multiuse_labels),
+    season = factor(season, levels = 1:4)
+  )
+```
+
+### 3.1 Stacked Crop Record by Season
+
+```{r}
+ggplot(plot_data, aes(x = season, y = n, fill = MULTIUSE)) +
+  geom_col(position = "stack", color = "black") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(
+    title = "Stacked Crop Records by Season (2018)",
+    x = "Season",
+    y = "Number of Crop Records",
+    fill = "Cropping Type"
+  )
+```
+
+### 3.2 Crop Records by Season Faceted by Cropping Type
+
+```{r}
+ggplot(plot_data, aes(x = season, y = n, fill = MULTIUSE)) +
+  geom_col(color = "black") +
+  scale_fill_brewer(palette = "Set2") +
+  facet_wrap(~ MULTIUSE, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Crop Records by Season Faceted by Cropping Type (2018)",
+    x = "Season",
+    y = "Number of Crop Records"
+  )
+```
+
+### 3.3 Summary Table
+
+```{r}
+# Pivot summary table (wide format)
+summary_table <- plot_data %>%
+  arrange(season, desc(n)) %>%
+  pivot_wider(
+    names_from = season,
+    values_from = n,
+    values_fill = 0
+  ) %>%
+  rename(`Cropping Type` = MULTIUSE)
+
+# Add row totals
+summary_table_totals <- summary_table %>%
+  mutate(Total = `1` + `2` + `3` + `4`)
+
+# Add grand total row
+grand_total <- summary_table_totals %>%
+  summarise(across(where(is.numeric), sum)) %>%
+  mutate(`Cropping Type` = "Total") %>%
+  select(`Cropping Type`, everything())
+
+# Combine
+summary_table_final <- bind_rows(summary_table_totals, grand_total)
+
+# Display DT table without dropdown
+datatable(
+  summary_table_final,
+  caption = "Crop Record Counts by Season and Cropping Type (2018)",
+  options = list(
+    dom = 't',            # Only show the table (no search box etc)
+    ordering = FALSE,
+    autoWidth = TRUE
+  )
+) %>%
+  formatCurrency(columns = colnames(summary_table_final)[-1], currency = "", digits = 0)
+```
+
+## 4. ADOY for Crop Timing
+
+#### Understanding ADOY and Seasonal Mapping
+
+Below is a reference for how LandIQ's crop seasons map to ADOY (Adjusted Day of Year) within the [water year calendar]{.underline}:
+
+| **Season** | **Typical Timing** | **ADOY Range** | **Notes** |
+|----|----|----|----|
+| 1 | October–December (previous CY) | `-92 to -1` | Fall crops starting water year (e.g., Oct–Dec 2017 for 2018) |
+| 2 | January–May | `1 to ~150` | Main winter/spring growing season |
+| 3 | May–August | `~151 to ~240` | Typical summer crops |
+| 4 | August–September | `~241 to ~275+` | Late or intercropped season |
+
+```{r}
+crops_2018_joined %>%
+  filter(!is.na(ADOY), PCNT > 0) %>%
+  ggplot(aes(x = ADOY)) +
+  geom_histogram(binwidth = 10, fill = "#66c2a5", color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Adjusted DOY (Peak NDVI) for Crop Records (2018)",
+    x = "Adjusted Day of Year (ADOY)",
+    y = "Count of Crop Records"
+  )
+```
+
+## 5. Crop Types
+
+### 5.1 View Unique Values by Column Name
+
+```{r}
+get_unique_values <- function(data, multiuse_codes, column_name) {
+  data %>%
+    ungroup() %>%
+    filter(MULTIUSE %in% multiuse_codes, !is.na(.data[[column_name]]), PCNT > 0) %>%
+    distinct(.data[[column_name]]) %>%
+    arrange(.data[[column_name]]) %>%
+    pull()
+}
+```
+
+```{r}
+# All crop types (crop descriptions)
+get_unique_values(crops_2018_joined, unique(crops_2018_joined$MULTIUSE), "crop_desc")
+
+```
+
+Note all Q are present in T
+
+```{r}
+get_unique_values(crops_2018_joined, c("T", "Q"), "crop_desc")  # Triple or Quadruple
+```
+
+```{r}
+get_unique_values(crops_2018_joined, c("M", "I"), "crop_desc")  # Mixed or Intercropped
+```
+
+```{r}
+# PFTs for triple + quadruple crop fields
+get_unique_values(crops_2018_joined, unique(crops_2018_joined$MULTIUSE), "pft_group")
+```
+
+### 5.2 Table of Crops by Season
+
+Note discrepancies in rows 2, 4, 10 (examples)
+
+```{r}
+# Base cleaned data
+crop_summary <- crops_2018_joined %>%
+  filter(!is.na(crop_desc), PCNT > 0) %>%
+  distinct(crop_desc, MULTIUSE, season, pft_group)
+
+# Wide format with season indicators
+crop_summary_wide <- crop_summary %>%
+  mutate(present = 1) %>%
+  pivot_wider(
+    names_from = season,
+    values_from = present,
+    values_fill = 0,
+    names_prefix = ""
+  )
+
+# Collapse MULTIUSE and finalize
+final_crop_table <- crop_summary_wide %>%
+  group_by(crop_desc, pft_group) %>%
+  summarise(
+    MULTIUSE = paste(sort(unique(MULTIUSE)), collapse = ", "),
+    `1` = max(`1`, na.rm = TRUE),
+    `2` = max(`2`, na.rm = TRUE),
+    `3` = max(`3`, na.rm = TRUE),
+    `4` = max(`4`, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(crop_desc)
+
+DT::datatable(
+  final_crop_table,
+  caption = "All Crop Types by PFT, MULTIUSE and Seasonal Presence (2018)",
+  options = list(
+    pageLength = 10,
+    autoWidth = TRUE,
+    scrollX = TRUE
+  )
+)
+```

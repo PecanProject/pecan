@@ -6,6 +6,7 @@
 \usage{
 run.write.configs(
   settings,
+  ensemble.size,
   input_design,
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
@@ -15,7 +16,11 @@ run.write.configs(
 \arguments{
 \item{settings}{a PEcAn settings list}
 
-\item{input_design}{input indices for samples}
+\item{ensemble.size}{number of ensemble runs}
+
+\item{input_design}{Input design data.frame coordinating input files across runs.
+Contains columns for each sampled input (met, param, etc.) with row indices,
+as documented in \code{runModule.run.write.configs()}.}
 
 \item{write}{should the runs be written to the database?}
 
@@ -41,5 +46,5 @@ The default value for \code{posterior.files} is NA, in which case the
    files within this workflow, to avoid confusion.
 }
 \author{
-David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
+David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
 }

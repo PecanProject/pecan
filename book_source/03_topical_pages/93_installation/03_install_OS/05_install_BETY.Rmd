@@ -1,10 +1,23 @@
 ### Installing BETY {#install-bety}
 
-**************THIS PAGE IS DEPRECATED*************
+> ⚠️ **Deprecated BETY Installation Page**
+>
+> This page documents **legacy, non-Docker installation methods for BETYdb**.
+> These instructions are **no longer recommended for new installations** and
+> are kept **only for users who already depend on manual deployments**.
+>
+> **Recommended approach (for new users):**
+> - Use the **Docker-based BETY installation** described in the PEcAn Docker section.
+>
+> **Authoritative BETY documentation:**
+> - https://pecan.gitbook.io/betydb-documentation
+>
+> If you are installing BETY for the first time, **do not follow the instructions below**.
 
-Official Instructions for BETY are maintained here: https://pecan.gitbook.io/betydb-documentation
+## See Also
 
-If you would like to install the Docker Version of BETY, please consult the [PEcAn Docker](#pecan-docker) section.
+- PEcAn Docker-based BETY installation (recommended)
+- Official BETYdb documentation: https://pecan.gitbook.io/betydb-documentation
 
 #### Install Database + Data
 
@@ -32,15 +45,35 @@ mkdir ~/output
 chmod 777 ~/output
 ```
 
+
 #### Installing BETYdb Web Application
+
+> ⚠️ **Legacy (Deprecated)**
+>
+> This section documents **manual PHP and Ruby-based BETYdb web application installations**.
+> These workflows are deprecated and are **not recommended for new installations**.
+> New users should use the **Docker-based BETY deployment** described in the PEcAn Docker section
+> or consult the official BETY documentation:
+> https://pecan.gitbook.io/betydb-documentation
+
 
 There are two flavors of BETY, PHP and RUBY. The PHP version allows for a minimal interaction with the database while the RUBY version allows for full interaction with the database.
 
 ##### PHP version
 
+⚠️  This section describes a **deprecated manual installation path**.
+>
+> This PHP-based BETYdb web interface is part of a legacy workflow.
+> New installations should use the Docker-based BETY deployment instead.
+
 The php version comes with PEcAn and is already configured.
 
 ##### RUBY version
+
+⚠️ This section describes a **deprecated manual installation path**.
+>
+> This Ruby-based BETYdb web application setup is a legacy, manual workflow.
+> It is retained for existing deployments and is not recommended for new installations.
 
 The RUBY version requires a few extra packages to be installed first.
 

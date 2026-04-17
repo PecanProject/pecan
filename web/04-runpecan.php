@@ -479,6 +479,10 @@ if ($email != "") {
   fwrite($fh, "    <url>{$url}</url>" . PHP_EOL);
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
+fwrite($fh, "  <nc_varfile_mode>" . PHP_EOL);
+fwrite($fh, "    <!-- valid modes: 'paired', 'collected', or null -->" . PHP_EOL);
+fwrite($fh, "    paired" . PHP_EOL);
+fwrite($fh, "  </nc_varfile_mode>" . PHP_EOL);
 fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh);
 

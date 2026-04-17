@@ -2,8 +2,6 @@
 ##' 
 ##' Simple uniform sampling with LHC permutation
 ##' 
-##' @name lhc
-##' @title lhc
 ##' @export
 ##'
 ##' @param x <- list (n.dim x 2)

@@ -32,9 +32,13 @@ pain for storing strings. Conversion back can be done by
  and then soil.name[soil_n]
 }
 \examples{
-\dontrun{ soil.data <- list(fraction_of_sand_in_soil = c
- (0.3,0.4,0.5), fraction_of_clay_in_soil = c(0.3,0.3,0.3), soil_depth = c
- (0.2,0.5,1.0))
-                        
-soil2netcdf(soil.data,"soil.nc") }
+\dontrun{ 
+soil.data <- list(
+  fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+  fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+  soil_depth = c(0.2,0.5,1.0)
+)
+
+soil2netcdf(soil.data,"soil.nc")
+}
 }

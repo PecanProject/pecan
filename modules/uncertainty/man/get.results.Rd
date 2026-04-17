@@ -14,7 +14,7 @@ get.results(
 )
 }
 \arguments{
-\item{settings}{list, read from settings file (xml) using \code{\link{read.settings}}}
+\item{settings}{list, read from settings file (xml) using \code{\link[PEcAn.settings]{read.settings}}}
 
 \item{sa.ensemble.id, ens.ensemble.id}{ensemble IDs for the sensitivity
 analysis and ensemble analysis.

@@ -1,3 +1,8 @@
+# PEcAn.DALEC 1.7.5
+
+* model2netcdf.DALEC no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
+
+
 # PEcAn.DALEC 1.7.4
 
 ## License change

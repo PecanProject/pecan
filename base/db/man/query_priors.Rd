@@ -42,7 +42,7 @@ Query priors using prepared statements
 }
 \examples{
 \dontrun{
-  con <- db.open(...)
+  con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 
   # No trait provided, so return all available traits
   pdat <- query_priors(

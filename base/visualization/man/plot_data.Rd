@@ -27,7 +27,10 @@ The height of Y is arbitrary, and can be set to optimize visualization.
 If SE estimates are available, the SE will be plotted
 }
 \examples{
-\dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
+\dontrun{
+  trait.data <- data.frame(Y = c(1, 2), se = c(1,2))
+  plot_data(trait.data, base.plot = NULL, ymax = 10)
+}
 }
 \author{
 David LeBauer

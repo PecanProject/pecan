@@ -1,3 +1,10 @@
+# PEcAn.DB 1.8.2
+
+* Refactored `convert.input()` internals into smaller, and hopefully more testable, chunks. No user-visible changes expected.
+* Roxygen cleanup.
+
+
+
 # PEcAn.DB 1.8.1
 
 ## License change

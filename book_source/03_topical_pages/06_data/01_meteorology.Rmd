@@ -1,5 +1,48 @@
 # Available Meteorological Drivers {#met-drivers}
 
+Meteorological (met) drivers provide the climate forcing data required by
+ecosystem models in PEcAn. Available drivers include site-level observations,
+regional and global reanalysis products, and climate model projections.
+
+### How to choose a meteorological driver {-}
+
+The appropriate meteorological driver depends on the study scale, site
+location, and time period of interest.
+
+General guidance:
+
+- Site-level analyses should use flux tower–based datasets (e.g. Ameriflux,
+  Fluxnet, ICOS) when their goal is to precisely match observations from that
+  tower and they are prepared to make analysis-specific choices on how to handle
+  gaps or inconsistencies in the data.
+- Site-level analyses where completeness and timeseries consistency is more
+  important than matching specific days may prefer to use a gridded product.
+- Regional analyses commonly use gridded reanalysis or model outputs (such as
+  NARR or NLDAS) whose coverage matches the scale of the analysis.
+- Global or long-term analyses typically rely on products with broad spatial and
+  temporal coverage like CRUNCEP, ERA5, or GLDAS.
+- Future simulations require climate model outputs (e.g. CMIP5).
+
+### Summary of available drivers {-}
+
+| Driver | Scale | Resolution | Coverage |
+|:------:|:-----:|:----------:|:--------:|
+| [Ameriflux](#ameriflux) | Site | 30–60 min | Varies by site |
+| [AmerifluxLBL](#amerifluxlbl) | Site | 30–60 min | Varies by site |
+| [Fluxnet2015](#fluxnet2015) | Site | 30–60 min | Selected FLUXNET sites |
+| [FluxnetLaThuile](#fluxnetlathuile) | Site | 30–60 min | Selected FLUXNET sites |
+| [ICOS Drought 2018](#icos-drought-2018) | Site | 30 min | Selected ICOS sites |
+| [ICOS Ecosystem Archive](#icos-ecosystem-archive) | Site | 30 min | Selected ICOS sites |
+| [NARR](#narr) | Regional (NA) | 3 hr, ~32 km | 1979–present |
+| [NLDAS](#nldas) | Regional (US) | 1 hr, 0.125° | 1980–present |
+| [CRUNCEP](#cruncep) | Global | 6 hr, 0.5° | 1901–2010 |
+| [ERA5](#era5) | Global | 3 hr, ~31 km | 1950–present |
+| [GLDAS](#gldas) | Global | 3 hr, 1° | 1948–2010 |
+| [CMIP5](#cmip5) | Global | 3 hr | 2006–2100 |
+| [PalEON](#paleon) | Regional | 6 hr, 0.5° | 850–2010 |
+| [Geostreams](#geostreams) | Site | Varies | Varies |
+
+
 ## Ameriflux
 
 Scale: site

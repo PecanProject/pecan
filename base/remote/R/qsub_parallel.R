@@ -8,6 +8,7 @@
 #' @export
 #' @examples
 #' \dontrun{
+#'   settings <- PEcAn.settings::read_settings("pecan.xml")
 #'   qsub_parallel(settings)
 #' }
 #' @author Dongchen Zhang

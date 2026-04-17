@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pecanproject.org/schema/events-mvp-0-1-0.json",
+  "oneOf": [
+    { "$ref": "#/$defs/site" },
+    { "type": "array", "items": { "$ref": "#/$defs/site" } }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "required": ["pecan_events_version", "site_id", "events"],
+      "properties": {
+        "pecan_events_version": { "type": "string", "const": "0.1.0" },
+        "site_id": { "type": "string", "minLength": 1 },
+        "pft": { "type": "string" },
+        "ensemble_id": { "type": ["string", "null"], "minLength": 1 },
+        "geometry_uri": { "type": ["string", "null"], "format": "uri" },
+        "provenance": { "type": "object", "additionalProperties": true },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["event_type", "date"],
+            "properties": {
+              "event_type": {
+                "type": "string",
+                "enum": ["planting", "harvest", "irrigation", "fertilization", "tillage"]
+              },
+              "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+              "fraction_area": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+              "source": { "type": "string" },
+
+              "leaf_c_kg_m2": { "type": "number", "minimum": 0 },
+              "wood_c_kg_m2": { "type": "number", "minimum": 0 },
+              "fine_root_c_kg_m2": { "type": "number", "minimum": 0 },
+              "coarse_root_c_kg_m2": { "type": "number", "minimum": 0 },
+              "cultivar": { "type": "string" },
+              "crop_code": { "type": "string" },
+              "crop_display": { "type": "string" },
+
+              "frac_above_removed_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
+              "frac_below_removed_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
+              "frac_above_to_litter_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
+              "frac_below_to_litter_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
+
+              "amount_mm": { "type": "number", "minimum": 0 },
+              "method": { "type": "string", "enum": ["soil", "canopy", "flood"] },
+              "immed_evap_frac_0to1": { "type": "number", "minimum": 0, "maximum": 1 },
+
+              "org_c_kg_m2": { "type": "number", "minimum": 0 },
+              "org_n_kg_m2": { "type": "number", "minimum": 0 },
+              "nh4_n_kg_m2": { "type": "number", "minimum": 0 },
+              "no3_n_kg_m2": { "type": "number", "minimum": 0 },
+
+              "tillage_eff_0to1": { "type": "number", "minimum": 0 },
+              "intensity_category": { "type": "string" },
+              "depth_m": { "type": "number", "minimum": 0 }
+            },
+            "allOf": [
+              { "if": { "properties": { "event_type": { "const": "planting" } } },
+                "then": { "required": ["leaf_c_kg_m2"] } },
+              { "if": { "properties": { "event_type": { "const": "harvest" } } },
+                "then": { "required": ["frac_above_removed_0to1"] } },
+              { "if": { "properties": { "event_type": { "const": "irrigation" } } },
+                "then": { "required": ["amount_mm", "method"] } },
+              { "if": { "properties": { "event_type": { "const": "fertilization" } } },
+                "then": { "anyOf": [
+                  { "required": ["org_c_kg_m2"] },
+                  { "required": ["nh4_n_kg_m2"] },
+                  { "required": ["no3_n_kg_m2"] }
+                ] } },
+              { "if": { "properties": { "event_type": { "const": "tillage" } } },
+                "then": { "required": ["tillage_eff_0to1"] } }
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

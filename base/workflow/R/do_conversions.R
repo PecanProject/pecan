@@ -28,8 +28,14 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
       next
     }
     
-    input.tag <- names(settings$run$input)[i]
+    input.tag <- names(settings$run$inputs)[i]
     PEcAn.logger::logger.info("PROCESSING: ",input.tag)
+
+    # Check for existing file paths , skips if the file exists
+    if (!is.null(input$path) && is.null(input$force)) {
+      PEcAn.logger::logger.info("Skipping input with existing path:", input.tag)
+      next
+    }
     
     
     ic.flag <- fia.flag <- FALSE

@@ -57,8 +57,8 @@ a list of xts objects with all the variables for the requested years
 ERA5_extract
 }
 \details{
-For the list of variables check out the documentation at \url{
- https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
+For the list of variables check out the documentation at
+ \url{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
 }
 \examples{
 \dontrun{

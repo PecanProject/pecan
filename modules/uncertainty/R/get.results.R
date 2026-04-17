@@ -1,17 +1,8 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
 ##' Reads model output and runs sensitivity and ensemble analyses
 ##'
 ##' Output is placed in model output directory (settings$outdir).
 ##' @export
-##' @param settings list, read from settings file (xml) using \code{\link{read.settings}}
+##' @param settings list, read from settings file (xml) using \code{\link[PEcAn.settings]{read.settings}}
 ##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
 ##'   analysis and ensemble analysis.
 ##'   If not provided, they are first looked up from `settings`,

@@ -7,7 +7,8 @@
 get.elasticity(sensitivity, samples, outputs)
 }
 \arguments{
-\item{sensitivity}{univariate sensitivity of model to a parameter, can be calculated by \code{\link{get.sensitivity}}}
+\item{sensitivity}{univariate sensitivity of model to a parameter,
+can be calculated by \code{\link{get.sensitivity}}}
 
 \item{samples}{samples from trait distribution}
 
@@ -17,5 +18,6 @@ get.elasticity(sensitivity, samples, outputs)
 elasticity = normalized sensitivity
 }
 \description{
-Given the sensitivity, samples, and outputs for a single trait, return elasticity
+Given the sensitivity, samples, and outputs for a single trait,
+  return elasticity
 }

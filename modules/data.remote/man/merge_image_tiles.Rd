@@ -10,9 +10,10 @@ merge_image_tiles(
   band.name = NULL,
   just.band.name = TRUE,
   keep.files = FALSE,
+  skip.conversion = FALSE,
   image.settings = list(crs = "EPSG:4326", dimension = NULL, ext = NULL, fun = NULL),
-  computation = list(GDAL_CACHEMAX = 1000, wm = "80\%", NUM_THREADS = 16, COMPRESS =
-    "DEFLATE")
+  computation = list(GDAL_CACHEMAX = 1000, wm = "80\%", NUM_THREADS =
+    parallel::detectCores() - 1, COMPRESS = "DEFLATE")
 )
 }
 \arguments{
@@ -22,9 +23,12 @@ merge_image_tiles(
 
 \item{band.name}{character: band name of the image. Default is NULL.}
 
-\item{just.band.name}{boolean: if we just want the band names of the image file. Default is TRUE.}
+\item{just.band.name}{logical: if we just want the band names of the image file. Default is TRUE.}
 
-\item{keep.files}{Boolean: if we want to keep the image tiles at the end.}
+\item{keep.files}{logical: if we want to keep the image tiles at the end.}
+
+\item{skip.conversion}{logical: if we want to ignore the image conversion.
+Note that this is a experimental feature, which only works when images are all in the GeoTIFF format.}
 
 \item{image.settings}{list: settings used during exporting merged image.
 Such as image coordinate system (crs), dimension, extents (ext), and average function (fun).}

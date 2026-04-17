@@ -24,7 +24,7 @@ write.insfile.LPJGUESS(
 
 \item{run.id}{PEcAn run ID}
 
-\item{restart}{Logical, whether to restart the simulation.}
+\item{restart}{A list object passed from the SDA workflow containing run-specific restart information, or NULL for initial runs.}
 }
 \value{
 settings Updated list
@@ -33,5 +33,5 @@ settings Updated list
 Write LPJ-GUESS instruction script
 }
 \author{
-Istem Fer
+Istem Fer, Yinghao Sun
 }

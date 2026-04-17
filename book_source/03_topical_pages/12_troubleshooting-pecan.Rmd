@@ -1,5 +1,34 @@
 # Troubleshooting and Debugging PEcAn
 
+This chapter provides guidance for diagnosing and resolving common
+issues encountered when running PEcAn workflows.
+Problems may arise from web interface configuration, file system paths,
+model failures, or system-level dependencies.
+The sections below document frequently encountered errors as well as general
+debugging techniques that can help identify the source of a problem.
+
+Start with the general troubleshooting guidance below, then refer to
+specific sections for detailed solutions.
+
+## General troubleshooting approach {-}
+
+When troubleshooting PEcAn issues:
+
+- Identify the error message and where it occurs (web, R, or model).
+- Check logs and console output for details.
+- Verify file paths, permissions, and dependencies.
+- Reproduce the issue with a minimal workflow.
+- Use R debugging tools such as `debug()`, `traceback()`, and `browser()`.
+
+
+## Common topics
+- [Workflow failures](#workflow-failures)
+- [Database issues](#database-issues)
+- [Model errors](#model-errors)
+- [Docker-related problems](#docker-issues)
+- [Debugging](#debugging)
+
+
 ## Cookies and pecan web pages
 
 You may need to disable cookies specifically for the pecan webserver in your browser. This is because your installation of php can include a 'PHPSESSID' that is quite long, and this can overflow the params field of the workflows table, depending on how long your hostname, model name, site name, etc are. 

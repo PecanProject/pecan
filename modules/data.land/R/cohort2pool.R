@@ -13,7 +13,7 @@
 ##' @examples
 ##' \dontrun{
 ##' veg_file <- "~/downloads/FFT_site_1-25665/FFT.2008.veg.rds"
-##' cohort2pool(veg_File = veg_file, allom_param = NULL)
+##' cohort2pool(dat = veg_file, allom_param = NULL)
 ##' }
 ##' 
 

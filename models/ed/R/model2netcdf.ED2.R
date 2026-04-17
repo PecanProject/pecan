@@ -193,15 +193,11 @@ model2netcdf.ED2 <- function(outdir,
     if (file.check[["-E-"]]==TRUE) {
       ncdf4::ncatt_put(nc, "dtime", "bounds", "dtime_bounds", prec = NA)
     }
-    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     # fill nc file with data
     for (i in seq_along(nc_var)) {
       var_put(nc, varid = nc_var[[i]], vals = out[[i]])
-      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile,
-          sep = "\n")
     }
     ncdf4::nc_close(nc)
-    close(varfile)
   } # end year-loop
 
 } # model2netcdf.ED2

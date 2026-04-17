@@ -1,3 +1,14 @@
+# PEcAn.benchmark 1.7.5.9000
+
+* Improved clarity of code examples that are not run at check time.
+
+
+# PEcAn.benchmark 1.7.5
+
+* Added keywords and bug reporting URL to DESCRIPTION.
+* No code changes in this release.
+
+
 # PEcAn.benchmark 1.7.4
 
 * Removed Browndog support

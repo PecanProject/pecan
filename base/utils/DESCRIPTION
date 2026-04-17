@@ -2,7 +2,7 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and
     Reanalysis
-Version: 1.8.1
+Version: 1.8.2.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Rob", "Kooper", role = c("aut", "cre"),
@@ -32,10 +32,12 @@ Description: The Predictive Ecosystem Carbon Analyzer
     investigation.
 URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     abind (>= 1.4.5),
     curl,
     dplyr,
+    foreach,
     lubridate (>= 1.6.0),
     magrittr,
     ncdf4 (>= 1.15),
@@ -43,10 +45,11 @@ Imports:
     purrr,
     rlang,
     stringi,
-    units
+    units (>= 0.8.7)
 Suggests:
     coda (>= 0.18),
     data.table,
+    doSNOW,
     ggplot2,
     MASS,
     mockery,
@@ -59,5 +62,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: PEcAn
