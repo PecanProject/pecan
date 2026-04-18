@@ -49,7 +49,7 @@ Before running this notebook, make sure you have:
 
 -   All the PEcAn packages installed. You can install all PEcAn packages and their dependencies by running the following command in the root of your PEcAn repository:
 
-```
+```{r, eval = FALSE}
 
 # Enable repository from pecanproject
 options(repos = c(
@@ -58,8 +58,6 @@ options(repos = c(
 # Download and install PEcAn.all in R
 install.packages(c('PEcAn.all', 'PEcAn.PEPRMT'))
 ```
-
-
 
 (Note that the chunk above does not run automatically since it will overwrite a version of PEcAn you installed by other methods. Run it by hand when needed.)
 
@@ -97,6 +95,9 @@ First, we need to load the PEcAn R packages. These packages provide all the func
 ```{r libraries}
 # Load the PEcAn.all package, which includes all necessary PEcAn functionality
 library("PEcAn.all")
+set.seed(20260326)
+logger.setUseConsole(console = TRUE, stderr = FALSE)
+logger.setLevel("INFO")
 ```
 
 # Load PEcAn Settings File
@@ -218,7 +219,8 @@ model_output <- purrr::map2_dfr(
       start.year = NA, end.year = NA,
       variables = NULL,
       dataframe = TRUE,
-      verbose = FALSE
+      verbose = FALSE,
+      print_summary = FALSE
     )
   },
   .id = "run_id"
@@ -262,71 +264,38 @@ This section provides examples of how to create time series plots of different m
 library("tidyverse")
 model_output |>
   mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
-  select("site_id", "run_id", "posix", "GPP", "NEE") |>
-  pivot_longer(cols = c("GPP", "NEE"), names_to = "flux") |>
+  select("site_id", "run_id", "posix", "GPP", "NEE", "TotalResp") |>
+  pivot_longer(cols = c("TotalResp", "GPP", "NEE"), names_to = "flux") |>
   ggplot() +
-    aes(x = posix, y = value, color = flux, group = run_id) +
-    facet_wrap(~site_id) +
-    geom_line() +
-    xlab("Date") +
-    ylab("Carbon Flux (kg C m-2 s-1)") +
-    ggtitle("Carbon Fluxes Over Time") +
-    theme_bw()
+  aes(x = posix, y = value, color = flux, group = run_id) +
+  facet_grid(flux~site_id) +
+  geom_line() +
+  xlab("Date") +
+  ylab(expression("Carbon Flux (kg C"~m^-2~s^-1*")")) +
+  ggtitle("Carbon Fluxes Over Time") +
+  theme_bw()+
+  theme(legend.position = "none")
 
-plot(model_output$posix, model_output$GPP,
-  type = "l",
-  col = "green",
-  xlab = "Date",
-  ylab = "Carbon Flux (kg C m-2 s-1)",
-  main = "Carbon Fluxes Over Time"
-)
-lines(model_output$posix, model_output$NPP, col = "blue")
-legend("topright", legend = c("GPP", "NPP"), col = c("green", "blue"), lty = 1)
+min(model_output$posix)
 ```
 
-## Plot Carbon Pools
+## Plot Methane emissions
 
-```{r plot-carbon-pools}
-# Plot Total Live Biomass and Total Soil Carbon
-plot(model_output$posix, model_output$TotLivBiom,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
-  ylab = "Carbon Pool (kg C m-2)",
-  main = "Carbon Pools Over Time"
-)
-lines(model_output$posix, model_output$TotSoilCarb, col = "brown")
-legend("topright", legend = c("Total Live Biomass", "Total Soil Carbon"), col = c("darkgreen", "brown"), lty = 1)
-```
-
-## Plot Water Variables
-
-```{r plot-water-variables}
-# Plot Soil Moisture and Snow Water Equivalent
-plot(model_output$posix, model_output$SoilMoist,
-  type = "l",
-  col = "blue",
-  xlab = "Date",
-  ylab = "Soil Moisture (kg m-2)",
-  main = "Soil Moisture Over Time"
-)
-lines(model_output$posix, model_output$SWE, col = "lightblue")
-legend("topright", legend = c("Soil Moisture", "Snow Water Equivalent"), col = c("blue", "lightblue"), lty = 1)
-```
-
-## Plot LAI and Biomass
-
-```{r plot-lai-biomass}
-# Plot Leaf Area Index (LAI) and Above Ground Wood
-plot(model_output$posix, model_output$LAI,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
-  ylab = "LAI (m2 m-2)",
-  main = "Leaf Area Index Over Time"
-)
-lines(model_output$posix, model_output$AbvGrndWood, col = "brown")
-legend("topright", legend = c("LAI", "Above Ground Wood"), col = c("darkgreen", "brown"), lty = 1)
+```{r plot-methane}
+model_output |>
+  mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
+  select("site_id", "run_id", "posix", "CH4_flux") |>
+  ggplot() +
+  aes(x = posix, 
+      y = CH4_flux * 1E6 * 60 * 60 * 24, # Convert from kg/m2/s to mg/m2/d
+      group = run_id) +
+  facet_wrap(~site_id, nrow = 1) +
+  geom_line() +
+  xlab("Date") +
+  ylab(expression("Methane Flux (mg C"~m^-2~d^-1*")")) +
+  ggtitle("Methane Fluxes Over Time") +
+  theme_bw()+
+  theme(legend.position = "none")
 ```
 
 # Conclusion

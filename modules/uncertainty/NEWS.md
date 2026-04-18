@@ -12,6 +12,8 @@ variance decomposition in one-at-a-time (OAT) sensitivity analysis (#3729)
   `NA`. The fix adds a fallback: when `quantile == "50"` and no exact match is
   found, the function now resolves the shared median entry before emitting a
   warning.
+* `get.parameter.samples()` now consistently accepts PFTs with no `outdir` specified. 
+  These previously failed when no database connection was available.
 
 
 

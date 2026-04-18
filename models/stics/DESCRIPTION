@@ -20,6 +20,7 @@ Imports:
     XML,
     dplyr
 Suggests:
+    SticsOnR,
     SticsRFiles,
     testthat (>= 1.0.2)
 Remotes:

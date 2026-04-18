@@ -63,7 +63,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       next
     }
     
-    input.tag <- names(settings$run$input)[i]
+    input.tag <- names(settings$run$inputs)[i]
     
     # fia database
     if (input["input"] == "fia") {

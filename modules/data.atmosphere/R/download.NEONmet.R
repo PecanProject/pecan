@@ -26,6 +26,8 @@
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {
 
+  PEcAn.utils::need_packages("nneo")
+
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }

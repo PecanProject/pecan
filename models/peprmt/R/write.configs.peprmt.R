@@ -43,60 +43,62 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
-  
+
+  # Handle parameters
+  #
+  # If more than one PFT is given, lump them together
+  trait_values <- Reduce(trait.values, f = append)
+  trait_names <- names(trait_values)
+  # That was easy!
+  # Now we'll do some extra work to complain informatively
+  #  about any traits defined in more than one PFT.
+  dup_traitnames <- trait_names[duplicated(trait_names)]
+  if (length(dup_traitnames) > 0) {
+    for (trt in dup_traitnames) {
+      # NB this is the raw trait.values, not trait_values
+      trt_in_pft <- sapply(trait.values, \(pft) trt %in% names(pft))
+      pfts_with_trt <- names(trait.values)[trt_in_pft]
+      PEcAn.logger::logger.info(
+        "Parameter", dQuote(trt),
+        "defined in multiple PFTs (", toString(pfts_with_trt), ").",
+        "write.config.PEPRMT will use the one it saw first (",
+        pfts_with_trt[[1]], ")."
+      )
+    }
+  }
+  GPP_names <- c("GPP_a0", "GPP_a1", "GPP_Ha", "GPP_Hd")
+  Reco_names <- c("Reco_Ea_som", "Reco_kM_som",
+                  "Reco_Ea_labile", "Reco_kM_labile")
+  CH4_names <- paste("CH4", 1:8, sep = "_") # TODO get meaningful names from Patty
+  missing_traitnames <- setdiff(c(GPP_names, Reco_names, CH4_names), trait_names)
+  if (length(missing_traitnames) > 0) {
+    PEcAn.logger::logger.error(
+      "Parameters missing from trait.values",
+      sQuote(missing_traitnames)
+    )
+  }
+
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
-  
+
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
   # jobsh <- gsub("@SITE_MET@", settings$run$site$met, jobsh)
-  
+
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
-  
+
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  
+
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@DELETE_RAW@", as.logical(settings$model$delete.raw %||% FALSE), jobsh)
-  
-  #-----------------------------------------------------------------------
-  ### Edit a templated config file for runs
-  # if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-  #   config.text <- readLines(con = settings$model$config, n = -1)
-  # } else {
-  #   filename <- system.file(settings$model$config, package = "PEcAn.PEPRMT")
-  #   if (filename == "") {
-  #     if (!is.null(settings$model$revision)) {
-  #       filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.PEPRMT")
-  #     }
-  #   }
-  #   if (filename == "") {
-  #     PEcAn.logger::logger.severe("Could not find config template")
-  #   }
-  #   PEcAn.logger::logger.info("Using", filename, "as template")
-  #   config.text <- readLines(con = filename, n = -1)
-  # }
-  
-  # config.text <- gsub("@SITE_LAT@", settings$run$site$lat, config.text)
-  # config.text <- gsub("@SITE_LON@", settings$run$site$lon, config.text)
-  # config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
-  # config.text <- gsub("@MET_START@", settings$run$site$met.start, config.text)
-  # config.text <- gsub("@MET_END@", settings$run$site$met.end, config.text)
-  # config.text <- gsub("@START_MONTH@", format(settings$run$start.date, "%m"), config.text)
-  # config.text <- gsub("@START_DAY@", format(settings$run$start.date, "%d"), config.text)
-  # config.text <- gsub("@START_YEAR@", format(settings$run$start.date, "%Y"), config.text)
-  # config.text <- gsub("@END_MONTH@", format(settings$run$end.date, "%m"), config.text)
-  # config.text <- gsub("@END_DAY@", format(settings$run$end.date, "%d"), config.text)
-  # config.text <- gsub("@END_YEAR@", format(settings$run$end.date, "%Y"), config.text)
-  # config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
-  # config.text <- gsub("@ENSNAME@", run.id, config.text)
-  # config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  
-  #-----------------------------------------------------------------------
-  # config.file.name <- paste0("CONFIG.", run.id, ".txt")
-  # writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
+
+  jobsh <- gsub("@GPP_THETA@", paste(trait_values[GPP_names], collapse = ", "), jobsh)
+  jobsh <- gsub("@RECO_THETA@", paste(trait_values[Reco_names], collapse = ", "), jobsh)
+  jobsh <- gsub("@CH4_THETA@", paste(trait_values[CH4_names], collapse = ", "), jobsh)
+
 
   # yes, this will be replaced with real params once demo is working
   run_data <- PEPRMT::example_data |>

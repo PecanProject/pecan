@@ -39,3 +39,6 @@ WATER_HRESP = 1
 
 LEAF_WATER = 0
 ! Leaf water interception pool (0 = disabled)
+
+FLOODING = 0
+! Enable soil moisture to go above water holding capacity
