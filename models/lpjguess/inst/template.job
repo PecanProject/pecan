@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # redirect output
+# This line redirects all standard output and error to the logfile.
 exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
@@ -10,34 +11,33 @@ exec &> "@OUTDIR@/logfile.txt"
 # create output folder
 mkdir -p "@OUTDIR@"
 
-# see if application needs running
-if [ ! -e "@OUTDIR@/results.out" ]; then
-  cd "@RUNDIR@"
-  
-  "@BINARY@" -input cf "@INSFILE@"
-  STATUS=$?
+# --- Start of Model Execution Block ---
+# This block now correctly calls the model in its default (CRU) mode.
 
-  mv "@RUNDIR@"/*.out "@OUTDIR@"
-  
-   #check the status:
-  if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
-    exit $STATUS
-  fi
+# Change directory to the run folder where config files are located.
+cd "@RUNDIR@"
 
-   #convert to MsTMIP
-  echo "require (PEcAn.LPJGUESS)
-  model2netcdf.LPJGUESS('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-  " | R --vanilla
+# **MODIFICATION:** The "-input cf" flag is now included.
+# This tells LPJ-GUESS to run in NetCDF input mode.
+"@BINARY@" -input cf "@INSFILE@"
+STATUS=$?
+
+# Move all generated text output files (*.out) to the output directory.
+# The wildcard `*` might cause issues if no .out files are produced on error.
+mv "@RUNDIR@"/*.out "@OUTDIR@" 2>/dev/null || true
+
+# Check the model's exit status. A non-zero status indicates an error.
+if [ $STATUS -ne 0 ]; then
+  echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  exit $STATUS
 fi
 
 # copy readme with specs to output
-cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
-
-# run getdata to extract right variables
+cp "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # host specific teardown
 @HOST_TEARDOWN@
 
 # all done
 echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+

@@ -10,16 +10,12 @@
  <rundir>output/run</rundir>
  <pfts>
   <pft>
-   <name>soil</name>
-   <outdir>raw-data/pfts/soil/</outdir>
-  </pft>
-  <pft>
-   <name>Not implemented</name>
-   <outdir>raw-data/pfts/soil/</outdir>
+   <name>default</name>
+   <posterior.files>raw-data/pfts/default/post.distns.RData</posterior.files>
   </pft>
  </pfts>
  <ensemble>
-  <size>20</size>
+  <size>3</size>
   <variable>TotSoilCarb</variable>
   <samplingspace>
    <parameters>
@@ -46,8 +42,7 @@
     <lat>37.615</lat>
     <lon>-122.114</lon>
     <site.pft>
-     <veg>Not implemented</veg>
-     <soil>soil</soil>
+     <veg>default</veg>
     </site.pft>
     <ERA5_grid_cell>37.5N_122W</ERA5_grid_cell>
     <name>US_EDN</name>
@@ -104,8 +99,7 @@
     <lat>38.2</lat>
     <lon>-122.026</lon>
     <site.pft>
-     <veg>Not implemented</veg>
-     <soil>soil</soil>
+     <veg>default</veg>
     </site.pft>
     <ERA5_grid_cell>38N_122W</ERA5_grid_cell>
     <name>US_SRR</name>
@@ -162,8 +156,7 @@
     <lat>39.088</lat>
     <lon>-75.437</lon>
     <site.pft>
-     <veg>Not implemented</veg>
-     <soil>soil</soil>
+     <veg>default</veg>
     </site.pft>
     <ERA5_grid_cell>39N_75.5W</ERA5_grid_cell>
     <name>US_STJ</name>
@@ -220,8 +213,7 @@
     <lat>29.5013</lat>
     <lon>-90.4449</lon>
     <site.pft>
-     <veg>Not implemented</veg>
-     <soil>soil</soil>
+     <veg>default</veg>
     </site.pft>
     <ERA5_grid_cell>29.5N_90.5W</ERA5_grid_cell>
     <name>US_LA1</name>
@@ -278,8 +270,7 @@
     <lat>42.7345</lat>
     <lon>-70.8382</lon>
     <site.pft>
-     <veg>Not implemented</veg>
-     <soil>soil</soil>
+     <veg>default</veg>
     </site.pft>
     <ERA5_grid_cell>42.5N_71W</ERA5_grid_cell>
     <name>US_PLM</name>

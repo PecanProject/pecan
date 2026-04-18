@@ -38,22 +38,33 @@ extra rows are ignored.}
 
 \item{write.to.db}{logical: Record this run in BETY?}
 
-\item{restart}{In case this is a continuation of an old simulation. restart needs to be a list with name tags of runid, inputs, new.params (parameters), new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.See Details.}
+\item{restart}{In case this is a continuation of an old simulation.
+Needs to be a list with name tags of runid, inputs, new.params (parameters),
+new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.
+See Details.}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
 }
 \value{
-list, containing $runs = data frame of runids, $ensemble.id = the ensemble ID for these runs and $samples with ids and samples used for each tag.  Also writes sensitivity analysis configuration files as a side effect
+list, containing
+ $runs = data frame of runids,
+ $ensemble.id = the ensemble ID for these runs,
+ and $samples with ids and samples used for each tag.
+ Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Writes config files for use in meta-analysis and returns a list of run ids.
-Given a pft.xml object, a list of lists as supplied by get.sa.samples, 
+Given a pft.xml object, a list of lists as supplied by get.sa.samples,
 a name to distinguish the output files, and the directory to place the files.
 }
 \details{
-The restart functionality is developed using model specific functions by calling write_restart.modelname function. First, you need to make sure that this function is already exist for your desired model.See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}
-new state is a dataframe with a different column for each state variable. The number of the rows in this dataframe needs to be the same as the ensemble size.
-The state variables that you can use for setting up initial conditions are model specific. Check the documentation of the write_restart.<modelname> function for the model you are using.
+The restart functionality is developed using model specific functions by calling write_restart.modelname function.
+First, you need to make sure that this function is already exist for your desired model.
+See here \url{https://pecanproject.github.io/pecan-documentation/latest/pecan-models.html}.
+new state is a dataframe with a different column for each state variable.
+The number of the rows in this dataframe needs to be the same as the ensemble size.
+The state variables that you can use for setting up initial conditions are model specific.
+Check the documentation of the write_restart.<modelname> function for the model you are using.
 The units for the state variables need to be in the PEcAn standard units which can be found in \link[PEcAn.utils]{standard_vars}.
 new.params also has similar structure to ensemble.samples which is sent as an argument.
 }

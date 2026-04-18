@@ -291,5 +291,12 @@ load.posteriors.legacy <- function(outdir = NULL,
     }
   }
 
+  if (is.null(result$prior.distns) && is.null(result$trait.mcmc)) {
+    PEcAn.logger::logger.warn(
+      "No posteriors found: outdir =", shQuote(outdir),
+      "posteriorid =", shQuote(posteriorid)
+    )
+  }
+
   return(result)
 }

@@ -44,7 +44,15 @@
 #' @export
 write.events.SIPNET <- function(events_json, outdir) {
     # Validate input JSON against PEcAn events schema
-    PEcAn.data.land::validate_events_json(events_json)
+    # TRUE = valid; FALSE = invalid; NA = jsonvalidate package not installed,
+    # proceed without complaining
+    valid <- PEcAn.data.land::validate_events_json(events_json, verbose = FALSE)
+    if (isFALSE(valid)) {
+        PEcAn.logger::logger.error(
+            "Invalid events file. More details may be available by calling",
+            "PEcAn.data.land::validate_events_json(", shQuote(events_json), ")"
+        )
+    }
 
     # TODO add overwrite argument
     x <- jsonlite::fromJSON(events_json, simplifyVector = FALSE)
@@ -67,17 +75,19 @@ write.events.SIPNET <- function(events_json, outdir) {
         evs <- site$events
         # Order by date and build lines
         dates <- as.Date(vapply(evs, function(e) as.character(e$date), character(1)))
+        years <- as.integer(format(dates, "%Y"))
+        days <- as.integer(format(dates, "%j"))
         ord <- order(dates)
-        lines <- character()
-        for (e in evs[ord]) {
-            d <- as.Date(e$date)
-            year <- as.integer(format(d, "%Y"))
-            day <- as.integer(format(d, "%j"))
+        lines <- character(length(ord))
+        for (i in ord) {
+            e <- evs[[i]]
+            year <- years[[i]]
+            day <- days[[i]]
             type <- e$event_type
             if (type == "tillage") {
                 f <- if (is.null(e$tillage_eff_0to1)) 0 else e$tillage_eff_0to1
                 # TODO: consider validating up front against schema rather than here
-                lines <- c(lines, sprintf("%d  %d  till  %s", year, day, f))
+                lines[i] <- sprintf("%d  %d  till  %s", year, day, f)
             } else if (type == "planting") {
                 # infer total planted biomass from leaf pool and allocation fraction
                 leaf_g <- as.numeric(if (is.null(e$leaf_c_kg_m2)) 0 else e$leaf_c_kg_m2) * kg2g
@@ -85,31 +95,28 @@ write.events.SIPNET <- function(events_json, outdir) {
                 wood_g <- woodAllocation * total_g
                 fr_g <- fineRootAllocation * total_g
                 cr_g <- coarseRootAllocation * total_g
-                lines <- c(lines, sprintf("%d  %d  plant  %s %s %s %s", year, day, leaf_g, wood_g, fr_g, cr_g))
+                lines[i] <- sprintf("%d  %d  plant  %s %s %s %s", year, day, leaf_g, wood_g, fr_g, cr_g)
             } else if (type == "fertilization") {
                 orgN_g <- as.numeric(if (is.null(e$org_n_kg_m2)) 0 else e$org_n_kg_m2) * kg2g
                 orgC_g <- as.numeric(if (is.null(e$org_c_kg_m2)) 0 else e$org_c_kg_m2) * kg2g
                 nh4_g <- as.numeric(if (is.null(e$nh4_n_kg_m2)) 0 else e$nh4_n_kg_m2) * kg2g
                 no3_g <- as.numeric(if (is.null(e$no3_n_kg_m2)) 0 else e$no3_n_kg_m2) * kg2g
                 minN_g <- nh4_g + no3_g
-                lines <- c(lines, sprintf("%d  %d  fert   %s %s %s", year, day, orgN_g, orgC_g, minN_g))
+                lines[i] <- sprintf("%d  %d  fert   %s %s %s", year, day, orgN_g, orgC_g, minN_g)
             } else if (type == "irrigation") {
                 amt_cm <- as.numeric(if (is.null(e$amount_mm)) 0 else e$amount_mm) * mm2cm
                 method_code <- if (is.null(e$method) || e$method == "soil") 1 else 0
-                lines <- c(lines, sprintf("%d  %d  irrig  %s %s", year, day, amt_cm, method_code))
+                lines[i] <- sprintf("%d  %d  irrig  %s %s", year, day, amt_cm, method_code)
             } else if (type == "harvest") {
                 abv_rem <- e$frac_above_removed_0to1 %||% 0
                 blw_rem <- e$frac_below_removed_0to1 %||% 0
                 abv_lit <- e$frac_above_to_litter_0to1 %||% (1.0 - abv_rem)
                 blw_lit <- e$frac_below_to_litter_0to1 %||% (1.0 - blw_rem)
-                lines <- c(
-                    lines,
-                    sprintf(
-                        "%d  %d harv   %s %s %s %s",
-                        year, day,
-                        abv_rem, blw_rem,
-                        abv_lit, blw_lit
-                    )
+                lines[i] <- sprintf(
+                    "%d  %d harv   %s %s %s %s",
+                    year, day,
+                    abv_rem, blw_rem,
+                    abv_lit, blw_lit
                 )
             }
         }

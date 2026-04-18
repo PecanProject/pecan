@@ -4,16 +4,15 @@
 * [PEcAn's `docker-compose`](#pecan-docker-compose)
 * [Top-level structure](#pecan-dc-structure)
 * [`traefik`](#pecan-dc-traefik)
-* [`portainer`](#pecan-dc-portainer)
-* [`minio`](#pecan-dc-minio)
-* [`thredds`](#pecan-dc-thredds)
-* [`postgres`](#pecan-dc-postgres)
 * [`rabbitmq`](#pecan-dc-rabbitmq)
+* [`postgres`](#pecan-dc-postgres)
 * [`bety`](#pecan-dc-bety)
+* [`rstudio`](#pecan-dc-rstudio)
 * [`docs`](#pecan-dc-docs)
-* [`web`](#pecan-dc-web)
-* [`executor`](#pecan-dc-executor)
+* [`pecan` (web)](#pecan-dc-web)
 * [`monitor`](#pecan-dc-monitor)
+* [`executor`](#pecan-dc-executor)
+* [`api`](#pecan-dc-api)
 * [Model-specific containers](#pecan-dc-models)
 
 
@@ -24,18 +23,18 @@ The PEcAn docker architecture consists of many containers (see figure below) tha
 ```{r, echo=FALSE,out.height= "50%", out.width="50%", fig.align='center'}
 knitr::include_graphics("02_demos_tutorials_workflows/05_developer_workflows/04_docker/pecan-docker.png")
 ```
-As can be seen in the figure the architecture leverages of two standard containers (in orange). The first container is postgresql with postgis ([mdillon/postgis](https://hub.docker.com/r/mdillon/postgis/)) which is used to store the database used by both BETY and PEcAn. The second containers is a messagebus, more specifically RabbitMQ ([rabbitmq](https://hub.docker.com/_/rabbitmq/)). 
+As can be seen in the figure the architecture leverages two standard containers (in orange). The first container is PostgreSQL with PostGIS ([mdillon/postgis](https://hub.docker.com/r/mdillon/postgis/)) which is used to store the database used by both BETY and PEcAn. The second container is a message bus, more specifically RabbitMQ ([rabbitmq](https://hub.docker.com/_/rabbitmq/)).
 
-The BETY app container  ([pecan/bety](https://hub.docker.com/r/pecan/bety/)) is the front end to the BETY database and is connected to the postgresql container. A http server can be put in front of this container for SSL termination as well to allow for load balancing (by using multiple BETY app containers).
+The BETY app container ([pecan/bety](https://hub.docker.com/r/pecan/bety/)) is the front end to the BETY database and is connected to the PostgreSQL container.
 
 The PEcAn framework containers consist of multiple unique ways to interact with the PEcAn system (none of these containers will have any models installed):
 
-- PEcAn shiny hosts the shiny applications developed and will interact with the database to get all information necessary to display
-- PEcAn rstudio is a rstudio environment with the PEcAn libraries preloaded. This allows for prototyping of new algorithms that can be used as part of the PEcAn framework later.
+- PEcAn RStudio is an RStudio Server environment with the PEcAn libraries preloaded. This allows for prototyping of new algorithms that can be used as part of the PEcAn framework later.
 - PEcAn web allows the user to create a new PEcAn workflow. The workflow is stored in the database, and the models are executed by the model containers.
-- PEcAn cli will allow the user to give a pecan.xml file that will be executed by the PEcAn framework.  The workflow created from the XML file is stored in the database, and the models are executed by the model containers.
+- PEcAn API provides a RESTful interface for programmatic access to PEcAn workflows, models, and data.
+- PEcAn monitor tracks running models and registers new model containers with PEcAn.
 
-The model containers contain the actual models that are executed as well as small wrappers to make them work in the PEcAn framework. The containers will run the model based on the parameters received from the message bus and convert the outputs back to the standard PEcAn output format. Once the container is finished processing a message it will immediatly get the next message and start processing it.
+The model containers contain the actual models that are executed as well as small wrappers to make them work in the PEcAn framework. The containers will run the model based on the parameters received from the message bus and convert the outputs back to the standard PEcAn output format. Once the container is finished processing a message it will immediately get the next message and start processing it.
 
 ### PEcAn's `docker-compose` {#pecan-docker-compose}
 
@@ -50,16 +49,15 @@ For full `docker-compose` syntax, see the [official documentation](https://docs.
 This section describes the [top-level structure](#pecan-dc-structure) and each of the services, which are as follows:
 
 - [`traefik`](#pecan-dc-traefik)
-- [`portainer`](#pecan-dc-portainer)
-- [`minio`](#pecan-dc-minio)
-- [`thredds`](#pecan-dc-thredds)
-- [`postgres`](#pecan-dc-postgres)
 - [`rabbitmq`](#pecan-dc-rabbitmq)
+- [`postgres`](#pecan-dc-postgres)
 - [`bety`](#pecan-dc-bety)
+- [`rstudio`](#pecan-dc-rstudio)
 - [`docs`](#pecan-dc-docs)
-- [`web`](#pecan-dc-web)
-- [`executor`](#pecan-dc-executor)
+- [`pecan` (web)](#pecan-dc-web)
 - [`monitor`](#pecan-dc-monitor)
+- [`executor`](#pecan-dc-executor)
+- [`api`](#pecan-dc-api)
 - [Model-specific services](#pecan-dc-models)
 
 For reference, the complete `docker-compose` file is as follows:
@@ -78,8 +76,6 @@ writeLines(readLines(docker_env_file))
 You can also extend the `docker-compose.yml` file with a `docker-compose.override.yml` file (in the same directory), allowing you to add more services, or for example to change where the volumes are stored (see [official documentation](https://docs.docker.com/compose/extends/)). For example the following will change the volume for postgres to be stored in your home directory:
 
 ```
-version: "3"
-
 volumes:
   postgres:
     driver_opts:
@@ -111,95 +107,49 @@ Volumes also allow data to persist on containers between restarts, as normally, 
 For example, using a volume for the database allows data to be saved between different runs of the database container.
 Without volumes, we would start with a blank database every time we restart the containers. 
 For more details on Docker volumes, see the [official documentation](https://docs.docker.com/storage/volumes/).
-Here, we define three volumes:
+Here, we define six volumes:
+
+	- `traefik` -- This contains configuration data for the Traefik reverse proxy.
+	It is only used by the `traefik` service.
 
 	- `postgres` -- This contains the data files underlying the PEcAn PostgreSQL database (BETY).
 	Notice that it is mounted by the `postgres` container to `/var/lib/postgresql/data`.
 	This is the data that we pre-populate when we run the Docker commands to [initialize the PEcAn database](#pecan-docker-quickstart-init).
 	Note that these are the values stored _directly in the PostgreSQL database_.
 	The default files to which the database points (i.e. `dbfiles`) are stored in the `pecan` volume, described below.
-	
+
+	- `bety` -- This volume contains log files for the BETY Rails application.
+	It is only used by the `bety` service.
+
 	- `rabbitmq` -- This volume contains persistent data for RabbitMQ.
 	It is only used by the `rabbitmq` service.
-	
+
 	- `pecan` -- This volume contains PEcAn's `dbfiles`, which include downloaded and converted model inputs, processed configuration files, and outputs.
 	It is used by almost all of the services in the PEcAn stack, and is typically mounted to `/data`.
+
+	- `rstudio` -- This volume contains the home directories for RStudio users.
+	It is only used by the `rstudio` service and is mounted to `/home`.
  
 ### `traefik` {#pecan-dc-traefik}
 
 [Traefik](https://traefik.io/) manages communication among the different PEcAn services and between PEcAn and the web.
 Among other things, `traefik` facilitates the setup of web access to each PEcAn service via common and easy-to-remember URLs.
-For instance, the following lines in the `web` service configure access to the PEcAn web interface via the URL http://pecan.localhost/pecan/ :
+The current configuration uses Traefik v2.9 with Docker provider auto-discovery.
+
+Services are exposed via Traefik labels in each service's configuration. For example, the following lines in the `pecan` (web) service configure access to the PEcAn web interface via the URL http://pecan.localhost/pecan/ :
 
 ```{r, echo = FALSE, comment = ''}
-yaml::write_yaml(dc_yaml$services$web["labels"], stdout())
+yaml::write_yaml(dc_yaml$services$pecan["labels"], stdout())
 ```
 
-(Further details in the works...)
+The Traefik dashboard is accessible at http://traefik.pecan.localhost.
+
+Note that HTTPS/SSL configuration is not included in the base `docker-compose.yml`. For HTTPS support with Let's Encrypt, see `docker-compose.https.yml`.
 
 The traefik service configuration looks like this:
 
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml$services["traefik"], stdout())
-```
-
- 
-### `portainer` {#pecan-dc-portainer}
-
-[portainer](https://portainer.io/) is lightweight management UI that allows you to manage the docker host (or swarm). You can use this service to monitor the different containers, see the logfiles, and start and stop containers.
-
-The portainer service configuration looks like this:
-
-```{r, echo = FALSE, comment = ''}
-yaml::write_yaml(dc_yaml$services["portainer"], stdout())
-```
-
-Portainer is accessible by browsing to `pecan.localhost/portainer/`. You can either set the password in the `.env` file (for an example see env.example) or you can use the web browser and go to the portainer url. If this is the first time it will ask for your password.
-
-### `minio` {#pecan-dc-minio}
-
-[Minio](https://github.com/minio/minio) is a service that provides access to the a folder on disk through a variety of protocols, including S3 buckets and web-based access.
-We mainly use Minio to facilitate access to PEcAn data using a web browser without the need for CLI tools.
-
-Our current configuration is as follows:
-
-```{r, echo = FALSE, comment = ''}
-yaml::write_yaml(dc_yaml$services["minio"], stdout())
-```
-
-The Minio interface is accessible by browsing to `minio.pecan.localhost`.
-From there, you can browse directories and download files.
-You can also upload files by clicking the red "+" in the bottom-right corner.
-
-Note that it is currently impossible to create or upload directories using the Minio interface (except in the `/data` root directory -- those folders are called "buckets" in Minio).
-Therefore, the recommended way to perform any file management tasks other than individual file uploads is through the command line, e.g.
-
-```bash
-docker run -it --rm --volumes pecan_pecan:/data --volumes /path/to/local/directory:/localdir ubuntu
-
-# Now, you can move files between `/data` and `/localdir`, create new directories, etc.
-```
-
-### `thredds` {#pecan-dc-thredds}
-
-This service allows PEcAn model outputs to be accessible via the [THREDDS data server (TDS)](https://www.unidata.ucar.edu/software/thredds/current/tds/).
-When the PEcAn stack is running, the catalog can be explored in a web browser at http://pecan.localhost/thredds/catalog.html.
-Specific output files can also be accessed from the command line via commands like the following:
-
-```{r, eval = FALSE}
-nc <- ncdf4::nc_open("http://pecan.localhost/thredds/dodsC/outputs/PEcAn_<workflow_id>/out/<run_id>/<year>.nc")
-```
-
-Note that everything after `outputs/` exactly matches the directory structure of the `workflows` directory.
-
-Which files are served, which subsetting services are available, and other aspects of the data server's behavior are configured in the `docker/thredds_catalog.xml` file.
-Specifically, this XML tells the data server to use the `datasetScan` tool to serve all files within the `/data/workflows` directory, with the additional `filter` that only files ending in `.nc` are served.
-For additional information about the syntax of this file, see the extensive [THREDDS documentation](https://www.unidata.ucar.edu/software/thredds/current/tds/reference/index.html).
-
-Our current configuration is as follows:
-
-```{r, echo = FALSE, comment = ''}
-yaml::write_yaml(dc_yaml$services["thredds"], stdout())
 ```
 
 
@@ -253,6 +203,20 @@ yaml::write_yaml(dc_yaml$services["bety"], stdout())
 
 The BETY container Dockerfile is located in the root directory of the [BETY GitHub repository](https://github.com/PecanProject/bety) ([direct link](https://github.com/PecanProject/bety/blob/master/Dockerfile)).
 
+### `rstudio` {#pecan-dc-rstudio}
+
+This service provides an [RStudio Server](https://posit.co/products/open-source/rstudio-server/) environment with PEcAn libraries pre-installed. It is useful for interactively exploring PEcAn data, prototyping new analyses, and debugging workflows.
+
+RStudio is accessible at http://pecan.localhost/rstudio/ or directly at http://rstudio.pecan.localhost. The default credentials are username `carya` and password `illinois`, configurable via the `PECAN_RSTUDIO_USER` and `PECAN_RSTUDIO_PASS` environment variables in the `.env` file.
+
+Our current configuration is as follows:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["rstudio"], stdout())
+```
+
+The RStudio service runs on the `pecan/base` image with a startup script (`/work/rstudio.sh`). It mounts both the `pecan` volume (for data access at `/data`) and the `rstudio` volume (for persistent home directories at `/home`).
+
 ### `docs` {#pecan-dc-docs}
 
 This service will show the documentation for the version of PEcAn running as well as a homepage with links to all relevant endpoints. You can access this at http://pecan.localhost/. You can find the documentation for PEcAn at http://pecan.localhost/docs/pecan/.
@@ -263,15 +227,15 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["docs"], stdout())
 ```
 
-### `web` {#pecan-dc-web}
+### `pecan` (web) {#pecan-dc-web}
 
 This service runs the PEcAn web interface.
-It is effectively a thin wrapper around a standard Apache web server container from Docker Hub that installs some additional dependencies and copies over the necessary files from the PEcAn source code.
+It is accessible at http://pecan.localhost/pecan/.
 
 Our configuration is as follows:
 
 ```{r, echo = FALSE, comment = ''}
-yaml::write_yaml(dc_yaml$services["web"], stdout())
+yaml::write_yaml(dc_yaml$services["pecan"], stdout())
 ```
 
 Its Dockerfile ships with the PEcAn source code, in [`docker/web/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/web/Dockerfile).
@@ -289,7 +253,7 @@ Our configuration is as follows:
 yaml::write_yaml(dc_yaml$services["executor"], stdout())
 ```
 
-Its Dockerfile is ships with the PEcAn source code, in [`docker/executor/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/executor/Dockerfile).
+Its Dockerfile ships with the PEcAn source code, in [`docker/executor/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/executor/Dockerfile).
 Its image is built on top of the `pecan/base` image ([`docker/base/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile)), which contains the actual PEcAn source.
 To facilitate caching, the `pecan/base` image is itself built on top of the `pecan/depends` image ([`docker/depends/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/depends/Dockerfile)), a large image that contains an R installation and PEcAn's many system and R package dependencies (which usually take ~30 minutes or longer to install from scratch).
 
@@ -308,14 +272,37 @@ Our current configuration is as follows:
 yaml::write_yaml(dc_yaml$services["monitor"], stdout())
 ```
 
+### `api` {#pecan-dc-api}
+
+This service provides the PEcAn RESTful API, which allows programmatic access to PEcAn workflows, models, and data. The API is accessible at http://pecan.localhost/api/. API documentation and a health check endpoint are available at `/api/ping`.
+
+By default, authentication is disabled (`AUTH_REQ=FALSE`). For production deployments, set `AUTH_REQ=TRUE` in the `.env` file to require authentication.
+
+Our current configuration is as follows:
+
+```{r, echo = FALSE, comment = ''}
+yaml::write_yaml(dc_yaml$services["api"], stdout())
+```
+
+For more details on using the PEcAn API, see the [PEcAn API documentation](#pecan-api).
+
 ### Model-specific containers {#pecan-dc-models}
 
 Additional models are added as additional services.
-In general, their configuration should be similar to the following configuration for SIPNET, which ships with PEcAn:
+The following models ship with PEcAn by default:
+
+- **SIPNET** (`sipnet`) -- `pecan/model-sipnet-git`
+- **ED2** (`ed2`) -- `pecan/model-ed2-2.2.0`
+- **FATES** (`fates`) -- `ghcr.io/noresmhub/ctsm-api`
+- **BASGRA** (`basgra`) -- `pecan/model-basgra-basgra_n_v1`
+- **MAESPA** (`maespa`) -- `pecan/model-maespa-git`
+- **BioCro** (`biocro`) -- `pecan/model-biocro-0.95`
+
+In general, their configuration should be similar to the following configuration for SIPNET:
 
 ```{r, echo = FALSE, comment = ''}
 yaml::write_yaml(dc_yaml$services["sipnet"], stdout())
 ```
 
-The PEcAn source contains Dockerfiles for ED2 ([`models/ed/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/ed/Dockerfile.)) and SIPNET ([`models/sipnet/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/Dockerfile)) that can serve as references.
+The PEcAn source contains Dockerfiles for ED2 ([`models/ed/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/ed/Dockerfile)) and SIPNET ([`models/sipnet/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/models/sipnet/Dockerfile)) that can serve as references.
 For additional tips on constructing a Dockerfile for your model, see [Dockerfiles for Models](#model-docker).

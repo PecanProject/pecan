@@ -71,7 +71,7 @@ get.parameter.samples <- function(settings,
     ### Get output directory info
     if (!is.null(pfts[[i.pft]]$outdir)) {
       outdirs[i.pft] <- pfts[[i.pft]]$outdir
-    } else {
+    } else if (!is.null(con)) {
       outdirs[i.pft] <- unique(
         PEcAn.DB::dbfile.check(
           type = "Posterior",
@@ -79,7 +79,8 @@ get.parameter.samples <- function(settings,
           con = con
         )$file_path
       )
-    }
+    } # else do nothing: outdirs[i.pft] stays NULL and load.posteriors will handle it
+
   } ### End of for loop to extract pft names
 
   PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)
@@ -94,8 +95,6 @@ get.parameter.samples <- function(settings,
 
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)) {
-    distns <- new.env()
-
     ## Load posteriors using unified loader
     ## Detects posterior type by content (not filename).
     ## Monte Carlo samples take precedence over distribution summaries.
@@ -107,15 +106,12 @@ get.parameter.samples <- function(settings,
       hostname = settings$host$name
     )
 
-    # Populate the distns environment for downstream compatibility
     if (!is.null(posterior$prior.distns)) {
-      distns$prior.distns <- posterior$prior.distns
+      prior_distns_list[[i]] <- posterior$prior.distns
     }
-    prior_distns_list[[i]] <- distns$prior.distns
 
     if (!is.null(posterior$trait.mcmc)) {
-      distns$trait.mcmc <- posterior$trait.mcmc
-      trait_mcmc_list[[i]] <- distns$trait.mcmc
+      trait_mcmc_list[[i]] <- posterior$trait.mcmc
       ma.results <- TRUE
       # Joint posteriors (e.g. from PDA) should preserve correlations
       if (posterior$is.joint) {
@@ -123,7 +119,7 @@ get.parameter.samples <- function(settings,
       }
     } else {
       ma.results <- FALSE
-      # trait_mcmc_list[[i]] stays NULL (already initialized)
+      # trait_mcmc_list[[i]] stays NULL
     }
   } ### End for loop
 
@@ -134,8 +130,7 @@ get.parameter.samples <- function(settings,
     trait_mcmc_list   = trait_mcmc_list,
     ensemble.size     = ensemble.size,
     ens.sample.method = ens.sample.method,
-    sa_quantiles      = if ("sensitivity.analysis" %in% names(settings))
-                          settings$sensitivity.analysis$quantiles else NULL,
+    sa_quantiles      = settings$sensitivity.analysis$quantiles, # which is NULL if no SA requested
     do_ensemble       = "ensemble" %in% names(settings),
     independent       = independent
   )

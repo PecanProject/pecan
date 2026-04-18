@@ -67,6 +67,7 @@ To begin with we'll load up an example A-Ci and A-Q curve that was collected dur
 
 ```{r echo=TRUE ,eval=FALSE}
 library(PEcAn.photosynthesis)
+set.seed(20260325)
 
 ### Load built in data
 filenames <- system.file("extdata", paste0("flux-course-3",c("aci","aq")), package = "PEcAn.photosynthesis")

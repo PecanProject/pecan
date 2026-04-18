@@ -234,7 +234,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if (!file.exists(event_file)) {
       PEcAn.logger::logger.warn("Event file not found at", event_file)
     }
-    file.copy(event_file, file.path(rundir, "events.in"))
+    file.copy(event_file, file.path(rundir, "events.in"), overwrite = TRUE)
   }
 
 
@@ -621,6 +621,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     if ("litter_methane_rate" %in% pft.trait.names) {
       param[which(param[, 1] == "litterMethaneRate"), 2] <- pft.traits[which(pft.trait.names == "litter_methane_rate")]
+    }
+    # water drainage fraction (requires FLOODING = 1 in sipnet.in)
+    if ("water_drain_frac" %in% pft.trait.names) {
+      param[which(param[, 1] == "waterDrainFrac"), 2] <- pft.traits[which(pft.trait.names == "water_drain_frac")]
     }
 
     #update LeafOnday and LeafOffDay

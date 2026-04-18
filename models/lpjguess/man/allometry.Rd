@@ -35,7 +35,7 @@ allometry(
 
 \item{densindiv}{The density of individuals in the cohort (indiv/m^2)}
 
-\item{age}{The age of the coort}
+\item{age}{The age of the cohort}
 
 \item{fpc}{The folar projective cover}
 
@@ -47,7 +47,7 @@ allometry(
 
 \item{k_rp, k_allom1, k_allom2, k_allom3, }{Allometry coefficients (per PFT parameters)}
 
-\item{wooddens}{Wood density (kgC/m^2) (per PFT parameter)}
+\item{wooddens}{Wood density (kgC/m^3) (per PFT parameter)}
 
 \item{crownarea_max}{Maximum allowed crown area (m^2)  (per PFT parameter)}
 
@@ -82,6 +82,6 @@ A named list of updated state variables for the individual/cohort.  The first va
 The LPJ-GUESS allometry function transcribed into R.
 }
 \author{
-Matthew Forrest
+Matthew Forrest, Yinghao Sun
 }
 \keyword{internal}

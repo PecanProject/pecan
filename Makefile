@@ -106,7 +106,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document clean shiny pkgdocs \
+.PHONY: all install check test document clean clean-src shiny pkgdocs \
             check_base check_models check_modules help
 
 all: install document
@@ -140,6 +140,12 @@ clean:
 		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
 	done
 
+clean-src:
+	@echo "Removing compiled source artifacts..."
+	for p in $(SRCS_TO_CLEAN); do \
+		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
+	done
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -167,6 +173,7 @@ help:
 	@echo "  book           Render the PEcAn bookdown documentation"
 	@echo "  pkgdocs        Build package documentation websites using pkgdown"
 	@echo "  clean          Remove build artifacts"
+	@echo "  clean-src      Remove compiled source artifacts (.o, .so, .mod) without full rebuild"
 	@echo "  help           Show this help message"
 
 ### Dependencies
