@@ -9,7 +9,8 @@
 #'
 #' @return list with:
 #' \itemize{
-#'   \item fill_vars: ERA5 variables to request
+#'   \item fill_vars_cds: ERA5 CDS variable names to request
+#'   \item fill_vars_cf: CF standard names corresponding to \code{fill_vars_cds}
 #'   \item coverage: named list of coverage fractions
 #' }
 #'

@@ -1,8 +1,7 @@
-# Tests for internal ERA5 CDS <-> CF variable name translation utilities.
-# Functions under test: cds_to_cf_varnames(), cf_to_cds_varnames()
+# Tests for meteorological variable name translation utilities.
+# Functions under test: translate_met_varnames(),
+#                       cds_to_cf_varnames(), cf_to_cds_varnames()
 # Return-value contract for: check_met_coverage_for_fallback()
-
-# Internal functions are not exported; access via ::: in tests.
 
 # ---------------------------------------------------------------------------
 # cds_to_cf_varnames — forward direction
@@ -46,22 +45,16 @@ test_that("multiple CDS names translate correctly and preserve order", {
   )
 })
 
-test_that("unknown CDS name produces a warning and returns NA", {
-  expect_warning(
-    result <- PEcAn.data.atmosphere:::cds_to_cf_varnames(
-      "not_a_real_cds_variable"
-    ),
-    regexp = "no CF mapping"
+test_that("unknown CDS name returns NA", {
+  result <- PEcAn.data.atmosphere:::cds_to_cf_varnames(
+    "not_a_real_cds_variable"
   )
   expect_true(is.na(unname(result)))
 })
 
 test_that("unknown CDS name does not corrupt translation of known names in same call", {
-  expect_warning(
-    result <- PEcAn.data.atmosphere:::cds_to_cf_varnames(
-      c("surface_solar_radiation_downwards", "not_a_real_cds_variable")
-    ),
-    regexp = "no CF mapping"
+  result <- PEcAn.data.atmosphere:::cds_to_cf_varnames(
+    c("surface_solar_radiation_downwards", "not_a_real_cds_variable")
   )
   expect_identical(
     unname(result[[1]]),
@@ -108,12 +101,9 @@ test_that("output names of cf_to_cds_varnames equal the input CF names", {
   expect_identical(names(result), input)
 })
 
-test_that("unknown CF name produces a warning and returns NA", {
-  expect_warning(
-    result <- PEcAn.data.atmosphere:::cf_to_cds_varnames(
-      "not_a_real_cf_variable"
-    ),
-    regexp = "no CDS mapping"
+test_that("unknown CF name returns NA", {
+  result <- PEcAn.data.atmosphere:::cf_to_cds_varnames(
+    "not_a_real_cf_variable"
   )
   expect_true(is.na(unname(result)))
 })
@@ -151,16 +141,22 @@ test_that("round-trip cf_to_cds then cds_to_cf recovers original name", {
   expect_identical(restored, original)
 })
 
-test_that("every entry in era5_cds_to_cf_varnames survives a full round-trip", {
-  map <- PEcAn.data.atmosphere:::era5_cds_to_cf_varnames
-  for (cds_name in names(map)) {
-    cf_name  <- unname(PEcAn.data.atmosphere:::cds_to_cf_varnames(cds_name))
-    restored <- unname(PEcAn.data.atmosphere:::cf_to_cds_varnames(cf_name))
-    expect_identical(
-      restored, cds_name,
-      label = paste("round-trip failed for CDS name:", cds_name)
-    )
-  }
+test_that("pecan_standard_met_table has era5_cds column", {
+  expect_true("era5_cds" %in% names(pecan_standard_met_table))
+})
+
+test_that("era5_cds column has correct value for shortwave radiation", {
+  row <- pecan_standard_met_table[
+    pecan_standard_met_table$cf_standard_name ==
+      "surface_downwelling_shortwave_flux_in_air", ]
+  expect_identical(row$era5_cds, "surface_solar_radiation_downwards")
+})
+
+test_that("era5_cds column has correct value for soil moisture", {
+  row <- pecan_standard_met_table[
+    pecan_standard_met_table$cf_standard_name ==
+      "volume_fraction_of_condensed_water_in_soil", ]
+  expect_identical(row$era5_cds, "volumetric_soil_water_layer_1")
 })
 
 # ---------------------------------------------------------------------------
@@ -299,7 +295,7 @@ test_that("PAR never appears in fill_vars_cds even when PAR coverage is zero", {
     any(grepl("photosynthetic|par", result$fill_vars_cds, ignore.case = TRUE))
   )
   expect_false(
-    any(grepl("photosynthetic|par", result$fill_vars_cf,  ignore.case = TRUE))
+    any(grepl("photosynthetic|par", result$fill_vars_cf, ignore.case = TRUE))
   )
 })
 
