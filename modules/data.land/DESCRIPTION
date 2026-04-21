@@ -73,7 +73,11 @@ Suggests:
     sp,
     testthat (>= 3.1.0),
     traits,
-    withr
+    withr,
+    xgboost,
+    doParallel,
+    data.table,
+    tibble
 Remotes:
     github::ropensci/traits
 License: BSD_3_clause + file LICENSE
