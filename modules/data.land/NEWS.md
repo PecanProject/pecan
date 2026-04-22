@@ -12,10 +12,12 @@
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
   *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 33 California crops from CDFA-FREP and UC ANR sources.
   *  `ca_compost_amendment` dataset with C:N ratios, carbon, nitrogen, and PAN (g/m2) for 32 organic amendment materials.
+  *  `carb_landiq_crop_pft` dataset pairing LandIQ CLASS/SUBCLASS codes with PFT assignments in two vocabularies (`pft_group` and `pecan_pft`).
 * Functions
   *  `look_up_ca_n_rate()` for looking up crop-specific N application rates by name (exact match first, partial match suggestions on miss).
   *  `look_up_ca_compost_amendment()` for looking up organic amendment properties by material name.
   *  `to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
+  *  `look_up_crop_pft()` for looking up PFT assignments by LandIQ CLASS and SUBCLASS codes.
 
 ## Changed
 
