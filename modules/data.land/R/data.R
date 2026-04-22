@@ -123,9 +123,28 @@
 #'   \item{SUBCLASS}{LandIQ subclass code.}
 #'   \item{subclass_name}{LandIQ subclass name.}
 #' }
-#' @source California Department of Water Resources. (2023). Statewide Crop Mapping—California 
+#' @source California Department of Water Resources. (2023). Statewide Crop Mapping—California
 #' Natural Resources Agency Open Data. Metadata retrieved from https://data.cnra.ca.gov/dataset/statewide-crop-mapping and manually extracted into `data-raw/landiq_crop_mapping_codes.tsv`.
 "landiq_crop_mapping_codes"
+
+#' LandIQ crop code to PFT lookup
+#'
+#' LandIQ CLASS/SUBCLASS codes paired with PFT assignments. One row per
+#' (crop_type, crop_code) pair in the LandIQ taxonomy.
+#'
+#' @format ## `carb_landiq_crop_pft`
+#' A data frame with 203 rows and 5 columns:
+#' \describe{
+#'   \item{crop_type}{LandIQ CLASS code.}
+#'   \item{crop_code}{LandIQ SUBCLASS code. NA for class-only rows.}
+#'   \item{crop_desc}{LandIQ subclass name.}
+#'   \item{pft_group}{One of row, woody, rice, hay, idle, semi-ag, urban, non-crop.}
+#'   \item{pecan_pft}{One of grass, temperate.deciduous, soil. NA for classes not yet assigned.}
+#' }
+#' @source California Department of Water Resources. (2023). Statewide Crop Mapping.
+#'   CLASS/SUBCLASS codes from `landiq_crop_mapping_codes`. PFT assignments follow
+#'   CARB_PFTs_table.csv in the ccmmf/cadwr-landuse repo.
+"carb_landiq_crop_pft"
 
 #' BIS crop coefficients by crop
 #'
