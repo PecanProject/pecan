@@ -13,7 +13,10 @@ meta_analysis_standalone(
   random = TRUE,
   threshold = 1.2,
   use_ghs = TRUE,
-  gamma_tau = 0.01
+  prior_n = 0.02,
+  prior_cv = sqrt(0.001),
+  tauA = NULL,
+  tauB = NULL
 )
 }
 \arguments{

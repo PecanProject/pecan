@@ -32,13 +32,18 @@ meta_analysis_standalone <- function(
   random = TRUE,
   threshold = 1.2,
   use_ghs = TRUE,
-  gamma_tau = 0.01
+  prior_n  = 0.02,
+  prior_cv = sqrt(0.001),
+  tauA     = NULL,
+  tauB     = NULL
 ) {
   stopifnot(
     is.list(trait_data),
     is.logical(use_ghs),
-    is.numeric(gamma_tau),
-    gamma_tau > 0
+    is.numeric(prior_n),  prior_n > 0,
+    is.numeric(prior_cv), prior_cv > 0,
+    is.null(tauA) || (is.numeric(tauA) && tauA > 0),
+    is.null(tauB) || is.numeric(tauB)
   )
 
   # Create output directory if it doesn't already exist
@@ -101,14 +106,19 @@ meta_analysis_standalone <- function(
   )
 
   ## Set gamma distribution prior
+  resolved_tauA <- if (!is.null(tauA)) tauA else prior_n / 2
+  
   prior_variances <- as.data.frame(rep(1, nrow(priors)))
   row.names(prior_variances) <- row.names(priors)
-  prior_variances[names(trait_average), ] <- 0.001 * trait_average ^ 2
-  prior_variances["seedling_mortality", 1] <- 1
-  taupriors <- list(
-    tauA = gamma_tau,
-    tauB = apply(prior_variances, 1, function(x) min(gamma_tau, x))
-  )
+  prior_variances[names(trait_average), ] <- prior_cv ^ 2 * trait_average ^ 2
+  
+  resolved_tauB <- if (!is.null(tauB)) {
+    tauB
+  } else {
+    apply(prior_variances, 1, function(x) resolved_tauA * x)
+  }
+  
+  taupriors <- list(tauA = resolved_tauA, tauB = resolved_tauB)
 
   ### Run the meta-analysis
   trait_mcmc <- pecan.ma(jagged_data,
@@ -192,7 +202,14 @@ check_consistent <- function(point, prior,
 #' @param dbfiles (character) directory where previous results are found
 #' @param dbcon (DBI connection object) BETY database connection object
 #' @param update (boolean; default = TRUE) If `TRUE`, replace existing
-#'  posteriors with new ones
+#' @param prior_n (numeric; default = 0.02) Passed to `meta_analysis_standalone`.
+#'   Prior effective sample size (n0), where `tauA = prior_n / 2`.
+#' @param prior_cv (numeric; default = `sqrt(0.001)`) Passed to
+#'   `meta_analysis_standalone`. Prior coefficient of variation (SD / mean).
+#' @param tauA (numeric or NULL; default = NULL) Passed to
+#'   `meta_analysis_standalone`. Direct override for first Gamma prior parameter.
+#' @param tauB (numeric or NULL; default = NULL) Passed to
+#'   `meta_analysis_standalone`. Direct override for second Gamma prior parameter.
 #'
 #' @inheritParams meta_analysis_standalone
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update = FALSE) {
@@ -247,13 +264,17 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 
   ma_result <- meta_analysis_standalone(
     trait_data = trait_env[["trait.data"]],
-    priors = prior_env[["prior.distns"]],
+    priors     = prior_env[["prior.distns"]],
     iterations = iterations,
-    pft_name = pft[["name"]],
-    outdir = pft[["outdir"]],
-    random = random,
-    threshold = threshold,
-    use_ghs = use_ghs
+    pft_name   = pft[["name"]],
+    outdir     = pft[["outdir"]],
+    random     = random,
+    threshold  = threshold,
+    use_ghs    = use_ghs,
+    prior_n    = prior_n,
+    prior_cv   = prior_cv,
+    tauA       = tauA,
+    tauB       = tauB
   )
 
   ## Save the jagged.data object, replaces previous madata.Rdata object
@@ -312,6 +333,14 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' @param update logical: Rerun the meta-analysis if result files already exist?
 ##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
 ##'   \code{\link{pecan.ma.summary}}
+##' @param prior_n (numeric; default = 0.02) Passed to `run.meta.analysis.pft`.
+##'   Prior effective sample size (n0), where `tauA = prior_n / 2`.
+##' @param prior_cv (numeric; default = `sqrt(0.001)`) Passed to
+##'   `run.meta.analysis.pft`. Prior coefficient of variation (SD / mean).
+##' @param tauA (numeric or NULL; default = NULL) Passed to
+##'   `run.meta.analysis.pft`. Direct override for first Gamma prior parameter.
+##' @param tauB (numeric or NULL; default = NULL) Passed to
+##'   `run.meta.analysis.pft`. Direct override for second Gamma prior parameter.
 ##' @inheritParams meta_analysis_standalone
 ##' @inheritParams run.meta.analysis.pft
 ##'
@@ -321,22 +350,41 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##'   and post.distns.Rdata, respectively
 ##' @export
 ##' @author Shawn Serbin, David LeBauer
-run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database, use_ghs = TRUE , update = FALSE) {
-  # process all pfts
-  dbcon <- PEcAn.DB::db.open(database)
+run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2,
+                              dbfiles, database, use_ghs = TRUE, update = FALSE,
+                              prior_n = 0.02, prior_cv = sqrt(0.001),
+                              tauA = NULL, tauB = NULL) {
+  dbcon  <- PEcAn.DB::db.open(database)
   on.exit(PEcAn.DB::db.close(dbcon), add = TRUE)
-
-  result <- lapply(pfts, run.meta.analysis.pft, iterations = iterations, random = random, 
-                   threshold = threshold, dbfiles = dbfiles, dbcon = dbcon, use_ghs = use_ghs, update = update)
-} # run.meta.analysis.R
+  result <- lapply(pfts, run.meta.analysis.pft,
+                   iterations = iterations, random    = random,
+                   threshold  = threshold,  dbfiles   = dbfiles,
+                   dbcon      = dbcon,      use_ghs   = use_ghs,
+                   update     = update,     prior_n   = prior_n,
+                   prior_cv   = prior_cv,   tauA      = tauA,
+                   tauB       = tauB)
+}
+# run.meta.analysis.R
 ## ==================================================================================================#
 #' Run meta-analysis on all PFTs in a (list of) PEcAn settings
 #'
 ##' @param settings a PEcAn settings or MultiSettings object
-##' @return list of PFTs, invisibly;
+##' @param prior_n (numeric; default = 0.02) Prior effective sample size (n0).
+##'   Can also be set via `settings$meta.analysis$prior_n` in `pecan.xml`.
+##'   If both are provided, the `settings` value takes precedence.
+##' @param prior_cv (numeric; default = `sqrt(0.001)`) Prior coefficient of
+##'   variation (SD / mean). Can also be set via
+##'   `settings$meta.analysis$prior_cv` in `pecan.xml`.
+##'   If both are provided, the `settings` value takes precedence.
+##' @return list of PFTs, invisibly;mo
 ##'  saves MA results to `settings$pft$outdir` as a side effect
 ##' @export
-runModule.run.meta.analysis <- function(settings) {
+runModule.run.meta.analysis <- function(settings,
+                                        prior_n  = 0.02,
+                                        prior_cv = sqrt(0.001)) {
+  # Read from settings if present, otherwise fall back to argument defaults
+  prior_n  <- as.numeric(settings$meta.analysis$prior_n  %||% prior_n)
+  prior_cv <- as.numeric(settings$meta.analysis$prior_cv %||% prior_cv)
   if (PEcAn.settings::is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
@@ -358,7 +406,9 @@ runModule.run.meta.analysis <- function(settings) {
       settings$meta.analysis$threshold,
       settings$database$dbfiles,
       settings$database$bety,
-      settings$meta.analysis$random.effects$use_ghs
+      settings$meta.analysis$random.effects$use_ghs,
+      prior_n  = prior_n,
+      prior_cv = prior_cv
     )
   } else if (PEcAn.settings::is.Settings(settings)) {
       run.meta.analysis(
@@ -369,7 +419,9 @@ runModule.run.meta.analysis <- function(settings) {
         settings$database$dbfiles,
         settings$database$bety,
         settings$meta.analysis$random.effects$use_ghs,
-        update = settings$meta.analysis$update
+        update = settings$meta.analysis$update,
+        prior_n  = prior_n,
+        prior_cv = prior_cv
       )
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")

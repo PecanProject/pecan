@@ -32,8 +32,19 @@ default = 1.2 following Bolker 2008 Ecological Models and Data in R}
 
 \item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
-\item{update}{(boolean; default = TRUE) If \code{TRUE}, replace existing
-posteriors with new ones}
+\item{update}{(boolean; default = TRUE) If \code{TRUE}, replace existing}
+
+\item{prior_n}{(numeric; default = 0.02) Passed to \code{meta_analysis_standalone}.
+Prior effective sample size (n0), where \code{tauA = prior_n / 2}.}
+
+\item{prior_cv}{(numeric; default = \code{sqrt(0.001)}) Passed to
+\code{meta_analysis_standalone}. Prior coefficient of variation (SD / mean).}
+
+\item{tauA}{(numeric or NULL; default = NULL) Passed to
+\code{meta_analysis_standalone}. Direct override for first Gamma prior parameter.}
+
+\item{tauB}{(numeric or NULL; default = NULL) Passed to
+\code{meta_analysis_standalone}. Direct override for second Gamma prior parameter.}
 }
 \description{
 Thin wrapper around \code{meta_analysis_standalone} that also reads/writes files
