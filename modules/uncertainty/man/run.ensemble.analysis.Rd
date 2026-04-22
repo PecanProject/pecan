@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.ensemble.analysis.R
 \name{run.ensemble.analysis}
 \alias{run.ensemble.analysis}
-\title{run ensemble.analysis}
+\title{Run ensemble analysis on finished model runs}
 \usage{
 run.ensemble.analysis(
   settings,
@@ -25,13 +25,38 @@ run.ensemble.analysis(
 
 \item{start.year, end.year}{taken from settings if not specified}
 
-\item{...}{additional arguments passed to [ensemble.ts()]}
+\item{...}{additional arguments passed to \code{\link[PEcAn.uncertainty]{ensemble.ts}}}
 }
 \value{
-nothing, creates ensemble plots as ensemble.analysis.pdf
+Nothing (called for side effects). Creates ensemble plots as PDF
+files and optionally saves time series analysis results.
 }
 \description{
-run ensemble.analysis
+Run ensemble analysis on finished model runs
+}
+\details{
+\strong{Upstream contract (reads from \code{settings$outdir}):}
+\describe{
+\item{\verb{ensemble.output.<var>.<years>.<id>.Rdata}}{Produced by
+\code{\link[PEcAn.uncertainty]{get.results}}. Contains \code{ensemble.output}: a numeric vector of
+model output values, one per ensemble member.}
+}
+
+\strong{File-based side effects (saved to \code{settings$outdir}):}
+\describe{
+\item{\verb{ensemble.analysis.<var>.<years>.<id>.pdf}}{Histogram and boxplot
+of ensemble output distribution.}
+\item{\verb{ensemble.ts.<var>.<years>.<id>.pdf}}{(Optional) Time series plot
+with confidence intervals. Generated when \code{plot.timeseries} is not
+\code{NA}.}
+\item{\verb{ensemble.ts.analysis.<var>.<years>.<id>.Rdata}}{(Optional)
+Contains \code{ensemble.ts.analysis}: time series summary statistics.
+Saved when \code{plot.timeseries} is not \code{NA}.}
+}
+
+\strong{Note:} This is a terminal step — nothing downstream loads these files
+programmatically. The results are consumed by visualization or user
+inspection.
 }
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly

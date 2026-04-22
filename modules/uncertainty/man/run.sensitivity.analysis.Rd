@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.sensitivity.analysis.R
 \name{run.sensitivity.analysis}
 \alias{run.sensitivity.analysis}
-\title{run sensitivity.analysis}
+\title{Run sensitivity analysis on finished model runs}
 \usage{
 run.sensitivity.analysis(
   settings,
@@ -19,30 +19,59 @@ run.sensitivity.analysis(
 \item{settings}{a PEcAn settings object}
 
 \item{plot}{logical. Option to generate sensitivity analysis and variance
-decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).}
+decomposition plots (\code{plot = TRUE}) or to turn these plots off
+(\code{plot = FALSE}).}
 
 \item{ensemble.id}{ensemble ID}
 
 \item{variable}{which variable(s) to do sensitivity analysis for. Defaults
-to all specified in `settings`}
+to all specified in \code{settings}}
 
-\item{start.year}{defaults to what is specified in `settings`}
+\item{start.year}{defaults to what is specified in \code{settings}}
 
-\item{end.year}{defaults to what is specified in `settings`}
+\item{end.year}{defaults to what is specified in \code{settings}}
 
-\item{pfts}{a vector of PFT names found in `settings` to run sensitivity
+\item{pfts}{a vector of PFT names found in \code{settings} to run sensitivity
 analysis on}
 
 \item{...}{currently unused}
 }
 \value{
-nothing, saves \code{sensitivity.results} as
-  sensitivity.results.Rdata, sensitivity plots as sensitivityanalysis.pdf,
-  and variance decomposition 'popsicle plot' as variancedecomposition.pdf a
-  side effect (OPTIONAL)
+Nothing (called for side effects). Saves \code{sensitivity.results} as
+\code{sensitivity.results.*.Rdata} and optional PDF plots.
 }
 \description{
-Runs the sensitivity analysis module on a finished run
+Run sensitivity analysis on finished model runs
+}
+\details{
+\strong{Upstream contract (reads from \code{settings$outdir}):}
+\describe{
+\item{\code{samples.Rdata}}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}. Loaded to
+obtain \code{trait.samples}, \code{trait.names}, \code{pft.names}, and \code{sa.run.ids}.}
+\item{\verb{sensitivity.samples.<id>.Rdata}}{Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.
+If present, overrides \code{sa.run.ids} and \code{sa.samples} from
+\code{samples.Rdata}.}
+\item{\verb{sensitivity.output.<var>.<years>.<id>.Rdata}}{Produced by
+\code{\link[PEcAn.uncertainty]{get.results}}. Contains \code{sensitivity.output}: a named list
+(PFT -> matrix) of model outputs for each SA run.}
+}
+
+\strong{File-based side effects (saved to \code{settings$outdir}):}
+\describe{
+\item{\verb{sensitivity.results.<var>.<years>.<id>.Rdata}}{Contains
+\code{sensitivity.results}: a named list (PFT -> list) with elements
+\code{sensitivity.output} (partial derivatives) and
+\code{variance.decomposition.output} (elasticities and partial variances).}
+\item{\verb{sensitivityanalysis.<pft>.<var>.<years>.<id>.pdf}}{Sensitivity
+analysis diagnostic plots (one per PFT). Generated when \code{plot = TRUE}.}
+\item{\verb{variance.decomposition.<pft>.<var>.<years>.<id>.pdf}}{Variance
+decomposition "popsicle" plots (one per PFT). Generated when
+\code{plot = TRUE}.}
+}
+
+\strong{Note:} This is a terminal step in the workflow — nothing downstream
+loads \code{sensitivity.results.*.Rdata} programmatically. The results are
+consumed by visualization or user inspection.
 }
 \examples{
 \dontrun{

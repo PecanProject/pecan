@@ -1,15 +1,47 @@
-#' run sensitivity.analysis
+#' Run sensitivity analysis on finished model runs
 #'
-#' Runs the sensitivity analysis module on a finished run
+#' @md
+#' Loads parameter samples and parsed model output from disk, computes
+#' sensitivity coefficients and variance decomposition for each PFT/trait,
+#' and saves results and diagnostic plots.
 #'
-#' @return nothing, saves \code{sensitivity.results} as
-#'   sensitivity.results.Rdata, sensitivity plots as sensitivityanalysis.pdf,
-#'   and variance decomposition 'popsicle plot' as variancedecomposition.pdf a
-#'   side effect (OPTIONAL)
+#' @details
+#' **Upstream contract (reads from `settings$outdir`):**
+#' \describe{
+#'   \item{`samples.Rdata`}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}. Loaded to
+#'     obtain `trait.samples`, `trait.names`, `pft.names`, and `sa.run.ids`.}
+#'   \item{`sensitivity.samples.<id>.Rdata`}{Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.
+#'     If present, overrides `sa.run.ids` and `sa.samples` from
+#'     `samples.Rdata`.}
+#'   \item{`sensitivity.output.<var>.<years>.<id>.Rdata`}{Produced by
+#'     \code{\link[PEcAn.uncertainty]{get.results}}. Contains `sensitivity.output`: a named list
+#'     (PFT -> matrix) of model outputs for each SA run.}
+#' }
+#'
+#' **File-based side effects (saved to `settings$outdir`):**
+#' \describe{
+#'   \item{`sensitivity.results.<var>.<years>.<id>.Rdata`}{Contains
+#'     `sensitivity.results`: a named list (PFT -> list) with elements
+#'     `sensitivity.output` (partial derivatives) and
+#'     `variance.decomposition.output` (elasticities and partial variances).}
+#'   \item{`sensitivityanalysis.<pft>.<var>.<years>.<id>.pdf`}{Sensitivity
+#'     analysis diagnostic plots (one per PFT). Generated when `plot = TRUE`.}
+#'   \item{`variance.decomposition.<pft>.<var>.<years>.<id>.pdf`}{Variance
+#'     decomposition "popsicle" plots (one per PFT). Generated when
+#'     `plot = TRUE`.}
+#' }
+#'
+#' **Note:** This is a terminal step in the workflow — nothing downstream
+#' loads `sensitivity.results.*.Rdata` programmatically. The results are
+#' consumed by visualization or user inspection.
+#'
+#' @return Nothing (called for side effects). Saves `sensitivity.results` as
+#'   `sensitivity.results.*.Rdata` and optional PDF plots.
 #'
 #' @param settings a PEcAn settings object
 #' @param plot logical. Option to generate sensitivity analysis and variance
-#' decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).
+#'   decomposition plots (`plot = TRUE`) or to turn these plots off
+#'   (`plot = FALSE`).
 #' @param ensemble.id ensemble ID
 #' @param variable which variable(s) to do sensitivity analysis for. Defaults
 #'   to all specified in `settings`
