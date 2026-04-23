@@ -2,27 +2,31 @@
 
 | Model Information ||
 | -- | -- |
-| Home Page | https://pecanproject.github.io/sipnet |
-| Source Code | https://github.com/PecanProject/sipnet |
-| License | BSD 3-Clause |
+| Home Page | [https://pecanproject.github.io/sipnet/](https://pecanproject.github.io/sipnet/) |
+| Source Code | [https://github.com/PecanProject/sipnet](https://github.com/PecanProject/sipnet) |
 | Authors | Michael Longfritz, William Sacks, David Moore, John M. Zobitz, Bobby H. Braswell, David S. Schimel, Rob Kooper, Michael C. Dietze, Istem Fer, Chris Black, David S. LeBauer|
 | PEcAn Integration | Michael Dietze, Rob Kooper |
+| PEcAn package | [PEcAn.SIPNET pkgdown site](https://pecanproject.github.io/package-documentation/develop/PEcAn.SIPNET/index.html) |
 
 **Introduction**
 
-SIPNET (Simplified Photosynthesis and Evapotranspiration Model) is a lightweight ecosystem model designed to simulate complex environmental dynamics. It tracks carbon, water, nitrogen, and trace greenhouse-gas (N₂O, CH₄) interactions, supporting applications from forest carbon inventories to managed croplands.
+SIPNET (Simplified Photosynthesis and Evapotranspiration Model) is a lightweight ecosystem model designed to simulate complex environmental dynamics. It tracks carbon, water, nitrogen, and trace greenhouse-gas (N₂O, CH₄) interactions, supporting applications from forest carbon inventories to managed croplands. It was built for data-assimilation workflows with eddy-covariance observations.
 
 Key features include simulation of photosynthesis, respiration, allocation, soil water, soil temperature, and nitrogen cycling on sub-daily time steps. The model tracks vegetation, litter, soil, and mineral-N pools, and includes event-based management for agricultural processes.
 
-For model documentation including model structure, user guide, and developer guide, see the [SIPNET documentation](https://pecanproject.github.io/sipnet). For PEcAn.SIPNET documentation, see the [package website](https://pecanproject.github.io/package-documentation/develop/PEcAn.SIPNET/).
+For comprehensive information about the standalone model structure, configuring it directly, and input/output descriptions, please visit the [Standalone SIPNET Documentation](https://pecanproject.github.io/sipnet/). 
+
+To use SIPNET through PEcAn and learn about its integration functions, please review the [PEcAn.SIPNET pkgdown site](https://pecanproject.github.io/package-documentation/develop/PEcAn.SIPNET/index.html) and its [README](https://github.com/PecanProject/pecan/tree/develop/models/sipnet#readme).
 
 **PEcAn configuration file additions**
 
-Should list the model specific additions to the PEcAn file here
+For basic SIPNET usage via PEcAn, please refer to the [PEcAn Basic Run Demo](https://pecanproject.github.io/pecan-documentation/develop/rendered-demo-notebooks/run_pecan.html).
 
 **Model specific input files**
 
-List of inputs required by model, such as met, etc.
+SIPNET requires meteorology files to be translated into its specific driver format (`.clim`). The `PEcAn.SIPNET` package handles this translation via its functions (`met2model.SIPNET`) documented on the pkgdown site. The `.clim` format is a space-delimited text file that includes variables like temperature, precipitation, vapor pressure deficit, and radiation at each timestep.
+
+Additionally, SIPNET understands event files (e.g. `events.in`) for management actions such as planting, harvest, and irrigation. When configured within the PEcAn workflow, the coupler will also read from and properly initialize state variables based on input files for phenology, soil carbon/nitrogen, and initial condition (IC) pools.
 
 **Model configuration files**
 
@@ -34,4 +38,4 @@ SIPNET is configured using 3 files which are placed in the run folder, as well a
 
 **Installation notes**
 
-For current SIPNET installation instructions, please see the [SIPNET Installation Guide](https://pecanproject.github.io/sipnet/install.html) or install binaries from the official [releases](https://github.com/PecanProject/sipnet/releases) page.
+For current SIPNET installation instructions, please see the [SIPNET Quick-Start Guide](https://pecanproject.github.io/sipnet/user-guide/getting-started/) or install binaries from the official [releases](https://github.com/PecanProject/sipnet/releases) page.

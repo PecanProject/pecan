@@ -1,0 +1,47 @@
+# Model Documentation Maintenance {#model-documentation-maintenance}
+
+This guide describes how to maintain and update the documentation for PEcAn model couplers. For every ecosystem model integrated with PEcAn, there are three primary documentation locations that should be kept in sync:
+
+1.  **Package README (`models/[modelname]/README.md`):** This is the entry point for someone visiting the PEcAn repository or the `pkgdown` site.
+2.  **Model Pkgdown site:** Generated from the README and function documentation using the `pkgdown` package.
+3.  **PEcAn Book Page (`book_source/03_topical_pages/05_models/[modelname].Rmd`):** This is part of the central PEcAn documentation (the "Book") and should focus on how the model fits into the overall PEcAn workflow.
+
+## Documentation Structure
+
+To avoid duplication, follows these guidelines:
+
+### 1. Package README (`README.md`)
+The README should serve as a concise entry point for a specific model coupler. It should include:
+-   **What is [MODEL]?**: A brief summary of the standalone model.
+-   **Standalone Documentation Link**: Point users to the official docs for the underlying model logic.
+-   **Homepage & Source**: Links to the model's primary home and repository.
+-   **Using via PEcAn**: A high-level description of what the PEcAn coupler does.
+-   **Installation**: Clear steps for installing both the R package and the underlying model binary.
+-   **Documentation Links**: Links to the `pkgdown` site, and most importantly, the PEcAn book chapter for detailed information.
+
+### 2. PEcAn Book Chapter
+The book is the right place to present detailed information about the model coupler. It should be the comprehensive source. It should include:
+-   Provide the standard "Model Information" table.
+-   Give a comprehensive introduction explaining how the model fits into PEcAn.
+-   List and detail model-specific configuration and input file patterns.
+-   Link out to standalone model documentation or vignettes if available. Do not link out to the README for detailed information—the book itself should be the master resource.
+
+### 3. Pkgdown Site
+This is automatically generated. Ensure that your `README.md` is well-formatted and that your R functions have complete Roxygen documentation.
+
+When updating an existing model coupler's documentation, ensure it follows the structure described above. After making changes, verify that your links point to the `develop` branch where appropriate, and ensure both the book and pkgdown site render correctly (build instructions below).
+
+## Build Instructions
+
+### Building the PEcAn Book
+To build the book locally:
+```bash
+cd book_source
+make
+```
+
+### Building Pkgdown site
+To build a specific package's documentation:
+```r
+pkgdown::build_site("models/[modelname]")
+```
