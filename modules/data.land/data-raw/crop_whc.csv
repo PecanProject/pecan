@@ -1,0 +1,67 @@
+crop_number,crop_name,Category,rooting_depth_m,whc_min_frac,whc_notes,rooting_depth_notes
+2.01,Alfalfa (annual),Non-woody Perennial,1.5,0.45,FAO-56 Table 22 (hay),FAO-56 Table 22
+1.01,Alfalfa (cycle),Non-woody Perennial,2,0.4,FAO-56 Table 22 (seed),FAO-56 Table 22
+3.01,Almonds,Woody Perennial,1.5,0.6,FAO-56 Table 22,FAO-56 Table 22
+3.02,Apple,Woody Perennial,1.5,0.5,FAO-56 Table 22,FAO-56 Table 22
+1.02,Artichokes,Non-woody Perennial,0.75,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.03,Asparagus,Non-woody Perennial,1.5,0.55,FAO-56 Table 22,FAO-56 Table 22
+4.01,Avocado,Woody Perennial,0.75,0.3,FAO-56 Table 22,FAO-56 Table 22
+1.04,Barley,Annual (Hardy),1.25,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.06,Beans (dry),Annual (Hardy),0.75,0.55,FAO-56 Table 22,FAO-56 Table 22
+,Beans (Fresh),Annual (Sensitive),0.6,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.05,Beans (pinto),Annual (Hardy),0.6,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.08,Beets (table),Annual (Sensitive),0.8,0.5,FAO-56 Table 22,FAO-56 Table 22
+1.09,Broccoli,Annual (Sensitive),0.5,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.1,Cabbage,Annual (Sensitive),0.65,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.11,Carrots,Annual (Sensitive),0.75,0.65,FAO-56 Table 22,FAO-56 Table 22
+1.12,Celery,Annual (Sensitive),0.4,0.80,FAO-56 Table 22,FAO-56 Table 22
+4.03,Citrus (<3.0 m tall),Woody Perennial,0.95,0.50,FAO-56 Table 22,FAO-56 Table 22
+4.02,Citrus (>3.8 m tall),Woody Perennial,1.35,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.13,Corn (grain),Annual (Hardy),1.35,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.14,Corn (silage),Annual (Hardy),1.0,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.15,Cotton,Annual (Hardy),1.35,0.35,FAO-56 Table 22,FAO-56 Table 22
+1.16,Cucumber,Annual (Sensitive),0.95,0.50,FAO-56 Table 22,FAO-56 Table 22
+4.04,Date Palm,Woody Perennial,2.0,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.17,Eggplant,Annual (Hardy),0.95,0.55,FAO-56 Table 22,FAO-56 Table 22
+4.05,Evergreen,Woody Perennial,1.25,0.35,FAO-56 Table 22,FAO-56 Table 22
+1.18,Flax,Annual (Hardy),1.25,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.19,Grains (small),Annual (Hardy),1.25,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.2,Grains (winter),Annual (Hardy),1.65,0.45,FAO-56 Table 22,FAO-56 Table 22
+3.05,Grapes (raisin),Woody Perennial,1.5,0.65,FAO-56 Table 22,FAO-56 Table 22
+3.04,Grapes (table),Woody Perennial,1.5,0.35,FAO-56 Table 22,FAO-56 Table 22
+3.03,Grapes (wine),Woody Perennial,1.5,0.55,FAO-56 Table 22,FAO-56 Table 22
+2.02,Improved Pasture,Non-woody Perennial,1.0,0.40,FAO-56 Table 22,FAO-56 Table 22
+3.06,Kiwifruit,Woody Perennial,1.0,0.65,FAO-56 Table 22,FAO-56 Table 22
+1.21,Lentil,Annual (Hardy),0.7,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.22,Lettuce,Annual (Sensitive),0.4,0.70,FAO-56 Table 22,FAO-56 Table 22
+1.23,Melon,Annual (Hardy),1.2,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.24,Millet,Annual (Hardy),1.5,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.25,Mustard,Annual (Hardy),1.2,0.45,Common value for other hardy annuals,"Dharmasri, Jong, Cowell. 1993. https://harvest.usask.ca/server/api/core/bitstreams/fc5e68a2-951c-4d34-9cfe-b5d2a383d449/content"
+1.26,Oats,Annual (Hardy),1.25,0.45,FAO-56 Table 22,FAO-56 Table 22
+4.06,Olives,Woody Perennial,1.45,0.35,FAO-56 Table 22,FAO-56 Table 22
+1.27,Onion (dry),Annual (Sensitive),0.45,0.70,FAO-56 Table 22,FAO-56 Table 22
+1.28,Onion (green),Annual (Sensitive),0.45,0.70,FAO-56 Table 22,FAO-56 Table 22
+1.29,Peas,Annual (Sensitive),0.8,0.65,FAO-56 Table 22,FAO-56 Table 22
+1.3,Peppers,Annual (Sensitive),0.75,0.70,FAO-56 Table 22,FAO-56 Table 22
+1.31,Potato,Annual (Sensitive),0.5,0.65,FAO-56 Table 22,FAO-56 Table 22
+1.32,Radishes,Annual (Sensitive),0.4,0.70,FAO-56 Table 22,FAO-56 Table 22
+1.33,Rice,Rice,0.75,1.0,FAO-56 Table 22,FAO value is 0.8 but WHC logic should be bypassed
+1.34,Safflower,Annual (Hardy),1.5,0.40,FAO-56 Table 22,FAO-56 Table 22
+1.35,Sisal,Annual (Hardy),0.75,0.20,FAO-56 Table 22,FAO-56 Table 22
+1.36,Sorghum,Annual (Hardy),1.5,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.37,Spinach,Annual (Sensitive),0.4,0.80,FAO-56 Table 22,FAO-56 Table 22
+1.38,Squash,Annual (Hardy),0.8,0.50,FAO-56 Table 22,FAO-56 Table 22
+3.07,Stone fruits,Woody Perennial,1.5,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.39,Strawberries w/mulch,Annual (Sensitive),0.25,0.80,FAO-56 Table 22,FAO-56 Table 22
+1.47,Sudan grass,Annual (Hardy),1.25,0.45,FAO-56 Table 22,FAO-56 Table 22
+1.4,Sugarbeet,Annual (Hardy),0.95,0.45,FAO-56 Table 22,FAO-56 Table 22
+3.48,Sugarcane,Non-woody Perennial,1.6,0.35,FAO-56 Table 22,FAO-56 Table 22
+1.41,Sunflower,Annual (Hardy),1.15,0.55,FAO-56 Table 22,FAO-56 Table 22
+1.42,Sweet Potatoes,Annual (Hardy),1.25,0.35,FAO-56 Table 22,FAO-56 Table 22
+1.43,Tomato,Annual (Sensitive),1.1,0.60,FAO-56 Table 22,FAO-56 Table 22
+2.03,Turfgrass (cool-season),Non-woody Perennial,0.75,0.60,FAO-56 Table 22,FAO-56 Table 22
+2.04,Turfgrass (warm-season),Non-woody Perennial,0.75,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.44,Vegetables,Annual (Sensitive),0.4,0.70,FAO-56 Table 22,FAO-56 Table 22
+3.08,Walnuts,Woody Perennial,2.05,0.50,FAO-56 Table 22,FAO-56 Table 22
+1.46,Watermelon,Annual (Hardy),1.15,0.60,FAO-56 Table 22,FAO-56 Table 22
+1.45,Wheat,Annual (Hardy),1.25,0.45,FAO-56 Table 22,FAO-56 Table 22

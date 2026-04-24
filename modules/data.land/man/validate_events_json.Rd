@@ -4,10 +4,17 @@
 \alias{validate_events_json}
 \title{Validate PEcAn events JSON against schema v0.1.0}
 \usage{
-validate_events_json(events_json, verbose = TRUE, max_errs = 50)
+validate_events_json(
+  events_json,
+  schema_version = "0.1.1",
+  verbose = TRUE,
+  max_errs = 50
+)
 }
 \arguments{
 \item{events_json}{character. Path to the JSON file to validate.}
+
+\item{schema_version}{character. Version of the PEcAn events schema to validate against.}
 
 \item{verbose}{logical. When `TRUE`, include detailed AJV messages on error.}
 
@@ -21,7 +28,7 @@ NA if validator unavailable.
 }
 \description{
 Validates a PEcAn events JSON file (single-site object or an array of site
-objects) against the bundled JSON Schema (draft 2020-12) using the AJV
+objects) against the bundled JSON Schema using the AJV
 engine.
 }
 \details{

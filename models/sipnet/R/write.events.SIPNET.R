@@ -77,12 +77,16 @@ write.events.SIPNET <- function(events_json, outdir) {
         dates <- as.Date(vapply(evs, function(e) as.character(e$date), character(1)))
         years <- as.integer(format(dates, "%Y"))
         days <- as.integer(format(dates, "%j"))
+        # Sort everything first; then just loop normally
         ord <- order(dates)
-        lines <- character(length(ord))
-        for (i in ord) {
-            e <- evs[[i]]
-            year <- years[[i]]
-            day <- days[[i]]
+        evs_sorted <- evs[ord]
+        days_sorted <- days[ord]
+        years_sorted <- years[ord]
+        lines <- character(length(evs))
+        for (i in seq_along(evs)) {
+            e <- evs_sorted[[i]]
+            year <- years_sorted[[i]]
+            day <- days_sorted[[i]]
             type <- e$event_type
             if (type == "tillage") {
                 f <- if (is.null(e$tillage_eff_0to1)) 0 else e$tillage_eff_0to1

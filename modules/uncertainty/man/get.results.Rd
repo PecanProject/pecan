@@ -2,7 +2,7 @@
 % Please edit documentation in R/get.results.R
 \name{get.results}
 \alias{get.results}
-\title{Reads model output and runs sensitivity and ensemble analyses}
+\title{Read model output and save parsed results for sensitivity and ensemble analyses}
 \usage{
 get.results(
   settings,
@@ -14,11 +14,12 @@ get.results(
 )
 }
 \arguments{
-\item{settings}{list, read from settings file (xml) using \code{\link[PEcAn.settings]{read.settings}}}
+\item{settings}{list, read from settings file (xml) using
+\code{PEcAn.settings::read.settings()}}
 
 \item{sa.ensemble.id, ens.ensemble.id}{ensemble IDs for the sensitivity
 analysis and ensemble analysis.
-If not provided, they are first looked up from `settings`,
+If not provided, they are first looked up from \code{settings},
 then if not found they are not used and the most recent set of results
 is read from \code{samples.Rdata} in directory \code{settings$outdir}}
 
@@ -26,8 +27,39 @@ is read from \code{samples.Rdata} in directory \code{settings$outdir}}
 
 \item{start.year, end.year}{first and last years to retrieve}
 }
+\value{
+Nothing (called for side effects). Saves \code{sensitivity.output} and/or
+\code{ensemble.output} \code{.Rdata} files to \code{settings$outdir}.
+}
 \description{
-Output is placed in model output directory (settings$outdir).
+Read model output and save parsed results for sensitivity and ensemble analyses
+}
+\details{
+\strong{Upstream contract (reads from \code{settings$outdir}):}
+\describe{
+\item{\verb{sensitivity.samples.<id>.Rdata} or \code{samples.Rdata}}{Loaded to
+obtain \code{sa.run.ids}, \code{pft.names}, \code{trait.names}, and \code{sa.samples} for
+sensitivity analysis. Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.}
+\item{\verb{ensemble.samples.<id>.Rdata} or \code{samples.Rdata}}{Loaded to obtain
+\code{ens.run.ids}, \code{pft.names}, and \code{trait.names} for ensemble analysis.
+Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.}
+}
+
+\strong{File-based side effects (saved to \code{settings$outdir}):}
+\describe{
+\item{\verb{sensitivity.output.<var>.<years>.<id>.Rdata}}{Contains
+\code{sensitivity.output}: a named list (PFT -> matrix[n_quantiles x
+n_traits]) of model output values corresponding to each SA run.
+One file per variable/year combination.}
+\item{\verb{ensemble.output.<var>.<years>.<id>.Rdata}}{Contains
+\code{ensemble.output}: a numeric vector of model output values, one per
+ensemble member. One file per variable/year combination.}
+}
+
+\strong{Downstream contract:} \code{sensitivity.output.*.Rdata} is loaded by
+\code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}}. \code{ensemble.output.*.Rdata} is loaded by
+\code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}. Both use these files to compute diagnostics
+and plots. This implicit file-based coupling is a refactoring target.
 }
 \author{
 David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly

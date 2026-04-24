@@ -26,7 +26,7 @@ library(terra)
 setwd("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/")
 
 # read settings xml file.
-settings_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/pecan.xml"
+settings_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/pecan_new_obs_prep.xml"
 settings <- PEcAn.settings::read.settings(settings_dir)
 
 # update settings with the actual PFTs.
@@ -56,7 +56,12 @@ for (i in 1:length(obs.mean)) {
     if (length(obs.mean[[i]][[j]])==0) {
       next
     }
-    obs.mean[[i]][[j]][which(obs.mean[[i]][[j]]==0)] <- 0.01
+    inds <- which(obs.mean[[i]][[j]]==0)
+    for (ind in inds) {
+      att <- attributes(obs.mean[[i]][[j]][[ind]])[[1]]
+      obs.mean[[i]][[j]][[ind]] <- 0.01
+      attr(obs.mean[[i]][[j]][[ind]], "source") <- att
+    }
     if(length(obs.cov[[i]][[j]]) > 1){
       diag(obs.cov[[i]][[j]])[which(diag(obs.cov[[i]][[j]]<=0.1))] <- 0.1
     }else{
@@ -71,31 +76,30 @@ for (i in 1:length(obs.mean)) {
 load(file.path(settings$outdir, "samples.Rdata"))
 
 # execute the SDA.
-PEcAnAssimSequential::qsub_sda(settings = settings, 
-                               obs.mean = obs.mean, 
-                               obs.cov = obs.cov, 
-                               Q = NULL, 
-                               pre_enkf_params = NULL, 
-                               ensemble.samples = ensemble.samples, 
-                               outdir = NULL, 
-                               control = list(TimeseriesPlot = FALSE,
-                                              OutlierDetection=FALSE,
-                                              send_email = NULL,
-                                              keepNC = FALSE,
-                                              forceRun = TRUE,
-                                              MCMC.args = NULL,
-                                              merge_nc = TRUE),
-                               block.index = NULL,
-                               debias = list(cov.dir = "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/covariates_lc_ts/covariates_nolatlon/", 
-                                             start.year = 2014), prefix = "batch_Oct_26")
-                               # debias = list(cov.dir = NULL, start.year = NULL))
+qsub_sda(settings = settings, 
+         obs.mean = obs.mean, 
+         obs.cov = obs.cov, 
+         Q = NULL, 
+         pre_enkf_params = NULL, 
+         ensemble.samples = ensemble.samples, 
+         outdir = NULL, 
+         control = list(TimeseriesPlot = FALSE,
+                        OutlierDetection=FALSE,
+                        send_email = NULL,
+                        keepNC = FALSE,
+                        forceRun = TRUE,
+                        MCMC.args = NULL,
+                        merge_nc = TRUE),
+         block.index = NULL,
+         debias = list(cov.dir = "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/covariates_lc_ts/covariates_nolatlon/", 
+                       t.start = 1, residual.lag = TRUE), prefix = "batch_Mar_10")
 
 # export sda output.
-PEcAnAssimSequential::sda_assemble("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/batch_Oct_25/", 
+PEcAnAssimSequential::sda_assemble("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/batch_Mar_10", 
                                    "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site")
 
 # merge all netcdf files into single files across time steps.
-batch.folder <- file.path(settings$outdir, "batch_Oct_25")
+batch.folder <- file.path(settings$outdir, "batch_Mar_10")
 job.folders <- paste0("Job_", 1:as.numeric(settings$state.data.assimilation$batch.settings$general.job$folder.num))
 time.points <- seq(as.Date(names(obs.mean)[1]), 
                    as.Date(names(obs.mean)[length(obs.mean)]),
@@ -147,3 +151,23 @@ for (t in time.points) {
   # print(length(which(file.exists(nc.files))))
   merge_multi_nc_files(nc.files, nc.outdir, parallel::detectCores() - 1)
 }
+
+# debug mode.
+configs <- readRDS("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/batch_Mar_10/Job_20/configs.rds")
+settings <- PEcAn.settings::read.settings(configs$setting)
+obs.mean <- configs$obs.mean
+obs.cov <- configs$obs.cov
+Q <- configs$Q 
+pre_enkf_params <- configs$pre_enkf_params
+ensemble.samples <- configs$ensemble.samples
+outdir <- configs$outdir
+control <- configs$control
+debias <- configs$debias
+sda_matchparam <- PEcAnAssimSequential:::sda_matchparam
+build_X <- PEcAnAssimSequential:::build_X
+analysis_sda_block <- PEcAnAssimSequential:::analysis_sda_block
+py.init <- PEcAnAssimSequential:::.get_debias_mod
+residual.lag <- TRUE
+t.start <- 1
+dates <- 2012:2024
+cov.dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/covariates_lc_ts/covariates_with_LAI"

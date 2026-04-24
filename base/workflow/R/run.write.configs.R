@@ -1,28 +1,62 @@
 #' Write model-specific run scripts and configuration files
 #'
-#' Generates run scripts and configuration files for all analyses specified
-#' in the provided settings. Most of the heavy lifting is done by the
-#' \code{write.config.*} function for your specific ecosystem model
-#' (e.g. write.config.ED2, write.config.SIPNET).
+#' @md
+#' Generates run scripts and configuration files for all analyses (ensemble
+#' and/or sensitivity analysis) specified in the provided settings. Delegates
+#' the model-specific config writing to the appropriate `write.config.*`
+#' function (e.g. `write.config.ED2`, `write.config.SIPNET`).
 #'
+#' @details
+#' **Upstream contract (reads from `settings$outdir`):**
+#' \describe{
+#'   \item{`samples.Rdata`}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
+#'     Contains 5 bundled objects: `trait.samples`,
+#'     `sa.samples`, `ensemble.samples`, `runs.samples`, `env.samples`.
+#'     This function loads `trait.samples` and `sa.samples` to build
+#'     model configuration files. If `input_design` contains a `param`
+#'     column, `ensemble.samples` is rebuilt by subsetting `trait.samples`
+#'     according to the design indices.}
+#' }
+#'
+#' **File-based side effects (saved to `settings$outdir`):**
+#' \describe{
+#'   \item{`sensitivity.samples.<ensemble_id>.Rdata`}{Contains `sa.run.ids`
+#'     (named list of run IDs per PFT/trait/quantile), `sa.ensemble.id`,
+#'     `sa.samples`, `pft.names`, and `trait.names`. Saved when sensitivity
+#'     analysis is configured.}
+#'   \item{`ensemble.samples.<ensemble_id>.Rdata`}{Contains `ens.run.ids`
+#'     (vector of run IDs), `ens.ensemble.id`, `ens.samples`, `pft.names`,
+#'     and `trait.names`. Saved when ensemble is configured.}
+#'   \item{`runs_manifest.csv`}{A CSV table tracking all runs created,
+#'     appended across ensemble and SA analyses.}
+#' }
+#'
+#' **Downstream contract:** The `sensitivity.samples.*.Rdata` and
+#' `ensemble.samples.*.Rdata` files are loaded by \code{\link[PEcAn.uncertainty]{get.results}}
+#'  to match model outputs to their corresponding
+#'  parameter sets. This implicit file-based coupling is a refactoring target.
+#'
+#' The default value for `posterior.files` is NA, in which case the
+#'    most recent posterior or prior (in that order) for the workflow is used.
+#'    When specified, `posterior.files` should be a vector of filenames with one
+#'    entry for each PFT. Specify filenames with no path; PFT outdirs will be
+#'    appended. This forces use of only files within this workflow, to avoid
+#'    confusion.
 #'
 #' @param settings a PEcAn settings list
 #' @param ensemble.size number of ensemble runs
-#' @param input_design Input design data.frame coordinating input files across runs.
-#'   Contains columns for each sampled input (met, param, etc.) with row indices,
-#'   as documented in \code{runModule.run.write.configs()}.
+#' @param input_design Input design data.frame coordinating input files across
+#'   runs. Contains columns for each sampled input (met, param, etc.) with row
+#'   indices, as documented in \code{\link[PEcAn.workflow]{runModule.run.write.configs}}.
 #' @param write should the runs be written to the database?
-#' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
-#'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
+#' @param posterior.files Filenames for posteriors for drawing samples for
+#'   ensemble and sensitivity analysis (e.g. `post.distns.Rdata`, or
+#'   `prior.distns.Rdata`).
 #' @param overwrite logical: Replace output files that already exist?
 #'
-#' @details The default value for \code{posterior.files} is NA, in which case the
-#'    most recent posterior or prior (in that order) for the workflow is used.
-#'    When specified, \code{posterior.files} should be a vector of filenames with one entry for each PFT.
-#'    Specify filenames with no path; PFT outdirs will be appended. This forces use of only
-#'    files within this workflow, to avoid confusion.
-#'
-#' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+#' @return The `settings` list (invisibly), updated with ensemble IDs for SA
+#'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
+#'   `settings$ensemble$ensemble.id`).
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V

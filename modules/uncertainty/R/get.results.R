@@ -1,15 +1,51 @@
-##' Reads model output and runs sensitivity and ensemble analyses
+##' Read model output and save parsed results for sensitivity and ensemble analyses
 ##'
-##' Output is placed in model output directory (settings$outdir).
+##' @md
+##' Loads sample metadata and run IDs from disk, reads model output for each
+##' run, and saves parsed results for downstream analysis by
+##' \code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} and \code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}.
+##'
+##' Output is placed in model output directory (`settings$outdir`).
+##'
+##' @details
+##' **Upstream contract (reads from `settings$outdir`):**
+##' \describe{
+##'   \item{`sensitivity.samples.<id>.Rdata` or `samples.Rdata`}{Loaded to
+##'     obtain `sa.run.ids`, `pft.names`, `trait.names`, and `sa.samples` for
+##'     sensitivity analysis. Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.}
+##'   \item{`ensemble.samples.<id>.Rdata` or `samples.Rdata`}{Loaded to obtain
+##'     `ens.run.ids`, `pft.names`, and `trait.names` for ensemble analysis.
+##'     Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.}
+##' }
+##'
+##' **File-based side effects (saved to `settings$outdir`):**
+##' \describe{
+##'   \item{`sensitivity.output.<var>.<years>.<id>.Rdata`}{Contains
+##'     `sensitivity.output`: a named list (PFT -> matrix\[n_quantiles x
+##'     n_traits\]) of model output values corresponding to each SA run.
+##'     One file per variable/year combination.}
+##'   \item{`ensemble.output.<var>.<years>.<id>.Rdata`}{Contains
+##'     `ensemble.output`: a numeric vector of model output values, one per
+##'     ensemble member. One file per variable/year combination.}
+##' }
+##'
+##' **Downstream contract:** `sensitivity.output.*.Rdata` is loaded by
+##' \code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}}. `ensemble.output.*.Rdata` is loaded by
+##' \code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}. Both use these files to compute diagnostics
+##' and plots. This implicit file-based coupling is a refactoring target.
+##'
 ##' @export
-##' @param settings list, read from settings file (xml) using \code{\link[PEcAn.settings]{read.settings}}
+##' @param settings list, read from settings file (xml) using
+##'   `PEcAn.settings::read.settings()`
 ##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
 ##'   analysis and ensemble analysis.
 ##'   If not provided, they are first looked up from `settings`,
 ##'   then if not found they are not used and the most recent set of results
-##'   is read from \code{samples.Rdata} in directory \code{settings$outdir}
+##'   is read from `samples.Rdata` in directory `settings$outdir`
 ##' @param variable variables to retrieve, as vector of names or expressions
 ##' @param start.year,end.year first and last years to retrieve
+##' @return Nothing (called for side effects). Saves `sensitivity.output` and/or
+##'   `ensemble.output` `.Rdata` files to `settings$outdir`.
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
 get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL, 
                         variable = NULL, start.year = NULL, end.year = NULL) {
@@ -85,8 +121,8 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     # Only handling one variable at a time for now
     if (length(variables.sa) >= 1) {
       for(variable.sa in variables.sa){
-        PEcAn.logger::logger.warn(paste0("Currently performing sensitivity analysis on variable ", 
-                                         variable.sa, ")"))
+        PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ",
+                                  variable.sa)
         
         # if an expression is provided, convert.expr returns names of the variables accordingly
         # if a derivation is not requested it returns the variable name as is

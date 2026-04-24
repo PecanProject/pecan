@@ -4,7 +4,7 @@
 \alias{Construct.H.multisite}
 \title{Construct.H.multisite}
 \usage{
-Construct.H.multisite(site.ids, var.names, obs.t.mean)
+Construct.H.multisite(site.ids, var.names, obs.t.mean, products = NULL)
 }
 \arguments{
 \item{site.ids}{a vector name of site ids}
@@ -12,6 +12,8 @@ Construct.H.multisite(site.ids, var.names, obs.t.mean)
 \item{var.names}{vector names of state variable names}
 
 \item{obs.t.mean}{list of vector of means for the time t for different sites.}
+
+\item{products}{vector names of products for each observation.}
 }
 \value{
 Returns a matrix with block sizes determined by the b argument. Each block is filled with the same value taken from x.

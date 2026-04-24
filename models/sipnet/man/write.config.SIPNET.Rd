@@ -20,7 +20,9 @@ write.config.SIPNET(
 structure is \verb{list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))}.
 Only \code{defaults[[1]]$constants} is used; all other elements are silently ignored.}
 
-\item{trait.values}{vector of samples for a given trait}
+\item{trait.values}{named list of trait values for each PFT. SIPNET can
+handle only one vegetation PFT, and an optional "soil" PFT for soil constants.
+\code{trait.values} that do not fit this format will throw a warning.}
 
 \item{settings}{PEcAn settings object}
 

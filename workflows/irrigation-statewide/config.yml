@@ -1,0 +1,23 @@
+default:
+  n_parcels: 1000
+  batch_size: 100
+  n_remote_workers: 1
+  exec_type: "local"
+  event_filename: "irrigation_1000"
+  n_irr_ensemble: 20
+
+small:
+
+medium:
+  n_parcels: 10000
+  batch_size: 1000
+  n_remote_workers: 15
+  exec_type: "cluster"
+  event_filename: "irrigation_10000"
+
+all:
+  n_parcels: null   # `null` means "all"
+  batch_size: 5000
+  n_remote_workers: 60
+  exec_type: "cluster"
+  event_filename: "irrigation_all"
