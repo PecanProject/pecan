@@ -233,24 +233,24 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #' @return a list of paths to generated and stored IC files.
 #' @export
 #'
-BADM_IC_process <- function(settings, dir, overwrite=TRUE){
+BADM_IC_process <- function(settings, dir, overwrite = TRUE) {
   
-  # check if this is a single-site or multi-site configuration
   out.ense <- PEcAn.settings::papply(settings, function(site.settings) {
-  
-  # create site info.
-    site <- site.settings$run$site
     
+    site      <- site.settings$run$site
     site.info <- list(
       id  = site$id,
       lat = as.numeric(site$lat),
       lon = as.numeric(site$lon)
     )
     
-  # Determine ensemble size safely
+    if (is.na(site.info$lat) || is.na(site.info$lon)) {
+      stop("Invalid coordinates for site ", site.info$id,
+           ": lat=", site$lat, ", lon=", site$lon)
+    }
+    
     ens.size <- max(1, site.settings$ensemble$size %||% 1)
     
-    # ---- 3. Generate IC files for each ensemble member
     site.outputs <- seq_len(ens.size) %>%
       purrr::map(~ netcdf.writer.BADM(
         lat    = site.info$lat,
@@ -260,14 +260,8 @@ BADM_IC_process <- function(settings, dir, overwrite=TRUE){
         ens    = .x
       ))
     
-    # Name outputs consistently
-    site.outputs <- stats::setNames(site.outputs, rep("path", length(site.outputs)))
-    
-    return(site.outputs)
+    stats::setNames(site.outputs, rep("path", length(site.outputs)))
   })
-  
-  # Flatten output into a single list
-  out.ense <- unlist(out.ense, recursive = FALSE)
   
   return(out.ense)
 }
