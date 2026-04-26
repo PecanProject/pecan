@@ -1,5 +1,7 @@
 # PEcAn.SIPNET
 
+PEcAn.SIPNET is the PEcAn interface package for running the SIPNET ecosystem model within the PEcAn workflow. It handles input/output translation, model execution, and integration with PEcAn tools such as data assimilation and ensemble analysis.
+
 <!-- badges: start -->
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -11,7 +13,9 @@
 
 The SIPNET v1 (**S**implified PnET (**P**hotosynthesis** and **E**vapo**t**ranspiration)) model is a lightweight ecosystem model designed to simulate ecosystem carbon and water dynamics. 
 
-SIPNET v2 added a nitrogen cycle, trace greenhouse-gas (N₂O, CH₄) fluxes, and support for cropland and ecosystem management. As of PEcAn v1.10, support for SIPNET v2 is partially implemented and under active development.
+SIPNET is a process-based ecosystem model that simulates carbon, water, and nutrient dynamics at sub-daily time steps. It includes modules for photosynthesis, respiration, soil processes, and vegetation dynamics.
+
+For full model details, see the SIPNET documentation.
 
 **Key Features:**
 - Simulates photosynthesis, respiration, allocation, soil water, soil temperature, and nitrogen cycling
@@ -20,7 +24,7 @@ SIPNET v2 added a nitrogen cycle, trace greenhouse-gas (N₂O, CH₄) fluxes, an
 - Event-based management for agricultural processes (planting, harvest, tillage, irrigation)
 - Clean, modular, BSD-licensed codebase suitable for research and production
 
-For comprehensive SIPNET documentation, see the [SIPNET project website](https://pecanproject.github.io/sipnet).
+For full model details, see the [SIPNET documentation](https://pecanproject.github.io/sipnet).
 
 ## Using SIPNET via PEcAn
 
@@ -34,11 +38,21 @@ PEcAn.SIPNET is the PEcAn interface package that enables SIPNET integration with
 - [Demo 1: Basic PEcAn Run](https://pecanproject.github.io/pecan-documentation/develop/rendered-demo-notebooks/run_pecan.html)
 - [SIPNET in the PEcAn Book](https://pecanproject.github.io/pecan-documentation/develop/models-sipnet.html)
 
+
+## Documentation Structure
+
+- This README provides an overview of using SIPNET within PEcAn.
+- Detailed model documentation is available in the [SIPNET documentation](https://pecanproject.github.io/sipnet).
+- The PEcAn documentation provides workflow-level guidance and examples.
+
+Users are encouraged to refer to the SIPNET documentation for model-specific details and to the PEcAn documentation for workflow integration.
+
+
 ## Installation
 
 ### Install PEcAn.SIPNET Package
 
-You can install the development version of `PEcAn.SIPNET` from r-universe:
+Install the PEcAn.SIPNET package from r-universe:
 
 ```r
 # Enable repository from pecanproject
@@ -63,7 +77,7 @@ To use PEcAn.SIPNET, you also need the SIPNET model executable installed on your
 ## Documentation
 
 - **PEcAn.SIPNET Package Docs:** https://pecanproject.github.io/package-documentation/develop/PEcAn.SIPNET/
-- **SIPNET Model Docs:** https://pecanproject.github.io/sipnet
+- **SIPNET Model Docs:** [SIPNET documentation](https://pecanproject.github.io/sipnet)
 - **PEcAn Book - SIPNET Chapter:** https://pecanproject.github.io/pecan-documentation/develop/models-sipnet.html
 - **Source Code:** https://github.com/PecanProject/pecan/tree/develop/models/sipnet
 
