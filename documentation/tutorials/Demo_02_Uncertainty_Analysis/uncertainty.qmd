@@ -365,10 +365,7 @@ for (var in variables) {
         sensitivity.results[[pft$name]]$variance.decomposition.output
       )
       # Explicitly print the plot
-      gridExtra::grid.arrange(
-        grobs = vd_plots, ncol = 4,
-        top = paste("Variance Decomposition:", var)
-      )
+      vd_plots + ggplot2::ggtitle(paste("Variance Decomposition:", var))
     }
   } else {
     PEcAn.logger::logger.warn(paste("Could not find sensitivity results file for variable:", var))

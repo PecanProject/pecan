@@ -80,8 +80,8 @@
 "soil_class"
 
 #' Fertilizer Nutrient Composition Table
-#' 
-#' A dataset of fertilizer and organic matter addition types 
+#'
+#' A dataset of fertilizer and organic matter addition types
 #' and their nitrogen and carbon composition, based on the SWAT model's
 #' `fertilizer.frt` table and DayCent model defaults for organic matter
 #' C:N ratio parameters.
@@ -101,9 +101,9 @@
 #' }
 #'
 #' @details
-#' This table is based on SWAT model's \code{fertilizer.frt} file, and uses 
+#' This table is based on SWAT model's \code{fertilizer.frt} file, and uses
 #' C:N ratios (\code{cn_ratio}) from DayCent model default parameter files.
-#' \code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of 
+#' \code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of
 #' fertilizer by mass that is ammonium-N and nitrate-N, respectively. This is different from
 #' the SWAT model's definition of \code{fraction_nh3_n} as a fraction of the total mineral N.
 #'
@@ -123,7 +123,7 @@
 #'   \item{SUBCLASS}{LandIQ subclass code.}
 #'   \item{subclass_name}{LandIQ subclass name.}
 #' }
-#' @source California Department of Water Resources. (2023). Statewide Crop Mapping—California 
+#' @source California Department of Water Resources. (2023). Statewide Crop Mapping—California
 #' Natural Resources Agency Open Data. Metadata retrieved from https://data.cnra.ca.gov/dataset/statewide-crop-mapping and manually extracted into `data-raw/landiq_crop_mapping_codes.tsv`.
 "landiq_crop_mapping_codes"
 
@@ -132,7 +132,7 @@
 #' Crop and growth stage specific coefficients (Kc) from the Basic Irrigation Scheduling
 #' (BIS) Excel workbook (Snyder et. al., 2014).
 #' The dataset is an export of the BISm.xlsx workbook's `CropRef` worksheet, with columns renamed
-#' and columns added that map to LandIQ CADWR land use dataset 
+#' and columns added that map to LandIQ CADWR land use dataset
 #' (\code{\link{landiq_crop_mapping_codes}}; California Department of Water Resources, 2023).
 #' This dataset provides the information needed to reconstruct a stage-based daily Kc curve when
 #' combined with grass-reference evapotranspiration (ETo), such as that provided
@@ -287,3 +287,31 @@
 #'   \code{\link{look_up_fertilizer_components}} for fertilizer nutrient
 #'   composition (N/C fractions) from the SWAT/DayCent database.
 "ca_compost_amendment"
+
+#' Crop-specific rooting depths and water-depletion thresholds
+#'
+#' Maximum effective rooting depth and minimum soil water content thresholds
+#' for various crops. The `whc_min_frac` column represents the fraction of
+#' total available water (TAW) that should remain in the root zone to avoid
+#' moisture stress (equivalent to 1 - p, where p is the depletion fraction
+#' from FAO-56).
+#'
+#' @format A tibble with one row per crop and the following columns:
+#' \describe{
+#'   \item{crop_number}{BIS crop number (character). Blank for crops not in BIS.}
+#'   \item{crop_name}{Crop name.}
+#'   \item{Category}{Crop category (e.g., Woody Perennial, Annual (Hardy)).}
+#'   \item{rooting_depth_m}{Maximum effective rooting depth in meters.}
+#'   \item{whc_min_frac}{Minimum soil water as fraction of available water-holding capacity (0-1).}
+#'   \item{whc_notes}{Rationale or source for the minimum WHC value.}
+#'   \item{rooting_depth_notes}{Rationale or source for the rooting depth value.}
+#' }
+#' @source Allen, R. G., Pereira, L. S., Raes, D., & Smith, M.
+#' \emph{FAO Irrigation and Drainage Paper No. 56: Crop evapotranspiration}. Chapter 8. Table 22.
+#' https://www.fao.org/4/x0490e/x0490e0e.htm#chapter%208%20%20%20etc%20under%20soil%20water%20stress%20conditions
+#' @examples
+#' data(crop_whc)
+#' head(crop_whc)
+#'
+#' @keywords datasets
+"crop_whc"

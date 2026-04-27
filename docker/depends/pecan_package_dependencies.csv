@@ -6,6 +6,7 @@
 "abind",">= 1.4.5","modules/data.atmosphere","Imports",FALSE
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
+"arrow","*","modules/data.land","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
 "assertthat","*","modules/data.atmosphere","Imports",FALSE
 "BayesianTools","*","modules/assim.batch","Imports",FALSE
@@ -133,6 +134,7 @@
 "httr","*","modules/data.atmosphere","Imports",FALSE
 "httr","*","modules/data.land","Suggests",FALSE
 "httr","*","modules/data.remote","Suggests",FALSE
+"httr2",">= 1.1.0","modules/data.land","Imports",FALSE
 "IDPmisc","*","modules/assim.batch","Imports",FALSE
 "imager","*","models/peprmt","Suggests",FALSE
 "itertools","*","modules/assim.sequential","Suggests",FALSE
@@ -215,6 +217,7 @@
 "methods","*","modules/assim.batch","Imports",FALSE
 "methods","*","modules/assim.sequential","Suggests",FALSE
 "methods","*","modules/emulator","Imports",FALSE
+"Metrics","*","modules/assim.sequential","Suggests",FALSE
 "mgcv","*","modules/data.atmosphere","Imports",FALSE
 "minpack.lm","*","modules/rtm","Suggests",FALSE
 "mlegp","*","modules/assim.batch","Imports",FALSE
@@ -668,6 +671,7 @@
 "tibble","*","models/fates","Imports",FALSE
 "tibble","*","models/lpjguess","Imports",FALSE
 "tibble","*","modules/data.atmosphere","Imports",FALSE
+"tibble","*","modules/data.land","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE
 "tibble","*","modules/meta.analysis","Suggests",FALSE
 "tictoc","*","modules/assim.sequential","Suggests",FALSE
@@ -676,6 +680,7 @@
 "tidyr","*","modules/assim.sequential","Suggests",FALSE
 "tidyr","*","modules/data.atmosphere","Imports",FALSE
 "tidyr","*","modules/data.land","Imports",FALSE
+"tidyr","*","modules/uncertainty","Imports",FALSE
 "tidyselect","*","modules/benchmark","Imports",FALSE
 "tidyselect","*","modules/data.atmosphere","Imports",FALSE
 "tidyselect","*","modules/data.land","Imports",FALSE

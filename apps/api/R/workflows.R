@@ -55,7 +55,7 @@ getWorkflows <- function(req, model_id=NA, site_id=NA, offset=0, limit=50, res){
           req$HTTP_HOST,
           "/api/workflows",
           req$PATH_INFO,
-          substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+          gsub("limit=\\d+&", "", substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]])),
           (as.numeric(limit) + as.numeric(offset)),
           "&limit=", 
           limit
@@ -81,7 +81,7 @@ getWorkflows <- function(req, model_id=NA, site_id=NA, offset=0, limit=50, res){
         req$HTTP_HOST,
         "/api/workflows",
         req$PATH_INFO, 
-        substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+        gsub("limit=\\d+&", "", substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]])),
         max(0, (as.numeric(offset) - as.numeric(limit))),
         "&limit=", 
         limit

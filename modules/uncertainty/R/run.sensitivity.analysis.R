@@ -1,6 +1,5 @@
 #' Run sensitivity analysis on finished model runs
 #'
-#' @md
 #' Loads parameter samples and parsed model output from disk, computes
 #' sensitivity coefficients and variance decomposition for each PFT/trait,
 #' and saves results and diagnostic plots.
@@ -51,8 +50,8 @@
 #'   analysis on
 #' @param ... currently unused
 #'
+#' @md
 #'
-#' @export
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly
 #' @examples
 #' \dontrun{
@@ -62,6 +61,7 @@
 #' run.sensitivity.analysis(settings)
 #' }
 #'
+#' @export
 run.sensitivity.analysis <- function(settings,
                                      plot = TRUE,
                                      ensemble.id = NULL,
@@ -242,10 +242,6 @@ run.sensitivity.analysis <- function(settings,
         grDevices::dev.off()
 
         ### Generate VD diagnostic plots
-        vd.plots <- plot_variance_decomposition(
-          sensitivity.results[[pft$name]]$variance.decomposition.output
-        )
-        #variance.scale = log, variance.prefix='Log')
         fname <- sensitivity.filename(settings, "variance.decomposition", "pdf",
                                       all.var.yr = FALSE,
                                       pft = pft$name,
@@ -255,7 +251,9 @@ run.sensitivity.analysis <- function(settings,
                                       end.year = end.year)
 
         grDevices::pdf(fname, width = 11, height = 8)
-        do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
+        plot_variance_decomposition(
+          sensitivity.results[[pft$name]]$variance.decomposition.output
+        )
         grDevices::dev.off()
       }
     }

@@ -25,7 +25,7 @@ predict.GP <- function(object, xpred, cI = NULL, pI = NULL, splinefcns = NULL, .
   dim <- 1  #; if(!isotropic) dim <- length(d)
   x <- gp$x.compact
   x.id <- gp$x.id
-  n.unique <- length(gp$x.id)
+  n.unique <- max(gp$x.id)
   # npred <- npred-n.unique
   y <- gp$y
   

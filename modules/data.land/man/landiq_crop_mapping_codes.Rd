@@ -15,7 +15,7 @@ A data frame with 203 rows and 4 columns:
 }
 }
 \source{
-California Department of Water Resources. (2023). Statewide Crop Mapping—California 
+California Department of Water Resources. (2023). Statewide Crop Mapping—California
 Natural Resources Agency Open Data. Metadata retrieved from https://data.cnra.ca.gov/dataset/statewide-crop-mapping and manually extracted into `data-raw/landiq_crop_mapping_codes.tsv`.
 }
 \usage{

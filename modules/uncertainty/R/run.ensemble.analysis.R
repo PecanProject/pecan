@@ -1,6 +1,5 @@
 #' Run ensemble analysis on finished model runs
 #'
-#' @md
 #' Loads parsed ensemble model output from disk, computes summary statistics
 #' (mean, median, quantiles), and generates diagnostic plots (histogram,
 #' boxplot, and optionally time series).
@@ -38,8 +37,11 @@
 #'
 #' @return Nothing (called for side effects). Creates ensemble plots as PDF
 #'   files and optionally saves time series analysis results.
-#' @export
+#'
+#' @md
+#'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly
+#' @export
 run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = NULL, 
                                   variable = NULL, start.year = NULL, end.year = NULL, ...) {
   

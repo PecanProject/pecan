@@ -1,6 +1,5 @@
 #' Convert priors / MCMC samples to parameter sample chains
 #'
-#' @md
 #' Loads posterior distributions and MCMC chain results from disk, generates
 #' parameter samples for ensemble and sensitivity analysis runs, and optionally
 #' saves results to `samples.Rdata`. This is the backward-compatible wrapper
@@ -51,10 +50,12 @@
 #' @return Named list with 5 elements: `trait.samples`, `sa.samples`,
 #'   `ensemble.samples`, `runs.samples`, `env.samples`. Returned invisibly.
 #'
-#' @export
+#' @md
 #'
 #' @author David LeBauer, Shawn Serbin, Istem Fer, Om Kapale
 #' @importFrom rlang %||%
+#'
+#' @export
 get.parameter.samples <- function(settings,
                                   ensemble.size = 1,
                                   posterior.files = rep(NA, length(settings$pfts)),

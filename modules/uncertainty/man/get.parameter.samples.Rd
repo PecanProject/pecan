@@ -29,7 +29,10 @@ Named list with 5 elements: \code{trait.samples}, \code{sa.samples},
 \code{ensemble.samples}, \code{runs.samples}, \code{env.samples}. Returned invisibly.
 }
 \description{
-Convert priors / MCMC samples to parameter sample chains
+Loads posterior distributions and MCMC chain results from disk, generates
+parameter samples for ensemble and sensitivity analysis runs, and optionally
+saves results to \code{samples.Rdata}. This is the backward-compatible wrapper
+that delegates computation to \code{\link[PEcAn.uncertainty]{get_parameter_samples}}.
 }
 \details{
 \strong{Upstream contract (reads from each PFT's \code{outdir}):}

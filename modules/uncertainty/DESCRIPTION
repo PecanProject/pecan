@@ -43,7 +43,8 @@ Imports:
     purrr,
     randtoolbox,
     rlang,
-    sensitivity
+    sensitivity,
+    tidyr
 Suggests:
     mockery,
     testthat (>= 1.0.2),
