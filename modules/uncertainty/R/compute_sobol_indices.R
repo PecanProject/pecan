@@ -10,26 +10,37 @@
 #' \code{sensobol} for these variance-based estimators; see Saltelli et al. (2008)
 #' for methodological background and Puy et al. (2022) for package details.
 #'
-#' This function handles one output variable at a time. To compute indices for
-#' multiple variables, call it in a loop (see examples).
+#' One variable per call. For a multisite outdir (one ensemble.output file
+#' per site per variable) pass `ensemble_id` to pick the right file; loop
+#' sites and variables in the caller.
 #'
 #' @param outdir PEcAn run output directory containing \code{ensemble.output.*.Rdata}
 #'   files.
 #' @param sobol_obj object produced by
 #'   \code{PEcAn.uncertainty::generate_joint_ensemble_design(..., sobol = TRUE)}.
 #' @param var Variable name to summarize (default \code{"GPP"}).
+#' @param ensemble_id optional ensemble id; filters
+#'   \code{ensemble.output.<ensemble_id>.<var>.<startyr>.<endyr>.Rdata} when
+#'   the outdir holds output from more than one site. NULL means expect one
+#'   matching file per var.
+#' @param boot pass through to \code{sensobol::sobol_indices}; TRUE returns
+#'   bootstrap CIs.
+#' @param R bootstrap replicates when \code{boot = TRUE}. NULL keeps the
+#'   sensobol default.
 #'
 #' @examples
 #' \dontrun{
-#'   # single variable
-#'   result <- compute_sobol_indices(outdir, sobol_obj, var = "GPP")
+#'   # single site
+#'   compute_sobol_indices(outdir, sobol_obj, var = "GPP")
 #'
-#'   # multiple variables
-#'   vars <- c("GPP", "NPP", "TotSoilCarb")
-#'   all_results <- purrr::map_dfr(vars, function(v) {
-#'     compute_sobol_indices(outdir, sobol_obj, var = v) |>
-#'       dplyr::mutate(variable = v)
-#'   })
+#'   # multisite - loop sites and vars, disambiguate via ensemble_id
+#'   for (i in seq_along(settings)) {
+#'     eid <- settings[[i]]$ensemble$ensemble.id
+#'     for (v in variables) {
+#'       compute_sobol_indices(outdir, sobol_obj, var = v,
+#'                             ensemble_id = eid, boot = TRUE, R = 500)
+#'     }
+#'   }
 #' }
 #'
 #' @return A tibble of Sobol first-order and total-order indices with attached
@@ -45,7 +56,10 @@
 #' @export
 compute_sobol_indices <- function(outdir,
                                   sobol_obj,
-                                  var = "GPP") {
+                                  var = "GPP",
+                                  ensemble_id = NULL,
+                                  boot = FALSE,
+                                  R = NULL) {
   if (is.null(sobol_obj$backend) || sobol_obj$backend != "sensobol") {
     PEcAn.logger::logger.error(
       "compute_sobol_indices expects a sensobol design object returned by ",
@@ -62,23 +76,35 @@ compute_sobol_indices <- function(outdir,
     PEcAn.logger::logger.error("No ensemble.output.*.Rdata files found in ", outdir)
   }
 
-  output_var <- vapply(
-    strsplit(basename(output_files), "\\."),
+  # filename layout is ensemble.output.<ensemble_id>.<var>.<startyr>.<endyr>.Rdata
+  toks       <- strsplit(basename(output_files), "\\.")
+  output_eid <- vapply(toks,
+    function(x) if (length(x) >= 3) x[[3]] else NA_character_,
+    character(1)
+  )
+  output_var <- vapply(toks,
     function(x) if (length(x) >= 4) x[[4]] else NA_character_,
     character(1)
   )
-  matched_files <- output_files[output_var == var]
+
+  keep <- output_var == var
+  if (!is.null(ensemble_id)) {
+    keep <- keep & output_eid == ensemble_id
+  }
+  matched_files <- output_files[keep]
 
   if (length(matched_files) == 0) {
-    PEcAn.logger::logger.error(
+    PEcAn.logger::logger.severe(
       "No standardized ensemble output found for variable '", var,
-      "' in ", outdir
+      "'", if (!is.null(ensemble_id)) paste0(" with ensemble_id '", ensemble_id, "'"),
+      " in ", outdir
     )
   }
   if (length(matched_files) > 1) {
-    PEcAn.logger::logger.error(
-      "Multiple standardized ensemble outputs found for variable '", var,
-      "' in ", outdir, ". Please keep only one matching file."
+    PEcAn.logger::logger.severe(
+      "Multiple ensemble outputs match variable '", var,
+      "' in ", outdir,
+      ". Pass ensemble_id to disambiguate or keep one matching file."
     )
   }
 
@@ -87,7 +113,7 @@ compute_sobol_indices <- function(outdir,
   load(output_file, envir = output_env)
   if (is.null(output_env$ensemble.output)) {
     PEcAn.logger::logger.error(
-      "Object `ensemble.output` missing from standardized output file ",
+      "object `ensemble.output` missing from output file ",
       output_file
     )
   }
@@ -96,7 +122,7 @@ compute_sobol_indices <- function(outdir,
   expected_length <- sobol_obj$N * (length(sobol_obj$params) + 2L)
   if (length(y) != expected_length) {
     PEcAn.logger::logger.error(
-      "Standardized ensemble output has ", length(y),
+      "ensemble output has ", length(y),
       " values but expected ", expected_length,
       " for Sobol design size N = ", sobol_obj$N
     )
@@ -110,7 +136,8 @@ compute_sobol_indices <- function(outdir,
     first = sobol_obj$first,
     total = sobol_obj$total,
     order = "first",
-    boot = FALSE
+    boot = boot,
+    R = R
   )
 
   sobol_results <- tibble::as_tibble(sobol_indices_result$results)
