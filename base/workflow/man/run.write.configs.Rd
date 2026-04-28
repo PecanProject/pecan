@@ -18,32 +18,62 @@ run.write.configs(
 
 \item{ensemble.size}{number of ensemble runs}
 
-\item{input_design}{Input design data.frame coordinating input files across runs.
-Contains columns for each sampled input (met, param, etc.) with row indices,
-as documented in \code{runModule.run.write.configs()}.}
+\item{input_design}{Input design data.frame coordinating input files across
+runs. Contains columns for each sampled input (met, param, etc.) with row
+indices, as documented in \code{\link[PEcAn.workflow]{runModule.run.write.configs}}.}
 
 \item{write}{should the runs be written to the database?}
 
-\item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
-analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)}
+\item{posterior.files}{Filenames for posteriors for drawing samples for
+ensemble and sensitivity analysis (e.g. \code{post.distns.Rdata}, or
+\code{prior.distns.Rdata}).}
 
 \item{overwrite}{logical: Replace output files that already exist?}
 }
 \value{
-an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+The \code{settings} list (invisibly), updated with ensemble IDs for SA
+and ensemble analysis (e.g. \code{settings$sensitivity.analysis$ensemble.id},
+\code{settings$ensemble$ensemble.id}).
 }
 \description{
-Generates run scripts and configuration files for all analyses specified
-in the provided settings. Most of the heavy lifting is done by the
-\code{write.config.*} function for your specific ecosystem model
-(e.g. write.config.ED2, write.config.SIPNET).
+Write model-specific run scripts and configuration files
 }
 \details{
+\strong{Upstream contract (reads from \code{settings$outdir}):}
+\describe{
+\item{\code{samples.Rdata}}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
+Contains 5 bundled objects: \code{trait.samples},
+\code{sa.samples}, \code{ensemble.samples}, \code{runs.samples}, \code{env.samples}.
+This function loads \code{trait.samples} and \code{sa.samples} to build
+model configuration files. If \code{input_design} contains a \code{param}
+column, \code{ensemble.samples} is rebuilt by subsetting \code{trait.samples}
+according to the design indices.}
+}
+
+\strong{File-based side effects (saved to \code{settings$outdir}):}
+\describe{
+\item{\verb{sensitivity.samples.<ensemble_id>.Rdata}}{Contains \code{sa.run.ids}
+(named list of run IDs per PFT/trait/quantile), \code{sa.ensemble.id},
+\code{sa.samples}, \code{pft.names}, and \code{trait.names}. Saved when sensitivity
+analysis is configured.}
+\item{\verb{ensemble.samples.<ensemble_id>.Rdata}}{Contains \code{ens.run.ids}
+(vector of run IDs), \code{ens.ensemble.id}, \code{ens.samples}, \code{pft.names},
+and \code{trait.names}. Saved when ensemble is configured.}
+\item{\code{runs_manifest.csv}}{A CSV table tracking all runs created,
+appended across ensemble and SA analyses.}
+}
+
+\strong{Downstream contract:} The \code{sensitivity.samples.*.Rdata} and
+\code{ensemble.samples.*.Rdata} files are loaded by \code{\link[PEcAn.uncertainty]{get.results}}
+to match model outputs to their corresponding
+parameter sets. This implicit file-based coupling is a refactoring target.
+
 The default value for \code{posterior.files} is NA, in which case the
-   most recent posterior or prior (in that order) for the workflow is used.
-   When specified, \code{posterior.files} should be a vector of filenames with one entry for each PFT.
-   Specify filenames with no path; PFT outdirs will be appended. This forces use of only
-   files within this workflow, to avoid confusion.
+most recent posterior or prior (in that order) for the workflow is used.
+When specified, \code{posterior.files} should be a vector of filenames with one
+entry for each PFT. Specify filenames with no path; PFT outdirs will be
+appended. This forces use of only files within this workflow, to avoid
+confusion.
 }
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V

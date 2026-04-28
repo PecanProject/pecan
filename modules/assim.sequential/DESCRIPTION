@@ -46,6 +46,7 @@ Suggests:
     itertools,
     magic (>= 1.5.0),
     methods,
+    Metrics,
     PEcAn.benchmark,
     PEcAn.data.land,
     PEcAn.data.remote,

@@ -183,16 +183,66 @@ check_consistent <- function(point, prior,
 }
 
 #' "Workflow" version of run.meta.analysis.pft
+#' #' Run Bayesian meta-analysis for a single PFT (file-based wrapper)
 #'
-#' Thin wrapper around `meta_analysis_standalone` that also reads/writes files 
-#' and registers results in the PEcAn database. 
+#' @md
+#' Thin wrapper around \code{\link[PEcAn.MA]{meta_analysis_standalone}} that reads trait data and
+#' priors from disk, runs the meta-analysis, and saves results back to disk.
+#' Also registers result files in the BETYdb posteriors table.
+#'
+#' @details
+#' **Upstream contract (reads from `pft$outdir`):**
+#' \describe{
+#'   \item{`trait.data.Rdata`}{Named list of data frames produced by
+#'     \code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into `trait_env$trait.data`.}
+#'   \item{`prior.distns.Rdata`}{Data frame of prior distributions produced by
+#'     \code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into `prior_env$prior.distns`.}
+#' }
+#'
+#' **File-based side effects (saved to `pft$outdir`):**
+#' \describe{
+#'   \item{`trait.mcmc.Rdata`}{Contains `trait.mcmc`: a named list of
+#'     `mcmc.list` objects (one per trait) with posterior MCMC samples from
+#'     JAGS. Each element has columns `beta.o` (overall mean) and optionally
+#'     `sd.o` (overall SD).}
+#'   \item{`post.distns.MA.Rdata`}{Contains `post.distns`: a data frame with
+#'     one row per trait and columns `distn`, `parama`, `paramb`, `n`
+#'     summarizing the fitted posterior distribution.}
+#'   \item{`post.distns.Rdata`}{Symlink to `post.distns.MA.Rdata`.}
+#'   \item{`jagged.data.Rdata`}{Contains `jagged.data`: a named list of data
+#'     frames (one per trait) formatted for use in the JAGS meta-analysis
+#'     model (see \code{\link[PEcAn.MA]{jagify}}).}
+#' }
+#'
+#' **Downstream contract:** The files `trait.mcmc.Rdata` and
+#' `post.distns.Rdata` are expected by \code{\link[PEcAn.uncertainty]{get.parameter.samples}} (in
+#' `PEcAn.uncertainty`), which loads them to generate ensemble and sensitivity
+#' analysis samples.
+#'
+#' **Note:** The core computation is performed by \code{\link[PEcAn.MA]{meta_analysis_standalone}},
+#' which accepts and returns R objects directly — see its documentation for
+#' the pure-function interface.
 #'
 #' @param pft (list) PFT list object, as defined in settings. Must include the
 #'  following: `outdir`, `name`, `posteriorid`
 #' @param dbfiles (character) directory where previous results are found
 #' @param dbcon (DBI connection object) BETY database connection object
-#' @param update (boolean; default = TRUE) If `TRUE`, replace existing
-#'  posteriors with new ones
+#' @param update (boolean; default = FALSE) If `TRUE`, replace existing
+#'   posteriors with new ones
+#'
+#' @return The `pft` list (invisibly), or `NA` if no trait data are available.
+#'   The returned `pft` list is a named list with the following elements:
+#'   \describe{
+#'     \item{`name`}{(character) PFT name, e.g. `"temperate.deciduous"`.}
+#'     \item{`outdir`}{(character) Path to directory where output files are
+#'       stored (trait data, priors, posteriors, MCMC samples).}
+#'     \item{`posteriorid`}{(integer) Row ID of the posterior record in
+#'       BETYdb's `posteriors` table.}
+#'     \item{`constants`}{(named list, optional) Trait values to treat as
+#'       fixed constants, bypassing the meta-analysis.}
+#'   }
+#'   The function's primary outputs are communicated through files saved in
+#'   `pft$outdir`.
 #'
 #' @inheritParams meta_analysis_standalone
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon, use_ghs = TRUE, update = FALSE) {
@@ -299,19 +349,23 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 } # run.meta.analysis.pft
 
 ##--------------------------------------------------------------------------------------------------##
-##' Run meta analysis
+##' Run meta-analysis across all PFTs
+##'
+##' @md
+##' Iterates over a list of PFTs and runs \code{\link[PEcAn.MA]{run.meta.analysis.pft}} for each
+##' one. This is the main entry point called by \code{\link[PEcAn.MA]{runModule.run.meta.analysis}}.
 ##'
 ##' This will use the following items from settings:
-##' - settings$pfts
-##' - settings$database$bety
-##' - settings$database$dbfiles
-##' - settings$meta.analysis$update
+##' - `settings$pfts`
+##' - `settings$database$bety`
+##' - `settings$database$dbfiles`
+##' - `settings$meta.analysis$update`
 ##'
 ##' @param pfts the list of pfts to get traits for
 ##' @param database database connection parameters
 ##' @param update logical: Rerun the meta-analysis if result files already exist?
 ##' @param threshold Gelman-Rubin convergence diagnostic, passed on to
-##'   \code{\link{pecan.ma.summary}}
+##'  \code{\link{pecan.ma.summary}}
 ##' @inheritParams meta_analysis_standalone
 ##' @inheritParams run.meta.analysis.pft
 ##'

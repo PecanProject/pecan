@@ -10,6 +10,7 @@
 * Updated `download.NOAA_GEFS` to work with the current (v12.3) release of GEFS (#3349).
 
 ## Changed
+* Dependency `nneo`, used by `download.NEONmet`, is now suggested rather than required. Caution: `nneo` is unmaintained, has been archived by its author on GitHub, and may be removed from a future PEcAn release.
 * Dependency `ggplot2` is now suggested rather than required. It is used in two vignettes and for optional diagnostic plots from `debias_met_regression`.
 * `download.ERA5_cds` now downloads NetCDF directly (replacing internal conversion from grib) using the R package ecmwfr (replacing python dependency on cdsapi via reticulate) (#3547).
 * `download.ERA5.cds()` now requires a valid Copernicus CDS API key, replacing the previous `.netrc` authentication. See the [ecmwfr package documentation](https://bluegreen-labs.github.io/ecmwfr/) for details.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/split_inputs.SIPNET.R
 \name{split_inputs.SIPNET}
 \alias{split_inputs.SIPNET}
-\title{split_inputs.SIPNET}
+\title{Split SIPNET inputs into multiple files based on start and end time}
 \usage{
 split_inputs.SIPNET(
   start.time,
@@ -13,22 +13,30 @@ split_inputs.SIPNET(
 )
 }
 \arguments{
-\item{start.time}{start date and time for each SDA ensemble}
+\item{start.time}{Start date or datetime for splitting}
 
-\item{stop.time}{stop date and time for each SDA ensemble}
+\item{stop.time}{End date or datetime for splitting}
 
-\item{inputs}{list of model inputs to use in write.configs.SIPNET}
+\item{inputs}{Named \code{inputs} list as provided by PEcAn \code{settings}. Must have
+structure like:
+\code{list(met = list(path = "path/to/sipnet.clim"), events = list(path = "path/to/events.in"), ...)}}
 
-\item{overwrite}{Default FALSE}
+\item{overwrite}{if \code{TRUE}, overwrite existing target file (Default \code{FALSE})}
 
-\item{outpath}{if specified, write output to a new directory. Default NULL writes back to the directory being read}
+\item{outpath}{if specified, write output to a new directory. Default \code{NULL} writes back to the directory being read}
 }
 \value{
-file split up climate file
+Modified \code{inputs} list with all \code{path} entries replaced with new
+paths (suitable for inserting back into \code{settings$run$inputs}).
 }
 \description{
-Splits climate met for SIPNET
+Subset each SIPNET input file and write a new file containing values \verb{>= start.time} and \verb{< end.time} (note: end time is \emph{not} inclusive)
+}
+\details{
+NOTE that sipnet met files contain dates \emph{and} times, while sipnet event
+files contain only dates. Comparing a datetime to a date will coerce the
+date to midnight UTC.
 }
 \author{
-Mike Dietze and Ann Raiho
+Alexey Shiklomanov
 }

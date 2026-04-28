@@ -37,7 +37,7 @@ parent_ids to this function.
 \dontrun{
   settings <- PEcAn.settings::read.settings("pecan.xml")
   input.ens.gen(
-    settings, 
+    settings,
     ensemble_size = 50,
     input = "met",
     method = "sampling"

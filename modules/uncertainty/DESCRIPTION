@@ -44,7 +44,8 @@ Imports:
     randtoolbox,
     rlang,
     sensobol,
-    tibble
+    tibble,
+    tidyr
 Suggests:
     mockery,
     testthat (>= 1.0.2),

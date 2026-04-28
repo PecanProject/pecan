@@ -3,7 +3,7 @@
 # program and the accompanying materials are made available under the terms of
 # the University of Illinois/NCSA Open Source License which accompanies this
 # distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
+# https://opensource.org/licenses/NCSA
 #-------------------------------------------------------------------------------
 #---------------- Load libraries. -----------------------------------------------------------------#
 library(PEcAn.all)

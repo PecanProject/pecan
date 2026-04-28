@@ -1,8 +1,7 @@
 [
   {
-    "pecan_events_version": "0.1.0",
+    "pecan_events_version": "0.1.1",
     "site_id": "S1",
-    "pft": "PFT",
     "events": [
       {
         "event_type": "tillage",
@@ -12,6 +11,7 @@
       {
         "event_type": "harvest",
         "date": "2022-09-01",
+        "crop_code": "wheat",
         "frac_above_removed_0to1": 0.2,
         "frac_below_removed_0to1": 0.0,
         "frac_above_to_litter_0to1": 0.0,
@@ -20,14 +20,14 @@
     ]
   },
   {
-    "pecan_events_version": "0.1.0",
+    "pecan_events_version": "0.1.1",
     "site_id": "S2",
-    "pft": "PFT",
     "events": [
       {
         "event_type": "planting",
         "date": "2022-03-01",
-        "leaf_c_kg_m2": 0.01
+        "leaf_c_kg_m2": 0.01,
+        "crop_code": "maize"
       },
       {
         "event_type": "irrigation",

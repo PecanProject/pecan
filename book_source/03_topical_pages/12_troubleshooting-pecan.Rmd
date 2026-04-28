@@ -73,7 +73,7 @@ See [tests README](https://github.com/PecanProject/pecan/blob/main/tests/README.
 
 The following scripts (in `qaqc/vignettes` identify, respectively:
 
-1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/main/qaqc/vignettes/function_relationships.Rmd)
-2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/main/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
+1. [relationships among functions across packages](https://github.com/PecanProject/pecan/blob/develop/base/qaqc/vignettes/function_relationships.Rmd)
+2. [function inputs and outputs](https://github.com/PecanProject/pecan/blob/develop/base/qaqc/vignettes/module_output.Rmd) (e.g. that will identify which functions and outputs are used in a workflow).
 
 

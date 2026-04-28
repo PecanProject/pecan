@@ -2,3 +2,4 @@ contrib
 data-raw
 ^docs$
 .*venv/
+.*/sipnet-restart-workflow/

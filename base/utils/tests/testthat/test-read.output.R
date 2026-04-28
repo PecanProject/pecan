@@ -1,8 +1,6 @@
 context("read.output")
 
-testdir = file.path(tempfile(), "readtest")
-dir.create(testdir, recursive = TRUE)
-teardown(unlink(testdir, recursive = TRUE))
+testdir <- withr::local_tempdir()
 
 
 test_that("returns a list or dataframe as requested", {
@@ -74,11 +72,8 @@ test_that("handles arbitrary time offsets", {
 	expect_equal(mixedres$posix, as.POSIXct((0:730)*86400, origin = "2004-01-01", tz = "UTC"))
 })
 
-empty_testdir <- tempfile()
-dir.create(empty_testdir)
-teardown(unlink(empty_testdir, recursive = TRUE))
-
 test_that("Correct behavior when no NetCDF files present", {
+  empty_testdir <- withr::local_tempdir()
   expected <- "no netCDF files of model output present"
   out_log <- capture.output(type = "message", {
     out <- read.output(runid = "", outdir = empty_testdir,
@@ -89,10 +84,8 @@ test_that("Correct behavior when no NetCDF files present", {
   expect_equal(out, list(NA))
 })
 
-custom_testdir <- tempfile()
-dir.create(custom_testdir)
-teardown(unlink(custom_testdir, recursive = TRUE))
 test_that("Correctly read all variables, from custom ncfiles", {
+  custom_testdir <- withr::local_tempdir()
   ncfiles <- file.path(custom_testdir, c("a.nc", "b.nc", "c.nc"))
   zzz <- lapply(ncfiles, example_netcdf, varnames = c("x", "y", "z"))
   out_log <- capture.output(type = "message", {

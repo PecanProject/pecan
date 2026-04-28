@@ -15,7 +15,7 @@ Follow the instructions on the [Shiny download page][shiny-download] for the ope
 
 ### Modify the shiny configuration file
 
-The Shiny configuration file is located in `/etc/shiny-server/shiny-server.conf`. Comment out the entire file and add the following, replacing `<username>` with your user name and `<location>` with the URL location you want for your app. This will allow you to run Shiny apps from your web browser at https://your.server.edu/shiny/your-location
+The Shiny configuration file is located in `/etc/shiny-server/shiny-server.conf`. Comment out the entire file and add the following, replacing `<username>` with your user name and `<location>` with the URL location you want for your app. This will allow you to run Shiny apps from your web browser at `https://your.server.edu/shiny/your-location`
 
 ```
 run as shiny;

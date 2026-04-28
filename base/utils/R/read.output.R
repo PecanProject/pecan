@@ -11,7 +11,7 @@
 #' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
 #'
 #' For more details, see the [MsTMIP
-#' variables](http://nacp.ornl.gov/MsTMIP_variables.shtml)
+#' variables](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
 #' documentation.
 #'
 #' @param runid the ID distinguishing the model run. Can be omitted

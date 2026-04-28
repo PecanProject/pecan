@@ -97,13 +97,93 @@ See the [Soil Data] section on more into on creating a standard soil data file.
 
 See the [Vegetation Data] section on more info on creating a standard vegetation data file
 
+### Management events
+
+Externally imposed changes in system state, such as planting and harvest or tillage of crop systems, are represented as a sequence of "events" that are each defined by a date, event type, and one or more event-specific properties that describe the kind and magnitude of change imposed. PEcAn passes the same representation of a given event to all models, but interpretation of all properties -- including dates and event types -- is necessarily model-specific and could include ignoring an event entirely.
+
+Event types are defined by the PEcAn events spec, which is currently provided as a JSON schema file bundled into the PEcAn.data.land package (TODO consider exposing this in a more linkable format?). Valid events files are stored as JSON, with each events file containing an array of sites. Each site contains an id, a schema version, and an array of events, usually recorded in date order. Each event has a date, an event type, and one or more values from the required and optional properties that are documented below for each event type. Any event is also allowed to contain arbitrary additional properties not mentioned in the spec; PEcAn will pass these on to models with no further validation.
+
+The currently supported event types are: planting, harvest, irrigation, fertilization, and tillage. Each of these is described briefly below. You will note that all of them are focused on agronomic management of croplands; future work will extend this framework to include disturbance of unmanaged systems such as fire, inundation or insect outbreaks.
+
+
+#### planting
+
+Addition of live biomass that is expected to grow according to the model's plant growth rules. The current spec expects a "planting" to be a transplantation of leafed-out seedlings; models which represent planting as addition of unsprouted seeds might choose to adjust the date to account for germination time.
+
+Required properties:
+
+* `crop_code`: a machine-readable identifier that specifies what type of plant was added. Should preferably be short and use only characters that are safe in filenames.
+* `leaf_c_kg_m2`: Amount of leaf biomass added. 
+
+Optional properties:
+
+* `wood_c_kg_m2`: Biomass added as aboveground stems. Assumed zero if not specified.
+* `fine_root_c_kg_m2`: Biomass added to belowground roots. Assumed zero if not specified.
+* `cultivar`: Identifier for finer-grainer plant type identifiers that will be meaningful to models with detailed growth parameterizations but likely ignored by PFT-based models.
+* `crop_display`: A human-readable name for the added plant type.
+
+#### harvest
+
+Removal of biomass from the living pool, either by transferring it to dead (litter) biomass or by removing it from the system. Specified as a fraction of live biomass.
+
+Required properties:
+* `frac_above_removed_0to1`: Fraction of existing aboveground biomass removed from the system.
+
+Optional properties:
+
+* `frac_below_removed_0to1`: Fraction of existing beloweground biomass removed from the system. Assumed zero if not specified.
+* `frac_above_to_litter_0to1`, `frac_below_to_litter_0to1`: fraction of existing above- or below-ground live biomass converted to dead litter. Assumed zero if not specified.
+* `crop_code`: A machine_readable identifier that specifies what type of plant was harvested.
+* `cultivar`: Identifier for finer-grainer plant type identifiers that will be meaningful to models with detailed growth parameterizations but likely ignored by PFT-based models.
+* `crop_display`: A human-readable name for the added plant type.
+
+#### irrigation
+
+Addition of water to the system beyond that specified as precipitation in met files. Note that only the total amount of water is specified and not the application rate; assumptions about the duration of the event will be model-specific.
+
+Required properties:
+
+* `method`: How water was applied. One of "soil", "canopy", "flood".
+* `amount_mm`: Amount of water applied.
+
+Optional properties:
+
+* `immed_evap_frac_0to1`: fraction of the applied water that evaporates before reaching the soil water pool.
+
+#### fertilization
+
+Addition of exogenous nutrients, including non-crop carbon (e.g. manure, compost). Nutrients other than N and C are not currently included but may be added in future schemas.
+
+Required properties:
+
+* at least one of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2`, which are respectively the amount of organic C, ammonium N, and nitrate N added.
+
+Optional properties:
+
+* any of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2` not already counted as required. All are assumed zero if not specified.
+* `org_n_kg_m2`: the amount of N added in organic compounds. Assumed zero if not specified. If specifying, you probably want to specify `org_c_kg_m2` as well but the schema does not enforce this.
+
+#### tillage
+
+Physical disturbance of the soil and litter pools. Models differ greatly in their representation of tillage effects and this spec intentionally limits its representation to a simple intensity score whose maximum should be interpreted as "the most complete possible mixing/disturbance." Whether this is sufficient detail will be re-evaluated in future revisions.
+
+Required properties:
+
+* `tillage_eff_0to1`: Relative tillage intensity, with 0 meaning no disturbance at all and 1 meaning the most complete disturbance possible.
+
+Optional properties:
+
+* `intensity_category`: string giving additional information on the type or amount of tillage performed.
+* `depth_m`: Depth of soil affected by the event.
+
+
 ## Output Standards
 
 * created by `model2netcdf` functions
-* based on format used by [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)
+* based on format used by [MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
 * Can be seen at HERE
 
-We originally used the [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
+We originally used the [MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data("standard_vars", package = "PEcAn.utils")
