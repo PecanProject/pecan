@@ -211,6 +211,16 @@ generate_joint_ensemble_design <- function(settings,
 
     # independent Sobol factor use pre computed quasi-random indices
     if (sobol && is.null(parent_name) && input_tag %in% names(sobol_indices)) {
+      # heads-up when a user set method is dropped in favor of QRN
+      user_method <- samp.ordered[[i]]$method
+      if (!is.null(user_method) && !identical(user_method, "sampling")) {
+        PEcAn.logger::logger.warn(
+          "input", input_tag, "set method=", user_method,
+          "in <ensemble><samplingspace>, but this is an independent",
+          "Sobol factor. Method is ignored; using QRN sampling from",
+          "sensobol::sobol_matrices()."
+        )
+      }
       sampled_inputs[[input_tag]] <- list(ids = sobol_indices[[input_tag]])
       design_list[[input_tag]] <- sobol_indices[[input_tag]]
       next
