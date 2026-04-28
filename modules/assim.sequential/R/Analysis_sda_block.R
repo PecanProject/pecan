@@ -461,9 +461,23 @@ MCMC_block_function <- function(block) {
                   control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
                                  latents = "X", pfOptimizeNparticles = TRUE))
   #add toggle Y sampler.
-  for (i in 1:block$constant$YN) {
-    conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
+  # Revise 1: only those who needed is y.censored
+  na_idx <- which(is.na(block$data$y.censored))
+  
+  if (length(na_idx) > 0) {
+    for (i in na_idx) {
+      conf$addSampler(
+        target = paste0("y.censored[", i, "]"),
+        type = "toggle",
+        control = list(type = "RW")
+      )
+    }
   }
+  ## Delete this
+  # for (i in 1:block$constant$YN) {
+  #   conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
+  # }
+  ## Finish Revise
   # conf$printSamplers()
   #compile MCMC
   Rmcmc <- nimble::buildMCMC(conf)
@@ -471,12 +485,14 @@ MCMC_block_function <- function(block) {
   Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
   
   #if we don't have any NA in the Y.
-  if (!any(is.na(block$data$y.censored))) {
-    #add toggle Y sampler.
-    for(i in 1:block$constant$YN) {
-      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
-    }
-  }
+  ## Revise 2: Delete this
+  # if (!any(is.na(block$data$y.censored))) {
+  #   #add toggle Y sampler.
+  #   for(i in 1:block$constant$YN) {
+  #     valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+  #   }
+  # }
+  ## Finish Revise
   
   #run MCMC
   dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)

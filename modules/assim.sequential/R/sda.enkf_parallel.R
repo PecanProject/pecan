@@ -169,17 +169,33 @@ sda.enkf_local <- function(settings,
         for (i in 1:length(settings$run$inputs$met$path)) {
           #---------------- model specific split inputs
           ### model specific split inputs
+          ### Revise: delete those
+                    # settings$run$inputs$met$path[[i]] <- do.call(
+          #   my.split_inputs,
+          #   args = list(
+          #     settings = settings,
+          #     start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
+          #     stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
+          #     inputs =  settings$run$inputs$met$path[[i]],
+          #     outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
+          #     overwrite =F
+          #   )
+          # )
+          split_args <- list(
+            start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3),
+            stop.time  = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
+            inputs     = settings$run$inputs$met$path[[i]],
+            outpath    = file.path(settings$outdir, "Extracted_met", settings$run$site$id),
+            overwrite  = FALSE
+          )
+          if (settings$model$type != "SIPNET") {
+            split_args <- c(list(settings = settings), split_args)
+          }
           settings$run$inputs$met$path[[i]] <- do.call(
             my.split_inputs,
-            args = list(
-              settings = settings,
-              start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
-              stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
-              inputs =  settings$run$inputs$met$path[[i]],
-              outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
-              overwrite =F
-            )
+            args = split_args
           )
+          ### Finish Revise
           # changing the start and end date which will be used for model2netcdf.model
           settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
           settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
@@ -211,7 +227,7 @@ sda.enkf_local <- function(settings,
     # find a site that has all registered inputs except for the parameter field.
     if (all(names.sampler %in% names.site.input)) {
       input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[i]], 
-                                                                        ensemble_samples = ensemble.samples, 
+                                                                      
                                                                         ensemble_size = nens)[[1]]
       break
     }
