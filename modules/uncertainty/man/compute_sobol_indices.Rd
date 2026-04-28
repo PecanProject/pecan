@@ -4,7 +4,14 @@
 \alias{compute_sobol_indices}
 \title{Compute Sobol indices from a finished PEcAn run}
 \usage{
-compute_sobol_indices(outdir, sobol_obj, var = "GPP")
+compute_sobol_indices(
+  outdir,
+  sobol_obj,
+  var = "GPP",
+  ensemble_id = NULL,
+  boot = FALSE,
+  R = NULL
+)
 }
 \arguments{
 \item{outdir}{PEcAn run output directory containing \code{ensemble.output.*.Rdata}
@@ -14,6 +21,17 @@ files.}
 \code{PEcAn.uncertainty::generate_joint_ensemble_design(..., sobol = TRUE)}.}
 
 \item{var}{Variable name to summarize (default \code{"GPP"}).}
+
+\item{ensemble_id}{optional ensemble id; filters
+\code{ensemble.output.<ensemble_id>.<var>.<startyr>.<endyr>.Rdata} when
+the outdir holds output from more than one site. NULL means expect one
+matching file per var.}
+
+\item{boot}{pass through to \code{sensobol::sobol_indices}; TRUE returns
+bootstrap CIs.}
+
+\item{R}{bootstrap replicates when \code{boot = TRUE}. NULL keeps the
+sensobol default.}
 }
 \value{
 A tibble of Sobol first-order and total-order indices with attached
@@ -31,20 +49,23 @@ that factor including its interactions with other factors. PEcAn uses
 \code{sensobol} for these variance-based estimators; see Saltelli et al. (2008)
 for methodological background and Puy et al. (2022) for package details.
 
-This function handles one output variable at a time. To compute indices for
-multiple variables, call it in a loop (see examples).
+One variable per call. For a multisite outdir (one ensemble.output file
+per site per variable) pass `ensemble_id` to pick the right file; loop
+sites and variables in the caller.
 }
 \examples{
 \dontrun{
-  # single variable
-  result <- compute_sobol_indices(outdir, sobol_obj, var = "GPP")
+  # single site
+  compute_sobol_indices(outdir, sobol_obj, var = "GPP")
 
-  # multiple variables
-  vars <- c("GPP", "NPP", "TotSoilCarb")
-  all_results <- purrr::map_dfr(vars, function(v) {
-    compute_sobol_indices(outdir, sobol_obj, var = v) |>
-      dplyr::mutate(variable = v)
-  })
+  # multisite - loop sites and vars, disambiguate via ensemble_id
+  for (i in seq_along(settings)) {
+    eid <- settings[[i]]$ensemble$ensemble.id
+    for (v in variables) {
+      compute_sobol_indices(outdir, sobol_obj, var = v,
+                            ensemble_id = eid, boot = TRUE, R = 500)
+    }
+  }
 }
 
 }
