@@ -185,7 +185,7 @@ Resolution: 1 hr, 45 km (d01), 9 km (d02), 3 km (d03)
 
 Availability: 1980--2100
 
-Notes: CMIP6 dynamically downscaled projections from the Cal-Adapt Analytics Engine (WUS-D3 dataset, Rahimi et al. 2024). Eight GCMs available under SSP3-7.0; CESM2 also has SSP2-4.5 and SSP5-8.5. Data is publicly available on AWS S3 (no authentication required). Requires the `caladaptR` package from GitHub. To use this option, set `source` as `CalAdaptWRF` and specify `model` and `scenario` in the `met` section of `pecan.xml`:
+Notes: CMIP6 dynamically downscaled projections from the Cal-Adapt Analytics Engine (WUS-D3 dataset, Rahimi et al. 2024). Eight GCMs available under SSP3-7.0; CESM2 also has SSP2-4.5 and SSP5-8.5. Data is publicly available on AWS S3 (no authentication required). Requires the `caladaptaer` package from GitHub. To use this option, set `source` as `CalAdaptWRF` and specify `model` and `scenario` in the `met` section of `pecan.xml`:
 
 ```xml
 <met>
@@ -195,4 +195,4 @@ Notes: CMIP6 dynamically downscaled projections from the Cal-Adapt Analytics Eng
 </met>
 ```
 
-Available GCMs: CESM2, CNRM-ESM2-1, EC-Earth3, EC-Earth3-Veg, FGOALS-g3, MPI-ESM1-2-HR, MIROC6, TaiESM1. See `caladaptR::ca_models(activity = "WRF")` for the current list.
+Available GCMs: CESM2, CNRM-ESM2-1, EC-Earth3, EC-Earth3-Veg, FGOALS-g3, MPI-ESM1-2-HR, MIROC6, TaiESM1. See `caladaptaer::cae_models(activity = "WRF")` for the current list.
