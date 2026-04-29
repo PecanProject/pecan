@@ -1,7 +1,7 @@
 #' Download Cal-Adapt WRF CMIP6 outputs for a single site and convert to CF
 #'
 #' Fetches hourly WRF dynamically downscaled data from the Cal-Adapt Analytics
-#' Engine (CADCAT S3 bucket) via caladaptR, extracts the nearest grid cell to
+#' Engine (CADCAT S3 bucket) via caladaptaer, extracts the nearest grid cell to
 #' the site, converts units to CF-1.8, and writes one NetCDF per year.
 #'
 #' WRF grids are cached in tempdir() so that when met.process calls this for
@@ -13,7 +13,7 @@
 #' Only CESM2 has ssp245 and ssp585 in addition to ssp370.
 #'
 #' Precipitation for MPI-ESM1-2-HR, MIROC6, and TaiESM1 is derived from
-#' rainc + rainnc components; caladaptR handles this transparently.
+#' rainc + rainnc components; caladaptaer handles this transparently.
 #'
 #' @param outfolder Directory for storing output
 #' @param start_date Start date for met data
@@ -37,10 +37,10 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
                                  model = "CESM2", scenario = "ssp370",
                                  overwrite = FALSE, verbose = FALSE, ...) {
 
-  if (!requireNamespace("caladaptR", quietly = TRUE)) {
+  if (!requireNamespace("caladaptaer", quietly = TRUE)) {
     PEcAn.logger::logger.severe(
-      "caladaptR package required but not installed. ",
-      "Install with: remotes::install_github('lebauerapproach/caladaptR')")
+      "caladaptaer package required but not installed. ",
+      "Install with: remotes::install_github('lebauerapproach/caladaptaer')")
   }
   if (!requireNamespace("sf", quietly = TRUE)) {
     PEcAn.logger::logger.severe("sf package required for CRS transform")
@@ -145,7 +145,7 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
         grid <- readRDS(cache_file)
       } else {
         PEcAn.logger::logger.info("  fetching ", wrf_var, " from S3")
-        grid <- caladaptR::ca_fetch(
+        grid <- caladaptaer::cae_fetch(
           variable   = wrf_var,
           model      = model,
           scenario   = scenario,
