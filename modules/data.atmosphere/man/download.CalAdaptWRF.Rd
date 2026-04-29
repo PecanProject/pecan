@@ -13,6 +13,7 @@ download.CalAdaptWRF(
   lon.in,
   model = "CESM2",
   scenario = "ssp370",
+  resolution = "d01",
   overwrite = FALSE,
   verbose = FALSE,
   ...
@@ -34,6 +35,11 @@ download.CalAdaptWRF(
 \item{model}{WRF GCM name, default "CESM2"}
 
 \item{scenario}{SSP experiment id, default "ssp370"}
+
+\item{resolution}{WRF nested-domain id: "d01" (45 km, default and only
+one with full coverage), "d02" (9 km), or "d03" (3 km). Higher
+resolutions are only partially released; check
+\code{caladaptaer::cae_check_variables()} for availability.}
 
 \item{overwrite}{Overwrite existing files? Default FALSE}
 

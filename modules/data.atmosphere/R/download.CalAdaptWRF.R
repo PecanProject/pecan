@@ -23,6 +23,10 @@
 #' @param lon.in Longitude of site (decimal degrees, WGS84)
 #' @param model WRF GCM name, default "CESM2"
 #' @param scenario SSP experiment id, default "ssp370"
+#' @param resolution WRF nested-domain id: "d01" (45 km, default and only
+#'   one with full coverage), "d02" (9 km), or "d03" (3 km). Higher
+#'   resolutions are only partially released; check
+#'   \code{caladaptaer::cae_check_variables()} for availability.
 #' @param overwrite Overwrite existing files? Default FALSE
 #' @param verbose Extra debug output? Default FALSE
 #' @param ... further arguments, currently ignored
@@ -35,6 +39,7 @@
 download.CalAdaptWRF <- function(outfolder, start_date, end_date,
                                  site_id, lat.in, lon.in,
                                  model = "CESM2", scenario = "ssp370",
+                                 resolution = "d01",
                                  overwrite = FALSE, verbose = FALSE, ...) {
 
   if (!requireNamespace("caladaptaer", quietly = TRUE)) {
@@ -50,8 +55,9 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
   }
 
   # null guard, convert_input sometimes passes NULL for optional args
-  if (is.null(model))    model <- "CESM2"
-  if (is.null(scenario)) scenario <- "ssp370"
+  if (is.null(model))      model <- "CESM2"
+  if (is.null(scenario))   scenario <- "ssp370"
+  if (is.null(resolution)) resolution <- "d01"
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -135,7 +141,7 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
 
     for (wrf_var in names(wrf_to_cf)) {
       cache_key  <- paste("caladapt_grid", model, scenario,
-                          wrf_var, year, sep = "_")
+                          resolution, wrf_var, year, sep = "_")
       cache_file <- file.path(tempdir(), paste0(cache_key, ".nc"))
 
       if (file.exists(cache_file)) {
@@ -152,7 +158,7 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
           model      = model,
           scenario   = scenario,
           timescale  = "1hr",
-          resolution = "d01",
+          resolution = resolution,
           start_time = year_start,
           end_time   = year_end
         )
