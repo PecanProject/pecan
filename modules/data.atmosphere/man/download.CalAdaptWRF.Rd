@@ -46,7 +46,7 @@ invisible data.frame with file info for BETY registration
 }
 \description{
 Fetches hourly WRF dynamically downscaled data from the Cal-Adapt Analytics
-Engine (CADCAT S3 bucket) via caladaptR, extracts the nearest grid cell to
+Engine (CADCAT S3 bucket) via caladaptaer, extracts the nearest grid cell to
 the site, converts units to CF-1.8, and writes one NetCDF per year.
 }
 \details{
@@ -59,7 +59,7 @@ EC-Earth3-Veg, FGOALS-g3, MPI-ESM1-2-HR, MIROC6, TaiESM1.
 Only CESM2 has ssp245 and ssp585 in addition to ssp370.
 
 Precipitation for MPI-ESM1-2-HR, MIROC6, and TaiESM1 is derived from
-rainc + rainnc components; caladaptR handles this transparently.
+rainc + rainnc components; caladaptaer handles this transparently.
 }
 \author{
 Akash B V
