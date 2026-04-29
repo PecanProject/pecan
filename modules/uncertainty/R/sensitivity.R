@@ -374,7 +374,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
           do.call(my.write.config, args = list(defaults = defaults,
                                                trait.values = trait.samples,
                                                settings = settings,
-                                               run.id))
+                                                   run.id = run.id))
           cat(
             run.id,
             file = file.path(settings$rundir, "runs.txt"),
