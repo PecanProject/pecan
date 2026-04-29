@@ -59,6 +59,8 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
   if (is.null(scenario))   scenario <- "ssp370"
   if (is.null(resolution)) resolution <- "d01"
 
+  hour_to_second <- PEcAn.utils::ud_convert(1, "h", "s")
+
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
 
@@ -185,9 +187,9 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
 
     ##unit conversions
     # precip: WRF hourly accumulation (mm) -> CF flux (kg/m2/s)
-    # 1 mm water = 1 kg/m2, divide by 3600s for hourly timestep
+    # 1 mm water = 1 kg/m2, divide by seconds-per-hour
     if ("prec" %in% names(dat.list)) {
-      dat.list[["prec"]] <- dat.list[["prec"]] / 3600
+      dat.list[["prec"]] <- dat.list[["prec"]] / hour_to_second
     }
 
     # specific humidity: WRF stores mixing ratio q (kg/kg)
