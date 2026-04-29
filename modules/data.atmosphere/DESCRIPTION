@@ -65,7 +65,7 @@ Imports:
     xts,
     zoo
 Suggests:
-    caladaptR,
+    caladaptaer,
     doParallel,
     ecmwfr (>= 2.0.0),
     doSNOW,
@@ -85,7 +85,7 @@ Suggests:
     testthat (>= 3.1.7),
     withr
 Remotes:
-    github::lebauerapproach/caladaptR,
+    github::lebauerapproach/caladaptaer,
     github::adokter/suntools,
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
