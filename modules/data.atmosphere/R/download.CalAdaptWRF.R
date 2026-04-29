@@ -144,15 +144,13 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
     for (wrf_var in names(wrf_to_cf)) {
       cache_key  <- paste("caladapt_grid", model, scenario,
                           resolution, wrf_var, year, sep = "_")
-      cache_file <- file.path(tempdir(), paste0(cache_key, ".nc"))
+      cache_file <- file.path(tempdir(), paste0(cache_key, ".rds"))
 
       if (file.exists(cache_file)) {
         if (verbose) {
           PEcAn.logger::logger.debug("  cache hit: ", wrf_var, " ", year)
         }
-        # lazy read so st_extract pulls only the requested cell
-        # rather than deserializing the full grid into memory
-        grid <- stars::read_stars(cache_file, proxy = TRUE)
+        grid <- readRDS(cache_file)
       } else {
         PEcAn.logger::logger.info("  fetching ", wrf_var, " from S3")
         grid <- caladaptaer::cae_fetch(
@@ -164,7 +162,7 @@ download.CalAdaptWRF <- function(outfolder, start_date, end_date,
           start_time = year_start,
           end_time   = year_end
         )
-        stars::write_stars(grid, cache_file)
+        saveRDS(grid, cache_file)
       }
 
       # grab time dimension and build the projected point once
