@@ -229,6 +229,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
     }
     if (n >= 10) {
       n_train <- max(1, floor(0.8 * n))
+      set.seed(42L + as.integer(ens_label))
       idx <- sample(seq_len(n), size = n_train)
       .train_data <- ens_data[idx, , drop = FALSE]
       .test_data <- ens_data[-idx, , drop = FALSE]
