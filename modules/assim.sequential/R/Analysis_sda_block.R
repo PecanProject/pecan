@@ -84,6 +84,19 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   foreach::registerDoSEQ()
   PEcAn.logger::logger.info("Completed!")
   
+  #### Revise: Add MCMC block diag save
+  mcmc_diag <- purrr::map(
+    block.list.all[[t]],
+    "mcmc_diag"
+  )
+  mcmc_diag <- mcmc_diag[!vapply(mcmc_diag, is.null, logical(1))]
+  if (length(mcmc_diag) > 0) {
+    mcmc_diag <- dplyr::bind_rows(mcmc_diag)
+  } else {
+    mcmc_diag <- NULL
+  }
+  #### Finish Revise
+  
   #convert from block lists to vector values.
   if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H, settings$state.data.assimilation$adjustment)))) {
     PEcAn.logger::logger.severe("Something wrong within the block.2.vector function.")
@@ -98,6 +111,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
               Pa = V$Pa,
               Y = Y,
               R = R,
+              mcmc_diag = mcmc_diag,
               analysis = V$analysis))
 }
 
@@ -494,10 +508,60 @@ MCMC_block_function <- function(block) {
   # }
   ## Finish Revise
   
-  #run MCMC
-  dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
-  #update aq, bq, mua, and pa
+  ## Revise: 
+  # Delete the original MCMC at fits nchain = 1
+  # #run MCMC
+  # dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
+  mcmc_diag <- NULL
+  
+   if (block$MCMC$nchain == 1) {
+    dat <- runMCMC(
+      Cmcmc,
+      niter   = block$MCMC$niter,
+      nburnin = block$MCMC$nburnin,
+      thin    = block$MCMC$nthin,
+      nchains = block$MCMC$nchain
+    )
+  } else {
+    ## multi-chain code
+    dat_raw <- runMCMC(
+      Cmcmc,
+      niter   = block$MCMC$niter,
+      nburnin = block$MCMC$nburnin,
+      thin    = block$MCMC$nthin,
+      nchains = block$MCMC$nchain,
+      samplesAsCodaMCMC = TRUE,
+      summary = FALSE
+    )
+    
+    rhat <- coda::gelman.diag(
+      dat_raw,
+      autoburnin = FALSE,
+      multivariate = FALSE
+    )$psrf[, "Point est."]
+    
+    ess <- coda::effectiveSize(dat_raw)
+    
+    mcmc_diag <- data.frame(
+      parameter = names(rhat),
+      rhat = as.numeric(rhat),
+      ess = as.numeric(ess[names(rhat)])
+    )
+
+    ## combine chains
+    dat <- as.matrix(dat_raw)
+  }
+  
+  str(dat_raw); dim(dat); head(colnames(dat))
+  
+  ## save diag into block
+  block$mcmc_diag <- mcmc_diag
+  
+    #update aq, bq, mua, and pa
   M <- colMeans(dat)
+  
+  
+  
   block$update$aq <- block$Inits$q
   if (block$constant$q.type == 3) {
     #if it's a vector q case

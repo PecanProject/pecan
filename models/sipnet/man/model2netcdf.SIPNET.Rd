@@ -13,7 +13,7 @@ model2netcdf.SIPNET(
   delete.raw = FALSE,
   revision = NULL,
   prefix = "sipnet.out",
-  overwrite = FALSE,
+  overwrite = TRUE,
   conflict = FALSE
 )
 }

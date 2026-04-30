@@ -24,18 +24,18 @@ library(lgarch)
 library(parallel)
 library(foreach)
 library(terra)
-setwd("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/")
+setwd("/projectnb/dietzelab/guYANG/pecan/")
 ## read settings xml file.
-load("/projectnb/dietzelab/guYANG/pecan/runners/test10/pecan_flux.RData")
+load("/projectnb/dietzelab/guYANG/pecan/pecan.Rdata")
 # Change dir name and settings
-settings$outdir      <- "/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/output_inter_q_2/"
+settings$outdir      <- "/projectnb/dietzelab/guYANG/pecan/output/adjust/"
 settings$rundir      <- file.path(settings$outdir, "run")
 settings$modeloutdir <- file.path(settings$outdir, "out")
 settings$host$rundir <- file.path(settings$outdir, "run")
 settings$host$outdir <- file.path(settings$outdir, "out")
 settings$host$folder <- file.path(settings$outdir, "out")
-settings$ensemble$size <- 5
-settings$state.data.assimilation$adjustment <- "TRUE"
+settings$ensemble$size <- 25
+settings$state.data.assimilation$adjustment <- "FALSE"
 settings$host$prerun <- "module load R/4.4.0"
 ###### Change Q type
 settings$state.data.assimilation$q.type <- "wishart"
@@ -63,10 +63,6 @@ settings <- PEcAn.settings::prepare.settings(settings)
 # load 6 obs
 load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.mean.RData")
 load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.cov.RData")
-
-# load 4 obs
-# load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/observation/Rdata_with_attributes/obs.mean.LandTrendr_GEDI.Rdata")
-# load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/observation/Rdata_with_attributes/obs.cov.LandTrendr_GEDI.Rdata")
 
 sub_obs <- function(L, keep) setNames(lapply(L, \(l) l[names(l) %in% keep]), names(L))
 obs.mean <- sub_obs(obs.mean, keep_ids)
@@ -99,7 +95,7 @@ if (length(obs.cov[[i]][[j]]) > 1) {
 }
 
 # load PFT parameter file.
-samples_src <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata"
+samples_src <- "/projectnb/dietzelab/guYANG/pecan/cali_samples.Rdata"
 samples_dst <- file.path(settings$outdir, "samples.Rdata")
 dir.create(settings$outdir, recursive = TRUE, showWarnings = FALSE)
 if (!file.exists(samples_dst)) file.copy(samples_src, samples_dst, overwrite = TRUE)
@@ -108,7 +104,7 @@ control <- list(
   TimeseriesPlot = FALSE,
   OutlierDetection = FALSE,
   send_email = NULL,
-  keepNC = TRUE,
+  keepNC = FALSE,
   forceRun = TRUE,
   run_parallel = FALSE,
   MCMC.args = NULL,
@@ -116,13 +112,6 @@ control <- list(
   execution = "qsub_parallel"   # or "qsub" / "local"
 )
 
-source("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/sda.enkf_local.R")
-source("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/read.restart.SIPNET.R")
-source("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/analysis_sda_block.R")
-source("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/MCMC_block_function.R")
-# source("/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/sda.enkf_param.R")
-
-###### Be careful: param
 res <- PEcAnAssimSequential:::sda.enkf_local(
   settings = settings,
   obs.mean = obs.mean,
@@ -130,25 +119,40 @@ res <- PEcAnAssimSequential:::sda.enkf_local(
   Q = NULL,
   pre_enkf_params = NULL,
   ensemble.samples = NULL,
-  control = control
+  control = list(
+    TimeseriesPlot = FALSE,
+    OutlierDetection = FALSE,
+    send_email = NULL,
+    keepNC = TRUE,
+    forceRun = TRUE,
+    run_parallel = FALSE,
+    MCMC.args = list(
+      niter = 200000,   
+      nburnin = 100000,
+      nthin = 5,
+      nchain = 3
+    ),
+    merge_nc = FALSE,
+    execution = "qsub_parallel"   # or "qsub" / "local"
+  )
 )
 
 # job_lines <- c(
 #   "#!/bin/bash",
 #   "module load R/4.4.0",
-#   "Rscript /projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/wishart_sda/pecan_sda_runner.R"
+#   "Rscript /projectnb/dietzelab/guYANG/pecan/pecan/local/sda_runner.R"
 # )
-# writeLines(job_lines, "/projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/logs/pecan_sda_runner.sh")
+# writeLines(job_lines, "/projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.sh")
 
-# qsub -l h_rt=2:00:00 \
+# qsub -l h_rt=6:00:00 \
 # -l buyin \
 # -l mem_per_core=8G \
 # -pe omp 28 \
 # -V \
-# -N pecan_sda_runner \
-# -o /projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/logs/pecan_sda_runner.out \
-# -e /projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/logs/pecan_sda_runner.err \
+# -N sda_runner \
+# -o /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.out \
+# -e /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.err \
 # -M yanggu@bu.edu \
 # -m abe \
 # -S /bin/bash \
-# /projectnb/dietzelab/guYANG/pecan/runners/wishart_sda/logs/pecan_sda_runner.sh
+# /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.sh

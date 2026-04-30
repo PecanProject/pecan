@@ -58,7 +58,7 @@ mergeNC <- function(
 #' @export
 #' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw = FALSE, revision = NULL, prefix = "sipnet.out",
-                                overwrite = FALSE, conflict = FALSE) {
+                                overwrite = TRUE, conflict = FALSE) {
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
   # SIPNET v1 had a "Notes" comment line before the header; v2 removed it.
@@ -119,8 +119,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   
   timestep.s <- 86400 / out_day
-
-
+  
+  
   ## Unit conversions
   #
   # CKB 20260407: Not using ud_convert here is intentional!
@@ -134,7 +134,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   cm_step_to_mm_sec <- function(x) x * 10 / timestep.s
   sipnet_output <- sipnet_output |>
     dplyr::mutate(
-
+      
       # C and N pools
       dplyr::across(
         .cols = c(
@@ -145,7 +145,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         ),
         .fns = g_to_kg
       ),
-
+      
       # C and N fluxes
       dplyr::across(
         .cols = c(
@@ -154,7 +154,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         ),
         .fns = g_step_to_kg_sec
       ),
-
+      
       # Water pools
       dplyr::across(
         .cols = c(
@@ -163,7 +163,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         ),
         .fns = cm_to_mm
       ),
-
+      
       # Water fluxes
       dplyr::across(
         .cols = dplyr::all_of("evapotranspiration"),
@@ -172,12 +172,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       # Water flux special case:
       # Sipnet reports transpiration, and no other variables, in cm/day not cm/timestep.
       fluxestranspiration = cm_to_mm(.data$fluxestranspiration) / 86400, # cm/day -> mm/sec
-
+      
       # Date and time
       datetime = sipnet2datetime(.data$year, .data$day, .data$time)
     )
-
-
+  
+  
   # calculate LAI for standard output
   # LAI = plantLeafC / leafCSpWt
   # both operands are in carbon units (gC/m2 and gC/m2_leaf),
@@ -187,22 +187,20 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                        "sipnet.param"), stringsAsFactors = FALSE)
   leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
   SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-
+  
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
-    #initialize the conflicted as FALSE
     conflicted <- FALSE
-    conflict <- TRUE    #conflict is set to TRUE to enable the rename of yearly nc file for merging SDA results with sub-annual data
-    #if we have conflicts on this file.
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE & conflict == FALSE) {
-      next
-    }else if(file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & conflict){
-      conflicted <- TRUE
-      file.rename(file.path(outdir, paste(y, "nc", sep = ".")), file.path(outdir, "previous.nc"))
+    nc_file <- file.path(outdir, paste(y, "nc", sep = "."))
+    if (file.exists(nc_file)) {
+      ok <- file.remove(nc_file)
+      if (!ok) {
+        stop("Failed to remove existing NetCDF file: ", nc_file)
+      }
     }
-    print(paste("---- Processing year: ", y))  # turn on for debugging
-
+    print(paste("---- Processing year: ", y))  # turn on for debugging  
+    
     ## Subset data for processing
     sub.sipnet.output <- subset(sipnet_output, sipnet_output$year == y)
     
@@ -238,10 +236,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
       "LAI" = sub.sipnet.output$plantLeafC * SLA,
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
-                       sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
+        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
       "AGB" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC,
-
+      
       # Water variables:
       # Liquid water units are cm in Sipnet; in PEcAn they're kg water m-2
       #  (which is equivalent to mm: (water density = 1000 kg m-3) * (1 m/ 1000 mm) = (1 kg m-2)/mm
@@ -255,14 +253,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "SoilMoistFrac" = sub.sipnet.output$soilWetnessFrac,
       "SWE" = sub.sipnet.output$snow  # Snow Water Equivalent
     )
-
+    
     if ("litterWater" %in% names(sub.sipnet.output)) { # Removed in SIPNET v2; only extract if present
       output[["litter_mass_content_of_water"]] <- sub.sipnet.output$litterWater
     }
     if ("woodCreation" %in% names(sub.sipnet.output)) { # Added in SIPNET v2; only extract if present
       output[["GWBI"]] <- sub.sipnet.output$woodCreation
     }
-
+    
     # columns only present in sipnet >= v2 with N and methane turned on
     if ("minN" %in% names(sub.sipnet.output)) {
       output[["mineral_N"]] <- sub.sipnet.output$minN
@@ -288,7 +286,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     if ("ch4" %in% names(sub.sipnet.output)) {
       output[["CH4_flux"]] <- sub.sipnet.output$ch4
     }
-
+    
     output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
@@ -344,7 +342,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
-
+    
     if ("litter_mass_content_of_water" %in% names(output)) {
       nc_var[["litter_mass_content_of_water"]] <- PEcAn.utils::to_ncvar("litter_mass_content_of_water", dims)
     }
@@ -354,30 +352,30 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     if ("mineral_N" %in% names(output)) {
       nc_var[["mineral_N"]] <- ncdf4::ncvar_def("mineral_N", units = "kg N m-2",
-        dim = list(lon, lat, t), missval = -999, longname = "Soil mineral nitrogen")
+                                                dim = list(lon, lat, t), missval = -999, longname = "Soil mineral nitrogen")
     }
     if ("soil_organic_N" %in% names(output)) {
       nc_var[["soil_organic_N"]] <- ncdf4::ncvar_def("soil_organic_N", units = "kg N m-2",
-        dim = list(lon, lat, t), missval = -999, longname = "Soil organic nitrogen")
+                                                     dim = list(lon, lat, t), missval = -999, longname = "Soil organic nitrogen")
     }
     if ("litter_N" %in% names(output)) {
       nc_var[["litter_N"]] <- ncdf4::ncvar_def("litter_N", units = "kg N m-2",
-        dim = list(lon, lat, t), missval = -999, longname = "Litter nitrogen")
+                                               dim = list(lon, lat, t), missval = -999, longname = "Litter nitrogen")
     }
     if ("N2O_flux" %in% names(output)) {
       nc_var[["N2O_flux"]] <- PEcAn.utils::to_ncvar("N2O_flux", dims)
     }
     if ("N_leaching" %in% names(output)) {
       nc_var[["N_leaching"]] <- ncdf4::ncvar_def("N_leaching", units = "kg N m-2 s-1",
-        dim = list(lon, lat, t), missval = -999, longname = "Nitrogen leaching flux")
+                                                 dim = list(lon, lat, t), missval = -999, longname = "Nitrogen leaching flux")
     }
     if ("N_fixation" %in% names(output)) {
       nc_var[["N_fixation"]] <- ncdf4::ncvar_def("N_fixation", units = "kg N m-2 s-1",
-        dim = list(lon, lat, t), missval = -999, longname = "Nitrogen fixation flux")
+                                                 dim = list(lon, lat, t), missval = -999, longname = "Nitrogen fixation flux")
     }
     if ("N_uptake" %in% names(output)) {
       nc_var[["N_uptake"]] <- ncdf4::ncvar_def("N_uptake", units = "kg N m-2 s-1",
-        dim = list(lon, lat, t), missval = -999, longname = "Plant nitrogen uptake flux")
+                                               dim = list(lon, lat, t), missval = -999, longname = "Plant nitrogen uptake flux")
     }
     if ("CH4_flux" %in% names(output)) {
       nc_var[["CH4_flux"]] <- PEcAn.utils::to_ncvar("CH4_flux", dims)

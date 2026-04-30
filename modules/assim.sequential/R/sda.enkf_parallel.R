@@ -479,6 +479,7 @@ sda.enkf_local <- function(settings,
                         analysis = ANALYSIS[[obs.t]],
                         enkf.params = enkf.params[[obs.t]],
                         ens_weights[[obs.t]],
+                        mcmc_diag = enkf.params[[obs.t]]$mcmc_diag,
                         params.list = params.list,
                         restart.list = restart.list,
                         debias.out = debias.out)
