@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added `download.CalAdaptWRF()` to `PEcAn.data.atmosphere` for fetching Cal-Adapt WRF CMIP6 hourly met data at 45 km resolution. Includes registration XML, met table mapping, and book documentation.
 - Added PEcAn.PEPRMT model, including a demo run with example data
 - Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
 - Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
