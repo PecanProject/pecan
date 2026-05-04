@@ -1,0 +1,37 @@
+Package: PEcAn.PEPRMT
+Type: Package
+Title: PEcAn Package for Integration of the PEPRMT Model
+Version: 0.1.0.9000
+Authors@R: c(person("Abigail", "Lewis", role = c("aut", "cre"),
+                     email = "lewisa4@si.edu"),
+             person("Patty", "Oikawa", role = c("aut")),
+             person("James", "Holmquist", role = c("aut")))
+Author: Abigail Lewis, Patty Oikawa, James Holmquist
+Maintainer: Abigail Lewis <lewisa4@si.edu>
+Description: This module provides functions to link PEPRMT to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Imports:
+    dplyr,
+    lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15),
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.utils,
+    PEPRMT
+Suggests:
+    dygraphs,
+    earthdatalogin,
+    imager,
+    rstac,
+    terra,
+    testthat (>= 1.0.2),
+    xts
+Remotes:
+    github::abbylewis/PEPRMT-Tidal
+License: BSD_3_clause + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 7.3.3

@@ -1,0 +1,327 @@
+---
+title: "Setting up PEPRMT inputs in PEcAn"
+author:
+  - "Chris Black"
+---
+
+# Purpose
+
+Show the process of creating input files for a basic PEcAn run. PEcAn provides helpers for some of these, while others are (so far) still manual.
+
+# Setup
+
+We assume here that you already have PEcAn and PEPRMT installed.
+See run_pecan_peprmt.qmd for installation instructions if needed.
+
+```{r setup}
+#here::i_am("models/peprmt/demo_run/set_up_inputs.qmd")
+PEcAn.all::pecan_version()
+library(tidyverse)
+library(PEcAn.all)
+# prints logger messages into the notebook instead of to the terminal
+logger.setUseConsole(consol = TRUE, stderr = FALSE)
+# prints messages with levels INFO or higher (WARNING, ERROR, SEVERE)
+# For even more detail, change to "DEBUG"
+logger.setLevel("INFO")
+```
+
+# Settings
+
+PEcAn settings files declare the configuration for the entire run, including (by the end of the setup stage) full paths to every file for every ensemble member at every site. Rather than try to hand-build such a complex XML document, we expand it from a simpler XML template plus a CSV file declaring the site-specific information.
+
+TODO: This section is hard to interpret. Either add more exposition or simplify.
+
+```{r}
+ensemble_size <- 3
+
+site_info <- read.csv("data/site_info.csv")
+settings <- read.settings("template.xml") # TODO move to data-raw?
+settings$ensemble$size <- ensemble_size
+
+settings <- settings |>
+
+  # Set where demo outputs go
+  setOutDir("input_demo_out") |>
+
+  # Set ensemble dates
+  # Note the run dates differ by site (overridden below);
+  # for ensemble we take a range that includes all.
+  setDates(min(site_info$met.start), max(site_info$met.end)) |>
+
+
+  # Takes all sites listed in site_info.csv,
+  # adds empty path templates to each `run$site.[siteid]`
+  createMultiSiteSettings(site_info) |>
+
+  # Set run start and end dates to match available met data
+  # (as hard-coded in site-info.csv -- consider getting from elsewhere?)
+  # If dates were equal for all sites, setDates() above this would handled this
+  papply(function(s) {
+    s$run$start.date <- s$run$site$met.start
+    s$run$end.date <- s$run$site$met.end
+    s
+  }) |>
+
+  # Declare naming scheme for met files.
+  # NB this creates paths in the XML that don't exist on disk yet --
+  # we'll create them in a separate operation below
+  setEnsemblePaths(
+    n_reps = ensemble_size,
+    input_type = "met",
+    path = file.path("data", "met"),
+    path_template = "{path}/{n}.csv"
+  )
+
+head(settings)
+settings$info$notes <- paste("Compiled from template.xml at", Sys.time())
+
+write.settings(
+  settings,
+  outputfile = "settings_inputdemo.xml",
+  outputdir = getwd()
+)
+
+settings <- PEcAn.settings::prepare.settings(settings)
+
+write.settings(
+  settings,
+  outputfile = "settings_inputdemo_prepped.xml",
+  outputdir = getwd()
+)
+```
+
+Note for future development: We are considering a change in `PEcAn.settings::setEnsemblePaths` that would allow using all fields of `settings$run$site` (which typically include lat, lon, site pft, etc) inside the format string for the file path, which should simplify construction of paths that vary by more than the siteid.
+
+
+# Parameters
+
+## Background: PEcAn's PFT concept
+
+Each time it sets up a model run, PEcAn parameterizes it by sampling each model parameter from distributions that we define beforehand. These definitions are encapsulated in posterior files containing sets of parameters that are expected to all be set together. We refer to these parameterizations as PFTs ("plant functional type"), a name that shows PEcAn's forest ecology background and also aligns with the granularity of parameter sets typically used by ecosystem modelers. But really a "PFT" is just a group of parameters that are stored and set together; the parameters need not even be plant-related. Many PEcAn model couplers support passing multiple PFT definitions into the same model run; for example SIPNET can only simulate one type of plant at once but accepts multiple PFT files so that we can set plant and soil parameters separately.
+
+PEcAn provides tools to define PFTs via formal meta-analysis and calibration, and the format of the PFT files is taken from the output of these tools. See the [meta-analysis](https://pecanproject.github.io/pecan-documentation/develop/rendered-demo-notebooks/meta_analysis.html) (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) and parameter data assimilation (`documentation/tutorials/ParameterAssimilation/PDA.Rmd`) demos for details. However, distributions can also be computed by any other means that are convenient (an external calibration process, expert elicitation, wild guessing...) and saved in the formats described next.
+
+Posterior distributions can be specified either parametrically as *marginal distributions* (currently assumed independent of each other), or as a set of *MCMC chains* that will be sampled jointly to preserve correlation structure. Ideally we would provide distributions for the full set of parameters recognized by the model, though in practice it is common to calibrate only the most sensitive / readily available parameters and build defaults for the remaining ones into the model coupler package.
+
+PEPRMT's PFT support is new and can be changed if we do not like it. For today's demo, we show two different ways to save the parameter sets for GPP, Reco, and CH4 all together in one file: One as a marginal posterior and once as correlated MCMC chains.
+
+Before we jump into defining PEPRMT's files, it's worth reiterating that although the parameter names and distribution shapes in a PFT file are model specific, the sampling mechanism is fully controlled by PEcAn. At runtime, `PEcAn.uncertainty::get.parameter.samples()` takes samples from the posterior file you provide and passes a single numeric value for each parameter into the function responsible for model-specific run setup (in this case `write.config.PEPRMT()`).
+
+
+## Marginal posterior
+
+First we'll write marginal distributions. The format is an R data file (conventionally named "post.distns.RData" and stored in a directory whose name is the PFT name), containing a single object named `post.distns` that is a data frame with row names set to the parameter names and with the following columns:
+
+* `distn`, the shape of distribution to use. Must be a distribution that R knows how to sample from using two moment parameters, i.e. if distribution is "foo" then `rfoo(n, a, b)` must exist.
+* `parama` and `paramb`, the first two moments of the distribution. For `norm` and friends these are mean and sd, for `unif` they are max and min, for `gamma` they are shape and rate, and so on.
+* `n`, the number of datapoints used to estimate this point. Usually NA in a file not created by formal meta-analysis, and not used by the model-specific sampling processes.
+
+The means shown here were retrieved 2026-03-03 from the default values used in `PEPRPMT::run_PRPMT()`. These were calibrated in Oikawa et al 2024 but not all variances are reported there. For demonstration purposes I estimated variance parameters by visual comparison to the histograms in Oikawa 2024 (for the parameters that appear there) or by arbitrarily setting sd to 1 (for CH4 parameters). TODO: Update this.
+
+
+```{r pft-marginal}
+post.distns <- read.csv(
+  text = r"(
+param,distn,parama,paramb,n
+GPP_a0,norm,0.7,0.1,NA
+GPP_a1,norm,1.05,0.1,NA
+GPP_Ha,norm,149,25,NA
+GPP_Hd,norm,94.4,1,NA
+Reco_Ea_som,norm,18.4,1,NA
+Reco_kM_som,unif,1000,12000,NA
+Reco_Ea_labile,norm,11.7,2,NA
+Reco_kM_labile,unif,10,100,NA
+CH4_1,norm,82.0,1,NA
+CH4_2,norm,17.4,1,NA
+CH4_3,norm,86.7,1,NA
+CH4_4,norm,23.4,1,NA
+CH4_5,norm,91.2,1,NA
+CH4_6,norm,23.5,1,NA
+CH4_7,norm,100.0,1,NA
+CH4_8,norm,0.20,1,NA)",
+  row.names = "param"
+)
+demo_pft_dir <- file.path("data", "pfts", "default_marginal")
+dir.create(demo_pft_dir, recursive = TRUE)
+save(
+  post.distns,
+  file = file.path(demo_pft_dir, "post.distns.RData"))
+```
+
+Let's run this!
+
+TODO: Copying most of the demo run here. This will turn into a lot of repeated lines.
+
+```{r config-marginal}
+settings$pfts[purrr::map_lgl(settings$pfts, \(x)x$name == "default")]$pft$posterior.files <-
+  file.path("data", "pfts", "default_marginal", "post.distns.RData")
+settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+```
+
+```{r run-marginal}
+PEcAn.workflow::runModule_start_model_runs(settings)
+```
+
+```{r read-marginal}
+runid <- read.csv(file.path(settings$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings$outdir, "out", runid)
+model_output <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = function(id, dir) {
+    PEcAn.utils::read.output(
+      runid = id, outdir = dir,
+      start.year = NA, end.year = NA,
+      variables = "GPP",
+      dataframe = TRUE,
+      verbose = FALSE,
+      print_summary = FALSE
+    )
+  },
+  .id = "run_id"
+)
+model_output |>
+  mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
+  group_by(site_id, year) |>
+  summarize(
+    mean_GPP = mean(GPP, na.rm = TRUE),
+    q5 = quantile(GPP, 0.05, na.rm = TRUE),
+    q95 = quantile(GPP, 0.95, na.rm = TRUE),
+    n = n(),
+    n_missing = sum(is.na(GPP))
+  )
+```
+
+## MCMC posterior
+
+For demonstration purposes, we'll mock up an MCMC output that implements the correlation between GPP parameters a0, Ha, and Hd as noted by Oikawa et al (2024). We'll then pass both sets of posteriors so that PEcAn.PEPRMT combines them into a single paraterization.
+
+The format is an R data file (conventionally named "trait.mcmc.RData" and stored in a directory whose name is the PFT name), containing a single object named `trait.mcmc` that is a named list of `mcmc.list` objects as generated by the {coda} package. The list names are parameter names, and each value is a numeric array of individual MCMC draws.
+
+In non-demo cases, you would of course create this file by actually running an MCMC sampler and would probably want to include all the parameters in the same sampling (and therefore only pass a single `trait.mcmc.RData` into the run).
+
+Caution: If two or more PFTs define a parameter with the same name, `get.parameter.samples` will provide a draw from each of them and pass both as the `trait.values` argument to `write.config.PEPRMT`, which will then use whichever value appears first in `trait.values`, which is in turn determined by which PFT appears first in `settings$run$site$site.pft`.
+TODO: PEcAn should probably have a cross-model policy on how to handle duplicate parameter definitions (but one that realizes there exist models that _do_ use both of them, e.g. models that explicitly represent more than one simultaneously grown PFT).
+
+
+```{r pft-mcmc}
+n_mc <- 100
+
+corr_parm <- post.distns |>
+  rownames_to_column() |>
+  filter(rowname %in% c("GPP_a0", "GPP_Ha", "GPP_Hd"))
+means <- corr_parm$parama
+sds <- corr_parm$paramb
+# correlations as reported by Oikawa et al 2024
+cor_mat <- matrix(
+  c(1.00, -0.66, -0.66,
+    -0.66, 1.00, 0.8,
+    -0.66, 0.8, 1.00),
+  nrow = 3)
+cov_mat <- outer(sds, sds) * cor_mat
+# simulate three independent MCMC chains
+vals <- replicate(3, MASS::mvrnorm(n_mc, means, cov_mat))
+# now assemble in coda format
+trait.mcmc <- list(
+  GPP_a0 = structure(list(
+    mcmc = structure(
+      array(data = c(vals[, 1,]), dim = list(3*n_mc, 1)),
+      class = "mcmc",
+      mcpar = c(1, 6, 1),
+      dimnames = list(NULL, "beta.o"))
+    ), class = "mcmc.list"),
+  GPP_Ha = structure(list(
+    mcmc = structure(
+      array(data = c(vals[, 2, ]), dim = list(3*n_mc, 1)),
+      class = "mcmc",
+      mcpar = c(1, 6, 1),
+      dimnames = list(NULL, "beta.o"))
+    ), class = "mcmc.list"),
+  GPP_Hd = structure(list(
+    mcmc = structure(
+      array(data = c(vals[, 3, ]), dim = list(3*n_mc, 1)),
+      class = "mcmc",
+      mcpar = c(1, 6, 1),
+      dimnames = list(NULL, "beta.o"))
+    ), class = "mcmc.list")
+  )
+str(trait.mcmc)
+demo_pft_dir <- file.path("data", "pfts", "default_mcmc")
+dir.create(demo_pft_dir, recursive = TRUE)
+save(
+  trait.mcmc,
+  file = file.path(demo_pft_dir, "trait.mcmc.RData"))
+```
+
+```{r config-mcmc}
+settings$pfts <- settings$pfts |>
+  append(list(pft = list(
+    name = "default_mcmc",
+    posterior.files = file.path("data", "pfts", "default_mcmc", "trait.mcmc.RData")
+  )))
+add_mcpft_to_site <- function(s) {
+  # Note: The order of this list determines the order of trait.values,
+  # so if a parameter is defined in multiple PFTs the first listed here wins
+  s$run$site$site.pft <- list(default_mcmc = "default_mcmc", default = "default")
+  s
+}
+settings <- settings |>
+  papply(add_mcpft_to_site) |>
+  setOutDir("input_demo_mcmc_out") |>
+
+  # Propagates the change in outdir through the rest of the settings
+  # TODO also induces a multisettings ensemble block --
+  # why does that show up here but not for marginal?
+  PEcAn.settings::prepare.settings(force = TRUE)
+
+write.settings(
+  settings,
+  outputfile = "settings_inputdemo_mcmc.xml",
+  outputdir = getwd()
+)
+```
+
+```{r run-write-configs-mcmc}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+```
+
+```{r run-mcmc}
+PEcAn.workflow::runModule_start_model_runs(settings)
+```
+
+```{r read-mcmc}
+runid <- read.csv(file.path(settings$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings$outdir, "out", runid)
+model_output <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = function(id, dir) {
+    PEcAn.utils::read.output(
+      runid = id, outdir = dir,
+      start.year = NA, end.year = NA,
+      variables = "GPP",
+      dataframe = TRUE,
+      verbose = FALSE,
+      print_summary = FALSE
+    )
+  },
+  .id = "run_id"
+)
+model_output |>
+  mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
+  group_by(site_id, year) |>
+  summarize(
+    mean_GPP = mean(GPP, na.rm = TRUE),
+    q5 = quantile(GPP, 0.05, na.rm = TRUE),
+    q95 = quantile(GPP, 0.95, na.rm = TRUE),
+    n = n(),
+    n_missing = sum(is.na(GPP))
+  )
+```
+
+
+# Meteorology
+
+* TODO
+* `met2model.PEPRMT()`
+
