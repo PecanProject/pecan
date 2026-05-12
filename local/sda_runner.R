@@ -27,8 +27,13 @@ library(terra)
 setwd("/projectnb/dietzelab/guYANG/pecan/")
 ## read settings xml file.
 load("/projectnb/dietzelab/guYANG/pecan/pecan.Rdata")
+
+### PEcAn Settings
+# settings_dir <- "/projectnb/dietzelab/guYANG/pecan/output/pecan_flux.xml"
+# settings <- PEcAn.settings::read.settings(settings_dir)
+
 # Change dir name and settings
-settings$outdir      <- "/projectnb/dietzelab/guYANG/pecan/output/adjust/"
+settings$outdir      <- "/projectnb/dietzelab/guYANG/pecan/output/5obs_monthly/"
 settings$rundir      <- file.path(settings$outdir, "run")
 settings$modeloutdir <- file.path(settings$outdir, "out")
 settings$host$rundir <- file.path(settings$outdir, "run")
@@ -38,7 +43,9 @@ settings$ensemble$size <- 25
 settings$state.data.assimilation$adjustment <- "FALSE"
 settings$host$prerun <- "module load R/4.4.0"
 ###### Change Q type
-settings$state.data.assimilation$q.type <- "wishart"
+settings$state.data.assimilation$q.type <- "vector"
+settings$state.data.assimilation$aqq.Init <- "1"
+settings$state.data.assimilation$bqq.Init <- "1"
 ## Fix the multi output in one timestep bug
 settings$model$jobtemplate <- "/projectnb/dietzelab/guYANG/pecan/runners/test7/sipnet_template.job"
 
@@ -60,9 +67,12 @@ settings$state.data.assimilation$batch.settings <- batch.settings
 # update settings with the actual PFTs.
 settings <- PEcAn.settings::prepare.settings(settings)
 
-# load 6 obs
-load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.mean.RData")
-load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.cov.RData")
+# load obs
+# load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.mean.RData")
+# load("/projectnb/dietzelab/guYANG/pecan/runners/test10/obs.cov.RData")
+
+load("/projectnb/dietzelab/guYANG/pecan/output/obs/Rdata/obs.mean.monthly.noSM.Rdata")
+load("/projectnb/dietzelab/guYANG/pecan/output/obs/Rdata/obs.cov.monthly.noSM.Rdata")
 
 sub_obs <- function(L, keep) setNames(lapply(L, \(l) l[names(l) %in% keep]), names(L))
 obs.mean <- sub_obs(obs.mean, keep_ids)
@@ -95,19 +105,25 @@ if (length(obs.cov[[i]][[j]]) > 1) {
 }
 
 # load PFT parameter file.
-samples_src <- "/projectnb/dietzelab/guYANG/pecan/cali_samples.Rdata"
+# samples_src <- "/projectnb/dietzelab/guYANG/pecan/cali_samples.Rdata"
+samples_src <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata"
 samples_dst <- file.path(settings$outdir, "samples.Rdata")
 dir.create(settings$outdir, recursive = TRUE, showWarnings = FALSE)
 if (!file.exists(samples_dst)) file.copy(samples_src, samples_dst, overwrite = TRUE)
 
-control <- list(
+control = list(
   TimeseriesPlot = FALSE,
   OutlierDetection = FALSE,
   send_email = NULL,
-  keepNC = FALSE,
+  keepNC = TRUE,
   forceRun = TRUE,
   run_parallel = FALSE,
-  MCMC.args = NULL,
+  MCMC.args = list(
+    niter = 200000,   
+    nburnin = 100000,
+    nthin = 5,
+    nchain = 3
+  ),
   merge_nc = FALSE,
   execution = "qsub_parallel"   # or "qsub" / "local"
 )
@@ -137,22 +153,34 @@ res <- PEcAnAssimSequential:::sda.enkf_local(
   )
 )
 
+#### qsub
+# PEcAnAssimSequential:::qsub_sda(
+#   settings = settings,
+#   obs.mean = obs.mean,
+#   obs.cov = obs.cov,
+#   Q = NULL,
+#   pre_enkf_params = NULL,
+#   ensemble.samples = NULL,
+#   outdir = "/projectnb/dietzelab/guYANG/pecan/output/qsub",
+#   control = control
+# )
+
 # job_lines <- c(
 #   "#!/bin/bash",
 #   "module load R/4.4.0",
 #   "Rscript /projectnb/dietzelab/guYANG/pecan/pecan/local/sda_runner.R"
 # )
-# writeLines(job_lines, "/projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.sh")
+# writeLines(job_lines, "/projectnb/dietzelab/guYANG/pecan/output/log/sda_runner_1.sh")
 
-# qsub -l h_rt=6:00:00 \
+# qsub -l h_rt=10:00:00 \
 # -l buyin \
 # -l mem_per_core=8G \
 # -pe omp 28 \
 # -V \
-# -N sda_runner \
-# -o /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.out \
-# -e /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.err \
+# -N sda_runner_1 \
+# -o /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner_1.out \
+# -e /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner_1.err \
 # -M yanggu@bu.edu \
 # -m abe \
 # -S /bin/bash \
-# /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner.sh
+# /projectnb/dietzelab/guYANG/pecan/output/log/sda_runner_1.sh

@@ -596,6 +596,21 @@ qsub_sda <- function(settings,
   if (is.null(outdir)) {
     outdir <- settings$outdir
   }
+  
+  ## Revise 
+  # ensure ensemble.samples is available before splitting batch jobs
+  if (is.null(ensemble.samples)) {
+    sample_file <- file.path(outdir, "samples.Rdata")
+    if (!file.exists(sample_file)) {
+      stop("Cannot find samples.Rdata at: ", sample_file)
+    }
+    load(sample_file)   # expects object named ensemble.samples
+    if (is.null(ensemble.samples)) {
+      stop("samples.Rdata was loaded, but object `ensemble.samples` was not found.")
+    }
+  }
+  ## Stop Revise
+  
   # create folder for storing job outputs.
   batch.folder <- file.path(outdir, prefix)
   # delete the whole folder if it's not empty.

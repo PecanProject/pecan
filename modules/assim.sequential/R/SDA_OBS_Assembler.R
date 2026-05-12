@@ -44,8 +44,7 @@ SDA_OBS_Assembler <- function(settings){
       site.list$lon <- as.numeric(site.list$lon)
       list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
     })%>% 
-    dplyr::bind_rows() %>% 
-    as.list()
+    dplyr::bind_rows() 
   
   #convert from timestep to time points
   if (length(Obs_Prep$timestep)>0){

@@ -158,7 +158,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       # Water pools
       dplyr::across(
         .cols = c(
-          dplyr::all_of(c("soilWater", "soilWetnessFrac", "snow")),
+          dplyr::all_of(c("soilWater", "snow")),
           dplyr::any_of("litterWater") # Only present in V1 output
         ),
         .fns = cm_to_mm
