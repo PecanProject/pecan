@@ -642,14 +642,12 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
   }
 
   if (!is.null(parent_ids)) {
+    # parent_ids enforces 1:1 mapping between parent and child runs.
+    stopifnot(
+      length(parent_ids$ids) == ensemble_size,
+      all(parent_ids$ids %in% seq_along(input_path))
+    )
     samples$ids <- parent_ids$ids
-    out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
-    # sample for those that our outside the param size -
-    # for example, parent id may send id number 200 but we have only 100 sample for param
-    samples$ids[samples$ids %in% out.of.sample.size] <- sample(
-      seq_along(input_path),
-      out.of.sample.size,
-      replace = TRUE)
   } else if (tolower(method) == "sampling") {
     samples$ids <- sample(
       seq_along(input_path),
