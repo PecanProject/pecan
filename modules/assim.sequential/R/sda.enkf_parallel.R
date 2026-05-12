@@ -109,13 +109,20 @@ sda.enkf_local <- function(settings,
   ###-------------------------------------------------------------------###
   ### check dates before data assimilation                              ###
   ###-------------------------------------------------------------------###----  
-  #filtering obs data based on years specifited in setting > state.data.assimilation
+  #Filter observation dates to SDA bounds
   start.cut <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
-  Start.year <- (lubridate::year(settings$state.data.assimilation$start.date))
-  End.year <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
-  assim.sda <- Start.year:End.year
-  obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.mean dates against assimyear dates
-  obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.cov dates against assimyear dates
+  # Start.year <- (lubridate::year(settings$state.data.assimilation$start.date))
+  # End.year <- lubridate::year(settings$state.data.assimilation$end.date) # dates that assimilations will be done for - obs will be subsetted based on this
+  # assim.sda <- Start.year:End.year
+  # obs.mean <- obs.mean[sapply(lubridate::year(names(obs.mean)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.mean dates against assimyear dates
+  # obs.cov <- obs.cov[sapply(lubridate::year(names(obs.cov)), function(obs.year) obs.year %in% (assim.sda))] #checks obs.cov dates against assimyear dates
+  if (is.na(start.cut)) {
+    start.cut <- as.POSIXct(as.Date(settings$state.data.assimilation$start.date), tz = "UTC")
+  }
+  end.cut <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
+  if (is.na(end.cut)) {
+    end.cut <- as.POSIXct(as.Date(settings$state.data.assimilation$end.date), tz = "UTC")
+  }
   #checking that there are dates in obs.mean and adding midnight as the time
   obs.times <- names(obs.mean)
   obs.times.POSIX <- lubridate::ymd_hms(obs.times)
@@ -127,11 +134,17 @@ sda.enkf_local <- function(settings,
         ### Data does not have time associated with dates 
         ### Adding 12:59:59PM assuming next time step starts one second later
         # PEcAn.logger::logger.warn("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
-        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
+        # obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "23:59:59"))
+        # If dates are provided without times, standardize to 00:00:00 UTC.
+        obs.times.POSIX[i] <- lubridate::ymd_hms(paste(obs.times[i], "00:00:00"))
       }
     }
   }
   obs.times <- obs.times.POSIX
+  keep_obs <- which(obs.times >= start.cut & obs.times <= end.cut)
+  obs.times <- obs.times[keep_obs]
+  obs.mean <- obs.mean[keep_obs]
+  obs.cov <- obs.cov[keep_obs]
   read_restart_times <- c(lubridate::ymd_hms(start.cut, truncated = 3), obs.times)
   nt  <- length(obs.times) #sets length of for loop for Forecast/Analysis
   if (nt==0) PEcAn.logger::logger.severe('There has to be at least one Obs.')
@@ -262,7 +275,8 @@ sda.enkf_local <- function(settings,
             for (i in seq_len(nens)) {
               #---------------- model specific split inputs
               split_args <- list(
-                start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                # start.time = (lubridate::ymd_hms(obs.times[t - 1], truncated = 3) + lubridate::second(lubridate::hms("00:00:01"))),
+                start.time = lubridate::ymd_hms(obs.times[t - 1], truncated = 3),
                 stop.time = lubridate::ymd_hms(obs.times[t], truncated = 3),
                 inputs = inputs$met$samples[[i]]
               )
@@ -289,7 +303,8 @@ sda.enkf_local <- function(settings,
                              }
                              list(
                                runid = configs$runs$id,
-                               start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
+                               # start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S") + lubridate::second(lubridate::hms("00:00:01")),
+                               start.time = strptime(obs.times[t -1], format = "%Y-%m-%d %H:%M:%S"),
                                stop.time = strptime(obs.times[t], format ="%Y-%m-%d %H:%M:%S"),
                                settings = settings,
                                new.state = new_state_site,

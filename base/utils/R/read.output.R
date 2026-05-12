@@ -77,9 +77,9 @@ read.output <- function(runid, outdir,
   }
 
   # create list of *.nc years - look only for files formatted as
-  # YYYY.nc, the default pecan output file name standard
+  # YYYY.nc or YYYY-MM-DD.nc
   if (is.null(ncfiles)) {
-    ncfiles_sub <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", full.names = FALSE)
+    ncfiles_sub <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}(-[[:digit:]]{2}-[[:digit:]]{2})?\\.nc$", full.names = FALSE)
     ncfiles <- file.path(outdir, ncfiles_sub)
   } else {
     # Assume the NetCDF files follow the PEcAn standard format
@@ -128,7 +128,7 @@ read.output <- function(runid, outdir,
 
   # Deduce file years from their names
   nc_years <- suppressWarnings(
-    as.numeric(gsub("^(-?[[:digit:]]{4})\\.nc", "\\1", ncfiles_sub))
+    as.numeric(gsub("^(-?[[:digit:]]{4})(-[[:digit:]]{2}-[[:digit:]]{2})?\\.nc$", "\\1", ncfiles_sub))
   )
   if (any(is.na(nc_years))) {
     PEcAn.logger::logger.debug(
