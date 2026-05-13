@@ -2,10 +2,7 @@
 % Please edit documentation in R/generate_joint_ensemble_design.R
 \name{generate_joint_ensemble_design}
 \alias{generate_joint_ensemble_design}
-\title{Generate joint ensemble design for parameter sampling
-Creates a joint ensemble design that maintains parameter correlations across
-all sites in a multi-site run. This function generates sample indices that
-are shared across sites to ensure consistent parameter sampling.}
+\title{Generate joint ensemble design for parameter sampling}
 \usage{
 generate_joint_ensemble_design(settings, ensemble_size, sobol = FALSE)
 }
@@ -26,22 +23,25 @@ When samples.Rdata doesn't exist, settings is passed to
 }}
 
 \item{ensemble_size}{Integer specifying the number of ensemble members.
+When \code{sobol = TRUE}, this is the Sobol base sample size \code{N}, not
+the expanded number of model runs (which will be \code{N * (k + 2)} for
+\code{k} independent factors).
 The input_design is generated once for the entire model run. You might
 want to recycle existing ensemble_samples when splitting larger runs
 into smaller jobs while keeping the same parameters.}
 
-\item{sobol}{Logical. If TRUE, returns a \code{sensitivity::soboljansen}
-object for Sobol sensitivity analysis.}
+\item{sobol}{Logical, generate a variance-based Sobol design using
+\code{sensobol}.}
 }
 \value{
-A list containing ensemble samples and indices.
-  If \code{sobol = FALSE}, returns \code{list(X = design_matrix)}.
-  If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
-  result object with the design matrix in \code{$X} plus additional
-  components for Sobol index calculations.
+A list with component \code{X}, a data frame design matrix
+  describing PEcAn parameter and sampled input indices. If \code{sobol = TRUE},
+  the list also includes the metadata needed by
+  \code{\link{compute_sobol_indices}}: \code{N}, \code{params},
+  \code{backend}, \code{matrices}, \code{first}, \code{total}, and
+  \code{factor_metadata}.
 }
 \description{
-Generate joint ensemble design for parameter sampling
 Creates a joint ensemble design that maintains parameter correlations across
 all sites in a multi-site run. This function generates sample indices that
 are shared across sites to ensure consistent parameter sampling.
@@ -65,4 +65,11 @@ In practice it:
 Difference from generate_OAT_SA_design: This function samples inputs
 randomly or quasi-randomly, while generate_OAT_SA_design holds all
 non-parameter inputs constant to isolate parameter effects.
+
+When \code{sobol = TRUE}, every input in
+\code{settings$ensemble$samplingspace} that does NOT declare a
+\code{parent} becomes an independent Sobol factor. Inputs that DO
+declare a parent inherit the parent's sampled indices via
+\code{\link{input.ens.gen}}, and appear in the design matrix but are
+not independent Sobol factors.
 }

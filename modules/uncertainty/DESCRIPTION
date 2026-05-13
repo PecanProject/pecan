@@ -43,7 +43,8 @@ Imports:
     purrr,
     randtoolbox,
     rlang,
-    sensitivity,
+    sensobol,
+    tibble,
     tidyr
 Suggests:
     mockery,

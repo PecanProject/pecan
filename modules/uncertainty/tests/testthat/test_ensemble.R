@@ -1,5 +1,4 @@
 context("input validation for write.ensemble.configs")
-library(testthat)
 
 # Mock a model write.configs function to avoid model-specific errors
 write.configs.SIPNET <- function(...) TRUE

@@ -635,21 +635,20 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
   if (input == "parameters") return(NULL)
 
   input_path <- settings$run$inputs[[tolower(input)]]$path
-  if (is.null(input_path)) {
-    PEcAn.logger::logger.error(
-      "No paths found for input", sQuote(input), "in settings$run$inputs"
-    )
+  if (is.null(input_path) || length(input_path) == 0) {
+    PEcAn.logger::logger.error("Input ", sQuote(input), " has no paths specified")
   }
 
   if (!is.null(parent_ids)) {
     samples$ids <- parent_ids$ids
-    out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
-    # sample for those that our outside the param size -
-    # for example, parent id may send id number 200 but we have only 100 sample for param
-    samples$ids[samples$ids %in% out.of.sample.size] <- sample(
-      seq_along(input_path),
-      out.of.sample.size,
-      replace = TRUE)
+    overflow_positions <- which(samples$ids > length(input_path))
+    if (length(overflow_positions) > 0) {
+      samples$ids[overflow_positions] <- sample(
+        seq_along(input_path),
+        length(overflow_positions),
+        replace = TRUE
+      )
+    }
   } else if (tolower(method) == "sampling") {
     samples$ids <- sample(
       seq_along(input_path),
@@ -659,6 +658,14 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
     samples$ids <- rep_len(
       seq_along(input_path),
       length.out = ensemble_size)
+  }
+  samples$ids <- as.integer(samples$ids)
+  if (any(is.na(samples$ids)) ||
+      any(samples$ids < 1L) ||
+      any(samples$ids > length(input_path))) {
+    PEcAn.logger::logger.error(
+      "Invalid sampled ids generated for input ", sQuote(input)
+    )
   }
   #using the sample ids
   samples$samples <- input_path[samples$ids]

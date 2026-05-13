@@ -70,9 +70,9 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   # number of (pft, trait, quantile) combinations
   if (!is.null(input_design) && "ensemble" %in% names(settings)) {
     if (nrow(input_design) != ensemble.size) {
-      stop(
+      PEcAn.logger::logger.error(
         "input_design has ", nrow(input_design), " rows, but ensemble.size is ",
-        ensemble.size, ".The design matrix must have exactly one row per run."
+        ensemble.size, ". The design matrix must have exactly one row per run."
       )
     }
   }
@@ -171,6 +171,26 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
         !is.null(input_design) && 
         "param" %in% colnames(input_design)) {
       trait_sample_indices <- input_design[["param"]]
+      if (is.null(trait.samples) || length(trait.samples) == 0) {
+        PEcAn.logger::logger.error(
+          "samples.Rdata does not contain trait.samples required for input_design$param"
+        )
+      }
+      trait_sample_indices <- as.integer(trait_sample_indices)
+      if (any(is.na(trait_sample_indices)) || any(trait_sample_indices < 1L)) {
+        PEcAn.logger::logger.error("input_design$param must contain positive integer indices")
+      }
+      parameter_bank_size <- PEcAn.uncertainty::trait_sample_bank_size(trait.samples)
+      if (parameter_bank_size == 0L) {
+        PEcAn.logger::logger.error(
+          "samples.Rdata does not contain usable trait.samples required for input_design$param"
+        )
+      }
+      if (any(trait_sample_indices > parameter_bank_size)) {
+        PEcAn.logger::logger.error(
+          "input_design$param includes indices beyond the available parameter sample bank"
+        )
+      }
       ensemble.samples <- list()
       for (pft in names(trait.samples)) {
         pft_traits <- trait.samples[[pft]]
@@ -182,6 +202,10 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
         )
         names(ensemble.samples[[pft]]) <- names(pft_traits)
       }
+    } else if ("ensemble" %in% names(settings) && !is.null(input_design)) {
+      PEcAn.logger::logger.error(
+        "input_design must include a `param` column selecting rows from trait.samples"
+      )
     } else {
       # use pre-generated samples
       ensemble.samples <- existing_data$ensemble.samples
