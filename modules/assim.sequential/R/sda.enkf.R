@@ -662,7 +662,7 @@ for(t in seq_len(nt)) { #
         intervalX <- matrix(NA, ncol(X), 2)
         rownames(intervalX) <- colnames(X)
         #TO DO: Not working for fcomp
-        for(i in 1:length(var.names)){
+        for(i in seq_along(var.names)){
           intervalX[which(startsWith(rownames(intervalX),
                                      var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
                                                                    as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
@@ -790,7 +790,7 @@ for(t in seq_len(nt)) { #
         ### create matrix the describes the support for each observed state variable at time t
         interval <- matrix(NA, length(obs.mean[[t]]), 2)
         rownames(interval) <- names(obs.mean[[t]])
-        for(i in 1:length(var.names)){
+        for(i in seq_along(var.names)){
           interval[which(startsWith(rownames(interval),
                                     var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
                                                                   as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
@@ -828,7 +828,7 @@ for(t in seq_len(nt)) { #
           ## this is needed for correct indexing later
           samplerNumberOffset <- length(conf$getSamplers())
           
-          for(i in 1:length(y.ind)) {
+          for(i in seq_along(y.ind)) {
             node <- paste0('y.censored[',i,']')
             conf$addSampler(node, 'toggle', control=list(type='RW'))
             ## could instead use slice samplers, or any combination thereof, e.g.:
@@ -845,7 +845,7 @@ for(t in seq_len(nt)) { #
           Cmodel <- nimble::compileNimble(model_pred)
           Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred)
           
-          for(i in 1:length(y.ind)) {
+          for(i in seq_along(y.ind)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
@@ -865,7 +865,7 @@ for(t in seq_len(nt)) { #
                             X = stats::rnorm(ncol(X),0,1)) #
           Cmodel$setInits(inits.pred)
           
-          for(i in 1:length(y.ind)) {
+          for(i in seq_along(y.ind)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
@@ -891,7 +891,7 @@ for(t in seq_len(nt)) { #
         mq <- dat[, iq]  # Omega, Precision
         q.bar <- matrix(apply(mq, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
         
-        col <- matrix(1:length(mu.f) ^ 2, length(mu.f), length(mu.f))
+        col <- matrix(seq_len(length(mu.f) ^ 2), length(mu.f), length(mu.f))
         WV  <- matrix(0, length(mu.f), length(mu.f))
         for (i in seq_along(mu.f)) {
           for (j in seq_along(mu.f)) {
@@ -1205,8 +1205,8 @@ for(t in seq_len(nt)) { #
     YCI[is.na(YCI)]<-0
     
     YCI <- YCI[,Y.order]
-    Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-    Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
+    Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[, seq_along(names.y), drop = FALSE], na.rm = TRUE)) })[t1:t]
+    Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[, seq_along(names.y), drop = FALSE], na.rm = TRUE)) })[t1:t]
     
     for (i in seq_len(ncol(X))) {
       Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
@@ -1407,8 +1407,8 @@ for(t in seq_len(nt)) { #
   YCI[is.na(YCI)]<-0
   
   YCI <- YCI[,Y.order]
-  Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-  Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
+  Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[, seq_along(names.y), drop = FALSE], na.rm = TRUE)) })[t1:t]
+  Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[, seq_along(names.y), drop = FALSE], na.rm = TRUE)) })[t1:t]
   
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {

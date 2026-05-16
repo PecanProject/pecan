@@ -64,8 +64,10 @@
 #'
 #' @param defaults nested list of named constant parameter values. The
 #' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
-#' Only `defaults[[1]]$constants` is used; all other elements are silently ignored. 
-#' @param trait.values vector of samples for a given trait
+#' Only `defaults[[1]]$constants` is used; all other elements are silently ignored.
+#' @param trait.values named list of trait values for each PFT. SIPNET can
+#'  handle only one vegetation PFT, and an optional "soil" PFT for soil constants.
+#'  `trait.values` that do not fit this format will throw a warning.
 #' @param settings PEcAn settings object
 #' @param run.id run ID
 #' @param inputs list of model inputs
@@ -77,6 +79,22 @@
 #' @author Michael Dietze, Alexey Shiklomanov
 write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
                                 restart = NULL, spinup = NULL) {
+
+  if (!is.list(trait.values)) {
+    PEcAn.logger::logger.severe(
+      "`trait.values` must be a list with names corresponding to PFTs."
+    )
+  }
+
+  if (
+    (length(trait.values) > 2) ||
+      (length(trait.values) == 2 && !("soil" %in% names(trait.values)))
+  ) {
+    PEcAn.logger::logger.warn(paste0(
+      "SIPNET can only handle one vegetation PFT and one optional soil PFT. ",
+      "Passing multiple vegetation PFTs may lead to unexpected behavior."
+    ))
+  }
 
   rev_raw <- settings$model$revision
   legacy_v1 <- c("102319", "136", "r136", "ssr", "git")
@@ -124,7 +142,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
-  
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
   outdir <- file.path(settings$host$outdir, as.character(run.id))
@@ -132,7 +150,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
-  
+
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con = settings$model$jobtemplate, n = -1)

@@ -14,7 +14,7 @@
 #'   \item `format$vars$input_name`: name in CSV file
 #'   \item `format$vars$input_units`: units in CSV file
 #'   \item `format$vars$bety_name`: name in BETY.
-#'       See https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html
+#'       See https://pecanproject.github.io/pecan-documentation/develop/NewInput.html#InputConversions
 #'       for allowable names.
 #' }
 #'

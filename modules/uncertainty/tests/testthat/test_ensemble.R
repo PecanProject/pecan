@@ -4,16 +4,6 @@ library(testthat)
 # Mock a model write.configs function to avoid model-specific errors
 write.configs.SIPNET <- function(...) TRUE
 
-# Helper: make input with correct structure
-make_input_sets <- function(paths) {
-  lapply(paths, function(p) list(path = p))
-}
-
-# Helper: make ensemble.samples with the correct structure
-make_samples <- function(samples) {
-  lapply(paths, function(p) list(path = p))
-}
-
 # 1. One input, no samples → should pass
 test_that("1 input, no samples: passes", {
   settings <- list(run = list(inputs = list(input = list(path = "IC1"))))

@@ -283,7 +283,7 @@ If you would like to make changes to a release branch, you must follow a differe
 
 #### Tags
 
-Git supports two types of tags: lightweight and annotated. For more information see the [Tagging Chapter in the Git documentation](http://git-scm.com/book/ch2-6.html).
+Git supports two types of tags: lightweight and annotated. For more information see the [Tagging Chapter in the Git documentation](https://git-scm.com/book/en/v2/Git-Basics-Tagging).
 
 Lightweight tags are useful, but here we discuss the annotated tags that are used for marking stable versions, major releases, and versions associated with published results. 
 
@@ -312,7 +312,7 @@ To tag an earlier commit, just append the commit SHA to the command, e.g.
 * GitHub help pages,
 [https://help.github.com](https://help.github.com)/
 * Main GIT page
-[http://git-scm.com/documentation](http://git-scm.com/documentation)
+[https://git-scm.com/doc](https://git-scm.com/doc)
 * Another set of pages about branching,
 [http://sandofsky.com/blog/git-workflow.html](http://sandofsky.com/blog/git-workflow.html)
 * [Stackoverflow highest voted questions tagged "git"](http://stackoverflow.com/questions/tagged/git?sort=votes&pagesize=50)
@@ -322,8 +322,7 @@ To tag an earlier commit, just append the commit SHA to the command, e.g.
 
 When in doubt, the first step is to click the "Help" button at the top of the page.
 
-* [GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html) by
-Scott Chacon (Git evangelist and Ruby developer working on GitHub.com)
+* [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow)
 * [GitHub FAQ](https://help.github.com/)
 * [Using Pull Requests](https://help.github.com/articles/using-pull-requests)
 * [SSH Keys](https://help.github.com/articles/generating-ssh-keys)

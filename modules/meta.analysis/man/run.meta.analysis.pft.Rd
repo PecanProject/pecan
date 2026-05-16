@@ -2,7 +2,8 @@
 % Please edit documentation in R/run.meta.analysis.R
 \name{run.meta.analysis.pft}
 \alias{run.meta.analysis.pft}
-\title{"Workflow" version of run.meta.analysis.pft}
+\title{"Workflow" version of run.meta.analysis.pft
+#' Run Bayesian meta-analysis for a single PFT (file-based wrapper)}
 \usage{
 run.meta.analysis.pft(
   pft,
@@ -32,10 +33,58 @@ default = 1.2 following Bolker 2008 Ecological Models and Data in R}
 
 \item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
-\item{update}{(boolean; default = TRUE) If \code{TRUE}, replace existing
+\item{update}{(boolean; default = FALSE) If \code{TRUE}, replace existing
 posteriors with new ones}
 }
+\value{
+The \code{pft} list (invisibly), or \code{NA} if no trait data are available.
+The returned \code{pft} list is a named list with the following elements:
+\describe{
+\item{\code{name}}{(character) PFT name, e.g. \code{"temperate.deciduous"}.}
+\item{\code{outdir}}{(character) Path to directory where output files are
+stored (trait data, priors, posteriors, MCMC samples).}
+\item{\code{posteriorid}}{(integer) Row ID of the posterior record in
+BETYdb's \code{posteriors} table.}
+\item{\code{constants}}{(named list, optional) Trait values to treat as
+fixed constants, bypassing the meta-analysis.}
+}
+The function's primary outputs are communicated through files saved in
+\code{pft$outdir}.
+}
 \description{
-Thin wrapper around \code{meta_analysis_standalone} that also reads/writes files
-and registers results in the PEcAn database.
+"Workflow" version of run.meta.analysis.pft
+#' Run Bayesian meta-analysis for a single PFT (file-based wrapper)
+}
+\details{
+\strong{Upstream contract (reads from \code{pft$outdir}):}
+\describe{
+\item{\code{trait.data.Rdata}}{Named list of data frames produced by
+\code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into \code{trait_env$trait.data}.}
+\item{\code{prior.distns.Rdata}}{Data frame of prior distributions produced by
+\code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into \code{prior_env$prior.distns}.}
+}
+
+\strong{File-based side effects (saved to \code{pft$outdir}):}
+\describe{
+\item{\code{trait.mcmc.Rdata}}{Contains \code{trait.mcmc}: a named list of
+\code{mcmc.list} objects (one per trait) with posterior MCMC samples from
+JAGS. Each element has columns \code{beta.o} (overall mean) and optionally
+\code{sd.o} (overall SD).}
+\item{\code{post.distns.MA.Rdata}}{Contains \code{post.distns}: a data frame with
+one row per trait and columns \code{distn}, \code{parama}, \code{paramb}, \code{n}
+summarizing the fitted posterior distribution.}
+\item{\code{post.distns.Rdata}}{Symlink to \code{post.distns.MA.Rdata}.}
+\item{\code{jagged.data.Rdata}}{Contains \code{jagged.data}: a named list of data
+frames (one per trait) formatted for use in the JAGS meta-analysis
+model (see \code{\link[PEcAn.MA]{jagify}}).}
+}
+
+\strong{Downstream contract:} The files \code{trait.mcmc.Rdata} and
+\code{post.distns.Rdata} are expected by \code{\link[PEcAn.uncertainty]{get.parameter.samples}} (in
+\code{PEcAn.uncertainty}), which loads them to generate ensemble and sensitivity
+analysis samples.
+
+\strong{Note:} The core computation is performed by \code{\link[PEcAn.MA]{meta_analysis_standalone}},
+which accepts and returns R objects directly — see its documentation for
+the pure-function interface.
 }
