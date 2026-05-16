@@ -2,6 +2,10 @@
 
 * Added keywords and bug reporting URL to DESCRIPTION. No other files changed.
 
+## Fixed
+
+* `calcSpatialCov.matrix()`: removed a redundant nested loop that recomputed each matrix row `n` times unnecessarily, reducing complexity from O(n^3) to O(n^2) (#3964).
+
 
 
 # PEcAn.emulator 1.8.1
