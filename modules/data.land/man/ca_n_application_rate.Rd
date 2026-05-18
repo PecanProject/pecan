@@ -41,9 +41,4 @@ breakdowns). When multiple sources report rates for the same crop,
 the rate represents the envelope (min of minimums, max of maximums)
 across sources.
 }
-\seealso{
-\code{\link{look_up_ca_n_rate}} for looking up rates by crop name.
-  \code{\link{look_up_fertilizer_components}} for fertilizer nutrient
-  composition (N/C fractions) from the SWAT/DayCent database.
-}
 \keyword{datasets}
