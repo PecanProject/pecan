@@ -4,4 +4,6 @@ This converts the raw outputs of the management/monitoring CCMMF pipeline into p
 
 - `01a-clean-irrigation.R` --- Preprocess irrigation. This is handled separately because the raw data are really large (600M rows).
 - `01b-clean-other-events.R` --- Preprocess remaining events. These are done together because they are much smaller.
+- `01c-clean-fertilization.R` --- Preprocess synthetic N fertilization (`workflows/fertilization-statewide/`).
+- `01d-clean-ncc.R` --- Preprocess ncc (compost) events (`workflows/ncc-statewide/`).
 - `02-events-to-json.R` --- Example of running
