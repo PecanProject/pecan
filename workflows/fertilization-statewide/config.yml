@@ -1,0 +1,24 @@
+default:
+  n_parcels: 1000
+  n_ensemble: 20
+  nh4_no3_ratio: 0.5
+  seed: 42
+  years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
+  matched_dir: /projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1
+  crosswalk_path: /projectnb/dietzelab/ccmmf/usr/akash/management/fertilization/CCMMF Fertilization - Crop_types.tsv
+  output_dir: /projectnb/dietzelab/ccmmf/usr/akash/event_files
+  output_subdir: fertilization
+  batch_size: 100
+  workers: 1
+
+small:
+
+medium:
+  n_parcels: 10000
+  batch_size: 1000
+  workers: 4
+
+all:
+  n_parcels: null   # null means all parcels in the matched product
+  batch_size: 5000
+  workers: 8
