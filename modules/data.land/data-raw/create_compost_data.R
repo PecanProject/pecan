@@ -23,7 +23,7 @@ LBS_ACRE_TO_G_M2 <- 0.112085
 material_to_class <- function(m) {
   s <- tolower(m)
   dplyr::case_when(
-    grepl("grass",            s) ~ "green",
+    grepl("grass", s) ~ "green",
     grepl("manure|alfalfa|blood|poultry|corn cob|corn stalk", s) ~ "ag",
     grepl("apple|coffee|fruit|vegetable", s) ~ "food",
     grepl("bark|sawdust|woodchip|newspaper|paper", s) ~ "wood",
