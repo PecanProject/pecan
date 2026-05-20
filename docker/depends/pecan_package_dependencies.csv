@@ -38,6 +38,7 @@
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Suggests",FALSE
 "DBI","*","base/db","Imports",FALSE
+"DBI","*","modules/data.land","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
@@ -69,6 +70,7 @@
 "dplyr","*","modules/uncertainty","Imports",FALSE
 "dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
+"duckdb","*","modules/data.land","Imports",FALSE
 "dygraphs","*","models/peprmt","Suggests",FALSE
 "earthdatalogin","*","models/peprmt","Suggests",FALSE
 "ecmwfr",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
