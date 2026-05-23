@@ -117,9 +117,8 @@ look_up_ca_n_rate <- function(
 #' @param aggregate Character, one of "none" (default) or "mean".
 #'   If "mean", rows for the same material are averaged into a single row.
 #'
-#' @return A tibble with columns: `material`, `cn_min`, `cn_max`,
-#'   `cn_avg`, `c_pct`, `n_pct`, `pan_pct`, `n_class`,
-#'   `total_c_min_g_m2`, `total_c_max_g_m2`,
+#' @return A tibble with columns: `material`, `material_class`,
+#'   `cn_min`, `cn_max`, `cn_avg`, `n_pct`, `pan_pct`, `n_class`,
 #'   `total_n_min_g_m2`, `total_n_max_g_m2`, `source`.
 #'   Returns an empty tibble (with a warning) if no match is found.
 #'
@@ -174,10 +173,9 @@ look_up_ca_compost_amendment <- function(
       )
     }
     return(dplyr::tibble(
-      material = character(), cn_min = numeric(), cn_max = numeric(),
-      cn_avg = numeric(), c_pct = numeric(),
+      material = character(), material_class = character(),
+      cn_min = numeric(), cn_max = numeric(), cn_avg = numeric(),
       n_pct = numeric(), pan_pct = numeric(), n_class = character(),
-      total_c_min_g_m2 = numeric(), total_c_max_g_m2 = numeric(),
       total_n_min_g_m2 = numeric(), total_n_max_g_m2 = numeric(),
       source = character()
     ))
@@ -185,22 +183,22 @@ look_up_ca_compost_amendment <- function(
 
   out <- result |>
     dplyr::select(
-      "material", "cn_min", "cn_max", "cn_avg",
-      "c_pct", "n_pct", "pan_pct", "n_class",
-      "total_c_min_g_m2", "total_c_max_g_m2",
+      "material", "material_class",
+      "cn_min", "cn_max", "cn_avg",
+      "n_pct", "pan_pct", "n_class",
       "total_n_min_g_m2", "total_n_max_g_m2",
       "source"
     )
 
   if (aggregate == "mean" && nrow(out) > 1) {
     numeric_cols <- c(
-      "cn_min", "cn_max", "cn_avg", "c_pct", "n_pct", "pan_pct",
-      "total_c_min_g_m2", "total_c_max_g_m2",
+      "cn_min", "cn_max", "cn_avg", "n_pct", "pan_pct",
       "total_n_min_g_m2", "total_n_max_g_m2"
     )
     out <- out |>
       dplyr::summarize(
         dplyr::across(dplyr::all_of(numeric_cols), mean),
+        material_class = dplyr::first(.data$material_class),
         n_class = dplyr::first(.data$n_class),
         source = paste(unique(.data$source), collapse = "; "),
         .by = "material"
