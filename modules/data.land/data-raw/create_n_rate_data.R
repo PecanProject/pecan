@@ -1,27 +1,14 @@
 #!/usr/bin/env Rscript
 #
 # Build the ca_n_application_rate packaged dataset from the raw
-# fertilization spreadsheet. Reads the raw TSV directly, classifies each
-# row by stage and unit, converts oz N per tree rows to lb N per acre via
-# DEMETER orchard density, sums within year stage rows for crops that
-# lack a total season row, and writes both a cached CSV in data-raw/ and
-# the packaged .rda in data/ via usethis::use_data
+# fertilization TSV that ships in data-raw/. Classifies each row by
+# stage, sums within year stage rows for crops that lack a total season
+# row, and writes the packaged .rda via usethis::use_data.
 
-# pull in build time helpers we expose in R/.
-source(file.path("R", "tpa_lookup.R"))
-source(file.path("R", "oz_per_tree_to_lb_per_acre.R"))
-
-raw_path <- file.path(
-  "/projectnb/dietzelab/ccmmf/usr/akash/management/fertilization",
-  "CCMMF Fertilization - N_Fertilization.tsv"
-)
-out_csv <- file.path("data-raw", "n_application_rates.csv")
-
-# 1 lb/acre = 0.112085 g/m^2.
-LBS_ACRE_TO_G_M2 <- 0.112085
+raw_path <- file.path("data-raw", "n_fertilization.tsv")
 
 # stages whose rows sum to an annual total for the same crop. other stage
-# tags (e.g. "first season", "first-leaf trees") describe year conditional
+# tags (e.g. "first season", "first leaf trees") describe year conditional
 # rates and get treated as separate years.
 WITHIN_YEAR_STAGES <- c(
   "preplant", "starter", "starter ", "sidedress",
@@ -49,22 +36,11 @@ usable <- raw |>
     max_n = dplyr::coalesce(.data$max_n, .data$min_n)
   )
 
-# convert any oz N per tree rows to lb N per acre using DEMETER orchard
-# density. currently only almond young tree rows hit this branch.
-oz_rows <- usable |>
-  dplyr::filter(.data$unit == "oz N/tree") |>
-  dplyr::mutate(
-    tpa = vapply(.data$crop, tpa_lookup, integer(1)),
-    min_n = oz_per_tree_to_lb_per_acre(.data$min_n, .data$tpa),
-    max_n = oz_per_tree_to_lb_per_acre(.data$max_n, .data$tpa),
-    unit = "lbs N/acre"
-  ) |>
-  dplyr::select(-"tpa")
-
-all_lb <- dplyr::bind_rows(
-  usable |> dplyr::filter(.data$unit == "lbs N/acre"),
-  oz_rows
-) |>
+# all rows in the current raw TSV are in lbs N per acre. classify by
+# stage so per-stage rows can be aggregated to an annual total when no
+# total-season row is available.
+all_lb <- usable |>
+  dplyr::filter(.data$unit == "lbs N/acre") |>
   dplyr::mutate(
     row_kind = dplyr::case_when(
       is.na(.data$stage) | .data$stage == "" ~ "total",
@@ -129,15 +105,15 @@ envelope_year <- all_lb |>
 
 ca_n_application_rate <- dplyr::bind_rows(envelope_total, sum_stages, envelope_year) |>
   dplyr::mutate(
-    min_n_g_m2 = round(.data$min_n_lbs_acre * .env$LBS_ACRE_TO_G_M2, 3),
-    max_n_g_m2 = round(.data$max_n_lbs_acre * .env$LBS_ACRE_TO_G_M2, 3)
+    min_n_g_m2 = round(
+      PEcAn.utils::ud_convert(.data$min_n_lbs_acre, "lb/acre", "g/m^2"), 3),
+    max_n_g_m2 = round(
+      PEcAn.utils::ud_convert(.data$max_n_lbs_acre, "lb/acre", "g/m^2"), 3)
   ) |>
   dplyr::arrange(.data$pft_group, .data$crop)
 
 PEcAn.logger::logger.info(sprintf(
-  "Harmonized %d crops into n_application_rates.csv",
-  nrow(ca_n_application_rate)
-))
+  "Harmonized %d crops", nrow(ca_n_application_rate)))
 
 # flag crops whose raw rows had NA for both MINN and MAXN.
 raw_crops <- unique(raw$crop)
@@ -150,8 +126,5 @@ if (length(dropped) > 0) {
     ". Their raw rows have NA for both MINN and MAXN."
   )
 }
-
-readr::write_csv(ca_n_application_rate, out_csv)
-PEcAn.logger::logger.info("Wrote ", out_csv)
 
 usethis::use_data(ca_n_application_rate, overwrite = TRUE)
