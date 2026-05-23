@@ -247,10 +247,12 @@
 #' California organic amendment (compost) properties
 #'
 #' Properties of organic amendment materials used in California agriculture,
-#' including C:N ratios, carbon and nitrogen content, plant-available nitrogen
-#' (PAN), and application rates. Some materials appear in multiple rows when
-#' values are reported by different sources (e.g. Corn stalks, Cow manure,
-#' Vegetable waste). The \code{source} column disambiguates these.
+#' including C:N ratios, nitrogen content, plant-available nitrogen (PAN),
+#' and application rates. Each material is also tagged with the CalRecycle
+#' material_class taxonomy (14 CCR section 17852). Some materials appear
+#' in multiple rows when values are reported by different sources
+#' (e.g. Corn stalks, Cow manure, Vegetable waste). The \code{source}
+#' column disambiguates these.
 #'
 #' @format A tibble with 32 rows and the following columns:
 #' \describe{
