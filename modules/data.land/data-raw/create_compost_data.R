@@ -1,22 +1,11 @@
 #!/usr/bin/env Rscript
 #
 # builds the ca_compost_amendment packaged dataset from the raw
-# fertilization spreadsheet. reads the raw Compost TSV, renames columns
-# into the snake_case schema we expose downstream, adds the CalRecycle
-# material_class taxonomy (14 CCR section 17852), and writes a cached
-# CSV plus the packaged .rda.
-#
-# the compost sampling distributions live in
-# create_ca_compost_distributions.R as separate bundled tibbles.
+# compost TSV that ships in data-raw/. renames columns into the
+# snake_case schema we expose downstream and adds the CalRecycle
+# material_class taxonomy (14 CCR section 17852).
 
-raw_path <- file.path(
-  "/projectnb/dietzelab/ccmmf/usr/akash/management/fertilization",
-  "CCMMF Fertilization - Compost.tsv"
-)
-out_csv <- file.path("data-raw", "compost_amendments.csv")
-
-# 1 lb/acre = 0.112085 g/m^2.
-LBS_ACRE_TO_G_M2 <- 0.112085
+raw_path <- file.path("data-raw", "compost.tsv")
 
 # map each raw material name to one of the CalRecycle classes
 # (14 CCR section 17852). biosolids is empty in the current table.
@@ -47,11 +36,12 @@ ca_compost_amendment <- raw |>
     n_class      = .data$`LowerN/HigherN`,
     app_rate_min = .data$`RowsMIN_AppRate (lbs/acre)`,
     app_rate_max = .data$`RowsMAX_AppRate (lbs/acre)`,
-    # %C is sampled at runtime via sample_ca_compost_pct_c().
     total_n_min_lbs_acre = .data$`RowsMIN_Total_N (lbs N/acre)`,
     total_n_max_lbs_acre = .data$`RowsMAX_Total_N (lbs N/acre)`,
-    total_n_min_g_m2     = round(.data$total_n_min_lbs_acre * .env$LBS_ACRE_TO_G_M2, 3),
-    total_n_max_g_m2     = round(.data$total_n_max_lbs_acre * .env$LBS_ACRE_TO_G_M2, 3),
+    total_n_min_g_m2     = round(
+      PEcAn.utils::ud_convert(.data$total_n_min_lbs_acre, "lb/acre", "g/m^2"), 3),
+    total_n_max_g_m2     = round(
+      PEcAn.utils::ud_convert(.data$total_n_max_lbs_acre, "lb/acre", "g/m^2"), 3),
     source       = trimws(.data$Source)
   )
 
@@ -67,11 +57,6 @@ if (length(unclassified) > 0) {
 }
 
 PEcAn.logger::logger.info(sprintf(
-  "Harmonized %d compost materials into compost_amendments.csv",
-  nrow(ca_compost_amendment)
-))
-
-readr::write_csv(ca_compost_amendment, out_csv)
-PEcAn.logger::logger.info("Wrote ", out_csv)
+  "Harmonized %d compost materials", nrow(ca_compost_amendment)))
 
 usethis::use_data(ca_compost_amendment, overwrite = TRUE)
