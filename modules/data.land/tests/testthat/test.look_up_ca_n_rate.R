@@ -47,7 +47,7 @@ test_that("partial match suggests crops and returns empty result", {
 test_that("no match returns empty data frame with correct columns", {
   level <- PEcAn.logger::logger.getLevel()
   PEcAn.logger::logger.setLevel("OFF")
-  result <- look_up_ca_n_rate("Alfalfa")
+  result <- look_up_ca_n_rate("Soybean")
   PEcAn.logger::logger.setLevel(level)
   expect_equal(nrow(result), 0)
   expect_equal(names(result), c("pft_group", "crop", "min_n", "max_n", "source"))
@@ -123,7 +123,7 @@ test_that("compost partial match suggests materials", {
 
 test_that("ca_n_application_rate dataset has expected structure", {
   dat <- PEcAn.data.land::ca_n_application_rate
-  expect_equal(nrow(dat), 33)
+  expect_equal(nrow(dat), 41)
   expect_true(all(c("pft_group", "crop", "min_n_lbs_acre", "max_n_lbs_acre",
                      "source", "min_n_g_m2", "max_n_g_m2") %in% names(dat)))
 })
