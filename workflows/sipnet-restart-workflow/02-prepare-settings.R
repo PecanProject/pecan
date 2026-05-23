@@ -87,7 +87,8 @@ ensemble_settings <- list(
   variable = "NEE",
   samplingspace = list(
     parameters = list(method = "uniform"),
-    events = list(method = "sampling"),
+    event_json = list(method = "sampling"),
+    events = list(parent = "event_json"),
     met = list(method = "sampling"),
     poolinitcond = list(method = "sampling")
   ),
@@ -127,10 +128,8 @@ settings_raw <- PEcAn.settings::as.Settings(list(
     inputs = list(
       met = list(path = metfiles),
       poolinitcond = list(path = icfiles),
-      events = list(
-        path = sipnet_eventfiles,
-        source = events_json_files
-      )
+      event_json = list(path = events_json_files),
+      events = list(path = sipnet_eventfiles)
     )
   ),
   host = list(

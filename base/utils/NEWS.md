@@ -4,6 +4,7 @@
 
 * `distn.stats()`: corrected the Weibull standard deviation formula, which was returning variance (`b^2 * (...)`) instead of SD (`b * sqrt(...)`). The test expectation is also corrected.
 * `read.output()`: an unsupported `end.year` type now stops execution (`logger.severe`) instead of silently continuing with a broken value (`logger.error`), matching the existing behaviour for `start.year`.
+* `transformstats()`: corrected the LSD-to-SE conversion. The denominator was `t * sqrt(2 * n)`, but the correct derivation (LSD = t * sqrt(2) * SE) gives `t * sqrt(2)`. The extra `sqrt(n)` factor made SE estimates from LSD-reporting studies appear `sqrt(n)` times smaller than true, over-weighting those observations in meta-analysis.
 
 ## Changed
 

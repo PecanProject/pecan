@@ -646,7 +646,38 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
     #update LeafOnday and LeafOffDay
-    if (!is.null(settings$run$inputs$leaf_phenology)) {
+    has_event_pheno <- FALSE
+    event_leafoff_before_leafon <- FALSE
+    if (sipnet_version >= "2.0" && !is.null(event_file)) {
+      event_lines <- readLines(event_file)
+      # If leafon / leafoff events are passed in the event file,
+      # skip any leaf_phenology input + turn off internal phenology scheduling
+      # (Sipnet only allows one method to be active at a time)
+      leafon_lines <- grep("leafon", event_lines, fixed = TRUE)
+      leafoff_lines <- grep("leafoff", event_lines, fixed = TRUE)
+      if (length(leafon_lines) > 0 || length(leafoff_lines) > 0) {
+        has_event_pheno <- TRUE
+        if (isTRUE(leafon_lines[1] >= leafoff_lines[1] ||
+                   length(leafon_lines[1]) == 0)) {
+          # leafoff occurs before leafon => simulation starts with leaves.
+          # Used when handling initial LAI below
+          event_leafoff_before_leafon <- TRUE
+        }
+      }
+    }
+    if (has_event_pheno) {
+      param[param[, 1] == "leafOnDay", 2] <- 0
+      param[param[, 1] == "leafOffDay", 2] <- 0
+      param[param[, 1] == "gddLeafOn", 2] <- 0
+
+      if (!is.null(settings$run$inputs$leaf_phenology)) {
+        PEcAn.logger::logger.warn(
+          "Ignoring leaf_phenology input for site",
+          settings$run$site$id,
+          "because event file already contains leafon/leafoff events."
+        )
+      }
+    } else if (!is.null(settings$run$inputs$leaf_phenology)) {
       obs_year_start <- lubridate::year(settings$run$start.date)
       obs_year_end <- lubridate::year(settings$run$end.date)
       if (obs_year_start != obs_year_end) {
@@ -885,10 +916,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       # ==> leaves are on from late May through mid-October.
       is_deciduous_pft <- isTRUE(param[param[, 1] == "fracLeafFall", 2] > 0.5)
       start_day <- lubridate::yday(settings$run$start.date)
-      starts_with_leaves <- (
-        start_day >= param[param[, 1] == "leafOnDay", 2]
-        && start_day <= param[param[, 1] == "leafOffDay", 2]
-      )
+      if (has_event_pheno) {
+        starts_with_leaves <- event_leafoff_before_leafon
+      } else {
+        starts_with_leaves <- (
+          start_day >= param[param[, 1] == "leafOnDay", 2]
+          && start_day <= param[param[, 1] == "leafOffDay", 2]
+        )
+      }
       if (is_deciduous_pft && !starts_with_leaves) {
         # Note that this doesn't adjust for winter LAI of evergreens!
         # Could consider using LAI*fracLeafFall,

@@ -80,12 +80,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   # get number of model timesteps per day
   # outday is the number of time steps in a day - for example 6 hours would have out_day of 4
-  
-  out_day <- sum(
-    sipnet_output$year == simulation_years[1] &
-      sipnet_output$day == unique(sipnet_output$day)[1],
-    na.rm = TRUE
-  ) # switched to day 2 in case first day is partial
+  #
+  # Count rows per day in the first simulation year, then take the max.
+  # This correctly handles edge cases where the first or last day of the
+  # simulation is partial (has fewer timesteps than a complete day).
+  steps_per_day <- table(
+    sipnet_output$day[sipnet_output$year == simulation_years[1]]
+  )
+  out_day <- max(steps_per_day)
   
   
   timestep.s <- 86400 / out_day

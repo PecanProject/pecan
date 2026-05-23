@@ -61,12 +61,9 @@ sipnet_time_range_idx <- function(yrs, ydays, hrs,
   if (first_row == 0) { # Start time is within file; find first matching row
     first_row <- match(
       TRUE,
-      # Note the `==` instead of `>=` on year. This reduces search scope,
-      # but does mean this will fail in the weird case where a whole start year
-      # is missing from the _middle_ of the file.
-      # (The missing-from-the-beginning-of-the-file case was handled above)
-      yrs == start_yr &
-        (ydays > start_yday  | (ydays == start_yday & hrs >= start_hr))
+      yrs > start_yr |
+        (yrs == start_yr &
+          (ydays > start_yday  | (ydays == start_yday & hrs >= start_hr)))
     )
     if (is.na(first_row)) {
       # no matches = file ended before start time => return 0
@@ -88,9 +85,9 @@ sipnet_time_range_idx <- function(yrs, ydays, hrs,
   if (last_row == 0) { # End time is within file; find last matching row
     # Can't use match() here because that only gives the _first_ candidate
     last_row_candidates <- which(
-      # Same caveat about missing years as for first_row
-      yrs == end_yr &
-      (ydays < end_yday | (ydays == end_yday & hrs < end_hr))
+      yrs < end_yr |
+        (yrs == end_yr &
+          (ydays < end_yday | (ydays == end_yday & hrs < end_hr)))
     )
     if (length(last_row_candidates) > 0) {
       last_row <- max(last_row_candidates)

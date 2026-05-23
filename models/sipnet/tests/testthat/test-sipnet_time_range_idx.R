@@ -12,7 +12,7 @@ test_that("subsetting by index", {
     sipnet_time_range_idx(
       dat$V1, dat$V2, dat$V3,
       1999, 1, 7.5,
-      2001, 365, 17), # NB file ends at 16.5, recall end time not exclusive
+      2001, 365, 17), # NB file ends at 16.5, recall end time is exclusive
     list(start = 1, end = 2190)
   )
 
@@ -23,6 +23,20 @@ test_that("subsetting by index", {
       1999, 2, 12,
       1999, 10, 16.5),
     list(start = 4, end = 19)
+  )
+  expect_equal(
+    sipnet_time_range_idx(
+      dat$V1, dat$V2, dat$V3,
+      1999, 2, 12,
+      2000, 1, 0),
+    list(start = 4, end = 730)
+  )
+  expect_equal(
+    sipnet_time_range_idx(
+      dat$V1, dat$V2, dat$V3,
+      2000, 1, 0,
+      2000, 2, 0),
+    list(start = 731, end = 732)
   )
 
   # Starting before file
