@@ -28,9 +28,8 @@ look_up_ca_compost_amendment(
 If "mean", rows for the same material are averaged into a single row.}
 }
 \value{
-A tibble with columns: `material`, `cn_min`, `cn_max`,
-  `cn_avg`, `c_pct`, `n_pct`, `pan_pct`, `n_class`,
-  `total_c_min_g_m2`, `total_c_max_g_m2`,
+A tibble with columns: `material`, `material_class`,
+  `cn_min`, `cn_max`, `cn_avg`, `n_pct`, `pan_pct`, `n_class`,
   `total_n_min_g_m2`, `total_n_max_g_m2`, `source`.
   Returns an empty tibble (with a warning) if no match is found.
 }
