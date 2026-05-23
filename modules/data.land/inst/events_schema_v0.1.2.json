@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pecanproject.org/schema/events-mvp-0-1-2.json",
+  "$id": "https://pecanproject.org/schema/events-mvp-0-1-1.json",
   "oneOf": [
     { "$ref": "#/$defs/site" },
     { "type": "array", "items": { "$ref": "#/$defs/site" } }
@@ -23,7 +23,7 @@
             "properties": {
               "event_type": {
                 "type": "string",
-                "enum": ["planting", "harvest", "irrigation", "fertilization", "ncc", "tillage", "leafon", "leafoff"]
+                "enum": ["planting", "harvest", "irrigation", "fertilization", "tillage", "leafon", "leafoff"]
               },
               "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
               "fraction_area": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
@@ -50,10 +50,6 @@
               "org_n_kg_m2": { "type": "number", "minimum": 0 },
               "nh4_n_kg_m2": { "type": "number", "minimum": 0 },
               "no3_n_kg_m2": { "type": "number", "minimum": 0 },
-              "fert_subtype": { "type": "string" },
-              "material": { "type": "string" },
-              "ncc_subtype": { "type": "string" },
-              "PFT": { "type": "string" },
 
               "tillage_eff_0to1": { "type": "number", "minimum": 0 },
               "intensity_category": { "type": "string" },
@@ -72,8 +68,6 @@
                   { "required": ["nh4_n_kg_m2"] },
                   { "required": ["no3_n_kg_m2"] }
                 ] } },
-              { "if": { "properties": { "event_type": { "const": "ncc" } } },
-                "then": { "required": ["org_c_kg_m2", "org_n_kg_m2", "material"] } },
               { "if": { "properties": { "event_type": { "const": "tillage" } } },
                 "then": { "required": ["tillage_eff_0to1"] } }
             ],
