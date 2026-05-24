@@ -5,7 +5,7 @@ config <- config::get(file = "workflows/fertilization-statewide/config.yml",
 
 set.seed(config[["seed"]])
 
-staging_dir <- file.path(config[["output_dir"]], config[["output_subdir"]], "_staging")
+staging_dir <- file.path(config[["output_dir"]], "_staging")
 dir.create(staging_dir, showWarnings = FALSE, recursive = TRUE)
 
 options(arrow.unsafe_metadata = TRUE)
@@ -111,8 +111,7 @@ read_matched_year <- function(year) {
       year      = as.integer(.data$year),
       season    = as.integer(.data$season),
       date      = as.Date(.data$mslsp_OGI),
-      code      = paste0(.data$landiq_CLASS, .data$landiq_SUBCLASS),
-      PFT       = as.character(.data$landiq_PFT)
+      code      = paste0(.data$landiq_CLASS, .data$landiq_SUBCLASS)
     )
 }
 
@@ -142,17 +141,24 @@ if (!is.null(n_parcels) && n_parcels < dplyr::n_distinct(plant$parcel_id)) {
 design <- plant |>
   dplyr::left_join(code_lookup, by = "code") |>
   dplyr::mutate(
-    rate_source = ifelse(is.na(.data$min_n_lbs_acre), "skip", "crosswalk")
+    rate_source = dplyr::case_when(
+      is.na(.data$min_n_lbs_acre) ~ "skip_no_rate",
+      .data$min_n_lbs_acre == 0 & .data$max_n_lbs_acre == 0 ~ "skip_zero_envelope",
+      TRUE ~ "crosswalk"
+    )
   )
 
-skipped <- design |> dplyr::filter(.data$rate_source == "skip")
-if (nrow(skipped) > 0) {
-  by_code <- skipped |>
+# log both kinds of drops separately so it's clear which are missing data
+# vs which are intentional zero envelopes (e.g. Alfalfa, legumes that fix
+# their own N and carry a cited 0 to 0 rate)
+unresolved <- design |> dplyr::filter(.data$rate_source == "skip_no_rate")
+if (nrow(unresolved) > 0) {
+  by_code <- unresolved |>
     dplyr::count(.data$code, name = "n_events", sort = TRUE) |>
     head(15)
   PEcAn.logger::logger.warn(sprintf(
     "Dropping %d cycles across %d codes with no resolvable N rate. Top offenders:",
-    nrow(skipped), dplyr::n_distinct(skipped$code)
+    nrow(unresolved), dplyr::n_distinct(unresolved$code)
   ))
   for (i in seq_len(nrow(by_code))) {
     PEcAn.logger::logger.warn(sprintf("  %s: %d cycles",
@@ -160,9 +166,24 @@ if (nrow(skipped) > 0) {
   }
 }
 
+zero_env <- design |> dplyr::filter(.data$rate_source == "skip_zero_envelope")
+if (nrow(zero_env) > 0) {
+  by_code <- zero_env |>
+    dplyr::count(.data$code, name = "n_events", sort = TRUE) |>
+    head(15)
+  PEcAn.logger::logger.info(sprintf(
+    "Dropping %d cycles across %d codes with a cited 0 to 0 N rate (no synthetic application). Top:",
+    nrow(zero_env), dplyr::n_distinct(zero_env$code)
+  ))
+  for (i in seq_len(nrow(by_code))) {
+    PEcAn.logger::logger.info(sprintf("  %s: %d cycles",
+                                      by_code$code[i], by_code$n_events[i]))
+  }
+}
+
 design <- design |>
-  dplyr::filter(.data$rate_source != "skip") |>
-  dplyr::select("parcel_id", "year", "season", "date", "code", "PFT",
+  dplyr::filter(.data$rate_source == "crosswalk") |>
+  dplyr::select("parcel_id", "year", "season", "date", "code",
                 "min_n_lbs_acre", "max_n_lbs_acre")
 
 PEcAn.logger::logger.info(sprintf("Design table: %d events, %d parcels, %d years",
