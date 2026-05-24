@@ -3,10 +3,7 @@
 config <- config::get(file = "workflows/fertilization-statewide/config.yml",
                       config = Sys.getenv("FERT_PROJECT", "default"))
 
-# 1 lb/acre = 0.112085 g/m^2 = 0.000112085 kg/m^2.
-LBS_ACRE_TO_KG_M2 <- 0.112085 / 1000
-
-staging_dir <- file.path(config[["output_dir"]], config[["output_subdir"]], "_staging")
+staging_dir <- file.path(config[["output_dir"]], "_staging")
 events_file <- file.path(staging_dir, "_staging_02_events.rds")
 if (!file.exists(events_file)) {
   PEcAn.logger::logger.severe(
@@ -18,34 +15,32 @@ if (!file.exists(events_file)) {
 PEcAn.logger::logger.info("Reading events from ", events_file)
 events <- readRDS(events_file)
 
-# synthetic N is split between nh4 and no3 by the configured ratio. org_c
-# and org_n stay zero here because organic amendments live in the separate
-# ncc product.
-nh4_ratio <- config[["nh4_no3_ratio"]]
+# synthetic N is split between nh4 and no3 using nh4_fraction (share going
+# to nh4, rest goes to no3). org_c and org_n stay zero here; compost rows
+# come in via ncc workflow and end up unioned into same fertilization
+# parquet by cleaner
+nh4_frac <- config[["nh4_fraction"]]
 
 out <- events |>
   dplyr::mutate(
-    total_n_kg_m2 = .data$annual_n_lb_acre * .env$LBS_ACRE_TO_KG_M2,
-    nh4_n_kg_m2   = .data$total_n_kg_m2 * .env$nh4_ratio,
-    no3_n_kg_m2   = .data$total_n_kg_m2 * (1 - .env$nh4_ratio),
-    org_c_kg_m2   = 0,
-    org_n_kg_m2   = 0,
-    fert_subtype  = "synthetic"
+    total_n_kg_m2 = PEcAn.utils::ud_convert(.data$annual_n_lb_acre, "lb/acre", "kg/m^2"),
+    nh4_n_kg_m2 = .data$total_n_kg_m2 * .env$nh4_frac,
+    no3_n_kg_m2 = .data$total_n_kg_m2 * (1 - .env$nh4_frac),
+    org_c_kg_m2 = 0,
+    org_n_kg_m2 = 0
   ) |>
   dplyr::transmute(
-    parcel_id    = as.integer(.data$parcel_id),
-    ens_id       = .data$ens_id,
-    date         = as.Date(.data$date),
+    parcel_id = as.integer(.data$parcel_id),
+    ens_id = .data$ens_id,
+    date = as.Date(.data$date),
     .data$nh4_n_kg_m2,
     .data$no3_n_kg_m2,
     .data$org_c_kg_m2,
     .data$org_n_kg_m2,
-    .data$fert_subtype,
-    crop_code    = .data$code,
-    PFT          = .data$PFT
+    crop_code = .data$code
   )
 
-out_path <- file.path(config[["output_dir"]], config[["output_subdir"]])
+out_path <- config[["output_dir"]]
 dir.create(out_path, showWarnings = FALSE, recursive = TRUE)
 
 ## clean prior shards
