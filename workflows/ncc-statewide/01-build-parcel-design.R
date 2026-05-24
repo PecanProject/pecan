@@ -5,7 +5,7 @@ config <- config::get(file = "workflows/ncc-statewide/config.yml",
 
 set.seed(config[["seed"]])
 
-staging_dir <- file.path(config[["output_dir"]], config[["output_subdir"]], "_staging")
+staging_dir <- file.path(config[["output_dir"]], "_staging")
 dir.create(staging_dir, showWarnings = FALSE, recursive = TRUE)
 
 options(arrow.unsafe_metadata = TRUE)
@@ -54,13 +54,11 @@ if (!is.null(n_parcels) && n_parcels < dplyr::n_distinct(plant$parcel_id)) {
                                     length(picked), n_parcels))
 }
 
-# classify each PFT into annual vs perennial. anything not in this set
-# gets dropped with a warning since the rate envelope is per family.
 pft_family <- function(pft) {
   dplyr::case_when(
-    pft %in% c("row", "vegetable") ~ "annual",
-    pft %in% c("woody", "vine")    ~ "perennial",
-    TRUE                            ~ NA_character_
+    pft %in% c("row", "hay", "rice") ~ "annual",
+    pft == "woody" ~ "perennial",
+    TRUE ~ NA_character_
   )
 }
 
