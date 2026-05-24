@@ -1,15 +1,29 @@
 # Statewide fertilization events workflow
 
-Builds an ensemble of synthetic N fertilization events for California ag parcels across 2016 and 2018 to 2023.
+Builds an ensemble of synthetic N fertilization events for every California ag parcel in the LandIQ MSLSP matched product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
 
-Run from PEcAn project root. Pick a profile (default, small, medium, all) with `FERT_PROJECT`:
+# Config
+
+Everything tweakable lives in `config.yml`. Most setups only need to look at:
+
+- `matched_dir`: the LandIQ MSLSP matched product directory
+- `crosswalk_path`: the LandIQ to FREP to UC ANR crop name crosswalk TSV
+- `output_dir`: where the parquet shards go
+- `n_parcels`, `n_ensemble`, `batch_size`, `workers`: scale knobs per profile
+- `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 0.5 for a 50/50 split)
+
+# Run
+
+Pick a profile (`default`, `medium`, `all`) and run from the PEcAn project root:
 
 ```
 FERT_PROJECT=default bash workflows/fertilization-statewide/run-statewide.sh
 ```
 
-The three scripts run in order. `01-build-parcel-design.R` reads the LandIQ MSLSP matched product for each configured year, walks the Crop_types crosswalk to map each LandIQ CLASS+SUBCLASS code onto a per crop N rate envelope from `PEcAn.data.land::ca_n_application_rate`, and saves the resulting design table. Cycles whose code does not resolve to a rate get logged and dropped. `02-sample-n-rates.R` crosses the design with the ensemble dimension and draws annual N uniformly from each cycle's min/max envelope. `03-write-parquet.R` converts lb/acre to kg/m^2, splits between nh4 and no3 by the configured `nh4_no3_ratio`, partitions parcels into batches, and writes one parquet per batch named `<pid_min>_<pid_max>.parquet`. Compression is ZSTD when available, snappy otherwise.
+`default` is 1000 random parcels, single threaded. `all` is full statewide (~660k parcels), eight workers. The three R scripts chain together: 01 builds the design, 02 samples rates, 03 writes parquet. `check-result.R` reads the output back and prints a summary.
 
-Output lands at `/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/`. Intermediate `.rds` files live under `_staging/` next to the output and can be deleted after a successful run. `check-result.R` opens the dataset and prints schema, shard count, rows per ensemble member, rows per year, a sample of rows, and the total N range. `push-to-carb.sh` is the eventual `aws s3 sync` to `s3://carb/management/fertilization/v1.0/`.
+# Output
 
-The output columns are `parcel_id` (int), `ens_id` (string `fert_ens_NNN`), `date` (MSLSP `mslsp_OGI`), `nh4_n_kg_m2`, `no3_n_kg_m2`, `org_c_kg_m2` (zero here, compost lives in the ncc product), `org_n_kg_m2` (zero), `fert_subtype` (`"synthetic"`), `crop_code` (LandIQ CLASS+SUBCLASS), `PFT`. The rename to the schema the JSON converter consumes (`site_id`, `event_member_id`, hive partitioned by ensemble) happens in the downstream cleaner under `workflows/preprocess-event-parquet/`.
+Parcel range sharded parquet at `<output_dir>/`. Columns: `parcel_id`, `ens_id` (`ens_NNN`, shared with ncc workflow), `date`, `nh4_n_kg_m2`, `no3_n_kg_m2`, `org_c_kg_m2` (zero), `org_n_kg_m2` (zero), `crop_code`.
+
+Downstream, `workflows/preprocess-event-parquet/01c-clean-fertilization.R` renames `parcel_id` to `site_id` and `ens_id` to `event_member_id`, unions compost rows from `workflows/ncc-statewide/`, and writes JSON converter input.
