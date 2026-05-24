@@ -5,7 +5,7 @@ config <- config::get(file = "workflows/fertilization-statewide/config.yml",
 
 set.seed(config[["seed"]])
 
-staging_dir <- file.path(config[["output_dir"]], config[["output_subdir"]], "_staging")
+staging_dir <- file.path(config[["output_dir"]], "_staging")
 design_file <- file.path(staging_dir, "_staging_01_design.rds")
 if (!file.exists(design_file)) {
   PEcAn.logger::logger.severe(
@@ -24,16 +24,14 @@ PEcAn.logger::logger.info(sprintf(
 ))
 
 # expand each design row to one row per ensemble member and draw the annual
-# N rate uniformly from the resolved min/max envelope.
+# N rate uniformly from each cycle's min/max envelope. ens_id is shared with
+# ncc workflow so a given ensemble member can carry both synthetic and
+# compost rows under one fertilization event_type in json output
 events <- design |>
   tidyr::crossing(ensemble_member = seq_len(n_ensemble)) |>
   dplyr::mutate(
-    annual_n_lb_acre = stats::runif(
-      dplyr::n(),
-      min = .data$min_n_lbs_acre,
-      max = .data$max_n_lbs_acre
-    ),
-    ens_id = sprintf("fert_ens_%03d", .data$ensemble_member)
+    annual_n_lb_acre = stats::runif(dplyr::n(), min = .data$min_n_lbs_acre, max = .data$max_n_lbs_acre),
+    ens_id = sprintf("ens_%03d", .data$ensemble_member)
   )
 
 PEcAn.logger::logger.info(sprintf(
