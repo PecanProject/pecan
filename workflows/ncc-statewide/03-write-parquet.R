@@ -3,10 +3,7 @@
 config <- config::get(file = "workflows/ncc-statewide/config.yml",
                       config = Sys.getenv("NCC_PROJECT", "default"))
 
-# 1 t/acre = 224.1702 g/m^2 = 0.2241702 kg/m^2.
-T_ACRE_TO_KG_M2 <- 0.2241702
-
-staging_dir <- file.path(config[["output_dir"]], config[["output_subdir"]], "_staging")
+staging_dir <- file.path(config[["output_dir"]], "_staging")
 events_file <- file.path(staging_dir, "_staging_02_events.rds")
 if (!file.exists(events_file)) {
   PEcAn.logger::logger.severe(
@@ -18,33 +15,33 @@ if (!file.exists(events_file)) {
 PEcAn.logger::logger.info("Reading events from ", events_file)
 events <- readRDS(events_file)
 
-# org_c = app_rate * (pct_c / 100); org_n = org_c / cn. nh4 and no3 stay
-# zero here because compost releases organic N that mineralizes through
-# the soil pool in SIPNET rather than as direct mineral N.
-# TODO: in v2, sample %C and C:N jointly since they covary through %N.
+# split total N using PAN (plant available N at 4 weeks). pan_pct can be
+# negative for high C:N materials (immobilization); clamp to 0 in that
+# case since SIPNET doesn't take negative minN. total C is just bulk
+# material carbon, doesn't depend on PAN
 out <- events |>
   dplyr::mutate(
-    org_c_kg_m2  = .data$app_rate_t_ac * .env$T_ACRE_TO_KG_M2 * (.data$pct_c / 100),
-    org_n_kg_m2  = .data$org_c_kg_m2 / .data$cn_ratio,
-    nh4_n_kg_m2  = 0,
-    no3_n_kg_m2  = 0,
-    ncc_subtype  = "compost"
+    dry_mass_kg_m2 = PEcAn.utils::ud_convert(.data$app_rate_lb_acre, "lb/acre", "kg/m^2"),
+    total_n_kg_m2 = .data$dry_mass_kg_m2 * (.data$n_pct / 100),
+    pan_frac = pmax(0, .data$pan_pct / 100),
+    nh4_n_kg_m2 = .data$total_n_kg_m2 * .data$pan_frac,
+    org_n_kg_m2 = .data$total_n_kg_m2 * (1 - .data$pan_frac),
+    org_c_kg_m2 = .data$total_n_kg_m2 * .data$cn_ratio,
+    no3_n_kg_m2 = 0
   ) |>
   dplyr::transmute(
-    parcel_id    = as.integer(.data$parcel_id),
-    ens_id       = .data$ens_id,
-    date         = as.Date(.data$date),
-    .data$material,
-    .data$org_c_kg_m2,
-    .data$org_n_kg_m2,
+    parcel_id = as.integer(.data$parcel_id),
+    ens_id = .data$ens_id,
+    date = as.Date(.data$date),
     .data$nh4_n_kg_m2,
     .data$no3_n_kg_m2,
-    .data$ncc_subtype,
-    crop_code    = .data$code,
-    PFT          = .data$PFT
+    .data$org_c_kg_m2,
+    .data$org_n_kg_m2,
+    crop_code = .data$code,
+    .data$material
   )
 
-out_path <- file.path(config[["output_dir"]], config[["output_subdir"]])
+out_path <- config[["output_dir"]]
 dir.create(out_path, showWarnings = FALSE, recursive = TRUE)
 
 ## clean prior shards
@@ -55,7 +52,7 @@ if (length(existing) > 0) {
 }
 
 # partition by parcel_id range and write one parquet per batch named
-# <pid_min>_<pid_max>.parquet.
+# <pid_min>_<pid_max>.parquet
 all_parcels <- sort(unique(out[["parcel_id"]]))
 batch_size  <- as.integer(config[["batch_size"]])
 n_batches   <- ceiling(length(all_parcels) / batch_size)
@@ -66,7 +63,7 @@ PEcAn.logger::logger.info(sprintf(
   nrow(out), n_batches, batch_size, out_path))
 
 # prefer ZSTD; fall back to snappy when zstd is not in the local arrow
-# build.
+# build
 parquet_codec <- if (arrow::codec_is_available("zstd")) "ZSTD" else "SNAPPY"
 PEcAn.logger::logger.info("Parquet compression codec: ", parquet_codec)
 
@@ -88,8 +85,7 @@ if (workers > 1) {
 }
 
 PEcAn.logger::logger.info(sprintf(
-  "Done. wrote %d shards, %d total rows, parcels=%d, materials=%d, ensemble=%d",
+  "Done. wrote %d shards, %d total rows, parcels=%d, ensemble=%d",
   length(written), nrow(out),
   dplyr::n_distinct(out[["parcel_id"]]),
-  dplyr::n_distinct(out[["material"]]),
   dplyr::n_distinct(out[["ens_id"]])))
