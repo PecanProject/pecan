@@ -6,17 +6,12 @@ default:
   matched_dir: /projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1
 
   # probability of compost amendment per parcel year per ensemble member.
-  # scenario knob, useful range 0.05 to 0.25. the rest of the compost
-  # distributions live in PEcAn.data.land bundled data
+  # scenario knob, useful range 0.05 to 0.25
   p_apply_default: 0.10
 
-  crosswalk_path: /projectnb/dietzelab/ccmmf/usr/akash/management/fertilization/CCMMF Fertilization - Crop_types.tsv
-  output_dir: /projectnb/dietzelab/ccmmf/usr/akash/event_files
-  output_subdir: ncc
+  output_dir: /projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc
   batch_size: 100
   workers: 1
-
-small:
 
 medium:
   n_parcels: 10000
