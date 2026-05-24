@@ -5,7 +5,7 @@ config <- config::get(file = "workflows/ncc-statewide/config.yml",
 
 options(arrow.unsafe_metadata = TRUE)
 
-out_path <- file.path(config[["output_dir"]], config[["output_subdir"]])
+out_path <- config[["output_dir"]]
 if (!dir.exists(out_path)) {
   PEcAn.logger::logger.severe("Output not found: ", out_path)
 }
