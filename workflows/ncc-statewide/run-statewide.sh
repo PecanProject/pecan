@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # runs the ncc (compost) statewide pipeline. NCC_PROJECT picks a profile
-# from config.yml (default, small, medium, all).
+# from config.yml (default, medium, all).
 
 set -euo pipefail
 
