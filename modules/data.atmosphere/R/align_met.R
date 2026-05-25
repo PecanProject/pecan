@@ -428,7 +428,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
           dat.tem <- ncdf4::ncvar_get(ncT, v)
           
           if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
-            dat.tem <- rep(dat.tem, each=stamps.hr)
+            dat.tem <- rep(dat.tem, each=length(stamps.hr))
           }
           df.tem <- matrix(rep(dat.tem, n.src), ncol=1, byrow=F)
           

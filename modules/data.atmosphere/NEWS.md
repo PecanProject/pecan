@@ -1,3 +1,9 @@
+# PEcAn.data.atmosphere 1.9.1.9000
+
+## Fixed
+
+* `align.met()`: fixed a silent data-corruption bug in the ensemble-source code path. When the source data was at a coarser time step than the training data (`align == "repeat"`), `rep(dat.tem, each = stamps.hr)` passed the full `stamps.hr` vector as the `each` argument. R silently uses only the first element in that case, producing the wrong replication count (half the training hour-step rather than the number of output sub-steps per source step). The fix matches the equivalent single-time-series path: `each = length(stamps.hr)`.
+
 # PEcAn.data.atmosphere 1.9.1
 
 ## Added
