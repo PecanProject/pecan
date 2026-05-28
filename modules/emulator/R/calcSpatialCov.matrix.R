@@ -10,13 +10,5 @@
 ##' @author Michael Dietze
 ##' @export
 calcSpatialCov.matrix <- function(d, psi, tau, ...) {
-  nl <- nrow(d)
-  H  <- matrix(0, nl, nl)
-  for (i in seq_len(nl)) {
-    # for(j in 1:nl){ H[i,j] <- tau*exp(-psi*d[i,j]) }
-    for (j in seq_len(nl)) {
-      H[i, ] <- tau * exp(-psi * d[i, ])
-    }
-  }
-  return(H)
+  return(tau * exp(-psi * d))
 }
