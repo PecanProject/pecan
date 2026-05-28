@@ -1,18 +1,20 @@
 ## Tests for align.met()
 ##
-## The bug fixed in this PR:
-##   In the ensemble source path, when the source resolution is coarser than
-##   the training resolution (align == "repeat"), the code called
-##     rep(dat.tem, each = stamps.hr)
-##   where stamps.hr is a numeric *vector* of hour-of-day values.  R silently
-##   uses only the first element, truncated to an integer; because stamps.hr[1]
-##   is always 1.5 (truncated to 1), each daily value was repeated only once
-##   instead of being tiled to match every sub-daily training step.
+## The bug fixed in this PR (line 431, ensemble source path):
+##   rep(dat.tem, each = stamps.hr)
+## where stamps.hr is a numeric *vector*.  R silently takes stamps.hr[1]
+## and truncates to an integer.
 ##
-##   Fix: rep(dat.tem, each = length(stamps.hr))
+## For hourly training data, stamps.hr = c(0.5) (the first centred hour stamp).
+## Truncating 0.5 to 0 makes rep() return an empty vector, so dat.source
+## ends up with zero rows -- silently discarding all source data.
+##
+## Fix: rep(dat.tem, each = length(stamps.hr))
+## The single-time-series source path (line 304) already used length() correctly.
 
 ## Helper: create a minimal single-variable NetCDF with a given number of
-## time steps, placed in outdir/filename.  The time dimension is in days.
+## time steps placed in outdir/filename.  Time dimension is in fractional days
+## since 2001-01-01, matching the step size implied by n_time.
 make_align_nc <- function(n_time, outdir, filename) {
   time_dim <- ncdf4::ncdim_def(
     name  = "time",
@@ -20,9 +22,9 @@ make_align_nc <- function(n_time, outdir, filename) {
     vals  = seq(0, by = 1 / (n_time / 365), length.out = n_time)
   )
   temp_var <- ncdf4::ncvar_def(
-    name   = "air_temperature",
-    units  = "K",
-    dim    = list(time_dim),
+    name    = "air_temperature",
+    units   = "K",
+    dim     = list(time_dim),
     missval = -9999
   )
   nc <- ncdf4::nc_create(file.path(outdir, filename), vars = list(air_temperature = temp_var))
@@ -32,7 +34,7 @@ make_align_nc <- function(n_time, outdir, filename) {
   invisible(file.path(outdir, filename))
 }
 
-test_that("align.met matches row counts when ensemble source is coarser than training", {
+test_that("align.met ensemble source path produces non-empty source data (bug: each=0 from stamps.hr truncation)", {
   skip_if_not_installed("ncdf4")
   skip_if_not_installed("withr")
   skip_if_not_installed("lubridate")
@@ -40,10 +42,13 @@ test_that("align.met matches row counts when ensemble source is coarser than tra
   train_dir  <- withr::local_tempdir()
   source_dir <- withr::local_tempdir()
 
-  ## Training: 3-hourly, 2920 time steps for 2001 (non-leap year, 365 * 8)
-  make_align_nc(n_time = 2920, outdir = train_dir, filename = "2001.nc")
+  ## Training: hourly, 8760 time steps for 2001 (365 * 24).
+  ## This produces stamps.hr[1] = 0.5 in the ensemble source path.
+  ## Before the fix, 0.5 truncates to 0 and rep(..., each=0) returns an
+  ## empty vector, silently zeroing out all source data.
+  make_align_nc(n_time = 8760, outdir = train_dir, filename = "2001.nc")
 
-  ## Source: daily, 365 time steps for 2001, placed inside an ensemble subfolder
+  ## Source: daily (365 steps), placed inside an ensemble subfolder.
   ens_dir <- file.path(source_dir, "ens001")
   dir.create(ens_dir)
   make_align_nc(n_time = 365, outdir = ens_dir, filename = "2001.nc")
@@ -55,18 +60,18 @@ test_that("align.met matches row counts when ensemble source is coarser than tra
     seed        = 42
   )
 
-  n_train  <- nrow(result$dat.train$air_temperature)
-  n_source <- nrow(result$dat.source$air_temperature)
+  ## Training should have 8760 rows (1 per hour).
+  expect_equal(nrow(result$dat.train$air_temperature), 8760,
+    label = "training row count is 8760 (hourly)")
 
-  ## After the fix, each daily source value is tiled 8 times to match the
-  ## 3-hourly training grid, so both outputs should have 2920 rows.
-  expect_equal(n_train, 2920,
-    label = "training data row count")
-  expect_equal(n_source, n_train,
-    label = "source row count equals training row count after upsampling")
+  ## Before the fix, rep(..., each=0) silently produced an empty matrix, so
+  ## dat.source would have 0 rows.  After the fix, each daily source value is
+  ## carried through (repeated once), giving 365 rows.
+  expect_equal(nrow(result$dat.source$air_temperature), 365,
+    label = "source data is non-empty after fix (was 0 rows before)")
 })
 
-test_that("align.met works correctly when single-series source matches training resolution", {
+test_that("align.met single-series source matches training row count when already aligned", {
   skip_if_not_installed("ncdf4")
   skip_if_not_installed("withr")
   skip_if_not_installed("lubridate")
@@ -74,7 +79,9 @@ test_that("align.met works correctly when single-series source matches training 
   train_dir  <- withr::local_tempdir()
   source_dir <- withr::local_tempdir()
 
-  ## Both at the same 3-hourly resolution, 2920 steps for 2001
+  ## Both training and source at the same 3-hourly resolution (2920 steps for 2001).
+  ## Source files are placed directly in source_dir (single-series path), not in
+  ## a subdirectory, so the already-correct line 304 is used.
   make_align_nc(n_time = 2920, outdir = train_dir,  filename = "2001.nc")
   make_align_nc(n_time = 2920, outdir = source_dir, filename = "2001.nc")
 
