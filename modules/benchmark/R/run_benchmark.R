@@ -55,18 +55,32 @@ bm_validate <- function(model_df, obs_df) {
 ##'
 ##' @return data.frame with columns: time, model, obs
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
-  aligned <- do.call(rbind, lapply(seq_len(nrow(model_df)), function(i) {
-    diffs <- abs(as.numeric(difftime(obs_df$time, model_df$time[i], units = "secs")))
-    nearest <- which.min(diffs)
-    if (diffs[nearest] <= tolerance_secs) {
-      data.frame(time  = model_df$time[i],
-                 model = model_df$value[i],
-                 obs   = obs_df$value[nearest])
-    } else {
-      NULL
-    }
-  }))
-  aligned
+  # Ensure data.table is available
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required for high-performance alignment.")
+  }
+  
+  # Convert to data.table and explicitly name value columns
+  dt_model <- data.table::data.table(time = model_df$time, model = model_df$value)
+  # Keep original obs time in a separate column to calculate difference after join
+  dt_obs <- data.table::data.table(time = obs_df$time, obs = obs_df$value, obs_time = obs_df$time)
+  
+  # Set keys for fast roll-join
+  data.table::setkey(dt_model, time)
+  data.table::setkey(dt_obs, time)
+  
+  # Perform rolling join to nearest time
+  aligned <- dt_obs[dt_model, roll = "nearest"]
+  
+  # Filter by tolerance
+  aligned[, time_diff := abs(as.numeric(difftime(obs_time, time, units = "secs")))]
+  aligned <- aligned[time_diff <= tolerance_secs]
+  
+  # Format output to match expected schema
+  aligned <- aligned[, .(time, model, obs)]
+  data.table::setDF(aligned) # Convert back to base data.frame
+  
+  return(aligned)
 }
 
 ##' Compute benchmark metrics
@@ -74,15 +88,28 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
 ##' @param aligned data.frame with columns: time, model, obs
 ##' @param metrics character vector of metric names
 ##' @return data.frame with columns: metric, value
-compute_metrics <- function(aligned, metrics = c("RMSE", "MAE")) {
+compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
+  # Future-proofing: Functions in the registry now accept the full aligned dataframe
+  # This aligns with the decoupled metric architecture introduced in PR #3888
   METRIC_REGISTRY <- list(
-    RMSE = function(x, y) sqrt(mean((x - y)^2, na.rm = TRUE)),
-    MAE  = function(x, y) mean(abs(x - y), na.rm = TRUE)
+    RMSE = function(dat) sqrt(mean((dat$model - dat$obs)^2, na.rm = TRUE)),
+    MAE  = function(dat) mean(abs(dat$model - dat$obs), na.rm = TRUE),
+    R2   = function(dat) {
+      if (exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+        return(PEcAn.benchmark::metric_R2(dat))
+      }
+      # Fallback if PR #3888 is not yet merged
+      numer <- sum((dat$obs - mean(dat$obs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
+      denom <- sqrt(sum((dat$obs - mean(dat$obs, na.rm=T))^2, na.rm=T)) * sqrt(sum((dat$model - mean(dat$model, na.rm=T))^2, na.rm=T))
+      (numer / denom)^2
+    }
   )
+  
   results <- lapply(toupper(metrics), function(m) {
     if (!m %in% names(METRIC_REGISTRY)) stop("Unknown metric: ", m)
-    METRIC_REGISTRY[[m]](aligned$model, aligned$obs)
+    METRIC_REGISTRY[[m]](aligned)
   })
+  
   data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
 }
 
