@@ -56,12 +56,8 @@ insert.format.vars <- function(con, format_name, mimetype_id, notes = NULL, head
     )
   }
 
-   #Test if skip is an integer
-  if(!is.character(skip)){
-  PEcAn.logger::logger.error(
-    "Skip must be of type character"
-    )
-  }
+  # Coerce skip to character to match the BetyDB schema (formats.skip is varchar)
+  skip <- as.character(skip)
 
   # Test if header is a Boolean
   if(!is.logical(header)){

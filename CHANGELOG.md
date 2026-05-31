@@ -23,11 +23,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added lookup functions to `PEcAn.data.land`: `look_up_ca_n_rate()` and `look_up_ca_compost_amendment()` for querying crop-specific fertilization and compost data.
 - PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 - Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
+- Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
 
 ### Fixed
 - Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
 - Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
+- `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
 
 ### Changed
 - Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).

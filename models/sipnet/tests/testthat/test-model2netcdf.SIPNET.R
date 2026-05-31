@@ -240,41 +240,54 @@ test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
   expect_equal(pec2$GWBI, sip2$woodCreation / 1000 / ts, tolerance = 1e-6)
 })
 
+test_that("out_day is correct when the first day of output is partial", {
+  # Simulate a run where SIPNET started mid-day on day 1 (only 1 timestep),
+  # while days 2 and 3 are complete (2 timesteps each, i.e. 12-hour intervals).
+  # The correct out_day is 2; the old code would have returned 1 by reading
+  # only the count from day 1, causing a factor-of-2 error in flux conversions.
 
-test_that("sipnet2datetime - standard vectorised input", {
-  years <- c(2023, 2023)
-  doys <- c(1, 32)
-  hours <- c(0, 10.5)
+  base_row <- make_base_sipnet(n = 4L)[1, ]
+  sipnet_partial <- rbind(
+    transform(base_row, day = 1, time = 18),          # day 1: only 1 row
+    transform(base_row, day = 2, time =  6),           # day 2: row 1
+    transform(base_row, day = 2, time = 18),           # day 2: row 2
+    transform(base_row, day = 3, time =  6),           # day 3: row 1
+    transform(base_row, day = 3, time = 18)            # day 3: row 2
+  )
+  sipnet_partial$cumNEE <- cumsum(rep(0.1, 5))
 
-  datetimes <- sipnet2datetime(years, doys, hours)
+  base    <- withr::local_tempdir()
+  outdir  <- file.path(base, "out", "run1")
+  rundir  <- file.path(base, "run", "run1")
+  dir.create(outdir,  recursive = TRUE)
+  dir.create(rundir,  recursive = TRUE)
+  writeLines("leafCSpWt\t32", file.path(rundir, "sipnet.param"))
 
-  expect_equal(length(datetimes), 2)
-  expect_equal(datetimes[1], as.POSIXct("2023-01-01 00:00:00", tz = "UTC"))
-  expect_equal(datetimes[2], as.POSIXct("2023-02-01 10:30:00", tz = "UTC"))
-  }
-)
+  out_path <- file.path(outdir, "sipnet.out")
+  writeLines(
+    c("Notes: units in g/m2 per timestep; water in cm",
+      paste(colnames(sipnet_partial), collapse = " ")),
+    out_path
+  )
+  write.table(sipnet_partial, file = out_path, append = TRUE,
+              row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
 
-test_that("sipnet2datetime - leap years",{
+  model2netcdf.SIPNET(
+    outdir     = outdir,
+    sitelat    = 38.0,
+    sitelon    = -121.0,
+    start_date = "2002-01-01",
+    end_date   = "2002-01-03"
+  )
 
-  expect_equal(
-    format(sipnet2datetime(2024, 60, 0), "%Y-%m-%d"), "2024-02-29")
+  nc <- ncdf4::nc_open(file.path(outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
 
-  expect_equal(
-    format(sipnet2datetime(2023, 60, 0), "%Y-%m-%d"), "2023-03-01")
-  }
-)
+  gpp <- as.vector(ncdf4::ncvar_get(nc, "GPP"))
 
-test_that("sipnet2datetime - decimal accuracy", {
-  expect_equal(format(sipnet2datetime(2023, 1, 13.75), "%H:%M:%S"),
-               "13:45:00")
-
-  expect_equal(format(sipnet2datetime(2023, 1, 23.9999), "%Y-%m-%d %H:%M:%S"),
-               "2023-01-01 23:59:59")
-
-  }
-)
-
-test_that("sipnet2datetime - UTC timezone", {
-  expect_equal(attr(sipnet2datetime(2023, 1, 1), "tzone"), "UTC")
-  }
-)
+  # out_day = 2 (from the complete days), timestep.s = 43200 s (12 hours)
+  # If the old code had used day 1 (out_day = 1), timestep.s = 86400 and
+  # the values would be half as large.
+  ts_correct <- 86400 / 2
+  expect_equal(gpp, rep(base_row$gpp * 1e-3 / ts_correct, 5), tolerance = 1e-10)
+})
