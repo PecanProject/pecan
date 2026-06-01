@@ -1,22 +1,5 @@
-# test-get.parameter.samples.R
-# Documents the invisible(NULL) return value problem in get.parameter.samples()
-#
-# get.parameter.samples() ends with save() and has no return() statement,
-# so it returns invisible(NULL). This means callers cannot programmatically
-# access results without loading the saved file.
-# The GSoC project "Refactoring the PEcAn trait meta-analysis workflow"
-# aims to fix this by returning a named list instead.
-
-
-
-test_that("get.parameter.samples returns invisible(NULL) — documenting the problem", {
-  skip(paste0(
-    "Requires full PEcAn settings + database connection. ",
-    "Current function ends with save() and no return(), ",
-    "so it returns invisible(NULL). ",
-    "GSoC refactoring will make it return a named list."
-  ))
-})
+# test-p.point.in.prior.R
+# Unit tests for PEcAn.MA:::p.point.in.prior()
 
 # ---------------------------------------------------------------------------
 # p.point.in.prior (helper used throughout the pipeline)
