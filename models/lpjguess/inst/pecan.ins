@@ -30,7 +30,7 @@ file_clitter "clitter.out"
 file_firert "firert.out"
 file_aiso "aiso.out"
 file_amon "amon.out"
-!file_speciesheights "height.out"
+file_speciesheights "height.out"
 
 !file_nmass "nmass.out"
 !file_cton_leaf "cton_leaf.out"
@@ -73,7 +73,7 @@ title 'LPJ-GUESS cohort mode - global pfts'
 
 vegmode "cohort"		! "cohort", "individual" or "population"
 nyear_spinup 500		! number of years to spin up the simulation for
-! spinup_lifeform "tree"
+spinup_lifeform "tree"
 ifcalcsla 0				! whether to calculate SLA from leaf longevity
 ! (PFT-specific value can be specified in this file instead)
 ifcalccton 1			! whether to calculate leaf C:N min from leaf longevity
@@ -81,23 +81,23 @@ ifcalccton 1			! whether to calculate leaf C:N min from leaf longevity
 iffire 1				! whether to implement fire (1) or not (0)
 npatch 5				! number of replicate patches to simulate
 patcharea 1000			! patch area (m2)
-estinterval 5			! years between establishment events in cohort mode
+estinterval 1			! years between establishment events in cohort mode
 ifdisturb 1				! whether generic patch-destroying disturbances enabled
-distinterval 500		! average return time for generic patch-destroying disturbances
-! disturb_year -1
+distinterval 150		! average return time for generic patch-destroying disturbances
+disturb_year -1
 ifbgestab 1				! whether background establishment enabled
 ifsme 1					! whether spatial mass effect enabled
 ifstochestab 1			! whether establishment stochastic
 ifstochmort 1			! whether mortality stochastic
 ifcdebt 1				! whether to allow vegetation C storage (1) or not (0)
-wateruptake "rootdist"  ! "wcont", "rootdist", "smart" or "speciesspecific",
+wateruptake "speciesspecific"  ! "wcont", "rootdist", "smart" or "speciesspecific",
 ! see documentation for water_uptake()
 
 !///////////////////////////////////////////////////////////////////////////////
   ! PROCESS SETTINGS SPECIFIC TO NITROGEN
 !///////////////////////////////////////////////////////////////////////////////
   
-  ifcentury 1				! whether to use CENTURY SOM dynamics (mandatory for N cycling)
+ifcentury 1				! whether to use CENTURY SOM dynamics (mandatory for N cycling)
 ifnlim 1				! whether plant growth limited by available N
 freenyears 100			! number of years to spin up without N limitation (needed to build up a N pool)
 nfix_a 0.102			! first term in N fixation eqn (Conservative 0.102, Central 0.234, Upper 0.367)
@@ -108,30 +108,80 @@ nrelocfrac 0.5			! fraction of N retranslocated prior to leaf and root shedding
 !///////////////////////////////////////////////////////////////////////////////
 ! SERIALIZATION SETTINGS 
 !///////////////////////////////////////////////////////////////////////////////
-@STATE_YEAR@			! year to save/start state file (no setting = after spinup)
-restart 0				! wheter to start from a state file
-save_state @SAVE_STATE_OPTION@			! wheter to save a state file
-@STATE_PATH@			! directory to put state files in
+!@STATE_YEAR@			! year to save/start state file (no setting = after spinup)
+@RESTART@         ! 0/1 whether to restart from an state
+@SAVE_STATE@      ! 0/1 whether to save new state
+@RESTART_YEAR@    ! >0
+@SAVE_YEAR@       ! >0
+@STATE_PATH@      ! include%Y
 
 
 ifsmoothgreffmort 1				! whether to vary mort_greff smoothly with growth efficiency (1) 
 ! or to use the standard step-function (0)  
 ! greff_min values below calibrated for the smooth (1) option 
-ifdroughtlimitedestab 0			! whether establishment is limited by growing season drought
+ifdroughtlimitedestab 1			! whether establishment is limited by growing season drought
 ! guess2008 - species version has 1
 ifrainonwetdaysonly 0			! whether to rain on wet days only (1), or to rain a bit every day (0)
 ifbvoc 0                     ! whether to include BVOC calculations (1) or not (0)
 
 !!!!!!!!!!!! landcover parameters !!!!!!!!!!!!!!					
   
-  run_landcover 0        ! whether to use (and change) landcover fractions (1) or not (0)						
+npatch_secondarystand 2		! number of replicate patches to simulate in secondary stands
+reduce_all_stands 0		! Whether to reduce equal percentage of all stands of a stand type at land cover change
+age_limit_reduce 5		! Minimum age of stands to reduce at land cover change
+
+minimizecftlist 1
+ifintercropgrass 0
+ifcalcdynamic_phu 0
+ifdyn_phu_limit 0
+nyear_dyn_phu 20
+iftillage 0
+ifslowharvestpool 0
+
+run_landcover 1        ! whether to use (and change) landcover fractions (1) or not (0)	
 
 run_urban 0	      ! whether to simulate barren land (1) or not (0)	
-run_crop 1	      ! whether to simulate crop vegetation (1) or not (0)
+run_crop 0	      ! whether to simulate crop vegetation (1) or not (0)
 run_forest 0	      ! whether to simulate managed forest (1) or not (0)
-run_pasture 0	      ! whether to simulate pasture (1) or not (0)
+run_pasture 1	      ! whether to simulate pasture (1) or not (0)
 run_natural 1	      ! whether to simulate natural vegetation (1) or not (0)
-run_peatland 1	      ! whether to simulate peatland (1) or not (0)
+run_peatland 0	      ! whether to simulate peatland (1) or not (0)
+run_barren 0	      ! whether to simulate barren land (1) or not (0)
+
+ifslowharvestpool 1	! If a slow harvested product pool is included in patchpft.
+printseparatestands 0	! Whether to print multiple stands within a land cover type (except cropland) separately
+gross_land_transfer 0	! Whether to use gross land transfer: simulate gross lcc (1); read landcover transfer matrix input file (2); 
+			! read stand type transfer matrix input file (3), or not (0)
+ifprimary_lc_transfer 0	! Whether to use primary/secondary land transition info in landcover transfer input file (1). or not (0)
+ifprimary_to_secondary_transfer 0 ! Whether to use primary-to-secondary land transition info (within land cover type) in landcover 
+				  ! transfer input file (1). or not (0)
+transfer_level 0	! Pooling level of land cover transitions; 0: one big pool; 1: land cover-level; 2: stand type-level
+iftransfer_to_new_stand 0 ! Whether to create new stands in transfer_to_new_stand() according to the rules in copy_stand_type()
+
+!///////////////////////////////////////////////////////////////////////////////////////
+!// PARAMETERS FOR STAND TYPES
+group "common_stand" (
+
+	intercrop "nointercrop"
+	naturalveg "none"
+	restrictpfts 0		! Use all pft:s defined for a land cover (pft parameter landcover)
+)
+
+
+
+st "Natural" (
+
+	common_stand
+	stinclude 1
+	landcover "natural"
+)
+
+st "Pasture" (
+	common_stand
+	stinclude 1
+  landcover "pasture"
+  pft "C3grass" 
+)
 
 @@@@@ Remove in PalEON version @@@@@
 lcfrac_fixed 0        	! use landcover fractions (%) below (1) or read from input file (0)
@@ -187,7 +237,7 @@ pft "@pft@" (
   res_outtake @res_outtake@
   harvest_slow_frac @harvest_slow_frac@
   turnover_harv_prod @turnover_harv_prod@
-  phenology '@phenology@'
+  phenology @phenology@
   fnstorage @fnstorage@
   phengdd5ramp @phengdd5ramp@
   est_max @est_max@					
@@ -195,7 +245,7 @@ pft "@pft@" (
   alphar @alphar@       			
   greff_min @greff_min@ 			
   turnover_sap @turnover_sap@
-  leafphysiognomy '@leafphysiognomy@'
+  leafphysiognomy @leafphysiognomy@
   k_allom1 @k_allom1@
   k_latosa @k_latosa@
   gmin @gmin@

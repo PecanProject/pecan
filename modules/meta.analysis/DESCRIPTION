@@ -38,7 +38,7 @@ Imports:
 Suggests:
     ggmcmc,
     ggplot2,
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     mockery,
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2),
@@ -49,6 +49,6 @@ VignetteBuilder: knitr, rmarkdown
 Copyright: Authors
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 X-schema.org-keywords: parameter-estimation, model-calibration

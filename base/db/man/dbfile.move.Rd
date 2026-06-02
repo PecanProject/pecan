@@ -27,11 +27,11 @@ to another on the same machine and update BETY
 \examples{
 \dontrun{
   dbfile.move(
-  old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676",
-  new.dir = '/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676'
-  file.type= clim,
-  siteid = 676,
-  register = TRUE
+    old.dir = "/fs/data3/kzarada/pecan.data/dbfiles/NOAA_GEFS_site_0-676",
+    new.dir = "/projectnb/dietzelab/pecan.data/dbfiles/NOAA_GEFS_site_0-676",
+    file.type= "clim",
+    siteid = 676,
+    register = TRUE
   )
 }
 }

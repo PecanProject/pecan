@@ -1,7 +1,7 @@
 Package: PEcAn.photosynthesis
 Type: Package
 Title: PEcAn functions used for leaf-level photosynthesis calculations
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Xiaohui", "Feng", role = c("aut"),
@@ -28,7 +28,7 @@ Imports:
     graphics,
     stats
 Suggests:
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     rmarkdown (>= 2.19),
     markdown
 SystemRequirements: JAGS (>=2.2.0)
@@ -37,6 +37,6 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr, rmarkdown
 X-schema.org-keywords: photosynthesis, PEcAn, Bayesian calibration, JAGS

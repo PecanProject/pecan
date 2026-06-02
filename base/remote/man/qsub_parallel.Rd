@@ -28,6 +28,7 @@ qsub_parallel
 }
 \examples{
 \dontrun{
+  settings <- PEcAn.settings::read_settings("pecan.xml")
   qsub_parallel(settings)
 }
 }

@@ -1,7 +1,7 @@
 Package: PEcAn.STICS
 Type: Package
 Title: PEcAn Package for Integration of the STICS Model
-Version: 1.8.2
+Version: 1.8.2.9000
 Authors@R: c(
   person("Istem", "Fer",
     email = "istem.fer@fmi.fi",
@@ -20,6 +20,7 @@ Imports:
     XML,
     dplyr
 Suggests:
+    SticsOnR,
     SticsRFiles,
     testthat (>= 1.0.2)
 Remotes:
@@ -32,5 +33,5 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: STICS, ecosystem-modeling

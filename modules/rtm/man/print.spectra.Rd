@@ -4,10 +4,10 @@
 \alias{print.spectra}
 \title{Print method for spectra S3 class}
 \usage{
-\method{print}{spectra}(spectra, n = 10, ...)
+\method{print}{spectra}(x, n = 10, ...)
 }
 \arguments{
-\item{spectra}{Object of class \code{spectra}}
+\item{x}{A spectra object}
 
 \item{n}{Max number of rows to print (show first \code{n/2} and last \code{n/2} rows)}
 

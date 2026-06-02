@@ -5,7 +5,7 @@ NOTE: As of PEcAn 1.2.6 -- needs to be updated significantly
 <!--NEEDS TO BE UPDATED SIGNIFICANTLY-->
 ## Overview
 
-Workflow inputs and outputs (click to open in new page, then zoom). Code used to generate this image is provided in [base/qaqc/vignettes/module_output.Rmd](https://github.com/PecanProject/pecan/blob/master/base/qaqc/vignettes/module_output.Rmd)
+Workflow inputs and outputs (click to open in new page, then zoom). Code used to generate this image is provided in [base/qaqc/vignettes/module_output.Rmd](https://github.com/PecanProject/pecan/blob/develop/base/qaqc/vignettes/module_output.Rmd)
 
 [![PEcAn Workflow](http://isda.ncsa.illinois.edu/~kooper/EBI/workflow.svg)](http://isda.ncsa.illinois.edu/~kooper/EBI/workflow.svg)
 
@@ -46,7 +46,7 @@ This code starts the model runs using a model specific run function named start.
 ## Get Model Output
 ### `get.model.output(model)`
 
-This code first uses a model-specific model2netcdf.[model] function to convert the model output into a standard output format ([MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml)). Then it extracts the data for requested variables specified in the settings file as `settings$ensemble$variable`, averages over the time-period specified as `start.date` and `end.date`, and stores the output in a file `output.Rdata`. The `output.Rdata` file contains two objects, `sensitivity.output` and `ensemble.output`, that is the model prediction for the parameter sets specified in `sa.samples` and `ensemble.samples`. In order to save bandwidth, if the model output is stored on a remote system PEcAn will perform these operations on the remote host and only return the `output.Rdata` object.
+This code first uses a model-specific model2netcdf.[model] function to convert the model output into a standard output format ([MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)). Then it extracts the data for requested variables specified in the settings file as `settings$ensemble$variable`, averages over the time-period specified as `start.date` and `end.date`, and stores the output in a file `output.Rdata`. The `output.Rdata` file contains two objects, `sensitivity.output` and `ensemble.output`, that is the model prediction for the parameter sets specified in `sa.samples` and `ensemble.samples`. In order to save bandwidth, if the model output is stored on a remote system PEcAn will perform these operations on the remote host and only return the `output.Rdata` object.
 
 ## Ensemble Analysis
 ### `run.ensemble.analysis()`

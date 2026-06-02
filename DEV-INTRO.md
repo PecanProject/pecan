@@ -4,13 +4,19 @@ This is a minimal guide to getting started with PEcAn development under Docker. 
 
 ## Requirements and Recommendations
 
-Docker is the primary software requirement; it handles all of the other software dependencies. This has been tested on Ubuntu 18.04 and above, MacOS Sonoma, and Windows 10 with Windows Subsystem for Linux 2 (following the Linux instructions).
+Docker is the primary software requirement; it handles all other software dependencies.  
+The following configurations have been tested; other configurations may work but are not supported.
 
+- Operating systems:
+  - Linux (Ubuntu ≥ 18.04)
+  - macOS (≥ 14, Sonoma)
+  - Windows (via Windows Subsystem for Linux 2, following Linux instructions)
+    - Native Windows / PowerShell Docker is not supported
 - Software (installation instructions below):
   - Docker version 26
   - Docker Compose version 2.27
-  - Git (optional until you want to make major changes)
-- Hardware
+  - Git (required for development; not to run PEcAn)
+- Hardware:
   - 100 GB storage (minimum 50 GB)
   - 16 GB RAM (minimum 8 GB)
 
@@ -58,6 +64,13 @@ cp docker-compose.dev.yml docker-compose.override.yml
 ```
 
 You can now use the command `docker compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
+
+_Note for Apple Silicon (M1/M2/M3/M4) macOS users:_ The default Traefik image (`traefik:v2.9`) is built only for `linux/amd64` and cannot reliably communicate with the Docker socket when running under emulation on ARM64. This causes all web routes to return 404 errors. To fix this, add the following to your `docker-compose.override.yml` under `services:` and above `pecan:`:
+```sh
+  traefik:
+    image: traefik:v2.11
+    platform: linux/arm64
+```
 
 ### First time setup
 
@@ -240,7 +253,7 @@ A better way of doing this is developed as part of GSOC, in which case you can l
 
 ## PEcAn URLs
 
-You can check the RabbitMQ server used by pecan using <https://rabbitmq.pecan.localhost> on the same server that the docker stack is running on. You can use rstudio either with <http://server/rstudio> or at <http://rstudio.pecan.localhost>. To check the traefik dashboard you can use <http://traefik.pecan.localhost>.
+You can check the RabbitMQ server used by pecan using <https://rabbitmq.pecan.localhost> on the same server that the docker stack is running on. You can use rstudio either with `http://server/rstudio` or at <http://rstudio.pecan.localhost>. To check the traefik dashboard you can use <http://traefik.pecan.localhost>.
 
 If the stack is running on a remote machine, you can use ssh and port forwarding to connect to the server. For example `ssh -L 8000:localhost:80` will allow you to use <http://rabbitmq.pecan.localhost:8000/> in your browser to connect to the remote PEcAn server RabbitMQ.
 

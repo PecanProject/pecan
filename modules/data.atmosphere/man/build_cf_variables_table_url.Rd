@@ -6,7 +6,7 @@
 \usage{
 build_cf_variables_table_url(
   version,
-  url_format_string = paste0("http://cfconventions.org/",
+  url_format_string = paste0("https://cf-convention.github.io/",
     "Data/cf-standard-names/\%d/src/", "src-cf-standard-name-table.xml")
 )
 }

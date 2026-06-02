@@ -12,7 +12,7 @@ nderiv(x, y)
 \item{y}{Name of variable to plot on Y axis}
 }
 \value{
-der
+numeric vector of numerical derivatives of \code{y} with respect to \code{x}
 }
 \description{
 nderiv

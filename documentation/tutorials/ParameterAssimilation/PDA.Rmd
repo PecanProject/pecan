@@ -68,6 +68,7 @@ To begin, let’s load up some NEE observations so that we can plot them along w
 ```{r echo= TRUE, eval=FALSE}
 
 library(PEcAn.all)
+set.seed(20260325)
 
 # read settings
 settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))

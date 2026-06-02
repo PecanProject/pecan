@@ -19,3 +19,11 @@ a list of paths to generated and stored IC files.
 \description{
 BADM_IC_process
 }
+\examples{
+\dontrun{
+settings <- PEcAn.settings::read.settings("pecan.xml")
+output_dir <- withr::local_tempdir()
+
+ic_files <- BADM_IC_process(settings, dir = output_dir)
+}
+}

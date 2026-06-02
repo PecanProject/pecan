@@ -1,0 +1,521 @@
+---
+title: "soilrespiration_validation"
+author: "chaney"
+date: "2025-11-24"
+output: html_document
+---
+
+All validation for soil respiration, not including validations that involve moisture and temperature. 
+
+```{r setup, include=FALSE}
+# Load libraries
+
+library(DBI)
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(maps)
+library(knitr)
+library(tidyr)
+library(neonUtilities)
+library(maps)
+library(tidyverse)
+library(neonSoilFlux)
+library(parallel)
+library(ncdf4)
+library(data.table)
+library(purrr)
+library(data.table)
+library(parallel)
+library(lubridate)
+library(httr)
+library(sp)
+library(neonSoilFlux)
+library(stringr)
+library(scales)
+
+
+```
+
+First, find model plots for each NEON plot
+```{r}
+
+# get the coordinates of 6400 sites in Dongchen's output
+Neonplots <- read.csv("/usr4/ugrad/chaney/R/3_25/Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info (site_info has coordinates of each location in df)
+Site_Info <- readRDS("/usr4/ugrad/chaney/R/3_25/site.locs.rds")
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+# Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+# Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+# Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+# make list to store matched list
+matched <- data.frame(id = numeric(nrow(Neonplots)), # id in forecast
+                      site_id = numeric(nrow(Neonplots))) # NEON id
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+```
+
+
+Get soil respiration output from SDA model
+```{r}
+
+source("model_processing_neonsites.R")
+
+# Set outdir
+outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/NA_SDA_no_Debias";
+
+final_daily_sr_data <- model_processing_neonsites(matched, 2012, 2025, outdir, "SoilResp", var2 = NULL)
+
+colnames(final_daily_sr_data)[colnames(final_daily_sr_data) == "Output1"] <- "Model_SR"
+
+```
+
+
+Get NEON Soil respiration from John's data in the SCC
+```{r}
+# Function to get soil fluxes for specifed years for 1 site
+
+soil_flux <- function(site_number, flux_type){
+
+  years = 2012:2025
+  site = matched$site_id[site_number]
+  
+  # create list to store data
+  all_days <- list() 
+  count <- 1 
+
+  for (year in years){
+    for (i in 01:12){
+      if (i < 10){
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/flux-results/out-flux-", site, "-",year,"-0",i,".Rda")
+      }else{
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/flux-results/out-flux-", site, "-",year,"-",i,".Rda")
+      }
+      if (file.exists(file_name)== TRUE){
+        load(file_name)
+        
+        # sort by date so I can average over all horizontal positions
+        out_fluxes <- out_fluxes[order(out_fluxes$startDateTime),]
+        
+        #  Exatract all flux values into a vector 
+        flux_vec <- sapply(out_fluxes[[3]], function(x) x$flux[flux_type])
+        
+        # Fine the number of data points per day
+        dppd = 48 * length(unique(out_fluxes$horizontalPosition))
+        
+        n_days <- length(flux_vec) / (dppd)
+        
+        # Create day index (every 240 rows = 1 day)
+        day_idx <- ceiling(seq_along(flux_vec) / dppd)
+        
+        # Count rows in each day
+        day_sizes <- table(day_idx)
+
+        # Identify complete days only
+        complete_days <- as.numeric(names(day_sizes[day_sizes == dppd]))
+
+        # Filter vectors to ONLY complete days
+        keep <- day_idx %in% complete_days
+        
+        flux_vec_f <- flux_vec[keep]
+
+        # Recompute number of complete days
+        n_days <- length(flux_vec_f) / dppd
+          
+        # Turn vector into column where column = day
+        flux_mat <- matrix(flux_vec_f, nrow = dppd, ncol = n_days)
+        
+        # Find daily means
+        daily_means <- colMeans(flux_mat, na.rm = TRUE)
+        
+        # Find times
+        day_times <- out_fluxes$startDateTime[seq(1, length(flux_vec_f), by = dppd)]
+        
+        # Add to table
+        summary_table <- data.frame(
+          Site_ID = site,
+          Time = day_times,
+          sr_neon = daily_means
+        )
+        
+        # Add table to list
+      all_days[[count]] <- summary_table
+      count <- count + 1
+      }
+    }
+  }
+  # turn list into table
+  summary <- rbindlist(all_days)
+  
+return(list(sr = summary))
+}
+
+
+# Apply parallel calculation for each site
+n = 1:nrow(matched)
+num_cores <- detectCores() - 1
+
+# using Marshall method at top of soil (000)
+results_j <- mclapply(n, soil_flux, mc.cores = num_cores, flux_type = 4)
+
+# Combine results from all ensmebles
+sr_marshall <- rbindlist(lapply(results_j, `[[`, "sr"))
+
+# delete rows with all zeros
+sr_marshall_filtered <- filter(sr_marshall, sr_neon != 0)
+
+# using Millington- Quirk method at top of soil (000)
+results_j_2 <- mclapply(n, soil_flux, mc.cores = num_cores, flux_type = 8)
+
+# Combine results from all ensembles
+sr_m_q <- rbindlist(lapply(results_j_2, `[[`, "sr"))
+
+# delete rows where the soil respiration is 0
+sr_m_q_filtered <-filter(sr_m_q, sr_neon != 0)
+
+
+# combine the two methods
+daily_mean_data_neon <- merge(sr_marshall_filtered, sr_m_q_filtered, by = c("Time", "Site_ID"))
+
+# rename rows
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.x"] <- "Marshall_SR"
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.y"] <- "Mill_Quirk_SR"
+
+# convert Time to date class
+final_daily_sr_data$Time <- as.Date(final_daily_sr_data$Time)
+
+# combine data frame into final_daily_sr_data
+daily_sr <- merge(final_daily_sr_data, daily_mean_data_neon, by = c("Time","Site_ID"))
+names(daily_sr)[names(daily_sr) == "Final_SR"] <- "Forecast_SR"
+
+# Convert NEON data to kg/mol ^2 *s (currently in umol/m^2 * s)
+daily_sr$Marshall_SR = daily_sr$Marshall_SR*10^-6*12.011*10^-3
+daily_sr$Mill_Quirk_SR = daily_sr$Mill_Quirk_SR*10^-6*12.011*10^-3
+```
+
+Combine NEON & Model into one table
+```{r}
+# combine the two methods
+daily_mean_data_neon <- merge(sr_marshall_filtered, sr_m_q_filtered, by = c("Time", "Site_id"))
+
+# rename rows
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.x"] <- "Marshall_SR"
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "sr_neon.y"] <- "Mill_Quirk_SR"
+names(daily_mean_data_neon)[names(daily_mean_data_neon) == "Site_id"] <- "Site_ID"
+
+# convert Time to date class
+final_daily_sr_data$Time <- as.Date(final_daily_sr_data$Time)
+daily_mean_data_neon$Time <- as.Date(daily_mean_data_neon$Time)
+
+# Delete var2
+final_daily_sr_data$Output2 <- NULL
+
+# combine data frame into final_daily_sr_data
+daily_sr <- merge(final_daily_sr_data, daily_mean_data_neon, by = c("Time","Site_ID"))
+
+# Convert NEON data to kg/mol ^2 *s (currently in umol/m^2 * s)
+daily_sr$Marshall_SR = daily_sr$Marshall_SR*10^-6*12.011*10^-3
+daily_sr$Mill_Quirk_SR = daily_sr$Mill_Quirk_SR*10^-6*12.011*10^-3
+
+```
+
+Graph Predicted-Observed Plots for each site
+```{r}
+
+for (i in 1:length(sites)){
+  temp_data <- filter(daily_sr, Site_ID == sites[i])
+  
+  print(ggplot() + 
+        geom_point(data = temp_data, aes(x = Forecast_SR, y = Marshall_SR, color = "Marshall"))+ 
+     #   geom_line(data = temp_data, aes(x = Forecast_SR, y = Marshall_SR, color = "Marshall Fit"), size = 1) + 
+        geom_point(data = temp_data, aes(x = Forecast_SR, y = Mill_Quirk_SR, color = "Millington-Quirk")) + 
+    #    geom_line(data = temp_data, aes(x = Forecast_SR, y = Mill_Quirk_SR, color = "Millington-Quirk Fit"), size = 1) + 
+        geom_abline(slope = 1, intercept = 0, color = "red", size = 2)+
+        scale_color_manual(values = c("Marshall" = "darkgreen", "Millington-Quirk" = "lightgreen", "Marshall Fit" = "darkgreen", "Mill Quirk Fit" = "lightgreen")) +
+        labs(title = sites[i], x = "Predicted (kg/m^2*s)", y = "Observed (kg/m^2*s)", color = "Dataset"))
+
+}
+```
+
+
+Calculate Summary Statistics
+```{r}
+# Calculate error
+daily_sr$Marsh_error <- daily_sr$Forecast_SR - daily_sr$Marshall_SR
+daily_sr$MQ_error <- daily_sr$Forecast_SR - daily_sr$Mill_Quirk_SR
+
+# keep a permanent daily_sr
+daily_sr_perm <- daily_sr
+
+# make table for summary statistics
+summary_stat <- data.frame(Site_ID = character(length(sites)),
+                           Marsh_corr_coef = numeric(length(sites)),
+                           MQ_corr_coef = numeric(length(sites)),
+                           Marsh_rms_error = numeric(length(sites)),
+                           MQ_rms_error = numeric(length(sites)))
+
+
+# do summary stats
+sites <- unique(daily_sr$Site_ID)
+
+for (i in 1:length(sites)){
+  # filter for just one site
+  temp_data <- filter(daily_sr, Site_ID == sites[i])
+  
+  # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  # add site name
+  summary_stat$Site_ID[i] <- sites[i]
+  
+  # find correlation coeffs
+  summary_stat$Marsh_corr_coef[i] <- cor(temp_data$Marshall_SR, temp_data$Forecast_SR)
+  summary_stat$MQ_corr_coef[i] <- cor(temp_data$Mill_Quirk_SR, temp_data$Forecast_SR)
+  
+  # find RMS errors
+  summary_stat$Marsh_rms_error[i] <- sqrt(mean((temp_data$Marshall_SR - temp_data$Forecast_SR)^2))
+  summary_stat$MQ_rms_error[i] <- sqrt(mean((temp_data$Mill_Quirk_SR - temp_data$Forecast_SR)^2))
+}
+
+
+```
+
+Add latitude and longitude to make maps!
+```{r}
+# Add site coordinates
+summary_stat$Site_Lat <- numeric(nrow(summary_stat))
+summary_stat$Site_Long <- numeric(nrow(summary_stat))
+
+for (i in 1:length(summary_stat$Site_ID)){
+  site_num = which(Neonplots$field_site_id == summary_stat$Site_ID[i])
+  summary_stat$Site_Lat[i] <- Neonplots$field_latitude[site_num]
+  summary_stat$Site_Long[i] <- Neonplots$field_longitude[site_num]
+}
+
+```
+
+Maps of Correlation Coefficient
+```{r}
+# map of correlation coefficient
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = summary_stat, aes(x= Site_Long, y = Site_Lat, size = Marsh_corr_coef, color = Marsh_corr_coef)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="Marshall Correlation Coefficient") + theme(plot.title = element_text(hjust = 0.5),))
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = summary_stat, aes(x= Site_Long, y = Site_Lat, size = MQ_corr_coef, color = MQ_corr_coef)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="MQ Correlation Coefficient") + theme(plot.title = element_text(hjust = 0.5),))
+```
+
+Maps of RMS error
+```{r}
+# map of RMS error
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = summary_stat, aes(x= Site_Long, y = Site_Lat, size = Marsh_rms_error, color = Marsh_rms_error)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="Marshall RMS error") + theme(plot.title = element_text(hjust = 0.5),))
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = summary_stat, aes(x= Site_Long, y = Site_Lat, size = MQ_rms_error, color = MQ_rms_error)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="MQ RMS error") + theme(plot.title = element_text(hjust = 0.5),))
+```
+
+
+Compare error to a variety of ecological factors 
+```{r}
+# get data on US 13 factors
+dat = terra::rast("all_data_layers.tif")
+
+# add columns to error_df
+summary_stat$ysd <- numeric(length(sites))
+summary_stat$abg<- numeric(length(sites))
+summary_stat$fia <- numeric(length(sites))
+summary_stat$gedi<- numeric(length(sites))
+summary_stat$twi<- numeric(length(sites))
+summary_stat$tavg <- numeric(length(sites))
+summary_stat$srad <- numeric(length(sites))
+summary_stat$prec <- numeric(length(sites))
+summary_stat$vapr <- numeric(length(sites))
+summary_stat$ph <- numeric(length(sites))
+summary_stat$n <- numeric(length(sites))
+summary_stat$soc <- numeric(length(sites))
+summary_stat$sand <- numeric(length(sites))
+
+pt = numeric(1)
+
+# extract data for each from each Neon site coordinate
+for (i in 1:nrow(summary_stat)){
+  pt = terra::extract(dat,data.frame(lon=summary_stat$Site_Long[i], lat = summary_stat$Site_Lat[i]))
+  summary_stat$ysd[i] <- pt$year_since_disturb
+  summary_stat$abg[i] <- pt$agb
+  summary_stat$fia[i] <- pt$fia
+  summary_stat$gedi[i] <- pt$gedi
+  summary_stat$twi[i] <- pt$twi
+  summary_stat$tavg[i] <- pt$tavg
+  summary_stat$srad[i] <- pt$srad
+  summary_stat$prec[i] <- pt$prec
+  summary_stat$vapr[i] <- pt$vapr
+  summary_stat$ph[i] <- pt$PH
+  summary_stat$n[i] <- pt$N
+  summary_stat$soc[i] <- pt$SOC
+  summary_stat$sand[i] <- pt$Sand
+}
+
+# use lm to fit a linear model to the data
+fit_ysd = lm(summary_stat$ysd ~ summary_stat$Marsh_corr_coef)
+fit_abg = lm(summary_stat$abg ~ summary_stat$Marsh_corr_coef)
+fit_fia = lm(summary_stat$fia ~ summary_stat$Marsh_corr_coef)
+fit_gedi = lm(summary_stat$gedi ~ summary_stat$Marsh_corr_coef)
+fit_twi = lm(summary_stat$twi ~ summary_stat$Marsh_corr_coef)
+fit_tavg = lm(summary_stat$tavg ~ summary_stat$Marsh_corr_coef)
+fit_srad = lm(summary_stat$srad ~ summary_stat$Marsh_corr_coef)
+fit_prec = lm(summary_stat$prec~ summary_stat$Marsh_corr_coef)
+fit_vapr = lm(summary_stat$vapr ~ summary_stat$Marsh_corr_coef)
+fit_ph = lm(summary_stat$ph ~ summary_stat$Marsh_corr_coef)
+fit_n = lm(summary_stat$n ~ summary_stat$Marsh_corr_coef)
+fit_soc = lm(summary_stat$soc ~ summary_stat$Marsh_corr_coef)
+fit_sand = lm(summary_stat$sand ~ summary_stat$Marsh_corr_coef)
+
+
+# For correlation Coefficient
+for (i in 8:20){
+  # fit a line
+  summary_stat$temp = summary_stat[[i]]
+  fit = lm(summary_stat$temp ~ summary_stat$Marsh_corr_coef)
+  
+  # graph
+
+  print(ggplot(summary_stat, aes(x = temp, y = Marsh_corr_coef)) + geom_point() + geom_smooth(method = "lm", se = FALSE) + xlab(colnames(summary_stat[(i)])))
+}
+
+
+# For RMS error
+for (i in 8:20){
+  # fit a line
+  summary_stat$temp = summary_stat[[i]]
+  fit = lm(summary_stat$temp ~ summary_stat$Marsh_rms_error)
+  
+  # graph
+  print(ggplot(summary_stat, aes(x = temp, y = Marsh_rms_error)) + geom_point() + geom_smooth(method = "lm", se = FALSE) + xlab(colnames(summary_stat[(i)])))
+
+}
+
+```
+
+-- Not really using anymore -- 
+
+Plot each one over time
+```{r}
+
+for (i in 1:nrow(matched)){
+  # make a graph of a year of one of them
+  temp_data <- filter(daily_sr, Site_ID == matched$site_id[i])
+  
+  print(ggplot(temp_data) +  
+    geom_line(aes(x = Time, y =Marshall_SR, group = 1), linewidth = 1, color = "darkgreen") + 
+    geom_line(aes(x = Time, y = Forecast_SR,group = 1), linewidth = 1, color = "orange") +
+    geom_line(aes(x = Time, y =  Mill_Quirk_SR, group = 1), linewidth = 1, color = "lightgreen") +
+    labs(title = matched$site_id[i], x = "date", y = "Soil Respiration (umol/ (m^2 s)"))
+}
+```
+
+
+Compare Cross Correlation Coefficients of sites that lag
+```{r}
+lag <- data.frame(lag_sites = character(8),
+                 half_lag = numeric(8),
+                 year_lag = numeric(8))
+
+lag$lag_sites <- c("MLBS", "HARV","SERC","UNDE","ABBY", "GRSM","WREF","SJER")
+
+peak <- numeric(length(lag$lag_sites))
+count = 1
+
+for (site in lag$lag_sites){
+  temp_data <- filter(daily_sr, Site_ID == site)
+  
+   # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  name <- temp_data$Site_ID[1]
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  ccf_data <- ccf(temp_data$Marshall_SR, temp_data$Forecast_SR, lag = 183, plot = TRUE, ylim = range(-1,1))
+  ccf_data_2 <- ccf(temp_data$Marshall_SR, temp_data$Forecast_SR, lag = 365, plot = TRUE, ylim = range(-1,1))
+  
+  #title(name)
+  
+  lag$half_lag[count] <- ccf_data$lag[which.max(ccf_data$acf)]
+  lag$year_lag[count] <- ccf_data_2$lag[which.max(ccf_data_2$acf)]
+  count = count + 1
+}
+
+# add titles
+
+# analyze more
+
+```
+```{r}
+lag_all <- data.frame(lag_sites = character(47),
+                 any_lag = numeric(47))
+
+lag_all$lag_sites = matched$site_id
+count = 1
+
+for (site in lag_all$lag_sites){
+  temp_data <- filter(daily_sr, Site_ID == site)
+  
+   # remove na values
+  temp_data <- na.omit(temp_data)
+  
+  # get rid of first row (so i can remove infinite)
+  temp_data <- subset(temp_data, select = -c(Site_ID, Time))
+  
+  # remove inf values
+  temp_data <- temp_data[apply(temp_data, 1, function(row) all(is.finite(row))), ]
+  
+  if (nrow(temp_data) != 0){
+   # ccf_data <- ccf(temp_data$Marshall_SR, temp_data$Forecast_SR, lag = 91, plot = TRUE, ylim = range(-1,1))
+    ccf_data_2 <- ccf(temp_data$Marshall_SR, temp_data$Forecast_SR, lag = 365, plot = TRUE, ylim = range(-1,1))
+    
+    #title(name)
+    
+    #lag$season_lag[count] <- ccf_data$lag[which.max(ccf_data$acf)]
+    lag_all$any_lag[count] <- ccf_data_2$lag[which.max(ccf_data_2$acf)]
+  }
+  count = count + 1
+}
+```
+
+

@@ -1,1 +1,9 @@
 ## Coding Practices {#coding-practices}
+
+Good coding practices keep PEcAn's codebase clean, readable, and maintainable. This section covers the standards and conventions all contributors should follow.
+
+Much of the advice in this section is not specific to PEcAn and is instead summarizing R community norms for good practice in package development. We drew especially heavily from the following sources, all of which are worth reading and following.
+
+* [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) is maintained by the R Core Team and forms the definitive source on how R packages should and should not behave.
+* [R Packages](https://r-pkgs.org) presents an opinionated but practical and detailed guide to one successful approach to R package development.
+* The [Tidyverse style guide](https://style.tidyverse.org) defines the code style conventions that PEcAn has adopted as its [aspirational] house style.

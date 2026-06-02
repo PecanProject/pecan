@@ -1,0 +1,1408 @@
+---
+title: "soilmoist_validation"
+author: "chaney"
+date: "2025-11-24"
+output: html_document
+---
+```{r setup, include=FALSE}
+# Load libraries
+
+library(DBI)
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(sf)
+library(maps)
+library(terra)
+library(knitr)
+library(tidyr)
+library(neonUtilities)
+library(swfscMisc)
+library(maps)
+library(tidyverse)
+library(neonSoilFlux)
+library(parallel)
+library(ncdf4)
+library(data.table)
+library(purrr)
+library(data.table)
+library(parallel)
+library(lubridate)
+library(terra)
+library(httr)
+library(sp)
+library(neonSoilFlux)
+library(stringr)
+library(scales)
+library(MASS)
+library(neonstore)
+
+```
+
+---- First, get all of the data -----
+
+Find which model sites correspond to NEON sites
+```{r}
+# get the coordinates of 6400 sites in Dongchen's output
+Neonplots <- read.csv("/usr4/ugrad/chaney/R/3_25/Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info 
+Site_Info <- readRDS("/usr4/ugrad/chaney/R/3_25/site.locs.rds")
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+# Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+# Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+# Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+# Make list to store matched list
+matched <- data.frame(id = numeric(nrow(Neonplots)), # id in forecast
+                      site_id = numeric(nrow(Neonplots))) # NEON id
+
+# Calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+
+```
+
+
+Get soil moisture data from model -- Percent of Soil Saturation
+```{r}
+source("neon_model_processing.R")
+
+# Set outdir
+outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/NA_SDA_no_Debias";
+
+final_daily_sm_data <- neon_model_processing(matched, 2012, 2025, outdir, "SoilMoistFrac", var2 = NULL)
+
+colnames(final_daily_sm_data)[colnames(final_daily_sm_data) == "Output1"] <- "Model_SM"
+```
+
+
+Get NEON Soil moisture from John's data in SCC -- Volumetric Soil Water Content
+```{r}
+
+# Function to extract John's data
+soil_moist <- function(site_number){
+  
+  years = 2012:2025
+  site = matched$site_id[site_number]
+  
+  # create list to store data
+  all_days <- list() 
+  count <- 1 
+
+
+  for (year in years){
+    for (i in 01:12){
+      if (i < 10){
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-0",i,".Rda")
+      }else{
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-",i,".Rda")
+      }
+      if (file.exists(file_name)== TRUE){
+        load(file_name)
+        
+        # Get VSWC content data
+        site_data_moist <- site_data[[2]][[2]] #V water/ V total soil
+        
+        # Sort by date
+        site_data_moist <- site_data_moist[order(site_data_moist$startDateTime),]
+        
+        # Combine positions into one column 
+        site_data_moist$Position <- paste(site_data_moist$horizontalPosition,site_data_moist$verticalPosition)
+        
+        # Find the number of data points per day (48 data points at multiple data sites and depths for each site)
+        dppd = 48 * length(unique(site_data_moist$Position))
+        
+        # Find the number of days 
+        n_days <- nrow(site_data_moist) / (dppd)
+        
+        # Add day index 
+        site_data_moist$day_idx <- ceiling(seq_len(nrow(site_data_moist)) / dppd)
+      
+       # Count rows per day
+        day_sizes <- table(site_data_moist$day_idx)
+        
+        # Keep only complete days
+        complete_days <- as.numeric(names(day_sizes[day_sizes == dppd]))
+        
+        filtered <- site_data_moist %>% 
+          filter(day_idx %in% complete_days)
+          
+        # Turn VSWC into column where column = day
+        vswc_mat <- matrix(filtered$VSWCMean, nrow = dppd, ncol = length(complete_days))
+      
+        # Find daily means VSWC
+        daily_means <- colMeans(vswc_mat, na.rm = TRUE)
+        
+        # Find times
+       day_times <- filtered$startDateTime[match(complete_days, filtered$day_idx)]
+        
+        # Find largest verticalPosition
+        deepest_vert <- max(unique(site_data_moist$verticalPosition))
+        
+        # Filter for just that vert position
+        deepest_rows <- filter(site_data_moist, verticalPosition == deepest_vert)
+        
+        # Find average depth of deepest_rows (per month)
+        depth <- mean(deepest_rows$zOffset, na.rm = TRUE)
+        
+        # Add to table
+        summary_table <- data.frame(
+          Site_ID = site,
+          Time = day_times,
+          Soil_moist_neon = daily_means,
+          Ave_depth = depth
+        )
+        
+        # Add table to list
+      all_days[[count]] <- summary_table
+      count <- count + 1
+        
+      }
+    }
+  }
+   # turn list into table
+  summary <- rbindlist(all_days)
+  
+return(list(stm = summary))
+}
+
+
+# Apply parallel calculation for each site
+n = 1:nrow(matched)
+results_m <- mclapply(n, soil_moist, mc.cores = num_cores)
+
+# Combine results from all ensembles
+soil_m <- rbindlist(lapply(results_m, `[[`, "stm"),fill=TRUE)
+
+# Delete all rows with just zeros
+soil_m <- filter(soil_m, Soil_moist_neon != 0)
+
+```
+
+
+NEON data is VSWC, so needs to be converted to Percent Soil Saturation. This can be done by dividing VSWC by porosity.
+
+Porosity can be calculated using NEON megapit data and function from Pecan Github
+```{r}
+start_date = NA
+end_date = NA 
+store_dir <- "/Users/chane/OneDrive/Documents/ef_lab/R_files" #
+
+# Load function from Pecan
+source("soil_utils.R")
+
+# Make df to keep everything
+neon_soil_texture <- data.frame(Site_ID = character(length(matched$site_id)),
+                              percentSand = numeric(length(matched$site_id)),
+                              percentSilt = numeric(length(matched$site_id)),
+                              percentClay = numeric(length(matched$site_id)),
+                              porosity = numeric(length(matched$site_id)))
+
+# Loop through all sites and get NEON data
+for(i in 1:length(matched$site_id)){
+  
+  neon_soil_texture$Site_ID[i] <- matched$site_id[i]
+  
+  # get neon Data
+neonstore::neon_download("DP1.00096.001", dir = store_dir, table = NA, site = matched$site_id[i], start_date = NA, end_date = NA, type = "basic",api = "https://data.neonscience.org/api/v0")
+
+# Contains horizon depths
+  perarchivesample <- neonstore::neon_read(table = "perarchivesample", product = "DP1.00096.001", site = matched$site_id[i], start_date = NA, end_date = NA, dir = store_dir)
+  
+  # Contains soil horizon percent sand/silt/clay 
+  perbiogeosample <- neonstore::neon_read(table = "perbiogeosample", product = "DP1.00096.001", site = matched$site_id[i], start_date = NA, end_date = NA, dir = store_dir)
+  
+  # Merge archive and biogeo samples 
+  persample <- merge(perarchivesample, perbiogeosample, by = c("domainID","siteID","horizonName", "pitID","horizonID","pitNamedLocation"))
+  
+    # Sort by depth
+  persample<-persample[order(persample$archiveTopDepth),]
+  
+    # Delete rows where sandTotal, siltTotal, and clayTotal are na
+  for (row in 1:nrow(persample)){
+    if (is.na(persample$sandTotal[row]) == TRUE & is.na(persample$siltTotal[row]) == TRUE & is.na(persample$clayTotal[row]) == TRUE){
+      persample <- persample[-row, ]
+    }
+  }
+  
+  # -- Find row with depth closest to average depth to depth from VSWC
+  
+  # Find rows of correct site
+  row <- which(soil_m$Site_ID == matched$site_id[i]) 
+  
+  # If this site exists, find porosity
+  if ((row[1] > 0) == TRUE){
+ 
+     # average across rows and multiply by 100 since in m (archiveBottomDepth is in cm)
+    neon_depth <- (mean(soil_m$Ave_depth[row], na.rm = TRUE))*100 # cm
+
+   # Calculate absolute differences between target and each neon depth
+    abs_diff <- abs(persample$archiveBottomDepth + neon_depth) # NEON depth negative
+    
+    # Find the index of the minimum absolute difference
+    closest_row_index <- which.min(abs_diff)
+    
+  # -- Find weighted average of rows above and including the closest row 
+    horizon_length <- persample$archiveBottomDepth - persample$archiveTopDepth # cm
+    
+    # Find the average sand, silt, and clay, weighted by how deep the layer is
+    
+    # set to zero
+    sand_ave <- 0
+    silt_ave <- 0
+    clay_ave <- 0
+    
+    
+    for (horizon in 1:closest_row_index){
+      sand_ave <- sand_ave + (((horizon_length[horizon])/(sum(horizon_length[1:closest_row_index])))*persample$sandTotal[horizon])
+      silt_ave <- silt_ave + (((horizon_length[horizon])/(sum(horizon_length[1:closest_row_index])))*persample$siltTotal[horizon])
+      clay_ave <- clay_ave + (((horizon_length[horizon])/(sum(horizon_length[1:closest_row_index])))*persample$clayTotal[horizon])
+    }
+  
+  neon_soil_texture$percentSand[i] <- sand_ave
+  neon_soil_texture$percentSilt[i] <- silt_ave
+  neon_soil_texture$percentClay[i] <- clay_ave
+  
+  # Use soil_params function to get porostiy from silt,sand,clay percentages
+    if (is.na(mean(neon_soil_texture$percentSand[i])) == TRUE){
+      neon_soil_texture$porosity[i] = NA
+    }else{
+        mysoil <- soil_params(soil_type=NULL, sand=neon_soil_texture$percentSand[i], silt=neon_soil_texture$percentSilt[i], clay=neon_soil_texture$percentClay[i], bulk=NULL)
+        neon_soil_texture$porosity[i] <- mysoil$volume_fraction_of_water_in_soil_at_saturation
+    }
+  }
+}
+```
+
+Divide VSWC by porosity to get soil saturation
+```{r}
+
+# Add a row percent soil saturation
+soil_m$Neon_SM <- numeric(length(soil_m$Time))
+
+# Loop through each site and calculate Soil saturation
+for (i in 1:length(soil_m$Site_ID)){
+      row <- which(neon_soil_texture$Site_ID == soil_m$Site_ID[i])
+      
+      if (is.na(neon_soil_texture$porosity[row]) == FALSE){
+        soil_m$Neon_SM[i]= soil_m$Soil_moist_neon[i]/neon_soil_texture$porosity[row]
+      }else{
+        soil_m$Neon_SM[i] = NA
+      }
+}
+```
+
+
+Combine everything into one table 
+```{r}
+
+# Delete var2
+final_daily_sm_data$Output2 <- NULL
+
+# Change Time type 
+soil_m$Time <- as.Date(soil_m$Time)
+final_daily_sm_data$Time <- as.Date(final_daily_sm_data$Time)
+
+# Combine two soil temperature tables
+soil_m_table <- merge(final_daily_sm_data, soil_m, by = c("Time","Site_ID"))
+
+load("/Users/chane/Documents/soil_table.Rdata") # load in table with soil respiration data (from "soilrespiration_validation.Rmd")
+
+# Merge with soil respiration 
+soil_table <- merge(soil_table, soil_m_table, by = c("Time","Site_ID"))
+
+# Change some names
+names(soil_m_table)[names(soil_m_table) == "soil_sat_neon"] <- "Neon_SM"
+names(soil_m_table)[names(soil_m_table) == "Soil_moist_model"] <- "Model_SM"
+
+names(soil_table)[names(soil_table) == "soil_sat_neon"] <- "Neon_SM"
+names(soil_table)[names(soil_table) == "Soil_moist_model"] <- "Model_SM"
+
+
+```
+
+
+---- Next, Look at NEON relationship of Soil R as a function of Soil M 
+
+Graph with data
+```{r}
+# Loess Regressions 
+df_m_ma <- data.frame(x = soil_table$Neon_SM,
+                   y = soil_table$Marshall_SR)
+df_m_ma <- df_m_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+
+df_m_mq <- data.frame(x = soil_table$Neon_SM,
+                   y = soil_table$Mill_Quirk_SR)
+df_m_mq <- df_m_mq %>%
+           filter(if_all(where(is.numeric), is.finite))
+
+loess90_m_ma <- loess(y ~ x, data=df_m_ma, span=.9, na.action = na.omit)
+df_m_ma$y_fit <- predict(loess90_m_ma)
+
+loess90_m_mq <- loess(y ~ x, data=df_m_mq, span=.9)
+df_m_mq$y_fit <- predict(loess90_m_mq)
+
+# Graph
+ggplot() +
+  geom_point(data = df_m_ma, aes(x = x, y = y, color = "Marshall data"), size = 1) +
+  geom_point(data = df_m_mq, aes(x = x, y = y, color = "Millington Quirk data"), size = 1) +
+  geom_line(data = df_m_ma, aes(x = x, y = y_fit, color = "Marshall Loess Regression"), size = 1) +
+    geom_line(data = df_m_mq, aes(x = x, y = y_fit, color = "Millington Quirk Loess Regression"), size = 1) +
+  scale_color_manual(values = c("Marshall Data" = "darkgrey", "Millington Quirk Data" = "lightgrey", "Marshall Loess Regression" = "darkgreen", "Millington Quirk Loess Regression" = "lightgreen")) +
+    labs(title = "Regression Model for Soil R as a function of Moisture",
+       x = "Percent Soil Saturation",
+       y = "Soil Respiration",
+       color = "Dataset")
+
+
+```
+
+Line fits for each NEON site Moist
+```{r}
+
+# Find unique site names
+sites <- unique(soil_table$Site_ID)
+
+# Fit a line for each site
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Neon_SM)]
+  
+  df <- data.frame(x = temp_data$Neon_SM,
+                   y = temp_data$Marshall_SR)
+
+  # Scatter Plot with Fitted line
+  print(ggplot(df, aes(x = x, y = y)) + geom_point(size = 0.5) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = sites[i], x = "Soil Moisture", y = "Soil Respiration"))
+
+}
+```
+
+Fitting a parabola to Soil R as a function of SM
+```{r}
+for (i in 1:length(sites)){
+  
+  # Sort Data
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  temp_data <- temp_data[order(temp_data$Neon_SM)]
+  
+  # Get data frame
+  df_temp_ma <- data.frame(x = temp_data$Neon_SM,
+                   y = temp_data$Marshall_SR)
+  
+   df_temp_ma <- df_temp_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+   
+  df_temp_mq <- data.frame(x = temp_data$Neon_SM,
+                   y = temp_data$Mill_Quirk_SR)
+   df_temp_mq <- df_temp_mq %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  
+  if (is.na(df_temp_mq$x[1]) == FALSE){
+
+    # Loess Regression
+    loess90_temp_ma <- loess(y ~ x, data=df_temp_ma, span=.9)
+    df_temp_ma$y_fit_loess <- predict(loess90_temp_ma)
+  
+    loess90_temp_mq <- loess(y ~ x, data=df_temp_mq, span=.9)
+    df_temp_mq$y_fit_loess <- predict(loess90_temp_mq)
+    
+  
+   # Parabola fit 
+    parabola_fit_ma_lm <- lm(y ~ x + I(x^2), data = df_temp_ma, na.action = na.exclude)
+ df_temp_ma$y_fit_parabola_lm <- predict(parabola_fit_ma_lm)
+
+  parabola_fit_mq_lm <- lm(y ~ x + I(x^2), data = df_temp_mq, na.action = na.exclude)
+  df_temp_mq$y_fit_parabola_lm <- predict(parabola_fit_mq_lm)
+  
+    # Parabola fit with outliers weighted less (looks same)
+    parabola_fit_ma_rlm <- rlm(y ~ x + I(x^2), data = df_temp_ma, na.action = na.exclude)
+ df_temp_ma$y_fit_parabola_rlm <- predict(parabola_fit_ma_rlm)
+
+  parabola_fit_mq_rlm <- rlm(y ~ x + I(x^2), data = df_temp_mq, na.action = na.exclude)
+  df_temp_mq$y_fit_parabola_rlm <- predict(parabola_fit_mq_rlm)
+  
+  
+  
+     # Graph Loess and Parabola for each site
+    print(ggplot() +
+      geom_point(data =  df_temp_ma, aes(x = x, y = y, color = "Marshall Data"), size = 1) +
+    geom_point(data =  df_temp_mq, aes(x = x, y = y, color = "Mill Qurik Data"), size = 1) +
+      geom_line(data =  df_temp_ma, aes(x = x, y = y_fit_loess, color = "Marshall Loess Fit"), size = 1) +
+     geom_line(data =  df_temp_mq, aes(x = x, y = y_fit_loess, color = "Mill Quirk Loess Fit"), size = 1) +
+ #    geom_line(data =  df_temp_ma, aes(x = x, y = y_fit_parabola_lm, color = "Marshall Parabolic Fit LM"), size = 1) +
+ #    geom_line(data =  df_temp_mq, aes(x = x, y = y_fit_parabola_lm, color = "Mill Quirk Parabolic Fit LM"), size = 1) +
+           geom_line(data =  df_temp_ma, aes(x = x, y = y_fit_parabola_rlm, color = "Marshall Parabolic Fit RLM"), size = 1) +
+     geom_line(data =  df_temp_mq, aes(x = x, y = y_fit_parabola_rlm, color = "Mill Quirk Parabolic Fit RLM"), size = 1) +
+       scale_color_manual(values = c("Marshall Data" = "darkgrey", "Mill Quirk Data" = "lightgrey", "Marshall Loess Fit" = "darkgreen", "Mill Quirk Loess Fit" = "lightgreen", "Marshall Parabolic Fit LM" = "royalblue", "Mill Quirk Parabolic Fit LM" = "lightblue", "Marshall Parabolic Fit RLM" = "purple", "Mill Quirk Parabolic Fit RLM" = "lavender")) +
+      labs(title = sites[i],
+           x = "Soil Moisture",
+           y = "Soil Respiration",
+           color = "Dataset"))
+  }
+
+}
+
+
+```
+
+Time series
+```{r}
+for (i in 1:nrow(matched)){
+
+  temp_data <- filter(soil_table, Site_ID == matched$site_id[i])
+  
+  # Look at just one year for now
+  temp_data_2022 <- filter(temp_data, Year == "2022")
+  
+  print(ggplot(temp_data_2022) +  
+    geom_line(aes(x = Time, y = Model_SM,group = 1), linewidth = 1, color = "orange") +
+    geom_line(aes(x = Time, y = Neon_SM, group = 1), linewidth = 1, color = "darkgreen") + 
+    labs(title = matched$site_id[i], x = "date", y = "Percent Soil Saturation"))
+}
+```
+
+Get precipitation data from NEON, so we can compare to SM data
+```{r}
+
+# Get NEON precipitation (tipping bucket) for all sites
+neon_download(product = "DP1.00045.001", site = NA, type = "basic")
+
+# Extract data for every 30 min
+precip_data <- neon_read(product = "DP1.00045.001", table = "TIPPRE_30min")
+
+# Add a day and year column
+precip_data$Year <- substr(precip_data$startDateTime,1,4)
+precip_data$Day <- substr(precip_data$startDateTime,1,10)
+
+# Change sitename to match
+colnames(precip_data)[colnames(precip_data) == "siteID"] <- "Site_ID"
+
+
+# Aggregate to everyday
+  precip_data_day <- precip_data %>%
+  group_by(Day, Site_ID) %>%
+  summarize(across(c(precipBulk,Year), mean, na.rm = TRUE), .groups = 'drop')
+colnames(precip_data_day)[colnames(precip_data_day) == "Day"] <- "Time"
+
+precip_data_day$Year <- substr(precip_data_day$Day,1,4)
+
+```
+
+Graph Precipitation of each site with SM data (for one year)
+```{r}
+for (i in 1:nrow(matched)){
+  
+  temp_data_sm <- filter(soil_table, Site_ID == matched$site_id[i])
+  
+  # Look at just one year for now
+  temp_data_sm_2022 <- filter(temp_data_sm, Year == "2022")
+  
+  # Sort prec data
+  temp_data_prec <- filter(precip_data_day,  Site_ID == matched$site_id[i])
+  temp_data_prec_2022 <- filter(temp_data_prec,  Year == "2019")
+  
+  # Normalize precip data
+  temp_data_prec_2022$precipBulk_norm <- temp_data_prec_2022$precipBulk/ max(temp_data_prec_2022$precipBulk)
+  
+ print(ggplot() +  
+    geom_line(data = temp_data_prec_2022, aes(x = as.Date(Day), y = precipBulk_norm, group = 1, color = "Normalized Precipitation"), linewidth = 1)+
+    geom_line(data = temp_data_sm_2022, aes(x = as.Date(Time), y = Model_SM,group = 1, color = "Model"), linewidth = 1) +
+    geom_line(data = temp_data_sm_2022, aes(x = as.Date(Time), y = Neon_SM, group = 1, color = "NEON"), linewidth = 1) + 
+    labs(title = matched$site_id[i], x = "date", y = "Percent Soil Saturation") + 
+   scale_color_manual(values = c("Normalized Precipitation" = "black", "Model" = "orange", "NEON" = "lightgreen")))
+ 
+}
+```
+
+
+Look at one month of precipitation data 
+```{r}
+
+# Add month column
+precip_data_day$Month <- substr(precip_data_day$Day,1,7)
+soil_table$Month <- substr(soil_table$Time,1,7)
+
+for (i in 1:nrow(matched)){
+
+  temp_data_sm <- filter(soil_table, Site_ID == matched$site_id[i])
+  
+  # Look at just one month for now
+  temp_data_sm_2018_4 <- filter(temp_data_sm, Month == "2018-04")
+  
+  # sort prec data
+  temp_data_prec <- filter(precip_data_day,  Site_ID == matched$site_id[i])
+  temp_data_prec_2018_04 <- filter(temp_data_prec,  Month == "2018-04")
+  
+  # Normalize precip data
+  temp_data_prec_2018_04$precipBulk_norm <- temp_data_prec_2018_04$precipBulk/ max(temp_data_prec_2018_04$precipBulk)
+  
+ print(ggplot() +  
+    geom_line(data = temp_data_prec_2018_04, aes(x = as.Date(Day), y = precipBulk_norm, group = 1, color = "Normalized Precipitation"), linewidth = 1)+
+    geom_line(data = temp_data_sm_2018_04, aes(x = as.Date(Time), y = Model_SM,group = 1, , color = "Model"), linewidth = 1) +
+    geom_line(data = temp_data_sm_2018_04, aes(x = as.Date(Time), y = Neon_SM, group = 1, color = "NEON"), linewidth = 1) + 
+      labs(title = matched$site_id[i], x = "date", y = "Percent Soil Saturation") + 
+    scale_color_manual(values = c("Normalized Precipitation" = "black", "Model" = "orange", "NEON" = "lightgreen")))
+ 
+}
+```
+
+Graphing each year for all sites
+```{r}
+for (y in 2015:2025){
+  
+  # Sort by year
+  temp_data_sm <- filter(soil_table, Site_ID == matched$site_id[i])
+  
+  # Sort by Site
+  temp_data_sm_2022 <- filter(temp_data_sm, Year == y)
+  
+  # Sort by Prec data
+  temp_data_prec <- filter(precip_data_day,  Site_ID == matched$site_id[i])
+  temp_data_prec_2022 <- filter(temp_data_prec,  Year == y)
+  
+  # Normalize precip data
+  temp_data_prec_2022$precipBulk_norm <- temp_data_prec_2022$precipBulk/ max(temp_data_prec_2022$precipBulk)
+  
+ print(ggplot() +  
+    geom_line(data = temp_data_prec_2022, aes(x = as.Date(Day), y = precipBulk_norm, group = 1, color = "Normalized Precipitation"), linewidth = 1)+
+    geom_line(data = temp_data_sm_2022, aes(x = as.Date(Time), y = Model_SM,group = 1, , color = "Model"), linewidth = 1) +
+    geom_line(data = temp_data_sm_2022, aes(x = as.Date(Time), y = Neon_SM, group = 1, color = "NEON"), linewidth = 1) + 
+      labs(title = matched$site_id[i], x = "date", y = "Percent Soil Saturation") + 
+    scale_color_manual(values = c("Normalized Precipitation" = "black", "Model" = "orange", "NEON" = "lightgreen")))
+ 
+}
+```
+
+
+---- Now, Validating Model ---- 
+
+-- Basic Error Validations 
+
+Predicted-Observed Plots for each site
+```{r}
+
+soil_moist_line_fits<- data.frame(Site_ID = character(length(matched$site_id)),
+                                slope = numeric(length(matched$site_id)),
+                                intercept = numeric(length(matched$site_id)))
+
+
+# Make predicted- observed plots
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  print(ggplot(temp_data, aes(x = Model_SM, y = Neon_SM)) + geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+        geom_abline(slope = 1, intercept = 0, color = "red", size = 2)+
+  labs(title = sites[i], x = "Predicted SM", y = "Observed SM"))
+  
+   # Fit line
+  line_fit <- lm(Neon_SM~Model_SM, data = temp_data, na.action = na.exclude)
+  coefs<- coef(line_fit)
+  
+  # Add to table
+  soil_moist_line_fits$Site_ID[i] = sites[i];
+  soil_moist_line_fits$slope[i] = unname(coefs["(Intercept)"]);
+  soil_moist_line_fits$intercept[i] = unname(coefs["Soil_temp_model"]);
+
+}
+```
+
+Finding RMS error and correlation coefficients
+```{r}
+
+# Calculate error
+soil_table$SMoist_error <- soil_table$Model_SM - soil_table$Neon_SM
+
+# Keep a permanent daily_sr
+soil_table_perm <- soil_table
+
+# Make table for summary statistics
+summary_stats_M <- data.frame(Site_ID = character(length(sites)),
+                           SMoist_corr_coef = numeric(length(sites)),
+                           SMoist_rms_error = numeric(length(sites)))
+
+
+# Do summary stats
+sites <- unique(soil_table$Site_ID)
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  # Remove na and inf values
+  temp_data <- temp_data %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  # Add site name
+  summary_stats_M$Site_ID[i] <- sites[i]
+  
+  # Find correlation coeffs
+  summary_stats_M$SMoist_corr_coef[i] <- cor(temp_data$Neon_SM, temp_data$Model_SM)
+  
+  # Find RMS errors
+  summary_stats_M$SMoist_rms_error[i] <- sqrt(mean((temp_data$Neon_SM - temp_data$Model_SM)^2))
+}
+
+```
+
+
+Graph summary stats
+```{r}
+# Add site coordinates
+summary_stats_M$Site_Lat <- numeric(length(sites))
+summary_stats_M$Site_Long <- numeric(length(sites))
+
+for (i in 1:length(summary_stats_M$Site_ID)){
+  site_num = which(Neonplots$field_site_id == summary_stats_M$Site_ID[i])
+  summary_stats_M$Site_Lat[i] <- Neonplots$field_latitude[site_num]
+  summary_stats_M$Site_Long[i] <- Neonplots$field_longitude[site_num]
+}
+
+
+USA = map_data("world") %>% filter(region == "USA")
+us_map <- st_as_sf(USA, 
+            coords = c("long", "lat"), 
+            crs = 4326)  # CRS 4326 is WGS84 (latitude/longitude)
+
+# Map of correlation coefficient
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + geom_point(data = summary_stats_M, aes(x= Site_Long, y = Site_Lat, size = SMoist_corr_coef, color = SMoist_corr_coef)) + geom_point(alpha = 0.7) + xlim(-170, -50) + scale_size_continuous(range = c(1,10)) + theme_void() + labs(title="Soil Moisture Coefficient") + theme(plot.title = element_text(hjust = 0.5),))
+
+
+```
+
+
+
+
+-- Next, validating Soil R as a function of Soil M relationship 
+
+
+Perform Loess regressions to fit curve of soil respiration as a function of soil moisture
+```{r}
+
+# LOESS Regressions for model
+df_m_model <- data.frame(x = soil_table$Model_SM,
+                   y = soil_table$Model_SR)
+df_m_model <- df_m_model %>%
+           filter(if_all(where(is.numeric), is.finite))
+
+loess90_m_model <- loess(y ~ x, data=df_m_model, span=.9)
+df_m_model$y_fit <- predict(loess90_m_model)
+
+ggplot() +
+  geom_line(data = df_m_ma, aes(x = x, y = y_fit, color = "NEON Data: Marshall Method"), size = 1) +
+    geom_line(data = df_m_mq, aes(x = x, y = y_fit, color = "NEON Data: Mill Quirk Method"), size = 1) +
+  geom_line(data = df_m_model, aes(x = x, y = y_fit, color = "Model Output"), size = 1)+
+  scale_color_manual(values = c("Model Output" = "orange", "NEON Data: Mill Quirk Method" = "lightgreen", "NEON Data: Marshall Method" = "darkgreen")) +
+    labs(title = "Regression Model for Soil R as a function of M",
+       x = "Soil Moisture",
+       y = "Soil Respiration",
+       color = "Dataset")
+
+```
+
+LOESS Regression and Parabolic Fit for NEON & Model at each site 
+```{r}
+
+# Make a list to store loess and parabolic fits
+SM_fits <- list()
+
+# Table to keep track of vertices
+vertices <- data.frame(Site_ID = character(length(sites)),
+                                  vertex_x_ma = numeric(length(sites)),
+                                  vertex_x_mq = numeric(length(sites)),
+                                  vertex_x_model = numeric(length(sites)),
+                                  vertex_y_ma = numeric(length(sites)),
+                                  vertex_y_mq = numeric(length(sites)),
+                                  vertex_y_model = numeric(length(sites)))
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Neon_SM),]
+  
+  df_temp_ma <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Neon_SM = temp_data$Neon_SM,
+                   Marshall_SR = temp_data$Marshall_SR)
+  df_temp_ma <- df_temp_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_mq <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Neon_SM = temp_data$Neon_SM,
+                   Mill_Quirk_SR = temp_data$Mill_Quirk_SR)
+  df_temp_mq <- df_temp_mq %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_model <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Model_SM = temp_data$Model_SM,
+                   Forecast_SR = temp_data$Model_SR)
+  df_temp_model <- df_temp_model %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  if (is.na(df_temp_mq$Neon_SM[1]) == FALSE){
+
+    # LOESS 
+    # NEON
+    loess90_temp_ma <- loess(Marshall_SR ~ Neon_SM, data=df_temp_ma, span=.9)
+    df_temp_ma$y_fit_loess_ma <- predict(loess90_temp_ma)
+  
+    loess90_temp_mq <- loess(Mill_Quirk_SR ~ Neon_SM, data=df_temp_mq, span=.9)
+    df_temp_mq$y_fit_loess_mq <- predict(loess90_temp_mq)
+    
+    # SDA Model
+    loess90_temp_model <- loess(Forecast_SR ~ Model_SM, data=df_temp_model, span=.9)
+    df_temp_model$y_fit_loess_model <- predict(loess90_temp_model)
+    
+      # Parabola fit 
+    parabola_fit_ma_rlm <- rlm(Marshall_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_ma, na.action = na.exclude)
+    df_temp_ma$y_fit_parabola_rlm_ma <- predict(parabola_fit_ma_rlm)
+
+     parabola_fit_mq_rlm <- rlm(Mill_Quirk_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_mq, na.action = na.exclude)
+     df_temp_mq$y_fit_parabola_rlm_mq <- predict(parabola_fit_mq_rlm)
+     
+     parabola_fit_model_rlm <- rlm(Forecast_SR ~ Model_SM + I(Model_SM^2), data = df_temp_model, na.action = na.exclude)
+     df_temp_model$y_fit_parabola_rlm_model <- predict(parabola_fit_model_rlm)
+  
+      # Find vertices
+     vertices$Site_ID[i] <- sites[i]
+     
+    # get coeffs
+    coefs_ma<- coef(parabola_fit_ma_rlm)
+    c_ma <- unname(coefs_ma["(Intercept)"])
+    b_ma <- unname(coefs_ma["Neon_SM"])
+    a_ma <- unname(coefs_ma["I(Neon_SM^2)"])
+    vertices$vertex_x_ma[i] <- (-b_ma/ (2*a_ma))
+    vertices$vertex_y_ma[i] <- a_ma*(vertices$vertex_x_ma[i])^2 + b_ma*(vertices$vertex_x_ma[i]) + c_ma
+    
+     coefs_mq<- coef(parabola_fit_mq_rlm)
+    c_mq <- unname(coefs_mq["(Intercept)"])
+    b_mq <- unname(coefs_mq["Neon_SM"])
+    a_mq <- unname(coefs_mq["I(Neon_SM^2)"])
+    vertices$vertex_x_mq[i] <- (-b_mq/ (2*a_mq))
+    vertices$vertex_y_mq[i] <- a_mq*(vertices$vertex_x_mq[i])^2 + b_mq*(vertices$vertex_x_mq[i]) + c_mq
+    
+     coefs_model<- coef(parabola_fit_model_rlm)
+    c_model <- unname(coefs_model["(Intercept)"])
+    b_model <- unname(coefs_model["Model_SM"])
+    a_model <- unname(coefs_model["I(Model_SM^2)"])
+    vertices$vertex_x_model[i] <- (-b_model/ (2*a_model))
+    vertices$vertex_y_model[i] <- a_model*(vertices$vertex_x_model[i])^2 + b_model*(vertices$vertex_x_model[i]) + c_model
+    
+
+    # Graph
+    
+    print(ggplot() +
+  #    geom_point(data = df_temp_ma, aes(x = Neon_SM, y = Marshall_SR, color = "NEON Data: Marshall Method"), size = 1) +
+ #     geom_point(data = df_temp_mq, aes(x = Neon_SM, y = Mill_Quirk_SR, color = "NEON Data: Mill Quirk Method"), size = 1) +
+  #    geom_point(data = df_temp_model, aes(x = Model_SM, y = Forecast_SR, color = "Model Output"), size = 1)+
+ #     geom_line(data = df_temp_model, aes(x = Model_SM, y = y_fit_loess_model, color = "Model Output Fit"), size = 1)+
+  #    geom_line(data = df_temp_mq, aes(x =Neon_SM, y = y_fit_loess_mq, color = "NEON Data Fit: Mill Quirk Method"), size = 1) +
+  #    geom_line(data = df_temp_ma, aes(x = Neon_SM, y = y_fit_loess_ma, color = "NEON Data Fit: Marshall Method"), size = 1) +
+      geom_line(data = df_temp_model, aes(x = Model_SM, y = y_fit_parabola_rlm_model, color = "Model Parabolic Fit"), size = 1)+
+      geom_line(data = df_temp_mq, aes(x = Neon_SM, y = y_fit_parabola_rlm_mq, color = "NEON Parabolic Fit: Mill Quirk Method"), size = 1) +
+      geom_line(data = df_temp_ma, aes(x = Neon_SM, y = y_fit_parabola_rlm_ma, color = "NEON Parabolic Fit: Marshall Method"), size = 1) +
+      scale_color_manual(values = c("Model Output Fit" = "orange", "Model Output" = "black", "NEON Data: Mill Quirk Method" = "darkgrey", "NEON Data Fit: Mill Quirk Method" = "lightgreen", "NEON Data Fit: Marshall Method" = "darkgreen", "NEON Data: Marshall Method" = "lightgrey", "Model Parabolic Fit" = "orangered", "NEON Parabolic Fit: Mill Quirk Method" = "lightblue", "NEON Parabolic Fit: Marshall Method" = "darkblue")) +
+      labs(title = sites[i],
+           x = "Soil Moisture",
+           y = "Soil Respiration",
+           color = "Dataset"))
+
+  
+  
+ }
+   # combine ma and mq data frames
+temp_df <- merge( df_temp_ma,  df_temp_mq, by = c("Time", "Site_ID", "Neon_SM"))
+  
+  # combine with model
+  temp_df_final <- merge(temp_df,  df_temp_model, by = c("Time", "Site_ID"))
+
+  SM_fits[[i]] <- temp_df_final
+}
+```
+
+Graph Parabolic Fit for NEON & Model at each site 
+```{r}
+
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Neon_SM)]
+  
+  df_temp_ma <- data.frame(x = temp_data$Neon_SM,
+                   y = temp_data$Marshall_SR)
+  df_temp_ma <- df_temp_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_mq <- data.frame(x = temp_data$Neon_SM,
+                   y = temp_data$Mill_Quirk_SR)
+  df_temp_mq <- df_temp_mq %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_model <- data.frame(x = temp_data$Model_SM,
+                   y = temp_data$Forecast_SR)
+  df_temp_model <- df_temp_model %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  if (is.na(df_temp_mq$x[1]) == FALSE){
+
+  
+      # Parabola fit 
+    parabola_fit_ma_rlm <- rlm(y ~ x + I(x^2), data = df_temp_ma, na.action = na.exclude)
+    df_temp_ma$y_fit_parabola_rlm <- predict(parabola_fit_ma_rlm)
+
+     parabola_fit_mq_rlm <- rlm(y ~ x + I(x^2), data = df_temp_mq, na.action = na.exclude)
+     df_temp_mq$y_fit_parabola_rlm <- predict(parabola_fit_mq_rlm)
+     
+     parabola_fit_model_rlm <- rlm(y ~ x + I(x^2), data = df_temp_model, na.action = na.exclude)
+     df_temp_model$y_fit_parabola_rlm <- predict(parabola_fit_model_rlm)
+    
+# Graph
+    print(ggplot() +
+     # geom_point(data = df_temp_ma, aes(x = x, y = y, color = "NEON Data: Marshall Method"), size = 1) +
+    #  geom_point(data = df_temp_mq, aes(x = x, y = y, color = "NEON Data: Mill Quirk Method"), size = 1) +
+    #  geom_point(data = df_temp_model, aes(x = x, y = y, color = "Model Output"), size = 1)+
+      geom_line(data = df_temp_model, aes(x = x, y = y_fit_parabola_rlm, color = "Model Parabolic Fit"), size = 1)+
+      geom_line(data = df_temp_mq, aes(x = x, y = y_fit_parabola_rlm, color = "NEON Parabolic Fit: Mill Quirk Method"), size = 1) +
+      geom_line(data = df_temp_ma, aes(x = x, y = y_fit_parabola_rlm, color = "NEON Parabolic Fit: Marshall Method"), size = 1) +
+      scale_color_manual(values = c("Model Output Fit" = "orange", "Model Output" = "black", "NEON Data: Mill Quirk Method" = "darkgrey", "NEON Data Fit: Mill Quirk Method" = "lightgreen", "NEON Data Fit: Marshall Method" = "darkgreen", "NEON Data: Marshall Method" = "lightgrey", "Model Parabolic Fit" = "orangered", "NEON Parabolic Fit: Mill Quirk Method" = "lightblue", "NEON Parabolic Fit: Marshall Method" = "darkblue")) +
+      labs(title = sites[i],
+           x = "Soil Moisture",
+           y = "Soil Respiration",
+           color = "Dataset"))
+  }
+
+}
+```
+
+
+Soil respiration vs soil temperature, parabolic fit -- With reference point at vertex
+```{r}
+
+for (i in 1:length(sites)){
+  
+   # Get data for site
+  temp_data <- SM_fits[[i]]
+  
+  if (is.na(vertices$vertex_x_ma[i])== FALSE){
+    # Subtract vertex points from every point so that vertex is at zero
+    temp_data$x_ma_ref <- temp_data$Neon_SM - vertices$vertex_x_ma[i]
+    temp_data$y_fit_parabola_ma_ref_vertex <- temp_data$y_fit_parabola_rlm_ma - vertices$vertex_y_ma[i]
+    
+    temp_data$x_mq_ref <- temp_data$Neon_SM - vertices$vertex_x_mq[i]
+    temp_data$y_fit_parabola_mq_ref_vertex <- temp_data$y_fit_parabola_rlm_mq - vertices$vertex_y_mq[i]
+    
+    temp_data$x_model_ref <- temp_data$Model_SM - vertices$vertex_x_model[i]
+    temp_data$y_fit_parabola_model_ref_vertex <- temp_data$y_fit_parabola_rlm_model - vertices$vertex_y_model[i]
+    
+     print(ggplot() +
+      geom_line(data = temp_data, aes(x = x_model_ref, y = y_fit_parabola_model_ref_vertex, color = "Model Parabolic Fit"), size = 1)+
+      geom_line(data = temp_data, aes(x = x_mq_ref, y = y_fit_parabola_mq_ref_vertex, color = "NEON Parabolic Fit: Mill Quirk Method"), size = 1) +
+      geom_line(data = temp_data, aes(x = x_ma_ref, y = y_fit_parabola_ma_ref_vertex, color = "NEON Parabolic Fit: Marshall Method"), size = 1) +
+      scale_color_manual(values = c("Model Output Fit" = "orange", "Model Output" = "black", "NEON Data: Mill Quirk Method" = "darkgrey", "NEON Data Fit: Mill Quirk Method" = "lightgreen", "NEON Data Fit: Marshall Method" = "darkgreen", "NEON Data: Marshall Method" = "lightgrey", "Model Parabolic Fit" = "orangered", "NEON Parabolic Fit: Mill Quirk Method" = "lightblue", "NEON Parabolic Fit: Marshall Method" = "darkblue")) +
+      labs(title = sites[i],
+           x = "Soil Moisture",
+           y = "Soil Respiration",
+           color = "Dataset"))
+  
+  }
+  
+}
+
+  
+```
+
+
+Soil respiration vs soil temperature, sigmoidal and loess regression fits -- With reference points at SM = 0.5
+```{r}
+
+for (i in 1:length(sites)){
+
+  
+  temp_data <- SM_fits[[i]]
+  
+  # -- Find the value closest to a set number 
+  
+  # Set the reference point
+  target_value <- 0.5 
+  
+ # Get the models again
+  df_temp_ma <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Neon_SM = temp_data$Neon_SM,
+                   Marshall_SR = temp_data$Marshall_SR)
+  df_temp_ma <- df_temp_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_mq <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Neon_SM = temp_data$Neon_SM,
+                   Mill_Quirk_SR = temp_data$Mill_Quirk_SR)
+  df_temp_mq <- df_temp_mq %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_model <- data.frame(Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID,
+                     Model_SM = temp_data$Model_SM,
+                   Forecast_SR = temp_data$Forecast_SR)
+  df_temp_model <- df_temp_model %>%
+           filter(if_all(where(is.numeric), is.finite))
+  
+    # Parabola fit 
+    parabola_fit_ma_rlm <- rlm(Marshall_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_ma, na.action = na.exclude)
+    temp_data$parabola_fit_ma_rlm <- predict(parabola_fit_ma_rlm)
+     
+    parabola_fit_mq_rlm <- rlm(Mill_Quirk_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_mq, na.action = na.exclude)
+       temp_data$parabola_fit_mq_rlm <- predict(parabola_fit_mq_rlm)
+     
+     parabola_fit_model_rlm <- rlm(Forecast_SR ~ Model_SM + I(Model_SM^2), data = df_temp_model, na.action = na.exclude)
+       temp_data$parabola_fit_model_rlm <- predict(parabola_fit_model_rlm)
+  
+     # Normalizing! 
+    # Find the max of each
+    max_val_ma <- max(temp_data$parabola_fit_ma_rlm)
+    temp_data$y_fit_parabola_ma_norm <- temp_data$parabola_fit_ma_rlm/max_val_ma
+    max_val_mq <- max(temp_data$parabola_fit_mq_rlm)
+    temp_data$y_fit_parabola_mq_norm <- temp_data$parabola_fit_mq_rlm/max_val_mq
+    max_val_model <- max(temp_data$parabola_fit_model_rlm)
+    temp_data$y_fit_parabola_model_norm <- temp_data$parabola_fit_model_rlm/max_val_model
+  
+  # Find what y is at each x = target
+    y_ma <- predict(parabola_fit_ma_rlm, data.frame(Neon_SM = target_value))/max_val_ma
+    y_mq <- predict(parabola_fit_mq_rlm, data.frame(Neon_SM = target_value))/max_val_mq
+    y_model <- predict(parabola_fit_model_rlm, data.frame(Model_SM = target_value))/max_val_model
+     
+  # -- Shift the graph down so that SR at 10 is 0 (for parabola fits)
+  # if sig fits exist
+  temp_data$y_fit_parabola_ma_ref <- temp_data$y_fit_parabola_ma_norm - y_ma
+  temp_data$y_fit_parabola_mq_ref <- temp_data$y_fit_parabola_mq_norm - y_mq
+  temp_data$y_fit_parabola_model_ref <- temp_data$y_fit_parabola_model_norm - y_model
+
+  # graph
+  pp <- ggplot() +
+      geom_line(data = temp_data, aes(x = Neon_SM, y = y_fit_parabola_mq_ref, color = "Millington Quirk Sigmoidal Fit"), size = 1) +
+      geom_line(data = temp_data, aes(x = Neon_SM, y = y_fit_parabola_ma_ref, color = "Marshall Sigmoidal Fit"), size = 1) +
+      geom_line(data = temp_data, aes(x = Model_SM, y = y_fit_parabola_model_ref, color = "Model Sigmoidal Fit"), size = 1)  +  scale_color_manual(values = c("Model Loess Fit" = "orange", "Model Sigmoidal Fit" = "orangered", "Marshall Loess Fit" = "darkgreen", "Marshall Sigmoidal Fit" = "darkblue", "Millington Quirk Loess Fit" = "lightgreen", "Millington Quirk Sigmoidal Fit" = "lightblue")) +
+      labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset")
+  
+    # print the plot 
+    print (pp)
+    # Reassign temp fits so that it has reference data
+    SM_fits[[i]] <- temp_data
+}
+
+
+
+```
+
+Scoring with reference at SM = 0.5 (Normalized)
+```{r}
+# Make a table for score
+
+sm_parabola_fit_scores <- data.frame(Site_ID = character(length(sites)),
+                              MSD_ma = numeric(length(sites)),
+                              MSD_mq = numeric(length(sites)),
+                              CC_ma = numeric(length(sites)),
+                              CC_mq = numeric(length(sites)),
+                              Bias_ma = numeric (length(sites)),
+                              Bias_mq = numeric (length(sites)),
+                              Input_overlap = numeric (length(sites)))
+
+# Loop through each site
+for (i in 1:length(sites)){
+
+  temp_data <- SM_fits[[i]]
+  sm_parabola_fit_scores$Site_ID[i] <- sites[i]
+
+  min_x <- max(min(temp_data$Neon_SM), min(temp_data$Model_SM));
+  max_x <- min(max(temp_data$Neon_SM), max(temp_data$Model_SM));
+  
+  # Find input percent overlap
+  percent_overlap <- ((max_x - min_x)/(max(max(temp_data$Neon_SM), max(temp_data$Model_SM))-min(min(temp_data$Neon_SM), min(temp_data$Model_SM)))) * 100
+  
+  sm_parabola_fit_scores$Input_overlap[i] <- round(percent_overlap)
+
+    if ((min_x < max_x) == TRUE){
+  
+      
+        # choose 10 points distributed across the range
+       overlap_neon <- data.frame(Neon_SM = seq(from = min_x, to = max_x, length.out = 50))
+       overlap_model <- data.frame(Model_SM = seq(from = min_x, to = max_x, length.out = 50))
+       
+       # Find the values at those points
+       # Need to find function of fit again (because these points do not exist in data and don't want to use closest point)
+       
+       # Get the models again
+    df_temp_ma <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Neon_SM = temp_data$Neon_SM,
+                     Marshall_SR = temp_data$Marshall_SR)
+    df_temp_ma <- df_temp_ma %>%
+             filter(if_all(where(is.numeric), is.finite))
+    
+    df_temp_mq <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Neon_SM = temp_data$Neon_SM,
+                     Mill_Quirk_SR = temp_data$Mill_Quirk_SR)
+    df_temp_mq <- df_temp_mq %>%
+             filter(if_all(where(is.numeric), is.finite))
+    
+    df_temp_model <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Model_SM = temp_data$Model_SM,
+                     Forecast_SR = temp_data$Forecast_SR)
+    df_temp_model <- df_temp_model %>%
+             filter(if_all(where(is.numeric), is.finite))
+  
+    # Parabola fit 
+    parabola_fit_ma_rlm <- rlm(Marshall_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_ma, na.action = na.exclude)
+    parabola_fit_mq_rlm <- rlm(Mill_Quirk_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_mq, na.action = na.exclude)
+    parabola_fit_model_rlm <- rlm(Forecast_SR ~ Model_SM + I(Model_SM^2), data = df_temp_model, na.action = na.exclude)
+    
+    # Set reference SM
+    target_value = 0.5
+  
+    # Find value at target so that this is based off reference point
+    y_ma <- predict(parabola_fit_ma_rlm, data.frame(Neon_SM = target_value))[1]
+    y_mq <- predict(parabola_fit_mq_rlm, data.frame(Neon_SM = target_value))[1]
+    y_model <- predict(parabola_fit_model_rlm, data.frame(Model_SM = target_value))[1]
+    
+    # Add bias to table
+    sm_parabola_fit_scores$Bias_ma[i] <- y_model - y_ma
+    sm_parabola_fit_scores$Bias_mq[i] <- y_model - y_mq
+    
+     # find max values to normalize
+       max_val_ma <- max(temp_data$parabola_fit_ma_rlm)
+       max_val_mq <- max(temp_data$parabola_fit_mq_rlm)
+       max_val_model <- max(temp_data$parabola_fit_model_rlm)
+    
+      # use function to find values at points
+       actual <- (predict(parabola_fit_model_rlm, overlap_model)[1:50] - y_model)/max_val_model
+       predicted_ma <- (predict(parabola_fit_ma_rlm, overlap_neon)[1:50] - y_ma)/max_val_ma
+       predicted_mq <- (predict(parabola_fit_mq_rlm, overlap_neon)[1:50] - y_mq)/max_val_mq
+       
+      # Find mean((actual-predicted)^2)
+       msd_ma <-  mean((actual-predicted_ma)^2)
+       msd_mq <-  mean((actual-predicted_mq)^2)
+       
+       sm_parabola_fit_scores$MSD_ma[i] <- round(msd_ma, digits = 2)
+       sm_parabola_fit_scores$MSD_mq[i] <- round(msd_mq, digits = 2)
+
+       
+      # Correlation Coeffs
+       sm_parabola_fit_scores$CC_ma[i] <- round(cor(actual, predicted_ma), digits = 2);
+       sm_parabola_fit_scores$CC_mq[i] <- round(cor(actual, predicted_mq), digits = 2);
+    
+  
+  # Put into table to compare
+    }else{
+      # If range doesn't over lap, add "NA" to table
+      sm_parabola_fit_scores$MSD_ma[i] <- NA
+      sm_parabola_fit_scores$MSD_mq[i] <- NA
+    }
+    
+}
+
+
+```
+
+
+Scoring with reference at vertex
+```{r}
+
+# Make a table for score
+sm_parabola_fit_scores <- data.frame(Site_ID = character(length(sites)),
+                              MSD_ma = numeric(length(sites)),
+                              MSD_mq = numeric(length(sites)),
+                              Shape_score_ma = numeric(length(sites)),
+                              Shape_score_mq = numeric(length(sites)),
+                              Input_score_ma = numeric(length(sites)),
+                              Input_score_mq = numeric(length(sites)))
+
+# Loop through each site
+for (i in 1:length(sites)){
+
+  temp_data <- SM_fits[[i]]
+  sm_parabola_fit_scores$Site_ID[i] <- sites[i]
+
+  min_x <- max(min(temp_data$Neon_SM), min(temp_data$Model_SM));
+  max_x <- min(max(temp_data$Neon_SM), max(temp_data$Model_SM));
+
+    if ((min_x < max_x) == TRUE){
+      
+        # Choose 10 points distributed across the range
+       overlap_neon <- data.frame(Neon_SM = seq(from = min_x, to = max_x, length.out = 50))
+       overlap_model <- data.frame(Model_SM = seq(from = min_x, to = max_x, length.out = 50))
+       
+       # Find the values at those points
+       # Get the models again
+    df_temp_ma <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Neon_SM = temp_data$Neon_SM,
+                     Marshall_SR = temp_data$Marshall_SR)
+    df_temp_ma <- df_temp_ma %>%
+             filter(if_all(where(is.numeric), is.finite))
+    
+    df_temp_mq <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Neon_SM = temp_data$Neon_SM,
+                     Mill_Quirk_SR = temp_data$Mill_Quirk_SR)
+    df_temp_mq <- df_temp_mq %>%
+             filter(if_all(where(is.numeric), is.finite))
+    
+    df_temp_model <- data.frame(Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID,
+                       Model_SM = temp_data$Model_SM,
+                     Forecast_SR = temp_data$Forecast_SR)
+    df_temp_model <- df_temp_model %>%
+             filter(if_all(where(is.numeric), is.finite))
+  
+    # Parabola fit 
+    parabola_fit_ma_rlm <- rlm(Marshall_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_ma, na.action = na.exclude)
+    parabola_fit_mq_rlm <- rlm(Mill_Quirk_SR ~ Neon_SM + I(Neon_SM^2), data = df_temp_mq, na.action = na.exclude)
+    parabola_fit_model_rlm <- rlm(Forecast_SR ~ Model_SM + I(Model_SM^2), data = df_temp_model, na.action = na.exclude)
+  
+      # Use function to find values at points
+       actual <- predict(parabola_fit_model_rlm, overlap_model)[1:50]
+       predicted_ma <- predict(parabola_fit_ma_rlm, overlap_neon)[1:50]
+       predicted_mq <- predict(parabola_fit_mq_rlm, overlap_neon)[1:50]
+       
+      # Find mean((actual-predicted)^2)
+       msd_ma <-  mean((actual-predicted_ma)^2)
+       msd_mq <-  mean((actual-predicted_mq)^2)
+       sm_parabola_fit_scores$MSD_ma[i] <- msd_ma
+       sm_parabola_fit_scores$MSD_mq[i] <- msd_mq
+       
+      sm_parabola_fit_scores$Shape_score_ma[i] <- round(msd_ma*10^16)
+      sm_parabola_fit_scores$Shape_score_mq[i] <- round(msd_mq*10^16)
+  
+  # Put into table to compare
+    }else{
+      # If range doesn't over lap, add "NA" to table
+      sm_parabola_fit_scores$MSD_ma[i] <- "No overlap"
+      sm_parabola_fit_scores$MSD_mq[i] <- "No overlap"
+       
+      sm_parabola_fit_scores$Shape_score_ma[i] <- "No overlap"
+      sm_parabola_fit_scores$Shape_Shape_score_mq[i] <- "No overlap"
+    }
+    
+}
+
+```
+
+Compare scores to other factors
+
+Precipitiation
+```{r}
+# Find average annual precipitation 
+
+load("C:/Users/chane/OneDrive/Documents/ef_lab/R_files/precip_data.RData")
+
+precip_data_ave <- precip_data_day %>%
+  group_by(Site_ID) %>%
+  summarize(across(c(precipBulk), mean, na.rm = TRUE), .groups = 'drop')
+
+sm_scores <- merge(sm_parabola_fit_scores, precip_data_ave, by = "Site_ID")
+
+# Plot score vs average precipitation
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = MSD_ma, color = "Marshall Mean Square Distance"))+
+  geom_point(data = sm_scores, aes(x = precipBulk, y =  MSD_mq, color = "Mill Quirk Mean Square Distance"))+
+  geom_smooth(data = sm_scores, aes(x = precipBulk, y = MSD_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = precipBulk, y =  MSD_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Mean Square Distance" = "darkgreen", "Mill Quirk Mean Square Distance" = "lightgreen"))+
+  labs(title = "", y = "Mean Square Distance", x = "Average Annual Precipitation", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = CC_ma, color = "Marshall Correlation Coefficient"))+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = CC_mq, color = "Mill Quirk Correlation Coefficient"))+
+  geom_smooth(data = sm_scores, aes(x = precipBulk, y = CC_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = precipBulk, y = CC_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Correlation Coefficient" = "darkgreen", "Mill Quirk Correlation Coefficient" = "lightgreen"))+
+  labs(title = "", y = "Correlation Coefficient", x = "Average Annual Precipitation", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = Bias_ma, color = "Marshall"))+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = Bias_mq, color = "Mill Quirk"))+
+  geom_smooth(data = sm_scores, aes(x = precipBulk, y = Bias_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = precipBulk, y = Bias_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall" = "darkgreen", "Mill Quirk" = "lightgreen"))+
+  labs(title = "", y = "Bias", x = "Average Annual Precipitation", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = precipBulk, y = Input_overlap), color = "grey")+
+  geom_smooth(data = sm_scores, aes(x = precipBulk, y = Input_overlap), color = "black", method = "lm", se = FALSE)+
+  labs(title = "", y = "Input Overlap", x = "Average Annual Precipitation", color = "Dataset")
+
+
+
+```
+
+
+
+
+
+Compare to 13 ecological factors
+```{r}
+dat = terra::rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/all_data_layers.tif")
+
+# add columns to error_df
+comparisons_table <- data.frame(Site_ID = character(length(sites)),
+                    latitude = numeric(length(sites)),
+                    longitude = numeric(length(sites)),
+                    ysd =numeric(length(sites)),
+                    abg =  numeric(length(sites)),
+                    fia = numeric(length(sites)),
+                    gedi = numeric(length(sites)),
+                    twi = numeric(length(sites)),
+                    tavg = numeric(length(sites)),
+                    srad = numeric(length(sites)),
+                    prec = numeric(length(sites)),
+                    vapr = numeric(length(sites)),
+                    ph = numeric(length(sites)),
+                    n = numeric(length(sites)),
+                    soc = numeric(length(sites)),
+                    sand = numeric(length(sites)))
+
+pt = numeric(1)
+
+# Extract data for each from each Neon site coordinate
+for (i in 1:length(sites)){
+  site_num = which(Neonplots$field_site_id == sites[i])
+  pt = terra::extract(dat,data.frame(lon=Neonplots$field_longitude[site_num], lat = Neonplots$field_latitude[site_num]))
+  comparisons_table$Site_ID[i] <- Neonplots$field_site_id[site_num]
+  comparisons_table$Latitude[i] <- Neonplots$field_latitude[site_num]
+  comparisons_table$Longitude[i] <- Neonplots$field_longitude[site_num]
+  
+  comparisons_table$ysd[i] = pt$year_since_disturb
+  comparisons_table$abg[i] <- pt$agb
+  comparisons_table$fia[i] <- pt$fia
+  comparisons_table$gedi[i] <- pt$gedi
+  comparisons_table$twi[i] <- pt$twi
+  comparisons_table$tavg[i] <- pt$tavg
+  comparisons_table$srad[i] <- pt$srad
+  comparisons_table$prec[i] <- pt$prec
+  comparisons_table$vapr[i] <- pt$vapr
+  comparisons_table$ph[i] <- pt$PH
+  comparisons_table$n[i] <- pt$N
+  comparisons_table$soc[i] <- pt$SOC
+  comparisons_table$sand[i] <- pt$Sand
+}
+
+
+
+# Or Load from SCC
+load("all_data_layers.Rdata")
+
+sm_scores <- merge(sm_scores, comparisons_table, by = "Site_ID")
+
+```
+
+
+Latitude
+```{r}
+ggplot()+
+  geom_point(data = sm_scores, aes(x = Latitude, y =  MSD_ma, color = "Marshall Mean Square Distance"))+
+  geom_point(data = sm_scores, aes(x = Latitude, y = MSD_mq, color = "Mill Quirk Mean Square Distance"))+
+  geom_smooth(data = sm_scores, aes(x = Latitude, y = MSD_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = Latitude, y = MSD_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Mean Square Distance" = "darkgreen", "Mill Quirk Mean Square Distance" = "lightgreen"))+
+  labs(title = "", y = "Mean Square Distance", x = "Latitude", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = Latitude, y = CC_ma, color = "Marshall Correlation Coefficient"))+
+  geom_point(data = sm_scores, aes(x = Latitude, y = CC_mq, color = "Mill Quirk Correlation Coefficient"))+
+  geom_smooth(data = sm_scores, aes(x = Latitude, y = CC_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = Latitude, y =  CC_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Correlation Coefficient" = "darkgreen", "Mill Quirk Correlation Coefficient" = "lightgreen"))+
+  labs(title = "", y = "Correlation Coefficient", x = "Latitude", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = Latitude, y = Bias_ma, color = "Marshall"))+
+  geom_point(data = sm_scores, aes(x = Latitude, y = Bias_mq, color = "Mill Quirk"))+
+  geom_smooth(data = sm_scores, aes(x = Latitude, y = Bias_ma, color = "red"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = Latitude, y = Bias_mq, color = "orange"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall" = "darkgreen", "Mill Quirk" = "lightgreen"))+
+  labs(title = "", y = "Bias", x = "Latitude", color = "Dataset")
+
+ggplot()+
+  geom_point(data = sm_scores, aes(x = Latitude, y = Input_overlap), color = "grey")+
+  geom_smooth(data = sm_scores, aes(x = Latitude, y = Input_overlap), color = "black", method = "lm", se = FALSE)+
+  labs(title = "", y = "Input Overlap", x = "Latitude", color = "Dataset")
+
+
+```
+
+```{r}
+for (i in (length(sm_scores) - 12):length(sm_scores)){
+  # fit a line
+  sm_scores$temp = sm_scores[[i]]
+  
+  # graph against scores
+   print(ggplot()+
+  geom_point(data = sm_scores, aes(x = temp, y = MSD_ma, color = "Marshall Correlation Coefficient"))+
+  geom_point(data = sm_scores, aes(x = temp, y = MSD_mq, color = "Mill Quirk Correlation Coefficient"))+
+  geom_smooth(data = sm_scores, aes(x = temp, y = MSD_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = temp, y =  MSD_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Correlation Coefficient" = "darkgreen", "Mill Quirk Correlation Coefficient" = "lightgreen", "Marshall Line Fit" = "black", "Mill Quirk Line Fit" = "darkgray"))+
+  labs(title = "", y = "MSD", x = colnames(sm_scores[(i)]), color = "Dataset"))
+
+
+ print(ggplot()+
+  geom_point(data = sm_scores, aes(x = temp, y = CC_ma, color = "Marshall Correlation Coefficient"))+
+  geom_point(data = sm_scores, aes(x = temp, y = CC_mq, color = "Mill Quirk Correlation Coefficient"))+
+  geom_smooth(data = sm_scores, aes(x = temp, y = CC_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = temp, y =  CC_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Correlation Coefficient" = "darkgreen", "Mill Quirk Correlation Coefficient" = "lightgreen", "Marshall Line Fit" = "black", "Mill Quirk Line Fit" = "darkgray"))+
+  labs(title = "", y = "Correlation Coefficient", x = colnames(sm_scores[(i)]), color = "Dataset"))
+ 
+ print(ggplot()+
+  geom_point(data = sm_scores, aes(x = temp, y =  Bias_ma, color = "Marshall Correlation Coefficient"))+
+  geom_point(data = sm_scores, aes(x = temp, y =  Bias_mq, color = "Mill Quirk Correlation Coefficient"))+
+  geom_smooth(data = sm_scores, aes(x = temp, y =  Bias_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+  geom_smooth(data = sm_scores, aes (x = temp, y =   Bias_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+  scale_color_manual(values = c("Marshall Correlation Coefficient" = "darkgreen", "Mill Quirk Correlation Coefficient" = "lightgreen", "Marshall Line Fit" = "black", "Mill Quirk Line Fit" = "darkgray"))+
+  labs(title = "", y = "Bias", x = colnames(sm_scores[(i)]), color = "Dataset"))
+ 
+ print(ggplot()+
+  geom_point(data = sm_scores, aes(x = temp, y = Input_overlap), color = "grey")+
+  geom_smooth(data = sm_scores, aes(x = temp, y = Input_overlap), color = "black", method = "lm", se = FALSE)+
+  labs(title = "", y = "Input Overlap", x = colnames(sm_scores[(i)]), color = "Dataset"))
+
+ 
+}
+```
+

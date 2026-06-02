@@ -32,9 +32,11 @@
 #' including `local` ,where we execute the model locally;
 #' `qsub`, where we use the traditional `start_model_runs` function for submission;
 #' `qsub_parallel`, where we first combine jobs and submit them into the SCC.
-#' @param debias List: R list containing the covariance directory and the start year.
+#' @param debias List: R list containing the covariance directory, the start time point, 
+#' and if we want to include the `residual.lag` as additional covariate.
 #' covariance directory should include GeoTIFF files named by year.
-#' start year is numeric input which decide when to start the debiasing feature.
+#' start time point is numeric input which decide when to start the debiasing feature.
+#' `residual.lag` is either TRUE or FALSE.
 #' @param ...       Additional arguments, currently ignored
 #' 
 #' @return NONE
@@ -57,7 +59,7 @@ sda.enkf.multisite <- function(settings,
                                             MCMC.args = NULL,
                                             merge_nc = TRUE,
                                             execution = "local"),
-                               debias = list(cov.dir = NULL, start.year = NULL), ...) {
+                               debias = list(cov.dir = NULL, t.start = NULL, residual.lag = NULL), ...) {
   #add if/else for when restart points to folder instead if T/F set restart as T
   if(is.list(restart)){
     old.dir <- restart$filepath
@@ -329,16 +331,35 @@ sda.enkf.multisite <- function(settings,
     #reformatting params
     new.params <- sda_matchparam(settings, ensemble.samples, site.ids, nens)
     # if it's not a restart run, we will generate the joint input design.
+    # following code tries to catch if there is any mismatch between
+    # samplingspace and site inputs.
+    # get the input names that are registered for sampling.
+    names.sampler <- names(settings$ensemble$samplingspace)
+    # remove parameters field from the list.
+    names.sampler <- names.sampler[-which(names.sampler == "parameters")]
+    mis.match.table <- settings %>% purrr::map(function(s){
+      # get the input names for the current site.
+      names.site.input <- names(s$run$inputs)
+      # check if there is any mismatch.
+      inds <- which(!names.sampler %in% names.site.input)
+      # if this site has missing inputs.
+      if (length(inds) > 0) {
+        return(data.frame(site_id = s$run$site$id, missed.input = names.sampler[inds]))
+      }
+    }) %>% dplyr::bind_rows()
+    # if we see any site that has missing inputs.
+    if (nrow(mis.match.table) > 0) {
+      PEcAn.logger::logger.info("There are sites that have missing inputs than the sampling space.")
+      return(mis.match.table)
+    }
+    
     # get the joint input design.
     input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[1]], 
-                                                                      ensemble_samples = ensemble.samples, 
                                                                       ensemble_size = nens)[[1]]
   }
   ###------------------------------------------------------------------------------------------------###
   ### loop over time                                                                                 ###
   ###------------------------------------------------------------------------------------------------###
-  # initialize the lists of covariates for the debias feature.
-  pre.states <- vector("list", length = length(var.names)) %>% purrr::set_names(var.names)
   # initialize the lists of forecasts for all time points.
   all.X <- vector("list", length = nt)
   for(t in 1:nt){
@@ -488,18 +509,20 @@ sda.enkf.multisite <- function(settings,
     all.X[[t]] <- X
     # start debiasing.
     debias.out <- NULL
-    if (!is.null(debias$start.year)) {
+    if (!is.null(debias$t.start)) {
       if (obs.year >= debias$start.year) {
         PEcAn.logger::logger.info("Start debiasing!")
-        debias.out <- sda_bias_correction(site.locs, 
-                                          t, all.X, 
-                                          obs.mean, 
-                                          state.interval, 
-                                          debias$cov.dir,
-                                          pre.states,
-                                          .get_debias_mod)
+        debias.out <- sda.bias.correction(settings = settings, 
+                                          t = t, 
+                                          t.start = debias$t.start, 
+                                          dates = assim.sda, 
+                                          all.X = all.X, 
+                                          obs.mean = obs.mean, 
+                                          state.interval = state.interval, 
+                                          cov.dir = debias$cov.dir, 
+                                          residual.lag = debias$residual.lag, 
+                                          py.init = debias$fun)
         X <- debias.out$X
-        pre.states <- debias.out$pre.states
       }
     }
     FORECAST[[obs.t]] <- all.X[[t]] <- X

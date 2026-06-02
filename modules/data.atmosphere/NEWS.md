@@ -7,9 +7,12 @@
 * `download.ERA5_cds` gains options `time`, `dataset`, `product_type`, all defaulting to the values previously hard-coded (#3547).
 
 ## Fixed
+* `downscale_solar_geom_halfhour()`: corrected the hour-of-day calculation from `* 48` to `* 24`. The previous formula produced a half-hour index (0-47) instead of an hour of day (0-23), causing `cos_solar_zenith_angle()` to compute a solar hour angle roughly pi radians off and therefore wrong potential shortwave radiation in all half-hourly downscaled met files.
+* Fixed `download_NOAA_GEFS_EFI`: the `sitename` filter compared the argument to itself (`sitename == sitename`), always returning data for all NEON sites instead of the requested one. Changed to `.data$sitename == sitename`.
 * Updated `download.NOAA_GEFS` to work with the current (v12.3) release of GEFS (#3349).
 
 ## Changed
+* Dependency `nneo`, used by `download.NEONmet`, is now suggested rather than required. Caution: `nneo` is unmaintained, has been archived by its author on GitHub, and may be removed from a future PEcAn release.
 * Dependency `ggplot2` is now suggested rather than required. It is used in two vignettes and for optional diagnostic plots from `debias_met_regression`.
 * `download.ERA5_cds` now downloads NetCDF directly (replacing internal conversion from grib) using the R package ecmwfr (replacing python dependency on cdsapi via reticulate) (#3547).
 * `download.ERA5.cds()` now requires a valid Copernicus CDS API key, replacing the previous `.netrc` authentication. See the [ecmwfr package documentation](https://bluegreen-labs.github.io/ecmwfr/) for details.

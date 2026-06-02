@@ -1,1 +1,5 @@
 # (PART) Introduction {-}
+
+This part introduces the PEcAn framework, its overall architecture, and
+the core concepts needed to understand how PEcAn supports ecosystem
+modeling workflows.

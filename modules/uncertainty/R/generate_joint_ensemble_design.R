@@ -3,17 +3,53 @@
 #' all sites in a multi-site run. This function generates sample indices that
 #' are shared across sites to ensure consistent parameter sampling.
 #'
-#' @param settings A PEcAn settings object containing ensemble configuration
-#' @param ensemble_size Integer specifying the number of ensemble members
-#' Since the `input_design` will only be generated once for the entire model run,
-#' the only situation, where we might want to recycle the existing `ensemble_samples`,
-#' is when we split and submit the larger SDA runs (e.g., 8,000 sites) into 
-#' smaller SDA experiments (e.g., 100 sites per job), where we want to keep using 
-#' the same parameters rather than creating new parameters for each job.
-#' @param sobol for activating sobol
-#' @return  A list containing ensemble samples and indices
-#'   If `sobol = TRUE`, the list will be a `sensitivity::soboljansen()` 
-#'   result and will contain the components documented therein.
+#' @details
+#' Note on internal dependencies
+#'
+#' If samples.Rdata doesn't exist we call get.parameter.samples(), which loads
+#' parameter distributions.
+#'
+#' In practice it:
+#' - uses pft$posterior.files directly when it is defined (an Rdata file with
+#'   post.distns or prior.distns),
+#' - otherwise figures out an output directory from pft$outdir or, if needed,
+#'   via pft$posteriorid in the database,
+#' - then looks in that directory for post.distns.Rdata, falling back to
+#'   prior.distns.Rdata,
+#' - and, for MCMC posteriors, looks up trait.mcmc*.Rdata linked to the same
+#'   posteriorid or a trait.mcmc.Rdata file in that directory.
+#'
+#' Difference from generate_OAT_SA_design: This function samples inputs
+#' randomly or quasi-randomly, while generate_OAT_SA_design holds all
+#' non-parameter inputs constant to isolate parameter effects.
+#'
+#' @param settings PEcAn settings object. This function directly uses:
+#'   \itemize{
+#'     \item \code{settings$outdir} - Output directory path for samples.Rdata
+#'     \item \code{settings$pfts} - List of PFTs (extracts \code{posterior.files})
+#'     \item \code{settings$ensemble$samplingspace} - Input sampling configuration
+#'     \item \code{settings$run$inputs} - Input paths for each input type
+#'   }
+#'   When samples.Rdata doesn't exist, settings is passed to
+#'   \code{\link{get.parameter.samples}} which additionally requires:
+#'   \itemize{
+#'     \item \code{settings$ensemble} - Ensemble configuration
+#'     \item \code{settings$database$bety} - Database connection (optional)
+#'     \item \code{settings$host$name} - Host name for dbfile.check (optional)
+#'   }
+#' @param ensemble_size Integer specifying the number of ensemble members.
+#'   The input_design is generated once for the entire model run. You might
+#'   want to recycle existing ensemble_samples when splitting larger runs
+#'   into smaller jobs while keeping the same parameters.
+#' @param sobol Logical. If TRUE, returns a \code{sensitivity::soboljansen}
+#'   object for Sobol sensitivity analysis.
+#'
+#' @return A list containing ensemble samples and indices.
+#'   If \code{sobol = FALSE}, returns \code{list(X = design_matrix)}.
+#'   If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
+#'   result object with the design matrix in \code{$X} plus additional
+#'   components for Sobol index calculations.
+#'
 #' @export
 
 generate_joint_ensemble_design <- function(settings,
