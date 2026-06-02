@@ -12,10 +12,6 @@
  <rundir><!-- altered at config time -->output/run</rundir>
  <pfts>
   <pft>
-   <name>soil</name>
-   <posterior.files>raw-data/pfts/soil/trait.mcmc.RData</posterior.files>
-  </pft>
-  <pft>
    <name>default</name>
    <posterior.files>data/pfts/default/post.distns.RData</posterior.files>
   </pft>
@@ -56,6 +52,10 @@
     <id></id>
     <path><!-- inserted at config time --></path>
    </met>
+   <PEPRMT>
+    <id></id>
+    <path><!-- inserted at config time --></path>
+   </PEPRMT>
   </inputs>
   <start.date><!-- inserted at config time --></start.date>
   <end.date><!-- inserted at config time --></end.date>

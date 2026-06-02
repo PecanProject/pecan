@@ -17,8 +17,7 @@ Imports:
     ncdf4 (>= 1.15),
     PEcAn.logger,
     PEcAn.remote,
-    PEcAn.utils,
-    PEPRMT
+    PEcAn.utils
 Suggests:
     dygraphs,
     earthdatalogin,
@@ -27,6 +26,8 @@ Suggests:
     terra,
     testthat (>= 1.0.2),
     xts
+Enhances:
+    PEPRMT
 Remotes:
     github::abbylewis/PEPRMT-Tidal
 License: BSD_3_clause + file LICENSE

@@ -110,7 +110,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   rev_str <- if (sipnet_version >= "2.0") "v2" else "v1"
-
+  # Version-specific capabilities (kept separate from input availability)
+  caps <- list(
+    has_runtime_flags = rev_str == "v2",
+    has_param_spatial = rev_str == "v1",
+    has_m_ballBerry = rev_str == "v1",
+    has_cold_soil_resp = rev_str == "v1",
+    has_litWaterDrainRate = rev_str == "v1",
+    has_litterWFracInit = rev_str == "v1",
+    has_microbeInit = rev_str == "v1"
+  )
 
   ### WRITE sipnet.in
   template.in <- system.file(
@@ -124,7 +133,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   # (e.g. NITROGEN_CYCLE requires LITTER_POOL and ANAEROBIC)
   # are handled by Sipnet at run time.
   user_flags <- settings$model$options
-  if (length(user_flags) > 0 && rev_str == "v1") {
+  if (length(user_flags) > 0 && !caps$has_runtime_flags) {
     PEcAn.logger::logger.warn(
       "Got model options", names(user_flags),
       "but sipnet version", rev_raw, "will ignore them.")
@@ -257,7 +266,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
 
   ### WRITE *.param-spatial
-  if (rev_str == "v1") {
+  if (caps$has_param_spatial) {
     template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
     file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
   }
@@ -413,7 +422,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     
     # Ball-berry stomatal slope parameter m (v1 only; m_ballBerry removed in v2)
-    if ("stomatal_slope.BB" %in% pft.trait.names && "m_ballBerry" %in% param[, 1]) {
+    if (caps$has_m_ballBerry &&
+        "stomatal_slope.BB" %in% pft.trait.names &&
+        "m_ballBerry" %in% param[, 1]) {
       id <- which(param[, 1] == "m_ballBerry")
       param[id, 2] <- pft.traits[which(pft.trait.names == "stomatal_slope.BB")]
     }
@@ -552,7 +563,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
     # 2025-07-22 CKB: soilRespQ10Cold and baseSoilRespCold were removed from Sipnet V2.0
-    if (rev_str == "v1") {
+    if (caps$has_cold_soil_resp) {
       # assume soil resp Q10 cold == soil resp Q10
       param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
       # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
@@ -790,7 +801,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       if ("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)) {
          #litwaterDrainrate in cm/day (v1 only; litWaterDrainRate removed in v2)
-         if ("litWaterDrainRate" %in% param[, 1]) {
+         if (caps$has_litWaterDrainRate && "litWaterDrainRate" %in% param[, 1]) {
            param[which(param[, 1] == "litWaterDrainRate"), 2] <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1], "m s-1", "cm day-1")
          }
        }
@@ -841,7 +852,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
     ## litterWFracInit fraction (v1 only; removed in v2)
-    if ("litter_mass_content_of_water" %in% ic.names && "litterWFracInit" %in% param[, 1]) {
+    if (caps$has_litterWFracInit &&
+        "litter_mass_content_of_water" %in% ic.names &&
+        "litterWFracInit" %in% param[, 1]) {
       #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
       param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
@@ -858,7 +871,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
     ## microbeInit mgC/g soil (v1 only; removed in v2)
-    if ("microbe" %in% ic.names && "microbeInit" %in% param[, 1]) {
+    if (caps$has_microbeInit && "microbe" %in% ic.names && "microbeInit" %in% param[, 1]) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
 
@@ -979,7 +992,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           param[param[, 1] == "leafOffDay", 2] <- leafOffDay
         }
       }
-      if (ic_has_ncvars[["Microbial Biomass C"]] && "microbeInit" %in% param[, 1]) {
+      if (caps$has_microbeInit &&
+          ic_has_ncvars[["Microbial Biomass C"]] &&
+          "microbeInit" %in% param[, 1]) {
         microbe <- ncdf4::ncvar_get(IC.nc, "Microbial Biomass C")
         if (!is.na(microbe) && is.numeric(microbe)) {
           param[param[, 1] == "microbeInit", 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
