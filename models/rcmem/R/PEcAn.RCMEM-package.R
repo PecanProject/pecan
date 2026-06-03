@@ -1,6 +1,6 @@
-#' PEcAn.PEPRMT-package
+#' PEcAn.RCMEM-package
 #'
-#' PEcAn support for the tidal biochemistry model PEPRMT
+#' PEcAn support for the tidal biochemistry model RCMEM
 #'
 #' @importFrom dplyr all_of select %>% .data
 #' @keywords internal
