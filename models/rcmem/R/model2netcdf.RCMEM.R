@@ -30,7 +30,7 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
   RCMEM.cohort.output <- utils::read.csv(raw_output_cohort)
   RCMEM.scenario.output <- utils::read.csv(raw_output_scenario)
   RCMEM.species.output <- utils::read.csv(raw_species_scenario) %>% 
-    tidyr::pivot_longer(names_to = "species_code", values_to = "species_aboveground_biomass", -year)
+    tidyr::pivot_longer(names_to = "species_code", values_to = "aboveground_biomass", -year)
   
   # RCMEM.cohort.dims <- dim(RCMEM.cohort.output)
   # RCMEM.scenario.dims <- dim(RCMEM.scenario.output)
@@ -62,25 +62,22 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     # if (y == lubridate::year(start_date)){
     #   start.day <- lubridate::yday(start_date)
     # } 
+    
     tvals <- c(1)
-     
-    bounds <- array(data=NA, dim=c(length(tvals),2))
+    
     bounds[,1] <- tvals
-    bounds[,2] <- bounds[,1]+364
-    
-    t   <- ncdf4::ncdim_def(name = "cal_date_mid", units = paste0("yr, mon, day, hr, min, sec"),
-                     vals = lubridate::ymd_hms(paste(y, "06", "15", "12", "00", "00", sep = "-")), calendar = "standard", unlim = TRUE)
-
-    
+    bounds[,2] <- bounds[,1]+365
+    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+                            vals = tvals, calendar = "standard", unlim = TRUE)
     ## ***** Need to dynamically update the UTC offset here *****
     
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     depth <- ncdf4::ncdim_def("depth", 
-                                     "m", 
-                                     vals = as.numeric(sub.RCMEM.output_cohort[,"cumVol"])/100,
-                                     longname = "Depth")
+                                     "cm", 
+                                     vals = as.numeric(sub.RCMEM.output_cohort[,"cumVol"]),
+                                     longname = "Depth from surface")
     
    
     pft <- ncdf4::ncdim_def(
@@ -91,9 +88,9 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
         unlim = TRUE
       )
     
-    dims_scenario <- list(lon = lon, lat = lat)
-    dims_cohorts <- list(lon = lon, lat = lat, depth = depth)
-    dims_species <- list(lon = lon, lat = lat, pft = pft)
+    dims_scenario <- list(lon = lon, lat = lat, time = t)
+    dims_cohorts <- list(lon = lon, lat = lat, depth = depth,  time = t)
+    dims_species <- list(lon = lon, lat = lat, pft = pft,  time = t)
     
     # What is this below???
     # time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
@@ -116,12 +113,12 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     output[[4]] <- sub.RCMEM.output_cohort[,"root"]
     
     # z_min 
-    #output[[5]] <- sub.RCMEM.output_cohort[,"vol"]
-    #output[[7]] <- sub.RCMEM.output_cohort[,"cumVol"] # z_top
+    # output[[6]] <- sub.RCMEM.output_cohort[,"vol"]
+    # output[[7]] <- sub.RCMEM.output_cohort[,"cumVol"] # z_top
     # z_bottom
-    output[[8]] <- sub.RCMEM.output_cohort[,"inputYrs"]
-    output[[9]] <- sub.RCMEM.output_cohort[,"omPackingDensity"]
-    output[[10]] <- sub.RCMEM.output_cohort[,"mineralPackingDensity"]
+    output[[5]] <- sub.RCMEM.output_cohort[,"inputYrs"]
+    output[[6]] <- sub.RCMEM.output_cohort[,"omPackingDensity"]
+    output[[7]] <- sub.RCMEM.output_cohort[,"mineralPackingDensity"]
     
     # Scenario
     # [1] "year"                "years_per_iteration" "surface_elevation"   "aboveground_biomass"
@@ -129,18 +126,18 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     # [9] "rootTurnover"        "abovegroundTurnover" "rootDepthMax"        "rootPackingDensity" 
     # [13] "lambda"              "rootShape"
     
-    output[[12]] <- sub.RCMEM.output_scenario[,"surface_elevation"]
-    output[[14]] <- sub.RCMEM.output_scenario[,"belowground_biomass"]
-    output[[16]] <- sub.RCMEM.output_scenario[,"sediment_delivered"]
+    output[[8]] <- sub.RCMEM.output_scenario[,"surface_elevation"]
+    output[[9]] <- sub.RCMEM.output_scenario[,"belowground_biomass"]
+    output[[10]] <- sub.RCMEM.output_scenario[,"sediment_delivered"]
     
     # Species
     # "species_code"        "aboveground_biomass"
-    output[[25]] <- sub.RCMEM.output_species[,"aboveground_biomass"]
+    output[[11]] <- sub.RCMEM.output_species[,"aboveground_biomass"]
 
-        ## time_bounds
-    output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),
-                      lubridate::ymd(paste(start_date, "12", "31", sep="-"))
-                      )
+    ## time_bounds
+    # output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),
+    #                   lubridate::ymd(paste(start_date, "12", "31", sep="-"))
+    #                   )
     
     ## missing value handling
     # for (i in seq_along(output)) {
@@ -152,19 +149,21 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     ## setup nc file
     # ******************** Declar netCDF variables ********************#
     nc_var <- list()
-    nc_var[[1]]  <- PEcAn.utils::to_ncvar("mineral", dims_cohorts)
+    nc_var[[1]]  <- ncdf4::ncvar_def(name = "mineral", units = "g", longname = "cohort mineral dry mass", dim = dims_cohorts, NA, prec = "double") 
+    nc_var[[2]] <- ncdf4::ncvar_def(name = "fast", units = "g", longname = "cohort fast decaying organic matter dry mass", dim = dims_cohorts, NA, prec = "double")
+    nc_var[[3]] <- ncdf4::ncvar_def(name = "slow", units = "g", longname = "cohort slow decaying organic matter dry mass", dim = dims_cohorts, NA, prec = "double")
+    nc_var[[4]] <- ncdf4::ncvar_def(name = "root", units = "g", longname = "cohort live root dry mass", dim = dims_cohorts, NA, prec = "double")
     
-    # nc_var[[1]]  <- PEcAn.utils::to_ncvar("CH4_flux", dims)
-    # nc_var[[2]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    # nc_var[[3]]  <- PEcAn.utils::to_ncvar("TotalResp", dims)
-    # nc_var[[4]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-    # 
-    # nc_var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
-    # nc_var[[6]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
+    nc_var[[5]] <- ncdf4::ncvar_def(name = "inputYrs", units = "years", longname = "cohort input years", dim = dims_cohorts, NA, prec = "double")
+    nc_var[[6]] <- ncdf4::ncvar_def(name = "omPackingDensity", units = "g cm-3", longname = "cohort organic matter packing density", dim = dims_cohorts, NA, prec = "double")
+    nc_var[[7]] <- ncdf4::ncvar_def(name = "mineralPackingDensity", units = "g cm-3", longname = "cohort mineral packing density", dim = dims_cohorts, NA, prec = "double")
     
-    # nc_var[[7]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
-    #                                  longname = "history time interval endpoints", dim=list(time_interval,time = t), 
-    #                                  prec = "double")
+    nc_var[[8]] <- ncdf4::ncvar_def(name = "surface_elevation", units = "cm", longname = "cohort live root dry mass", dim = dims_scenario, NA, prec = "double")
+    nc_var[[9]] <- ncdf4::ncvar_def(name = "belowground_biomass", units = "g cm-2", longname = "belowground biomass per unit area", dim = dims_scenario, NA, prec = "double")
+    nc_var[[10]] <- ncdf4::ncvar_def(name = "sediment_delivered", units = "g cm-2", longname = "sediment captured in one year", dim = dims_scenario, NA, prec = "double")
+    
+    nc_var[[11]] <- ncdf4::ncvar_def(name = "aboveground_biomass", units = "g cm-2", longname = "aboveground herbacious biomass", dim = dims_species, NA, prec = "double")
+    
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
@@ -179,6 +178,6 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
   if (delete_raw) {
     file.remove(raw_output)
   }
-} # model2netcdf.PEPRMT
+} # model2netcdf.RCMEM
 # ==================================================================================================#
 ## EOF
