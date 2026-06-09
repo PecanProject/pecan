@@ -66,10 +66,10 @@ test_that("broccoli has multi-source citation", {
   expect_true(grepl("CDFA-FREP", result$source))
 })
 
-# look_up_ca_compost_amendment tests
+# look_up_ca_organic_amendment tests
 
 test_that("exact compost match returns correct properties", {
-  result <- look_up_ca_compost_amendment("Poultry litter")
+  result <- look_up_ca_organic_amendment("Poultry litter")
   expect_equal(nrow(result), 1)
   expect_equal(result$material, "Poultry litter")
   expect_equal(result$n_class, "LOWER")
@@ -77,7 +77,7 @@ test_that("exact compost match returns correct properties", {
 })
 
 test_that("duplicate materials return multiple rows", {
-  result <- look_up_ca_compost_amendment("Cow manure")
+  result <- look_up_ca_organic_amendment("Cow manure")
   expect_equal(nrow(result), 2)
   expect_true(all(result$material == "Cow manure"))
   expect_equal(sort(result$source),
@@ -85,7 +85,7 @@ test_that("duplicate materials return multiple rows", {
 })
 
 test_that("aggregate = mean collapses duplicate materials", {
-  result <- look_up_ca_compost_amendment("Cow manure", aggregate = "mean")
+  result <- look_up_ca_organic_amendment("Cow manure", aggregate = "mean")
   expect_equal(nrow(result), 1)
   expect_equal(result$material, "Cow manure")
   # cn_avg should be mean of 22.5 and 20.0
@@ -96,7 +96,7 @@ test_that("aggregate = mean collapses duplicate materials", {
 })
 
 test_that("n_class filter works", {
-  result <- look_up_ca_compost_amendment("Blood meal", n_class = "HIGHER")
+  result <- look_up_ca_organic_amendment("Blood meal", n_class = "HIGHER")
   expect_equal(nrow(result), 1)
   expect_equal(result$n_class, "HIGHER")
 })
@@ -104,7 +104,7 @@ test_that("n_class filter works", {
 test_that("no compost match returns empty tibble with correct columns", {
   level <- PEcAn.logger::logger.getLevel()
   PEcAn.logger::logger.setLevel("OFF")
-  result <- look_up_ca_compost_amendment("Unicorn dust")
+  result <- look_up_ca_organic_amendment("Unicorn dust")
   PEcAn.logger::logger.setLevel(level)
   expect_equal(nrow(result), 0)
   expect_true("source" %in% names(result))
@@ -114,7 +114,7 @@ test_that("no compost match returns empty tibble with correct columns", {
 test_that("compost partial match suggests materials", {
   level <- PEcAn.logger::logger.getLevel()
   PEcAn.logger::logger.setLevel("OFF")
-  result <- look_up_ca_compost_amendment("manure")
+  result <- look_up_ca_organic_amendment("manure")
   PEcAn.logger::logger.setLevel(level)
   expect_equal(nrow(result), 0)
 })
@@ -123,14 +123,22 @@ test_that("compost partial match suggests materials", {
 
 test_that("ca_n_application_rate dataset has expected structure", {
   dat <- PEcAn.data.land::ca_n_application_rate
-  expect_equal(nrow(dat), 41)
+  expect_equal(nrow(dat), 40)
   expect_true(all(c("pft_group", "crop", "min_n_lbs_acre", "max_n_lbs_acre",
                      "source", "min_n_g_m2", "max_n_g_m2") %in% names(dat)))
 })
 
-test_that("ca_compost_amendment dataset has expected structure", {
-  dat <- PEcAn.data.land::ca_compost_amendment
+test_that("ca_organic_amendment_properties dataset has expected structure", {
+  dat <- PEcAn.data.land::ca_organic_amendment_properties
   expect_equal(nrow(dat), 32)
   expect_true("source" %in% names(dat))
   expect_true(all(dat$n_class %in% c("LOWER", "HIGHER")))
+})
+
+test_that("ca_organic_amendment_app_rate dataset has expected structure", {
+  dat <- PEcAn.data.land::ca_organic_amendment_app_rate
+  expect_equal(nrow(dat), 64)
+  expect_true(all(c("material", "crop_structure", "app_rate_min",
+                    "app_rate_max", "source") %in% names(dat)))
+  expect_true(all(dat$crop_structure %in% c("rows", "trees")))
 })
