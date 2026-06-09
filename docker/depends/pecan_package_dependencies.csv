@@ -459,7 +459,7 @@
 "PEcAn.workflow","*","base/all","Depends",TRUE
 "PEcAn.workflow","*","modules/assim.batch","Imports",TRUE
 "PEcAn.workflow","*","modules/assim.sequential","Imports",TRUE
-"PEPRMT","*","models/peprmt","Imports",FALSE
+"PEPRMT","*","models/peprmt","Enhances",FALSE
 "plotrix","*","base/qaqc","Imports",FALSE
 "plotrix","*","modules/assim.sequential","Suggests",FALSE
 "plyr",">= 1.8.4","base/visualization","Imports",FALSE
@@ -615,6 +615,7 @@
 "stringi","*","base/utils","Imports",FALSE
 "stringr","*","models/fates","Imports",FALSE
 "stringr","*","models/lpjguess","Imports",FALSE
+"stringr","*","models/sipnet","Imports",FALSE
 "stringr","*","modules/assim.sequential","Imports",FALSE
 "stringr","*","modules/benchmark","Imports",FALSE
 "stringr","*","modules/data.land","Imports",FALSE
@@ -672,6 +673,7 @@
 "tibble","*","models/ed","Imports",FALSE
 "tibble","*","models/fates","Imports",FALSE
 "tibble","*","models/lpjguess","Imports",FALSE
+"tibble","*","models/sipnet","Imports",FALSE
 "tibble","*","modules/data.atmosphere","Imports",FALSE
 "tibble","*","modules/data.land","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE

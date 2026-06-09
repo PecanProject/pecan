@@ -34,11 +34,8 @@ model2netcdf.PEPRMT <- function(outdir, sitelat, sitelon, start_date, end_date, 
     sub.PEPRMT.output.dims <- dim(sub.PEPRMT.output)
 
     # ******************** Declare netCDF variables ********************#
-    start.day <- 1
-    if (y == lubridate::year(start_date)){
-      start.day <- lubridate::yday(start_date)
-    } 
-    tvals <- (start.day:sub.PEPRMT.output.dims[1])-1
+    start.day <- min(sub.PEPRMT.output$DOY_disc)
+    tvals <- (start.day:((start.day + sub.PEPRMT.output.dims[1]) - 1))
     bounds <- array(data=NA, dim=c(length(tvals),2))
     bounds[,1] <- tvals
     bounds[,2] <- bounds[,1]+1
@@ -74,8 +71,8 @@ model2netcdf.PEPRMT <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[4]] <- (sub.PEPRMT.output[, "NEE_mod"] * 0.001)   # NEE in kgC/m2/s
     
     ## Pools
-    output[[5]]  <- (sub.PEPRMT.output[, fluxes[1]] * 0.001)  # Soil Carbon, kgC/m2
-    output[[6]]  <- (sub.PEPRMT.output[, fluxes[2]] * 0.001)  # Soil Carbon, kgC/m2
+    output[[5]]  <- (sub.PEPRMT.output[, pools[1]] * 0.001)  # Soil Carbon, kgC/m2
+    output[[6]]  <- (sub.PEPRMT.output[, pools[2]] * 0.001)  # Soil Carbon, kgC/m2
     
     ## time_bounds
     output[[length(fluxes) +
@@ -99,9 +96,11 @@ model2netcdf.PEPRMT <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[5]]  <- PEcAn.utils::to_ncvar("slow_soil_pool_carbon_content", dims)
     nc_var[[6]]  <- PEcAn.utils::to_ncvar("fast_soil_pool_carbon_content", dims)
     
-    nc_var[[7]] <- ncdf4::ncvar_def(name="time_bounds", units='', 
-                                     longname = "history time interval endpoints", dim=list(time_interval,time = t), 
-                                     prec = "double")
+    nc_var[[7]] <- ncdf4::ncvar_def(name="time_bounds", 
+                                    units='', 
+                                    longname = "history time interval endpoints", 
+                                    dim=list(time_interval,time = t), 
+                                    prec = "double")
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

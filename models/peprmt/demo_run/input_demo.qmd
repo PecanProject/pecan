@@ -2,11 +2,14 @@
 title: "Setting up PEPRMT inputs in PEcAn"
 author:
   - "Chris Black"
+  - "Abby Lewis"
 ---
 
 # Purpose
 
-Show the process of creating input files for a basic PEcAn run. PEcAn provides helpers for some of these, while others are (so far) still manual.
+Show the process of creating input and met files for a basic PEcAn run. 
+PEcAn provides helpers for some of these, while others are (so far) still manual.
+
 
 # Setup
 
@@ -14,16 +17,20 @@ We assume here that you already have PEcAn and PEPRMT installed.
 See run_pecan_peprmt.qmd for installation instructions if needed.
 
 ```{r setup}
-#here::i_am("models/peprmt/demo_run/set_up_inputs.qmd")
-PEcAn.all::pecan_version()
+here::i_am("models/peprmt/demo_run/input_demo.qmd")
+
 library(tidyverse)
 library(PEcAn.all)
+library(PEcAn.PEPRMT)
+PEcAn.all::pecan_version()
+
 # prints logger messages into the notebook instead of to the terminal
 logger.setUseConsole(consol = TRUE, stderr = FALSE)
 # prints messages with levels INFO or higher (WARNING, ERROR, SEVERE)
 # For even more detail, change to "DEBUG"
 logger.setLevel("INFO")
 ```
+
 
 # Settings
 
@@ -32,13 +39,60 @@ PEcAn settings files declare the configuration for the entire run, including (by
 TODO: This section is hard to interpret. Either add more exposition or simplify.
 
 ```{r}
-ensemble_size <- 3
+ensemble_size <- 10
 
 site_info <- read.csv("data/site_info.csv")
-settings <- read.settings("template.xml") # TODO move to data-raw?
-settings$ensemble$size <- ensemble_size
 
-settings <- settings |>
+stopifnot(
+  length(unique(site_info$id)) == nrow(site_info),
+  all(site_info$lat > 0), # just to simplify grid naming below
+  all(site_info$lon < 0)
+)
+site_info <- site_info |>
+  dplyr::mutate(
+    # match locations to half-degree ERA5 grid cell centers
+    # CAUTION: Calculation only correct when all lats are N and all lons are W!
+    ERA5_grid_cell = paste0(
+      ((lat + 0.25) %/% 0.5) * 0.5, "N_",
+      ((abs(lon) + 0.25) %/% 0.5) * 0.5, "W"
+    ),
+    # Hack: prepare.settings wants every site to have a name as well as an ID.
+    # It's probably never used downstream, but add here to quiet the check.
+    # TODO remove the upstream rule
+    name = id
+  )
+
+# Hack: setEnsemblePaths leaves all path components other than siteid
+# identical across sites.
+# To use site-specific grid id, I'll string-replace each siteid
+id2grid <- function(s) {
+  # replacing in place to preserve names (easier than thinking)
+  for (p in seq_along(s$run$inputs$met$path)) {
+    s$run$inputs$met$path[[p]] <- gsub(
+      pattern = s$run$site$id,
+      replacement = s$run$site$ERA5_grid_cell,
+      x = s$run$inputs$met$path[[p]]
+    )
+  }
+  s
+}
+# Also replace start and end dates
+dates2grid <- function(s) {
+  for (p in seq_along(s$run$inputs$met$path)) {
+    s$run$inputs$met$path[[p]] <- gsub(
+      pattern = "DATES-HERE",
+      replacement = paste0(s$run$site$met.start, ".",
+                           s$run$site$met.end),
+      x = s$run$inputs$met$path[[p]]
+    )
+  }
+  s
+}
+
+settings_raw <- read.settings("raw-data/template.xml")
+settings_raw$ensemble$size <- ensemble_size
+
+settings <- settings_raw |>
 
   # Set where demo outputs go
   setOutDir("input_demo_out") |>
@@ -55,13 +109,12 @@ settings <- settings |>
 
   # Set run start and end dates to match available met data
   # (as hard-coded in site-info.csv -- consider getting from elsewhere?)
-  # If dates were equal for all sites, setDates() above this would handled this
+  # If dates were equal for all sites, setDates() above this would handle this
   papply(function(s) {
     s$run$start.date <- s$run$site$met.start
     s$run$end.date <- s$run$site$met.end
     s
-  }) |>
-
+  })  |>
   # Declare naming scheme for met files.
   # NB this creates paths in the XML that don't exist on disk yet --
   # we'll create them in a separate operation below
@@ -69,8 +122,17 @@ settings <- settings |>
     n_reps = ensemble_size,
     input_type = "met",
     path = file.path("data", "met"),
-    path_template = "{path}/{n}.csv"
-  )
+    d1 = "DATES-HERE",
+    path_template = "{path}/ERA5_{id}/ERA5.{n}.{d1}.dat"
+  ) |>
+  setEnsemblePaths(
+    n_reps = 1,
+    input_type = "PEPRMT",
+    path = file.path("data", "PEPRMT_specific_inputs"),
+    path_template = "{path}/{id}_formatted.csv"
+  ) |>
+  papply(id2grid) |>
+  papply(dates2grid)
 
 head(settings)
 settings$info$notes <- paste("Compiled from template.xml at", Sys.time())
@@ -92,6 +154,47 @@ write.settings(
 
 Note for future development: We are considering a change in `PEcAn.settings::setEnsemblePaths` that would allow using all fields of `settings$run$site` (which typically include lat, lon, site pft, etc) inside the format string for the file path, which should simplify construction of paths that vary by more than the siteid.
 
+
+# Meteorology
+
+Process met data for all sites using `met2model.PEPRMT()`
+
+```{r}
+# Set up folder
+dir.create(here::here("models","peprmt","demo_run","data","met"))
+
+# Fill in processed files
+for(i in 1:nrow(site_info)){
+  for(ens in 1:ensemble_size){
+    in.path <- here::here("models","peprmt","demo_run","raw-data","met",
+                          paste0("ERA5_", site_info$ERA5_grid_cell[i], "_", ens))
+    in.prefix <- paste0("ERA5.", ens)
+    start_date <- site_info$met.start[i]
+    end_date <- site_info$met.end[i]
+    outfolder <- paste0("data/met/ERA5_",site_info$ERA5_grid_cell[i])
+    result <- met2model.PEPRMT(in.path, in.prefix, outfolder, start_date, end_date)
+  }
+}
+```
+
+# Other inputs
+
+PEPRMT includes a variety of inputs that we are supplying manually
+
+```{r}
+# Set up folder
+dir.create(here::here("models","peprmt","demo_run","data","PEPRMT_specific_inputs"))
+
+# Fill in processed files
+
+for(i in 1:nrow(site_info)){
+  in.path <- here::here("models","peprmt","demo_run","raw-data","site-data-formatted",
+                        paste0(site_info$id[i], "_formatted.csv"))
+  outfolder <- here::here("models","peprmt","demo_run","data", "PEPRMT_specific_inputs",
+                        paste0(site_info$id[i], "_formatted.csv"))
+  file.copy(from = in.path, to = outfolder, overwrite = TRUE)
+}
+```
 
 # Parameters
 
@@ -116,36 +219,37 @@ First we'll write marginal distributions. The format is an R data file (conventi
 * `parama` and `paramb`, the first two moments of the distribution. For `norm` and friends these are mean and sd, for `unif` they are max and min, for `gamma` they are shape and rate, and so on.
 * `n`, the number of datapoints used to estimate this point. Usually NA in a file not created by formal meta-analysis, and not used by the model-specific sampling processes.
 
-The means shown here were retrieved 2026-03-03 from the default values used in `PEPRPMT::run_PRPMT()`. These were calibrated in Oikawa et al 2024 but not all variances are reported there. For demonstration purposes I estimated variance parameters by visual comparison to the histograms in Oikawa 2024 (for the parameters that appear there) or by arbitrarily setting sd to 1 (for CH4 parameters). TODO: Update this.
+The means shown here were retrieved 2026-03-03 from the default values used in `PEPRPMT::run_PEPRMT()`. These were calibrated in Oikawa et al 2024 but not all variances are reported there. For demonstration purposes I estimated variance parameters by visual comparison to the histograms in Oikawa 2024 (for the parameters that appear there) or by arbitrarily setting sd to 1 (for CH4 parameters). TODO: Update this.
 
 
 ```{r pft-marginal}
 post.distns <- read.csv(
   text = r"(
 param,distn,parama,paramb,n
-GPP_a0,norm,0.7,0.1,NA
-GPP_a1,norm,1.05,0.1,NA
-GPP_Ha,norm,149,25,NA
-GPP_Hd,norm,94.4,1,NA
-Reco_Ea_som,norm,18.4,1,NA
-Reco_kM_som,unif,1000,12000,NA
-Reco_Ea_labile,norm,11.7,2,NA
-Reco_kM_labile,unif,10,100,NA
-CH4_1,norm,82.0,1,NA
-CH4_2,norm,17.4,1,NA
-CH4_3,norm,86.7,1,NA
-CH4_4,norm,23.4,1,NA
-CH4_5,norm,91.2,1,NA
-CH4_6,norm,23.5,1,NA
-CH4_7,norm,100.0,1,NA
-CH4_8,norm,0.20,1,NA)",
+a0,norm,0.7,0.1,NA
+a1,norm,1.05,0.1,NA
+Ha,norm,149,25,NA
+Hd,norm,94.4,1,NA
+Ea_SOM,norm,18.4,1,NA
+kM_SOM,unif,1000,12000,NA
+Ea_labile,norm,11.7,2,NA
+kM_labile,unif,10,100,NA
+Ea_SOM_CH4,norm,82.0,1,NA
+kM_SOM_CH4,norm,17.4,1,NA
+Ea_labile_CH4,norm,86.7,1,NA
+kM_labile_CH4,norm,23.4,1,NA
+Ea_oxi_CH4,norm,91.2,1,NA
+kM_oxi_CH4,norm,23.5,1,NA
+kI_SO4,norm,100.0,1,NA
+kI_NO3,norm,0.20,1,NA)",
   row.names = "param"
 )
-demo_pft_dir <- file.path("data", "pfts", "default_marginal")
-dir.create(demo_pft_dir, recursive = TRUE)
+# Save
+demo_pft_dir_marginal <- file.path("data", "pfts", "default_marginal")
+dir.create(demo_pft_dir_marginal, recursive = TRUE)
 save(
   post.distns,
-  file = file.path(demo_pft_dir, "post.distns.RData"))
+  file = file.path(demo_pft_dir_marginal, "post.distns.RData"))
 ```
 
 Let's run this!
@@ -192,6 +296,7 @@ model_output |>
   )
 ```
 
+
 ## MCMC posterior
 
 For demonstration purposes, we'll mock up an MCMC output that implements the correlation between GPP parameters a0, Ha, and Hd as noted by Oikawa et al (2024). We'll then pass both sets of posteriors so that PEcAn.PEPRMT combines them into a single paraterization.
@@ -209,7 +314,7 @@ n_mc <- 100
 
 corr_parm <- post.distns |>
   rownames_to_column() |>
-  filter(rowname %in% c("GPP_a0", "GPP_Ha", "GPP_Hd"))
+  filter(rowname %in% c("a0", "Ha", "Hd"))
 means <- corr_parm$parama
 sds <- corr_parm$paramb
 # correlations as reported by Oikawa et al 2024
@@ -318,10 +423,4 @@ model_output |>
     n_missing = sum(is.na(GPP))
   )
 ```
-
-
-# Meteorology
-
-* TODO
-* `met2model.PEPRMT()`
 

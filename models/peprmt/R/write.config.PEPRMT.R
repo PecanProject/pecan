@@ -66,14 +66,20 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
       )
     }
   }
-  GPP_names <- c("GPP_a0", "GPP_a1", "GPP_Ha", "GPP_Hd")
-  Reco_names <- c("Reco_Ea_som", "Reco_kM_som",
-                  "Reco_Ea_labile", "Reco_kM_labile")
-  CH4_names <- paste("CH4", 1:8, sep = "_") # TODO get meaningful names from Patty
-  missing_traitnames <- setdiff(c(GPP_names, Reco_names, CH4_names), trait_names)
+  
+  params <- c("wetland_type", "a0", "a1", "Ha", "Hd", "T_opt_GPP", "Ea_SOM", 
+              "kM_SOM", "Ea_labile", "kM_labile", "Ea_SOM_CH4", "kM_SOM_CH4", 
+              "Ea_labile_CH4", "kM_labile_CH4", "Ea_oxi_CH4", "kM_oxi_CH4", 
+              "kI_SO4", "kI_NO3", "k_plant_oxi")
+  provided_traitnames <- intersect(params, trait_names)
+  if (!"wetland_type" %in% provided_traitnames) {
+    trait_values["wetland_type"] <- 2
+    provided_traitnames <- c(provided_traitnames, "wetland_type")
+  }
+  missing_traitnames <- setdiff(params, trait_names)
   if (length(missing_traitnames) > 0) {
-    PEcAn.logger::logger.error(
-      "Parameters missing from trait.values",
+    PEcAn.logger::logger.warn(
+      "Parameters missing from trait.values. Will use default",
       sQuote(missing_traitnames)
     )
   }
@@ -94,15 +100,29 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
 
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@DELETE_RAW@", as.logical(settings$model$delete.raw %||% FALSE), jobsh)
+  
+  param_str <- paste0(
+    "list(",
+    paste(
+      paste0(provided_traitnames, " = ", trait_values[provided_traitnames]),
+      collapse = ", "
+    ),
+    ")"
+  )
+  
+  jobsh <- gsub("@PARAMS@", param_str, jobsh, fixed = TRUE)
 
-  jobsh <- gsub("@GPP_THETA@", paste(trait_values[GPP_names], collapse = ", "), jobsh)
-  jobsh <- gsub("@RECO_THETA@", paste(trait_values[Reco_names], collapse = ", "), jobsh)
-  jobsh <- gsub("@CH4_THETA@", paste(trait_values[CH4_names], collapse = ", "), jobsh)
-
-
-  # yes, this will be replaced with real params once demo is working
-  run_data <- PEPRMT::example_data |>
-    dplyr::filter(.data$site == settings$run$site$id)
+  # MET
+  met_path <- settings$run$inputs$met$path
+  met <- utils::read.table(met_path, header = T)
+  met_vars <- colnames(met)[!colnames(met) %in% c("Year", "DOY_disc")]
+  
+  peprmt_specific_input_path <- settings$run$inputs$PEPRMT$path
+  
+  run_data <- utils::read.csv(peprmt_specific_input_path) |> 
+    dplyr::select(-dplyr::any_of(met_vars)) |>
+    dplyr::right_join(met) |>
+    dplyr::mutate(site = settings$run$site$id)
 
   utils::write.csv(run_data, file.path(rundir, "run_data.csv"), row.names = FALSE)
   writeLines(jobsh, con = file.path(rundir, "job.sh"))
