@@ -9,9 +9,10 @@ get.trait.data.pft(
   modeltype,
   dbfiles,
   dbcon,
-  trait.names,
+  trait.names = NULL,
   forceupdate = FALSE,
-  write = FALSE
+  write = TRUE,
+  return_data = FALSE
 )
 }
 \arguments{
@@ -31,45 +32,63 @@ see if an update is needed.}
 
 \item{write}{(Logical) If \code{TRUE} updated posteriors will be written to
 BETYdb.  Defaults to \code{FALSE}.}
+
+\item{return_data}{(Logical) If \code{TRUE}, the returned \code{pft} list also
+includes \code{trait_data} and \code{prior_distns} as in-memory objects.
+Defaults to \code{FALSE} to preserve legacy behavior — when \code{pft} is
+embedded inside a \code{settings} object, attaching these data frames by
+default would inflate the settings and break serialization.}
 }
 \value{
-The \code{pft} input list, updated with \code{pft$posteriorid} set to the
-ID of the (possibly new) posterior record in BETYdb. The posterior ID can
-be used to locate the output files (\code{trait.data.Rdata}, \code{prior.distns.Rdata},
-etc.) via BETYdb's \code{dbfiles} table.
+The updated \code{pft} list with \code{posteriorid} set to the
+ID of the (possibly new) posterior record in BETYdb. The posterior ID
+can be used to locate the output files (\code{trait.data.Rdata},
+\code{prior.distns.Rdata}, etc.) via BETYdb's \code{dbfiles} table.
+
+When \code{return_data = TRUE}, the returned list also includes
+\code{trait_data} and \code{prior_distns} as in-memory objects, so
+downstream callers can use them without reloading from \code{pft$outdir}.
 }
 \description{
-Get trait data from the database for a single PFT
+Queries BETYdb for trait observations and prior distributions for a single
+plant functional type (PFT). Results are saved to files in the PFT output
+directory (\code{pft$outdir}), and also registered in the database as posterior
+records when \code{write = TRUE}.
 }
 \details{
 \code{pft} should be a list containing at least \code{name} and \code{outdir}, and
 optionally \code{posteriorid} and \code{constants}.
+}
+\section{File-based side effects}{
 
-\strong{File-based side effects (saved to \code{pft$outdir}):}
+The following files are written to \code{pft$outdir}:
 \describe{
-\item{\code{trait.data.Rdata}}{Contains a single object \code{trait.data}: a named
-list of data frames, one per trait. Each data frame has columns from
-BETYdb's traits/yields views (e.g., \code{mean}, \code{stat}, \code{n}, \code{site_id},
-\code{treatment_id}). Names correspond to trait variable names
-(e.g., \code{"SLA"}, \code{"Vcmax"}).}
-\item{\code{prior.distns.Rdata}}{Contains a single object \code{prior.distns}: a
-data frame with one row per trait and columns \code{distn}, \code{parama},
-\code{paramb}, and \code{n}. Row names are trait variable names. Traits listed
-in \code{pft$constants} are excluded.}
-\item{\code{trait.data.csv}}{CSV export of \code{trait.data} (all traits
-row-bound).}
-\item{\code{prior.distns.csv}}{CSV export of \code{prior.distns}.}
-\item{\code{species.csv} or \code{cultivars.csv}}{PFT membership list used to
-detect changes between runs.}
+\item{\code{trait.data.Rdata}}{Named list of trait data frames, one per
+trait that has observations. Read by \code{run.meta.analysis.pft()}.}
+\item{\code{prior.distns.Rdata}}{Data frame of prior distributions, rows
+named by trait. Read by \code{run.meta.analysis.pft()}.}
+\item{\code{species.csv} or \code{cultivars.csv}}{Data frame of PFT
+member species or cultivar IDs, depending on PFT type.}
+\item{\code{trait.data.csv}}{Flattened CSV of all trait observations,
+one row per observation, for human inspection.}
+}
+In addition, each output file is registered in BETYdb via
+\code{dbfile.insert()} and associated with the posterior record whose ID
+is returned as \code{pft$posteriorid}.
 }
 
-\strong{Downstream contract:} The files \code{trait.data.Rdata} and
-\code{prior.distns.Rdata} are expected by \code{run.meta.analysis.pft}, which
-loads them from \code{pft$outdir}. This implicit file-based coupling means
-the two functions must agree on directory path and object names. A future
-refactoring goal is to pass these objects directly via function arguments
-instead.
+\section{Downstream contract}{
+
+\code{run.meta.analysis.pft()} reads \code{trait.data.Rdata} and
+\code{prior.distns.Rdata} from \code{pft$outdir} at the start of the
+meta-analysis step. These two files are therefore a required output of
+this wrapper.
+
+Note: this file-based contract will be removed once
+\code{run.meta.analysis.pft()} is refactored to accept in-memory inputs
+(GSoC Week 2).
 }
+
 \author{
 David LeBauer, Shawn Serbin, Rob Kooper
 }
