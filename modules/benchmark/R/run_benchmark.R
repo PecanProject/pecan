@@ -55,30 +55,33 @@ bm_validate <- function(model_df, obs_df) {
 ##'
 ##' @return data.frame with columns: time, model, obs
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
-  # Ensure data.table is available
-  if (!requireNamespace("data.table", quietly = TRUE)) {
-    stop("Package 'data.table' is required for high-performance alignment.")
-  }
+  # Sort both dataframes by time to ensure findInterval works correctly
+  model_df <- model_df[order(model_df$time), ]
+  obs_df <- obs_df[order(obs_df$time), ]
   
-  # Convert to data.table and explicitly name value columns
-  dt_model <- data.table::data.table(time = model_df$time, model = model_df$value)
-  # Keep original obs time in a separate column to calculate difference after join
-  dt_obs <- data.table::data.table(time = obs_df$time, obs = obs_df$value, obs_time = obs_df$time)
+  # For each model time, find the interval in obs_time it falls into
+  idx <- findInterval(model_df$time, obs_df$time, all.inside = TRUE)
   
-  # Set keys for fast roll-join
-  data.table::setkey(dt_model, time)
-  data.table::setkey(dt_obs, time)
+  # findInterval returns index i where obs[i] <= model_time < obs[i+1]
+  # We check both i and i+1 to see which one is the absolute nearest
+  idx_next <- pmin(idx + 1, nrow(obs_df))
   
-  # Perform rolling join to nearest time
-  aligned <- dt_obs[dt_model, roll = "nearest"]
+  diff_current <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx], units = "secs")))
+  diff_next <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx_next], units = "secs")))
   
-  # Filter by tolerance
-  aligned[, time_diff := abs(as.numeric(difftime(obs_time, time, units = "secs")))]
-  aligned <- aligned[time_diff <= tolerance_secs]
+  # Select the index of the closest observation
+  nearest_idx <- ifelse(diff_current <= diff_next, idx, idx_next)
+  time_diffs <- pmin(diff_current, diff_next)
   
-  # Format output to match expected schema
-  aligned <- aligned[, .(time, model, obs)]
-  data.table::setDF(aligned) # Convert back to base data.frame
+  # Filter by our time tolerance
+  valid <- time_diffs <= tolerance_secs
+  
+  # Construct the aligned base data.frame
+  aligned <- data.frame(
+    time = model_df$time[valid],
+    model = model_df$value[valid],
+    obs = obs_df$value[nearest_idx][valid]
+  )
   
   return(aligned)
 }
