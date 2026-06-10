@@ -20,44 +20,24 @@ test_that("Read.IC.info.BADM falls back to L1 and ALL if no L2 data", {
 })
 
 
-test_that("All-NA row filtering handles edge cases correctly", {
+test_that("Read.IC.info.BADM does not return all-NA carbon pool rows", {
   
-  entries_with_na_row <- data.frame(
-    Site = c("US-Ha1", "US-Ha1", "US-Ha1", "US-Ha1"),
-    Var = c("AG_BIOMASS_TREE", "SOIL_STOCK_C_ORG", "ROOT_BIOMASS", "LIT_BIOMASS"),
-    Date = as.Date(c("2020-01-01", "2020-01-01", "2020-01-01", "2020-01-01")),
-    Organ = c("Wood", NA, "Fine root", NA),
-    AGB = c(5.2, NA, NA, NA),
-    soil_organic_carbon_content = c(NA, 3.1, NA, NA),
-    litter_carbon_content = c(NA, NA, NA, NA),
-    root_carbon_content = c(NA, NA, 2.8, NA)
+  result <- Read.IC.info.BADM(42.5378, -72.1715)
+  
+  carbon_cols <- c(
+    "AGB",
+    "soil_organic_carbon_content",
+    "litter_carbon_content",
+    "root_carbon_content"
   )
   
-  ind <- apply(entries_with_na_row[, 5:8], 1, function(x) all(is.na(x)))
+  all_na_rows <- apply(
+    result[, carbon_cols],
+    1,
+    function(x) all(is.na(x))
+  )
   
-  expect_equal(sum(ind), 1, label = "Should identify exactly 1 all-NA row")
-  expect_true(ind[4], label = "Row 4 should be all-NA")
-  
-  filtered <- entries_with_na_row[!ind, , drop = FALSE]
-  
-  expect_equal(nrow(filtered), 3, label = "Should remove 1 all-NA row, leaving 3")
-
-  expect_false(4 %in% as.numeric(rownames(filtered)))
-  
-  # Test edge case: all rows all_NAs
-  all_na <- entries_with_na_row
-  all_na[, 5:8] <- NA
-  ind_all <- apply(all_na[, 5:8], 1, function(x) all(is.na(x)))
-  filtered_all <- all_na[!ind_all, , drop = FALSE]
-  
-  expect_equal(nrow(filtered_all), 0)
-
-  # Test edge case: no rows all-NAs
-  no_na <- entries_with_na_row[1:3, ]
-  ind_none <- apply(no_na[, 5:8], 1, function(x) all(is.na(x)))
-  filtered_none <- no_na[!ind_none, , drop = FALSE]
-  
-  expect_equal(nrow(filtered_none), 3)
+  expect_false(any(all_na_rows))
 })
 
 
