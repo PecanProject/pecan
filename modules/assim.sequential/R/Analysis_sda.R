@@ -165,7 +165,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   }
   
     ####getting ready to calculate y.ind and x.ind
-    for(i in 1:length(var.names)){
+    for(i in seq_along(var.names)){
       intervalX[which(startsWith(rownames(intervalX),
                                  var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
                                                                as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
@@ -495,7 +495,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     ## this is needed for correct indexing later
     samplerNumberOffset <- length(conf$getSamplers())
     
-    for(i in 1:length(y.ind)) {
+    for(i in seq_along(y.ind)) {
       node <- paste0('y.censored[',i,']')
       conf$addSampler(node, 'toggle', control=list(type='RW'))
       ## could instead use slice samplers, or any combination thereof, e.g.:
@@ -511,7 +511,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     Cmodel <- compileNimble(model_pred)
     Cmcmc <- compileNimble(Rmcmc, project = model_pred)
     
-    for(i in 1:length(y.ind)) {
+    for(i in seq_along(y.ind)) {
       ## ironically, here we have to "toggle" the value of y.ind[i]
       ## this specifies that when y.ind[i] = 1,
       ## indicator variable is set to 0, which specifies *not* to sample
@@ -536,7 +536,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
     # 
     # Cmodel$setInits(inits.pred())
     
-    for(i in 1:length(y.ind)) {
+    for(i in seq_along(y.ind)) {
       ## ironically, here we have to "toggle" the value of y.ind[i]
       ## this specifies that when y.ind[i] = 1,
       ## indicator variable is set to 0, which specifies *not* to sample
@@ -592,7 +592,7 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   mq <- dat[, iq]  # Omega, Precision
   q.bar <- matrix(apply(mq, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
   
-  col <- matrix(1:length(mu.f) ^ 2, length(mu.f), length(mu.f))
+  col <- matrix(seq_len(length(mu.f) ^ 2), length(mu.f), length(mu.f))
   WV  <- matrix(0, length(mu.f), length(mu.f))
   for (i in seq_along(mu.f)) {
     for (j in seq_along(mu.f)) {
@@ -613,17 +613,17 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   grDevices::pdf(file.path(outdir, paste0('dat_plot', t, '.pdf')))
   graphics::par(mfrow = c(2, 3))
   
-  for(rr in 1:length(iX)){
+  for(rr in seq_along(iX)){
     graphics::plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
     abline(h=mu.f[rr],col='blue')
   }
   
-  for (rr in 1:length(iystar)) {
+  for (rr in seq_along(iystar)) {
     graphics::plot(dat_save[,iystar[rr]], type = 'l', main = paste('iystar',rr))
     abline(h=(mu.a)[rr],col='red')
   }
   
-  for (rr in 1:length(iX)) {
+  for (rr in seq_along(iX)) {
     graphics::plot(dat_save[,iX.mod[rr]], type = 'l', main = paste('iX.mod',rr))
     abline(h=mu.f[rr],col='blue')
   }

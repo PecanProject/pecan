@@ -49,7 +49,7 @@ cd ~/carya/models/clm4_5_1_r085/scripts
 python runCLM.py --site US-UMB ––compset I1850CLM45CN --mach ubuntu --ccsm_input /home/carya/models/ccsm_inputdata --tstep 1 --nopointdata --coldstart --cpl_bypass --clean_build
 ```
 
-##### CLM Test Run
+**CLM Test Run**
 You will see a new directory in scripts:  US-UMB_I1850CLM45CN
 Enter this directory and run (you shouldn’t have to do this normally, but there is a bug with the python script and doing this ensures all files get to the right place):
 ```bash

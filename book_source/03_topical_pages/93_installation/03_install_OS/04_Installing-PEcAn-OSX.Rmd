@@ -143,8 +143,8 @@ brew install udunits
 
 ##### Option 2: Install udunits-2 on MacOSX is done from source.
 
-* download most recent [version of Udunits here](http://www.unidata.ucar.edu/downloads/udunits/index.jsp)
-* instructions for [compiling from source](http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html#Obtain)
+* download most recent [version of Udunits here](https://downloads.unidata.ucar.edu/udunits/)
+* instructions for [compiling from source](https://docs.unidata.ucar.edu/udunits/current/)
 
 ```bash
 curl -o udunits-2.1.24.tar.gz ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz
@@ -157,7 +157,7 @@ sudo make install
 
 #### Apache Configuration  (Optional)
 
-Mac does not support pdo/postgresql by default. The easiest way to install is use: http://php-osx.liip.ch/
+_Note: This section is out of date. Consult other sources to make sure your version of PHP supports the `pdo/postgres` driver before proceeding._
 
 To enable pecan to run from your webserver.
 ```bash

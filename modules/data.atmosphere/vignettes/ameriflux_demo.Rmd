@@ -16,7 +16,7 @@ This is a demonstration of the PEcAn utilities for downloading met data, convert
 We’ll download 12 years of met data from the [Bondville Ameriflux site](https://ameriflux.lbl.gov/sites/siteinfo/US-Bo1), which has a `SITE_ID` of `US-Bo1`.
 
 
-The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/main/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/main/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.atmosphere/).
 
 
 

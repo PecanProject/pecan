@@ -39,8 +39,13 @@ version_changed() {
 	git diff -U0 "$git_ref" -- "${1}"/DESCRIPTION | grep -q '^+Version: '
 }
 
-
-pkgdirs=$(find "$check_dir" -name DESCRIPTION | xargs dirname | sort)
+# Find all packages in the requested path
+# ...OK, all except the model wrapper template, which stays at v0.0.1
+pkgdirs=$(
+	find "$check_dir" -name DESCRIPTION -not -path '*template*' \
+	| xargs dirname \
+	| sort
+)
 
 while IFS= read -r pkg; do
 	if pkg_changed "$pkg" && ! version_changed "$pkg"; then

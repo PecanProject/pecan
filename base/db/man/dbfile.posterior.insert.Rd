@@ -38,6 +38,9 @@ data to store the file
 }
 \examples{
 \dontrun{
+  pft <- "temp_pft"
+  dbcon <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+
   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 }
 }

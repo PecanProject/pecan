@@ -6,7 +6,7 @@
 ##' 
 ##' @export
 ##' @param sitename the NEON ID of the site to be downloaded, used as file name prefix. 
-##' The 4-letter SITE code  in \href{https://www.neonscience.org/science-design/field-sites/list}{list of NEON sites}
+##' The 4-letter SITE code  in \href{https://www.neonscience.org/field-sites/explore-field-sites}{list of NEON sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
@@ -16,10 +16,17 @@
 ##'
 ##' @examples 
 ##' \dontrun{
-##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+##' result <- download.NEONmet(
+##'    sitename = 'HARV',
+##'    outfolder = '~/',
+##'    start_date = '2017-01-01',
+##'    end_date = '2017-01-31',
+##'    overwrite = TRUE)
 ##' }
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {
+
+  PEcAn.utils::need_packages("nneo")
 
   if (!file.exists(outfolder)) {
     dir.create(outfolder)

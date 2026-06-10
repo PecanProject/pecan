@@ -56,6 +56,7 @@ Uses Ameriflux LBL JSON API to download met data from Ameriflux towers in CSV fo
 }
 \examples{
 \dontrun{
+options(download.ftp.method = "ncftpget")
 result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
 }
 

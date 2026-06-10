@@ -2,7 +2,7 @@
 % Please edit documentation in R/ensemble.R
 \name{read.ensemble.output}
 \alias{read.ensemble.output}
-\title{Read ensemble output}
+\title{Reads output from model ensemble}
 \usage{
 read.ensemble.output(
   ensemble.size,
@@ -34,10 +34,7 @@ If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pec
 a list of ensemble model output
 }
 \description{
-Reads output from model ensemble
-}
-\details{
-Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year} 
+Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year}
 and \code{end.year}
 }
 \author{

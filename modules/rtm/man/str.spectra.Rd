@@ -4,10 +4,10 @@
 \alias{str.spectra}
 \title{Structure of \code{spectra} object}
 \usage{
-\method{str}{spectra}(spectra, ...)
+\method{str}{spectra}(object, ...)
 }
 \arguments{
-\item{spectra}{Object of class \code{spectra}}
+\item{object}{A spectra object}
 
 \item{...}{additional arguments, currently ignored}
 }

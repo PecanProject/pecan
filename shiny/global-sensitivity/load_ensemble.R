@@ -15,13 +15,16 @@ load_ensemble <- function(workflow_dir, settings, variable){
     message("End year: ", settings$ensemble$end.year)
     message("Read ensemble output...")
     
-    # Read samples file
-    samples.file <- file.path(workflow_dir, "samples.Rdata")
-    if (file.exists(samples.file)) {
-      load(samples.file)
-      ens.run.ids <- runs.samples$ensemble
+    # Read run manifest
+    manifest.file <- file.path(workflow_dir, "runs_manifest.csv")
+    if (file.exists(manifest.file)) {
+      manifest <- utils::read.csv(manifest.file, stringsAsFactors = FALSE)
+      ens.run.ids <- manifest[manifest$type == "Ensemble", ]
+      if ("run_id" %in% names(ens.run.ids)) {
+        names(ens.run.ids)[names(ens.run.ids) == "run_id"] <- "id"
+      }
     } else {
-      stop(samples.file, "not found required by read.ensemble.output")
+      stop(manifest.file, "not found required by read.ensemble.output")
     }
 
     ensemble.output.raw <- list()
@@ -55,7 +58,8 @@ load_ensemble <- function(workflow_dir, settings, variable){
     ##    trait.samples -- Samples from meta-analysis? 5004 samples per trait.
     
     message("Get run samples...")
-    ensemble.output$runid <- runs.samples$ensemble$id
+    # Use run ids from manifest dataframe instead of runs.samples
+    ensemble.output$runid <- ens.run.ids$id
 
     message('Cbind ensemble samples...')
     ensemble.samples.cbind <- do.call(cbind, ensemble.samples[pft.names])

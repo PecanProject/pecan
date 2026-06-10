@@ -50,6 +50,11 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
   biomass_thoc2 <- array(NA, c(mplot, nrep, nt))
   
   ## sample over tree chronologies
+  if (!requireNamespace("mvtnorm", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'mvtnorm' is required for multivariate normal sampling but is not installed.",
+      "Please install it with: install.packages('mvtnorm')")
+  }
   pb <- utils::txtProgressBar(min = 0, max = nrep, style = 3)
   for (g in seq_len(nrep)) {
     

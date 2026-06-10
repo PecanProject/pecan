@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build PEcAn base Docker image
         run: |
@@ -69,7 +69,7 @@ jobs:
           done
 
       - name: Upload rendered HTML as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: quarto-html
           path: quarto_html_build/
@@ -86,7 +86,7 @@ jobs:
 
       - name: Checkout documentation repo
         if: ${{ github.event_name == 'push' && steps.doc_exists.outputs.exists == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository_owner }}/pecan-documentation
           path: pecan-documentation

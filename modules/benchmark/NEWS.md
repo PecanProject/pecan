@@ -1,5 +1,9 @@
 # PEcAn.benchmark 1.7.5.9000
 
+## Fixed
+
+* `metric_PPMC()`: added `use = "pairwise.complete.obs"` to `stats::cor()` so the Pearson correlation is computed on available pairs rather than returning `NA` whenever any observation is missing. This matches the behaviour of `metric_cor()` in the same package.
+
 * Improved clarity of code examples that are not run at check time.
 
 

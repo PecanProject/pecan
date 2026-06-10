@@ -16,7 +16,7 @@
 write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
   # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
+  # https://pecanproject.github.io/pecan-documentation/develop/coding-practices.html#developer-codestyle
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".
   # Calls to dependent packages should use a double colon, e.g.
@@ -107,7 +107,21 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
   config.text <- gsub("@ENSNAME@", run.id, config.text)
   config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
-  
+
+  # Convert traits to model-specific parameter values
+  # These are just examples! Your model's structure will dictate what happens
+  # in this section
+  params <- list()
+  for (pft in seq_along(trait.values)) {
+    params[[pft]] <- defaults
+    if (!is.null(trait.values[[pft]]$some_value)) {
+      params[[pft]]$SomeModelParam <-
+        PEcAn.utils::ud_convert(trait.values[[pft]]$some_value, "kg/m2", "g/ha")
+    }
+    # ... handle other params here ...
+  }
+  # ... then write params to the file your model expects ...
+
   #-----------------------------------------------------------------------
   config.file.name <- paste0("CONFIG.", run.id, ".txt")
   writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
