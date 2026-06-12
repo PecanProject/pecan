@@ -1,0 +1,36 @@
+#!/bin/bash -l
+#
+# SGE wrapper for run_gapfill.sh
+#
+#   qsub -l h_rt=4:00:00 -v "GAPFILL_ARGS=--rebuild-emission --rebuild-adoy-ref 2016-2023" \
+#     landiq-gapfill/sge/run_gapfill.sge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=4:00:00
+#$ -pe omp 4 -l mem_per_core=16G
+#$ -m ea
+#$ -N gapfill
+#$ -o /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge_logs/$JOB_NAME.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge_logs/$JOB_NAME.$JOB_ID.err
+
+set -euo pipefail
+
+PKG_ROOT="${LANDIQ_GAPFILL_ROOT:-/projectnb/dietzelab/ccmmf/management/landiq-gapfill}"
+mkdir -p "$PKG_ROOT/sge_logs"
+
+export CCMMF_ROOT="${CCMMF_ROOT:-/projectnb/dietzelab/ccmmf}"
+export LANDIQ_GAPFILL_ROOT="$PKG_ROOT"
+export CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-$CCMMF_ROOT/LandIQ-harmonized-v4.1}"
+export CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL_data}"
+export CDL_OUT_DIR="${CDL_OUT_DIR:-$LANDIQ_GAPFILL_ROOT/cdl}"
+export CCMMF_LANDIQ_GAPFILL_PRODUCT="${CCMMF_LANDIQ_GAPFILL_PRODUCT:-$CCMMF_ROOT/LandIQ-harmonized-v4.1.2}"
+
+: "${GAPFILL_ARGS:?Set GAPFILL_ARGS for qsub -v, e.g. GAPFILL_ARGS='--rebuild-emission 2016-2023'}"
+
+echo "=== gap-fill SGE $(date) ==="
+echo "GAPFILL_ARGS=$GAPFILL_ARGS"
+# shellcheck disable=SC2086
+bash "$PKG_ROOT/run_gapfill.sh" $GAPFILL_ARGS
+echo "=== gap-fill SGE done $(date) ==="

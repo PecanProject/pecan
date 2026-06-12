@@ -1,0 +1,32 @@
+#!/bin/bash -l
+#
+# SGE job: download CDL GeoTIFF(s) from NASS CropScape (avoids login-node timeout).
+#
+# Submit (one or more years):
+#   qsub -v "YEARS=2017" /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge/download_cdl_nass.sge
+#   qsub -v "YEARS=2016 2017 2018" /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge/download_cdl_nass.sge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=6:00:00
+#$ -l mem_per_core=8G
+#$ -m ea
+#$ -N cdl_download
+#$ -o /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge_logs/cdl_download.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/landiq-gapfill/sge_logs/cdl_download.$JOB_ID.err
+
+PKG_ROOT=/projectnb/dietzelab/ccmmf/management/landiq-gapfill
+SCRIPT_DIR="$PKG_ROOT/scripts/cdl"
+CDL_DIR=/projectnb/dietzelab/ccmmf/CDL_data
+mkdir -p "$CDL_DIR"
+
+export LANDIQ_GAPFILL_ROOT="$PKG_ROOT"
+export CDL_DIR="$CDL_DIR"
+
+YEARS=${YEARS:-2017}
+
+echo "=== CDL download $(date) YEARS=$YEARS ==="
+module load R/4.4.3
+Rscript "$SCRIPT_DIR/download_cdl_nass.R" $YEARS
+echo "=== CDL download exit $? $(date) ==="
