@@ -21,7 +21,9 @@ run_benchmark <- function(model_df, obs_df,
   bm_validate(model_df, obs_df)
 
   # Stage 2: Align by time
-  aligned <- align_by_time(model_df, obs_df, tolerance_secs = tolerance_secs)
+  aligned <- align_by_time(model_df, obs_df,
+                           tolerance_secs = tolerance_secs,
+                           method = method)
 
   # Stage 3: Compute metrics via registry
   results <- compute_metrics(aligned, metrics)
@@ -49,24 +51,45 @@ bm_validate <- function(model_df, obs_df) {
 
 ##' Align model and observation data frames by nearest time
 ##'
+##' Uses a binary-search nearest join (O(N log N)) to match each model
+##' timestep to the closest observation within \code{tolerance_secs}.
+##' Only the "nearest" method is currently implemented; the \code{method}
+##' argument is accepted for forward compatibility.
+##'
 ##' @param model_df data.frame with columns: time (POSIXct), value
 ##' @param obs_df   data.frame with columns: time (POSIXct), value
 ##' @param tolerance_secs max allowed time difference in seconds
+##' @param method alignment method: currently only "nearest" is supported
 ##'
 ##' @return data.frame with columns: time, model, obs
-align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
-  aligned <- do.call(rbind, lapply(seq_len(nrow(model_df)), function(i) {
-    diffs <- abs(as.numeric(difftime(obs_df$time, model_df$time[i], units = "secs")))
-    nearest <- which.min(diffs)
-    if (diffs[nearest] <= tolerance_secs) {
-      data.frame(time  = model_df$time[i],
-                 model = model_df$value[i],
-                 obs   = obs_df$value[nearest])
-    } else {
-      NULL
-    }
-  }))
-  aligned
+align_by_time <- function(model_df, obs_df, tolerance_secs = 3600,
+                          method = "nearest") {
+  t_model <- as.numeric(model_df$time)
+  t_obs   <- as.numeric(obs_df$time)
+
+  obs_ord        <- order(t_obs)
+  t_obs_sorted   <- t_obs[obs_ord]
+  obs_val_sorted <- obs_df$value[obs_ord]
+
+  # findInterval gives the index of the last obs <= each model time (binary search)
+  idx_lo <- findInterval(t_model, t_obs_sorted)
+
+  nearest_idx <- vapply(seq_along(t_model), function(i) {
+    lo <- idx_lo[i]
+    hi <- lo + 1L
+    if (lo < 1L) return(hi)
+    if (hi > length(t_obs_sorted)) return(lo)
+    if (abs(t_obs_sorted[hi] - t_model[i]) < abs(t_obs_sorted[lo] - t_model[i])) hi else lo
+  }, integer(1L))
+
+  diffs <- abs(t_obs_sorted[nearest_idx] - t_model)
+  keep  <- diffs <= tolerance_secs
+
+  data.frame(
+    time  = model_df$time[keep],
+    model = model_df$value[keep],
+    obs   = obs_val_sorted[nearest_idx[keep]]
+  )
 }
 
 ##' Compute benchmark metrics
@@ -90,6 +113,7 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE")) {
 ##'
 ##' @param aligned data.frame with columns: time, model, obs
 ##' @return ggplot object
+##' @importFrom rlang .data
 plot_time_series <- function(aligned) {
   ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
     ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +
