@@ -35,17 +35,11 @@ make_align_nc <- function(n_time, outdir, filename) {
 }
 
 test_that("align.met ensemble source path produces non-empty source data (bug: each=0 from stamps.hr truncation)", {
-  skip_if_not_installed("ncdf4")
-  skip_if_not_installed("withr")
-  skip_if_not_installed("lubridate")
-
   train_dir  <- withr::local_tempdir()
   source_dir <- withr::local_tempdir()
 
-  ## Training: hourly, 8760 time steps for 2001 (365 * 24).
-  ## This produces stamps.hr[1] = 0.5 in the ensemble source path.
-  ## Before the fix, 0.5 truncates to 0 and rep(..., each=0) returns an
-  ## empty vector, silently zeroing out all source data.
+  ## Hourly training (8760 steps) produces stamps.hr[1] == 0.5, intentionally
+  ## chosen so that any truncation of the step count to integer yields 0.
   make_align_nc(n_time = 8760, outdir = train_dir, filename = "2001.nc")
 
   ## Source: daily (365 steps), placed inside an ensemble subfolder.
@@ -57,31 +51,19 @@ test_that("align.met ensemble source path produces non-empty source data (bug: e
     train.path  = train_dir,
     source.path = source_dir,
     n.ens       = 1,
-    seed        = 42
+    seed        = 20260602
   )
 
-  ## Training should have 8760 rows (1 per hour).
-  expect_equal(nrow(result$dat.train$air_temperature), 8760,
-    label = "training row count is 8760 (hourly)")
-
-  ## Before the fix, rep(..., each=0) silently produced an empty matrix, so
-  ## dat.source would have 0 rows.  After the fix, each daily source value is
-  ## carried through (repeated once), giving 365 rows.
-  expect_equal(nrow(result$dat.source$air_temperature), 365,
-    label = "source data is non-empty after fix (was 0 rows before)")
+  ## 8760 hourly training rows; 365 source rows (one per day, repeated once each).
+  expect_equal(nrow(result$dat.train$air_temperature), 8760)
+  expect_equal(nrow(result$dat.source$air_temperature), 365)
 })
 
 test_that("align.met single-series source matches training row count when already aligned", {
-  skip_if_not_installed("ncdf4")
-  skip_if_not_installed("withr")
-  skip_if_not_installed("lubridate")
-
   train_dir  <- withr::local_tempdir()
   source_dir <- withr::local_tempdir()
 
   ## Both training and source at the same 3-hourly resolution (2920 steps for 2001).
-  ## Source files are placed directly in source_dir (single-series path), not in
-  ## a subdirectory, so the already-correct line 304 is used.
   make_align_nc(n_time = 2920, outdir = train_dir,  filename = "2001.nc")
   make_align_nc(n_time = 2920, outdir = source_dir, filename = "2001.nc")
 
@@ -89,10 +71,9 @@ test_that("align.met single-series source matches training row count when alread
     train.path  = train_dir,
     source.path = source_dir,
     n.ens       = 1,
-    seed        = 42
+    seed        = 20260602
   )
 
   expect_equal(nrow(result$dat.source$air_temperature),
-               nrow(result$dat.train$air_temperature),
-               label = "source and training row counts match when already aligned")
+               nrow(result$dat.train$air_temperature))
 })
