@@ -58,19 +58,21 @@ test_that("flux.uncertainty fits both slopes for mixed positive/negative flux", 
 })
 
 test_that("flux.uncertainty uses positive-slope fallback for slopeN when neg bins all NA", {
-  # All positive flux: neg bins will be empty, slopeN should fall back to mp
-  d <- make_flux_series(range_lo = 2, range_hi = 20)
+  # Data spans a zero crossing but stays almost entirely positive.
+  # With bin.num=8 and minBin=5 the tiny negative portion falls below the
+  # minimum bin size, so errBin[neg] is NA for every negative bin.
+  # The else-if branch therefore assigns slopeN = mp$coefficients[1],
+  # making slopeN equal to slopeP.
+  d <- make_flux_series(range_lo = -0.5, range_hi = 20, seed = 3)
 
   capture.output(
-    val <- flux.uncertainty(d$measurement, QC = d$QC, bin.num = 5, minBin = 3),
+    val <- flux.uncertainty(d$measurement, QC = d$QC, bin.num = 8, minBin = 5),
     type = "output"
   )
 
   expect_type(val, "list")
-  expect_true("slopeP" %in% names(val), label = "slopeP present for all-positive data")
-  # slopeN falls back to mp when available
-  if ("slopeN" %in% names(val)) {
-    expect_equal(val$slopeN, val$slopeP,
-      label = "slopeN equals slopeP when neg bins unavailable and mp is the fallback")
-  }
+  expect_true("slopeP" %in% names(val), label = "slopeP present when positive bins have data")
+  expect_true("slopeN" %in% names(val), label = "slopeN set via mp fallback when neg bins empty")
+  expect_equal(val$slopeN, val$slopeP,
+    label = "slopeN equals slopeP when neg bins unavailable and mp is the fallback")
 })
