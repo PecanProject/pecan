@@ -36,7 +36,7 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
   # RCMEM.scenario.dims <- dim(RCMEM.scenario.output)
   # RCMEM.species.dims <- dim(RCMEM.species.output)
 
-  years <- start_date:end_date
+  years <- as.numeric(start_date):as.numeric(end_date)
   
   ### Loop over years in PEPRMT output to create separate netCDF outputs
   for (y in years) {

@@ -52,8 +52,8 @@ Rscript \
                            rootPackingDensity = parameters$rootPackingDensity,
                            rootToShoot = parameters$rootToShoot)
   ' \
-  -e 'write.csv(res[[1]], file.path("@OUTDIR@", "scenario_out.csv"), row.names = FALSE)'\
-  -e 'write.csv(res[[2]], file.path("@OUTDIR@", "cohorts_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[2]], file.path("@OUTDIR@", "scenario_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[1]], file.path("@OUTDIR@", "cohorts_out.csv"), row.names = FALSE)'\
   -e 'write.csv(res[[3]], file.path("@OUTDIR@", "species_out.csv"), row.names = FALSE)'\
 
 # convert output to PEcAn format

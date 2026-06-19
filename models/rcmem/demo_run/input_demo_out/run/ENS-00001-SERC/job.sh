@@ -52,8 +52,8 @@ Rscript \
                            rootPackingDensity = parameters$rootPackingDensity,
                            rootToShoot = parameters$rootToShoot)
   ' \
-  -e 'write.csv(res[[1]], file.path("models/rcmem/demo_run/input_demo_out/out//ENS-00001-SERC", "scenario_out.csv"), row.names = FALSE)'\
-  -e 'write.csv(res[[2]], file.path("models/rcmem/demo_run/input_demo_out/out//ENS-00001-SERC", "cohorts_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[2]], file.path("models/rcmem/demo_run/input_demo_out/out//ENS-00001-SERC", "scenario_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[1]], file.path("models/rcmem/demo_run/input_demo_out/out//ENS-00001-SERC", "cohorts_out.csv"), row.names = FALSE)'\
   -e 'write.csv(res[[3]], file.path("models/rcmem/demo_run/input_demo_out/out//ENS-00001-SERC", "species_out.csv"), row.names = FALSE)'\
 
 # convert output to PEcAn format
