@@ -15,8 +15,8 @@
 model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/ENS-00001-SERC/", 
                                sitelat = 38.874544, 
                                sitelon=-76.548628, 
-                               start_date=1928, 
-                               end_date=2018, 
+                               start_date, 
+                               end_date, 
                                delete_raw = FALSE) {
   
   require(tidyverse)
@@ -50,12 +50,10 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     sub.RCMEM.output_scenario <- dplyr::filter(RCMEM.scenario.output, .data$year == y)
     sub.RCMEM.output_species <- dplyr::filter(RCMEM.species.output, .data$year == y) %>% 
       dplyr::mutate(species_index = 1:n())
-    
-    # 
+  
     # sub.RCMEM.output_cohort.dims <- dim(sub.RCMEM.output_cohort)
     # sub.RCMEM.output_scenario.dims <- dim(sub.RCMEM.output_scenario)
     # sub.RCMEM.output_species.dims <- dim(sub.RCMEM.output_species)
-    # 
 
     # ******************** Declare netCDF variables ********************#
     # start.day <- 1
@@ -65,8 +63,8 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     
     tvals <- c(1)
     
-    bounds[,1] <- tvals
-    bounds[,2] <- bounds[,1]+365
+    # bounds[,1] <- tvals
+    # bounds[,2] <- bounds[,1]+365
     t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                             vals = tvals, calendar = "standard", unlim = TRUE)
     ## ***** Need to dynamically update the UTC offset here *****

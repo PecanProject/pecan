@@ -1,0 +1,3 @@
+Error in loadNamespace(x) : there is no package called ‘PEcAn.RCMEM’
+Calls: loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+Execution halted
