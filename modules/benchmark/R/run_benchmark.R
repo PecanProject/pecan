@@ -85,12 +85,23 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   n_dropped <- length(valid) - n_kept
   PEcAn.logger::logger.info(sprintf("Time alignment kept %d points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
   
-  # Construct the aligned base data.frame
-  aligned <- data.frame(
-    model = model_df$value[valid],
-    obvs = obs_df$value[nearest_idx][valid],
-    time = model_df$time[valid]
-  )
+  # Construct the aligned base data.frame without dropping metadata
+  # Rename value columns to prevent collision and fit convention
+  names(model_df)[names(model_df) == "value"] <- "model"
+  names(obs_df)[names(obs_df) == "value"] <- "obvs"
+  
+  # Prevent time collision if obs_df carries it forward
+  if ("time" %in% names(obs_df)) {
+    names(obs_df)[names(obs_df) == "time"] <- "obs_time"
+  }
+  
+  model_sub <- model_df[valid, , drop = FALSE]
+  obs_sub <- obs_df[nearest_idx[valid], , drop = FALSE]
+  
+  # Drop overlapping columns from obs to cleanly cbind
+  obs_sub <- obs_sub[, !(names(obs_sub) %in% names(model_sub)), drop = FALSE]
+  
+  aligned <- cbind(model_sub, obs_sub)
   
   return(aligned)
 }
@@ -124,6 +135,18 @@ register_metric("NSE",  function(dat) {
   1 - (sum((dat$obvs - dat$model)^2, na.rm = TRUE) / sum((dat$obvs - mean(dat$obvs, na.rm = TRUE))^2, na.rm = TRUE))
 })
 register_metric("MEF", get("NSE", envir = pecan_metric_registry))
+register_metric("PMU", function(dat) {
+  if (exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_PMU(dat))
+  }
+  metric_PMU(dat)
+})
+register_metric("COVERAGE", function(dat) {
+  if (exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_Coverage(dat))
+  }
+  metric_Coverage(dat)
+})
 
 ##' Compute benchmark metrics
 ##'

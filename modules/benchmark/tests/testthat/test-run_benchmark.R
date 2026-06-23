@@ -76,3 +76,41 @@ test_that("align_by_time drops points outside tolerance", {
   expect_equal(aligned$model, 1)
   expect_equal(aligned$obvs, 1.1)
 })
+
+test_that("align_by_time passes through metadata columns", {
+  model_df_meta <- data.frame(
+    time = as.POSIXct(c(0, 3600), origin = "1970-01-01", tz = "UTC"),
+    value = c(1, 2),
+    model_q025 = c(0.5, 1.5),
+    model_q975 = c(1.5, 2.5)
+  )
+  obs_df_meta <- data.frame(
+    time = as.POSIXct(c(0, 3600), origin = "1970-01-01", tz = "UTC"),
+    value = c(1.1, 1.9),
+    obs_se = c(0.1, 0.2),
+    obs_n = c(3, 3)
+  )
+  
+  aligned <- align_by_time(model_df_meta, obs_df_meta)
+  expect_true(all(c("model_q025", "model_q975", "obs_se", "obs_n") %in% names(aligned)))
+})
+
+test_that("metric_Coverage calculates correct fraction", {
+  aligned <- data.frame(
+    model = c(1, 2, 3),
+    obvs = c(1, 4, 3),
+    model_q025 = c(0.5, 1.5, 2.5),
+    model_q975 = c(1.5, 2.5, 3.5)
+  )
+  
+  expect_equal(metric_Coverage(aligned), 2/3)
+})
+
+test_that("metric_PMU calculates correct pooled uncertainty", {
+  aligned <- data.frame(
+    obs_se = c(0.1, 0.2),
+    obs_n = c(3, 5)
+  )
+  
+  expect_equal(metric_PMU(aligned), sqrt(0.23/8))
+})
