@@ -35,7 +35,7 @@ read_soil_physics <- function(path, model_depth = 23) {
     soil_units$depth <- "cm"
   }
 
-  soil_vals |>
+  soil_vals <- soil_vals |>
     dplyr::mutate(
       depth_cm = .data$depth |>
         PEcAn.utils::ud_convert(soil_units$depth, "cm")
@@ -46,7 +46,15 @@ read_soil_physics <- function(path, model_depth = 23) {
     # Consider rescaling partial layers
     # (Or throwing an error on mismatch and making everyone generate their soil
     #  files with layers that match model depth?)
-    dplyr::filter(.data$depth_cm <= model_depth) |>
+    dplyr::filter(.data$depth_cm <= model_depth)
+
+  if (nrow(soil_vals) == 0) {
+    PEcAn.logger::logger.error(
+      "No soil layers <=", model_depth, "found in file", sQuote(path)
+    )
+  }
+  
+  soil_vals |>
     dplyr::summarize(
       # TODO consider weighting by layer thickness?
       depth_cm = max(.data$depth_cm),
