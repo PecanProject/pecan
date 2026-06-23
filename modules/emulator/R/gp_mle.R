@@ -1,5 +1,4 @@
-##' @name gp_mle
-##' @title gp_mle
+##' gp_mle
 ##' @export
 ##'
 ##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]
@@ -8,7 +7,7 @@
 ##' @param myY  vector of observed data
 ##' @param maxval maximum value
 ##' 
-##' @return val
+##' @return negative log-likelihood value, or \code{maxval} if the computation fails
 ##' 
 ##' @author Michael Dietze
 gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
@@ -53,8 +52,7 @@ gp_mle <- function(theta, d, nugget, myY, maxval = Inf) {
 } # gp_mle
 
 
-##' zero mean version
-##' @title gp_mle2 
+##' gp_mle2
 ##' @export
 ##' 
 ##' @param theta proposed parameter vector: [mu, tauw, tauv, phi1...phiK]

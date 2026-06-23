@@ -12,6 +12,6 @@ and for the DTS:
 ------------------------------------------------------------------------------------------------------
 
 
-To excute PEcAn.R, you need to install PEcAn.data.atmosphere. Please refer to https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html
+To excute PEcAn.R, you need to install PEcAn.data.atmosphere. Please refer to https://pecanproject.github.io/package-documentation/develop/PEcAn.data.atmosphere/
 (Use install.packages("devtools") if you don't have this library. 
 Use install.packages("udunits2", configure.args='--with-udunits2-lib=/usr/local/lib') if you get "Error: libudunits2.a not found")

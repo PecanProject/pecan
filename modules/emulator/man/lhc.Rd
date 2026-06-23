@@ -2,7 +2,7 @@
 % Please edit documentation in R/lhc.R
 \name{lhc}
 \alias{lhc}
-\title{lhc}
+\title{Latin Hyper Cube}
 \usage{
 lhc(x, n.samp)
 }
@@ -12,9 +12,6 @@ lhc(x, n.samp)
 \item{n.samp}{number of samples}
 }
 \description{
-Latin Hyper Cube
-}
-\details{
 Simple uniform sampling with LHC permutation
 }
 \author{

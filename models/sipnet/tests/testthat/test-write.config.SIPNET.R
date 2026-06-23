@@ -67,3 +67,29 @@ test_that("write.config.SIPNET", {
   )
 
 })
+
+
+test_that("update_flag_lines", {
+  txt <- c("!comment", "NITROG = 0", "GDD = 1")
+
+  # existing lines updated, new lines added
+  expect_equal(
+    update_flag_lines(txt, c(GDD = 0)),
+    c("!comment", "NITROG = 0", "GDD = 0")
+  )
+  expect_equal(
+    update_flag_lines(txt, c(new_flag = 0, NITROG = "1")),
+    c("!comment", "NITROG = 1", "GDD = 1", "new_flag = 0")
+  )
+
+  # empty flags return input
+  expect_equal(txt, update_flag_lines(txt, c()))
+  expect_equal(txt, update_flag_lines(txt, NULL))
+
+  # unnamed arguments ignored
+  expect_equal(txt, update_flag_lines(txt, c("unnamed")))
+  expect_equal(
+    update_flag_lines(txt, c(1, GDD = 0)),
+    c("!comment", "NITROG = 0", "GDD = 0")
+  )
+})

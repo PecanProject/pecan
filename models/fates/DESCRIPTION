@@ -1,7 +1,7 @@
 Package: PEcAn.FATES
 Type: Package
 Title: PEcAn Package for Integration of FATES Model
-Version: 1.8.1
+Version: 1.8.1.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Shawn", "Serbin", role = c("aut"),
@@ -32,5 +32,5 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: FATES, ecosystem-modeling

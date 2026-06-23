@@ -1,7 +1,7 @@
 Package: PEcAn.MAAT
 Type: Package
 Title: PEcAn Package for Integration of the MAAT Model
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(
     person("Shawn", "Serbin", role = c("aut", "cre"), email="sserbin@bnl.gov"),
     person("Anthony", "Walker", role = "aut", email="walkerap@ornl.gov"))
@@ -18,7 +18,7 @@ Imports:
     ncdf4 (>= 1.15),
     XML
 Suggests:
-    knitr,
+    knitr (>= 1.50),
     rmarkdown,
     testthat (>= 1.0.2)
 SystemRequirements: MAAT
@@ -29,5 +29,5 @@ VignetteBuilder: knitr, rmarkdown
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: MAAT, ecosystem-modeling

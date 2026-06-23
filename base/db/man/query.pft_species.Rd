@@ -21,8 +21,8 @@ select plant id's associated with pft
 }
 \examples{
 \dontrun{
-query.pft_species('ebifarm.pavi')
-query.pft_species(settings = read.settings("pecan.xml"))
+  con <- db.open(list(host = "postgres", user = "bety", password = "carya")) 
+  query.pft_species("ebifarm.pavi", con = con)
 }
 }
 \author{

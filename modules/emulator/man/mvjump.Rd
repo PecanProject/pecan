@@ -16,5 +16,5 @@ mvjump(ic = 0, rate = 0.4, nc = 2, ...)
 \item{...}{Additional arguments}
 }
 \description{
-multivariate version
+mvjump
 }

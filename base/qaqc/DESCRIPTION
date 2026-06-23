@@ -1,7 +1,7 @@
 Package: PEcAn.qaqc
 Type: Package
 Title: QAQC
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(person("David", "LeBauer", role = c("aut", "cre"),
                      email = "dlebauer@email.arizona.edu"),
              person("Tess", "McCabe", role = c("aut"),
@@ -21,7 +21,7 @@ Imports:
     rlang,
     stats
 Suggests:
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     mockery,
     mvbutils,
     PEcAn.BIOCRO,
@@ -39,5 +39,5 @@ LazyData: FALSE
 Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
 Config/testthat/edition: 3
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: PEcAn, quality-control, data-cleaning

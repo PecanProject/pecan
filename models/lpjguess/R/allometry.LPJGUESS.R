@@ -1,4 +1,4 @@
-## Matthew Forrest 2019-06-19 Simple helper function transcribed from the LPJ-GUESS C++ to support the allocation funcrion below
+## Matthew Forrest 2019-06-19 Simple helper function transcribed from the LPJ-GUESS C++ to support the allocation function below
 
 # NEGLIGABLE
 # Returns true if |dval| < exp(limit), otherwise false
@@ -37,13 +37,13 @@ lambertbeer <- function(lai) {
 ##' @param cmass_sap The sapwood C pool size (kgC/m^2)
 ##' @param cmass_heart The heartwood C pool size (kgC/m^2)
 ##' @param densindiv The density of individuals in the cohort (indiv/m^2) 
-##' @param age The age of the coort
+##' @param age The age of the cohort
 ##' @param fpc The folar projective cover
 ##' @param deltafpc The change in foliar projective cover
 ##' @param sla The SLA (specific leaf area) (per PFT parameter)
 ##' @param k_latosa The leaf area to sapwood area ratio (per PFT parameter)
 ##' @param k_rp,k_allom1,k_allom2,k_allom3, Allometry coefficients (per PFT parameters)
-##' @param wooddens Wood density (kgC/m^2) (per PFT parameter)
+##' @param wooddens Wood density (kgC/m^3) (per PFT parameter)
 ##' @param crownarea_max Maximum allowed crown area (m^2)  (per PFT parameter)
 ##' @param HEIGHT_MAX Maximum allowed height of an individual.  This is the maximum height that a tree
 ##' can have.  This is hard-coded in LPJ-GUESS to 150 m, but for SDA that might be unrealistically big, 
@@ -71,7 +71,7 @@ lambertbeer <- function(lai) {
 ##'
 ##' @keywords internal
 ##' @return A named list of updated state variables for the individual/cohort.  The first value in the list is the error code. 
-##' @author Matthew Forrest
+##' @author Matthew Forrest, Yinghao Sun
 ##' 
 allometry <- function(
   # initial allometry/pools
@@ -162,7 +162,7 @@ allometry <- function(
     
     # guess2008 - new allometry check
     if (!negligible(cmass_leaf)) {
-      
+
       height = cmass_sap / cmass_leaf / sla * k_latosa / wooddens
       
       # Stem diameter (Eqn 5)

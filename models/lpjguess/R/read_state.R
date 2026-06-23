@@ -451,21 +451,39 @@ find_stream_type <- function(class = NULL, current_stream_var, LPJ_GUESS_CLASSES
 #'
 #' Reads a binary file formatted for LPJ-GUESS and extracts relevant data.
 #'
-#' @param outdir  The output directory where ".state" and "meta.bin" will be written
+#' @param outdir  The directory where the .state file is stored (e.g., .../state/1961)
+#' @param rundir  The directory where the corresponding params.ins is stored (e.g., .../run/ENS-00001)
 #' @param version A character string specifying the LPJ-GUESS version (default is "PalEON").
+#' @param bak     whether read bak.state or not (default is FALSE)
 #' @importFrom stringr str_match
 #' @importFrom utils glob2rx
 #' @return A matrix or list containing the extracted data.
 #' @export
 #' @author Istem Fer, Yinghao Sun
-read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
+# outdir <- "/projectnb/dietzelab/yinghao/try/out/ENS-00001-1000000650/state/1960"
+read_binary_LPJGUESS <- function(outdir, rundir, version = "PalEON", bak = FALSE){
   
   # ## FOR TEST
   # outdir <- "/projectnb/dietzelab/yinghao/try/write_test/out"
   # rundir <- "/projectnb/dietzelab/yinghao/try/write_test/run"
   
-  # find rundir too, params.ins is in there and we need to get some values from there
-  rundir <- file.path(dirname(dirname(outdir)), "run", basename(outdir))
+  # Read params.ins from the CORRECT rundir provided as an argument.
+  paramsins_path <- file.path(rundir, "params.ins")
+  if (!file.exists(paramsins_path)) {
+    PEcAn.logger::logger.severe("params.ins not found at:", paramsins_path)
+    return(NULL)
+  }
+  ## these are the values read from params.ins, passed to this fcn
+  paramsins <- readLines(paramsins_path, n = -1)
+  # npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
+  npatches <- as.numeric(sub("^\\s*npatch\\s+([0-9]+).*", "\\1",
+                           paramsins[grep("^\\s*npatch\\s+", paramsins)][1]))
+  #npatches  <- 5
+  
+  # # find rundir too, params.ins is in there and we need to get some values from there
+  # # rundir <- file.path(dirname(dirname(outdir)), "run", basename(outdir))
+  # rundir <- file.path(dirname(dirname(dirname(dirname(outdir)))), "run",
+  #                     basename(dirname(dirname(outdir))))
   
   # create lists to store byte offset and byte size for each variable
   pos_list <- list()
@@ -481,10 +499,7 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   paramh_name <- paste0("parameters.", version, ".h") 
   paramh_in   <- readLines(con = system.file(paramh_name, package = "PEcAn.LPJGUESS"), n = -1)
   
-  ## these are the values read from params.ins, passed to this fcn
-  paramsins <- readLines(file.path(rundir, "params.ins"), n = -1)
-  npatches  <- as.numeric(gsub(".*([0-9]+).*$", "\\1", paramsins[grepl("npatch", paramsins, fixed = TRUE)]))
-  #npatches  <- 5
+
   
   ######################################
   ## read meta.bin
@@ -506,7 +521,12 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   
   # open connection to the binary state file
   if(meta_data$num_processes == 1){
-    zz <- file(file.path(outdir,"0.state"), "rb")
+    if (!bak){
+      zz <- file(file.path(outdir,"0.state"), "rb")
+    }else{
+      zz <- file(file.path(outdir,"bak.state"), "rb")
+    }
+    
   }else{
     # then file names would be different 1.state etc etc
     PEcAn.logger::logger.severe("This function is implemented to read state from 1 process only.")
@@ -582,7 +602,7 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   lpjguess_consts[match(dont_need, names(lpjguess_consts))] <-  NULL
   
   
-  # need to parse out few  more constants
+  # need to parse out few more constants
   for(i in seq_along(paramh_in)){ #do same for parameters.h
     res <- stringr::str_match(paramh_in[i], "typedef enum \\{(.*?)\\} landcovertype\\;")
     if(!is.na(res[,2])){
@@ -630,13 +650,56 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
   Gridcell <- list()
   level <- "Gridcell"
   for(g_i in seq_along(streamed_vars_gridcell)){ # Gridcell-loop starts
-    
     # # Debug for empty nstands
     # if(g_i == 7) browser()
     
     current_stream <- streamed_vars_gridcell[g_i]
     # weird, it doesn't go into Gridcell st
-    if(current_stream == "st[i]")   next #current_stream <- "Gridcellst" 
+    # if(current_stream == "st[i]")   next #current_stream <- "Gridcellst"
+    if (current_stream == "st[i]") {
+      # Enter the Gridcellst serialization block and read all StandType Gridcellst
+      beg_end_st <- serialize_starts_ends(file_in = guesscpp_in,
+                                          pattern = "void Gridcellst::serialize")
+      streamed_vars_st <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end_st)
+      # Order: frac -> nstands -> nfert
+      # n_st_types <- LPJ_GUESS_CONST_INTS$val[LPJ_GUESS_CONST_INTS$var == "NLANDCOVERTYPES"]
+      frac_vec <- as.numeric(Gridcell[["Landcover"]][["frac"]][[1]])
+      n_st_types <- sum(frac_vec > 1e-12)  # Read only the actual existing stand type
+      
+      # Consistent with the data structure of pft[i]
+      Gridcell[["Gridcellst"]] <- list()
+      for (varname in streamed_vars_st) {
+        Gridcell[["Gridcellst"]][[varname]] <- vector("list", n_st_types)
+      }
+      
+      # Outer loop: standtype index
+      # Inner loop: Read one by one in the order of the "serialized variables" in the source code
+      for (sti in seq_len(n_st_types)) {
+        for (sv in seq_along(streamed_vars_st)) {
+          varname <- streamed_vars_st[sv]
+          
+          var_type  <- find_stream_type("Gridcellst", varname,
+                                        LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
+          var_specs <- find_stream_size(var_type, guessh_in, LPJ_GUESS_TYPES, LPJ_GUESS_CONST_INTS)
+          
+          pos <- seek(zz)
+          Gridcell[["Gridcellst"]][[varname]][[sti]] <- readBin(
+            con   = zz,
+            what  = var_specs$what,
+            n     = var_specs$n,
+            size  = var_specs$size,
+            endian= "little"
+          )
+          
+          # Record the offset
+          key <- file.path("Gridcell","Gridcellst", varname, sti, fsep = "/")
+          pos_list[[key]] <- pos
+          siz_list[[key]] <- var_specs$size
+        }
+      }
+      next
+    }
+    
     if(current_stream == "balance") current_stream <- "MassBalance" #not sure how to make this name matching otherwise
     if(grepl(utils::glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
     if(grepl(utils::glob2rx("(*this)[*].landcover"), current_stream)){ # s counter might change, using wildcard
@@ -644,27 +707,37 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
       # this function considers "NATURAL" vegetation only, so there is only one stand
       # this is an integer that tells us which landcover type this stand is
       # so it should be the indice of NATURAL in typedef enum landcovertype (I believe indexing starts from 0)
-      
-      # note that this is streamed under Gridcell, not Stand in guess.cpp, 
+
+      # note that this is streamed under Gridcell, not Stand in guess.cpp,
       # but I think this info needs to go together with the Stand sublist
       # so prepend landcovertype to the streamed_vars_stand EDIT: I'll actually just read it here
-      
+
       ## Past version
       #Gridcell[["Stand"]][["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
-      
-      # # Landcover will be read again under stand. So "landcovertype" here is meaningless but we need to read/write.  
-      Gridcell[["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
-      num_stnd <- as.numeric(Gridcell$nstands)
-      Gridcell[["Stand"]] <- vector("list", num_stnd) 
-      
+
+      # # Landcover will be read again under stand. So "landcovertype" here is meaningless but we need to read/write.
+      # Gridcell[["landcovertype"]] <- readBin(zz, what = integer(), n = 1, size = 4)
+      # num_stnd <- as.numeric(Gridcell$nstands)
+      # Gridcell[["Stand"]] <- vector("list", num_stnd)
+
+      # Don't read it here! Put it in the (*this)[*] loop to read.
       next
-    } 
+    }
+
     
     # "(*this)[*]" points to different things under different levels, here it is stand
     if(grepl(utils::glob2rx("(*this)[*]"), current_stream)){ # note that first else-part will be evaluated considering the order in guess.cpp
       # STAND
       level <- "Stand"
       current_stream <- "Stand"
+      
+      num_stnd <- Gridcell$nstands$nstands
+      if (is.na(num_stnd) || num_stnd < 0) {
+        PEcAn.logger::logger.severe("nstands not read or invalid before Stand block.")
+      }
+      
+      Gridcell[["Stand"]] <- vector("list", num_stnd)
+      
       current_stream_type <- find_stream_type(NULL, current_stream, LPJ_GUESS_CLASSES, LPJ_GUESS_TYPES, guessh_in)
       
       beg_end <- serialize_starts_ends(file_in = guesscpp_in, 
@@ -677,6 +750,16 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
       
       
       for(stnd_i in seq_len(num_stnd)){ #looping over the stands
+        level <- "Stand"
+        # read the landcovertype (4B enumeration/integer) of this stand
+        pos_lc <- seek(zz)
+        lc_val <- readBin(zz, what = "integer", n = 1, size = 4, endian = "little")
+        # if (is.null(Gridcell[["Stand"]][[stnd_i]])) Gridcell[["Stand"]][[stnd_i]] <- list()
+        Gridcell[["Stand"]][[stnd_i]][["landcovertype"]] <- lc_val
+        key <- file.path("Gridcell","Stand",stnd_i,"landcovertype",fsep="/")
+        pos_list[[key]] <- pos_lc
+        siz_list[[key]] <- 4
+        
         for(svs_i in seq_along(streamed_vars_stand)){ # looping over the streamed stand vars
           current_stream <- streamed_vars_stand[svs_i]
           if(grepl(utils::glob2rx("pft[*]"), current_stream)) current_stream <- paste0(level, "pft") # i counter might change, using wildcard
@@ -687,13 +770,18 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
             # but it's also written to the state file, need to move bytes
             pos <- seek(zz)
             nofpatch <- readBin(zz, integer(), 1, size = 4)  
-            # browser()
-            if(npatches == nofpatch){ # also not a bad place to check if everything is going fine so far
-              Gridcell[["Stand"]][[stnd_i]]$npatches <- npatches
-              #Gridcell[["Stand"]] <- vector("list", npatches) 
-            }else{
-              PEcAn.logger::logger.severe("The number of patches set through the instruction file does not match the number read from the state files. Probably a bug in the read.state function! Terminating.")
-            }
+            key <- file.path("Gridcell","Stand",stnd_i,"npatches", fsep="/")
+            pos_list[[key]] <- pos         
+            siz_list[[key]] <- 4          
+            ## We dont need this check now because we have other landcover types besides 'natural', 
+            ## and their num of patches are not specified in ins file
+            # if(npatches == nofpatch){ # also not a bad place to check if everything is going fine so far
+            #   Gridcell[["Stand"]][[stnd_i]]$npatches <- npatches
+            #   #Gridcell[["Stand"]] <- vector("list", npatches) 
+            # }else{
+            #   PEcAn.logger::logger.severe("The number of patches set through the instruction file does not match the number read from the state files. Probably a bug in the read.state function! Terminating.")
+            # }
+            Gridcell[["Stand"]][[stnd_i]]$npatches <- nofpatch
             next
           }
           
@@ -710,9 +798,9 @@ read_binary_LPJGUESS <- function(outdir, version = "PalEON"){
                                                               "::serialize"))
             streamed_vars_patch <- find_stream_var(file_in = guesscpp_in, line_nos = beg_end)
             
-            Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", npatches) 
+            Gridcell[["Stand"]][[stnd_i]][["Patch"]] <- vector("list", nofpatch) 
             
-            for(ptch_i in seq_len(npatches)){ #looping over the patches
+            for(ptch_i in seq_len(nofpatch)){ #looping over the patches
               for(svp_i in seq_along(streamed_vars_patch)){ #looping over the streamed patch vars
                 # if(svp_i == 17) browser()
                 current_stream <- streamed_vars_patch[svp_i]
