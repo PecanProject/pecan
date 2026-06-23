@@ -81,7 +81,7 @@ build_quietly <- function(pkg, ...) {
         "⚠️ Warning building pkgdown site for", pkg, ":", w$message
       )
       warns <<- append(warns, w)
-      invokeRestart("muffleWarning")
+      tryInvokeRestart("muffleWarning")
     }
   )
 
