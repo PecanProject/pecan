@@ -82,6 +82,6 @@ test_that("deeper layers ignored", {
 test_that("detects unit errors", {
   expect_output(
     nc_roundtrip(depth = c(1500, 3000, 6000)),
-    "Assuming these are mislabeled cm"
+    "Assuming the units have been mislabeled"
   )
 })
