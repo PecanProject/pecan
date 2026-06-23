@@ -7,7 +7,7 @@
 cf2biocro(met, longitude = NULL, zulu2solarnoon = FALSE)
 }
 \arguments{
-\item{met}{data.table object  with met for a single site; output from \code{\link{load.cfmet}}
+\item{met}{data.table object  with met for a single site; output from \code{\link[PEcAn.data.atmosphere]{load.cfmet}}
 \describe{
 \item{year}{int}
 \item{month}{int}

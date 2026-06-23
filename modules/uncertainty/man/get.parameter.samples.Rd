@@ -2,14 +2,14 @@
 % Please edit documentation in R/get.parameter.samples.R
 \name{get.parameter.samples}
 \alias{get.parameter.samples}
-\title{Convert priors / MCMC samples to chains that can be sampled
-  for model parameters}
+\title{Convert priors / MCMC samples to parameter sample chains}
 \usage{
 get.parameter.samples(
   settings,
   ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
-  ens.sample.method = "uniform"
+  ens.sample.method = "uniform",
+  outdir = settings$outdir
 )
 }
 \arguments{
@@ -19,12 +19,60 @@ get.parameter.samples(
 
 \item{posterior.files}{list of filenames to read from}
 
-\item{ens.sample.method}{one of "halton", "sobol", "torus", "lhc", "uniform"}
+\item{ens.sample.method}{one of \code{"halton"}, \code{"sobol"}, \code{"torus"}, \code{"lhc"},
+\code{"uniform"}}
+
+\item{outdir}{character path; directory to write \code{samples.Rdata} to for
+provenance. Defaults to \code{settings$outdir}, preserving the legacy
+always-save behaviour for existing callers (none of which pass it).
+Pass \code{outdir = NULL} to skip the save entirely; the pure
+\code{get_parameter_samples()} never writes to disk regardless.}
+}
+\value{
+Named list with 5 elements: \code{trait.samples}, \code{sa.samples},
+\code{ensemble.samples}, \code{runs.samples}, \code{env.samples}. Returned invisibly.
 }
 \description{
-Convert priors / MCMC samples to chains that can be sampled
-  for model parameters
+Loads posterior distributions and MCMC chain results from disk, generates
+parameter samples for ensemble and sensitivity analysis runs, and optionally
+saves results to \code{samples.Rdata}. This is the backward-compatible wrapper
+that delegates computation to \code{\link[PEcAn.uncertainty]{get_parameter_samples}}.
+}
+\details{
+\strong{Upstream contract (reads from each PFT's \code{outdir}):}
+\describe{
+\item{\code{post.distns.Rdata} or \code{prior.distns.Rdata}}{Posterior (or prior)
+distribution summaries produced by \code{run.meta.analysis.pft}. A data
+frame with columns \code{distn}, \code{parama}, \code{paramb}, \code{n}.}
+\item{\code{trait.mcmc.Rdata}}{(Optional) MCMC chain samples from the
+meta-analysis. Named list of \code{mcmc.list} objects, one per trait.
+If present, samples are drawn from the chains directly; otherwise,
+independent samples are drawn from \code{post.distns}.}
+}
+
+\strong{File-based side effects (saved to \code{settings$outdir}):}
+\describe{
+\item{\code{samples.Rdata}}{When \code{outdir} is non-\code{NULL} (the default), bundles 5 objects:
+\itemize{
+\item \code{trait.samples} — Named list (PFT -> trait -> numeric vector of
+length \code{iterations}). Raw MCMC or prior-sampled values.
+\item \code{sa.samples} — Named list (PFT -> matrix[n_quantiles x
+n_traits]). Quantile-based samples for sensitivity analysis.
+\item \code{ensemble.samples} — Named list (PFT -> data frame[ensemble.size
+x n_traits]). Subsampled parameter sets for ensemble runs.
+\item \code{env.samples} — Currently empty list (reserved for
+environmental samples).
+\item \code{runs.samples} — Currently empty list (reserved for run
+metadata).
+}}
+}
+
+\strong{Downstream contract:} \code{samples.Rdata} is loaded by \code{run.write.configs}
+(in \code{PEcAn.workflow}) to generate model configuration files. It is also
+loaded by \code{\link[PEcAn.uncertainty]{get.results}} and \code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} to retrieve
+sample metadata for post-processing. This implicit file-based coupling is
+a refactoring target.
 }
 \author{
-David LeBauer, Shawn Serbin, Istem Fer
+David LeBauer, Shawn Serbin, Istem Fer, Om Kapale
 }

@@ -7,8 +7,8 @@
 read.output(
   runid,
   outdir,
-  start.year = NA,
-  end.year = NA,
+  start.year = NULL,
+  end.year = NULL,
   variables = "GPP",
   dataframe = FALSE,
   pft.name = NULL,
@@ -26,7 +26,7 @@ Can be omitted if \code{ncfiles} is set.}
 
 \item{start.year, end.year}{first and last year of output to read.
 Specify as a date-time (only the year portion is used) or as a
-four-digit number or string. If \code{NA}, reads all years found in
+four-digit number or string. If \code{NULL}, reads all years found in
 \code{outdir}.}
 
 \item{variables}{Character vector of variables to be read from
@@ -74,7 +74,7 @@ DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
 and Water fluxes: Evaporation (Evap), Transpiration (TVeg),
 surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
 
-For more details, see the \href{http://nacp.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
+For more details, see the \href{https://nacp-prod.ornl.gov/MsTMIP_variables.shtml}{MsTMIP variables}
 documentation.
 }
 \author{

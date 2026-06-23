@@ -54,11 +54,13 @@ Suggests:
     knitr (>= 1.50),
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
+Additional_repositories:
+    https://florianhartig.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 X-schema.org-keywords: data-assimilation, parameter-estimation, Bayesian-inference, ecological-modeling, model-calibration

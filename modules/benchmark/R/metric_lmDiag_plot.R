@@ -21,10 +21,13 @@ metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE
   p1 <- p1 + ggplot2::ggtitle("Residual vs Fitted Plot") 
   p1 <- p1 + ggplot2::theme_bw()
   
-  p2 <- ggplot2::ggplot(fit, ggplot2::aes(stats::qqnorm(.data$.stdresid)[[1]], .data$.stdresid)) 
-  p2 <- p2 + ggplot2::geom_point(na.rm = TRUE)
-  p2 <- p2 + ggplot2::geom_abline(ggplot2::aes(stats::qqline(.data$.stdresid))) 
-  p2 <- p2 + ggplot2::xlab("Theoretical Quantiles") 
+  p2 <- ggplot2::ggplot(
+    data = data.frame(sample = stats::na.omit(ggplot2::fortify(fit)$.stdresid)),
+    ggplot2::aes(sample = sample)
+  )
+  p2 <- p2 + ggplot2::stat_qq()
+  p2 <- p2 + ggplot2::stat_qq_line()
+  p2 <- p2 + ggplot2::xlab("Theoretical Quantiles")
   p2 <- p2 + ggplot2::ylab("Standardized Residuals")
   p2 <- p2 + ggplot2::ggtitle("Normal Q-Q") 
   p2 <- p2 + ggplot2::theme_bw()

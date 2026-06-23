@@ -1,5 +1,6 @@
 Type: Shiny
 Title: Data-Ingest
+Version: 0.1.0.9000
 License: BSD_3_clause + file LICENSE
 Author: Liam Burke liam.burke24@gmail.com
 Tags: PEcAn
@@ -17,6 +18,5 @@ Imports:
 	shinyTime,
 	shinytoastr,
 	shinyWidgets,
-	shinyjs,
 	stringr,
 	tibble

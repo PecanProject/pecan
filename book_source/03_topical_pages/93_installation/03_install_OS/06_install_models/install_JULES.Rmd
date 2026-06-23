@@ -4,7 +4,7 @@ INSTALL STEPS:
     1) Download JULES and FCM
 JULES:
     Model requires registration to download. Not to be put on PEcAn VM
-Getting Started documentation: https://jules.jchmr.org/content/getting-started
+Getting Started documentation: https://jules.jchmr.org/getting-started
 Registration: http://jules-lsm.github.io/access_req/JULES_access.html 
 
 FCM:

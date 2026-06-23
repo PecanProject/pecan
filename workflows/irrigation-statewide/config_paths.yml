@@ -1,0 +1,8 @@
+default:
+  event_output_dir: "/projectnb/dietzelab/ccmmf/usr/ashiklom/event-outputs"
+  crops_path: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"
+  mslsp_path: "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1"
+  cimis_etref_path: "/projectnb/dietzelab/ccmmf/data/cimis-extracted"
+  chirps_precip_path: "/projectnb/dietzelab/ccmmf/data/chirps-extracted"
+  ssurgo_weights_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/ssurgo-weights.parquet"
+  ssurgo_gdb_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"

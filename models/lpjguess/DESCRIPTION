@@ -1,7 +1,7 @@
 Package: PEcAn.LPJGUESS
 Type: Package
 Title: PEcAn Package for Integration of the LPJ-GUESS Model
-Version: 1.9.0
+Version: 1.9.0.9000
 Authors@R: c(person("Istem", "Fer", role = c("aut", "cre"),
                      email = "istem.fer@fmi.fi"),
              person("Tony", "Gardella", role = c("aut"),
@@ -29,6 +29,6 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 LinkingTo: Rcpp
 X-schema.org-keywords: LPJ-GUESS, ecosystem-modeling

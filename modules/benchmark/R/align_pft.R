@@ -41,22 +41,26 @@
 #' @author Tempest McCabe
 #' @examples \dontrun{
 #' 
+#' con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
 #' 
 #' #------------ A species to PFT alignment -----------
-#' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-#' observation_two<-c("a", "b", "a", "a") #
+#' observation_one <- c("AMCA3","AMCA3","AMCA3","AMCA3")
+#' observation_two <- c("a", "b", "a", "a")
 #' 
-#' format_one<-"species_USDA_symbol"
-#' format_two<-"plant_funtional_type"
+#' format_one <- "species_USDA_symbol"
+#' format_two <- "plant_functional_type"
 #' 
-#' table<-list()
-#' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-#' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-#' table<-as.data.frame(table)
+#' table <- list()
+#' table$plant_functional_type_one <- c("AMCA3","AMCA3","ARHY", "ARHY")
+#' table$plant_functional_type_two <- c('a','a','b', 'b') # PFT groupings
+#' table <- as.data.frame(table)
 #'
 #' 
-#' aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
-#' format_one = format_one, format_two = format_two, custom_table = table)
+#' aligned <- align_pft(
+#'   con = con,
+#'   observation_one = observation_one, observation_two = observation_two,
+#'   custom_table = table,
+#'   format_one = format_one, format_two = format_two)
 #' }
 #' 
 #' @export

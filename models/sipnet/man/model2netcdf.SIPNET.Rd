@@ -11,7 +11,7 @@ model2netcdf.SIPNET(
   start_date,
   end_date,
   delete.raw = FALSE,
-  revision,
+  revision = NULL,
   prefix = "sipnet.out",
   overwrite = FALSE,
   conflict = FALSE
@@ -30,7 +30,8 @@ model2netcdf.SIPNET(
 
 \item{delete.raw}{logical: remove sipnet.out files after converting?}
 
-\item{revision}{model revision}
+\item{revision}{model revision.
+Ignored: PEcAn detects all relevant version differences from the format of the output file.}
 
 \item{prefix}{prefix to read the output files}
 

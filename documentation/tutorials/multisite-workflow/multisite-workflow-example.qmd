@@ -32,6 +32,7 @@ site_info <- tibble::tribble(
 ```{r}
 library(dplyr)
 library(PEcAn.settings)
+set.seed(20260325)
 ```
 
 

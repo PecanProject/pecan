@@ -2,46 +2,46 @@
 # Add project labels to PRs
 # Invocation is done by .github/workflows/prlabeler.yml
 
-'Documentation':
+'documentation':
 - changed-files:
   - any-glob-to-any-file: 'book_source/**'
   - any-glob-to-any-file: 'documentation/**'
   - any-glob-to-any-file: 'CONTRIBUTING.md'
-  - any-glob-to-any-file: 'DEBUGING.md'
+  - any-glob-to-any-file: 'DEBUGGING.md'
   - any-glob-to-any-file: 'DEV-INTRO.md'
   - any-glob-to-any-file: 'README.md'
 
-'Dockerfile':
-- changed-files:
-  - any-glob-to-any-file: 'docker/**'
-
-'Web Frontend':
-- changed-files:
-  - any-glob-to-any-file: 'web/**'
-
-'Base':
-- changed-files:
-  - any-glob-to-any-file: 'base/**'
-
-'Models':
-- changed-files:
-  - any-glob-to-any-file: 'models/**'
-
-'Modules':
-- changed-files:
-  - any-glob-to-any-file: 'modules/**'
-
-'GitHub Actions':
+'github-actions':
 - changed-files:
   - any-glob-to-any-file: '.github/workflows/**'
 
+'dockerfile':
+- changed-files:
+  - any-glob-to-any-file: 'docker/**'
+
+'web-frontend':
+- changed-files:
+  - any-glob-to-any-file: 'web/**'
+
+'base':
+- changed-files:
+  - any-glob-to-any-file: 'base/**'
+
+'models':
+- changed-files:
+  - any-glob-to-any-file: 'models/**'
+
+'modules':
+- changed-files:
+  - any-glob-to-any-file: 'modules/**'
+
 # TODO: scripts folder is due for a reorganization by theme;
 # update these tags when that is done
-'Scripts':
+'scripts':
 - changed-files:
   - any-glob-to-any-file: 'scripts/**'
 
-'Tests':
+'tests':
 - all:
   - changed-files:
     - any-glob-to-any-file: ['tests/**', '**/tests/**']

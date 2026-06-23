@@ -2,9 +2,9 @@
 % Please edit documentation in R/calcSpatialCov.list.R
 \name{calcSpatialCov.list}
 \alias{calcSpatialCov.list}
-\title{calcSpatialCov.list}
+\title{Currently assumes an exponential spatial dependency}
 \usage{
-\method{calcSpatialCov}{list}(d, psi, tau)
+\method{calcSpatialCov}{list}(d, psi, tau, ...)
 }
 \arguments{
 \item{d}{list of component spatial distance matrices}
@@ -12,12 +12,14 @@
 \item{psi}{spatial corr}
 
 \item{tau}{spatial var}
+
+\item{...}{additional arguments (currently unused)}
+}
+\value{
+spatial covariance matrix
 }
 \description{
-Currently assumes an exponential spatial dependency
-}
-\details{
-can make gaussian by passing squared distance matrix
+Can make gaussian by passing squared distance matrix
 }
 \author{
 Michael Dietze

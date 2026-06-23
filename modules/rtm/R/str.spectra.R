@@ -1,14 +1,14 @@
 #' Structure of `spectra` object
 #'
-#' @inheritParams wavelengths
+#' @param object A spectra object
 #' @param ... additional arguments, currently ignored
 #' @export
-str.spectra <- function(spectra, ...) {
-  wl <- wavelengths(spectra)
+str.spectra <- function(object, ...) {
+  wl <- wavelengths(object)
   wl_min <- min(wl)
   wl_max <- max(wl)
-  n_spec <- ncol(spectra)
-  n_wl <- nrow(spectra)
+  n_spec <- ncol(object)
+  n_wl <- nrow(object)
   string <- sprintf(
     "'spectra':\t %d obs, %d - %d nm (%d x %d)\n",
     n_spec,

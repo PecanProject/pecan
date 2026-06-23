@@ -2,7 +2,7 @@
 % Please edit documentation in R/ldinvgamma.R
 \name{ldinvgamma}
 \alias{ldinvgamma}
-\title{ldinvgamma}
+\title{Log-dinvgamma, based on MCMCpack}
 \usage{
 ldinvgamma(x, shape, scale = 1)
 }
@@ -12,7 +12,7 @@ ldinvgamma(x, shape, scale = 1)
 \item{shape, scale}{shape and scale parameters for the inverse Gamma distribution}
 }
 \value{
-log.density
+log density of the inverse Gamma distribution evaluated at \code{x}
 }
 \description{
 Log-dinvgamma, based on MCMCpack

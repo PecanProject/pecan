@@ -32,6 +32,7 @@ Suggests:
     knitr (>= 1.50),
     testthat (>= 2.0.0),
     mockery (>= 0.3.0),
+    purrr,
     PEcAn.DB,
     rmarkdown,
     RPostgreSQL
@@ -41,5 +42,5 @@ License: BSD_3_clause + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema-keywords: BIOCRO, ecosystem-modeling
