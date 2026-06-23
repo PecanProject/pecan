@@ -30,7 +30,7 @@ read_soil_physics <- function(path, model_depth = 23) {
     PEcAn.logger::logger.warn(
       "Soil depths reported to be in meters, but found values >= 10",
       "in file", path,
-      "Assuming these are mislabeled cm and treating them as such."
+      "Assuming the units have been mislabeled and treating all depths as cm."
     )
     soil_units$depth <- "cm"
   }
