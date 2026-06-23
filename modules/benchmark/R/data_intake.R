@@ -18,7 +18,7 @@ load_and_map_data <- function(data.path, mapping.path) {
   mapping <- yaml::read_yaml(mapping.path)
   
   if (is.null(mapping$variables)) {
-    stop("YAML mapping must contain a 'variables' section.")
+    PEcAn.logger::logger.severe("YAML mapping must contain a 'variables' section.")
   }
   
   # Create a named vector for dplyr::rename (new_name = old_name)
@@ -33,7 +33,7 @@ load_and_map_data <- function(data.path, mapping.path) {
     # Using tidy evaluation with !!!
     dat <- dplyr::rename(dat, !!!valid_renames)
   } else {
-    warning("No matching columns found in the dataset to map.")
+    PEcAn.logger::logger.warn("No matching columns found in the dataset to map.")
   }
   
   return(dat)

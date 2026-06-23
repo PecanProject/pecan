@@ -39,10 +39,15 @@ run_benchmark <- function(model_df, obs_df,
 ##' @return invisible(TRUE)
 bm_validate <- function(model_df, obs_df) {
   for (df in list(model_df, obs_df)) {
+    if (!"time" %in% names(df))
+      PEcAn.logger::logger.severe("Missing required column: 'time'")
+    if (!"value" %in% names(df))
+      PEcAn.logger::logger.severe("Missing required column: 'value'")
+      
     if (!inherits(df$time, "POSIXct"))
-      stop("Column 'time' must be POSIXct, got: ", class(df$time))
+      PEcAn.logger::logger.severe(paste0("Column 'time' must be POSIXct, got: ", class(df$time)[1]))
     if (!is.numeric(df$value))
-      stop("Column 'value' must be numeric, got: ", class(df$value))
+      PEcAn.logger::logger.severe(paste0("Column 'value' must be numeric, got: ", class(df$value)[1]))
   }
   invisible(TRUE)
 }
@@ -53,7 +58,7 @@ bm_validate <- function(model_df, obs_df) {
 ##' @param obs_df   data.frame with columns: time (POSIXct), value
 ##' @param tolerance_secs max allowed time difference in seconds
 ##'
-##' @return data.frame with columns: time, model, obs
+##' @return data.frame with columns: model, obvs, time
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   # Sort both dataframes by time to ensure findInterval works correctly
   model_df <- model_df[order(model_df$time), ]
@@ -76,41 +81,62 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   # Filter by our time tolerance
   valid <- time_diffs <= tolerance_secs
   
+  n_kept <- sum(valid)
+  n_dropped <- length(valid) - n_kept
+  PEcAn.logger::logger.info(sprintf("Time alignment kept %d points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
+  
   # Construct the aligned base data.frame
   aligned <- data.frame(
-    time = model_df$time[valid],
     model = model_df$value[valid],
-    obs = obs_df$value[nearest_idx][valid]
+    obvs = obs_df$value[nearest_idx][valid],
+    time = model_df$time[valid]
   )
   
   return(aligned)
 }
 
+##' Metric Registry for PEcAn.benchmark
+##' @export
+pecan_metric_registry <- new.env(parent = emptyenv())
+
+##' Register a new benchmark metric
+##'
+##' @param name Character name of the metric
+##' @param func Function that takes an aligned dataframe and returns a numeric value
+##' @export
+register_metric <- function(name, func) {
+  assign(toupper(name), func, envir = pecan_metric_registry)
+}
+
+# Pre-populate default metrics
+register_metric("RMSE", function(dat) sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE)))
+register_metric("MAE",  function(dat) mean(abs(dat$model - dat$obvs), na.rm = TRUE))
+register_metric("R2",   function(dat) {
+  if (exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_R2(dat))
+  }
+  numer <- sum((dat$obvs - mean(dat$obvs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
+  denom <- sqrt(sum((dat$obvs - mean(dat$obvs, na.rm=T))^2, na.rm=T)) * sqrt(sum((dat$model - mean(dat$model, na.rm=T))^2, na.rm=T))
+  (numer / denom)^2
+})
+register_metric("NSE",  function(dat) {
+  # Nash-Sutcliffe Efficiency
+  1 - (sum((dat$obvs - dat$model)^2, na.rm = TRUE) / sum((dat$obvs - mean(dat$obvs, na.rm = TRUE))^2, na.rm = TRUE))
+})
+register_metric("MEF", get("NSE", envir = pecan_metric_registry))
+
 ##' Compute benchmark metrics
 ##'
-##' @param aligned data.frame with columns: time, model, obs
+##' @param aligned data.frame with columns: model, obvs, time
 ##' @param metrics character vector of metric names
 ##' @return data.frame with columns: metric, value
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
-  # Future-proofing: Functions in the registry now accept the full aligned dataframe
-  # This aligns with the decoupled metric architecture introduced in PR #3888
-  METRIC_REGISTRY <- list(
-    RMSE = function(dat) sqrt(mean((dat$model - dat$obs)^2, na.rm = TRUE)),
-    MAE  = function(dat) mean(abs(dat$model - dat$obs), na.rm = TRUE),
-    R2   = function(dat) {
-      if (exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
-        return(PEcAn.benchmark::metric_R2(dat))
-      }
-      # Fallback if PR #3888 is not yet merged
-      numer <- sum((dat$obs - mean(dat$obs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
-      denom <- sqrt(sum((dat$obs - mean(dat$obs, na.rm=T))^2, na.rm=T)) * sqrt(sum((dat$model - mean(dat$model, na.rm=T))^2, na.rm=T))
-      (numer / denom)^2
-    }
-  )
-  
   results <- lapply(toupper(metrics), function(m) {
-    if (!m %in% names(METRIC_REGISTRY)) stop("Unknown metric: ", m)
-    METRIC_REGISTRY[[m]](aligned)
+    if (!exists(m, envir = pecan_metric_registry)) {
+      PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
+    }
+    func <- get(m, envir = pecan_metric_registry)
+    func(aligned)
   })
   
   data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
@@ -118,12 +144,12 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
 
 ##' Plot model vs observations time series
 ##'
-##' @param aligned data.frame with columns: time, model, obs
+##' @param aligned data.frame with columns: model, obvs, time
 ##' @return ggplot object
 plot_time_series <- function(aligned) {
   ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
     ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +
-    ggplot2::geom_line(ggplot2::aes(y = .data$obs, color = "Obs")) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$obvs, color = "Obs")) +
     ggplot2::labs(color = "", y = "value", title = "Model vs Observations") +
     ggplot2::theme_bw()
 }
