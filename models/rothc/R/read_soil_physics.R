@@ -16,8 +16,6 @@
 #'   `depth_cm`, `clay_pct`, `silt_pct`,
 #'   `bulkdens_g_cm3`, `org_C_pct`, `iom_tC_ha`
 #'
-#' @importFrom rlang .data .env
-#'
 read_soil_physics <- function(path, model_depth = 23) {
   soil_vals <- netcdf2df(path)
   soil_units <- as.list(attr(soil_vals, "units"))
