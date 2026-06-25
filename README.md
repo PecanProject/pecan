@@ -3,6 +3,8 @@
 [![Slack](https://img.shields.io/badge/slack-join_chat-green.svg)](https://join.slack.com/t/pecanproject/shared_invite/enQtMzkyODUyMjQyNTgzLWEzOTM1ZjhmYWUxNzYwYzkxMWVlODAyZWQwYjliYzA0MDA0MjE4YmMyOTFhMjYyMjYzN2FjODE4N2Y4YWFhZmQ)
 [![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
 
+> Due to spam we have disabled the automatic signup to slack. To access our slack space, please email kooper@illinois.edu to get an invite.
+
 ## Our Vision
 
 #### Ecosystem science, policy, and management informed by the best available data and models

@@ -1,5 +1,4 @@
-##' @name p
-##' @title p
+##' p
 ##' @export
 ##' 
 ##' @param x jump distribution

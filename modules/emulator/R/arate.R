@@ -1,7 +1,5 @@
 ##' Acceptance rate
 ##'
-##' @name arate
-##' @title arate 
 ##' @export
 ##'
 ##' @param x vector of MCMC samples

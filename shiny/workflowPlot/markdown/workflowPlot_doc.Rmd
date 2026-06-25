@@ -61,7 +61,7 @@ All benchmarks that are calcualted are automatcally registered in to the databas
 
 You need to register a run before performing benchmarks. 
 
-[See documentation on reference runs](https://pecanproject.github.io/pecan-documentation/develop/reference-runs.html)
+[See documentation on reference runs](https://pecanproject.github.io/pecan-documentation/develop/NewBenchmark.html)
 
 #### Setup Benchmarks
 

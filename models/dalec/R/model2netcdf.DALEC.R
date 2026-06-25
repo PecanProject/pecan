@@ -83,22 +83,22 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
-    ## Fluxes
-    output[[1]] <- (sub.DALEC.output[, 1] * 0.001)/timestep.s  # Autotrophic Respiration in kgC/m2/s
-    output[[2]] <- (sub.DALEC.output[, 21] + sub.DALEC.output[, 23]) * 0.001 / timestep.s  # Heterotrophic Resp kgC/m2/s
-    output[[3]] <- (sub.DALEC.output[, 31] * 0.001)/timestep.s  # GPP in kgC/m2/s    
-    output[[4]] <- (sub.DALEC.output[, 33] * 0.001)/timestep.s  # NEE in kgC/m2/s
-    output[[5]] <- (sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7]) * 0.001/timestep.s  # NPP kgC/m2/s
-    output[[6]] <- (sub.DALEC.output[, 9] * 0.001) / timestep.s  # Leaf Litter Flux, kgC/m2/s
-    output[[7]] <- (sub.DALEC.output[, 11] * 0.001) / timestep.s  # Woody Litter Flux, kgC/m2/s
-    output[[8]] <- (sub.DALEC.output[, 13] * 0.001) / timestep.s  # Root Litter Flux, kgC/m2/s
+    ## Fluxes (convert g/m2/day to kg/m2/s)
+    output[[1]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 1], "g/m2/d", "kg/m2/s") # Autotrophic Respiration
+    output[[2]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 21] + sub.DALEC.output[, 23], "g/m2/d", "kg/m2/s") # Heterotrophic Resp
+    output[[3]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 31], "g/m2/d", "kg/m2/s") # GPP
+    output[[4]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 33], "g/m2/d", "kg/m2/s") # NEE
+    output[[5]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7], "g/m2/d", "kg/m2/s") # NPP
+    output[[6]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 9], "g/m2/d", "kg/m2/s") # Leaf Litter Flux
+    output[[7]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 11], "g/m2/d", "kg/m2/s") # Woody Litter Flux
+    output[[8]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 13], "g/m2/d", "kg/m2/s") # Root Litter Flux
     
-    ## Pools
-    output[[9]]  <- (sub.DALEC.output[, 15] * 0.001)  # Leaf Carbon, kgC/m2
-    output[[10]] <- (sub.DALEC.output[, 17] * 0.001)  # Wood Carbon, kgC/m2
-    output[[11]] <- (sub.DALEC.output[, 19] * 0.001)  # Root Carbon, kgC/m2
-    output[[12]] <- (sub.DALEC.output[, 27] * 0.001)  # Litter Carbon, kgC/m2
-    output[[13]] <- (sub.DALEC.output[, 29] * 0.001)  # Soil Carbon, kgC/m2
+    ## Pools (convert g/m2 to kg/m2)
+    output[[9]]  <- PEcAn.utils::ud_convert(sub.DALEC.output[, 15], "g/m2", "kg/m2") # Leaf Carbon
+    output[[10]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 17], "g/m2", "kg/m2") # Wood Carbon
+    output[[11]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 19], "g/m2", "kg/m2") # Root Carbon
+    output[[12]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 27], "g/m2", "kg/m2") # Litter Carbon
+    output[[13]] <- PEcAn.utils::ud_convert(sub.DALEC.output[, 29], "g/m2", "kg/m2") # Soil Carbon
     
     ## standard composites
     output[[14]] <- output[[1]] + output[[2]]  # Total Respiration

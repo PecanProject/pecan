@@ -19,3 +19,7 @@ Data assimilation 'by hand'. Illustration of generating the relationship between
 ### StateAssimilation
 
 Application of PEcAn's State Data Assimilation (SDA) module to assimilate tree-ring estimated NPP and AGB into SIPNET. State assimilation is aimed at constraining the model's STATE VARIABLES (e.g. pools) rather than updating parameters.
+
+### old/
+
+Tutorials that are deprecated because they are out of date and/or have been replaced by other versions. They will be deleted eventually: If you find something in this directory useful, tell us so we can incorporate it into a supported tutorial.

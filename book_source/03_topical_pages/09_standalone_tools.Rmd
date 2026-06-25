@@ -1,9 +1,9 @@
 # Standalone tools (modules)
 
-- Radiative transfer modeling and remote sensing ([`modules/rtm`](https://pecanproject.github.io/modules/rtm/docs/index.html)); [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html)
-- Photosynthesis ([`modules/photosynthesis`](https://pecanproject.github.io/modules/photosynthesis/docs/index.html)); [vignette](https://pecanproject.github.io/modules/photosynthesis/docs/articles/ResponseCurves.html)
-- Allometry ([`modules/allometry`](https://pecanproject.github.io/modules/allometry/docs/index.html)); [vignette](https://pecanproject.github.io/modules/allometry/docs/articles/AllomVignette.html)
-- Load data ([`modules/benchmark`](https://pecanproject.github.io/modules/benchmark/docs/index.html) -- `PEcAn.benchmark::load_data`)
+- Radiative transfer modeling and remote sensing ([`PEcAnRTM`](https://pecanproject.github.io/package-documentation/develop/PEcAnRTM/)); [vignette](https://pecanproject.github.io/package-documentation/develop/PEcAnRTM/articles/pecanrtm.vignette.html)
+- Photosynthesis ([`PEcAn.photosynthesis`](https://pecanproject.github.io/package-documentation/develop/PEcAn.photosynthesis/)); [vignette](https://pecanproject.github.io/package-documentation/develop/PEcAn.photosynthesis/articles/ResponseCurves.html)
+- Allometry ([`PEcAn.allometry`](https://pecanproject.github.io/package-documentation/develop/PEcAn.allometry/)); [vignette](https://pecanproject.github.io/package-documentation/develop/PEcAn.allometry/articles/AllomVignette.html)
+- Load data ([`PEcAn.benchmark`](https://pecanproject.github.io/package-documentation/develop/PEcAn.benchmark/) -- `PEcAn.benchmark::load_data`)
 
 ## Loading Data in PEcAn {#LoadData}
 
@@ -142,9 +142,9 @@ Remote data module retrieves remote sensing data from MODISTools, Google Earth E
 
 Datasets currently available for use in PEcAn via Google Earth Engine are,
 
-* [Sentinel-2 MSI](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) [`gee2pecan_s2()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_s2.py). It is possible to estimate Leaf Area Index (LAI) from Sentinel-2 data using the [ESA SNAP algorithm](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/biophys_xarray.py).
-* [SMAP Global Soil Moisture Data](https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture) [`gee2pecan_smap()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_smap.py)
-* [Landsat 8 Surface Reflectance](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR) [`gee2pecan_l8()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/gee2pecan_l8.py)
+* [Sentinel-2 MSI](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) [`gee2pecan_s2()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/gee2pecan_s2.py). It is possible to estimate Leaf Area Index (LAI) from Sentinel-2 data using the [ESA SNAP algorithm](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/biophys_xarray.py).
+* [SMAP Global Soil Moisture Data](https://developers.google.com/earth-engine/datasets/catalog/NASA_USDA_HSL_SMAP_soil_moisture) [`gee2pecan_smap()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/gee2pecan_smap.py)
+* [Landsat 8 Surface Reflectance](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR) [`gee2pecan_l8()`](https://github.com/PecanProject/pecan/blob/develop/modules/data.remote/inst/RpTools/RpTools/gee2pecan_l8.py)
 * [Global Forest Canopy Height, 2019](https://glad.umd.edu/dataset/gedi) [`gee2pecan_gedi()`]()
 
 #### AppEEARS
