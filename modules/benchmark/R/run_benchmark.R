@@ -1,17 +1,17 @@
-##' Run a simple benchmark pipeline
-##'
-##' Takes two validated dataframes, aligns by time,
-##' computes metrics, and returns a results table with a plot.
-##'
-##' @param model_df data.frame with columns: time (POSIXct), value (numeric)
-##' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
-##' @param metrics character vector of metrics to compute. Options: "RMSE", "MAE"
-##' @param tolerance_secs nearest-neighbor time tolerance in seconds (default 1 hour)
-##' @param method alignment method: "nearest" or "interpolate"
-##'
-##' @return list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
-##' @export
-##' @author Anshul Jain
+#' Run a simple benchmark pipeline
+#'
+#' Takes two validated dataframes, aligns by time,
+#' computes metrics, and returns a results table with a plot.
+#'
+#' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+#' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
+#' @param metrics character vector of metrics to compute. Options: "RMSE", "MAE"
+#' @param tolerance_secs nearest-neighbor time tolerance in seconds (default 1 hour)
+#' @param method alignment method: "nearest" or "interpolate"
+#'
+#' @return list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
+#' @export
+#' @author Anshul Jain
 run_benchmark <- function(model_df, obs_df,
                           metrics = c("RMSE", "MAE"),
                           tolerance_secs = 3600,
@@ -32,11 +32,11 @@ run_benchmark <- function(model_df, obs_df,
   list(metrics = results, aligned = aligned, plot = plot)
 }
 
-##' Validate benchmark input dataframes
-##'
-##' @param model_df data.frame with columns: time (POSIXct), value (numeric)
-##' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
-##' @return invisible(TRUE)
+#' Validate benchmark input dataframes
+#'
+#' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+#' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
+#' @return invisible(TRUE)
 bm_validate <- function(model_df, obs_df) {
   for (df in list(model_df, obs_df)) {
     if (!"time" %in% names(df))
@@ -52,13 +52,13 @@ bm_validate <- function(model_df, obs_df) {
   invisible(TRUE)
 }
 
-##' Align model and observation data frames by nearest time
-##'
-##' @param model_df data.frame with columns: time (POSIXct), value
-##' @param obs_df   data.frame with columns: time (POSIXct), value
-##' @param tolerance_secs max allowed time difference in seconds
-##'
-##' @return data.frame with columns: model, obvs, time
+#' Align model and observation data frames by nearest time
+#'
+#' @param model_df data.frame with columns: time (POSIXct), value
+#' @param obs_df   data.frame with columns: time (POSIXct), value
+#' @param tolerance_secs max allowed time difference in seconds
+#'
+#' @return data.frame with columns: model, obvs, time
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   # Sort both dataframes by time to ensure findInterval works correctly
   model_df <- model_df[order(model_df$time), ]
@@ -106,15 +106,15 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   return(aligned)
 }
 
-##' Metric Registry for PEcAn.benchmark
-##' @export
+#' Metric Registry for PEcAn.benchmark
+#' @export
 pecan_metric_registry <- new.env(parent = emptyenv())
 
-##' Register a new benchmark metric
-##'
-##' @param name Character name of the metric
-##' @param func Function that takes an aligned dataframe and returns a numeric value
-##' @export
+#' Register a new benchmark metric
+#'
+#' @param name Character name of the metric
+#' @param func Function that takes an aligned dataframe and returns a numeric value
+#' @export
 register_metric <- function(name, func) {
   assign(toupper(name), func, envir = pecan_metric_registry)
 }
@@ -148,11 +148,11 @@ register_metric("COVERAGE", function(dat) {
   metric_Coverage(dat)
 })
 
-##' Compute benchmark metrics
-##'
-##' @param aligned data.frame with columns: model, obvs, time
-##' @param metrics character vector of metric names
-##' @return data.frame with columns: metric, value
+#' Compute benchmark metrics
+#'
+#' @param aligned data.frame with columns: model, obvs, time
+#' @param metrics character vector of metric names
+#' @return data.frame with columns: metric, value
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
   results <- lapply(toupper(metrics), function(m) {
     if (!exists(m, envir = pecan_metric_registry)) {
@@ -165,10 +165,10 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
   data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
 }
 
-##' Plot model vs observations time series
-##'
-##' @param aligned data.frame with columns: model, obvs, time
-##' @return ggplot object
+#' Plot model vs observations time series
+#'
+#' @param aligned data.frame with columns: model, obvs, time
+#' @return ggplot object
 plot_time_series <- function(aligned) {
   ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
     ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +

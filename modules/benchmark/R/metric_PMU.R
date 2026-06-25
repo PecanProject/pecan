@@ -1,11 +1,12 @@
-##' @name metric_PMU
-##' @title Predictive Model Uncertainty (PMU)
-##' @export
-##' @param dat dataframe with columns `obs_se` and `obs_n`
-##' @param ... ignored
-##' @details
-##' Calculates the pooled measurement uncertainty.
-##' Requires `obs_se` (standard error) and `obs_n` (replicate counts) in the observation data.
+#' @name metric_PMU
+#' @title Predictive Model Uncertainty (PMU)
+#' @export
+#' @param dat dataframe with columns `obs_se` and `obs_n`
+#' @param ... ignored
+#' @return A numeric value representing the pooled measurement uncertainty.
+#' @details
+#' Calculates the pooled measurement uncertainty.
+#' Requires `obs_se` (standard error) and `obs_n` (replicate counts) in the observation data.
 
 metric_PMU <- function(dat, ...) {
   if (!"obs_se" %in% names(dat) || !"obs_n" %in% names(dat)) {

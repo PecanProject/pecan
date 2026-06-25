@@ -7,10 +7,7 @@
 #' @importFrom yaml read_yaml
 #' @importFrom dplyr rename
 load_and_map_data <- function(data.path, mapping.path) {
-  # Load the raw data (currently assuming CSV, but could be extended to NetCDF)
-  dat <- utils::read.csv(data.path, as.is = TRUE, check.names = FALSE)
-  
-  # Load the YAML mapping
+  # Load the YAML mapping first to know which variables we need
   # The YAML should look like:
   # variables:
   #   airT: TA_F
@@ -23,6 +20,17 @@ load_and_map_data <- function(data.path, mapping.path) {
   
   # Create a named vector for dplyr::rename (new_name = old_name)
   rename_vector <- unlist(mapping$variables)
+  required_vars <- unname(rename_vector)
+  
+  # Load the raw data based on file extension
+  if (grepl("\\.nc$", data.path, ignore.case = TRUE)) {
+    # If NetCDF, we only load the variables requested in the YAML mapping
+    # Assuming standard NA string representations for now, can be expanded via YAML
+    dat <- load_x_netcdf(data.path, format = list(na.strings = c("-9999", "-9999.0", "NA")), site = NULL, vars = required_vars)
+  } else {
+    # Default to CSV
+    dat <- utils::read.csv(data.path, as.is = TRUE, check.names = FALSE)
+  }
   
   # Only rename columns that exist in the raw data
   valid_renames <- rename_vector[rename_vector %in% colnames(dat)]
