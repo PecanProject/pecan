@@ -9,6 +9,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
+    with units attached as an attribute.
+- New package `PEcAn.RothC` runs the RothC soil carbon model.
 - Added `inst/ilamb/` pipeline in PEcAn.benchmark to convert downscaled SDA reanalysis GeoTIFFs into ILAMB-compatible CF netCDF for carbon-cycle benchmarking (#4019).
 - Added PEcAn.PEPRMT model, including a demo run with example data
 - Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
