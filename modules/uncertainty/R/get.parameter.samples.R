@@ -19,7 +19,7 @@
 #'
 #' **File-based side effects (saved to `settings$outdir`):**
 #' \describe{
-#'   \item{`samples.Rdata`}{When `save_to_disk = TRUE`, bundles 5 objects:
+#'   \item{`samples.Rdata`}{When `outdir` is non-`NULL` (the default), bundles 5 objects:
 #'     \itemize{
 #'       \item `trait.samples` — Named list (PFT -> trait -> numeric vector of
 #'         length `iterations`). Raw MCMC or prior-sampled values.
@@ -45,7 +45,11 @@
 #' @param posterior.files list of filenames to read from
 #' @param ens.sample.method one of `"halton"`, `"sobol"`, `"torus"`, `"lhc"`,
 #'   `"uniform"`
-#' @param save_to_disk logical. If `TRUE` (default), saves `samples.Rdata`.
+#' @param outdir character path; directory to write `samples.Rdata` to for
+#'   provenance. Defaults to `settings$outdir`, preserving the legacy
+#'   always-save behaviour for existing callers (none of which pass it).
+#'   Pass `outdir = NULL` to skip the save entirely; the pure
+#'   `get_parameter_samples()` never writes to disk regardless.
 #'
 #' @return Named list with 5 elements: `trait.samples`, `sa.samples`,
 #'   `ensemble.samples`, `runs.samples`, `env.samples`. Returned invisibly.
@@ -60,7 +64,7 @@ get.parameter.samples <- function(settings,
                                   ensemble.size = 1,
                                   posterior.files = rep(NA, length(settings$pfts)),
                                   ens.sample.method = "uniform",
-                                  save_to_disk = TRUE) {
+                                  outdir = settings$outdir) {
   .Deprecated("get_parameter_samples")
 
   ### Identify PFTs in the input settings.xml file
@@ -172,15 +176,19 @@ get.parameter.samples <- function(settings,
     independent       = independent
   )
 
-  ## ---- Save to disk for backward compatibility ----
-  if (save_to_disk) {
+  ## ---- Save to disk for provenance (opt-in via `outdir`) ----
+  # `outdir` defaults to `settings$outdir`, so existing callers (none of which
+  # pass it) write `samples.Rdata` exactly as before. Pass `outdir = NULL` to
+  # skip the save for a purely in-memory call; the pure get_parameter_samples()
+  # never writes to disk at all.
+  if (!is.null(outdir)) {
     ensemble.samples <- result$ensemble.samples
     trait.samples    <- result$trait.samples
     sa.samples       <- result$sa.samples
     runs.samples     <- result$runs.samples
     env.samples      <- result$env.samples
     save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
-         file = file.path(settings$outdir, "samples.Rdata"))
+         file = file.path(outdir, "samples.Rdata"))
   }
 
   invisible(result)

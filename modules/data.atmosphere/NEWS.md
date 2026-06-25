@@ -7,6 +7,8 @@
 * `download.ERA5_cds` gains options `time`, `dataset`, `product_type`, all defaulting to the values previously hard-coded (#3547).
 
 ## Fixed
+* `downscale_solar_geom_halfhour()`: corrected the hour-of-day calculation from `* 48` to `* 24`. The previous formula produced a half-hour index (0-47) instead of an hour of day (0-23), causing `cos_solar_zenith_angle()` to compute a solar hour angle roughly pi radians off and therefore wrong potential shortwave radiation in all half-hourly downscaled met files.
+* Fixed `download_NOAA_GEFS_EFI`: the `sitename` filter compared the argument to itself (`sitename == sitename`), always returning data for all NEON sites instead of the requested one. Changed to `.data$sitename == sitename`.
 * Updated `download.NOAA_GEFS` to work with the current (v12.3) release of GEFS (#3349).
 
 ## Changed

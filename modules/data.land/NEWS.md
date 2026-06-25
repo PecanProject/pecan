@@ -2,6 +2,8 @@
 
 ## Added
 
+- Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+
 ## Fixed
 
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)

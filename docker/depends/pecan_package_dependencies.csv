@@ -38,6 +38,7 @@
 "dataone","*","modules/data.land","Suggests",FALSE
 "datapack","*","modules/data.land","Suggests",FALSE
 "DBI","*","base/db","Imports",FALSE
+"DBI","*","modules/data.land","Imports",FALSE
 "DBI","*","modules/data.remote","Imports",FALSE
 "dbplyr",">= 2.4.0","base/db","Imports",FALSE
 "devtools","*","models/ed","Suggests",FALSE
@@ -69,6 +70,7 @@
 "dplyr","*","modules/uncertainty","Imports",FALSE
 "dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
 "dplyr",">= 1.1.2","base/db","Imports",FALSE
+"duckdb","*","modules/data.land","Imports",FALSE
 "dygraphs","*","models/peprmt","Suggests",FALSE
 "earthdatalogin","*","models/peprmt","Suggests",FALSE
 "ecmwfr",">= 2.0.0","modules/data.atmosphere","Suggests",FALSE
@@ -139,6 +141,7 @@
 "imager","*","models/peprmt","Suggests",FALSE
 "itertools","*","modules/assim.sequential","Suggests",FALSE
 "jsonlite","*","base/remote","Imports",FALSE
+"jsonlite","*","models/peprmt","Imports",FALSE
 "jsonlite","*","models/sipnet","Imports",FALSE
 "jsonlite","*","models/stics","Imports",FALSE
 "jsonlite","*","modules/data.atmosphere","Imports",FALSE
@@ -458,7 +461,7 @@
 "PEcAn.workflow","*","base/all","Depends",TRUE
 "PEcAn.workflow","*","modules/assim.batch","Imports",TRUE
 "PEcAn.workflow","*","modules/assim.sequential","Imports",TRUE
-"PEPRMT","*","models/peprmt","Imports",FALSE
+"PEPRMT","*","models/peprmt","Enhances",FALSE
 "plotrix","*","base/qaqc","Imports",FALSE
 "plotrix","*","modules/assim.sequential","Suggests",FALSE
 "plyr",">= 1.8.4","base/visualization","Imports",FALSE
@@ -614,6 +617,7 @@
 "stringi","*","base/utils","Imports",FALSE
 "stringr","*","models/fates","Imports",FALSE
 "stringr","*","models/lpjguess","Imports",FALSE
+"stringr","*","models/sipnet","Imports",FALSE
 "stringr","*","modules/assim.sequential","Imports",FALSE
 "stringr","*","modules/benchmark","Imports",FALSE
 "stringr","*","modules/data.land","Imports",FALSE
@@ -671,6 +675,7 @@
 "tibble","*","models/ed","Imports",FALSE
 "tibble","*","models/fates","Imports",FALSE
 "tibble","*","models/lpjguess","Imports",FALSE
+"tibble","*","models/sipnet","Imports",FALSE
 "tibble","*","modules/data.atmosphere","Imports",FALSE
 "tibble","*","modules/data.land","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE

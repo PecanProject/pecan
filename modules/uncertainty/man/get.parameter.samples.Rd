@@ -9,7 +9,7 @@ get.parameter.samples(
   ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
   ens.sample.method = "uniform",
-  save_to_disk = TRUE
+  outdir = settings$outdir
 )
 }
 \arguments{
@@ -22,7 +22,11 @@ get.parameter.samples(
 \item{ens.sample.method}{one of \code{"halton"}, \code{"sobol"}, \code{"torus"}, \code{"lhc"},
 \code{"uniform"}}
 
-\item{save_to_disk}{logical. If \code{TRUE} (default), saves \code{samples.Rdata}.}
+\item{outdir}{character path; directory to write \code{samples.Rdata} to for
+provenance. Defaults to \code{settings$outdir}, preserving the legacy
+always-save behaviour for existing callers (none of which pass it).
+Pass \code{outdir = NULL} to skip the save entirely; the pure
+\code{get_parameter_samples()} never writes to disk regardless.}
 }
 \value{
 Named list with 5 elements: \code{trait.samples}, \code{sa.samples},
@@ -48,7 +52,7 @@ independent samples are drawn from \code{post.distns}.}
 
 \strong{File-based side effects (saved to \code{settings$outdir}):}
 \describe{
-\item{\code{samples.Rdata}}{When \code{save_to_disk = TRUE}, bundles 5 objects:
+\item{\code{samples.Rdata}}{When \code{outdir} is non-\code{NULL} (the default), bundles 5 objects:
 \itemize{
 \item \code{trait.samples} — Named list (PFT -> trait -> numeric vector of
 length \code{iterations}). Raw MCMC or prior-sampled values.
