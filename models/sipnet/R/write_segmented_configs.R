@@ -2,7 +2,7 @@
 #' settings for one ensemble member with one path per input
 #'
 #' @param settings single-site settings object (not Multisettings)
-#' @param inputs named list of input indices (one row of the sample design)
+#' @param path_nums named list of input indices (one row of the sample design)
 subset_paths <- function(settings, path_nums) {
   for (input in names(path_nums)) {
     if (!is.list(settings$run$inputs[[input]])) {
@@ -11,7 +11,9 @@ subset_paths <- function(settings, path_nums) {
     path_idx <- path_nums[[input]]
     all_paths <- settings$run$inputs[[input]]$path
     if (path_idx > length(all_paths)) {
-      PEcAn.logger::logger.severe("No path at input ", sQuote(input), " index ", path_idx)
+      PEcAn.logger::logger.severe(
+        "No path at input ", sQuote(input), " index ", path_idx
+      )
     }
     settings$run$inputs[[input]]$path <- all_paths[[path_idx]]
     # If we define a list of `source`s, also try to subset that (if the lengths
@@ -28,7 +30,7 @@ subset_paths <- function(settings, path_nums) {
         paste(
           "For input %s, number of paths (%d) ",
           "is not equal to number of sources (%d). ",
-          "Assuming these are different things and therefore leaving sources as is."
+          "Assuming these are different things and leaving sources as is."
         ),
         input, n_path, n_source
       ))
@@ -58,12 +60,29 @@ crop2pft_example <- function(crop_code) {
   )
 }
 
+#' Break a Sipnet simulation into time segments with possibly changed parameters
+#'
+#' Each segment will run in its own subdirectory,
+#' starting from the restart file written at the end of the previous segment.
+#' Crop parameters can be altered by specifying a different PFT in the segment
+#' file.
+#'
+#' @param settings a single PEcAn settings object (not MultiSettings)
+#' @param input_design data frame in the format returned by
+#'   `PEcAn.uncertainty::generate_joint_ensemble_design()`,
+#'   reporting which ensemble members to select for each input
+#' @param ... further arguments passed on to `write_segment_configs()`
+#'
+#' @author Alexey Shiklomanov, Chris Black
+#'
+#' @export
+#'
 write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
   manifest_file <- file.path(settings$outdir, "runs_manifest.csv")
   if (!file.exists(manifest_file)) {
     PEcAn.logger::logger.severe("Could not find manifest file: ", manifest_file)
   }
-  inputs_runs <- read.csv(manifest_file) |>
+  inputs_runs <- utils::read.csv(manifest_file) |>
     dplyr::filter(.data$site_id == settings$run$site$id) |>
     # TODO the manifest should probably report these already...
     dplyr::mutate(
@@ -87,11 +106,12 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
   invisible(new_jobfiles)
 }
 
+#' @importFrom rlang .data .env
 segment_dataframe <- function(run_settings) {
   crop_change_csv <- run_settings$run$inputs$crop_changes$path
   if (!is.null(crop_change_csv)) {
     stopifnot(file.exists(crop_change_csv))
-    crop_cycles <- read.csv(crop_change_csv)
+    crop_cycles <- utils::read.csv(crop_change_csv)
     crop_cycles$date <- as.Date(crop_cycles$date)
   } else {
     events_json <- run_settings$run$inputs$event_json$path
@@ -174,7 +194,7 @@ write_segment_configs <- function(
   stopifnot(file.exists(ens_samples_file))
   ensemble_samples <- PEcAn.utils::load_local(ens_samples_file)[["ens.samples"]]
   i_param <- run_row[["param"]] %||% 1
-  run_traits <- lapply(ensemble_samples, \(dat) dat[i_param, ])
+  run_traits <- lapply(ensemble_samples, \(dat) dat[i_param, , drop = FALSE])
 
   segments <- segment_dataframe(run_settings)
 
@@ -184,13 +204,18 @@ write_segment_configs <- function(
   }
 
   segments <- segments |>
-    # Adds an all-NA pft column if needed without clobbering one that exists already
+    # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
     dplyr::mutate(
       pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code)),
-      segment_dir = file.path(segment_rootdir, sprintf("segment_%s", .data$segment_id))
+      segment_dir = file.path(segment_rootdir,
+                              sprintf("segment_%s", .data$segment_id))
     )
-  write.csv(segments, file = file.path(run_dir, "segments.csv"), row.names = FALSE)
+  utils::write.csv(
+    segments,
+    file = file.path(run_dir, "segments.csv"),
+    row.names = FALSE
+  )
 
   jobsh_files <- character()
 
