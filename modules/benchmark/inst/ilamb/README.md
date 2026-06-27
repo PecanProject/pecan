@@ -103,3 +103,154 @@ loading. Set `ILAMB_OUTPUT_DIR` to point the tests at your output directory.
 - A known structural discontinuity exists in the underlying LandTrendr input
   around 2017-2018 (see the ORNL DAAC documentation); it is preserved as-is in
   the converted output rather than adjusted here.
+
+---
+
+# Multi-Model Benchmarking (CMIP6 and TRENDY)
+
+Building on the conversion pipeline above, these scripts benchmark the PEcAn
+reanalysis against two major model intercomparison ensembles, CMIP6 and TRENDY
+(Global Carbon Budget), using ILAMB, and score the individual PEcAn ensemble
+members so that PEcAn's skill spread can be compared directly with the model
+ensembles' spread.
+
+Comparison is over North America for three state variables with established
+observational benchmarks: vegetation carbon (`cVeg`), soil carbon (`cSoil`),
+and leaf area index (`lai`). Soil moisture is supported by the conversion step
+but is not yet included in the multi-model scoring (see Scope below).
+
+## Pipeline
+
+Run in order; each step writes inputs for the next. The first script is the
+conversion tool documented above.
+
+| Step | Script | Purpose |
+|------|--------|---------|
+| 1 | `convert_geotiff_to_ilamb.py` | PEcAn GeoTIFF ensemble maps to CF netCDF |
+| 2 | `build_cmip6_ensemble.py` | Download + regrid CMIP6 historical fields |
+| 3 | `build_cmip6_ssp.py` | Splice CMIP6 historical + ssp245 for a longer record |
+| 4 | `build_trendy_ensemble.py` | Download + regrid TRENDY (GCB) fields |
+| 5 | `build_window_ensembles.py` | Slice all models to an evaluation window; build ensemble means |
+| 6 | `build_pecan_members.py` | Per-member PEcAn fields for spread analysis |
+| 7 | `make_spread_figures.py` | Spread figure from ILAMB scores |
+
+All model fields are regridded onto the same 0.5 degree North American grid the
+conversion step produces, so PEcAn, the observational benchmarks, and every
+model share one grid. LAI is reduced to its July value throughout, to match the
+July snapshot of the PEcAn product. The TRENDY ensemble mean is built only from
+members that pass a per-variable physical-plausibility screen; the members used
+are recorded in `trendy_ensemble_manifest.json`.
+
+## Evaluation windows
+
+The PEcAn reanalysis and the models are compared over two windows, which answer
+different questions:
+
+- **2012-2014**: a mean-state snapshot using the full set of CMIP6 historical
+  models (25), the broadest representative model sample.
+- **2015-2023**: a longer record for interannual variability and trends, using
+  the CMIP6 models that provide a continuous historical + ssp245 land-carbon
+  record (14).
+
+Reporting both is deliberate: the longer window supports variability and trend
+analysis that three years cannot, while the 2012-2014 window retains the full
+model sample. The two windows also differ in CMIP6 composition, and that
+difference is itself informative; see the note on soil carbon below.
+
+## ILAMB configuration
+
+`pecan_ilamb.cfg` defines three confrontations:
+
+| Variable | Benchmark | Notes |
+|----------|-----------|-------|
+| Biomass (cVeg) | Xu & Saatchi 2021 | RMSE skipped; mass-weighted |
+| Leaf Area Index | GIMMS LAI4g | seasonal-cycle and RMSE skipped |
+| Soil Carbon | HWSD2 | RMSE skipped; mass-weighted |
+
+The configuration applies no time or region restriction itself; the evaluation
+window is set entirely by the windowed input files (step 5), and the North
+American extent is set by the grid.
+
+## Results
+
+ILAMB overall scores (0-1, higher is a closer match to the benchmark). PEcAn is
+the reanalysis ensemble mean; CMIP6 and TRENDY are ensemble means.
+
+**2012-2014 (25 CMIP6 models)**
+
+| Variable | PEcAn | CMIP6 | TRENDY |
+|----------|-------|-------|--------|
+| Biomass | 0.483 | 0.477 | 0.410 |
+| Leaf Area Index | 0.510 | 0.448 | 0.453 |
+| Soil Carbon | 0.625 | 0.634 | 0.478 |
+
+**2015-2023 (14 CMIP6 models)**
+
+| Variable | PEcAn | CMIP6 | TRENDY |
+|----------|-------|-------|--------|
+| Biomass | 0.464 | 0.473 | 0.409 |
+| Leaf Area Index | 0.513 | 0.448 | 0.454 |
+| Soil Carbon | 0.648 | 0.715 | 0.478 |
+
+PEcAn scores above both model ensembles on leaf area index in every window, and
+above the TRENDY ensemble on all three variables. On biomass and soil carbon it
+is comparable to the CMIP6 ensemble.
+
+The higher CMIP6 soil-carbon score in the 2015-2023 window (0.715) is a
+composition effect, not a change in the benchmark: the 14 models with a
+continuous ssp245 record happen to be stronger soil-carbon performers. The full
+25-model window (0.634) is the representative figure, where PEcAn and CMIP6 are
+close.
+
+## Ensemble spread
+
+Scoring the 100 individual PEcAn members alongside the individual CMIP6 and
+TRENDY models shows that the PEcAn members vary far less in skill than the
+models do. Standard deviation of member scores:
+
+| Variable | PEcAn (100) | CMIP6 | TRENDY |
+|----------|-------------|-------|--------|
+| Biomass (2012-2014) | 0.003 | 0.057 | 0.086 |
+| LAI (2012-2014) | 0.004 | 0.082 | 0.145 |
+| Soil Carbon (2012-2014) | 0.003 | 0.166 | 0.137 |
+| Biomass (2015-2023) | 0.014 | 0.040 | 0.086 |
+| LAI (2015-2023) | 0.002 | 0.085 | 0.147 |
+| Soil Carbon (2015-2023) | 0.001 | 0.146 | 0.137 |
+
+The narrow PEcAn spread reflects skill, not identical members: the members
+differ in their spatial carbon fields (for soil carbon, on the order of one
+percent of the field, member to member) yet match the benchmark about equally
+well. Whether that spread is appropriately sized relative to the error, that is,
+whether the ensemble is well-calibrated, is a separate question, addressed by
+probabilistic scoring in a later contribution.
+
+`fig_spread_clouds.png` shows the per-member scores for all three ensembles
+across both windows.
+
+## Scope and caveats
+
+- **North America only.** The comparison uses the North American PEcAn grid.
+- **Biomass pool mismatch.** PEcAn `cVeg` is above-ground wood carbon, while the
+  Xu & Saatchi benchmark is total live biomass (including roots). PEcAn is
+  therefore expected to read somewhat low on biomass by construction.
+- **Soil-carbon depth mismatch.** PEcAn soil carbon integrates 0-200 cm, deeper
+  than the benchmark, so PEcAn reads higher in deep-carbon regions.
+- **Soil moisture deferred.** The conversion step handles soil moisture, but
+  multi-model soil-moisture scoring is not yet included.
+- **Probabilistic scoring is future work.** The spread results above motivate
+  ensemble calibration metrics (rank histograms, reliability), which are a
+  planned follow-on rather than part of this contribution.
+
+## Reproducing the figure
+
+`make_spread_figures.py` reads ILAMB `scores.csv` output for the two windows.
+Its paths refer to the analysis working tree where the scoring runs were
+produced; point them at your own ILAMB build directories to regenerate the
+figure.
+
+## Data sources
+
+- CMIP6: ESGF, via `intake-esgf` (historical and ssp245, r1i1p1f1).
+- TRENDY: Global Carbon Budget 2024, public download index.
+- Benchmarks: Xu & Saatchi 2021 (biomass), GIMMS LAI4g (leaf area index),
+  HWSD2 (soil carbon).
