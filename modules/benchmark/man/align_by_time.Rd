@@ -14,7 +14,7 @@ align_by_time(model_df, obs_df, tolerance_secs = 3600)
 \item{tolerance_secs}{max allowed time difference in seconds}
 }
 \value{
-data.frame with columns: time, model, obs
+data.frame with columns: model, obvs, time
 }
 \description{
 Align model and observation data frames by nearest time
