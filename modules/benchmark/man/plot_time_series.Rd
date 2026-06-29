@@ -7,7 +7,7 @@
 plot_time_series(aligned)
 }
 \arguments{
-\item{aligned}{data.frame with columns: time, model, obs}
+\item{aligned}{data.frame with columns: model, obvs, time}
 }
 \value{
 ggplot object
