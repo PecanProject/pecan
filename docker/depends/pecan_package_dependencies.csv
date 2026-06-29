@@ -749,5 +749,6 @@
 "xtable","*","base/utils","Suggests",FALSE
 "xts","*","models/peprmt","Suggests",FALSE
 "xts","*","modules/data.atmosphere","Imports",FALSE
+"yaml","*","modules/benchmark","Imports",FALSE
 "zoo","*","modules/benchmark","Imports",FALSE
 "zoo","*","modules/data.atmosphere","Imports",FALSE
