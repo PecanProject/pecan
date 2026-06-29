@@ -4,10 +4,10 @@
 \alias{compute_metrics}
 \title{Compute benchmark metrics}
 \usage{
-compute_metrics(aligned, metrics = c("RMSE", "MAE"))
+compute_metrics(aligned, metrics = c("RMSE", "MAE", "R2"))
 }
 \arguments{
-\item{aligned}{data.frame with columns: time, model, obs}
+\item{aligned}{data.frame with columns: model, obvs, time}
 
 \item{metrics}{character vector of metric names}
 }
