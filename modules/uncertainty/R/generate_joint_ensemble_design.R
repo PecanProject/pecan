@@ -54,6 +54,7 @@
 
 generate_joint_ensemble_design <- function(settings,
                                            ensemble_size,
+                                           samples = NULL,
                                            sobol = FALSE) {
   if (sobol) {
     ensemble_size <- as.numeric(ensemble_size) * 2
@@ -93,13 +94,19 @@ generate_joint_ensemble_design <- function(settings,
     sampled_inputs[[input_tag]] <- input_result$ids
     design_list[[input_tag]] <- input_result$ids
   }
-  # Sample parameters if we don't have it.
-  if (!file.exists(file.path(settings$outdir, "samples.Rdata"))) {
-    PEcAn.uncertainty::get.parameter.samples(
-      settings,
-      ensemble.size = ensemble_size,
-      posterior.files,
-      ens.sample.method)
+  # Generate parameter samples in memory (or use the ones passed in).
+  if (is.null(samples)) {
+    loaded <- load_pft_posteriors(settings, posterior.files)
+    samples <- get_parameter_samples(
+      pft_names         = loaded$pft_names,
+      prior_distns_list = loaded$prior_distns_list,
+      trait_mcmc_list   = loaded$trait_mcmc_list,
+      ensemble.size     = ensemble_size,
+      ens.sample.method = ens.sample.method,
+      sa_quantiles      = NULL,
+      do_ensemble       = TRUE,
+      independent       = loaded$independent
+    )
   }
   # Here we assumed the length of parameters is identical to the ensemble size.
   # TODO: detect if they are identical. If not, we will need to resample the 
@@ -118,5 +125,5 @@ generate_joint_ensemble_design <- function(settings,
   # that the output is a list that includes the design as X. In the sobol version the 
   # list includes additional info beyond just X that's required by the function that 
   # does the sobol index calculations, but not required to do the runs themselves.
-  return(list(X = design_matrix))
+  return(list(X = design_matrix, samples = samples))
 }
