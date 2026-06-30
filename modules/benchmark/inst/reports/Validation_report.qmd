@@ -1,0 +1,75 @@
+---
+title: "PEcAn Validation Benchmark Report"
+author: "PEcAn Validation Toolkit"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+params:
+  benchmark_results: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(ggplot2)
+```
+
+## Executive Summary
+
+The following scorecard summarizes the validation metrics computed during the benchmark run.
+
+```{r scorecard}
+results <- params$benchmark_results
+
+if (!is.null(results) && !is.null(results$metrics)) {
+  # Check if knitr is available to use kable
+  if (requireNamespace("knitr", quietly = TRUE)) {
+    knitr::kable(results$metrics, digits = 3)
+  } else {
+    print(results$metrics)
+  }
+} else {
+  cat("No metrics data provided.\n")
+}
+```
+
+## Visual Diagnostics
+
+```{r plots, results='asis', fig.width=10, fig.height=6}
+if (!is.null(results) && !is.null(results$plots)) {
+  plots <- results$plots
+  
+  # if plots is a flat list of ggplot objects
+  if (inherits(plots[[1]], "ggplot")) {
+    for (p_name in names(plots)) {
+      cat(sprintf("\n### %s\n\n", p_name))
+      print(plots[[p_name]])
+      cat("\n\n")
+    }
+  } else {
+    # If plots are nested by variable: plots[[var_name]]$timeseries
+    for (var in names(plots)) {
+      cat(sprintf("\n### Variable: %s\n\n", var))
+      
+      var_plots <- plots[[var]]
+      
+      if (!is.null(var_plots$timeseries)) {
+        print(var_plots$timeseries)
+        cat("\n\n")
+      }
+      if (!is.null(var_plots$scatter)) {
+        print(var_plots$scatter)
+        cat("\n\n")
+      }
+      if (!is.null(var_plots$residual)) {
+        print(var_plots$residual)
+        cat("\n\n")
+      }
+    }
+  }
+} else {
+  cat("No plots provided.\n")
+}
+```

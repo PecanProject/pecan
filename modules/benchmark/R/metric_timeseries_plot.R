@@ -6,34 +6,43 @@
 ##' @param draw.plot logical: Return the plot object?
 ##'
 ##' @author Betsy Cowdery
-##' @importFrom ggplot2 ggplot labs geom_path geom_point
 ##' @export
-
 metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Timeseries Plot")
   
-  # Attempt at getting around the fact that time can be annual and thus as.Date won't work
-  date.time <- try(as.Date(metric_dat$time), silent = TRUE)
-  if (inherits(date.time, "try-error")) {
-    PEcAn.logger::logger.warn("Can't coerce time column to Date format, attempting plot anyway")
-  }else{
-    metric_dat$time <- date.time
+  # Ensure metric_dat is a data.frame for ggplot2
+  metric_dat <- as.data.frame(metric_dat)
+  
+  if (!"time" %in% colnames(metric_dat)) {
+    PEcAn.logger::logger.warn("Missing 'time' column in metric_dat, using row index instead.")
+    metric_dat$time <- seq_len(nrow(metric_dat))
+  } else {
+    date.time <- try(as.Date(as.character(metric_dat$time)), silent = TRUE)
+    if (!inherits(date.time, "try-error") && !all(is.na(date.time))) {
+      metric_dat$time <- date.time
+    } else {
+      PEcAn.logger::logger.warn("Can't coerce time column to Date format, using original format.")
+    }
   }
   
-  p <- ggplot(data = metric_dat, ggplot2::aes(x = .data$time)) 
-  p <- p + labs(title = var, y = "") 
-  p <- p + geom_path(ggplot2::aes(y = .data$model, colour = "Model"), size = 2) 
-  p <- p + geom_point(ggplot2::aes(y = .data$model, colour = "Model"), size = 4) 
-  p <- p + geom_path(ggplot2::aes(y = .data$obvs, colour = "Observed"), size = 2) 
-  p <- p + geom_point(ggplot2::aes(y = .data$obvs, colour = "Observed"), size = 4)
+  p <- ggplot2::ggplot(data = metric_dat, ggplot2::aes(x = .data$time)) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$model, colour = "Model"), linewidth = 1) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$model, colour = "Model"), size = 2, alpha = 0.7) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$obvs, colour = "Observed"), linewidth = 1) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$obvs, colour = "Observed"), size = 2, alpha = 0.7) +
+    ggplot2::scale_colour_manual(values = c("Model" = "#619CFF", "Observed" = "#F8766D")) +
+    ggplot2::labs(title = var, x = "Time", y = "Value", color = "Source") +
+    ggplot2::theme_minimal(base_size = 14) +
+    ggplot2::theme(legend.position = "bottom")
   
   if (!is.na(filename)) {
     grDevices::pdf(filename, width = 10, height = 6)
-    plot(p)
+    print(p)
     grDevices::dev.off()
   }
   
   if (draw.plot) {
     return(p)
   }
+  invisible(p)
 } # metric_timeseries_plot
