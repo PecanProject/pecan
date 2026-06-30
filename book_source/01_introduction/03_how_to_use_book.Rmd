@@ -81,8 +81,8 @@ We have no strict rules about this, but it's useful to have tags that give some 
 If section organization changes, it is fine to move header tags, but **avoid altering existing tags** as this will break all the links pointing to that tag.
 (Note that it is also possible to link to section headings by their exact title. However, this is not recommended because these section titles could change, which would break the links.)
 
-When referring to PEcAn packages or specific functions, it is a good idea to link to the [rendered package documentation](https://pecanproject.github.io/pkgdocs.html).
-For instance, here are links to the [`models/ed`](https://pecanproject.github.io/models/ed/docs/index.html) package, the [`PEcAn.ED2::modify_ed2in`](https://pecanproject.github.io/models/ed/docs/reference/modify_ed2in.html) function, and the PEcAnRTM package [vignette](https://pecanproject.github.io/modules/rtm/docs/articles/pecanrtm.vignette.html).
+When referring to PEcAn packages or specific functions, it is a good idea to link to the [rendered package documentation](https://pecanproject.github.io/package-documentation/develop/).
+For instance, here are links to the [`PEcAn.ED2`](https://pecanproject.github.io/package-documentation/develop/PEcAn.ED2/) package, the [`PEcAn.ED2::modify_ed2in`](https://pecanproject.github.io/package-documentation/develop/PEcAn.ED2/reference/modify_ed2in.html) function, and the PEcAnRTM package [vignette](https://pecanproject.github.io/package-documentation/develop/PEcAnRTM/articles/pecanrtm.vignette.html).
 If necessary, you can also link directly to specific lines or blocks in the source code on GitHub, [like this](https://github.com/PecanProject/pecan/blob/develop/models/ed/R/create_veg.R#L11-L25).
 (To get a link to a line, click its line number. To then select a block, shift-click another line number.)
 

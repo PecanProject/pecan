@@ -903,7 +903,11 @@ check.model.settings <- function(settings, dbcon = NULL) {
     }
 
     # check on binary for given host
-    if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
+    if (is.null(dbcon)) {
+      PEcAn.logger::logger.info(
+        "No database connection available, can't check model binary"
+      )
+    } else if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
       binary <- PEcAn.DB::dbfile.file(
         "Model",
         settings$model$id,
@@ -922,7 +926,7 @@ check.model.settings <- function(settings, dbcon = NULL) {
       }
     } else {
       PEcAn.logger::logger.warn(
-        "No model binary sepcified in database for model ", settings$model$type)
+        "No model binary specified in database for model ", settings$model$type)
     }
   }
 
@@ -1035,7 +1039,7 @@ check.database.settings <- function(settings) {
           PEcAn.logger::logger.debug(
             "Writing all runs/configurations to database.")
         } else {
-          PEcAn.logger::logger.warn(
+          PEcAn.logger::logger.debug(
             "Will not write runs/configurations to database.")
         }
       }
@@ -1059,11 +1063,11 @@ check.database.settings <- function(settings) {
       # check database version
       check.bety.version(dbcon)
     } else {
-      PEcAn.logger::logger.warn(
+      PEcAn.logger::logger.info(
         "No BETY database information specified; not using database.")
     }
   } else {
-    PEcAn.logger::logger.warn(
+    PEcAn.logger::logger.info(
       "No BETY database information specified; not using database.")
   }
   return(settings)

@@ -117,8 +117,8 @@ getRunSettings <- function(templateSettings, siteId) {
   } else {
     site_info <- list(id = siteId)
   }
-  site_info$met.start <- startDate
-  site_info$met.end <- endDate
+  if (is.null(site_info$met.start)) site_info$met.start <- startDate
+  if (is.null(site_info$met.end)) site_info$met.end <- endDate
 
   return(list(
     site = site_info,

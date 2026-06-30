@@ -22,9 +22,11 @@ Imports:
     PEcAn.data.land,
     PEcAn.logger,
     rlang,
+    stats,
+    stringr,
+    tibble,
     PEcAn.remote,
-    PEcAn.utils,
-    stats
+    PEcAn.utils
 Suggests:
     coda,
     testthat (>= 1.0.2),
@@ -34,5 +36,6 @@ OS_type: unix
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 X-schema.org-keywords: SIPNET, ecosystem-modeling

@@ -22,7 +22,7 @@ jobs:
 
     steps:
     # checkout source code
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     # install bookdown
     - name: Install bookdown
       run: |
@@ -41,7 +41,7 @@ jobs:
         cd book_source
         Rscript -e 'bookdown::render_book("index.Rmd", "bookdown::gitbook")'
     # save artifact
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: pecan-documentation
         path: book_source/_book/
@@ -57,7 +57,7 @@ jobs:
     # download documentation repo
     - name: Checkout documentation repo
       if: ${{ github.event_name == 'push' && steps.doc_exists.outputs.exists == 'true' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ${{ github.repository_owner }}/pecan-documentation
         path: pecan-documentation

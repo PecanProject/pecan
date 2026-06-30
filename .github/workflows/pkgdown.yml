@@ -23,7 +23,7 @@ jobs:
 
     steps:
     # Checkout source code
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     # Install dependencies
     - name: Install dependencies
@@ -46,7 +46,7 @@ jobs:
     # Checkout package documentation repo
     - name: Checkout package documentation repo
       if: ${{ github.event_name == 'push' && steps.pkgdoc_exists.outputs.exists == 'true' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ${{ github.repository_owner }}/package-documentation
         path: package-documentation

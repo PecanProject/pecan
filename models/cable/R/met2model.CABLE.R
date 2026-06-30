@@ -4,7 +4,7 @@
 # are made available under the terms of the 
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
+# https://opensource.org/licenses/NCSA
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
@@ -24,7 +24,7 @@ met2model.CABLE <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
-  # https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Coding_style.html
+  # https://pecanproject.github.io/pecan-documentation/develop/coding-practices.html#developer-codestyle
   
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".

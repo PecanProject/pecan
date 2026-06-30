@@ -1,15 +1,19 @@
-##' @name predict.GP
-##' @title predict.GP
-##' @export
-##' 
-##' @param gp Gaussian Process
+##' Predict method for Gaussian Process objects
+##'
+##' Performs kriging prediction from a fitted Gaussian Process model.
+##'
+##'
+##' @param object a Gaussian Process object (class \code{GP}) as returned by \code{\link{GaussProcess}}
 ##' @param xpred value of x where prediction should be made
-##' @param cI credible interval
-##' @param pI prediction interval
-##' @param splinefcns spline functions
-##' 
+##' @param cI credible interval quantiles, or \code{NULL} to skip
+##' @param pI prediction interval quantiles, or \code{NULL} to skip
+##' @param splinefcns optional list of spline functions for trend-surface adjustment
+##' @param ... additional arguments (currently unused)
+##' @return Kriged predictions or a list of credible/prediction interval quantiles.
 ##' @author Michael Dietze
-predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
+##' @export
+predict.GP <- function(object, xpred, cI = NULL, pI = NULL, splinefcns = NULL, ...) {
+  gp <- object
   
   npred <- length(xpred)
   if (is.matrix(xpred)) {
@@ -21,13 +25,13 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   dim <- 1  #; if(!isotropic) dim <- length(d)
   x <- gp$x.compact
   x.id <- gp$x.id
-  n.unique <- length(gp$x.id)
+  n.unique <- max(gp$x.id)
   # npred <- npred-n.unique
   y <- gp$y
   
   dprime <- NULL
   if (isotropic) {
-    dprime <- distance.matrix(rbind(xpred, x), 2)
+    dprime <- distance_matrix(rbind(xpred, x), 2)
   } else {
     if (is.null(dim(x))) {
       dprime <- distance(c(xpred, x), 2)

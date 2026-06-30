@@ -20,7 +20,8 @@ Imports:
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15)
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    withr
 SystemRequirements: GDAY
 OS_type: unix
 License: BSD_3_clause + file LICENSE

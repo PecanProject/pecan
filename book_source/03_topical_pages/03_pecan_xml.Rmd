@@ -312,6 +312,7 @@ This section describes which model PEcAn should run and some instructions for ho
 	<id>7</id>
 	<type>ED2</type>
 	<binary>/usr/local/bin/ed2.r82</binary>
+	<revision>82</revision>
 	<prerun>module load hdf5</prerun>
 	<config.header>
 		<!--...xml code passed directly to config file...-->
@@ -323,8 +324,14 @@ Some important tags are as follows:
 
 - `id` -- The unique numeric ID of the model in the PEcAn database `models` table. If this is present, then `type` and `binary` are optional since they can be determined from the PEcAn database.
 - `type` -- The model "type", matching the PEcAn database `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
-- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine. 
+- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine.
+- `revision` -- A unique identifier for the model version of `binary`. Format is model-specific, but many models expect a semantic version (eg "2.12.3") and rely on version comparisons (e.g. `revision >= "2.0"`) to match PEcAn configuration behavior to model capabilities.
 - `prerun` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
+- `options` -- Additional configuration passed on to the model.
+  Depending on the model these might be passed as a set of command flags (e.g. `<options><infile>path/to/file</infile><quiet>FALSE</quiet><options` becomes `./path/to/binary --no-quiet --inputfile=path/to/file`),
+  entries in a configuration file (e.g. `<options><LOG_FILE>path/to/file</LOG_FILE><QUIET>1</QUIET><options` becomes `LOG_FILE = path/to/file` and `QUIET = 1`),
+  or a more complicated transformation (e.g. a model that accepts some options as command flags and other as lines in a configuration file might take `<options><flags>...</flags><settings>...</settings></options>`).
+  To avoid confusion, we recommend that the names in `model$options` be *identical* to the names the model recognizes: If the model expects `LONG_COMPLICATED_OPTION_NAME = "third_verbose_option"`, write that into the XML instead of making write.config.MODEL translate from `model$options$complic_opt = 3".`
 
 This information is currently used by the following PEcAn workflow function:
 
@@ -435,18 +442,39 @@ The following are the most common types of inputs, along with their correspondin
 
 ##### `met`: Meteorological inputs {#xml-run-inputs-met}
 
-See the `PEcAn.data.atmosphere` package documentation for more details.
-In particular, users working with meteorological inputs should focus on
-the data download functions and the `met2CF` conversion utilities, which
-handle retrieval of raw meteorological products and conversion to
-CF-compliant NetCDF files used by PEcAn.
+The `<met>` tag specifies the meteorological forcing data used to drive the model simulation.
+
+Users must define either:
+
+- `source` – the name of a supported meteorological dataset, or  
+- `path` – the location of a pre-processed meteorological file.
+
+Example:
+
+```xml
+<met>
+  <source>CRUNCEP</source>
+  <output>SIPNET</output>
+</met>
+```
+
+Common sub-tags:
+
+- `id` – Database ID of the meteorological dataset.
+- `source` – Name of the meteorological product (e.g., `CRUNCEP`, `AmerifluxLBL`).
+- `path` – Direct path to an existing meteorological file.
+- `output` – Model format to convert the meteorological data into.
+
+If `source` is provided, PEcAn will automatically retrieve and process the dataset.  
+If `path` is provided, PEcAn will use the file directly.
+
 
 
 ##### `soil`: Soil inputs {#xml-run-inputs-soil}
 
 Soil inputs are handled through the `PEcAn.data.land` module.
 For full technical details, see the
-[PEcAn.data.land package documentation](https://pecan.ncsa.illinois.edu/pkgdocs/PEcAn.data.land/).
+[PEcAn.data.land package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.land/)
 
 In practice, most PEcAn workflows do not rely on automated soil data
 processing at runtime. Instead, users typically preprocess soil data
@@ -462,7 +490,7 @@ preprocessed soil inputs rather than to trigger on-the-fly data
 processing.
 
 Note that some models reference soil inputs using the `<soil>` tag,
-while others use `<soilphysics>`. This inconsistency is historical and
+while others use `<soil_physics>`. This inconsistency is historical and
 can cause confusion; a future harmonization of these tags would be
 beneficial.
 

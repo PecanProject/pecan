@@ -383,7 +383,7 @@ process_gridded_noaa_download <- function(lat_list,
     
     noaa_data$relative_humidity$value <- noaa_data$relative_humidity$value / 100
     
-    noaa_data$air_temperature$value <- noaa_data$air_temperature$value + 273.15
+    noaa_data$air_temperature$value <- PEcAn.utils::ud_convert(noaa_data$air_temperature$value, "degC", "Kelvin")
     
     specific_humidity[which(!is.na(noaa_data$relative_humidity$value))] <- PEcAn.data.atmosphere::rh2qair(
       rh = noaa_data$relative_humidity$value[which(!is.na(noaa_data$relative_humidity$value))],

@@ -1,63 +1,107 @@
-##--------------------------------------------------------------------------------------------------#
-##' Variance Decomposition Plots
-##'
-##' Plots variance decomposition tryptich
-##' @name plot_variance_decomposition
-##' @export
-##' @author David LeBauer, Carl Davidson
-##' @param plot.inputs Output from a sensitivity analysis. Output must be of the form
-##'          given by sensitivity.results$variance.decomposition.output in model output
-##' @param fontsize list specifying the font size of the titles and axes of the graph
-##' @examples
-##' x <- list(trait.labels = c('a', 'b', 'c'),
-##'           coef.vars = c(a=1,b=0.5, c=0.1),
-##'           elasticities = c(a=1,b=2,c=0.5),
-##'           variances    = c(a = 20, b=30, c = 10))
-##' do.call(gridExtra::grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
-plot_variance_decomposition <- function(plot.inputs, 
-                                        fontsize = list(title = 18, axis = 14)) {
-  ggplot2::theme_set(ggplot2::theme_classic() + ggplot2::theme(axis.text.x = ggplot2::element_text(size = fontsize$axis, vjust = -1),
-                                    axis.text.y = ggplot2::element_blank(), axis.ticks = ggplot2::element_blank(), 
-                                    axis.line = ggplot2::element_blank(), axis.title.x = ggplot2::element_blank(), 
-                                    axis.title.y = ggplot2::element_blank(), 
-                                    panel.grid.minor = ggplot2::element_blank(), 
-                                    panel.border = ggplot2::element_blank()))
-  
-  traits <- names(plot.inputs$variances)
-  units <- as.character(PEcAn.utils::trait.lookup(traits)$units)
-  trait.labels <- as.character(PEcAn.utils::trait.lookup(traits)$figid)
-  plot.data <- data.frame(trait.labels = ifelse(!is.na(trait.labels), 
-                                                trait.labels, 
-                                                traits), 
-                          units = ifelse(!is.na(units), units, ""), 
-                          coef.vars = plot.inputs$coef.vars * 100,
-                          elasticities = plot.inputs$elasticities, 
-                          variances = plot.inputs$variances, 
-                          points = seq_along(traits) - 0.5)
-  
-  plot.data <- plot.data[order(plot.data$variances, decreasing = FALSE), ]
-  
-  base.plot <- ggplot2::ggplot(plot.data) + ggplot2::coord_flip()
-  
-  
-  trait.plot <- base.plot + ggplot2::ggtitle("Parameter") + 
-    ggplot2::geom_text(ggplot2::aes(y = 1, x = .data$points, label = trait.labels, hjust = 1), size = fontsize$axis/3) + 
-    ggplot2::scale_y_continuous(breaks = c(0, 0), limits = c(0, 1)) + 
-    ggplot2::theme(axis.text.x = ggplot2::element_blank())
-  cv.plot <- base.plot + ggplot2::ggtitle("CV (%)") + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$coef.vars, ymin = 0, ymax = .data$coef.vars), size = 1.25) +
-    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title))
-  
-  el.plot <- base.plot + ggplot2::ggtitle("Elasticity") + 
-    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, y = .data$elasticities, ymin = 0, ymax = .data$elasticities), size = 1.25)
-  
-  pv.plot <- base.plot + ggplot2::ggtitle("Variance") + 
-    ggplot2::theme(plot.title = ggplot2::element_text(size = fontsize$title)) + 
-    ggplot2::geom_pointrange(ggplot2::aes(x = .data$points, sqrt(.data$variances), ymin = 0, ymax = sqrt(.data$variances)), size = 1.25)
-  
-  return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
-} # plot_variance_decomposition
+
+#' Variance Decomposition Plots
+#'
+#' Plots variance decomposition tryptich: CV, elasticity, variance
+#' @name plot_variance_decomposition
+#' @export
+#' @author David LeBauer, Carl Davidson, Chris Black
+#'
+#' @param plot.inputs Output from a sensitivity analysis. Output must be of the form
+#'          given by sensitivity.results$variance.decomposition.output in model output
+#' @param fontsize list specifying the font size of the titles and axes of the graph
+#' @param order_by Result column to sort by, or "none" to retain input order
+#'
+#' @return ggplot object
+#' @examples
+#' x <- list(trait.labels = c('a', 'b', 'c'),
+#'           coef.vars = c(a=1,b=0.5, c=0.1),
+#'           elasticities = c(a=1,b=2,c=0.5),
+#'           variances    = c(a = 20, b=30, c = 10))
+#' plot_variance_decomposition(x)
+#' plot_variance_decomposition(x, order_by = "rowname")
+plot_variance_decomposition <- function(plot.inputs,
+                                        fontsize = list(title = 18, axis = 14),
+                                        order_by = c("Variance", "Elasticity",
+                                                     "CV (%)", "rowname", "none")) {
+  sort_cols <- match.arg(order_by, several.ok = TRUE)
+  if (any(sort_cols != "none")) {
+    # Can't retain original order when sorting by anything else
+    sort_cols <- sort_cols[sort_cols != "none"]
+  }
+
+  dat <- as.data.frame(plot.inputs)
+  dat$rowname <- rownames(dat)
+  dat <- dat |>
+    dplyr::mutate(
+      rowname = dplyr::coalesce(PEcAn.utils::trait.lookup(.data$rowname)$figid,
+                                .data$rowname),
+      "CV (%)" = .data$coef.vars * 100,
+      Variance = sqrt(.data$variances)
+    ) |>
+    dplyr::select(
+      "rowname",
+      "CV (%)",
+      Elasticity = "elasticities",
+      "Variance"
+    )
+
+  if ("none" %in% sort_cols) {
+    dat$roworder <- seq_along(dat$rowname)
+  } else {
+    dat$roworder <- match(
+      x = seq_len(nrow(dat)),
+      table = do.call("order", dat[sort_cols])
+    )
+  }
+
+  dat <- tidyr::pivot_longer(dat, c(-"rowname", -"roworder"))
+
+  # Set point and line weight
+  # (`element_geom` didn't exist before ggplot 4.0, `fatten` is deprecated after)
+  lollipops <- function() {
+    if (utils::packageVersion("ggplot2") >= "4.0.0") {
+
+      # getExportedValue is to quiet an R CMD check "missing or unexported object"
+      #   warning when checked on a system with ggplot2 < 4.0.
+      # Never mind that the if skips this whole block on those systems...
+      elem_geom = getExportedValue(ns = "ggplot2", name = "element_geom")
+
+      return(list(
+        ggplot2::geom_pointrange(),
+        ggplot2::theme(
+          geom = elem_geom(pointsize = ggplot2::rel(3),
+                           linewidth = ggplot2::rel(1.25)))
+      ))
+    } else {
+      return(ggplot2::geom_pointrange(fatten = 10))
+    }
+  }
+
+  ggplot2::ggplot(dat) +
+    ggplot2::aes(
+      y = stats::reorder(.data$rowname, .data$roworder),
+      x = .data$value,
+      xmin = 0,
+      xmax = .data$value
+    ) +
+    ggplot2::facet_wrap(~name, scales = "free_x") +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.line = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size = fontsize$axis, vjust = -1),
+      axis.text.y = ggplot2::element_text(size = fontsize$axis, hjust = 1),
+      axis.ticks = ggplot2::element_blank(),
+      axis.title.x = ggplot2::element_blank(),
+      axis.title.y = ggplot2::element_blank(),
+      panel.border = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.spacing = ggplot2::unit(1, "lines"),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(size = fontsize$title)
+    ) +
+    lollipops()
+}
+
 
 
 

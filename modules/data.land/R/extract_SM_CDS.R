@@ -19,6 +19,11 @@ extract_SM_CDS <- function(site_info,
                            out.path = NULL, 
                            allow.download = TRUE,
                            search_window = 10){
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'sp' is required for spatial data processing but is not installed.",
+      "Please install it with: install.packages('sp')")
+  }
   #find downloaded files and the corresponding dates.
   ncfiles <- base::list.files(in.path, full.names = T)
   available.dates <- ncfiles %>% purrr::map(function(file){

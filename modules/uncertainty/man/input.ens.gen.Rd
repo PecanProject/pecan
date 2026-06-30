@@ -2,14 +2,15 @@
 % Please edit documentation in R/ensemble.R
 \name{input.ens.gen}
 \alias{input.ens.gen}
-\title{Function for generating samples based on sampling method, parent or etc}
+\title{Generate an ensemble of samples from one input}
 \usage{
 input.ens.gen(
   settings,
   ensemble_size,
   input,
   method = "sampling",
-  parent_ids = NULL
+  parent_ids = NULL,
+  bad_parent_action = c("error", "resample")
 )
 }
 \arguments{
@@ -21,23 +22,47 @@ input.ens.gen(
 
 \item{method}{Method for sampling - For now looping or sampling with replacement is implemented}
 
-\item{parent_ids}{This is basically the order of the paths that the parent is sampled.See Details.}
+\item{parent_ids}{integer vector of indices to be used as-is}
+
+\item{bad_parent_action}{How to handle entries in `parent_id` that are not
+valid indices into the paths given for this input. See details}
 }
 \value{
-For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
+A list with elements `id` showing the order of sampling
+ and `samples` with the paths selected from those indices.
 }
 \description{
-Function for generating samples based on sampling method, parent or etc
+Given an input containing paths to multiple files, this function samples
+from the given paths to make an ensemble of the requested size.
+If method is `sampling` they are sampled with replacement from the full set;
+if method is `looping` they are taken sequentially with the sequence
+repeating as needed.
 }
 \details{
-If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
-parent_ids to this function.
+If `parent_ids` is provided, it is used as the indices for the current input.
+Use this when you have multiple inputs whose files should be sampled as a
+coordinated set.
+For example if your soil moisture files are matched to the rainfall amounts
+in your weather files, generate the met ensemble first
+(`met_ids <- input.ens.gen(..., input = "met", parent_ids = NULL)`)
+and then pass those as parents to the soil moisture ensemble:
+`input.ens.gen(..., input = "soilmoist", parent_ids = met_ids)`.
+
+If any indices in `parent_ids` are larger than the length of the input
+being sampled (e.g. `53` when the input only has 25 paths),
+the result is determined by `bad_parent_action`:
+"error" stops execution and requests the user to fix their inputs,
+"resample" uses the valid parents as-is and replaces the invalid parents
+via method = "sampling".
+Note that method "resample" is provided for backwards compatibility;
+we strongly recommend validating parent-child alignment before calling
+`input.ens.gen`, ideally in the same process that generates your parent ids.
 }
 \examples{
 \dontrun{
   settings <- PEcAn.settings::read.settings("pecan.xml")
   input.ens.gen(
-    settings, 
+    settings,
     ensemble_size = 50,
     input = "met",
     method = "sampling"

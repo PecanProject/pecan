@@ -1,4 +1,20 @@
+# PEcAn.utils 1.8.2.9000
+
+## Added
+
+* New function `netcdf2df()` reads a netCDF as a dataframe, with units attached as an attribute. It is intended so far for files that are already "basically a rectangle" (dense grids where all variables have the same dimensions and all dimensions are scalars or fully-crossed vectors), but if you try it on files with more complex dimensions please report how it goes.
+
 # PEcAn.utils 1.8.2
+
+## Fixed
+
+* `distn.stats()`: corrected the Weibull standard deviation formula, which was returning variance (`b^2 * (...)`) instead of SD (`b * sqrt(...)`). The test expectation is also corrected.
+* `read.output()`: an unsupported `end.year` type now stops execution (`logger.severe`) instead of silently continuing with a broken value (`logger.error`), matching the existing behaviour for `start.year`.
+* `transformstats()`: corrected the LSD-to-SE conversion. The denominator was `t * sqrt(2 * n)`, but the correct derivation (LSD = t * sqrt(2) * SE) gives `t * sqrt(2)`. The extra `sqrt(n)` factor made SE estimates from LSD-reporting studies appear `sqrt(n)` times smaller than true, over-weighting those observations in meta-analysis.
+
+## Changed
+
+* `read.output()`: `start.year` and `end.year` now default to `NULL` (read all years) instead of `NA`, and both `NULL` and `NA` are accepted as "read all years" sentinels (#3987).
 
 ## Added
 

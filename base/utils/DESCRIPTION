@@ -45,7 +45,7 @@ Imports:
     purrr,
     rlang,
     stringi,
-    units
+    units (>= 0.8.7)
 Suggests:
     coda (>= 0.18),
     data.table,

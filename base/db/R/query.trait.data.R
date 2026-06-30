@@ -126,8 +126,8 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE
   ## if result is empty, stop run
   
   if (nrow(result) == 0) {
+    PEcAn.logger::logger.warn("there is no data for", trait)
     return(NA)
-    warning(paste("there is no data for", trait))
   } else {
     
     ## Do we really want to print each trait table?? Seems like a lot of

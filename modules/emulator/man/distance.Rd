@@ -12,7 +12,7 @@ distance(x, power = 1)
 \item{power}{exponent used for calculating distance, default value of 2 = Pythagorean distance}
 }
 \value{
-dst
+list of per-dimension pairwise distance matrices
 }
 \description{
 distance

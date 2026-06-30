@@ -100,7 +100,7 @@ for (i in seq_along(settings$run$inputs)) {
     next
   }
   
-  input.tag <- names(settings$run$input)[i]
+  input.tag <- names(settings$run$inputs)[i]
   
   # fia database
   if ((input["input"] == "fia") && (status.check("FIA2ED") == 0)) {
