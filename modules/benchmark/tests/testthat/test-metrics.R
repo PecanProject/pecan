@@ -1,9 +1,3 @@
-# at the top of test-metrics.R, add this:
-if (!requireNamespace("PEcAn.logger", quietly = TRUE)) {
-  PEcAn.logger <- new.env()
-  PEcAn.logger$logger.info <- function(...) invisible(NULL)
-}
-
 test_that("metric_RMSE returns 0 for perfect predictions", {
   dat <- data.frame(model = c(1, 2, 3), obvs = c(1, 2, 3))
   expect_equal(metric_RMSE(dat), 0)
@@ -11,7 +5,7 @@ test_that("metric_RMSE returns 0 for perfect predictions", {
 
 test_that("metric_RMSE handles NA values", {
   dat <- data.frame(model = c(1, NA, 3), obvs = c(1, 2, 3))
-  expect_true(is.numeric(metric_RMSE(dat)))
+  expect_equal(metric_RMSE(dat), 0)
 })
 
 test_that("metric_RMSE returns numeric", {
@@ -39,11 +33,11 @@ test_that("metric_R2 returns 1 for perfect predictions", {
   expect_equal(metric_R2(dat), 1)
 })
 
-test_that("metric_R2 silent NA fallback produces valid output", {
+test_that("metric_R2 returns NA for constant model output", {
   dat <- data.frame(model = c(2, 2, 2), obvs = c(1, 2, 3))
   expect_warning(
     result <- metric_R2(dat),
-    "essentially perfect fit"
+    "the standard deviation is zero"
   )
-  expect_true(is.numeric(result))
+  expect_equal(result, NA_real_)
 })
