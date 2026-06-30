@@ -1,7 +1,7 @@
 Package: PEcAn.JULES
 Type: Package
 Title: PEcAn Package for Integration of the JULES Model
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("University of Illinois, NCSA", role = c("cph")))
@@ -24,5 +24,5 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: JULES, ecosystem-modeling

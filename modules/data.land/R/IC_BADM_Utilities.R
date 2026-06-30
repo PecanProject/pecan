@@ -13,9 +13,8 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#'   badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
-#'}
+#' badm_test <- Read.IC.info.BADM(45.805925,-90.07961)
+
 Read.IC.info.BADM <-function(lat, long){
   cov.factor <-1
   #Reading in the DB
@@ -163,7 +162,7 @@ Read.IC.info.BADM <-function(lat, long){
   
  #cleaning
 ind <- apply(entries[,5:8], 1, function(x) all(is.na(x)))
-entries <- entries[-which(ind),]
+entries <- entries[!ind, , drop = FALSE]
 
   return(entries)
 }
@@ -232,7 +231,14 @@ netcdf.writer.BADM <- function(lat, long, siteid, outdir, ens){
 #'
 #' @return a list of paths to generated and stored IC files.
 #' @export
-#'
+#' 
+#' @examples
+#' \dontrun{
+#' settings <- PEcAn.settings::read.settings("pecan.xml")
+#' output_dir <- withr::local_tempdir()
+#' 
+#' ic_files <- BADM_IC_process(settings, dir = output_dir)
+#' }
 BADM_IC_process <- function(settings, dir, overwrite=TRUE){
   
   # check if this is a single-site or multi-site configuration
@@ -309,7 +315,11 @@ EPA_ecoregion_finder <- function(Lat, Lon, folder.path = NULL){
   U.S.SB.sp <-
     data.frame(Lati = Lat %>% as.numeric(),
                Long = Lon %>% as.numeric())
-  
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'sp' is required for spatial data processing but is not installed.",
+      "Please install it with: install.packages('sp')")
+  }
   sp::coordinates(U.S.SB.sp) <- ~ Long + Lati
   # L1 layer
   L1 <-

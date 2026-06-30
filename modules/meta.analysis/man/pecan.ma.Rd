@@ -12,7 +12,7 @@ pecan.ma(
   outdir,
   random = FALSE,
   overdispersed = TRUE,
-  logfile = file.path(outdir, "meta-analysis.log)"),
+  logfile = file.path(outdir, "meta-analysis.log"),
   verbose = TRUE
 )
 }
@@ -63,7 +63,7 @@ function to modify the \code{ma.model.template.bug} generic model.
 \examples{
 \dontrun{
   # Setup
-  con <- PEcAn.DB::db.open(...)
+  con <- PEcAn.DB::db.open(list(host = "postgres", user = "bety", password = "carya"))
   pft <- "temperate.Early_Hardwood"
   pft_id <- PEcAn.DB::db.query("SELECT id FROM pfts WHERE name = $1", con,
   values = list(pft))[[1]]

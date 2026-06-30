@@ -1,11 +1,10 @@
-##' @name distance
-##' @title distance
+##' distance
 ##' @export
 ##'
 ##' @param x matrix of locations in physical or parameter space
 ##' @param power exponent used for calculating distance, default value of 2 = Pythagorean distance
 ##'
-##' @return dst
+##' @return list of per-dimension pairwise distance matrices
 ##'  
 ##' @author Michael Dietze
 distance <- function(x, power = 1) {

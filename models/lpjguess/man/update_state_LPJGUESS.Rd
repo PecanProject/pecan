@@ -64,5 +64,5 @@ Adjust LPJ-GUESS state variables based on input parameters.
 Adjust LPJ-GUESS state
 }
 \author{
-Matthew Forrest
+Matthew Forrest, Yinghao Sun
 }

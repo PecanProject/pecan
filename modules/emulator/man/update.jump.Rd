@@ -2,20 +2,23 @@
 % Please edit documentation in R/update.jump.R
 \name{update.jump}
 \alias{update.jump}
-\title{update.jump}
+\title{Update method for adaptive MCMC jump-tuning objects}
 \usage{
-\method{update}{jump}(jmp, chain)
+\method{update}{jump}(object, chain, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{object}{object of class \code{jump}}
 
-\item{chain}{mcmc chain}
+\item{chain}{numeric matrix of recent MCMC chain values used to compute acceptance rate}
+
+\item{...}{additional arguments (currently unused)}
 }
 \value{
-jmp updated jump parameter
+Updated \code{jump} object with adjusted history and acceptance rate.
 }
 \description{
-update.jump
+Adapts the jump standard deviation based on recent acceptance rate
+to keep acceptance near the target rate.
 }
 \author{
 Michael Dietze

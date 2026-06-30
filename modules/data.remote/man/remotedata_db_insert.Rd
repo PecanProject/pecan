@@ -75,7 +75,7 @@ db_out <- remotedata_db_insert(
   write_pro_start,
   write_pro_end,
   raw_check,
-  pro_check
+  pro_check,
   raw_mimetype,
   raw_formatname,
   pro_mimetype,

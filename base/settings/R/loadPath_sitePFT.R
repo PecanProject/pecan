@@ -1,8 +1,6 @@
 #' Title loadPath.sitePFT
 #'
-#' @param settings pecan setting list.
 #' @param Path  Character of file name with extension.
-#'   The path will be generated using the outdir tag in pecan settings.
 #'
 #' @return a dataframe of two columns of site and pft
 #' @export loadPath.sitePFT
@@ -11,7 +9,7 @@
 #'   one needs to specify the site id and in the second column there has to be
 #'   the name of the PFT.
 #'
-loadPath.sitePFT <- function(settings, Path) {
+loadPath.sitePFT <- function(Path) {
   #finding the file extension.
   ext <- tools::file_ext(Path)
 

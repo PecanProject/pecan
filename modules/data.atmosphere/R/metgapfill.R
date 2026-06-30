@@ -566,7 +566,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       Tair_ff <- Tair_f
       Tair_ff[is.na(Tair_ff)] <- mean(Tair_ff, na.rm = TRUE)
       tau <- 15 * DTS.n
-      filt <- exp(-(1:length(Tair_ff)) / tau)
+      filt <- exp(-(seq_along(Tair_ff)) / tau)
       filt <- (filt / sum(filt))
       Ts_1ff <- stats::convolve(Tair_ff, filt)
       Ts1_f[is.na(Ts1_f)] <- Ts_1ff[is.na(Ts1_f)]

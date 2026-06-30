@@ -1,7 +1,7 @@
 Package: PEcAn.dvmdostem
 Type: Package
 Title: PEcAn Package for Integration of the Dvmdostem Model
-Version: 1.7.5
+Version: 1.7.5.9000
 Authors@R: c(person("Shawn", "Serbin", role = c("aut"),
                      email = "sserbin@bnl.gov"),
              person("Tobey", "Carman", role = c("aut", "cre"),
@@ -28,7 +28,5 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: dvmdostem, ecosystem-modeling
-
-

@@ -2,15 +2,17 @@
 % Please edit documentation in R/plot.jump.R
 \name{plot.mvjump}
 \alias{plot.mvjump}
-\title{plot.mvjump}
+\title{Plot diagnostic history for a \code{mvjump} tuning object}
 \usage{
-\method{plot}{mvjump}(jmp)
+\method{plot}{mvjump}(x, ...)
 }
 \arguments{
-\item{jmp}{jump parameter}
+\item{x}{object of class \code{mvjump}}
+
+\item{...}{additional arguments (currently unused)}
 }
 \description{
-plot.mvjump
+Displays the multivariate jump parameter trace and acceptance rate over MCMC iterations.
 }
 \author{
 Michael Dietze

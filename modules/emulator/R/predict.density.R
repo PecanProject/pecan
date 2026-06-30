@@ -1,16 +1,13 @@
 ##' Simple interpolation of a density object to new points
-##' 
-##' @name predict.density
-##' @title predict.density
-##' @export
-##' 
-##' @param den density object
-##' @param xnew new x coordinate
-##' 
-##' @return ynew
 ##'
+##' @param object a \code{density} object (as returned by \code{\link[stats]{density}})
+##' @param xnew numeric vector of new x coordinates at which to evaluate the density
+##' @param ... additional arguments (currently unused)
+##' @return numeric vector of interpolated density values at \code{xnew}
 ##' @author Michael Dietze
-predict.density <- function(den, xnew) {
+##' @export
+predict.density <- function(object, xnew, ...) {
+  den <- object
   neval <- length(den$x)
   nnew  <- length(xnew)
   ynew  <- rep(NA, nnew)

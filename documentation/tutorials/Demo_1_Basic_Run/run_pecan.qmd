@@ -6,6 +6,7 @@ author:
 format:
   html: default
   pdf: default
+format-links: false
 toc: true
 number-sections: true
 fig-width: 10
@@ -110,6 +111,7 @@ First, we need to load the PEcAn R packages. These packages provide all the func
 ```{r libraries}
 # Load the PEcAn.all package, which includes all necessary PEcAn functionality
 library("PEcAn.all")
+set.seed(20260325)
 ```
 
 # Load PEcAn Settings File

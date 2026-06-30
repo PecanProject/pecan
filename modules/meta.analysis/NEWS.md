@@ -2,6 +2,11 @@
 
 * New function `PEcAn.MA::meta_analysis_standalone` runs meta-analysis without database or file IO (#3728).
 
+## Fixed
+
+* `pecan.ma()`: removed stray `)` inside the default `logfile` path string that caused the path to be literally `meta-analysis.log)` (with a closing parenthesis in the filename).
+* `pecan.ma()`: `sink()` now correctly redirects output to the caller-supplied `logfile` argument instead of always hardcoding the path to `meta-analysis.log` inside `outdir`, making the argument actually effective.
+
 
 # PEcAn.MA 1.7.5
 

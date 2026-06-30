@@ -41,7 +41,7 @@ build_cf_variables_table_url <- function(
     url_format_string = paste0(
       # this paste0 is solely to hush R package checks,
       # which complain if any usage line is wider than 90 chars
-      "http://cfconventions.org/",
+      "https://cf-convention.github.io/",
       "Data/cf-standard-names/%d/src/",
       "src-cf-standard-name-table.xml")) {
   sprintf(url_format_string, version)

@@ -46,6 +46,7 @@ Suggests:
     itertools,
     magic (>= 1.5.0),
     methods,
+    Metrics,
     PEcAn.benchmark,
     PEcAn.data.land,
     PEcAn.data.remote,
@@ -72,5 +73,5 @@ Suggests:
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 X-schema.org-keywords: state-data-assimilation, ensemble-kalman-filter, particle-filter, ecological-forecasting, forecast-verification

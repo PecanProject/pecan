@@ -1,1 +1,5 @@
 # (PART) Tutorials, Demos and How To's {-}
+
+This section contains step-by-step tutorials, example workflows,
+and demonstrations designed to help users get started with PEcAn and learn
+common usage patterns through practical examples.

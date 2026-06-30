@@ -4,7 +4,8 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote workflow
 
 MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
-				ldndc lpjguess maat maespa rothc sibcasa sipnet stics template
+				ldndc lpjguess maat maespa peprmt rothc sibcasa sipnet stics \
+				template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.land data.remote \
@@ -50,7 +51,7 @@ SRCS_TO_CLEAN := $(strip $(foreach d,$(ALL_PKGS),$(wildcard ${d}/src)))
 
 SETROPTIONS := "options(Ncpus = ${NCPUS})"
 
-EXPECTED_ROXYGEN_VERSION := 7.3.2
+EXPECTED_ROXYGEN_VERSION := 7.3.3
 INSTALLED_ROXYGEN_VERSION := $(shell Rscript \
 	-e "if (requireNamespace('roxygen2', quietly = TRUE)) {" \
 	-e   "cat(as.character(packageVersion('roxygen2')))" \
@@ -68,8 +69,12 @@ recurse_dir = $(foreach d, $(wildcard $1*), $(call recurse_dir, $d/) $d)
 # For output from recurse_dir this removes all dirs, but in other cases beware.
 drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 
-# Generates a list of regular files at any depth inside its argument
-files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
+# Generates a list of regular files at any depth inside its argument,
+# excluding those in any `docs` folder
+files_in_dir = $(filter-out \
+  ${1}/docs/%, \
+  $(call drop_parents, $(call recurse_dir,$1)))
+
 
 # Git hash + clean status for this directory
 git_rev = $(shell \
@@ -105,7 +110,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 ### Rules
 
-.PHONY: all install check test document clean shiny pkgdocs \
+.PHONY: all install check test document clean clean-src shiny pkgdocs \
             check_base check_models check_modules help
 
 all: install document
@@ -117,9 +122,8 @@ check_modules: $(BASE_I) $(MODULES_C)
 
 document: $(ALL_PKGS_D) .doc/base/all
 
-pkgdocs:
+pkgdocs: $(ALL_PKGS_D) .doc/base/all
 	Rscript scripts/build_pkgdown.R $(ALL_PKGS) base/all || exit 1
-	
 
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
@@ -135,6 +139,12 @@ book:
 
 clean:
 	rm -rf .install .check .test .doc
+	for p in $(SRCS_TO_CLEAN); do \
+		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
+	done
+
+clean-src:
+	@echo "Removing compiled source artifacts..."
 	for p in $(SRCS_TO_CLEAN); do \
 		find "$$p" \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete; \
 	done
@@ -166,6 +176,7 @@ help:
 	@echo "  book           Render the PEcAn bookdown documentation"
 	@echo "  pkgdocs        Build package documentation websites using pkgdown"
 	@echo "  clean          Remove build artifacts"
+	@echo "  clean-src      Remove compiled source artifacts (.o, .so, .mod) without full rebuild"
 	@echo "  help           Show this help message"
 
 ### Dependencies

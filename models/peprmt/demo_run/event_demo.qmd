@@ -1,0 +1,333 @@
+---
+title: "Event handling in PEPRMT"
+author:
+  - "Chris Black"
+---
+
+## Purpose
+
+Adds management events to a basic PEPRMT run using PEcAn.
+For demonstration we show a one-time step change in inundation depth and a
+temporary fractional change in salinity.
+The same approach could be extended to other event types that alter timeseries
+inputs.
+
+Future development will add support for events that alter model parameters,
+e.g. changes in site vegetation type).
+This will require new capabilities for "restarting" the model,
+which exist for other PEcAn models but are not yet implemented for PEPRMT.
+
+
+## Prerequisites
+
+We assume here that you already have PEcAn and PEPRMT installed.
+See run_pecan_peprmt.qmd for installation instructions if needed.
+
+We also assume you have already run `input_demo.qmd`,
+and this demo uses these files created by it:
+
+* `settings_inputdemo.xml`
+* `data/met/`
+* `data/PEPRMT_specific_inputs/`
+* `data/pfts/default_marginal/`
+
+
+## Setup
+
+
+```{r}
+#| label: setup
+here::i_am("models/peprmt/demo_run/event_demo.qmd")
+
+library(tidyverse)
+library(PEcAn.all)
+library(PEcAn.PEPRMT)
+PEcAn.all::pecan_version()
+
+# prints logger messages into the notebook instead of to the terminal
+logger.setUseConsole(console = TRUE, stderr = FALSE)
+# prints messages with levels INFO or higher (WARNING, ERROR, SEVERE)
+# For even more detail, change to "DEBUG"
+logger.setLevel("INFO")
+```
+
+### Define outdirs
+
+PEcAn accepts existing output directories and will attempt to overwrite them,
+but this often does not work cleanly.
+We advise always starting fresh.
+
+This check adds a step when trying to rerun the notebook quickly,
+but complaining here is better than clobbering outputs you were counting on.
+
+```{r}
+#| label: outdir-check
+outdirs <- c(noevt = "event_demo_out_noevt", evt = "event_demo_out_evt")
+have_outdirs <- dir.exists(outdirs)
+if (any(have_outdirs)) {
+  logger.severe(
+    "Please move or delete outdir", sQuote(outdirs[have_outdirs]), "first"
+  )
+}
+```
+
+
+## Settings
+
+For brevity let's modify the settings used for the input demo rather than
+start from scratch.
+We'll use only the first two sites (US_EDN and US_SRR) and add an event file.
+
+To add an input to a PEcAn run, first declare it in the sampling space and then
+provide (an ensemble of) paths to the input files in each site's input block.
+Note that these files don't exist yet -- we'll create them next.
+This step only constructs paths and does not check their contents.
+
+```{r}
+#| label: settings
+settings <- read.settings("settings_inputdemo.xml")
+settings$pfts$pft$posterior.files <-
+  file.path("data", "pfts", "default_marginal", "post.distns.RData")
+
+settings_noevt <- settings[1:2] |>
+  setOutDir(outdirs[["noevt"]])
+settings_noevt <- PEcAn.settings::prepare.settings(settings_noevt)
+
+settings_evt <- settings[1:2] |>
+  setOutDir(outdirs[["evt"]]) |>
+  setEnsemblePaths(
+    n_reps = as.numeric(settings$ensemble$size),
+    input_type = "event_json",
+    path = file.path("data", "events"),
+    # For prototype at least, making one JSON file per ensemble member,
+    # with each one containing events from all sites => no site_id in path
+    path_template = "{path}/events_{n}.json"
+  )
+
+settings_evt$ensemble$samplingspace$event_json <- list(method="sampling")
+settings_evt <- PEcAn.settings::prepare.settings(settings_evt)
+
+write.settings(
+  settings_noevt,
+  outputfile = "settings_eventdemo_noevt.xml",
+  outputdir = getwd()
+)
+write.settings(
+  settings_evt,
+  outputfile = "settings_eventdemo_evt.xml",
+  outputdir = getwd()
+)
+```
+
+
+## Event files
+
+For demo purposes let's imagine all sites experience a one-time permanent change
+in inundation depth of approximately 30 cm and a temporary step change in
+salinity of approximately 75 percent.
+These are chosen more for simplicity than for biological realism;
+suggestions for other simple event examples are very welcome.
+
+PEcAn will treat these as "management events", and stores them as nested lists
+in JSON format.
+Each site has a site id, a list of events, and optionally other site-level
+metadata.
+Each event has a date, an event type, and optionally other parameters needed to
+specify the particulars of that event type.
+Models are allowed to ignore event types they do not recognize and to disregard
+event parameters not used in their representation of an event they do recognize.
+
+
+```{r}
+#| label: write-event-json
+dir.create(file.path("data", "events"))
+for (i in seq_len(settings$ensemble$size))  {
+  dsal <- rnorm(n = 1, mean = 75, sd = 5) |> round(2)
+  delev <- rnorm(n = 1, mean = 30, sd = 20) |> round(2)
+  evts <- list(
+    list(
+      pecan_events_version = "0.1.2",
+      site_id = "US_EDN",
+      events = list(
+        list(
+          event_type = "salinity",
+          date = "2019-01-01",
+          pct_relative_salinity_change = -dsal,
+          days_duration = 180
+        ),
+        list(
+          event_type = "elevation",
+          date = "2020-01-01",
+          cm_elevation_rise = delev
+        )
+      )
+    ),
+    list(
+      pecan_events_version = "0.1.2",
+      site_id = "US_SRR",
+      events = list(
+        list(
+          event_type = "salinity",
+          date = "2015-01-01",
+          pct_relative_salinity_change = dsal,
+          days_duration = 730
+        ),
+        list(
+          event_type = "elevation",
+          date = "2016-01-01",
+          cm_elevation_rise = delev
+        )
+      )
+    )
+  )
+
+  jsonlite::write_json(
+    x = evts,
+    path = file.path("data", "events", paste0("events_", i, ".json")),
+    pretty = TRUE,
+    auto_unbox = TRUE
+  )
+}
+
+
+```
+
+## Set up run
+
+### Generate sample design
+
+To get clean comparisons between treatments,
+we'll pair simulations with and without events by using the same ensemble of
+parameter and input values for both runs.
+
+
+```{r}
+#| label: design
+evt_design <- generate_joint_ensemble_design(
+  settings_evt[[1]],
+  settings_evt$ensemble$size
+)$X
+
+noevt_design <- evt_design |>
+  select(-event_json)
+
+settings_evt$ensemble$id <- rlang::hash(evt_design)
+settings_noevt$ensemble$id <- rlang::hash(noevt_design)
+```
+
+### Write config files
+
+```{r}
+#| label: write-config
+settings_evt <- runModule.run.write.configs(
+  settings_evt,
+  input_design = evt_design
+)
+
+file.copy(
+  file.path(settings_evt$outdir, "samples.Rdata"),
+  file.path(settings_noevt$outdir, "samples.Rdata")
+)
+settings_noevt <- runModule.run.write.configs(
+  settings_noevt,
+  input_design = noevt_design
+)
+
+write.csv(evt_design, file.path(settings_evt$outdir, "input_design.csv"))
+write.csv(noevt_design, file.path(settings_noevt$outdir, "input_design.csv"))
+```
+
+### Run PEPRMT
+
+```{r}
+#| label: run
+runModule_start_model_runs(settings_noevt)
+runModule_start_model_runs(settings_evt)
+```
+
+## Plot results
+
+Most non-carbon outputs are not yet written into the PEcAn standard outputs,
+so let's read read the raw PEPRMT output (`out.csv`) to verify the environment
+changes. See the input demo for an example of reading from PEcAn netcdf output.
+
+
+```{r}
+#| label: read
+runid <- read.csv(file.path(settings_noevt$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings_noevt$outdir, "out", runid)
+
+model_output_noevt <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = \(id, dir) read.csv(file.path(dir, "out.csv")),
+  .id = "run_id"
+) |>
+  mutate(
+    date = parse_date_time(paste(Year, DOY_disc), "yj"),
+    site_id = sub("ENS-\\d+-", "", run_id),
+    ens_num = sub("ENS-(\\d+).*", "\\1", run_id)
+  )
+
+runid <- read.csv(file.path(settings_evt$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings_evt$outdir, "out", runid)
+
+model_output_evt <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = \(id, dir) read.csv(file.path(dir, "out.csv")),
+  .id = "run_id"
+) |>
+  mutate(
+    date = parse_date_time(paste(Year, DOY_disc), "yj"),
+    site_id = sub("ENS-\\d+-", "", run_id),
+    ens_num = sub("ENS-(\\d+).*", "\\1", run_id)
+  )
+
+model_output <- dplyr::bind_rows(
+  no_event = model_output_noevt,
+  event = model_output_evt,
+  .id = "has_event"
+) |>
+  mutate(
+    cum_CH4 = cumsum(CH4_mod),
+    cum_Reco = cumsum(Reco_mod),
+    cum_GPP = cumsum(GPP_mod),
+    .by = c(ens_num, site_id, has_event)
+  )
+
+```
+Salinity and water table depth did change:
+
+```{r}
+#| label: plot-treatments
+# base_plot <- ggplot(model_output) +
+#   aes(x = date, color = has_event) +
+#   facet_grid(ens_num ~ site_id, scales = "free_x") +
+#   geom_line() +
+#   theme_bw()
+base_plot <- ggplot(model_output) +
+  aes(x = date, color = has_event, group = paste(has_event, ens_num)) +
+  facet_wrap(~ site_id, scales = "free") +
+  geom_line(alpha = 0.6) +
+  theme_bw()
+
+base_plot + aes(y = Salinity_daily_ave_ppt)
+base_plot + aes(y = WTD_cm)
+```
+
+...And as expected, salinity reduction at the normally-salty EDN site produces
+a visible increase in CH4 production, while salinity increase at the
+mostly-fresh SRR site produces a net inhibition of CH4.
+The change in water depth does not visibly affect CH4 in these simulations.
+
+```{r}
+#| label: plot-ch4
+base_plot + aes(y = log(1 + CH4_mod))
+# base_plot + aes(y = log(GPP_mod) * sign(GPP_mod))
+# base_plot + aes(y = log(1 + Reco_mod))
+
+base_plot + aes(y = cum_CH4) + scale_y_log10()
+# base_plot + aes(y = cum_GPP)
+# base_plot + aes(y = cum_Reco)
+```

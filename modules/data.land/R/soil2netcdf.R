@@ -22,11 +22,15 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{ soil.data <- list(fraction_of_sand_in_soil = c
-#'  (0.3,0.4,0.5), fraction_of_clay_in_soil = c(0.3,0.3,0.3), soil_depth = c
-#'  (0.2,0.5,1.0))
+#' \dontrun{ 
+#' soil.data <- list(
+#'   fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+#'   fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+#'   soil_depth = c(0.2,0.5,1.0)
+#' )
 #'
-#' soil2netcdf(soil.data,"soil.nc") }
+#' soil2netcdf(soil.data,"soil.nc")
+#' }
 soil2netcdf <- function(soil.data, new.file) {
   if (any(lengths(soil.data) != length(soil.data[[1]]))) {
     PEcAn.logger::logger.warn(
@@ -39,11 +43,13 @@ soil2netcdf <- function(soil.data, new.file) {
 
 
   ## convert soil type to parameters via look-up-table / equations
-  mysoil <- PEcAn.data.land::soil_params(sand = soil.data$fraction_of_sand_in_soil,
-                                         silt = soil.data$fraction_of_silt_in_soil,
-                                         clay = soil.data$fraction_of_clay_in_soil,
-                                         bulk = soil.data$soil_bulk_density,
-                                         soil_type = soil.data$soil_type)
+  mysoil <- PEcAn.data.land::soil_params(
+    sand = soil.data$fraction_of_sand_in_soil,
+    silt = soil.data$fraction_of_silt_in_soil,
+    clay = soil.data$fraction_of_clay_in_soil,
+    bulk = soil.data$soil_bulk_density,
+    soil_type = soil.data$soil_type
+  )
 
   ## Merge in new variables
   for (n in seq_along(mysoil)) {
@@ -71,12 +77,12 @@ soil2netcdf <- function(soil.data, new.file) {
   }
 
   ## create netCDF variables
-  def_dim <- function(vn) {
+  def_var <- function(vn) {
     ncdf4::ncvar_def(name = vn,
                      units = soil.units(vn),
                      dim = depth)
   }
-  ncvar <- sapply(names(soil.data), def_dim, simplify = FALSE)
+  ncvar <- sapply(names(soil.data), def_var, simplify = FALSE)
 
   ## create new file
   nc <- ncdf4::nc_create(new.file, vars = ncvar)

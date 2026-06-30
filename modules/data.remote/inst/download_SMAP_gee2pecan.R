@@ -19,12 +19,13 @@
 ##'
 ##'@examples
 ##'\dontrun{
-##'test <- download_SMAP_from_gee(
-##'start = "2019-11-01",
-##'end = "2019-11-10",
-##'site_info = list(site_id = 1126, name = "Harvard_Forest", lat = 42.531453, lon = -72.188896),
-##'geoJSON_outdir = '/projectnb/dietzelab/jbowers1/geoFiles/',
-##'smap_outdir = '/projectnb/dietzelab/jbowers1/smap_ncFiles/')
+##'  test <- download_SMAP_from_gee(
+##'    start = "2019-11-01",
+##'    end = "2019-11-10",
+##'    site_info = list(site_id = 1126, name = "Harvard_Forest", lat = 42.531453, lon = -72.188896),
+##'    geoJSON_outdir = '/projectnb/dietzelab/jbowers1/geoFiles/',
+##'    smap_outdir = '/projectnb/dietzelab/jbowers1/smap_ncFiles/'
+##'  )
 ##'}
 
 

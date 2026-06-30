@@ -7,13 +7,22 @@
 load_csv(data.path, format, site, vars = NULL)
 }
 \arguments{
-\item{data.path}{character}
+\item{data.path}{character, file path to the .csv file}
 
-\item{format}{list}
+\item{format}{list, config list containing 
+\itemize{
+  \item \code{header},    numeric for number of header rows in file
+  \item \code{skip},       numeric for skip argument of utils::read.csv 
+  \item \code{na.strings}, character vector for na.strings argument
+                          of utils::read.csv
+  }}
 
-\item{site}{list}
+\item{site}{list, currently ignored}
 
 \item{vars}{column names to return. If NULL, returns all columns}
+}
+\value{
+a data frame with the processed data of the .csv file
 }
 \description{
 load_csv

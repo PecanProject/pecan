@@ -40,6 +40,11 @@ load_veg <- function(new_site, start_date, end_date,
   # query format info
   format     <- PEcAn.DB::query.format.vars(bety = con, input.id = source_id)
 
+  if (!requireNamespace("PEcAn.benchmark", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'PEcAn.benchmark' is required for loading vegetation data but is not installed.",
+      "Please install it with: install.packages('PEcAn.benchmark')")
+  }
   # load_data{benchmark}
   obs        <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
 

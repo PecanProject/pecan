@@ -140,7 +140,7 @@ met2model.STICS <- function(in.path, in.prefix, outfolder, start_date, end_date,
       # column 10: rainfall (mm.j-1)
       Rain  <- ncdf4::ncvar_get(nc, "precipitation_flux") # kg m-2 s-1
       Rain  <- Rain[ydays %in% simdays]
-      raini <- tapply(Rain * 86400, ind, mean, na.rm = TRUE) 
+      raini <- tapply(PEcAn.utils::ud_convert(Rain, "kg/m2/s", "kg/m2/d"), ind, mean, na.rm = TRUE) # 1 kg/m2 = 1 mm water
       weather_df[ ,10] <- round(raini, digits = 2) # precipitation (mm d-1)	
       
       # column 11: wind (m.s-1) 

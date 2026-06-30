@@ -2,7 +2,7 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and
     Reanalysis
-Version: 1.8.2
+Version: 1.8.2.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Rob", "Kooper", role = c("aut", "cre"),
@@ -45,7 +45,7 @@ Imports:
     purrr,
     rlang,
     stringi,
-    units
+    units (>= 0.8.7)
 Suggests:
     coda (>= 0.18),
     data.table,
@@ -62,6 +62,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 X-schema.org-keywords: PEcAn
