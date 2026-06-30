@@ -12,8 +12,8 @@ test_that("load_x_netcdf properly loads NetCDF and parses time", {
   dim_time <- ncdf4::ncdim_def("time", "seconds since 2000-01-01 00:00:00", time_vals)
   
   # Define variables
-  var_gpp <- ncdf4::ncvar_def("GPP", "kg m-2 s-1", dim_time, -9999)
-  var_nee <- ncdf4::ncvar_def("NEE", "kg m-2 s-1", dim_time, -9999)
+  var_gpp <- ncdf4::ncvar_def("GPP", "kg m-2 s-1", dim_time, missval = NA_real_, prec = "double")
+  var_nee <- ncdf4::ncvar_def("NEE", "kg m-2 s-1", dim_time, missval = NA_real_, prec = "double")
   
   # Create the file
   nc_new <- ncdf4::nc_create(nc_file, list(var_gpp, var_nee))
