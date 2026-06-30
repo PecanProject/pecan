@@ -254,3 +254,45 @@ figure.
 - TRENDY: Global Carbon Budget 2024, public download index.
 - Benchmarks: Xu & Saatchi 2021 (biomass), GIMMS LAI4g (leaf area index),
   HWSD2 (soil carbon).
+
+## Customizing the benchmark
+
+The benchmark is designed to stay usable as models and datasets evolve. Three
+common changes: updating or adding models, adding benchmark datasets, and
+adjusting the scoring weights. The per-field meaning of every configuration
+option is documented inline in `pecan_ilamb.cfg`.
+
+### Updating or adding a model
+
+Each model is just a directory under the model root (for example
+`ilamb_models_2012_2014/`), containing `cVeg.nc`, `cSoil.nc`, and `lai.nc` on
+the analysis grid. ILAMB scores every model directory it finds there, so:
+
+- To add a model, place its directory (with the three variable files, regridded
+  to the analysis grid) under the model root and re-run `ilamb-run`.
+- To update a model to a newer version (for example a new CMIP6 or TRENDY
+  release), regenerate its files with the relevant build script and overwrite
+  that model's directory. The build scripts take the source and output paths as
+  arguments, so pointing them at a new data release does not require code edits.
+
+The ensemble means (CMIP6, TRENDY, PEcAn) are rebuilt from the individual
+members by `build_window_ensembles.py`, so re-run it after changing the set of
+member models so the means reflect the new set.
+
+### Adding a benchmark dataset
+
+Benchmarks are defined in `pecan_ilamb.cfg`. To add one for an existing
+variable, copy the dataset block under the relevant `[h2: ...]` variable, rename
+it, and point its `source` at the new benchmark netCDF (placed under
+`ILAMB_ROOT/DATA/...`). When more than one benchmark is listed under a variable,
+their `weight` values set how they combine. To score a new variable entirely,
+add a new `[h2: ...]` block and make sure the model files contain that variable.
+
+### Adjusting weights
+
+Scoring weights live in `pecan_ilamb.cfg` at two levels: the `weight` on each
+`[h2: ...]` variable sets how much that variable counts toward the overall
+score relative to the other variables, and the `weight` on each dataset block
+sets how much that dataset counts within its variable. Both are relative
+weights, not percentages. See the inline comments in the config for the full
+per-field reference.
