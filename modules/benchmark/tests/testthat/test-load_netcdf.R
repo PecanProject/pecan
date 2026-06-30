@@ -19,7 +19,7 @@ test_that("load_x_netcdf properly loads NetCDF and parses time", {
   nc_new <- ncdf4::nc_create(nc_file, list(var_gpp, var_nee))
   
   # Put data
-  ncdf4::ncvar_put(nc_new, var_gpp, c(1.1, 2.2, -9999)) # One missing value
+  ncdf4::ncvar_put(nc_new, var_gpp, c(1.1, 2.2, NA)) # One missing value
   ncdf4::ncvar_put(nc_new, var_nee, c(10, 20, 30))
   
   ncdf4::nc_close(nc_new)
