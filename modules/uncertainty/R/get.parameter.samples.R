@@ -21,15 +21,15 @@
 #' \describe{
 #'   \item{`samples.Rdata`}{When `outdir` is non-`NULL` (the default), bundles 5 objects:
 #'     \itemize{
-#'       \item `trait.samples` — Named list (PFT -> trait -> numeric vector of
+#'       \item `trait.samples` â€” Named list (PFT -> trait -> numeric vector of
 #'         length `iterations`). Raw MCMC or prior-sampled values.
-#'       \item `sa.samples` — Named list (PFT -> matrix\[n_quantiles x
+#'       \item `sa.samples` â€” Named list (PFT -> matrix\[n_quantiles x
 #'         n_traits\]). Quantile-based samples for sensitivity analysis.
-#'       \item `ensemble.samples` — Named list (PFT -> data frame\[ensemble.size
+#'       \item `ensemble.samples` â€” Named list (PFT -> data frame\[ensemble.size
 #'         x n_traits\]). Subsampled parameter sets for ensemble runs.
-#'       \item `env.samples` — Currently empty list (reserved for
+#'       \item `env.samples` â€” Currently empty list (reserved for
 #'         environmental samples).
-#'       \item `runs.samples` — Currently empty list (reserved for run
+#'       \item `runs.samples` â€” Currently empty list (reserved for run
 #'         metadata).
 #'     }}
 #' }
@@ -69,100 +69,18 @@ get.parameter.samples <- function(settings,
 
   ### Identify PFTs in the input settings.xml file
   pfts <- settings$pfts
-  pft.names <- list()
-  outdirs <- list()
-
   if (length(pfts) != length(posterior.files)) {
     PEcAn.logger::logger.error(
       "settings$pfts and posterior.files should be the same length"
     )
   }
 
-  ## Open database connection
-  con <- NULL
-  if (!is.null(settings$database$bety)) {
-    con <- try(PEcAn.DB::db.open(settings$database$bety))
-    on.exit(try(PEcAn.DB::db.close(con), silent = TRUE), add = TRUE)
-    if (inherits(con, "try-error")) {
-      con <- NULL
-      PEcAn.logger::logger.warn(
-        "We were not able to successfully establish a connection with Bety"
-      )
-    }
-  } else {
-    PEcAn.logger::logger.info(
-      "No database connection parameters provided.",
-      "Will not use Bety for parameter lookup."
-    )
-    con <- NULL
-  }
-
-  # If we fail to connect to DB then we set to NULL
-  if (inherits(con, "try-error")) {
-    con <- NULL
-    PEcAn.logger::logger.warn(
-      "We were not able to successfully establish a connection with Bety "
-    )
-  }
-
-  for (i.pft in seq_along(pfts)) {
-    # If no name given, use string "NULL" to warn user
-    pft.names[i.pft] <- pfts[[i.pft]]$name %||% "NULL"
-
-    ### Get output directory info
-    if (!is.null(pfts[[i.pft]]$outdir)) {
-      outdirs[i.pft] <- pfts[[i.pft]]$outdir
-    } else if (!is.null(con)) {
-      outdirs[i.pft] <- unique(
-        PEcAn.DB::dbfile.check(
-          type = "Posterior",
-          container.id = pfts[[i.pft]]$posteriorid,
-          con = con
-        )$file_path
-      )
-    } # else do nothing: outdirs[i.pft] stays NULL and load.posteriors will handle it
-
-  } ### End of for loop to extract pft names
-
-  PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)
-
-  ## Generate empty list arrays for output.
-  prior_distns_list <- vector("list", length(pft.names))
-  trait_mcmc_list   <- vector("list", length(pft.names))
-
-  # flag determining whether samples are independent
-  # (e.g. when params fitted individually)
-  independent <- TRUE
-
-  ## Load PFT priors and posteriors
-  for (i in seq_along(pft.names)) {
-    ## Load posteriors using unified loader
-    ## Detects posterior type by content (not filename).
-    ## Monte Carlo samples take precedence over distribution summaries.
-    posterior <- load.posteriors(
-      posterior.file = posterior.files[i],
-      outdir = unlist(outdirs[i]),
-      posteriorid = settings$pfts[[i]]$posteriorid,
-      con = con,
-      hostname = settings$host$name
-    )
-
-    if (!is.null(posterior$prior.distns)) {
-      prior_distns_list[[i]] <- posterior$prior.distns
-    }
-
-    if (!is.null(posterior$trait.mcmc)) {
-      trait_mcmc_list[[i]] <- posterior$trait.mcmc
-      ma.results <- TRUE
-      # Joint posteriors (e.g. from PDA) should preserve correlations
-      if (posterior$is.joint) {
-        independent <- FALSE
-      }
-    } else {
-      ma.results <- FALSE
-      # trait_mcmc_list[[i]] stays NULL
-    }
-  } ### End for loop
+  ## Load priors and posteriors (shared loader; see load_pft_posteriors)
+  loaded <- load_pft_posteriors(settings, posterior.files)
+  pft.names         <- loaded$pft_names
+  prior_distns_list <- loaded$prior_distns_list
+  trait_mcmc_list   <- loaded$trait_mcmc_list
+  independent       <- loaded$independent
 
   ## ---- Delegate to pure function ----
   result <- get_parameter_samples(
