@@ -82,7 +82,8 @@ runModule.run.write.configs <- function(settings,
         write = isTRUE(settings$database$bety$write),
         posterior.files = posterior.files,
         overwrite = current_overwrite,
-        input_design = designs$sensitivity
+        input_design = designs$sensitivity,
+        samples = designs$samples
       )
 
       # capture SA ensemble.id
@@ -116,7 +117,8 @@ runModule.run.write.configs <- function(settings,
         write = isTRUE(settings$database$bety$write),
         posterior.files = posterior.files,
         overwrite = current_overwrite,
-        input_design = designs$ensemble
+        input_design = designs$ensemble,
+        samples = designs$samples
       )
 
       # capture ensemble.id
@@ -143,7 +145,9 @@ runModule.run.write.configs <- function(settings,
 #'
 #' @param settings A single PEcAn settings object
 #' @param input_design Input design specification (see \code{runModule.run.write.configs})
-#' @return A list with \code{ensemble} and \code{sensitivity} entries (each a data.frame or NULL)
+#' @return A list with \code{ensemble} and \code{sensitivity} entries (each a
+#'   data.frame or NULL) and a \code{samples} entry holding the parameter bundle
+#'   when one was sampled (NULL otherwise, in which case callers fall back to disk).
 #'
 #' @details
 #' Input normalization rules:
@@ -167,7 +171,7 @@ runModule.run.write.configs <- function(settings,
     return(input_design)
   }
 
-  designs <- list(ensemble = NULL, sensitivity = NULL)
+  designs <- list(ensemble = NULL, sensitivity = NULL, samples = NULL)
 
  # single data.frame = ensemble design
  if (is.data.frame(input_design)) {
@@ -209,6 +213,7 @@ runModule.run.write.configs <- function(settings,
       samples = samples
     )
     designs$ensemble <- design_result$X
+    designs$samples <- samples
   }
 
   # generate SA design if needed

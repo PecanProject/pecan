@@ -88,6 +88,8 @@ test_that(".prepare_input_designs hands the sampled bundle to the generator", {
   passed <- mockery::mock_args(gen)[[1]]
   expect_identical(passed$samples, bundle)
   expect_equal(designs$ensemble, data.frame(param = 1:3))
+  # the bundle is also threaded onto designs for run.write.configs to receive
+  expect_identical(designs$samples, bundle)
 })
 
 
