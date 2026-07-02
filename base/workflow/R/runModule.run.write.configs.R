@@ -169,7 +169,7 @@ runModule.run.write.configs <- function(settings,
 
   designs <- list(ensemble = NULL, sensitivity = NULL)
 
-  # single data.frame = ensemble design
+ # single data.frame = ensemble design
  if (is.data.frame(input_design)) {
     designs$ensemble <- input_design
   }
@@ -177,9 +177,36 @@ runModule.run.write.configs <- function(settings,
   # generate ensemble design if needed
   if (is.null(designs$ensemble) && "ensemble" %in% names(settings)) {
     ensemble_size <- settings$ensemble$size %||% 1
+
+    # Sample once for the full bundle (traits + SA + ensemble), write
+    # samples.Rdata for the downstream analysis steps that still read it
+    # (run.sensitivity.analysis, run.ensemble.analysis, get.results), then
+    # hand the same samples to the generator so it does not resample.
+    posterior.files <- settings$pfts %>%
+      purrr::map_chr("posterior.files", .default = NA_character_)
+    loaded <- PEcAn.uncertainty::load_pft_posteriors(settings, posterior.files)
+    samples <- PEcAn.uncertainty::get_parameter_samples(
+      pft_names         = loaded$pft_names,
+      prior_distns_list = loaded$prior_distns_list,
+      trait_mcmc_list   = loaded$trait_mcmc_list,
+      ensemble.size     = ensemble_size,
+      ens.sample.method = settings$ensemble$samplingspace$parameters$method,
+      sa_quantiles      = settings$sensitivity.analysis$quantiles,
+      do_ensemble       = TRUE,
+      independent       = loaded$independent
+    )
+    ensemble.samples <- samples$ensemble.samples
+    trait.samples    <- samples$trait.samples
+    sa.samples       <- samples$sa.samples
+    runs.samples     <- samples$runs.samples
+    env.samples      <- samples$env.samples
+    save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
+         file = file.path(settings$outdir, "samples.Rdata"))
+
     design_result <- PEcAn.uncertainty::generate_joint_ensemble_design(
       settings = settings,
-      ensemble_size = ensemble_size
+      ensemble_size = ensemble_size,
+      samples = samples
     )
     designs$ensemble <- design_result$X
   }
