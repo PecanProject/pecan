@@ -39,12 +39,17 @@ generate_validation_report <- function(benchmark_results, output_file = "Validat
   temp_qmd <- file.path(output_dir, basename(template))
   file.copy(template, temp_qmd, overwrite = TRUE)
   
+  # Quarto execute_params are converted to YAML. Complex R objects like ggplots
+  # cannot be passed via YAML. We must save them to an RDS and pass the path.
+  results_rds <- file.path(output_dir, "benchmark_results.rds")
+  saveRDS(benchmark_results, results_rds)
+  
   # Render the document
   tryCatch({
     quarto::quarto_render(
       input = temp_qmd,
       output_file = basename(output_file),
-      execute_params = list(benchmark_results = benchmark_results)
+      execute_params = list(benchmark_results = results_rds)
     )
     
     PEcAn.logger::logger.info("Validation report successfully generated at:", output_file)

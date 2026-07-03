@@ -21,7 +21,12 @@ library(ggplot2)
 The following scorecard summarizes the validation metrics computed during the benchmark run.
 
 ```{r scorecard}
-results <- params$benchmark_results
+# Quarto execute_params passes strings. If it's a file path, load the RDS.
+if (is.character(params$benchmark_results) && file.exists(params$benchmark_results)) {
+  results <- readRDS(params$benchmark_results)
+} else {
+  results <- params$benchmark_results
+}
 
 if (!is.null(results) && !is.null(results$metrics)) {
   # Check if knitr is available to use kable
