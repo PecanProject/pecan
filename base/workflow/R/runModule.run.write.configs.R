@@ -186,15 +186,14 @@ runModule.run.write.configs <- function(settings,
     # samples.Rdata for the downstream analysis steps that still read it
     # (run.sensitivity.analysis, run.ensemble.analysis, get.results), then
     # hand the same samples to the generator so it does not resample.
-    posterior.files <- settings$pfts %>%
-      purrr::map_chr("posterior.files", .default = NA_character_)
+    posterior.files <- rep(NA, length(settings$pfts))
     loaded <- PEcAn.uncertainty::load_pft_posteriors(settings, posterior.files)
     samples <- PEcAn.uncertainty::get_parameter_samples(
       pft_names         = loaded$pft_names,
       prior_distns_list = loaded$prior_distns_list,
       trait_mcmc_list   = loaded$trait_mcmc_list,
       ensemble.size     = ensemble_size,
-      ens.sample.method = settings$ensemble$samplingspace$parameters$method,
+      ens.sample.method = settings$ensemble$samplingspace$parameters$method %||% "uniform",
       sa_quantiles      = settings$sensitivity.analysis$quantiles,
       do_ensemble       = TRUE,
       independent       = loaded$independent
