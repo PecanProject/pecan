@@ -7,7 +7,12 @@ Creates a joint ensemble design that maintains parameter correlations across
 all sites in a multi-site run. This function generates sample indices that
 are shared across sites to ensure consistent parameter sampling.}
 \usage{
-generate_joint_ensemble_design(settings, ensemble_size, sobol = FALSE)
+generate_joint_ensemble_design(
+  settings,
+  ensemble_size,
+  samples = NULL,
+  sobol = FALSE
+)
 }
 \arguments{
 \item{settings}{PEcAn settings object. This function directly uses:

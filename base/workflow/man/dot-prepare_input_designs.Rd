@@ -12,7 +12,9 @@
 \item{input_design}{Input design specification (see \code{runModule.run.write.configs})}
 }
 \value{
-A list with \code{ensemble} and \code{sensitivity} entries (each a data.frame or NULL)
+A list with \code{ensemble} and \code{sensitivity} entries (each a
+  data.frame or NULL) and a \code{samples} entry holding the parameter bundle
+  when one was sampled (NULL otherwise, in which case callers fall back to disk).
 }
 \description{
 Normalizes and generates input design matrices. This helper ensures
