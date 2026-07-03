@@ -21,15 +21,15 @@
 #' \describe{
 #'   \item{`samples.Rdata`}{When `outdir` is non-`NULL` (the default), bundles 5 objects:
 #'     \itemize{
-#'       \item `trait.samples` â€” Named list (PFT -> trait -> numeric vector of
+#'       \item `trait.samples` - Named list (PFT -> trait -> numeric vector of
 #'         length `iterations`). Raw MCMC or prior-sampled values.
-#'       \item `sa.samples` â€” Named list (PFT -> matrix\[n_quantiles x
+#'       \item `sa.samples` - Named list (PFT -> matrix\[n_quantiles x
 #'         n_traits\]). Quantile-based samples for sensitivity analysis.
-#'       \item `ensemble.samples` â€” Named list (PFT -> data frame\[ensemble.size
+#'       \item `ensemble.samples` - Named list (PFT -> data frame\[ensemble.size
 #'         x n_traits\]). Subsampled parameter sets for ensemble runs.
-#'       \item `env.samples` â€” Currently empty list (reserved for
+#'       \item `env.samples` - Currently empty list (reserved for
 #'         environmental samples).
-#'       \item `runs.samples` â€” Currently empty list (reserved for run
+#'       \item `runs.samples` - Currently empty list (reserved for run
 #'         metadata).
 #'     }}
 #' }

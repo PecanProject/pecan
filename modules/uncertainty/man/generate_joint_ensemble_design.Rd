@@ -35,12 +35,17 @@ The input_design is generated once for the entire model run. You might
 want to recycle existing ensemble_samples when splitting larger runs
 into smaller jobs while keeping the same parameters.}
 
+\item{samples}{Optional pre-computed parameter samples. When supplied, these
+are used directly instead of loading posteriors and sampling. When
+\code{NULL} (default), samples are generated in memory via
+\code{load_pft_posteriors} and \code{get_parameter_samples}.}
+
 \item{sobol}{Logical. If TRUE, returns a \code{sensitivity::soboljansen}
 object for Sobol sensitivity analysis.}
 }
 \value{
 A list containing ensemble samples and indices.
-  If \code{sobol = FALSE}, returns \code{list(X = design_matrix)}.
+  If \code{sobol = FALSE}, returns \code{list(X = design_matrix, samples = samples)}.
   If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
   result object with the design matrix in \code{$X} plus additional
   components for Sobol index calculations.

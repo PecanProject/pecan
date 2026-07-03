@@ -54,15 +54,15 @@ independent samples are drawn from \code{post.distns}.}
 \describe{
 \item{\code{samples.Rdata}}{When \code{outdir} is non-\code{NULL} (the default), bundles 5 objects:
 \itemize{
-\item \code{trait.samples} — Named list (PFT -> trait -> numeric vector of
+\item \code{trait.samples} - Named list (PFT -> trait -> numeric vector of
 length \code{iterations}). Raw MCMC or prior-sampled values.
-\item \code{sa.samples} — Named list (PFT -> matrix[n_quantiles x
+\item \code{sa.samples} - Named list (PFT -> matrix[n_quantiles x
 n_traits]). Quantile-based samples for sensitivity analysis.
-\item \code{ensemble.samples} — Named list (PFT -> data frame[ensemble.size
+\item \code{ensemble.samples} - Named list (PFT -> data frame[ensemble.size
 x n_traits]). Subsampled parameter sets for ensemble runs.
-\item \code{env.samples} — Currently empty list (reserved for
+\item \code{env.samples} - Currently empty list (reserved for
 environmental samples).
-\item \code{runs.samples} — Currently empty list (reserved for run
+\item \code{runs.samples} - Currently empty list (reserved for run
 metadata).
 }}
 }
