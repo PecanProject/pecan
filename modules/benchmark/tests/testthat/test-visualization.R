@@ -48,6 +48,6 @@ test_that("generate_validation_report fails gracefully if no template", {
   
   expect_error(
     generate_validation_report(mock_results, template = "non_existent.qmd"),
-    "Quarto template not found"
+    "Template file not found: non_existent.qmd"
   )
 })

@@ -14,7 +14,7 @@ metric_scatter_plot(
 \arguments{
 \item{metric_dat}{dataframe to plot, with at least columns `model` and `obvs`}
 
-\item{var}{ignored}
+\item{var}{title for the plot}
 
 \item{filename}{path to save plot, or NA to not save}
 
