@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added `make_scorecard.sh` and documentation to `inst/ilamb/` in PEcAn.benchmark for generating and serving the ILAMB HTML scorecard.
 - New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
     with units attached as an attribute.
 - New package `PEcAn.RothC` runs the RothC soil carbon model.
