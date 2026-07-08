@@ -281,3 +281,259 @@ test_that("run.meta.analysis.pft returns NA when trait.data is empty list", {
 
   expect_true(is.na(result))
 })
+
+# ---------------------------------------------------------------------------
+# In-memory input path (Modularity Part 2)
+# ---------------------------------------------------------------------------
+
+test_that("run.meta.analysis.pft errors when only trait_data is provided", {
+  pft_outdir <- file.path(tempdir(), "test-partial-trait-only")
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.partial.trait")
+  trait_data <- list(SLA = create_test_trait_data())
+
+  expect_error(
+    PEcAn.MA:::run.meta.analysis.pft(
+      pft = pft,
+      iterations = 1000,
+      random = TRUE,
+      threshold = 1.2,
+      dbfiles = tempdir(),
+      dbcon = NULL,
+      use_ghs = TRUE,
+      update = FALSE,
+      trait_data = trait_data,
+      prior_distns = NULL
+    ),
+    "must both be provided together"
+  )
+})
+
+test_that("run.meta.analysis.pft errors when only prior_distns is provided", {
+  pft_outdir <- file.path(tempdir(), "test-partial-prior-only")
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.partial.prior")
+  prior_distns <- create_test_priors("SLA")
+
+  expect_error(
+    PEcAn.MA:::run.meta.analysis.pft(
+      pft = pft,
+      iterations = 1000,
+      random = TRUE,
+      threshold = 1.2,
+      dbfiles = tempdir(),
+      dbcon = NULL,
+      use_ghs = TRUE,
+      update = FALSE,
+      trait_data = NULL,
+      prior_distns = prior_distns
+    ),
+    "must both be provided together"
+  )
+})
+
+test_that("run.meta.analysis.pft skips disk loading when in-memory inputs are provided", {
+  # When in-memory inputs are provided, the function must not attempt to read
+  # trait.data.Rdata or prior.distns.Rdata. We verify this by ensuring those
+  # files do not exist on disk and confirming the function still proceeds to
+  # call meta_analysis_standalone() with our in-memory objects (stubbed via
+  # mockery to avoid the JAGS dependency in unit tests).
+  pft_outdir <- file.path(tempdir(), "test-in-memory-skips-load")
+  unlink(pft_outdir, recursive = TRUE)
+  dir.create(pft_outdir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.in.memory.skip")
+
+  trait_data <- list(SLA = create_test_trait_data(n_obs = 10))
+  prior_distns <- create_test_priors("SLA")
+
+  # Canned result mimicking what meta_analysis_standalone() returns.
+  # Kept structurally simple so save() succeeds without JAGS objects.
+  fake_ma_result <- list(
+    trait.mcmc  = list(SLA = list()),
+    post.distns = data.frame(
+      distn = "norm", parama = 20, paramb = 5, n = NA_real_,
+      row.names = "SLA", stringsAsFactors = FALSE
+    ),
+    jagged.data = list(SLA = data.frame(Y = 1:10))
+  )
+
+  ma_mock <- mockery::mock(fake_ma_result)
+  mockery::stub(run.meta.analysis.pft, "meta_analysis_standalone", ma_mock)
+  # Stub DB registration so we don't need a real BETY connection
+  mockery::stub(run.meta.analysis.pft, "PEcAn.DB::dbfile.insert", NULL)
+
+  result <- run.meta.analysis.pft(
+    pft = pft,
+    iterations = 100,
+    random = TRUE,
+    threshold = 1.2,
+    dbfiles = tempdir(),
+    dbcon = NULL,
+    use_ghs = TRUE,
+    update = FALSE,
+    trait_data = trait_data,
+    prior_distns = prior_distns,
+    return_data = TRUE
+  )
+
+  # meta_analysis_standalone should be called exactly once with our objects
+  mockery::expect_called(ma_mock, 1)
+  call_args <- mockery::mock_args(ma_mock)[[1]]
+  expect_identical(call_args$trait_data, trait_data)
+  expect_identical(call_args$priors, prior_distns)
+
+  # Return contract: pft with trait.mcmc, post.distns, jagged.data attached
+  expect_type(result, "list")
+  expect_equal(result$name, "test.in.memory.skip")
+  expect_identical(result$trait.mcmc,  fake_ma_result$trait.mcmc)
+  expect_identical(result$post.distns, fake_ma_result$post.distns)
+  expect_identical(result$jagged.data, fake_ma_result$jagged.data)
+
+  # Provenance side-effects: wrapper still writes .Rdata files for audit trail
+  expect_true(file.exists(file.path(pft_outdir, "trait.mcmc.Rdata")))
+  expect_true(file.exists(file.path(pft_outdir, "post.distns.Rdata")))
+  expect_true(file.exists(file.path(pft_outdir, "post.distns.MA.Rdata")))
+  expect_true(file.exists(file.path(pft_outdir, "jagged.data.Rdata")))
+})
+
+test_that("run.meta.analysis.pft returns NA when in-memory trait_data is empty", {
+  pft_outdir <- file.path(tempdir(), "test-in-memory-empty")
+  unlink(pft_outdir, recursive = TRUE)
+  dir.create(pft_outdir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.in.memory.empty")
+
+  # Mirrors the disk-path "no observations" branch: when length(trait_data) == 0
+  # the function logs an info message and returns NA without running JAGS.
+  result <- PEcAn.MA:::run.meta.analysis.pft(
+    pft = pft,
+    iterations = 100,
+    random = TRUE,
+    threshold = 1.2,
+    dbfiles = tempdir(),
+    dbcon = NULL,
+    use_ghs = TRUE,
+    update = FALSE,
+    trait_data = list(),
+    prior_distns = create_test_priors("SLA")
+  )
+
+  expect_true(is.na(result))
+})
+
+test_that("run.meta.analysis.pft skip path attaches existing results to returned pft", {
+  pft_outdir <- file.path(tempdir(), "test-skip-attaches-results")
+  unlink(pft_outdir, recursive = TRUE)
+  dir.create(pft_outdir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.skip.attaches")
+
+  # Set up input files (precondition) plus the output files that trigger the
+  # skip path. We use recognizable sentinel values to verify they're loaded
+  # and attached, not silently dropped.
+  setup_trait_files(pft$outdir, trait_names = "SLA")
+
+  trait.mcmc <- list(SLA = "sentinel-mcmc")
+  save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
+  post.distns <- data.frame(
+    distn = "norm", parama = 99, paramb = 99, n = NA_real_,
+    row.names = "SLA", stringsAsFactors = FALSE
+  )
+  save(post.distns, file = file.path(pft$outdir, "post.distns.Rdata"))
+  jagged.data <- list(SLA = "sentinel-jagged")
+  save(jagged.data, file = file.path(pft$outdir, "jagged.data.Rdata"))
+
+  result <- PEcAn.MA:::run.meta.analysis.pft(
+    pft = pft,
+    iterations = 1000,
+    random = TRUE,
+    threshold = 1.2,
+    dbfiles = tempdir(),
+    dbcon = NULL,
+    use_ghs = TRUE,
+    update = FALSE,
+    return_data = TRUE
+  )
+
+  expect_equal(result$name, "test.skip.attaches")
+  expect_equal(result$trait.mcmc,  list(SLA = "sentinel-mcmc"))
+  expect_equal(result$post.distns$parama, 99)
+  expect_equal(result$jagged.data, list(SLA = "sentinel-jagged"))
+})
+
+test_that("run.meta.analysis.pft skip path tolerates missing jagged.data.Rdata", {
+  # Older posteriors copied via get.trait.data.pft may not include
+  # jagged.data.Rdata. The skip path should still succeed and return a pft
+  # with trait.mcmc and post.distns attached.
+  pft_outdir <- file.path(tempdir(), "test-skip-no-jagged")
+  unlink(pft_outdir, recursive = TRUE)
+  dir.create(pft_outdir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.skip.no.jagged")
+
+  setup_trait_files(pft$outdir, trait_names = "SLA")
+  trait.mcmc <- list()
+  save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
+  post.distns <- data.frame()
+  save(post.distns, file = file.path(pft$outdir, "post.distns.Rdata"))
+  # Deliberately do NOT save jagged.data.Rdata
+
+  result <- PEcAn.MA:::run.meta.analysis.pft(
+    pft = pft,
+    iterations = 1000,
+    random = TRUE,
+    threshold = 1.2,
+    dbfiles = tempdir(),
+    dbcon = NULL,
+    use_ghs = TRUE,
+    update = FALSE,
+    return_data = TRUE
+  )
+
+  expect_type(result, "list")
+  expect_equal(result$name, "test.skip.no.jagged")
+  expect_true("trait.mcmc" %in% names(result))
+  expect_true("post.distns" %in% names(result))
+  expect_false("jagged.data" %in% names(result))
+})
+
+test_that("run.meta.analysis.pft does NOT attach results by default (return_data = FALSE)", {
+  # Guards the serialization-safe default: a pft folded back into a settings
+  # object must not gain large mcmc/jagged fields unless the caller opts in.
+  pft_outdir <- file.path(tempdir(), "test-no-attach-default")
+  unlink(pft_outdir, recursive = TRUE)
+  dir.create(pft_outdir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(pft_outdir, recursive = TRUE), add = TRUE)
+
+  pft <- create_test_pft(outdir = pft_outdir, pft_name = "test.no.attach")
+
+  # Input + output files present so the function takes the skip path.
+  setup_trait_files(pft$outdir, trait_names = "SLA")
+  trait.mcmc <- list(SLA = "x")
+  save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
+  post.distns <- data.frame()
+  save(post.distns, file = file.path(pft$outdir, "post.distns.Rdata"))
+
+  result <- PEcAn.MA:::run.meta.analysis.pft(
+    pft = pft,
+    iterations = 1000,
+    random = TRUE,
+    threshold = 1.2,
+    dbfiles = tempdir(),
+    dbcon = NULL,
+    use_ghs = TRUE,
+    update = FALSE
+  )
+
+  # Default return_data = FALSE: bare pft, no attached MA outputs.
+  expect_false("trait.mcmc"  %in% names(result))
+  expect_false("post.distns" %in% names(result))
+  expect_false("jagged.data" %in% names(result))
+})
