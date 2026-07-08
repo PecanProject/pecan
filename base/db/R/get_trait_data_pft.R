@@ -19,7 +19,10 @@
 #' @param modeltype character or NULL. Disambiguates PFTs that share a name
 #'   across model types (e.g. \code{"SIPNET"}, \code{"ED2"}).
 #' @param dbcon database connection from \code{\link[PEcAn.DB]{db.open}}.
-#' @param trait_names character vector of trait names to retrieve.
+#' @param trait_names character vector of trait names to retrieve. If
+#'   \code{NULL} (default), priors for every trait associated with the PFT
+#'   are returned and the trait list is derived from those priors. Supply a
+#'   vector to restrict the query to specific traits.
 #' @param constants named list from \code{pft$constants} in the settings.
 #'   Traits named here are excluded from the returned priors because their
 #'   values are fixed rather than sampled by the meta-analysis.
@@ -71,16 +74,19 @@
 get_trait_data_pft <- function(pft_name,
                                modeltype,
                                dbcon,
-                               trait_names,
+                               trait_names = NULL,
                                constants = list()) {
 
   # ---- Input validation (cheap checks before any DB call) ----
   if (!is.character(pft_name) || length(pft_name) != 1L) {
     PEcAn.logger::logger.severe("'pft_name' must be a single character string")
   }
-  if (!is.character(trait_names) || length(trait_names) == 0L) {
+  # trait_names is optional: NULL means "all priors for this PFT". If the
+  # caller does supply it, it must still be a non-empty character vector.
+  if (!is.null(trait_names) &&
+      (!is.character(trait_names) || length(trait_names) == 0L)) {
     PEcAn.logger::logger.severe(
-      "'trait_names' must be a non-empty character vector"
+      "'trait_names', when supplied, must be a non-empty character vector"
     )
   }
   if (!inherits(dbcon, "DBIConnection")) {
@@ -149,9 +155,13 @@ get_trait_data_pft <- function(pft_name,
 
   # ---- Query prior distributions ----
   # format() prevents integer64 from being silently coerced to double in SQL.
+  # NULL trait_names -> trstr = NULL (NOT vecpaste(NULL), which yields "" and
+  # would inject an empty `IN ()` clause). query.priors drops the trait filter
+  # when trstr is NULL and returns every prior for the PFT.
+  trstr <- if (is.null(trait_names)) NULL else PEcAn.utils::vecpaste(trait_names)
   prior_distns <- query.priors(
     pft   = format(pft_id, scientific = FALSE),
-    trstr = PEcAn.utils::vecpaste(trait_names),
+    trstr = trstr,
     con   = dbcon
   )
 
