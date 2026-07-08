@@ -53,6 +53,11 @@
 #'   ensemble and sensitivity analysis (e.g. `post.distns.Rdata`, or
 #'   `prior.distns.Rdata`).
 #' @param overwrite logical: Replace output files that already exist?
+#' @param samples Optional pre-computed parameter samples (a list with
+#'   `trait.samples`, `sa.samples`, `ensemble.samples`). When supplied, these
+#'   are used directly and `samples.Rdata` is not read from disk. When `NULL`
+#'   (default), the function falls back to loading `samples.Rdata` from
+#'   `settings$outdir`.
 #'
 #' @return The `settings` list (invisibly), updated with ensemble IDs for SA
 #'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
@@ -63,7 +68,7 @@
 
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
-                              overwrite = TRUE) {
+                              overwrite = TRUE, samples = NULL) {
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -158,36 +163,43 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   scipen <- getOption("scipen")
   options(scipen = 12)
 
-  samples.file <- file.path(settings$outdir, "samples.Rdata")
-  if (file.exists(samples.file)) {
-    existing_data <- new.env()
-    load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
-    trait.samples <- existing_data$trait.samples
-    sa.samples <- existing_data$sa.samples
-    
-    # build ensemble.samples only for ensemble runs
-    # SA runs use sa.samples directly (quantile-based), not ensemble.samples
-    if ("ensemble" %in% names(settings) && 
-        !is.null(input_design) && 
-        "param" %in% colnames(input_design)) {
-      trait_sample_indices <- input_design[["param"]]
-      ensemble.samples <- list()
-      for (pft in names(trait.samples)) {
-        pft_traits <- trait.samples[[pft]]
-        ensemble.samples[[pft]] <- as.data.frame(
-          lapply(
-            names(pft_traits),
-            function(trait) pft_traits[[trait]][trait_sample_indices]
-          )
-        )
-        names(ensemble.samples[[pft]]) <- names(pft_traits)
-      }
+  ## Resolve parameter samples: use the in-memory bundle when passed,
+  ## otherwise fall back to loading samples.Rdata from disk.
+  if (!is.null(samples)) {
+    existing_data <- samples
+  } else {
+    samples.file <- file.path(settings$outdir, "samples.Rdata")
+    if (file.exists(samples.file)) {
+      existing_data <- new.env()
+      load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
     } else {
-      # use pre-generated samples
-      ensemble.samples <- existing_data$ensemble.samples
+      PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    }
+  }
+
+  trait.samples <- existing_data$trait.samples
+  sa.samples <- existing_data$sa.samples
+
+  # build ensemble.samples only for ensemble runs
+  # SA runs use sa.samples directly (quantile-based), not ensemble.samples
+  if ("ensemble" %in% names(settings) &&
+      !is.null(input_design) &&
+      "param" %in% colnames(input_design)) {
+    trait_sample_indices <- input_design[["param"]]
+    ensemble.samples <- list()
+    for (pft in names(trait.samples)) {
+      pft_traits <- trait.samples[[pft]]
+      ensemble.samples[[pft]] <- as.data.frame(
+        lapply(
+          names(pft_traits),
+          function(trait) pft_traits[[trait]][trait_sample_indices]
+        )
+      )
+      names(ensemble.samples[[pft]]) <- names(pft_traits)
     }
   } else {
-    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    # use pre-generated samples
+    ensemble.samples <- existing_data$ensemble.samples
   }
 
   ## remove previous runs.txt

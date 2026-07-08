@@ -13,6 +13,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     with units attached as an attribute.
 - New package `PEcAn.RothC` runs the RothC soil carbon model.
 - Added `inst/ilamb/` pipeline in PEcAn.benchmark to convert downscaled SDA reanalysis GeoTIFFs into ILAMB-compatible CF netCDF for carbon-cycle benchmarking (#4019).
+- Added multi-model benchmarking scripts to `inst/ilamb/` in PEcAn.benchmark: build the CMIP6 and TRENDY ensembles, score the PEcAn reanalysis and its individual SDA members against observational benchmarks over two evaluation windows, and summarize ensemble spread (#4038).
 - Added PEcAn.PEPRMT model, including a demo run with example data
 - Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
 - Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
