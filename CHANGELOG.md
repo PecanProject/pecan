@@ -30,6 +30,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
 - Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
+- `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
 
 ### Changed
 - Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).

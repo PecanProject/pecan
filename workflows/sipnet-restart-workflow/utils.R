@@ -88,12 +88,18 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
 }
 
 segment_dataframe <- function(run_settings) {
-  events_json <- run_settings$run$inputs$events$source
-  stopifnot(file.exists(events_json))
-
-  crop_cycles <- PEcAn.data.land::events_to_crop_cycle_starts(events_json) |>
-    dplyr::filter(.data$site_id == run_settings$run$site$id) |>
-    dplyr::ungroup()
+  crop_change_csv <- run_settings$run$inputs$crop_changes$path
+  if (!is.null(crop_change_csv)) {
+    stopifnot(file.exists(crop_change_csv))
+    crop_cycles <- read.csv(crop_change_csv)
+    crop_cycles$date <- as.Date(crop_cycles$date)
+  } else {
+    events_json <- run_settings$run$inputs$event_json$path
+    stopifnot(file.exists(events_json))
+    crop_cycles <- PEcAn.data.land::events_to_crop_cycle_starts(events_json) |>
+      dplyr::filter(.data$site_id == run_settings$run$site$id) |>
+      dplyr::ungroup()
+  }
 
   run_start <- as.Date(run_settings$run$start.date)
   run_end <- as.Date(run_settings$run$end.date)
@@ -135,7 +141,7 @@ segment_dataframe <- function(run_settings) {
         .data$end_date > .env$run_start
       )
     if (nrow(segments) < 1) {
-      PEcAn.logger::logger.severe(
+      PEcAn.logger::logger.error(
         "Filtering resulted in no segments. ",
         "This is an invalid state; check settings and events.json."
       )
@@ -220,6 +226,7 @@ write_segment_configs <- function(
 
     segment_rundir_withid <- file.path(segment_rundir, runid_dummy)
     dir.create(segment_rundir_withid, showWarnings = FALSE, recursive = TRUE)
+    file.create(file.path(segment_rundir_withid, "README.txt"))
     segment_outdir_withid <- file.path(segment_outdir, runid_dummy)
     dir.create(segment_outdir_withid, showWarnings = FALSE, recursive = TRUE)
 

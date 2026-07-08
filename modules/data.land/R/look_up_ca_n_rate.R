@@ -100,10 +100,12 @@ look_up_ca_n_rate <- function(
 }
 
 
-#' Look up California compost amendment properties
+#' Look up California organic amendment properties
 #'
 #' Returns properties of organic amendment materials including carbon and
 #' nitrogen content, C:N ratio, and plant-available nitrogen (PAN).
+#' Application rates live in
+#' \code{\link{ca_organic_amendment_app_rate}}; join on \code{material}.
 #'
 #' Matching is case-insensitive. Exact matches are returned directly.
 #' If no exact match is found, partial matching suggests possible materials.
@@ -117,10 +119,8 @@ look_up_ca_n_rate <- function(
 #' @param aggregate Character, one of "none" (default) or "mean".
 #'   If "mean", rows for the same material are averaged into a single row.
 #'
-#' @return A tibble with columns: `material`, `cn_min`, `cn_max`,
-#'   `cn_avg`, `c_pct`, `n_pct`, `pan_pct`, `n_class`,
-#'   `total_c_min_g_m2`, `total_c_max_g_m2`,
-#'   `total_n_min_g_m2`, `total_n_max_g_m2`, `source`.
+#' @return A tibble with columns: `material`, `material_class`,
+#'   `cn_min`, `cn_max`, `cn_avg`, `n_pct`, `pan_pct`, `n_class`, `source`.
 #'   Returns an empty tibble (with a warning) if no match is found.
 #'
 #' @source Eghball, B. Composting Manure and Other Organic Residues.
@@ -132,21 +132,22 @@ look_up_ca_n_rate <- function(
 #'
 #' @seealso [look_up_fertilizer_components()] for fertilizer nutrient
 #'   composition (N/C fractions) from the SWAT/DayCent database.
-#'   [ca_compost_amendment] for the underlying dataset.
+#'   [ca_organic_amendment_properties] for the underlying dataset.
+#'   [ca_organic_amendment_app_rate] for the matching application rates.
 #'
 #' @examples
-#' look_up_ca_compost_amendment("Cow manure")
-#' look_up_ca_compost_amendment("Cow manure", aggregate = "mean")
-#' look_up_ca_compost_amendment("Poultry litter", n_class = "LOWER")
+#' look_up_ca_organic_amendment("Cow manure")
+#' look_up_ca_organic_amendment("Cow manure", aggregate = "mean")
+#' look_up_ca_organic_amendment("Poultry litter", n_class = "LOWER")
 #'
 #' @export
-look_up_ca_compost_amendment <- function(
+look_up_ca_organic_amendment <- function(
     material,
     n_class = NULL,
     aggregate = c("none", "mean")
 ) {
   aggregate <- match.arg(aggregate)
-  dat <- PEcAn.data.land::ca_compost_amendment
+  dat <- PEcAn.data.land::ca_organic_amendment_properties
 
   if (!is.null(n_class)) {
     dat <- dat |>
@@ -170,37 +171,33 @@ look_up_ca_compost_amendment <- function(
       )
     } else {
       PEcAn.logger::logger.warn(
-        "No compost amendment found for material '", material, "'"
+        "No organic amendment found for material '", material, "'"
       )
     }
     return(dplyr::tibble(
-      material = character(), cn_min = numeric(), cn_max = numeric(),
-      cn_avg = numeric(), c_pct = numeric(),
+      material = character(), material_class = character(),
+      cn_min = numeric(), cn_max = numeric(), cn_avg = numeric(),
       n_pct = numeric(), pan_pct = numeric(), n_class = character(),
-      total_c_min_g_m2 = numeric(), total_c_max_g_m2 = numeric(),
-      total_n_min_g_m2 = numeric(), total_n_max_g_m2 = numeric(),
       source = character()
     ))
   }
 
   out <- result |>
     dplyr::select(
-      "material", "cn_min", "cn_max", "cn_avg",
-      "c_pct", "n_pct", "pan_pct", "n_class",
-      "total_c_min_g_m2", "total_c_max_g_m2",
-      "total_n_min_g_m2", "total_n_max_g_m2",
+      "material", "material_class",
+      "cn_min", "cn_max", "cn_avg",
+      "n_pct", "pan_pct", "n_class",
       "source"
     )
 
   if (aggregate == "mean" && nrow(out) > 1) {
     numeric_cols <- c(
-      "cn_min", "cn_max", "cn_avg", "c_pct", "n_pct", "pan_pct",
-      "total_c_min_g_m2", "total_c_max_g_m2",
-      "total_n_min_g_m2", "total_n_max_g_m2"
+      "cn_min", "cn_max", "cn_avg", "n_pct", "pan_pct"
     )
     out <- out |>
       dplyr::summarize(
         dplyr::across(dplyr::all_of(numeric_cols), mean),
+        material_class = dplyr::first(.data$material_class),
         n_class = dplyr::first(.data$n_class),
         source = paste(unique(.data$source), collapse = "; "),
         .by = "material"

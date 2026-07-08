@@ -122,6 +122,14 @@ write.events.SIPNET <- function(events_json, outdir) {
                     abv_rem, blw_rem,
                     abv_lit, blw_lit
                 )
+            } else if (type == "leafon") {
+                lines[i] <- sprintf("%d  %d  leafon", year, day)
+            } else if (type == "leafoff") {
+                lines[i] <- sprintf("%d  %d  leafoff", year, day)
+            } else {
+                PEcAn.logger::logger.warn(
+                    "unknown event type", sQuote(type), "at year", year, "day", day
+                )
             }
         }
         dir.create(outdir, showWarnings = FALSE, recursive = TRUE)

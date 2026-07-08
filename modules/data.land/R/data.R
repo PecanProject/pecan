@@ -209,84 +209,108 @@
 
 #' California recommended N application rates by crop
 #'
-#' Crop-specific recommended nitrogen fertilizer application rates for
-#' California agriculture. Contains total-season rates (not per-stage
-#' breakdowns). When multiple sources report rates for the same crop,
-#' the rate represents the envelope (min of minimums, max of maximums)
-#' across sources.
+#' Recommended nitrogen fertilizer application rates for California crops.
+#' When multiple sources report rates for the same crop the value is the
+#' envelope across sources. Crops reported only as within year stages
+#' (Barley, Beans, Cauliflower, Melons) have stages summed to an annual
+#' total. Crops reported only by age (Almonds) get the envelope across
+#' ages.
 #'
-#' @format A tibble with one row per crop and the following columns:
+#' @format A tibble with one row per crop and the columns:
 #' \describe{
-#'   \item{pft_group}{\code{character}. Plant functional type group
-#'     (e.g. "row", "woody", "rice").}
-#'   \item{crop}{\code{character}. Crop name as given in the source.}
-#'   \item{min_n_lbs_acre}{\code{numeric}. Minimum recommended N rate
-#'     (lbs N/acre).}
-#'   \item{max_n_lbs_acre}{\code{numeric}. Maximum recommended N rate
-#'     (lbs N/acre).}
-#'   \item{source}{\code{character}. Short citation for the source(s).
-#'     Multiple sources are separated by "; ".}
-#'   \item{min_n_g_m2}{\code{numeric}. Minimum N rate in SI units
-#'     (g N/m\eqn{^2}). Conversion: 1 lb/acre = 0.112085 g/m\eqn{^2}.}
-#'   \item{max_n_g_m2}{\code{numeric}. Maximum N rate in SI units
-#'     (g N/m\eqn{^2}).}
+#'   \item{pft_group}{Plant functional type group: \code{"row"},
+#'     \code{"woody"}, or \code{"rice"}.}
+#'   \item{crop}{Crop name as given in the source.}
+#'   \item{min_n_lbs_acre, max_n_lbs_acre}{Recommended N rate range
+#'     (lbs N / acre).}
+#'   \item{source}{Short citation. Multiple sources are joined with
+#'     \code{"; "}.}
+#'   \item{min_n_g_m2, max_n_g_m2}{Same range in SI units (g N / m\eqn{^2}).}
 #' }
 #'
-#' @source Rosenstock, T. S., Liptzin, D., Six, J., & Tomich, T. P. (2013).
+#' @source Rosenstock, T. S., Liptzin, D., Six, J., Tomich, T. P. (2013).
 #'   Nitrogen fertilizer use in California: Assessing the data, trends and a
-#'   way forward. California Agriculture, 67(1).
+#'   way forward. California Agriculture 67(1).
 #'   \url{https://escholarship.org/uc/item/5mk2q1sm}
-#' @source Meyer, R. D., Marcum, D. B., Orloff, S. B., & Schmierer, J. L.
+#' @source Meyer, R. D., Marcum, D. B., Orloff, S. B., Schmierer, J. L.
 #'   (2007). Alfalfa fertilization strategies. UC ANR Publication 8296.
+#' @source Brown, P. H. et al. (2020). Nitrogen Best Management Practices
+#'   for Almonds. Almond Board of California. Source for Almonds rates by
+#'   age.
+#' @source Lazicki, P., Geisseler, D., Horwath, W. R. (2016). Potato
+#'   Production in California. CDFA FREP / UC Davis. Source for Potato.
 #'
-#' @seealso \code{\link{look_up_ca_n_rate}} for looking up rates by crop name.
-#'   \code{\link{look_up_fertilizer_components}} for fertilizer nutrient
-#'   composition (N/C fractions) from the SWAT/DayCent database.
+#' @seealso \code{\link{look_up_ca_n_rate}}.
 "ca_n_application_rate"
 
-#' California organic amendment (compost) properties
+#' California organic amendment properties
 #'
-#' Properties of organic amendment materials used in California agriculture,
-#' including C:N ratios, carbon and nitrogen content, plant-available nitrogen
-#' (PAN), and application rates. Some materials appear in multiple rows when
-#' values are reported by different sources (e.g. Corn stalks, Cow manure,
-#' Vegetable waste). The \code{source} column disambiguates these.
+#' Properties of organic amendment materials used in California
+#' agriculture: C:N ratio range, total N, plant available N at 4 weeks
+#' (PAN), and CalRecycle feedstock class (14 CCR section 17852).
+#' Materials reported by more than one source appear once per source;
+#' the \code{source} column disambiguates. Application rates live in
+#' \code{\link{ca_organic_amendment_app_rate}} and join on
+#' \code{material}.
 #'
-#' @format A tibble with 32 rows and the following columns:
+#' @format A tibble with 32 rows and the columns:
 #' \describe{
-#'   \item{material}{\code{character}. Amendment material name.}
-#'   \item{cn_min, cn_max, cn_avg}{\code{numeric}. Carbon-to-nitrogen ratio
-#'     range and average.}
-#'   \item{c_pct}{\code{numeric}. Assumed carbon content (percent).}
-#'   \item{n_pct}{\code{numeric}. Total nitrogen content (percent).}
-#'   \item{pan_pct}{\code{numeric}. Plant-available nitrogen after 4 weeks
-#'     (percent). Negative values indicate N immobilization.}
-#'   \item{n_class}{\code{character}. "LOWER" or "HIGHER" N content class.}
-#'   \item{app_rate_min, app_rate_max}{\code{numeric}. Application rate range
-#'     (lbs/acre).}
-#'   \item{total_c_min_lbs_acre, total_c_max_lbs_acre}{\code{numeric}.
-#'     Total carbon applied (lbs C/acre).}
-#'   \item{total_n_min_lbs_acre, total_n_max_lbs_acre}{\code{numeric}.
-#'     Total nitrogen applied (lbs N/acre).}
-#'   \item{total_c_min_g_m2, total_c_max_g_m2}{\code{numeric}.
-#'     Total carbon in SI units (g C/m\eqn{^2}).}
-#'   \item{total_n_min_g_m2, total_n_max_g_m2}{\code{numeric}.
-#'     Total nitrogen in SI units (g N/m\eqn{^2}).}
-#'   \item{source}{\code{character}. Short citation for the data source.}
+#'   \item{material}{Material name.}
+#'   \item{material_class}{CalRecycle feedstock class
+#'     (14 CCR section 17852): one of \code{"ag"}, \code{"food"},
+#'     \code{"green"}, \code{"wood"}, \code{"yard"}, \code{"biosolids"}.}
+#'   \item{cn_min, cn_max, cn_avg}{C:N ratio range.}
+#'   \item{n_pct}{Total N (percent of dry mass).}
+#'   \item{pan_pct}{Plant available N at 4 weeks (percent of total N).
+#'     Negative values indicate net immobilization.}
+#'   \item{n_class}{N tier reported in the source (\code{"LOWER"} or
+#'     \code{"HIGHER"}).}
+#'   \item{source}{Short citation.}
 #' }
 #'
 #' @source Eghball, B. Composting Manure and Other Organic Residues.
-#'   University of Nebraska-Lincoln Extension, Publication G2222.
+#'   University of Nebraska Lincoln Extension, Publication G2222.
 #'   \url{https://extensionpubs.unl.edu/publication/g2222/na/html/view}
 #' @source Rynk, R. (ed.) Compost Production and Use in Sustainable
 #'   Farming Systems. NC State Extension.
 #'   \url{https://content.ces.ncsu.edu/compost-production-and-use-in-sustainable-farming-systems}
 #'
-#' @seealso \code{\link{look_up_ca_compost_amendment}} for looking up
-#'   amendments by material name.
-#'   \code{\link{look_up_fertilizer_components}} for fertilizer nutrient
-#'   composition (N/C fractions) from the SWAT/DayCent database.
-"ca_compost_amendment"
+#' @seealso \code{\link{ca_organic_amendment_app_rate}}.
+#'   \code{\link{look_up_ca_organic_amendment}}.
+"ca_organic_amendment_properties"
+
+#' California organic amendment application rates
+#'
+#' Recommended application rates for each material in
+#' \code{\link{ca_organic_amendment_properties}}, broken out by crop
+#' structure (row crops vs orchards). The two rate sets are identical
+#' for most materials in the source, but a handful of N rich materials
+#' (Blood meal, poultry manure) differ between row and tree applications.
+#'
+#' @format A tibble with 64 rows (32 materials x 2 crop structures) and
+#' the columns:
+#' \describe{
+#'   \item{material}{Material name. Joins to
+#'     \code{\link{ca_organic_amendment_properties}}.}
+#'   \item{crop_structure}{\code{"rows"} for annual row crops,
+#'     \code{"trees"} for perennial orchards.}
+#'   \item{app_rate_min, app_rate_max}{Amendment application rate range
+#'     (lbs of amendment / acre).}
+#'   \item{total_n_min_lbs_acre, total_n_max_lbs_acre}{Total N delivered
+#'     at those rates (lbs N / acre).}
+#'   \item{source}{Short citation.}
+#'   \item{total_n_min_g_m2, total_n_max_g_m2}{Same N range in SI units
+#'     (g N / m\eqn{^2}).}
+#' }
+#'
+#' @source Eghball, B. Composting Manure and Other Organic Residues.
+#'   University of Nebraska Lincoln Extension, Publication G2222.
+#' @source Rynk, R. (ed.) Compost Production and Use in Sustainable
+#'   Farming Systems. NC State Extension.
+#'
+#' @seealso \code{\link{ca_organic_amendment_properties}}.
+#'   \code{\link{look_up_ca_organic_amendment}}.
+"ca_organic_amendment_app_rate"
 
 #' Crop-specific rooting depths and water-depletion thresholds
 #'
