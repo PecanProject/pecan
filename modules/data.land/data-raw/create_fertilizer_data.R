@@ -19,7 +19,7 @@ daycent_default_cn <- tibble::tribble(
 )  
 
 convert_swat_fert_table_to_pkg_df <- function() {
-  fertilizer.frt <- "https://raw.githubusercontent.com/swat-model/swatplus/refs/heads/main/data/Osu_1hru/fertilizer.frt"
+  fertilizer.frt <- "https://raw.githubusercontent.com/swat-model/swatplus/main/refdata/Osu_1hru/fertilizer.frt"
   readr::read_table(
     file = fertilizer.frt,
     skip = 1,
@@ -42,8 +42,10 @@ convert_swat_fert_table_to_pkg_df <- function() {
       # SWAT's fertilizer.frt defines fraction_nh3_n as a fraction of the total mineral N
       # But this seems unintuitive
       # defining fraction_nh3_n relative to total mass
-      fraction_nh3_n = fraction_mineral_n * fraction_nh3_n,
-      fraction_no3_n = fraction_mineral_n - fraction_nh3_n,
+      # SWAT encodes the same urea-N as NH3 in urea and as NO3 in 46_00_00.
+      fraction_urea_n = ifelse(name %in% c("urea", "46_00_00"), fraction_mineral_n, 0),
+      fraction_nh3_n = ifelse(fraction_urea_n > 0, 0, fraction_mineral_n * fraction_nh3_n),
+      fraction_no3_n = fraction_mineral_n - fraction_nh3_n - fraction_urea_n,
       cn_ratio = dplyr::case_when(
         !is.na(cn_ratio) ~ cn_ratio,
         fraction_organic_n > 0 ~ NA_real_,
@@ -54,22 +56,22 @@ convert_swat_fert_table_to_pkg_df <- function() {
                          0)
     ) |>
     dplyr::select(name, description, fraction_mineral_n, fraction_nh3_n, 
-           fraction_no3_n, fraction_organic_n, fraction_c, cn_ratio)
+           fraction_no3_n, fraction_organic_n, fraction_urea_n, fraction_c, cn_ratio)
 }
 
 custom_fertilizers <- tibble::tribble(
-  ~name, ~description, ~fraction_mineral_n, ~fraction_nh3_n, ~fraction_no3_n, ~fraction_organic_n, ~fraction_c, ~cn_ratio,
-  "manure", "Generic mixed animal manure", 0.0138, 0.0137, 0.0001, 0.02, 0.24, 12,
-  "ammonium_nitrate", "Ammonium nitrate", 0.33, 0.17, 0.16, 0.0, 0.0, NA,
-  # UAN-32: 32% total N as 7.75% NH4-N + 7.75% NO3-N + 16.5% urea-N (mass fractions of solution).
-  # fraction_c derived from urea CO(NH2)2 stoichiometry: 12 g C per 28 g N -> 0.165 * (12/28) = 0.0707
-  "uan_32", "UAN solution (32% N): 7.75% NH4-N + 7.75% NO3-N + 16.5% urea-N", 0.155, 0.0775, 0.0775, 0.165, 0.0707, 0.428,
-  "can_17", "Calcium ammonium nitrate (17% N): 5.4% NH4-N + 11.6% NO3-N", 0.170, 0.054, 0.116, 0.0, 0.0, NA
+  ~name, ~description, ~fraction_mineral_n, ~fraction_nh3_n, ~fraction_no3_n, ~fraction_organic_n, ~fraction_urea_n, ~fraction_c, ~cn_ratio,
+  "manure", "Generic mixed animal manure", 0.0138, 0.0137, 0.0001, 0.02, 0, 0.24, 12,
+  "ammonium_nitrate", "Ammonium nitrate", 0.33, 0.17, 0.16, 0.0, 0, 0.0, NA,
+  # UAN-32: urea-N moved from fraction_organic_n to fraction_urea_n; fraction_c/cn_ratio zeroed
+  "uan_32", "UAN solution (32% N): 7.75% NH4-N + 7.75% NO3-N + 16.5% urea-N", 0.32, 0.0775, 0.0775, 0.0, 0.165, 0.0, 0,
+  "can_17", "Calcium ammonium nitrate (17% N): 5.4% NH4-N + 11.6% NO3-N", 0.170, 0.054, 0.116, 0.0, 0, 0.0, NA
 )
 fertilizer_composition_data <- dplyr::bind_rows(
-  convert_swat_fert_table_to_pkg_df(),
-  custom_fertilizers
-)
+  custom_fertilizers,
+  convert_swat_fert_table_to_pkg_df()
+) |>
+  dplyr::distinct(name, .keep_all = TRUE)
 
 usethis::use_data(fertilizer_composition_data, overwrite = TRUE)
 

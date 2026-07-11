@@ -1,5 +1,9 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.events.SIPNET()` includes optional `urea_n_kg_m2` in mineral nitrogen,
+  assuming immediate availability and preserving the organic N and C pools
+  (#3963, #4047).
+
 * `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
     soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
     litter pool, so it is not comparable to a measured soil organic carbon
