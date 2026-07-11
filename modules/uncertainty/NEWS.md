@@ -1,5 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* Fixed the namespace-qualified input sampler mocks in ensemble design tests, removing a random CI failure and checking that the sampled input indices are preserved.
+
 * `read.sa.output()` now reads only the runs in `sa.run.ids`, so each site of a multisite sensitivity analysis gets its own results. Previously every site read the last site's runs from the shared `runs_manifest.csv`.
 * `run.sensitivity.analysis()` skips traits with no spread in their SA samples, with a warning. Previously one such trait stopped the analysis for every PFT.
 * `runs_manifest.csv` now has a column `ens_num` to distinguish ensemble members without reparsing run IDs.
