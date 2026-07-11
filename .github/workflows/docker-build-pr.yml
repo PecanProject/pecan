@@ -1,0 +1,73 @@
+name: Docker build (fork PRs)
+
+# Pull requests opened from forks get a read-only GITHUB_TOKEN and cannot push
+# to ghcr.io/pecanproject, so the normal Docker GHA workflow (docker.yml) skips
+# them (see the gate on its `rversion` job). This workflow gives those PRs a
+# real "does the image stack still build" signal without pushing anything.
+#
+# The images build on top of each other (depends -> base -> models -> sipnet).
+# The normal workflow runs each as a separate job and pulls the parent back from
+# ghcr, which needs a registry we can't push to from a fork. Here we build the
+# whole chain in a single job with plain `docker build`, so each image stays in
+# the runner's local image store and the next `FROM pecan/<parent>:latest`
+# resolves locally. No registry, no push, no secrets.
+#
+# Scope is the core linear chain only (depends -> base -> models -> sipnet). It
+# fits the default runner disk (~19 GB free; the resident stack is ~5-6 GB). The
+# other model binaries, baseplus (docs/executor/api) and extras images are not
+# built here to keep the job within disk and time budget.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-stack:
+    # Only fork PRs. Same-repo PRs are already covered by docker.yml, which can
+    # push pr-* tags to ghcr because they run with a writable token.
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    env:
+      R_VERSION: "4.4"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Disk space before build
+        run: df -h /
+
+      # NOTE: do not add docker/setup-buildx-action here. Plain `docker build`
+      # uses the default docker-engine builder, which resolves each
+      # `FROM pecan/<parent>:latest` from the local image store built by the
+      # previous step. The docker-container buildx driver would not see those
+      # local images and every FROM after depends would fail.
+      - name: Build depends -> base -> models -> sipnet (no push)
+        run: |
+          set -euxo pipefail
+
+          # depends: FROM rocker/tidyverse:${R_VERSION}
+          docker build -f docker/depends/Dockerfile \
+            --build-arg R_VERSION="${R_VERSION}" \
+            -t pecan/depends:latest \
+            docker/depends
+
+          # base: FROM pecan/depends:latest (resolved from the local store)
+          docker build -f docker/base/Dockerfile \
+            -t pecan/base:latest \
+            .
+
+          # models: FROM pecan/base:latest
+          docker build -f docker/models/Dockerfile \
+            -t pecan/models:latest \
+            docker/models
+
+          # sipnet: FROM pecan/models:latest
+          docker build -f models/sipnet/Dockerfile \
+            --build-arg MODEL_VERSION=git \
+            -t pecan/model-sipnet-git:latest \
+            models/sipnet
+
+      - name: Disk space after build
+        if: always()
+        run: df -h /
