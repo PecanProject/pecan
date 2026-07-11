@@ -1,5 +1,20 @@
 context("validate_events_json")
 
+testthat::test_that("urea-only fertilizer events validate and negative urea is rejected", {
+    testthat::skip_if_not_installed("jsonvalidate")
+    input <- withr::local_tempfile(fileext = ".json")
+    site <- list(pecan_events_version = "0.1.2", site_id = "UREA", events = list(
+        list(event_type = "fertilization", date = "2022-01-01", urea_n_kg_m2 = 0.0046)
+    ))
+    jsonlite::write_json(list(site), input, auto_unbox = TRUE)
+    expect_true(validate_events_json(input))
+    site$events[[1]]$urea_n_kg_m2 <- -0.001
+    # Also provide an accepted legacy field to isolate validation of urea's range.
+    site$events[[1]]$nh4_n_kg_m2 <- 0
+    jsonlite::write_json(list(site), input, auto_unbox = TRUE)
+    expect_false(validate_events_json(input))
+})
+
 testthat::test_that("validate_events_json validates good fixtures", {
     f1 <- system.file("events_fixtures/events_site1.json", package = "PEcAn.data.land", mustWork = TRUE)
     f2 <- system.file("events_fixtures/events_site1_site2.json", package = "PEcAn.data.land", mustWork = TRUE)

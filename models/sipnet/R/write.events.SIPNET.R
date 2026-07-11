@@ -15,6 +15,9 @@
 #'   `irrigation`, `harvest`.
 #' - Units translated from PEcAn standard_vars to SIPNET events.in specification:
 #'   `kg/m^2` to `g/m^2`; irrigation `amount_mm` to `cm`.
+#' - Fertilization adds ammonium, nitrate, and optional `urea_n_kg_m2` to
+#'   SIPNET mineral N. Urea is treated as immediately available mineral nitrogen;
+#'   omitted urea defaults to zero and does not contribute to organic N or C.
 #' - Planting allocation uses fixed internal parameters. Future work should use the same values
 #'   that are written to `sipnet.parms` (e.g. after integrating this into `write.configs.SIPNET`)
 #'
@@ -89,27 +92,28 @@ write.events.SIPNET <- function(events_json, outdir) {
             day <- days_sorted[[i]]
             type <- e$event_type
             if (type == "tillage") {
-                f <- if (is.null(e$tillage_eff_0to1)) 0 else e$tillage_eff_0to1
+                f <- e$tillage_eff_0to1 %||% 0
                 # TODO: consider validating up front against schema rather than here
                 lines[i] <- sprintf("%d  %d  till  %s", year, day, f)
             } else if (type == "planting") {
                 # infer total planted biomass from leaf pool and allocation fraction
-                leaf_g <- as.numeric(if (is.null(e$leaf_c_kg_m2)) 0 else e$leaf_c_kg_m2) * kg2g
+                leaf_g <- as.numeric(e$leaf_c_kg_m2 %||% 0) * kg2g
                 total_g <- if (leafAllocation > 0) leaf_g / leafAllocation else leaf_g
                 wood_g <- woodAllocation * total_g
                 fr_g <- fineRootAllocation * total_g
                 cr_g <- coarseRootAllocation * total_g
                 lines[i] <- sprintf("%d  %d  plant  %s %s %s %s", year, day, leaf_g, wood_g, fr_g, cr_g)
             } else if (type == "fertilization") {
-                orgN_g <- as.numeric(if (is.null(e$org_n_kg_m2)) 0 else e$org_n_kg_m2) * kg2g
-                orgC_g <- as.numeric(if (is.null(e$org_c_kg_m2)) 0 else e$org_c_kg_m2) * kg2g
-                nh4_g <- as.numeric(if (is.null(e$nh4_n_kg_m2)) 0 else e$nh4_n_kg_m2) * kg2g
-                no3_g <- as.numeric(if (is.null(e$no3_n_kg_m2)) 0 else e$no3_n_kg_m2) * kg2g
-                minN_g <- nh4_g + no3_g
+                orgN_g <- as.numeric(e$org_n_kg_m2 %||% 0) * kg2g
+                orgC_g <- as.numeric(e$org_c_kg_m2 %||% 0) * kg2g
+                nh4_g <- as.numeric(e$nh4_n_kg_m2 %||% 0) * kg2g
+                no3_g <- as.numeric(e$no3_n_kg_m2 %||% 0) * kg2g
+                urea_g <- as.numeric(e$urea_n_kg_m2 %||% 0) * kg2g
+                minN_g <- nh4_g + no3_g + urea_g
                 lines[i] <- sprintf("%d  %d  fert   %s %s %s", year, day, orgN_g, orgC_g, minN_g)
             } else if (type == "irrigation") {
-                amt_cm <- as.numeric(if (is.null(e$amount_mm)) 0 else e$amount_mm) * mm2cm
-                method_code <- if (is.null(e$method) || e$method == "soil") 1 else 0
+                amt_cm <- as.numeric(e$amount_mm %||% 0) * mm2cm
+                method_code <- if ((e$method %||% "soil") == "soil") 1 else 0
                 lines[i] <- sprintf("%d  %d  irrig  %s %s", year, day, amt_cm, method_code)
             } else if (type == "harvest") {
                 abv_rem <- e$frac_above_removed_0to1 %||% 0
