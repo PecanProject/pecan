@@ -93,8 +93,9 @@
 #'   \item{fraction_mineral_n}{\code{numeric}. Fraction of total nitrogen in mineral form.}
 #'   \item{fraction_nh3_n}{\code{numeric}. Fraction of fertilizer by mass that is ammonium-n (NH\eqn{_3}-N).}
 #'   \item{fraction_no3_n}{\code{numeric}. Fraction of fertilizer by mass that is nitrate-N (NO\eqn{_3}-N).
-#'     Computed as \code{fraction_mineral_n - fraction_nh3_n}.}
+#'     Computed as \code{fraction_mineral_n - fraction_nh3_n - fraction_urea_n}.}
 #'   \item{fraction_organic_n}{\code{numeric}. Fraction of organic matter that is nitrogen.}
+#'   \item{fraction_urea_n}{\code{numeric}. Fraction of fertilizer by mass that is urea-N (ure\eqn{_a}-N).}
 #'   \item{fraction_c}{\code{numeric}. Fraction of mass that is carbon.}
 #'   \item{cn_ratio}{\code{numeric}. Carbon-to-nitrogen ratio for organic matter.
 #'     Assigned based on DayCent organic matter parameterterizations.}
