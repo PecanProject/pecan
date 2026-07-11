@@ -178,7 +178,10 @@ In other words, this configuration...
   </database>
 ```
 
-...will be translated (by way of `PEcAn.DB::db.open(settings$database$bety)`) into R code like the following:
+... will be translated (by way of
+[`PEcAn.DB::db.open`](https://pecanproject.github.io/package-documentation/develop/PEcAn.DB/reference/db.open.html)
+(`settings$database$bety`)) into R code like the following:
+
 
 ```r
 con <- DBI::dbConnect(
@@ -206,7 +209,9 @@ The default `config.php` settings on any given platform (VM, Docker, etc.) or in
 
 Key R functions using these parameters are as follows:
 
-- `PEcAn.DB::db.open` -- Open a database connection and create a connection object, which is used by many other functions for communicating with the PEcAn database.
+- [`PEcAn.DB::db.open`](https://pecanproject.github.io/package-documentation/develop/PEcAn.DB/reference/db.open.html)
+  -- Open a database connection and create a connection object,
+   which is used by many other functions for communicating with the PEcAn database.
 
 #### `dbfiles`: Location of database files {#xml-dbfiles}
 
@@ -258,19 +263,19 @@ The PEcAn system requires at least 1 plant functional type (PFT) to be specified
 
 * `name` : (required) the name of the PFT, which must *exactly* match the name in the PEcAn database.
 * `outdir`: (optional) Directory path in which PFT-specific output will be stored during meta-analysis and sensitivity analysis. If not specified (recommended), it will be written into `<outdir>/<pftname>`.
-* `contants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
-* `posterior.files` (Optional) this tag helps to signal write.config functions to use specific posterior/prior files (such as HPDA or MA analysis) for generating samples without needing to access to the bety database.
-
-``
+* `constants`: (optional) this section contains information that will be written directly into the model specific configuration files. For example, some models like ED2 use PFT numbers instead of names for PFTs, and those numbers can be specified here. See documentation for model-specific code for details.
+* `posterior.files` (Required unless database is available) this tag helps to signal write.config functions to use specific posterior/prior files (such as HPDA or MA analysis) for generating samples without needing to access to the bety database.
 
 This information is currently used by the following PEcAn workflow function:
 
-- `get.traits` - ??????
+- - [`PEcAn.DB::get.trait.data`](https://pecanproject.github.io/package-documentation/develop/PEcAn.DB/reference/get.trait.data.html)
+  — Retrieves trait data for selected PFTs from the database or posterior files
+
 
 ### `meta.analysis`: Trait Meta Analysis {#xml-meta-analysis}
 
 The section meta.analysis needs to exists for a meta.analysis to be executed, even though all tags inside are optional.
-Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to manually set all parameters), you should omit this node.
+Conversely, if you do not want to do a trait meta-analysis (e.g. if you want to manually set all parameters), you should omit this section.
 
 ```xml
   <meta.analysis>
@@ -294,7 +299,9 @@ Some of the tags that can go in this section are:
 
 This information is currently used by the following PEcAn workflow function:
 
-- `PEcAn.MA::run.meta.analysis` - ???
+- - [`PEcAn.MA::run.meta.analysis`](https://pecanproject.github.io/package-documentation/develop/PEcAn.MA/reference/run.meta.analysis.html)
+  — Performs Bayesian meta-analysis of trait data to generate posterior distributions
+
 
 ### `model`: Model configuration {#xml-model}
 
@@ -305,6 +312,7 @@ This section describes which model PEcAn should run and some instructions for ho
 	<id>7</id>
 	<type>ED2</type>
 	<binary>/usr/local/bin/ed2.r82</binary>
+	<revision>82</revision>
 	<prerun>module load hdf5</prerun>
 	<config.header>
 		<!--...xml code passed directly to config file...-->
@@ -316,8 +324,14 @@ Some important tags are as follows:
 
 - `id` -- The unique numeric ID of the model in the PEcAn database `models` table. If this is present, then `type` and `binary` are optional since they can be determined from the PEcAn database.
 - `type` -- The model "type", matching the PEcAn database `modeltypes` table `name` column. This also refers to which PEcAn model-specific package will be used. In PEcAn, a "model" refers to a specific version (e.g. release, git commit) of a specific model, and "model type" is used to link different releases of the same model. Model "types" also have specific PFT definitions and other requirements associated with them (e.g. the ED2 model "type" requires a global land cover database).
-- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine. 
+- `binary` -- The file path to the model executable. If omitted, PEcAn will use whatever path is registered in the PEcAn database for the current machine.
+- `revision` -- A unique identifier for the model version of `binary`. Format is model-specific, but many models expect a semantic version (eg "2.12.3") and rely on version comparisons (e.g. `revision >= "2.0"`) to match PEcAn configuration behavior to model capabilities.
 - `prerun` -- Additional options added to the `job.sh` script, which is used to execute the model. This is useful for setting specific environment variables, load modules, etc.
+- `options` -- Additional configuration passed on to the model.
+  Depending on the model these might be passed as a set of command flags (e.g. `<options><infile>path/to/file</infile><quiet>FALSE</quiet><options` becomes `./path/to/binary --no-quiet --inputfile=path/to/file`),
+  entries in a configuration file (e.g. `<options><LOG_FILE>path/to/file</LOG_FILE><QUIET>1</QUIET><options` becomes `LOG_FILE = path/to/file` and `QUIET = 1`),
+  or a more complicated transformation (e.g. a model that accepts some options as command flags and other as lines in a configuration file might take `<options><flags>...</flags><settings>...</settings></options>`).
+  To avoid confusion, we recommend that the names in `model$options` be *identical* to the names the model recognizes: If the model expects `LONG_COMPLICATED_OPTION_NAME = "third_verbose_option"`, write that into the XML instead of making write.config.MODEL translate from `model$options$complic_opt = 3".`
 
 This information is currently used by the following PEcAn workflow function:
 
@@ -428,20 +442,86 @@ The following are the most common types of inputs, along with their correspondin
 
 ##### `met`: Meteorological inputs {#xml-run-inputs-met}
 
-(Under construction. See the `PEcAn.data.atmosphere` package, located in `modules/data.atmosphere`, for more details.)
+The `<met>` tag specifies the meteorological forcing data used to drive the model simulation.
 
-##### (Experimental) `soil`: Soil inputs {#xml-run-inputs-soil}
+Users must define either:
 
-(Under construction. See the `PEcAn.data.land` package, located in `modules/data.land`, for more details).
+- `source` – the name of a supported meteorological dataset, or  
+- `path` – the location of a pre-processed meteorological file.
 
-##### (Experimental) `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
+Example:
+
+```xml
+<met>
+  <source>CRUNCEP</source>
+  <output>SIPNET</output>
+</met>
+```
+
+Common sub-tags:
+
+- `id` – Database ID of the meteorological dataset.
+- `source` – Name of the meteorological product (e.g., `CRUNCEP`, `AmerifluxLBL`).
+- `path` – Direct path to an existing meteorological file.
+- `output` – Model format to convert the meteorological data into.
+
+If `source` is provided, PEcAn will automatically retrieve and process the dataset.  
+If `path` is provided, PEcAn will use the file directly.
+
+
+
+##### `soil`: Soil inputs {#xml-run-inputs-soil}
+
+Soil inputs are handled through the `PEcAn.data.land` module.
+For full technical details, see the
+[PEcAn.data.land package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.land/)
+
+In practice, most PEcAn workflows do not rely on automated soil data
+processing at runtime. Instead, users typically preprocess soil data
+and provide standardized `soil.nc` files that are referenced directly
+in `pecan.xml`.
+
+Although automated soil processing is supported in principle, there are
+currently only two soil data products commonly used in PEcAn workflows:
+gSSURGO and SoilGrids.
+
+The `<soil>` element in `pecan.xml` is primarily used to specify paths to
+preprocessed soil inputs rather than to trigger on-the-fly data
+processing.
+
+Note that some models reference soil inputs using the `<soil>` tag,
+while others use `<soil_physics>`. This inconsistency is historical and
+can cause confusion; a future harmonization of these tags would be
+beneficial.
+
+
+##### `veg`: Vegetation initial conditions {#xml-run-inputs-veg}
 
 ##### `poolinitcond`: initial condition inputs {#xml-run-inputs-poolinitcond}
 * `source`: Data source of initial condition .rd veg files ex: NEON_veg, FIA.
 * `output`: This tag can only must match the cooresponding tag in the modeltypes_formats table that matches with your model type ex for SIPNET model tag is poolinitcond.
 * `ensemble`: Number of initial conditions ensemble member files ex: 30.
 
-(Under construction. Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
+###### `phenology`
+
+Defines the timing of vegetation growth and dormancy, such as leaf-out and
+senescence. Phenology information allows PEcAn to determine when vegetation
+is actively growing and interacting with climate drivers.
+
+Phenology inputs are typically derived from external datasets and help align
+model simulations with observed seasonal behavior.
+
+###### `management`
+
+Specifies management activities applied to vegetation, such as planting,
+harvesting, fertilization, or irrigation. Management inputs allow PEcAn to
+represent human interventions that affect ecosystem processes.
+
+Management information may vary over time and is commonly linked to site- or
+crop-specific datasets.
+
+
+ (Follow developments in the `PEcAn.data.land` package, located in `modules/data.land` in the source code).
 
 ##### `pft.site` Multi-site site / PFT mapping
 
@@ -636,6 +716,35 @@ This information is currently used by the following PEcAn workflow functions:
 - `PEcAn.<MODEL>::write.configs.<MODEL>` -- See [above](#pecan-write-configs)
 - `PEcAn.uncertainty::run.sensitivity.analysis` -- Executes the uncertainty analysis
 
+#### Coordinating inputs with the `input_design` design matrix {#xml-input-design}
+
+Multi-site ensembles that sample over input files use an `input_design`
+data.frame to keep parameter draws and input files aligned across runs. The
+design is created up front (typically via `generate_joint_ensemble_design()`)
+and passed to `runModule.run.write.configs()`. It is not saved automatically to
+`samples.Rdata`, so keep your copy if you need to reuse it.
+
+- **Parameter column:** `param` gives the index (i.e. row number) of the
+posterior draw to use for this run. For example, `param = 5` means use the 5th
+parameter sample from `samples.Rdata`.
+- **Input columns:** any name that matches a tag under `run/inputs` (for
+example `met`, `soil`, `veg`, `poolinitcond`). Values are indices into that
+input’s `path` list. Leaving a column out keeps that input fixed across runs.
+- **Row count and order:** must include exactly one row per run. For ensembles 
+  this means `ensemble.size` rows.
+
+Example layout (CSV or `data.frame`):
+
+| param | met | soil |
+|------:|----:|-----:|
+| 1 | 1 | 1 |
+| 2 | 2 | 1 |
+| 3 | 1 | 2 |
+| 4 | 2 | 2 |
+
+In this example, run 2 would reuse the second parameter draw and also switch to
+the second met driver while keeping the first soil file.
+
 ### Parameter Data Assimilation {#xml-parameter-data-assimilation}
 
 The following tags can be used for parameter data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](#pda)
@@ -766,6 +875,13 @@ The following tags can be used for state data assimilation. More detailed inform
   <Localization.FUN>Local.support</Localization.FUN>
   <scalef>1</scalef>
   <chains>5</chains>
+  <batch.settings>
+    <general.job>
+      <cores>28</cores>
+      <folder.num>40</folder.num>
+    </general.job>
+    <qsub.cmd>qsub -l h_rt=24:00:00 -l mem_per_core=4G -l buyin -pe omp @CORES@ -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub.cmd>
+  </batch.settings>
   <state.variables>
    <variable>
     <variable.name>AbvGrndWood</variable.name>
@@ -860,6 +976,8 @@ The following tags can be used for state data assimilation. More detailed inform
 * **scalef** : [optional] The scale parameter used for the localization operation, the smaller the value is, the sites are more isolated.
 * **chains** : [optional] The number of chains needed to be estimated during the MCMC sampling process.
 * **_NOTE:_** If TRUE, you must also assign a vector of trait names to pick.trait.params within the sda.enkf function.
+* **batch.settings** : [optional] The configurations are used to set up batch job submissions. It will be used only if you use the `qsub_sda` function for the SDA job submissions with a large number of sites (>500). The `general.job` contains the number of CPUs per job and the number of jobs you would like to submit to the entire SDA experiment (e.g., 8,000 sites with 40 folders will end up with 200 sites per job).
+The `qsub.cmd` contains the string for configuring extra qsub arguments.
 * **state.variable** : [required] State variable that is to be assimilated (in PEcAn standard format, with pre-specified variable name, unit, and range). Four variables can be assimilated so far: including Aboveground biomass (AbvGrndWood), LAI, SoilMoistFrac, and Soil carbon (TotSoilCarb).
 * **Obs_Prep** : [required] This section will be handled through the SDA_Obs_Assembler function, if you want to proceed with this function, this section is required.
 * **spin.up** : [required] start.date and end.date for model spin up.

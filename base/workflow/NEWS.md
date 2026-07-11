@@ -1,12 +1,19 @@
-### Joint Ensemble Sampling Implementation
-- **Behavior Change**: Ensemble runs now use shared input samples across all sites instead of independent sampling per site
-- **Affected Components**: 
-  - `get.parameter.samples.R` 
-  - `runModule.run.write.configs.R`
-  - `run.write.configs.R` 
-  - `ensemble.R`
-- **New Default**: The sampling method default has changed from "uniform" to "random"
-- **Impact**: This ensures consistency across sites in ensemble runs but may produce different results compared to previous versions
+# PEcAn.workflow 1.10.0.9000
+
+## Changed
+* Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
+* Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)
+* Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.
+
+# PEcAn.workflow 1.10.0
+
+## Changed
+
+Breaking: Ensemble runs now use shared input samples across all sites instead of independent sampling per site.
+
+* `run.write.configs()` now has two new required args `ensemble.size` and `input_design`, and removes `ens.sample.method` (#3535, #3612).
+* `runModule.run.write.configs()` has new arg `input_design`, with default NULL meaning to generate one internally (#3535).
+* Removed unused functions `create_execute_test_xml()` and `model_specific_tags()`, which depended on deprecated database and web frontend (@S1DDHEY, #3826).
 
 
 # PEcAn.workflow 1.9.0

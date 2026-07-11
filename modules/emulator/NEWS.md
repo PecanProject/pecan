@@ -1,3 +1,9 @@
+# PEcAn.emulator 1.8.2
+
+* Added keywords and bug reporting URL to DESCRIPTION. No other files changed.
+
+
+
 # PEcAn.emulator 1.8.1
 
 ## License change

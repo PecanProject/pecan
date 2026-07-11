@@ -1,3 +1,7 @@
 # (PART) Topical Pages {-}
 
-
+This section provides reference documentation on core PEcAn concepts,
+data formats, models, and system components.
+These chapters are intended to provide deeper understanding of individual
+modules in support of both using PEcAn for science and development of the
+PEcAn toolbox.

@@ -11,9 +11,9 @@ write_restart.LPJGUESS(
   stop.time,
   settings,
   new.state,
-  RENAME = TRUE,
   new.params,
   inputs = NULL,
+  RENAME = TRUE,
   verbose = FALSE
 )
 }
@@ -30,11 +30,11 @@ write_restart.LPJGUESS(
 
 \item{new.state}{analysis state vector}
 
-\item{RENAME}{flag to either rename output file or not}
-
 \item{new.params}{list of parameters to convert between different states}
 
-\item{inputs}{list of model inputs to use in write.configs.SIPNET}
+\item{inputs}{list of model inputs to use in write.configs.LPJGUESS}
+
+\item{RENAME}{flag to either rename output file or not}
 
 \item{verbose}{decide if we want to print the runid}
 }

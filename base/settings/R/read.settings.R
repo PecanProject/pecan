@@ -24,18 +24,9 @@
 #' @author Ryan Kelly
 #' @author Betsy Cowdery
 #' @examples
-#' \dontrun{
-#' ## bash shell:
-#' ## example workflow.R and pecan.xml files in pecan/tests
-#' R --vanilla -- --settings path/to/mypecan.xml < workflow.R
-#'
-#' ## R:
-#'
-#' settings <- read.settings()
-#' settings <- read.settings(file="willowcreek.xml")
-#' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.settings")
+#' test.settings.file <- system.file("test.xml", package = "PEcAn.settings")
 #' settings <- read.settings(test.settings.file)
-#' }
+#' 
 read.settings <- function(inputfile = "pecan.xml") {
   if (inputfile == "") {
     PEcAn.logger::logger.warn(

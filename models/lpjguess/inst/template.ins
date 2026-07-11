@@ -14,11 +14,21 @@ coordinates_precision 2
 ! Forcing Data & gridlists
 !
 
-param "file_gridlist" (str "@GRID_FILE@")
+param "file_gridlist_cf" (str "@GRID_CF_FILE@")
+param "file_gridlist" (str "@GRID_LIST_FILE@")
 
 param "file_co2"      (str "@CO2_FILE@")
-param "file_cru"      (str "@MET_AND_SOIL_FILE@")
-param "file_cru_misc"  (str "@MISC_FILE@")
+param "file_cru"      (str "@SOIL_FILE@")
+param "file_lu"      (str "@LU_FILE@")
+param "file_grossLUC"      (str "@LUC_FILE@")
+param "file_lucrop"  (str "")
+param "file_lupasture"  (str "")
+param "file_lunatural"  (str "")
+param "file_luforest"  (str "")
+param "file_Nfert_st" (str "")
+param "file_Nfert" (str "")
+!param "file_cru"      (str "@MET_AND_SOIL_FILE@")
+!param "file_cru_misc"  (str "@MISC_FILE@")
 
 ! N deposition (blank string to use constant pre-industrial level of 2 kgN/ha/year)
 param "file_ndep"     (str "")

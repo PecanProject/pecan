@@ -88,18 +88,20 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     params$restart["LAI"] <- ens$LAI[last]
   }
   
+  litter_carbon_content <- ens$litter_carbon_content[last] %||% NA_real_  ##kgC/m2
   if ("litter_carbon_content" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
+    forecast[[length(forecast) + 1]] <- litter_carbon_content
     names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }else{
-    params$restart["litter_carbon_content"] <- PEcAn.utils::ud_convert(ens$litter_carbon_content[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    params$restart["litter_carbon_content"] <- PEcAn.utils::ud_convert(litter_carbon_content, 'kg m-2', 'g m-2')
   }
   
+  litter_mass_content_of_water <- ens$litter_mass_content_of_water[last] %||% NA_real_  ##kgC/m2
   if ("litter_mass_content_of_water" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$litter_mass_content_of_water[last]  ##kgC/m2
+    forecast[[length(forecast) + 1]] <- litter_mass_content_of_water
     names(forecast[[length(forecast)]]) <- c("litter_mass_content_of_water")
   }else{
-    params$restart["litter_mass_content_of_water"] <- ens$litter_mass_content_of_water[last]
+    params$restart["litter_mass_content_of_water"] <- litter_mass_content_of_water
   }
   
   if ("SoilMoist" %in% var.names) {

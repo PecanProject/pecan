@@ -42,16 +42,15 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' library(PEcAn.data.atmosphere)
-##' outfolder = '~/Downscaled_GCM'
-##' in.path = '~/raw_GCM'
-##' in.prefix = 'GFDL'
-##' lm.models.base = 'sf_scratch/US-WCr'
-##' dat.train_file = 'Training_data/US-WCr_dat.train.nc'
-##' start_date = '2010-01-01'
-##' end_date = '2014-12-31'
-##' cores.max = 12
-##' n.ens = 3}
+##'   predict_subdaily_met(
+##'     outfolder = "~/Downscaled_GCM",
+##'     in.path = "~/raw_GCM",
+##'     in.prefix = "GFDL",
+##'     path.train = "~/Training_data",
+##'     lm.models.base = "sf_scratch/US-WCr",
+##'     ens.labs = 1:3
+##'   )
+##' }
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Script

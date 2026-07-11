@@ -38,6 +38,20 @@ met2model.DALEC(
 
 \item{...}{additional arguments, currently ignored}
 }
+\value{
+Invisibly returns a data.frame with metadata for the generated DALEC meteorology file.
+}
 \description{
 met2model for DALEC
+}
+\examples{
+\dontrun{
+ in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
+ in.prefix  <- ""
+ outfolder  <- "~/paleon/metTest/"
+ merge.file <- "~/paleon/paleon_monthly_co2.nc"
+ start_date <- "0850-01-01"
+ end_date   <- "2010-12-31"
+ PEcAn.DALEC::met2model.DALEC(in.path, in.prefix, outfolder, start_date, end_date)
+}
 }

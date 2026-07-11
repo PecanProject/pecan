@@ -1,24 +1,46 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
-#' run sensitivity.analysis
+#' Run sensitivity analysis on finished model runs
 #'
-#' Runs the sensitivity analysis module on a finished run
+#' Loads parameter samples and parsed model output from disk, computes
+#' sensitivity coefficients and variance decomposition for each PFT/trait,
+#' and saves results and diagnostic plots.
 #'
-#' @return nothing, saves \code{sensitivity.results} as
-#'   sensitivity.results.Rdata, sensitivity plots as sensitivityanalysis.pdf,
-#'   and variance decomposition 'popsicle plot' as variancedecomposition.pdf a
-#'   side effect (OPTIONAL)
+#' @details
+#' **Upstream contract (reads from `settings$outdir`):**
+#' \describe{
+#'   \item{`samples.Rdata`}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}. Loaded to
+#'     obtain `trait.samples`, `trait.names`, `pft.names`, and `sa.run.ids`.}
+#'   \item{`sensitivity.samples.<id>.Rdata`}{Produced by \code{\link[PEcAn.workflow]{run.write.configs}}.
+#'     If present, overrides `sa.run.ids` and `sa.samples` from
+#'     `samples.Rdata`.}
+#'   \item{`sensitivity.output.<var>.<years>.<id>.Rdata`}{Produced by
+#'     \code{\link[PEcAn.uncertainty]{get.results}}. Contains `sensitivity.output`: a named list
+#'     (PFT -> matrix) of model outputs for each SA run.}
+#' }
+#'
+#' **File-based side effects (saved to `settings$outdir`):**
+#' \describe{
+#'   \item{`sensitivity.results.<var>.<years>.<id>.Rdata`}{Contains
+#'     `sensitivity.results`: a named list (PFT -> list) with elements
+#'     `sensitivity.output` (partial derivatives) and
+#'     `variance.decomposition.output` (elasticities and partial variances).}
+#'   \item{`sensitivityanalysis.<pft>.<var>.<years>.<id>.pdf`}{Sensitivity
+#'     analysis diagnostic plots (one per PFT). Generated when `plot = TRUE`.}
+#'   \item{`variance.decomposition.<pft>.<var>.<years>.<id>.pdf`}{Variance
+#'     decomposition "popsicle" plots (one per PFT). Generated when
+#'     `plot = TRUE`.}
+#' }
+#'
+#' **Note:** This is a terminal step in the workflow — nothing downstream
+#' loads `sensitivity.results.*.Rdata` programmatically. The results are
+#' consumed by visualization or user inspection.
+#'
+#' @return Nothing (called for side effects). Saves `sensitivity.results` as
+#'   `sensitivity.results.*.Rdata` and optional PDF plots.
 #'
 #' @param settings a PEcAn settings object
 #' @param plot logical. Option to generate sensitivity analysis and variance
-#' decomposition plots (plot=TRUE) or to turn these plots off (plot=FALSE).
+#'   decomposition plots (`plot = TRUE`) or to turn these plots off
+#'   (`plot = FALSE`).
 #' @param ensemble.id ensemble ID
 #' @param variable which variable(s) to do sensitivity analysis for. Defaults
 #'   to all specified in `settings`
@@ -28,8 +50,8 @@
 #'   analysis on
 #' @param ... currently unused
 #'
+#' @md
 #'
-#' @export
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly
 #' @examples
 #' \dontrun{
@@ -39,6 +61,7 @@
 #' run.sensitivity.analysis(settings)
 #' }
 #'
+#' @export
 run.sensitivity.analysis <- function(settings,
                                      plot = TRUE,
                                      ensemble.id = NULL,
@@ -47,7 +70,6 @@ run.sensitivity.analysis <- function(settings,
                                      end.year = NULL,
                                      pfts = NULL,
                                      ...) {
-
   if (!"sensitivity.analysis" %in% names(settings)) {
     # nothing to do
     return()
@@ -74,14 +96,17 @@ run.sensitivity.analysis <- function(settings,
     PEcAn.logger::logger.severe("No variables for sensitivity analysis!")
   }
   if (is.null(pfts)) {
-    #extract just pft names
+    # extract just pft names
     pfts <- purrr::map_chr(settings$pfts, "name")
+    if (!is.null(settings$run$site$site.pft)) {
+      pfts <- pfts[pfts %in% settings$run$site$site.pft]
+    }
   } else {
     # validate pfts argument
     if (!is.character(pfts)) {
       PEcAn.logger::logger.severe("Please supply a character vector for `pfts`")
     }
-    if (!pfts %in% purrr::map_chr(settings$pfts, "name")) {
+    if (any(!pfts %in% purrr::map_chr(settings$pfts, "name"))) {
       PEcAn.logger::logger.severe("`pfts` must be a subset of the PFTs defined in `settings`")
     }
   }
@@ -102,20 +127,14 @@ run.sensitivity.analysis <- function(settings,
     samples <- new.env()
     load(fname, envir = samples)
 
-    # Can specify ensemble ids manually. If not, look in settings.
-    # If none there, will use the most recent, which was loaded with samples.Rdata
-    if (!is.null(ensemble.id)) {
-      fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                    ensemble.id = ensemble.id,
-                                    all.var.yr = TRUE)
-    } else if (!is.null(settings$sensitivity.analysis$ensemble.id)) {
-      ensemble.id <- settings$sensitivity.analysis$ensemble.id
-      fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                    ensemble.id = ensemble.id,
-                                    all.var.yr = TRUE)
-    } else {
-      ensemble.id <- NULL
-    }
+    # Ensemble ID is expected to be specified in function args or settings.
+    # If none there, create one specific to this site.
+    ensemble.id <- ensemble.id %||%
+      settings$sensitivity.analysis$ensemble.id %||%
+      rlang::hash(settings)
+    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
+                                  ensemble.id = ensemble.id,
+                                  all.var.yr = TRUE)
     if (file.exists(fname)) {
       load(fname, envir = samples)
     }
@@ -222,10 +241,6 @@ run.sensitivity.analysis <- function(settings,
         grDevices::dev.off()
 
         ### Generate VD diagnostic plots
-        vd.plots <- plot_variance_decomposition(
-          sensitivity.results[[pft$name]]$variance.decomposition.output
-        )
-        #variance.scale = log, variance.prefix='Log')
         fname <- sensitivity.filename(settings, "variance.decomposition", "pdf",
                                       all.var.yr = FALSE,
                                       pft = pft$name,
@@ -235,7 +250,9 @@ run.sensitivity.analysis <- function(settings,
                                       end.year = end.year)
 
         grDevices::pdf(fname, width = 11, height = 8)
-        do.call(gridExtra::grid.arrange, c(vd.plots, ncol = 4))
+        print(plot_variance_decomposition(
+          sensitivity.results[[pft$name]]$variance.decomposition.output
+        ))
         grDevices::dev.off()
       }
     }

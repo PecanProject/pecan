@@ -13,41 +13,25 @@ call_biocro_0.9 <- function(WetDat, genus, year_in_run,
   if (!all(mapply(grepl, expected_cols, colnames(WetDat)))) {
     PEcAn.logger::logger.severe("Format error in weather file: Columns must be (", expected_cols, "), in that order.")
   }
-  day1 <- min(WetDat$doy) # data already subset upstream, but BioCro 0.9 assumes a full year if day1/dayn are unset
+  
+  if (length(unique(WetDat[, "year"])) > 1) {
+    PEcAn.logger::logger.severe("WetDat must contain only one year of data when using BioCro 0.9")
+  }
+  
+  n_days <- length(unique(WetDat[, "doy"]))
+  if (nrow(WetDat) != 24 * n_days) {
+    PEcAn.logger::logger.severe("WetDat must have exactly 24 rows per day (hourly timestep) when using BioCro 0.9")
+  }
+  
+  day1 <- min(WetDat$doy)
   dayn <- max(WetDat$doy)
   WetDat <- as.matrix(WetDat)
 
-  # BLETCHEROUS HACK: BioCro 0.94 starts the run by subsetting weather data
-  # to day1:dayn, but it assumes the data start on DOY 1 and contain
-  # (yearlength*(24/timestep)) lines. This means that in practice, day1 and
-  # dayn are treated as "day of file" not "day of year".
-  # BioCro *does* handle DOY correctly downstream of the subsetting, so here
-  # we check if the current BioCro has fixed this assumption.
-  # If not, rescale day1 and dayn to be relative to the start of the input.
-  #   Scaling is derived by inverting Biocro's day->index equations.
-  biocro_checks_doy <- tryCatch(
-    {
-      m <- BioCro::BioGro(
-        WetDat = matrix(c(0, 10, 0, 0, 0, 0, 0, 0), nrow = 1),
-        day1 = 10, dayn = 10, timestep = 24
-      )
-      inherits(m, "BioGro")
-    },
-    error = function(e) {
-      FALSE
-    }
-  )
-  if (!biocro_checks_doy && min(WetDat[, "doy"]) > 1) {
-    if (!is.null(day1)) {
-      # Biocro calculates line number as `indes1 <- (day1 - 1) * 24`
-      indes1 <- Position(function(x) x == day1, WetDat[, "doy"])
-      day1 <- indes1 / 24 + 1
-    }
-    if (!is.null(dayn)) {
-      # Biocro calculates line number as `indesn <- (dayn) * 24`
-      indesn <- Position(function(x) x == dayn, WetDat[, "doy"], right = TRUE)
-      dayn <- indesn / 24
-    }
+  # BioCro 0.9x treats day1/dayn as "day of file" not "day of year",
+  # so rescale to be relative to the start of the input when data doesn't start on DOY 1.
+  if (min(WetDat[, "doy"]) > 1) {
+    day1 <- 1
+    dayn <- n_days
   }
 
   coppice.interval <- config$pft$coppice.interval

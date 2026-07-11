@@ -1,15 +1,8 @@
 context("status")
 
-make_testdir <- function() {
-	td <- tempfile()
-	dir.create(td)
-	teardown(unlink(td, recursive = TRUE, force = TRUE))
-
-	td
-}
 
 test_that("status functions accept explicit filename", {
-	d <- make_testdir()
+	d <- withr::local_tempdir()
 	f <- file.path(d, "MY_STATUS")
 
 	expect_silent(status.start("TRAITS", f))
@@ -29,14 +22,14 @@ test_that("status functions accept explicit filename", {
 })
 
 test_that("status handles file = dir/", {
-	d <- make_testdir()
+	d <- withr::local_tempdir()
 	status.start("NONE", d)
 	status.end("DONE", d)
 	expect_equal(status.check("NONE", file.path(d, "STATUS")), 1L)
 })
 
 test_that("status functions read from local settings", {
-	settings <- list(outdir = make_testdir())
+	settings <- list(outdir = withr::local_tempdir())
 	expect_silent(status.skip("auto"))
 	expect_match(
 		readLines(file.path(settings$outdir, "STATUS"))[[1]],
@@ -44,7 +37,7 @@ test_that("status functions read from local settings", {
 })
 
 test_that("status finds settings defined outside immediate calling scope", {
-	settings <- list(outdir = make_testdir())
+	settings <- list(outdir = withr::local_tempdir())
 	f <- function(name) {
 		status.start(name)
 		status.end()
@@ -60,11 +53,11 @@ test_that("status finds settings defined outside immediate calling scope", {
 
 test_that("status writes to stdout on bad filename", {
 	expect_output(status.start("NOFILE"), "NOFILE")
-	settings <- list(outdir = file.path(make_testdir(), "fake", "path"))
+	settings <- list(outdir = file.path(withr::local_tempdir(), "fake", "path"))
 	expect_output(status.end(), "\\d{4}-\\d{2}-\\d{2}.*DONE")
 })
 
 test_that("status.check returns 0 on bad filename", {
 	expect_equal(status.check("NOFILE"), 0L)
-	expect_equal(status.check("NOFILE", file.path(make_testdir(), "fake")), 0L)
+	expect_equal(status.check("NOFILE", file.path(withr::local_tempdir(), "fake")), 0L)
 })

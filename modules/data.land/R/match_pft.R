@@ -33,12 +33,18 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       query <- paste0(query," AND bp.modeltype_id = ",modeltype$id)
     }
     translation <- PEcAn.DB::db.query(query, con = con)
-    
-    
-  }else{ # use traits package
-    
+
+
+  } else { # use traits package
+    if (!requireNamespace("traits", quietly = TRUE)) {
+      PEcAn.logger::logger.severe(
+        "Using match_pft without a Bety connection",
+        "requires the `traits` package, which is not installed."
+      )
+    }
+
     bety_list <- list()
-    
+
     for (pft in pfts) {
       # query pft id
       bety_pft <- traits::betydb_query(name = pft$name, modeltype_id = model$id, table = 'pfts', user = 'bety', pwd = 'bety')

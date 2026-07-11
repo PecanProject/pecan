@@ -1,7 +1,10 @@
 # How to contribute
 
 Third-party contributions are highly encouraged for PEcAn and will grow the code as well as the understanding of PEcAn and its applications.  The core development team can not add all models that exist to PEcAn or all possible scenarios and analysis that people want to conduct.  Our goal is to keep it as easy as possible for you contribute changes that get things working in your environment.
-There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
+
+This document focuses on **how** to contribute, including specific steps that will get you from setting up a development environment to submitting a PR.
+
+If you are looking for ideas on **what** to contribute, see the post ["Getting Started: Contributing to PEcAn Project"](https://github.com/PecanProject/pecan/discussions/3469).
 
 ## PEcAn CORE vs Models vs Modules
 
@@ -59,6 +62,8 @@ PEcAn uses two protected branches, the main branch and the develop branch. The m
 
 When you add a new feature always create an issue first, this allows others to comment and give you tips. It will also help us keep track of what people are adding and with new releases helps us to write new release notes and give you credit for your work.
 
+> **Important Requirement:** For new features or workflow changes, please open an issue first to discuss the idea before submitting a pull request. This helps ensure the change aligns with project priorities and avoids unnecessary development work.
+
 Secondly always work in a  branch, never work on the main or develop branch. Keep your main and develop branch in sync with the main and develop of the official PEcAn repository. This makes the pull requests (you do want your work to be in the main branch right?) easier for us.
 
 Finally try to keep your branches focused on fixing/adding only one feature and try not fall in the trap of doing a lot of things in a  single branch. This will not only make it harder for us to process your pull request but makes it take longer before you can submit your pull request. Small pull requests are more likely to be looked at faster and pulled into the develop branch faster.
@@ -114,8 +119,13 @@ git push -u origin GH-issuenumber-title-of-issue
   - The license listed at PR opening time for the code you are contributing to,
   - and/or the BSD 3-clause license.
 
-## Additional Resources
+## Repository Labels
 
+PEcAn uses [labels](https://github.com/PecanProject/pecan/labels) to keep issues and pull requests organized. We aim to keep label names simple and have few enough of them for the tag system to be understood by reading the list without consulting external documentation.
+
+The `.github/labeler.yml` action automatically applies labels to PRs based on the files modified. If additional labels beyond these are applicable they can be added manually as needed, but this is not mandatory; we do _not_ expect every issue to need a label.
+
+## Additional Resources
 - [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/develop/adding-model.html)
 - [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html)
 - [Development help](https://pecanproject.github.io/pecan-documentation/latest/developer-guide.html)

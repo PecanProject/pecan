@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.meta.analysis.R
 \name{run.meta.analysis}
 \alias{run.meta.analysis}
-\title{Run meta analysis}
+\title{Run meta-analysis across all PFTs}
 \usage{
 run.meta.analysis(
   pfts,
@@ -12,40 +12,53 @@ run.meta.analysis(
   dbfiles,
   database,
   use_ghs = TRUE,
-  update = FALSE
+  update = FALSE,
+  return_data = FALSE
 )
 }
 \arguments{
 \item{pfts}{the list of pfts to get traits for}
 
-\item{iterations}{the number of iterations for the mcmc analysis}
+\item{iterations}{(integer) Number of sampler iterations for MCMC analysis}
 
-\item{random}{should random effects be used?}
+\item{random}{(boolean; default = TRUE) Should random effects be used?}
 
 \item{threshold}{Gelman-Rubin convergence diagnostic, passed on to
 \code{\link{pecan.ma.summary}}}
 
-\item{dbfiles}{location where previous results are found}
+\item{dbfiles}{(character) directory where previous results are found}
 
 \item{database}{database connection parameters}
 
-\item{use_ghs}{do not exclude greenhouse data if TRUE}
+\item{use_ghs}{(boolean; default = TRUE) If TRUE, do not exclude greenhouse data}
 
 \item{update}{logical: Rerun the meta-analysis if result files already exist?}
+
+\item{return_data}{(boolean; default = FALSE) If \code{TRUE}, attach \code{trait.mcmc},
+\code{post.distns}, and \code{jagged.data} to the returned \code{pft} for in-memory
+chaining. Defaults to \code{FALSE} to preserve legacy behavior — attaching
+these objects to a \code{pft} that is embedded in a settings object would
+inflate the settings and can break serialization.}
 }
 \value{
-nothing, as side effect saves \code{trait.mcmc} created by
-\code{\link{pecan.ma}} and post.distns created by
-\code{\link{approx.posterior}(trait.mcmc, ...)}  to trait.mcmc.Rdata
-and post.distns.Rdata, respectively
+Invisibly, a list (one element per input PFT) of the values
+returned by \code{\link{run.meta.analysis.pft}}. Each element is either
+the input \code{pft} list with \code{trait.mcmc}, \code{post.distns}, and \code{jagged.data}
+attached, or \code{NA} when no meta-analysis was performed for that PFT.
+Provenance files (\code{trait.mcmc.Rdata}, \code{post.distns.Rdata}, etc.) are
+also written to each \code{pft$outdir} as a side effect.
 }
 \description{
+Iterates over a list of PFTs and runs \code{\link[PEcAn.MA]{run.meta.analysis.pft}} for each
+one. This is the main entry point called by \code{\link[PEcAn.MA]{runModule.run.meta.analysis}}.
+}
+\details{
 This will use the following items from settings:
 \itemize{
-\item settings$pfts
-\item settings$database$bety
-\item settings$database$dbfiles
-\item settings$meta.analysis$update
+\item \code{settings$pfts}
+\item \code{settings$database$bety}
+\item \code{settings$database$dbfiles}
+\item \code{settings$meta.analysis$update}
 }
 }
 \author{

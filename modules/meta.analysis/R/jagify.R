@@ -15,14 +15,14 @@ jagify <- function(result, use_ghs = TRUE) {
   ## Finally, summarize the results by calculating summary statistics from experimental replicates
   r <- result[!is.na(result$mean), ]
   r$trt_id <- r$name
-  r <- transform.nas(r)
+  r <- transform_nas(r)
   
   # exclude greenhouse data unless requested otherwise
   if(!use_ghs){
     r <- r[r$greenhouse != 1, ]
   }
   
-  r <- PEcAn.DB::assign.treatments(r)
+  r <- assign_treatments(r)
   r <- PEcAn.utils::summarize.result(r)
   r$stat <- as.numeric(r$stat)
   r$n <- as.numeric(r$n)
@@ -63,11 +63,11 @@ jagify <- function(result, use_ghs = TRUE) {
 ##' 
 ##' Transform NA values in data exported from BETYdb
 ##' 
-##' @name transform.nas
+##' @name transform_nas
 ##' @param data input data
 ##' 
 ##' @return A data frame NAs sensibly replaced 
-transform.nas <- function(data) {
+transform_nas <- function(data) {
   #set stat to NA if 0 (uncertainties can only asymptotically approach 0)
   data$stat[data$stat == 0] <- NA
   
@@ -85,4 +85,4 @@ transform.nas <- function(data) {
   data$n[data$n == 1 & !is.na(data$stat)] <- 2
   
   return(data)
-} # transform.nas
+} # transform_nas

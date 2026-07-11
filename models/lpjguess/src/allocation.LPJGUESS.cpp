@@ -529,6 +529,21 @@ else if (lifeform == 2) {
   }
   }
 
+// --- NEW: Heartwood non-negative floor (allow heart->sap, but never below 0) ---
+if (cmass_heart + cmass_heart_inc < 0.0) {
+  // The amount of heartwood that needs to be removed exceeds the existing heartwood -> Cut the heartwood to 0
+  double deficit = -(cmass_heart + cmass_heart_inc);
+  cmass_heart_inc = -cmass_heart;                     // heart -> 0
+  
+  // The increment of sapwood with the same amount of callback: Heartwood can no longer be used to "supplement" sap
+  cmass_sap_inc -= deficit;
+  // If this also turns sapwood into a negative number, crop sapwood to 0 and record the excess in exceeds_cmass
+  if (cmass_sap + cmass_sap_inc < 0.0) {
+    exceeds_cmass += -(cmass_sap + cmass_sap_inc);
+    cmass_sap_inc = -cmass_sap;
+  }
+}
+
 // Check C budget after allocation
 
 // maximum carbon mismatch

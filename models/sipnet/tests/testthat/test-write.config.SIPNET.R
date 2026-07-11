@@ -31,7 +31,7 @@ test_that("write.config.SIPNET", {
 
   res <- write.config.SIPNET(
     defaults = list(pft1 = list(constants = list(SLA = 2.0))),
-    trait.values = list(pft1 = list(Amax = 5, AmaxFrac = 0.99)),
+    trait.values = list(pft1 = list(Amax = 5, AmaxFrac = 0.99, leafC = 47)),
     settings = s,
     run.id = "run1"
   )
@@ -57,5 +57,39 @@ test_that("write.config.SIPNET", {
     "aMaxFrac 0.99", # raw template had 0.76
     fixed = TRUE,
     all = FALSE
+  )
+  # leaf C specific weight is leafC / SLA, with units converted to g C/m2 leaf
+  expect_match(
+    param_result,
+    "leafCSpWt 235 ", # space at end to catch unit errors (eg fail on 23500)
+    fixed = TRUE,
+    all = FALSE
+  )
+
+})
+
+
+test_that("update_flag_lines", {
+  txt <- c("!comment", "NITROG = 0", "GDD = 1")
+
+  # existing lines updated, new lines added
+  expect_equal(
+    update_flag_lines(txt, c(GDD = 0)),
+    c("!comment", "NITROG = 0", "GDD = 0")
+  )
+  expect_equal(
+    update_flag_lines(txt, c(new_flag = 0, NITROG = "1")),
+    c("!comment", "NITROG = 1", "GDD = 1", "new_flag = 0")
+  )
+
+  # empty flags return input
+  expect_equal(txt, update_flag_lines(txt, c()))
+  expect_equal(txt, update_flag_lines(txt, NULL))
+
+  # unnamed arguments ignored
+  expect_equal(txt, update_flag_lines(txt, c("unnamed")))
+  expect_equal(
+    update_flag_lines(txt, c(1, GDD = 0)),
+    c("!comment", "NITROG = 0", "GDD = 0")
   )
 })

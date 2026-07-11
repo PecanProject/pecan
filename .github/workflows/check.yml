@@ -23,7 +23,6 @@ jobs:
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      _R_CHECK_LENGTH_1_CONDITION_: true
       _R_CHECK_LENGTH_1_LOGIC2_: true
       # Avoid compilation check warnings that come from the system Makevars
       # See https://stat.ethz.ch/pipermail/r-package-devel/2019q2/003898.html
@@ -38,7 +37,7 @@ jobs:
     # checkout source code
     - name: work around https://github.com/actions/checkout/issues/766
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         set-safe-directory: false
 
@@ -67,3 +66,11 @@ jobs:
 
     - name: check for out-of-date files
       uses: infotroph/tree-is-clean@v1
+
+    - name: check package versions
+      run: |
+        tag=$(\
+          curl -s https://api.github.com/repos/PecanProject/pecan/releases/latest \
+          | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
+        git fetch https://github.com/PecanProject/pecan.git "refs/tags/${tag}:refs/tags/${tag}" --depth=1
+        ./scripts/ensure_version_bump.sh "$tag"

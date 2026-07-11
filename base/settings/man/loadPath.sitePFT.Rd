@@ -4,13 +4,10 @@
 \alias{loadPath.sitePFT}
 \title{Title loadPath.sitePFT}
 \usage{
-loadPath.sitePFT(settings, Path)
+loadPath.sitePFT(Path)
 }
 \arguments{
-\item{settings}{pecan setting list.}
-
-\item{Path}{Character of file name with extension.
-The path will be generated using the outdir tag in pecan settings.}
+\item{Path}{Character of file name with extension.}
 }
 \value{
 a dataframe of two columns of site and pft

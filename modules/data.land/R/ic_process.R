@@ -13,15 +13,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
-  site       <- settings$run$site
-  model <- list()
-    model$type <- settings$model$type
-    model$id <- settings$model$id
-  host       <- settings$host
-  dbparms    <- settings$database
+  site <- settings$run$site
+  model <- list(
+    type = settings$model$type,
+    id = settings$model$id
+  )
+  host <- settings$host
+  dbparms <- settings$database
 
   # Handle IC Workflow locally
-  if(host$name != "localhost"){
+  if (host$name != "localhost") {
     host$name <- "localhost"
     dir       <- settings$database$dbfiles
   }
@@ -48,26 +49,27 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # set up bety connection
   con <- PEcAn.DB::db.open(dbparms$bety)
   on.exit(PEcAn.DB::db.close(con), add = TRUE)
-  
+
   #grab site lat and lon info
 
   # check if site metadata is available in the settings$run$site
-  if (isTRUE(nzchar(settings$run$site$lat)) && isTRUE(nzchar(settings$run$site$lon))) {
+  if (isTRUE(nzchar(site$lat)) && isTRUE(nzchar(site$lon))) {
     # if lat and lon are available, use them directly
-    latlon <- data.frame(lat = settings$run$site$lat, lon = settings$run$site$lon)
+    latlon <- data.frame(lat = site$lat, lon = site$lon)
   } else {
     # otherwise, query the site information from the database
     latlon <- PEcAn.DB::query.site(site$id, con = con)[c("lat", "lon")]
   }
 
   # setup site database number, lat, lon and name and copy for format.vars if new input
-  new.site <- data.frame(id = as.numeric(site$id),
-                         lat = latlon$lat,
-                         lon = latlon$lon)
+  new.site <- list(
+    id = site$id,
+    lat = latlon$lat,
+    lon = latlon$lon,
+    name = site$name
+  )
 
-  new.site$name <- settings$run$site$name
-
-  if (isTRUE(new.site$id > 1e9)) {
+  if (is.numeric(new.site$id) && isTRUE(new.site$id > 1e9)) {
     # Assume this is a BETYdb id, condense for readability
     str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   } else {

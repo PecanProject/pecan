@@ -1,3 +1,0 @@
-## Advanced User Guide {#advanced-user}
-
-- [Workflow curl submission](#web-curl-submission)

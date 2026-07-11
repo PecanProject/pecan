@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+
+mkdir -p @OUTDIR@
+
+# Redirect output
+exec 3>&1
+exec &> "$(realpath @OUTDIR@)/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+# cdo setup
+# @CDO_SETUP@
+
+# Run PEPRMT
+Rscript \
+  -e 'dat <- read.csv(file.path("@RUNDIR@", "run_data.csv"))' \
+  -e 'res <- do.call(PEPRMT::run_PEPRMT, c(@PARAMS@,
+    list(data = dat)
+  ))' \
+  -e 'write.csv(res, file.path("@OUTDIR@", "out.csv"), row.names = FALSE)'
+
+# convert output to PEcAn format
+Rscript -e 'PEcAn.PEPRMT::model2netcdf.PEPRMT(
+  outdir = "@OUTDIR@",
+  sitelat = @SITE_LAT@,
+  sitelon = @SITE_LON@,
+  start_date = "@START_DATE@",
+  end_date = "@END_DATE@",
+  delete_raw = @DELETE_RAW@
+)'

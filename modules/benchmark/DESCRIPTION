@@ -1,7 +1,7 @@
 Package: PEcAn.benchmark
 Type: Package
 Title: PEcAn Functions Used for Benchmarking
-Version: 1.7.4
+Version: 1.7.5.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut", "cre"),
                      email = "dietze@bu.edu"),
              person("Betsy", "Cowdery", role = c("aut"),
@@ -43,7 +43,8 @@ Imports:
     utils,
     grDevices,
     XML (>= 3.98-1.4),
-    zoo 
+    zoo,
+    yaml
 Suggests:
     PEcAn.data.land,
     testthat (>= 2.0.0)
@@ -52,4 +53,5 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+X-schema.org-keywords: model-evaluation, model-data-comparison, PEcAn

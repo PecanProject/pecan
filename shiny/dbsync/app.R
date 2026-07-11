@@ -34,25 +34,26 @@ ignored_servers <- c()
 # given a IP address lookup geo spatital info
 # uses a cache to prevent to many requests (1000 per day)
 get_geoip <- function(ip) {
-    if (length(geoip) == 0 && file.exists("geoip.json")) {
+    if (length(geoip) == 0 && file.exists(geocache)) {
         geoip <<- jsonlite::read_json(geocache, simplifyVector = TRUE)
     }
     if (! ip %in% geoip$ip) {
         print(paste("CACHE MISS", ip))
         res <- curl::curl_fetch_memory(paste0("http://free.ipwhois.io/json/", ip))
-        if (res$status -- 200) {
+        if (res$status == 200) {
             geoloc <- jsonlite::parse_json(rawToChar(res$content))
             geoloc[lengths(geoloc) == 0] <- NA
-            geoloc <- type.convert(geoloc, as.is = TRUE)
+            geoloc <- type.convert(geoloc, as.is = TRUE)[
+                c("ip", "latitude", "longitude", "city", "region", "country", "org")]
         } else {
-            geoloc <- list(ip=ip, lat=0, lon=0, city="?", countr="?")
+            geoloc <- list(ip=ip, latitude=0, longitude=0, city="?", region="?", country="?", org="?")
         }
         if (length(geoip) == 0) {
             geoip <<- as.data.frame(geoloc)
         } else {
-            geoip <<- rbind(geoip, as.data.frame(geoloc))
+            geoip <<- merge(geoip, as.data.frame(geoloc), all = TRUE)
         }
-        jsonlite::write_json(geoip, geocache)
+        jsonlite::write_json(geoip, geocache, pretty = 2)
     }
 }
 
@@ -95,10 +96,10 @@ get_servers <- function() {
     locations <- geoip %>% 
         dplyr::filter(ip %in% servers$ip) %>%
         dplyr::arrange(ip) %>%
-        dplyr::select("city", "country", "latitude", "longitude")
+        dplyr::select("ip", "city", "country", "latitude", "longitude")
     
     # combine tables
-    servers <- cbind(servers, locations)
+    servers <- merge(servers, locations, by = "ip")
     
     # add columns for all sync_ids
     servers[, paste0("server_", servers$sync_host_id)] <- NA
@@ -283,7 +284,7 @@ server <- function(input, output, session) {
     # create a map of all servers that have a sync_host_id and sync_url
     output$map <- renderLeaflet({
         leaflet(values$servers) %>%
-            addProviderTiles(providers$Stamen.TonerLite,
+            addProviderTiles(providers$Stadia.StamenTonerLite,
                              options = providerTileOptions(noWrap = TRUE)
             ) %>%
             addMarkers(~longitude, ~latitude,

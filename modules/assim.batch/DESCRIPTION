@@ -1,7 +1,7 @@
 Package: PEcAn.assim.batch
 Type: Package
 Title: PEcAn Functions Used for Ecological Forecasts and Reanalysis
-Version: 1.9.0
+Version: 1.9.1.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("Istem", "Fer", role = c("aut", "cre"),
@@ -51,13 +51,16 @@ Imports:
     lqmm,
     mvtnorm
 Suggests:
-    knitr (>= 1.42),
+    knitr (>= 1.50),
     rmarkdown (>= 2.19),
     testthat (>= 1.0.2)
+Additional_repositories:
+    https://florianhartig.r-universe.dev/
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
+X-schema.org-keywords: data-assimilation, parameter-estimation, Bayesian-inference, ecological-modeling, model-calibration
