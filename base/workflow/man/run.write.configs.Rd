@@ -10,7 +10,8 @@ run.write.configs(
   input_design,
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
-  overwrite = TRUE
+  overwrite = TRUE,
+  samples = NULL
 )
 }
 \arguments{
@@ -29,6 +30,12 @@ ensemble and sensitivity analysis (e.g. \code{post.distns.Rdata}, or
 \code{prior.distns.Rdata}).}
 
 \item{overwrite}{logical: Replace output files that already exist?}
+
+\item{samples}{Optional pre-computed parameter samples (a list with
+\code{trait.samples}, \code{sa.samples}, \code{ensemble.samples}). When supplied, these
+are used directly and \code{samples.Rdata} is not read from disk. When \code{NULL}
+(default), the function falls back to loading \code{samples.Rdata} from
+\code{settings$outdir}.}
 }
 \value{
 The \code{settings} list (invisibly), updated with ensemble IDs for SA
