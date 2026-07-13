@@ -9,17 +9,19 @@ library(stringr)
 library(tidyr)
 library(purrr)
 library(data.table)
-library(readxl)
 
-#scenario = either "BAU_Targets" or "NBS_Targets"
+#scenario = either "BAU_Targets" or "NBS_Targets" 
+#keeping scenario_variable outside config to switch between scenario/output paths 
 #use n_parcels = NULL for full scale run 
 
-config = list(seed = 42, scenario = "NBS_Targets", years = 2024:2045,
-  n_parcels = NULL, n_ensemble = 20, batch_size = 500, workers = 1,
-  scenarios_path = "/projectnb/dietzelab/ananyak/MAGiC scenarios_FINAL.xlsx",
-  lookup_path = "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv",
-  projection_dir = "/projectnb/dietzelab/ananyak/county_landiq_predictions_with_phenology",
-  output_dir = "/projectnb/dietzelab/ananyak/ncc")
+scenario_variable = "NBS_Targets"
+
+config = list(seed = 42, years = 2024:2045, scenario = scenario_variable, n_parcels = NULL, 
+              n_ensemble = 20, batch_size = 500, workers = 1,
+              scenarios_path = sprintf( "/projectnb/dietzelab/ananyak/MAGiC_scenarios_FINAL/%s.csv", scenario_variable),
+              lookup_path = "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv",
+              projection_dir = "/projectnb/dietzelab/ananyak/county_landiq_predictions_with_phenology",
+              output_dir = file.path("/projectnb/dietzelab/ananyak/ncc", scenario_variable))
 
 set.seed(config[["seed"]])
 
@@ -134,31 +136,15 @@ read_projected_county = function(fn) {
   
   dt = readr::read_csv(fn, show_col_types = FALSE)
   
-  if (!"season" %in% names(dt)) {
-    dt$season = 0L
-  }
+  if (!"season" %in% names(dt)) {dt$season = 0L}
   
-  required_cols = c(
-    "parcel_id",
-    "county",
-    "year",
-    "CLASS",
-    "SUBCLASS",
-    "PFT",
-    "planting_date",
-    "ACRES"
-  )
+  required_cols = c("parcel_id", "county", "year", "CLASS", "SUBCLASS", "PFT", "planting_date", "ACRES")
   
   missing_cols = setdiff(required_cols, names(dt))
   
   if (length(missing_cols) > 0) {
-    logger_severe(
-      "Projected file is missing required columns: ",
-      paste(missing_cols, collapse = ", "),
-      "\nFile: ", fn,
-      "\nAvailable columns: ", paste(names(dt), collapse = ", ")
-    )
-  }
+    logger_severe("Projected file is missing required columns: ", paste(missing_cols, collapse = ", "),
+      "\nFile: ", fn, "\nAvailable columns: ", paste(names(dt), collapse = ", "))}
   
   dt |>
     dplyr::filter(
@@ -179,75 +165,53 @@ read_projected_county = function(fn) {
       code = paste0(as.character(.data$CLASS), as.character(.data$SUBCLASS)),
       PFT = as.character(.data$PFT),
       ACRES = as.numeric(.data$ACRES),
-      scenario = config[["scenario"]]
-    )
+      scenario = config[["scenario"]])
 }
 
 scenario_dir = file.path(config[["projection_dir"]], config[["scenario"]])
 
-if (!dir.exists(scenario_dir)) {
-  logger_severe("Scenario directory does not exist: ", scenario_dir)
-}
+if (!dir.exists(scenario_dir)) {logger_severe("Scenario directory does not exist: ", scenario_dir)}
 
-projected_files = list.files(
-  scenario_dir,
-  pattern = "_predicted_2024_2045\\.csv$",
-  full.names = TRUE
-)
+projected_files = list.files(scenario_dir, pattern = "_predicted_2024_2045\\.csv$", full.names = TRUE)
 
-if (length(projected_files) == 0) {
-  logger_severe("No projected county CSVs found in: ", scenario_dir)
-}
+if (length(projected_files) == 0) {logger_severe("No projected county CSVs found in: ", scenario_dir)}
 
 logger_info("Found ", length(projected_files), " projected files under: ", scenario_dir)
 
 plant = purrr::map_dfr(projected_files, read_projected_county)
 
-if (nrow(plant) == 0) {
-  logger_severe(
-    "Projected files were found, but no valid rows survived filtering.\n",
-    "Check years, CLASS, SUBCLASS, PFT, planting_date, and ACRES."
-  )
-}
+if (nrow(plant) == 0) {logger_severe("Projected files were found, but no valid rows survived filtering.\n",
+    "Check years, CLASS, SUBCLASS, PFT, planting_date, and ACRES.")}
 
 ncc_crop_lookup = build_ncc_crop_lookup(config[["lookup_path"]])
 
 plant = plant |>
   dplyr::left_join(ncc_crop_lookup, by = "code") |>
   dplyr::mutate(
-    pft_family = pft_family(.data$PFT)
-  )
+    pft_family = pft_family(.data$PFT))
 
 unmapped_codes = plant |>
   dplyr::filter(is.na(.data$scenario_crop)) |>
   dplyr::count(.data$code, .data$PFT, sort = TRUE)
 
 if (nrow(unmapped_codes) > 0) {
-  logger_warn(
-    "Dropping ", sum(unmapped_codes$n),
-    " rows with no scenario crop mapping. Top unmapped codes:"
-  )
-  print(head(unmapped_codes, 20))
-}
+  logger_warn("Dropping ", sum(unmapped_codes$n), " rows with no scenario crop mapping. Top unmapped codes:")
+  print(head(unmapped_codes, 20))}
 
 unknown_pft = plant |>
   dplyr::filter(is.na(.data$pft_family)) |>
   dplyr::count(.data$PFT, sort = TRUE)
 
 if (nrow(unknown_pft) > 0) {
-  logger_warn(
-    "Dropping rows with unknown PFT family. Breakdown:"
-  )
-  print(unknown_pft)
-}
+  logger_warn("Dropping rows with unknown PFT family. Breakdown:")
+  print(unknown_pft)}
 
 design = plant |>
   dplyr::filter(
     !is.na(.data$scenario_crop),
-    !is.na(.data$pft_family)
-  )
+    !is.na(.data$pft_family))
 
-# Subsample parcels for testing
+#Subsample parcels for testing
 n_parcels = config[["n_parcels"]]
 
 if (!is.null(n_parcels) && n_parcels < dplyr::n_distinct(design$parcel_id)) {
@@ -259,35 +223,19 @@ if (!is.null(n_parcels) && n_parcels < dplyr::n_distinct(design$parcel_id)) {
   design = design |>
     dplyr::filter(.data$parcel_id %in% picked)
   
-  logger_info("Sampled ", length(picked), " parcels using n_parcels = ", n_parcels)
-}
+  logger_info("Sampled ", length(picked), " parcels using n_parcels = ", n_parcels)}
 
 design = design |>
   dplyr::select(
-    "parcel_id",
-    "county",
-    "year",
-    "season",
-    "anchor",
-    "code",
-    "PFT",
-    "pft_family",
-    "ACRES",
-    "scenario",
-    "scenario_crop",
-    "scenario_crop_key"
-  )
+    "parcel_id", "county", "year", "season", "anchor", "code", "PFT", "pft_family", "ACRES", "scenario",
+    "scenario_crop", "scenario_crop_key")
 
-if (nrow(design) == 0) {
-  logger_severe("Design table has 0 rows after filtering.")
-}
+if (nrow(design) == 0) {logger_severe("Design table has 0 rows after filtering.")}
 
-logger_info(
-  "Design table: ",
+logger_info("Design table: ",
   nrow(design), " cycles, ",
   dplyr::n_distinct(design$parcel_id), " parcels, ",
-  dplyr::n_distinct(design$year), " years"
-)
+  dplyr::n_distinct(design$year), " years")
 
 logger_info("PFT family split:")
 print(table(design$pft_family))
@@ -301,65 +249,37 @@ saveRDS(design, design_file)
 logger_info("Wrote staging file: ", design_file)
 
 ##-----script 2, assign from scenario goal sheet instead of default %-----
-if (!file.exists(design_file)) {
-  logger_severe("Stage 01 output not found: ", design_file)
-}
+if (!file.exists(design_file)) {logger_severe("Stage 01 output not found: ", design_file)}
 
 logger_info("Reading design from ", design_file)
 design = readRDS(design_file)
 
-required_design_cols = c(
-  "parcel_id",
-  "county",
-  "year",
-  "season",
-  "anchor",
-  "code",
-  "PFT",
-  "pft_family",
-  "ACRES",
-  "scenario",
-  "scenario_crop",
-  "scenario_crop_key"
-)
+required_design_cols = c("parcel_id", "county", "year", "season", "anchor", "code", "PFT",
+                         "pft_family","ACRES", "scenario", "scenario_crop", "scenario_crop_key")
 
 missing_design_cols = setdiff(required_design_cols, names(design))
 
 if (length(missing_design_cols) > 0) {
-  logger_severe(
-    "Design file is missing required columns: ",
-    paste(missing_design_cols, collapse = ", ")
-  )
-}
+  logger_severe("Design file is missing required columns: ",
+    paste(missing_design_cols, collapse = ", "))}
 
-if (!file.exists(config[["scenarios_path"]])) {
-  logger_severe("Scenario goals sheet not found: ", config[["scenarios_path"]])
-}
+if (!file.exists(config[["scenarios_path"]])) {logger_severe("Scenario goals sheet not found: ", config[["scenarios_path"]])}
 
 logger_info("Reading scenario goals from ", config[["scenarios_path"]])
 
-goals_raw = readxl::read_excel(
+goals_raw = read.csv(
   config[["scenarios_path"]],
-  sheet = config[["scenario"]]
-)
+  stringsAsFactors = FALSE)
 
-required_goal_cols = c(
-  "Crop",
-  "County",
-  "Year",
-  "Compost acres (CPS 808)",
-  "Compost N (lbs per acre)",
-  "Compost C (lbs per acre)"
-)
+##compost columns have csv formatted names which is why there are so many periods in those names 
+required_goal_cols = c("Crop", "County", "Year", "Compost.acres..CPS.808.", 
+                       "Compost.N..lbs.per.acre.", "Compost.C..lbs.per.acre.")
 
 missing_goal_cols = setdiff(required_goal_cols, names(goals_raw))
 
 if (length(missing_goal_cols) > 0) {
-  logger_severe(
-    "Scenario sheet missing required columns: ",
-    paste(missing_goal_cols, collapse = ", ")
-  )
-}
+  logger_severe("Scenario sheet missing required columns: ",
+    paste(missing_goal_cols, collapse = ", "))}
 
 goals = goals_raw |>
   dplyr::transmute(
@@ -368,9 +288,9 @@ goals = goals_raw |>
     year = as.integer(.data$Year),
     scenario_crop = as.character(.data$Crop),
     scenario_crop_key = normalize_crop_key(.data$Crop),
-    target_compost_acres = as.numeric(.data$`Compost acres (CPS 808)`),
-    compost_n_lbs_acre = as.numeric(.data$`Compost N (lbs per acre)`),
-    compost_c_lbs_acre = as.numeric(.data$`Compost C (lbs per acre)`)
+    target_compost_acres = as.numeric(.data$Compost.acres..CPS.808.),
+    compost_n_lbs_acre = as.numeric(.data$Compost.N..lbs.per.acre.),
+    compost_c_lbs_acre = as.numeric(.data$Compost.C..lbs.per.acre.)
   ) |>
   dplyr::filter(
     .data$year %in% config[["years"]],
@@ -381,63 +301,35 @@ goals = goals_raw |>
   )
 
 if (nrow(goals) == 0) {
-  logger_severe(
-    "No usable compost goal rows found for scenario=",
-    config[["scenario"]],
+  logger_severe("No usable compost goal rows found for scenario=", config[["scenario"]],
     " and years=",
-    paste(config[["years"]], collapse = ",")
-  )
-}
+    paste(config[["years"]], collapse = ","))}
 
-logger_info(
-  "Loaded ", nrow(goals),
-  " compost target rows from scenario sheet."
-)
+logger_info("Loaded ", nrow(goals), " compost target rows from scenario sheet.")
 
 design_targets = design |>
   dplyr::inner_join(
     goals,
-    by = c(
-      "scenario",
-      "county",
-      "year",
-      "scenario_crop_key"
-    ),
-    suffix = c("", "_goal")
-  )
+    by = c("scenario", "county", "year", "scenario_crop_key"),
+    suffix = c("", "_goal"))
 
-if (nrow(design_targets) == 0) {
-  logger_severe(
-    "No design rows matched scenario compost targets. ",
-    "Check county/year/scenario_crop mapping."
-  )
-}
+if (nrow(design_targets) == 0) {logger_severe("No design rows matched scenario compost targets. ",
+    "Check county/year/scenario_crop mapping.")}
 
 unmatched_goals = goals |>
-  dplyr::anti_join(
-    design,
-    by = c("scenario", "county", "year", "scenario_crop_key")
-  )
+  dplyr::anti_join(design, by = c("scenario", "county", "year", "scenario_crop_key"))
 
 if (nrow(unmatched_goals) > 0) {
-  logger_warn(
-    nrow(unmatched_goals),
-    " compost goal rows had no matching projected parcels. Preview:"
-  )
-  print(head(unmatched_goals, 20))
-}
+  logger_warn(nrow(unmatched_goals), " compost goal rows had no matching projected parcels. Preview:")
+  print(head(unmatched_goals, 20))}
 
-logger_info(
-  "Matched ", nrow(design_targets),
-  " parcel cycles to compost target rows."
-)
+logger_info("Matched ", nrow(design_targets), " parcel cycles to compost target rows.")
 
 assign_to_target = function(df) {
   target = unique(df$target_compost_acres)
   
   if (length(target) != 1 || is.na(target) || target <= 0) {
-    return(df[0, ])
-  }
+    return(df[0, ])}
   
   df2 = df |>
     dplyr::slice_sample(prop = 1) |>
@@ -446,27 +338,23 @@ assign_to_target = function(df) {
   df2 |>
     dplyr::filter(
       .data$cum_acres <= target |
-        dplyr::lag(.data$cum_acres, default = 0) < target
-    )
-}
+        dplyr::lag(.data$cum_acres, default = 0) < target)}
 
 n_ensemble = as.integer(config[["n_ensemble"]])
 
-if (is.na(n_ensemble) || n_ensemble < 1) {
-  logger_severe("n_ensemble must be a positive integer.")
-}
+if (is.na(n_ensemble) || n_ensemble < 1) {logger_severe("n_ensemble must be a positive integer.")}
 
-assign_events_fast <- function(design_targets, n_ensemble) {
-  dt <- data.table::as.data.table(design_targets)
+assign_events_fast = function(design_targets, n_ensemble) {
+  dt = data.table::as.data.table(design_targets)
   
-  out_list <- vector("list", n_ensemble)
+  out_list = vector("list", n_ensemble)
   
-  group_cols <- c("scenario", "county", "year", "scenario_crop_key")
+  group_cols = c("scenario", "county", "year", "scenario_crop_key")
   
   for (e in seq_len(n_ensemble)) {
     logger_info("Assigning ensemble ", e, " of ", n_ensemble)
     
-    dt_e <- data.table::copy(dt)
+    dt_e = data.table::copy(dt)
     
     # randomize parcel order within each target group
     dt_e[, rand := runif(.N)]
@@ -477,25 +365,20 @@ assign_events_fast <- function(design_targets, n_ensemble) {
     dt_e[, prev_cum_acres := shift(cum_acres, fill = 0), by = group_cols]
     
     # keep parcels until target acres are reached
-    dt_e <- dt_e[
+    dt_e = dt_e[
       cum_acres <= target_compost_acres |
-        prev_cum_acres < target_compost_acres
-    ]
+        prev_cum_acres < target_compost_acres]
     
     dt_e[, ensemble_member := e]
     dt_e[, ens_id := sprintf("ens_%03d", e)]
     
-    out_list[[e]] <- dt_e
-  }
+    out_list[[e]] = dt_e}
   
-  dplyr::as_tibble(data.table::rbindlist(out_list, use.names = TRUE, fill = TRUE))
-}
+  dplyr::as_tibble(data.table::rbindlist(out_list, use.names = TRUE, fill = TRUE))}
 
-events <- assign_events_fast(design_targets, n_ensemble)
+events = assign_events_fast(design_targets, n_ensemble)
 
-if (nrow(events) == 0) {
-  logger_severe("No NCC events assigned. Check scenario targets and crop matching.")
-}
+if (nrow(events) == 0) {logger_severe("No NCC events assigned. Check scenario targets and crop matching.")}
 
 target_check = events |>
   dplyr::group_by(
@@ -509,8 +392,7 @@ target_check = events |>
     assigned_acres = sum(.data$ACRES, na.rm = TRUE),
     target_acres = dplyr::first(.data$target_compost_acres),
     diff_acres = assigned_acres - target_acres,
-    .groups = "drop"
-  )
+    .groups = "drop")
 
 logger_info("Compost target assignment check:")
 print(head(target_check, 20))
@@ -529,15 +411,10 @@ events = events |>
       sample(PERENNIAL_OFFSET_MIN:PERENNIAL_OFFSET_MAX, dplyr::n(), replace = TRUE)
     ),
     date = .data$anchor - .data$date_offset_days,
-    material = "scenario_compost"
-  )
+    material = "scenario_compost")
 
-logger_info(
-  "Assigned ", nrow(events),
-  " NCC compost events across ",
-  dplyr::n_distinct(events$parcel_id),
-  " parcels."
-)
+logger_info("Assigned ", nrow(events), " NCC compost events across ",
+  dplyr::n_distinct(events$parcel_id), " parcels.")
 
 logger_info("Events preview:")
 print(head(events))
@@ -548,34 +425,21 @@ saveRDS(events, events_file)
 
 logger_info("Wrote staging file: ", events_file)
 
-
 ##-----script 3, write new files-----
 
-if (!file.exists(events_file)) {
-  logger_severe("Stage 02 output not found: ", events_file)
-}
+if (!file.exists(events_file)) {logger_severe("Stage 02 output not found: ", events_file)}
 
 logger_info("Reading events from ", events_file)
 events = readRDS(events_file)
 
-required_event_cols = c(
-  "parcel_id",
-  "ens_id",
-  "date",
-  "code",
-  "compost_n_lbs_acre",
-  "compost_c_lbs_acre",
-  "material"
-)
+required_event_cols = c("parcel_id", "ens_id", "date", "code", "compost_n_lbs_acre", 
+                        "compost_c_lbs_acre", "material")
 
 missing_event_cols = setdiff(required_event_cols, names(events))
 
 if (length(missing_event_cols) > 0) {
-  logger_severe(
-    "Stage 02 events missing required columns: ",
-    paste(missing_event_cols, collapse = ", ")
-  )
-}
+  logger_severe("Stage 02 events missing required columns: ",
+    paste(missing_event_cols, collapse = ", "))}
 
 out = events |>
   dplyr::mutate(
@@ -598,9 +462,7 @@ out = events |>
     material = .data$material
   )
 
-if (nrow(out) == 0) {
-  logger_severe("Stage 03 output table has 0 rows.")
-}
+if (nrow(out) == 0) {logger_severe("Stage 03 output table has 0 rows.")}
 
 logger_info("Stage 03 output preview:")
 print(head(out))
@@ -611,36 +473,17 @@ print(table(format(out$date, "%Y")))
 out_path = config[["output_dir"]]
 dir.create(out_path, showWarnings = FALSE, recursive = TRUE)
 
-existing = list.files(out_path, pattern = "\\.parquet$", full.names = TRUE)
-
-if (length(existing) > 0) {
-  logger_info(sprintf("Removing %d existing parquet shards", length(existing)))
-  unlink(existing)
-}
-
 all_parcels = sort(unique(out[["parcel_id"]]))
 
 batch_size = as.integer(config[["batch_size"]])
 
-if (is.na(batch_size) || batch_size < 1) {
-  logger_severe("batch_size must be a positive integer.")
-}
+if (is.na(batch_size) || batch_size < 1) {logger_severe("batch_size must be a positive integer.")}
 
-batches = split(
-  all_parcels,
-  ceiling(seq_along(all_parcels) / batch_size)
-)
+batches = split(all_parcels, ceiling(seq_along(all_parcels) / batch_size))
 
-logger_info(sprintf(
-  "Writing %d rows across %d parcel batches to %s",
-  nrow(out),
-  length(batches),
-  out_path
-))
+logger_info(sprintf("Writing %d rows across %d parcel batches to %s", nrow(out), length(batches), out_path))
 
-if (!requireNamespace("arrow", quietly = TRUE)) {
-  logger_severe("Package arrow is required to write parquet files.")
-}
+if (!requireNamespace("arrow", quietly = TRUE)) {logger_severe("Package arrow is required to write parquet files.")}
 
 parquet_codec = if (arrow::codec_is_available("zstd")) "ZSTD" else "SNAPPY"
 
@@ -657,14 +500,11 @@ write_batch = function(pids) {
   
   arrow::write_parquet(shard, fn, compression = parquet_codec)
   
-  fn
-}
+  fn}
 
 workers = as.integer(config[["workers"]])
 
-if (is.na(workers) || workers < 1) {
-  workers = 1L
-}
+if (is.na(workers) || workers < 1) {workers = 1L}
 
 if (workers > 1) {
   logger_info(sprintf("Using mclapply with %d workers", workers))
@@ -673,11 +513,9 @@ if (workers > 1) {
   written = lapply(batches, write_batch)
 }
 
-logger_info(sprintf(
-  "Done. wrote %d shards, %d total rows, parcels=%d, years=%d, ensemble=%d",
+logger_info(sprintf("Done. wrote %d shards, %d total rows, parcels=%d, years=%d, ensemble=%d",
   length(written),
   nrow(out),
   dplyr::n_distinct(out[["parcel_id"]]),
   dplyr::n_distinct(format(out[["date"]], "%Y")),
-  dplyr::n_distinct(out[["ens_id"]])
-))
+  dplyr::n_distinct(out[["ens_id"]])))
