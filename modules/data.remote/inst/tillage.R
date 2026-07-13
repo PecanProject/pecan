@@ -1,15 +1,25 @@
-##makes simple, 3x3  transition matrices for tillage states for each county
+#makes simple, 3x3  transition matrices for tillage states for each county
 
-setwd("/projectnb/dietzelab/ananyak")
 library(data.table)
 library(arrow) 
 
+setwd("/projectnb/dietzelab/ananyak")
+
+#functions to make consistent transition matrices and formats 
+source("/projectnb/dietzelab/ananyak/transition_functions.R")
+
+##directories to load full data files 
 dir_till = "/projectnb/dietzelab/ccmmf/management/event_files"
+phenology_dir = "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1"
+
+#file that already includes ominant crop class per parcel&year w/ the same workflow as transition_matrix.R
+crop_year = fread("/projectnb/dietzelab/ananyak/crop_year_states_cleaned.csv")
+
 
 years = 2018:2023
 
-##----load files----
-#tillage from event files 
+##----load files and add till class column----
+#tillage from event files; class column based on ndti_pct_change: 0-30 = no till, 30-69 = low till, 70+ = high 
 till_files = unlist(lapply(years, function(yr) {
   list.files(path = dir_till, pattern = paste0("^tillage_statewide_", yr, "\\.parquet$"), full.names = TRUE)}))
 
@@ -24,15 +34,11 @@ tillage = rbindlist(lapply(till_files, function(f) {
 
 setorder(tillage, parcel_id, year)
 
-##-----edit/filter tillage-----
-#add till class column based on ndti_pct_change: 0-30 = no till, 30-69 = low till, 70+ = high 
-
 tillage[, till_class := fifelse( ndti_pct_change >= 0 & ndti_pct_change < 30, "no_till",
                                  fifelse(ndti_pct_change >= 30 & ndti_pct_change < 70, "low_till",
                                          fifelse(ndti_pct_change >= 70, "high_till", NA_character_)))]
 
-##-----p&h dates----
-phenology_dir = "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1"
+##-----phenology and harvesting data----
 phenology_files = list.files(phenology_dir, pattern = "^assigned_year=.*\\.parquet$", full.names = TRUE)
 
 #combining them all 
@@ -46,9 +52,6 @@ assigned_all = rbindlist(lapply(phenology_files, function(f) {
   fill = TRUE)
 
 ##----load cleaned crop year states from original transition matrix script----
-#file already has dominant crop class per parcel&year w/ the same workflow as transition_matrix.R
-
-crop_year = fread("/projectnb/dietzelab/ananyak/crop_year_states_cleaned.csv")
 
 crop_year[, `:=`(
   parcel_id = as.character(parcel_id), year = as.integer(year), crop_class = as.character(state), 
@@ -59,9 +62,7 @@ crop_year = crop_year[
   .(
     parcel_id, year, county, county_geoid, crop_class, crop_non_dom_prob, ACRES)]
 
-#transition matrix 
 ##----create annual tillage states-----
-
 tillage[, parcel_id := as.character(parcel_id)]
 tillage[, year := as.integer(year)]
 
@@ -77,7 +78,6 @@ tillage_year_states = tillage_counts[,
                                      .SD[1], by = .(parcel_id, year)][,
                                                                       .(
                                                                         parcel_id, year, state = till_class, n_obs = N, total_obs, non_dom_prob = 1 - N / total_obs)]
-
 ##----merge crop class onto tillage states----
 ## to get tillage and crop class per parcel & year
 
@@ -88,17 +88,13 @@ setorder(tillage_year_states, crop_class, parcel_id, year)
 write.csv(tillage_year_states, 'all_data.csv')
 
 ##----use transition format & matrix functions----
-source("/projectnb/dietzelab/ananyak/transition_functions.R")
-
 states = c("no_till", "low_till", "high_till")
 
 tillage_transitions_annual = make_transitions(year_states = tillage_year_states, id_col = "parcel_id", time_col = "year",
                                               state_col = "state", non_dom_col = "non_dom_prob")
 
 #overall annual tillage transition matrix
-till_mat = make_transition_matrix(
-  dt = tillage_transitions_annual,
-  states_all = states)
+till_mat = make_transition_matrix(dt = tillage_transitions_annual, states_all = states)
 
 till_mat
 
