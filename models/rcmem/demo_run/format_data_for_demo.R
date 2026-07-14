@@ -56,7 +56,9 @@ a_mem_run <- runCohortMem2(run_spinup = 1,
                            rootToShoot = 1.7
 )
 
-scenario <- a_mem_run[[2]] %>% filter(year == 1928)
+a_mem_run2 <- rCMEM::calculateCarbonFlux(a_mem_run[[1]], a_mem_run[[2]])
+
+scenario <- a_mem_run2[[1]] %>% filter(year == 1928)
 cohorts <- a_mem_run[[1]] %>% filter(year == 1928)
 species <- a_mem_run[[3]] %>% filter(year == 1928)
 

@@ -18,6 +18,8 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   # The point of this function is to write the settings for one ensemble member and site combination
   # Generates one subfolder in output/run and one in output/out
   # and one subfolder in 
+  # settings <- xml2::read_xml("demo_run/settings.xml")
+
   
   # Defaults - overrides trait values
   # trait.values - list of parameters for each pft, even if it only has one pdf
@@ -105,13 +107,11 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   # }
   
   # settings$run$site$lat <- 38.874544
-  # sitelat = 38.874544, 
+  # sitelat = 38.874544 
   # settings$run$site$lon <- -76.548628
   # sitelon=-76.548628
-  # start_date=1928, 
-  # 
-  
-  # end_date=2018,
+  # start_date=1928
+  # end_date=2018
   # settings$run$start.date <- 1928
   # settings$run$end.date <- 2018
   
@@ -147,3 +147,4 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   writeLines(jobsh, con = file.path(rundir, "job.sh"))
   Sys.chmod(file.path(rundir, "job.sh"))
 } # write.config.RCMEM
+

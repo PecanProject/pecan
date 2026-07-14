@@ -17,3 +17,8 @@ devtools::install_github("https://github.com/Smithsonian/rCMEM")
 
 # 4. Load version into memory
 library(rCMEM)
+
+# remotes::install_github("pecanproject/pecan", subdir = "base/all", 
+#                         ref = "develop", force = T)
+remotes::install_github("abbylewis/pecan", subdir = "models/rcmem", 
+                        ref = "mem_dev")
