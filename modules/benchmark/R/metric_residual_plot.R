@@ -7,7 +7,7 @@
 ##' 
 ##' @author Betsy Cowdery
 ##' @export
-metric_residual_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
+metric_residual_plot <- function(metric_dat, var, unit = NULL, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Residual Plot")
   
   metric_dat <- as.data.frame(metric_dat)
@@ -24,11 +24,65 @@ metric_residual_plot <- function(metric_dat, var, filename = NA, draw.plot = is.
   # Calculate residuals (Model - Observation)
   metric_dat$diff <- metric_dat$model - metric_dat$obvs
   
+  is_multi_site <- "site" %in% colnames(metric_dat) && length(unique(metric_dat$site)) > 1
+  is_multi_var <- "variable" %in% colnames(metric_dat) && length(unique(metric_dat$variable)) > 1
+  
+  if (!"site" %in% colnames(metric_dat)) metric_dat$site <- "All"
+  if (!"variable" %in% colnames(metric_dat)) metric_dat$variable <- var
+  
+  facet_groups <- split(metric_dat, list(metric_dat$site, metric_dat$variable), drop = TRUE)
+  
+  annotations <- do.call(rbind, lapply(names(facet_groups), function(g) {
+    sub_dat <- facet_groups[[g]]
+    
+    time_num <- as.numeric(sub_dat$time)
+    if (inherits(sub_dat$time, "POSIXt")) {
+      time_num <- time_num / 86400
+    }
+    time_num <- time_num - min(time_num, na.rm = TRUE)
+    
+    fit <- try(stats::lm(diff ~ time_num, data = sub_dat), silent = TRUE)
+    if (!inherits(fit, "try-error") && length(stats::coef(fit)) == 2 && !is.na(stats::coef(fit)[2])) {
+      intercept <- stats::coef(fit)[1]
+      slope <- stats::coef(fit)[2]
+      label_str <- sprintf("Intercept: %.3f\nSlope: %.4f / day", intercept, slope)
+    } else {
+      label_str <- "Trend: N/A"
+    }
+    
+    data.frame(
+      site = sub_dat$site[1],
+      variable = sub_dat$variable[1],
+      label = label_str
+    )
+  }))
+  
+  ylab <- if (is.null(unit)) "residual (model - obs)" else sprintf("residual (%s)", unit)
+  
   p <- ggplot2::ggplot(data = metric_dat, ggplot2::aes(x = .data$time, y = .data$diff)) +
     ggplot2::geom_hline(yintercept = 0, colour = "#666666", linewidth = 1, linetype = 2) +
     ggplot2::geom_point(size = 2, alpha = 0.7, colour = "#619CFF") +
-    ggplot2::labs(title = var, x = "Time", y = "Residual (Model - Obs)") +
-    ggplot2::theme_minimal(base_size = 14)
+    ggplot2::geom_smooth(method = "lm", formula = y ~ x, colour = "#FF3333", se = FALSE, linetype = "dashed") +
+    ggplot2::labs(title = var, x = "time", y = ylab, colour = NULL, fill = NULL) +
+    ggplot2::theme_minimal(base_size = 12)
+    
+  # Add per-panel annotations
+  p <- p + ggplot2::geom_label(
+    data = annotations,
+    ggplot2::aes(x = -Inf, y = Inf, label = label),
+    hjust = -0.05, vjust = 1.1,
+    inherit.aes = FALSE,
+    alpha = 0.8
+  )
+  
+  # Add facets if applicable
+  if (is_multi_site && is_multi_var) {
+    p <- p + ggplot2::facet_wrap(~ variable + site, scales = "free_y")
+  } else if (is_multi_site) {
+    p <- p + ggplot2::facet_wrap(~ site, scales = "free_y")
+  } else if (is_multi_var) {
+    p <- p + ggplot2::facet_wrap(~ variable, scales = "free_y")
+  }
   
   if (!is.na(filename)) {
     grDevices::pdf(filename, width = 10, height = 6)

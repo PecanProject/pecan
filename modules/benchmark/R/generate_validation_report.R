@@ -19,12 +19,10 @@ generate_validation_report <- function(benchmark_results, output_file = "Validat
   
   if (!file.exists(template)) {
     PEcAn.logger::logger.severe("Template file not found:", template)
-    stop("Quarto template not found.")
   }
   
   if (!requireNamespace("quarto", quietly = TRUE)) {
     PEcAn.logger::logger.severe("The 'quarto' package is required to generate the report.")
-    stop("Please install the 'quarto' R package.")
   }
   
   # Ensure absolute paths
@@ -55,7 +53,6 @@ generate_validation_report <- function(benchmark_results, output_file = "Validat
     PEcAn.logger::logger.info("Validation report successfully generated at:", output_file)
   }, error = function(e) {
     PEcAn.logger::logger.severe("Failed to render validation report:", e$message)
-    stop(e)
   }, finally = {
     # Clean up the temporary template file
     if (file.exists(temp_qmd)) {
