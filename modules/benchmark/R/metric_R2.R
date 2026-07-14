@@ -1,5 +1,5 @@
 ##' @name metric_R2
-##' @title Squared Pearson Correlation (R²)
+##' @title Squared Pearson Correlation (R2)
 ##' @export
 ##' @param metric_dat dataframe with columns \code{model} and \code{obvs}
 ##' @param ... ignored
