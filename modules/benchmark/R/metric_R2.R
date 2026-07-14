@@ -11,6 +11,6 @@
 ##'
 ##' @author Betsy Cowdery
 metric_R2 <- function(metric_dat, ...) {
-  PEcAn.logger::logger.info("Metric: Squared Pearson Correlation (R²)")
+  PEcAn.logger::logger.info("Metric: Squared Pearson Correlation (R2)")
   stats::cor(metric_dat$model, metric_dat$obvs, use = "pairwise.complete.obs")^2
 } # metric_R2
