@@ -18,7 +18,7 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   # The point of this function is to write the settings for one ensemble member and site combination
   # Generates one subfolder in output/run and one in output/out
   # and one subfolder in 
-  # settings <- xml2::read_xml("demo_run/settings.xml")
+  #  settings <- xml2::read_xml("models/rcmem/demo_run/settings.xml")
 
   
   # Defaults - overrides trait values
@@ -134,14 +134,6 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   jobsh <- gsub("@DELETE_RAW@", as.logical(settings$model$delete.raw != FALSE), jobsh)
-
-  # jobsh <- gsub("@GPP_THETA@", paste(trait_values[GPP_names], collapse = ", "), jobsh)
-  # jobsh <- gsub("@RECO_THETA@", paste(trait_values[Reco_names], collapse = ", "), jobsh)
-  # jobsh <- gsub("@CH4_THETA@", paste(trait_values[CH4_names], collapse = ", "), jobsh)
-
-  # yes, this will be replaced with real params once demo is working
-  # run_data <- PEPRMT::example_data |>
-  #   dplyr::filter(.data$site == settings$run$site$id)
 
   # utils::write.csv(run_data, file.path(rundir, "run_data.csv"), row.names = FALSE)
   writeLines(jobsh, con = file.path(rundir, "job.sh"))
