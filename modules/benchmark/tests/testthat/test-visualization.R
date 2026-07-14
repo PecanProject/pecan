@@ -51,3 +51,10 @@ test_that("generate_validation_report fails gracefully if no template", {
     "Template file not found: non_existent.qmd"
   )
 })
+test_that("timeseries adds a ribbon and error bars when uncertainty cols present", {
+    d <- data.frame(time = as.Date("2020-01-01") + 0:4, model = 1:5, obvs = 1:5,
+                    model_q05 = 0:4, model_q95 = 2:6, obvs_sd = rep(0.5, 5))
+    p <- metric_timeseries_plot(d, "unc", draw.plot = TRUE)
+    geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+    expect_true(all(c("GeomRibbon", "GeomPointrange") %in% geoms))
+ })
