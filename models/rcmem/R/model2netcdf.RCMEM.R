@@ -119,18 +119,29 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     output[[7]] <- sub.RCMEM.output_cohort[,"mineralPackingDensity"]
     
     # Scenario
-    # [1] "year"                "years_per_iteration" "surface_elevation"   "aboveground_biomass"
-    # [5] "belowground_biomass" "totalRootVolume"     "sediment_delivered"  "rootToShoot"        
-    # [9] "rootTurnover"        "abovegroundTurnover" "rootDepthMax"        "rootPackingDensity" 
-    # [13] "lambda"              "rootShape"
+    
+    # [1] "year"                    "years_per_iteration"     "surface_elevation"       "aboveground_biomass"    
+    # [5] "belowground_biomass"     "totalRootVolume"         "sediment_delivered"      "rootToShoot"            
+    # [9] "rootTurnover"            "abovegroundTurnover"     "rootDepthMax"            "rootPackingDensity"     
+    # [13] "lambda"                  "rootShape"               "cumulativeTotalOm"       "cumulativeSequesteredOm"
+    # [17] "omFlux"
+
     
     output[[8]] <- sub.RCMEM.output_scenario[,"surface_elevation"]
     output[[9]] <- sub.RCMEM.output_scenario[,"belowground_biomass"]
     output[[10]] <- sub.RCMEM.output_scenario[,"sediment_delivered"]
     
+    output[[11]] <- sub.RCMEM.output_scenario[,"cumulativeTotalOm"]
+    output[[12]] <- sub.RCMEM.output_scenario[,"cumulativeSequesteredOm"]
+    output[[13]] <- sub.RCMEM.output_scenario[,"omFlux"]
+    
+    output[[14]] <- sub.RCMEM.output_scenario[,"omSequestration"]
+    output[[15]] <- sub.RCMEM.output_scenario[,"cFlux"]
+    output[[16]] <- sub.RCMEM.output_scenario[,"cSequestration"]
+    
     # Species
     # "species_code"        "aboveground_biomass"
-    output[[11]] <- sub.RCMEM.output_species[,"aboveground_biomass"]
+    output[[17]] <- sub.RCMEM.output_species[,"aboveground_biomass"]
 
     ## time_bounds
     # output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),
@@ -160,7 +171,14 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     nc_var[[9]] <- ncdf4::ncvar_def(name = "belowground_biomass", units = "g cm-2", longname = "belowground biomass per unit area", dim = dims_scenario, NA, prec = "double")
     nc_var[[10]] <- ncdf4::ncvar_def(name = "sediment_delivered", units = "g cm-2", longname = "sediment captured in one year", dim = dims_scenario, NA, prec = "double")
     
-    nc_var[[11]] <- ncdf4::ncvar_def(name = "aboveground_biomass", units = "g cm-2", longname = "aboveground herbacious biomass", dim = dims_species, NA, prec = "double")
+    nc_var[[11]] <- ncdf4::ncvar_def(name = "cumulativeTotalOm", units = "g cm-2", longname = "cumulative total organic matter accumulated", dim = dims_scenario, NA, prec = "double")
+    nc_var[[12]] <- ncdf4::ncvar_def(name = "cumulativeSequesteredOm", units = "g cm-2", longname = "cumulative slow pool organic matter accumulated", dim = dims_scenario, NA, prec = "double")
+    nc_var[[13]] <- ncdf4::ncvar_def(name = "omFlux", units = "g cm-2 yr-1", longname = "per year change in organic matter content", dim = dims_scenario, NA, prec = "double")
+    nc_var[[14]] <- ncdf4::ncvar_def(name = "omSequestration", units = "g cm-2 yr-1", longname = "per year change in slow pool organic matter content", dim = dims_scenario, NA, prec = "double")
+    nc_var[[15]] <- ncdf4::ncvar_def(name = "cFlux", units = "g cm-2", longname = "per year change in organic carbon content", dim = dims_scenario, NA, prec = "double")
+    nc_var[[16]] <- ncdf4::ncvar_def(name = "cSequestration", units = "g cm-2 yr-1", longname = "per year change in slow pool organic carbon content", dim = dims_scenario, NA, prec = "double")
+    
+    nc_var[[17]] <- ncdf4::ncvar_def(name = "aboveground_biomass", units = "g cm-2", longname = "aboveground herbacious biomass", dim = dims_species, NA, prec = "double")
     
     
     ### Output netCDF data
