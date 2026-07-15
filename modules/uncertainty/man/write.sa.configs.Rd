@@ -10,28 +10,35 @@ write.sa.configs(
   settings,
   model,
   clean = FALSE,
-  write.to.db = TRUE
+  write.to.db = TRUE,
+  input_design = NULL
 )
 }
 \arguments{
 \item{defaults}{named list with default parameter values}
 
-\item{quantile.samples}{list of lists supplied by \link{get.sa.samples}}
+\item{quantile.samples}{list of lists supplied by \link[PEcAn.utils]{get.sa.samples}}
 
 \item{settings}{list of settings}
 
 \item{model}{name of model to be run}
 
-\item{clean}{logical: Delete any existing contents of the directory specified by \code{settings$rundir} before writing to it?}
+\item{clean}{logical: Delete any existing contents of the directory specified
+by \code{settings$rundir} before writing to it?}
 
-\item{write.to.db}{logical: Record this run to BETY? If TRUE, uses connection settings specified in \code{settings$database}}
+\item{write.to.db}{logical: Record this run to BETY? If TRUE, uses connection
+settings specified in \code{settings$database}}
+
+\item{input_design}{data.frame coordinating input files across runs}
 }
 \value{
-list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids,
+ and $ensemble.id = the ensemble ID for these runs.
+ Also writes sensitivity analysis configuration files as a side effect
 }
 \description{
 Writes config files for use in sensitivity analysis.
 }
 \author{
-David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson, Akash B V
 }

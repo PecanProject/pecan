@@ -17,8 +17,8 @@
 ##' @export query.trait.data
 ##' @examples
 ##' \dontrun{
-##' settings <- read.settings()
-##' query.trait.data("Vcmax", "938", con = con)
+##'   con <- db.open(list(host = "postgres", user = "bety", password = "carya"))
+##'   query.trait.data("Vcmax", "938", con = con)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
 query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE, ids_are_cultivars = FALSE, ...){
@@ -126,8 +126,8 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE
   ## if result is empty, stop run
   
   if (nrow(result) == 0) {
+    PEcAn.logger::logger.warn("there is no data for", trait)
     return(NA)
-    warning(paste("there is no data for", trait))
   } else {
     
     ## Do we really want to print each trait table?? Seems like a lot of

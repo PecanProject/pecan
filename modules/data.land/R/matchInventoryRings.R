@@ -8,7 +8,11 @@
 #'
 ##' @export
 matchInventoryRings <- function(trees, rings, extractor = "TreeCode", nyears = 30, coredOnly = TRUE) {
-  
+  if (!requireNamespace("dplR", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'dplR' is required for tree ring processing but is not installed.",
+      "Please install it with: install.packages('dplR')")
+  }
   ## build tree codes
   id.build <- function(x) {
     do.call(paste0("to.", extractor), x)
@@ -19,7 +23,7 @@ matchInventoryRings <- function(trees, rings, extractor = "TreeCode", nyears = 3
   ## build tree ring codes
   if (is.list(rings)) {
     ring.file <- rep(names(rings), times = sapply(rings, ncol))
-    rings     <- dplR::combine.rwl(rings)
+    rings <- dplR::combine.rwl(rings)
   }
   ring.ID    <- names(rings)
   id.extract <- function(x) {

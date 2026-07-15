@@ -7,7 +7,7 @@
 setEnsemblePaths(
   settings,
   n_reps,
-  input_type = c("met", "poolinitcond", "soilinitcond"),
+  input_type = "met",
   path_template = "./{id}/{n}.nc",
   ...
 )
@@ -43,10 +43,9 @@ with curly braces wrapping any expressions to be interpolated.
 replaced with the siteid of each site, and any other variables need to be
 passed as named arguments in \code{...}.
 
-Note that for consistency, every site in \code{settings} must contain an
-element named \verb{inputs$<input_type>} before you call this.
-If \verb{inputs$<input_type>$path} does not exist it will be created;
-if it does exist it will be overwritten.
+If \verb{inputs$<input_type>} does not exist, it will be created with a \code{path}
+element that matches the requested pattern. If it does exist, any existing
+\code{path} element will be overwritten.
 }
 \examples{
 s <- as.Settings(list(

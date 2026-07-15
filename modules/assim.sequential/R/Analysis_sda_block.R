@@ -21,11 +21,12 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   # grab cores from settings.
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   # if we didn't assign number of CPUs in the settings.
-  if (is.null(cores)) {
-    cores <- parallel::detectCores() - 1
-    # if we only have one CPU.
-    if (cores < 1) cores <- 1
+  if (length(cores) == 0 | is.null(cores)) {
+    cores <- parallel::detectCores()
   }
+  cores <- cores - 1
+  # if we only have one CPU.
+  if (cores < 1) cores <- 1
   #convert from vector values to block lists.
   if ("try-error" %in% class(try(block.results <- build.block.xy(settings = settings, 
                                                                  block.list.all = block.list.all, 
@@ -84,7 +85,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   PEcAn.logger::logger.info("Completed!")
   
   #convert from block lists to vector values.
-  if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H)))) {
+  if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H, settings$state.data.assimilation$adjustment)))) {
     PEcAn.logger::logger.severe("Something wrong within the block.2.vector function.")
     return(0)
   }
@@ -124,6 +125,8 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
   #grab basic arguments based on X.
   site.ids <- unique(attributes(X)$Site)
   var.names <- unique(colnames(X))
+  products <- names(settings$state.data.assimilation$Obs_Prep$variables)
+  var.names.products <- settings$state.data.assimilation$Obs_Prep$variables %>% purrr::map(~.x$var_name) %>% unlist
   mu.f <- colMeans(X)
   Pf <- stats::cov(X)
   if (length(diag(Pf)[which(diag(Pf)==0)]) > 0) {
@@ -202,10 +205,11 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       }) %>% unlist() %>% sort)
     } else {
       H <- construct_nimble_H(site.ids = site.ids,
-                              var.names = var.names,
+                              var.names = var.names.products,
                               obs.t = obs.mean[[t]],
                               pft.path = settings[[1]]$run$inputs$pft.site$path,
-                              by = "block_pft_var")
+                              by = "block_pft_var", 
+                              products = products)
     }
   }
   #start the blocking process
@@ -223,7 +227,7 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       f.end <- i * length(var.names)
       block.list[[i]]$data$muf <- mu.f[f.start:f.end]
       block.list[[i]]$data$pf <- Pf[f.start:f.end, f.start:f.end]
-      #find indexs for Y.
+      #find indexes for Y.
       y.start <- sum(obs_per_site[1:i]) - obs_per_site[i] + 1
       y.end <- sum(obs_per_site[1:i])
       #fill in y and r
@@ -243,11 +247,13 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t) {
       } else {
         block.list[[i]]$data$y.censored <- y.censored[y.start:y.end]
         block.list[[i]]$data$r <- solve(R[y.start:y.end, y.start:y.end])
-        block.h <- Construct.H.multisite(site.ids[i], var.names, obs.mean[[t]])
+        block.h <- Construct.H.multisite(site.ids[i], var.names.products, obs.mean[[t]], products)
       }
       #fill in constants.
       block.list[[i]]$H <- block.h
-      block.list[[i]]$constant$H <- which(apply(block.h, 2, sum) == 1)
+      block.list[[i]]$constant$H <- apply(block.h, 2, FUN = function(c) {
+        which(c == 1)
+      }) %>% unlist
       block.list[[i]]$constant$N <- length(f.start:f.end)
       block.list[[i]]$constant$YN <- length(block.list[[i]]$data$y.censored)
       block.list[[i]]$constant$q.type <- q.type
@@ -393,14 +399,15 @@ MCMC_Init <- function (block.list, X) {
       end <- (block.list[[i]]$sites.per.block[j]) * length(var.names)
       block.list[[i]]$Inits$X.mod <- c(block.list[[i]]$Inits$X.mod, sample.mu.f[start:end])
       #initialize X
-      block.list[[i]]$Inits$X <- block.list[[i]]$data$y.censored
+      block.list[[i]]$Inits$X <- sample.mu.f[start:end]
+      block.list[[i]]$Inits$X[block.list[[i]]$constant$H] <- block.list[[i]]$data$y.censored
       #initialize Xs
       block.list[[i]]$Inits$Xs <- block.list[[i]]$Inits$X.mod[block.list[[i]]$constant$H]
     }
     #initialize q.
     #if we want the vector q.
     if (block.list[[i]]$constant$q.type == 3) {
-      for (j in seq_along(block.list[[i]]$data$y.censored)) {
+      for (j in seq_along(block.list[[i]]$data$muf)) {
         temp.q <- stats::rgamma(1, shape = block.list[[i]]$data$aq[j], rate = block.list[[i]]$data$bq[j])
         if (temp.q < 0.001) {
           temp.q <- 0.001
@@ -484,7 +491,7 @@ MCMC_block_function <- function(block) {
   block$update$aq <- block$Inits$q
   if (block$constant$q.type == 3) {
     #if it's a vector q case
-    aq <- bq <- rep(NA, length(block$data$y.censored))
+    aq <- bq <- rep(NA, length(block$data$muf))
     for (i in seq_along(aq)) {
       CHAR <- paste0("[", i, "]")
       aq[i] <- (mean(dat[, paste0("q", CHAR)]))^2/stats::var(dat[, paste0("q", CHAR)])
@@ -492,9 +499,9 @@ MCMC_block_function <- function(block) {
     }
     #update aqq and bqq
     block$aqq[,block$t+1] <- block$aqq[, block$t]
-    block$aqq[block$constant$H, block$t+1] <- aq
+    block$aqq[,block$t+1] <- aq
     block$bqq[,block$t+1] <- block$bqq[, block$t]
-    block$bqq[block$constant$H, block$t+1] <- bq
+    block$bqq[,block$t+1] <- bq
   } else if (block$constant$q.type == 4) {
     #previous updates
     mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
@@ -522,33 +529,16 @@ MCMC_block_function <- function(block) {
     block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
     block$bqq[block$t+1] <- bq
   }
-  #update mua and pa; mufa, and pfa
+  #update mua and pa; muf, and pf
   iX <- grep("X[", colnames(dat), fixed = TRUE)
   iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
-  if (length(iX) == 1) {
-    mua <- mean(dat[, iX])
-    pa <- stats::var(dat[, iX])
-  } else {
-    mua <- colMeans(dat[, iX])
-    pa <- stats::cov(dat[, iX])
-  }
-  # construct X.all object.
-  # NA only occurs when there is zero observation.
-  if (!any(is.na(block$data$y.censored))) {
-    H <- colSums(block$H)
-    obs.inds <- which(H == 1)
-    non.obs.inds <- which(H == 0)
-    X.all.inds <- H
-    X.all.inds[obs.inds] <- iX
-    X.all.inds[non.obs.inds] <- iX.mod[non.obs.inds]
-    mufa <- colMeans(dat[, X.all.inds])
-    pfa <- stats::cov(dat[, X.all.inds])
-  } else {
-    mufa <- colMeans(dat[, iX.mod])
-    pfa <- stats::cov(dat[, iX.mod])
-  }
+  mua <- colMeans(dat[, iX])
+  pa <- stats::cov(dat[, iX])
+  # construct X.mod object.
+  muf <- colMeans(dat[, iX.mod])
+  pf <- stats::cov(dat[, iX.mod])
   #return values.
-  block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, mufa = mufa, pfa = pfa)
+  block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, muf = muf, pf = pf)
   return(block)
 }
 
@@ -571,6 +561,14 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
   if (is.null(MCMC_dat)) {
     #loop over blocks
     if (t == 1) {
+      fresh.run <- TRUE
+    } else if (t > 1 & is.null(block.list.all[[t-1]])) {
+      fresh.run <- TRUE
+    } else {
+      fresh.run <- FALSE
+    }
+    #if t=1 or if it's a fresh run.
+    if (fresh.run) {
       for (i in seq_along(block.list)) {
         nvar <- length(block.list[[i]]$data$muf)
         nobs <- length(block.list[[i]]$data$y.censored)
@@ -584,8 +582,8 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
             block.list[[i]]$bqq <- array(1, dim = c(nvar, nt + 1))
           }
           #update aq and bq based on aqq and bqq
-          block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
-          block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
+          block.list[[i]]$data$aq <- block.list[[i]]$aqq[, t]
+          block.list[[i]]$data$bq <- block.list[[i]]$bqq[, t]
         } else if (block.list[[i]]$constant$q.type == 4) {
           #initialize aqq and bqq for nt
           block.list[[i]]$aqq <- array(1, dim = c(nvar, nvar, nt + 1))
@@ -596,7 +594,7 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
           block.list[[i]]$data$bq <- block.list[[i]]$bqq[t]
         }
       }
-    } else if (t > 1) {
+    } else {
       if (!is.null(block.list.all.pre)) {
         block.list.pre <- block.list.all.pre[[t - 1]]
       } else {
@@ -611,8 +609,8 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
           block.list[[i]]$aqq <- block.list.pre[[i]]$aqq
           block.list[[i]]$bqq <- block.list.pre[[i]]$bqq
           #update aq and bq
-          block.list[[i]]$data$aq <- block.list[[i]]$aqq[block.list[[i]]$constant$H, t]
-          block.list[[i]]$data$bq <- block.list[[i]]$bqq[block.list[[i]]$constant$H, t]
+          block.list[[i]]$data$aq <- block.list[[i]]$aqq[, t]
+          block.list[[i]]$data$bq <- block.list[[i]]$bqq[, t]
         } else if (block.list[[i]]$constant$q.type == 4) {
           #initialize aqq and bqq for nt
           block.list[[i]]$aqq <- block.list.pre[[i]]$aqq
@@ -643,31 +641,34 @@ update_q <- function (block.list.all, t, nt, aqq.Init = NULL, bqq.Init = NULL, M
 ##' @param block.list  lists of blocks generated by the `build.block.xy` function.
 ##' @param X A matrix contains ensemble forecasts.
 ##' @param H H index created by the `construct_nimble_H` function.
+##' @param adjustment logical variable determine if we want to adjust the analysis ensembles based on likelihood.
 ##' 
 ##' @return It returns a list of analysis results by MCMC sampling.
-block.2.vector <- function (block.list, X, H) {
+block.2.vector <- function (block.list, X, H, adjustment) {
+  # initialize site.ids, mu.a, mu.f, pa, and pf.
   site.ids <- attributes(X)$Site
   mu.f <- mu.a <- c()
   Pf <- Pa <- matrix(0, length(site.ids), length(site.ids))
   analysis <- X
+  # loop over blocks.
   for (L in block.list) {
+    # grab index for the locations within the current block.
     ind <- c()
     for (id in L$site.ids) {
       ind <- c(ind, which(site.ids == id))
     }
-    #convert mu.f and pf
-    mu.a[ind] <- mu.f[ind] <- L$update$mufa
-    Pa[ind, ind] <- Pf[ind, ind] <- L$update$pfa
-    # MVN sample based on block.
-    sample <- as.data.frame(mvtnorm::rmvnorm(nrow(X), 
-                                             L$update$mufa, 
-                                             L$update$pfa, 
-                                             method = "svd"))
-    analysis[,ind] <- sample
-    #convert mu.a and pa
-    ind <- intersect(ind, H$H.ind)
+    # grab mu.a, mu.f, pa, and pf from the MCMC updates.
     mu.a[ind] <- L$update$mua
     Pa[ind, ind] <- L$update$pa
+    mu.f[ind] <- L$update$muf
+    Pf[ind, ind] <- L$update$pf
+    # adjustment.
+    if (as.logical(adjustment)) {
+      sample <- as.data.frame(adj.ens(Pf[ind, ind], X[,ind], mu.f[ind], mu.a[ind], Pa[ind, ind]))
+    } else {
+      sample <- as.data.frame(mvtnorm::rmvnorm(nrow(X), L$update$mua, L$update$pa, method = "svd"))
+    }
+    analysis[,ind] <- sample
   }
   return(list(mu.f = mu.f,
               Pf = Pf,

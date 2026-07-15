@@ -1,0 +1,34 @@
+pft_group,crop,min_n_lbs_acre,max_n_lbs_acre,source,min_n_g_m2,max_n_g_m2
+woody,Avocado,67,100,"Rosenstock et al., 2013",7.51,11.209
+row,"Bean, dry",86,116,"Rosenstock et al., 2013",9.639,13.002
+row,Broccoli,100,240,"Rosenstock et al., 2013; CDFA-FREP & UC Davis",11.209,26.9
+row,Carrot,100,250,"Rosenstock et al., 2013",11.209,28.021
+row,Celery,200,275,"Rosenstock et al., 2013",22.417,30.823
+row,Corn,150,275,"Rosenstock et al., 2013",16.813,30.823
+row,"Corn, sweet",100,200,"Rosenstock et al., 2013",11.209,22.417
+row,Cotton,100,200,"Rosenstock et al., 2013",11.209,22.417
+woody,"Grape, raisin",20,60,"Rosenstock et al., 2013",2.242,6.725
+woody,Grapevines,20,60,Meyer et al. 2007. Pub. 8296,2.242,6.725
+row,Lettuce,170,220,"Rosenstock et al., 2013",19.054,24.659
+row,"Melon, cantaloupe",80,150,"Rosenstock et al., 2013",8.967,16.813
+row,"Melon, watermelon",0,160,"Rosenstock et al., 2013",0,17.934
+row,Melons (mixed),100,150,"Rosenstock et al., 2013",11.209,16.813
+woody,Nectarine,100,150,"Rosenstock et al., 2013",11.209,16.813
+row,Oats,50,120,"Rosenstock et al., 2013",5.604,13.45
+row,Onion,100,400,"Rosenstock et al., 2013",11.209,44.834
+woody,"Peach, bell",180,240,"Rosenstock et al., 2013",20.175,26.9
+woody,"Peach, chili",150,200,"Rosenstock et al., 2013",16.813,22.417
+woody,"Peach, cling",50,100,"Rosenstock et al., 2013",5.604,11.209
+woody,"Peach, free",50,100,"Rosenstock et al., 2013",5.604,11.209
+row,"Pepper, bell",180,240,"Rosenstock et al., 2013",20.175,26.9
+row,"Pepper, chili",150,200,"Rosenstock et al., 2013",16.813,22.417
+woody,Pistachios,100,225,"Rosenstock et al., 2013",11.209,25.219
+woody,"Plums, dried",0,100,"Rosenstock et al., 2013",0,11.209
+woody,"Plums, fresh",110,150,"Rosenstock et al., 2013",12.329,16.813
+rice,Rice,110,145,"Rosenstock et al., 2013",12.329,16.252
+row,Safflower,100,150,"Rosenstock et al., 2013",11.209,16.813
+row,Strawberry,150,300,"Rosenstock et al., 2013",16.813,33.626
+row,"Tomatoes, fresh market",125,350,"Rosenstock et al., 2013",14.011,39.23
+row,"Tomatoes, processing",100,150,"Rosenstock et al., 2013",11.209,16.813
+woody,Walnuts,150,200,"Rosenstock et al., 2013",16.813,22.417
+row,Wheat,100,240,"Rosenstock et al., 2013",11.209,26.9

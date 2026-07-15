@@ -454,8 +454,12 @@ model{
   
   
   PEcAn.logger::logger.info("COMPILE JAGS MODEL")
+  if (!requireNamespace("rjags", quietly = TRUE)) {
+    PEcAn.logger::logger.severe(
+      "Package 'rjags' is required for JAGS model fitting but is not installed.",
+      "Please install it with: install.packages('rjags')")
+  }
   j.model <- rjags::jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
-  
   if(n.burn > 0){
     PEcAn.logger::logger.info("BURN IN")
     jags.out <- rjags::coda.samples(model = j.model, 

@@ -1,7 +1,7 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn Functions Used for Managing Climate Driver Data
-Version: 1.9.1
+Version: 1.9.1.9000
 Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "dietze@bu.edu"),
              person("David", "LeBauer", role = c("aut", "cre"),
@@ -12,6 +12,9 @@ Authors@R: c(person("Mike", "Dietze", role = c("aut"),
                      email = "kooper@illinois.edu"),
              person("Deepak", "Jaiswal", role = c("aut"),
                      email = "djaiswal@djaiswal.edu"),
+             person("Chris", "Black", role = c("ctb"),
+                    email = "chris@ckblack.org",
+                    comment = c(ORCID="https://orcid.org/0000-0001-8382-298X")),
              person("University of Illinois, NCSA", role = c("cph")))
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -38,7 +41,6 @@ Imports:
     MASS,
     mgcv,
     ncdf4 (>= 1.15),
-    nneo,
     PEcAn.DB,
     PEcAn.logger,
     PEcAn.remote,
@@ -70,8 +72,9 @@ Suggests:
     future,
     getPass,
     ggplot2,
-    knitr,
+    knitr (>= 1.50),
     mockery,
+    nneo,
     parallel,
     PEcAn.settings,
     progress,
@@ -83,11 +86,15 @@ Remotes:
     github::adokter/suntools,
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
-    github::ropensci/nneo
+    github::ropensci-archive/nneo
+Additional_repositories:
+    https://ropensci.r-universe.dev/,
+    https://adokter.r-universe.dev
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+X-schema.org-keywords: climate-data, data-standardization

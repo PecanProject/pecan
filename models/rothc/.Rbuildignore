@@ -1,0 +1,4 @@
+Dockerfile
+model_info.json
+inst/workflow_example
+^docs$

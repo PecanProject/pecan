@@ -34,3 +34,43 @@ expect_log <- function(object, regexp, ...){
 
 	invisible(val)
 }
+
+
+#' Expectation: Does this directory contain all listed files?
+#' @param object directory to look in
+#' @param files character vector of filenames expected
+#' @others_ok logical: allow files not listed in `paths`?
+#' @param ... passed on to list.files
+expect_files <- function(object, files, others_ok = TRUE, ...) {
+  act <- quasi_label(rlang::enquo(object), arg = "object")
+
+  files_present <- list.files(path = act$val, ...)
+  files_found <- files %in% files_present
+  others_found <- !(files_present %in% files)
+
+
+  if (all(files_found) && (others_ok || !any(others_found))) {
+    succeed()
+    return(invisible(act$val))
+  }
+
+  msg <- ""
+  if (!all(files_found)) {
+    msg <- sprintf(
+      "%s does not contain files(s) %s.",
+      act$lab,
+      paste(files[!files_found], collapse = ", ")
+    )
+  }
+  if (!others_ok && any(others_found)) {
+    msg <- sprintf(
+      "%s %s contains unexpected files(s) %s.",
+      msg,
+      act$lab,
+      paste(files_present[others_found], collapse = ", ")
+    )
+  }
+  fail(msg)
+
+  invisible(act$val)
+}

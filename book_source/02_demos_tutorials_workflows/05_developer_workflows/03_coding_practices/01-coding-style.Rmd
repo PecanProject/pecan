@@ -36,7 +36,7 @@ In general, try to avoid adding new dependencies (especially ones that depend on
 For a more thorough and nuanced discussion, see the [package dependencies appendix](#package-dependencies).
 
 
-# dplyr
+### dplyr
 
 When running `devtools::check()` a common warning relating to `dplyr` code is "no visible binding for global variable 'x'"
 

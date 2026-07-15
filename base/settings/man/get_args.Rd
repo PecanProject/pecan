@@ -14,5 +14,7 @@ Used in web/workflow.R to parse command line arguments.
 See also https://github.com/PecanProject/pecan/pull/2626.
 }
 \examples{
-\dontrun{./web/workflow.R -h}
+## Example using a script called from your bash terminal:
+## If workflow.R contains `get_args()` and settings are in foo.xml, run as
+## ./workflow.R -s settings.xml
 }

@@ -1,11 +1,60 @@
 # Change Log
+
 All notable changes are kept in this file. All changes made should be added to the section called
 `Unreleased`. Once a new release is made this file will be updated to create a new `Unreleased`
 section for the next release.
 
-	For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
+For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## Unreleased
+
+### Added
+- New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
+    with units attached as an attribute.
+- New package `PEcAn.RothC` runs the RothC soil carbon model.
+- Added `inst/ilamb/` pipeline in PEcAn.benchmark to convert downscaled SDA reanalysis GeoTIFFs into ILAMB-compatible CF netCDF for carbon-cycle benchmarking (#4019).
+- Added multi-model benchmarking scripts to `inst/ilamb/` in PEcAn.benchmark: build the CMIP6 and TRENDY ensembles, score the PEcAn reanalysis and its individual SDA members against observational benchmarks over two evaluation windows, and summarize ensemble spread (#4038).
+- Added PEcAn.PEPRMT model, including a demo run with example data
+- Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
+- Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
+- Add function `PEcAn.MA::meta_analysis_standalone` to run meta-analysis without database or file IO.
+- Added Demo 03: Meta Analysis Quarto notebook (`documentation/tutorials/Demo_03_Meta_Analysis/meta_analysis.qmd`) to demonstrate how to perform Bayesian meta-analysis and visualize posterior distributions using pre-generated trait data.
+- Added `generate_OAT_SA_design()` function for sensitivity analysis input design. Unlike ensemble design which randomizes all inputs, SA design holds non-parameter inputs constant to isolate parameter effects (#3729)
+- Added datasets to `PEcAn.data.land` 
+  *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
+  *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
+  *  `ca_n_application_rate` dataset with recommended N application rates for 33 California crops (g N/m2 and lbs N/acre).
+  *  `ca_compost_amendment` dataset with properties of 32 organic amendment materials for California agriculture (g/m2 and lbs/acre).
+- Added lookup functions to `PEcAn.data.land`: `look_up_ca_n_rate()` and `look_up_ca_compost_amendment()` for querying crop-specific fertilization and compost data.
+- PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
+- Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
+- Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+
+### Fixed
+- Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
+- Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
+- Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
+- Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
+- `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
+
+### Changed
+- `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
+- Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).
+- Improved PEcAn.SIPNET documentation including README, model description, and current installation instructions (@Eshaan-byte; #3703, #3705).
+- `assign.treatments` has been renamed to `assign_treatments` and moved from `PEcAn.utils` to `PEcAn.MA` since that's the only place where it's used.
+- With new `PEcAn.MA::meta_analysis_standalone` function, `PEcAn.MA::run.meta.analysis.pft` now saves all files all at once _after_ the complete meta-analysis runs (and only if it is successful, including prior and posterior checks), rather than saving intermediate objects (like "JAGS-ified" data) as they are created.
+- Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
+- Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)
+- SDA workflows now maintain joint input sampling, via internal calls to `generate_joint_ensemble_design()` (#3634).
+- Management events specified via `events.json` are now required to specify a crop code for each planting event, so that models can know when to restart with a different PFT (#3828, #3836).
+- `PEcAn.data.land`: Moved optional dependencies `doSNOW`, `dplR`, `httr`,
+  `MCMCpack`, `mvtnorm`, `neonUtilities`, `neonstore`, `PEcAn.benchmark`,
+  `PEcAn.visualization`, `rjags`, `sirt`, and `sp` from `Imports` to
+  `Suggests` (@omkarrr2533, #3599).
+- Management events specified via `events.json` are now required to specify a crop code for each planting event, so that models can know when to restart with a different PFT (#3828, #3836).
+
+
+## [1.10.0] - 2026-01-06
 
 ### Added
 
@@ -15,6 +64,9 @@ section for the next release.
 - Added `AmeriFlux_met_ensemble()` function with ERA5 fallback for AmeriFlux meteorological data processing and ensemble generation
 - Added `all_site_nc_merge_by_year()` and `single_site_nc_merge()` functions to merge netCDF files across ensembles and sites from pecan model netCDF outputs.
 - Added parallel mode for the entire SDA workflow.
+- Define, add support for, and parse events schema
+  - Events schema and validate_events() function to PEcAn.data.land (#3623, #3521)
+  - Add `write.events.SIPNET()` to generate SIPNET `events.in` files from a `events.json` file.
 - Included all relevant carbon pools (`ROOT_BIOMASS`, `AG_BIOMASS`, `SOIL_STOCK`, `LIT_BIOMASS`) in BADM-based IC extraction; excluded non-pool variables like `SOIL_CHEM`.
 - Added explicit support for `LIT_BIOMASS` to fully utilize **BADM** biomass capabilities.
 - Added `test-IC_BADM_Utilities.R` to validate BADM initial condition extraction and processing
@@ -29,6 +81,11 @@ section for the next release.
  - Directory structure for PEcAn Quarto notebooks under `pecan/documentation/tutorials/Demo_1_Basic_Run`
  - Support for inspecting and plotting NetCDF output variables within the notebook workflow.
 - added support for soil temperature, relative humidity, soil moisture, and PPFD downscaling to `met_temporal_downscale.Gaussian_ensemble`
+- The PEcAn uncertainty analysis tutorial ("Demo 2") has been updated and reimplemented as a Quarto notebook at `documentation/tutorials/Demo_02_Uncertainty_Analysis/uncertainty.qmd`. (#3570)
+- Added the shared `input_design` matrix, generated via 
+ `runModule.run.write.configs()`/`generate_joint_ensemble_design()`, that keeps
+  parameter draws and sampled inputs aligned across `run.write.configs()`,
+  `write.ensemble.configs()`(#3535, #3634, #3677).
 
 ### Fixed
 
@@ -38,11 +95,18 @@ section for the next release.
 
 ### Changed
 
+- Package `PEcAn.uncertainty` has changed licensing. With approval from all its contributors, we now provide it under a BSD 3-clause license rather than the previously used NCSA Open Source license.
+- Ensemble and sensitivity analyses now assign an ensemble ID if one is not specified in the XML, even when running with no DB (#3654).
 - `download.ERA5_cds` now uses the R package ecmwfr (replacing python dependency of cdsapi via reticulate), enabling direct NetCDF downloads; and made flexible for both reanalysis and ensemble data product.
 - `extract_soil_gssurgo` now supports spatial sampling using a grid of user-defined size and spacing. And supports ensemble simulation of soil organic carbon (SOC) stocks, using area-weighted aggregation
 - The ERA5 NC extraction function can now handle multi-site instead of one
 - All of the `met2model.*` functions no longer write a list of variables (`*.nc.var`) file alongside each output netcdf. If you need var files, use `PEcAn.utils::nc_write_vars()` after the run completes (#3611, #3616).
-
+- Refactor `convert_input` to Perform tasks via helper function. Subtask of [#3307](https://github.com/PecanProject/pecan/issues/3307)
+- Stopped testing on R 4.1, started testing on R 4.5, and updated prebuilt Docker images to match -- they are now available for R releases 4.2 through 4.5 as well as for R under development.
+- `write.config.STICS()` now modifies parameters with vectors rather than individually.
+- Code for DART has been moved from `modules/` to `contrib/` and its license more clearly described.
+- Updated docker.sh to mimic more the build for github actions, added options to push to other registries.
+- ED will now use the same configuration (docker GNU) as the official ED repository for building.
 
 
 ## [1.9.0] - 2025-05-25

@@ -55,7 +55,7 @@ getWorkflows <- function(req, model_id=NA, site_id=NA, offset=0, limit=50, res){
           req$HTTP_HOST,
           "/api/workflows",
           req$PATH_INFO,
-          substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+          gsub("limit=\\d+&", "", substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]])),
           (as.numeric(limit) + as.numeric(offset)),
           "&limit=", 
           limit
@@ -81,7 +81,7 @@ getWorkflows <- function(req, model_id=NA, site_id=NA, offset=0, limit=50, res){
         req$HTTP_HOST,
         "/api/workflows",
         req$PATH_INFO, 
-        substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]]),
+        gsub("limit=\\d+&", "", substr(req$QUERY_STRING, 0, stringr::str_locate(req$QUERY_STRING, "offset=")[[2]])),
         max(0, (as.numeric(offset) - as.numeric(limit))),
         "&limit=", 
         limit
@@ -241,6 +241,80 @@ getWorkflowFile <- function(req, id, filename, res){
     
     # Read the data in binary form & return it
     bin <- readBin(filepath,'raw', n = file.info(filepath)$size)
+    return(bin)
+  }
+}
+
+
+#################################################################################################
+#' Get the list of files in a workflow specified by the id
+#' @param id Workflow id (character)
+#' @return List of files
+#' @author Nihar Sanda
+#* @get /<id>/files
+
+getWorkflowFileDetails <- function(req, id, res) {
+  Workflow <- tbl(global_db_pool, "workflows") %>%
+    select(id, user_id, folder) %>%
+    filter(id == !!id)
+
+  qry_res <- Workflow %>% collect()
+
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return(list(error = "Workflow with specified ID was not found"))
+  }
+
+  list(workflow_id = id, file_names = list.files(qry_res$folder))
+}
+
+#################################################################################################
+#' Get the zip of specified files of the workflow specified by the id
+#' @param id Workflow id (character)
+#' @return Details of requested workflow
+#' @author Nihar Sanda
+#* @serializer contentType list(type="application/octet-stream")
+#* @post /<id>/file-multiple/
+
+getWorkflowFilesAsZip <- function(req, id, filenames, res){
+  if(req$HTTP_CONTENT_TYPE == "application/json") {
+    filenames_req <- req$postBody
+  }
+
+  filenamesList <- jsonlite::fromJSON(filenames_req)
+  filenames <- filenamesList$files
+
+  Workflow <- tbl(global_db_pool, "workflows") %>%
+    select(id, user_id, folder) %>%
+    filter(id == !!id)
+
+  qry_res <- Workflow %>% collect()
+
+  if (nrow(qry_res) == 0) {
+    res$status <- 404
+    return()
+  } else {
+    full_files <- vector(mode = "character", length = length(filenames))
+    for (i in seq_along(filenames)) {
+      # Check if the requested file exists on the host
+      filepath <- file.path(qry_res$folder, filenames[[i]])
+      if (! file.exists(filepath)) {
+        res$status <- 404
+        return()
+      }
+
+      if (Sys.getenv("AUTH_REQ") == TRUE) {
+        if (qry_res$user_id != req$user$userid) {
+          res$status <- 403
+          return()
+        }
+      }
+
+      full_files[i] <- filepath
+    }
+    zip_path <- zip::zipr("output.zip", full_files)
+    bin <- readBin(zip_path, "raw", n = file.info(zip_path)$size)
+    file.remove(zip_path)
     return(bin)
   }
 }

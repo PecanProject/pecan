@@ -7,13 +7,12 @@
 #' @return A list the same dimension as X, with each column of each dataframe
 #'   modified by replacing outlier points with the column median
 #' @export outlier.detector.boxplot
-#' @importFrom magrittr %>%
 #'
 outlier.detector.boxplot <- function(X) {
-  X <- X  %>% 
+  X <- X  |> 
     purrr::map(function(X.tmp){
       #X.tmp is all the state variables for each element of the list (site)
-      X.tmp %>%
+      X.tmp |>
         purrr::map_dfc(function(col.tmp){
           #naive way of finding the outlier - 3 * IQR
           OutVals <- graphics::boxplot(col.tmp, plot = FALSE)$out
@@ -86,7 +85,7 @@ SDA_control <-
 #' @description This function uses a set of scaling factors defined in the pecan XML to scale a given matrix
 #' @return rescaled Matrix
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 rescaling_stateVars <- function(settings, X, multiply=TRUE) {
   
   FUN <- ifelse(multiply, .Primitive('*'), .Primitive('/'))

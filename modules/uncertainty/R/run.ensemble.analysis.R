@@ -1,24 +1,47 @@
-#-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
-#-------------------------------------------------------------------------------
-
-#' run ensemble.analysis
-#' 
+#' Run ensemble analysis on finished model runs
+#'
+#' Loads parsed ensemble model output from disk, computes summary statistics
+#' (mean, median, quantiles), and generates diagnostic plots (histogram,
+#' boxplot, and optionally time series).
+#'
+#' @details
+#' **Upstream contract (reads from `settings$outdir`):**
+#' \describe{
+#'   \item{`ensemble.output.<var>.<years>.<id>.Rdata`}{Produced by
+#'     \code{\link[PEcAn.uncertainty]{get.results}}. Contains `ensemble.output`: a numeric vector of
+#'     model output values, one per ensemble member.}
+#' }
+#'
+#' **File-based side effects (saved to `settings$outdir`):**
+#' \describe{
+#'   \item{`ensemble.analysis.<var>.<years>.<id>.pdf`}{Histogram and boxplot
+#'     of ensemble output distribution.}
+#'   \item{`ensemble.ts.<var>.<years>.<id>.pdf`}{(Optional) Time series plot
+#'     with confidence intervals. Generated when `plot.timeseries` is not
+#'     `NA`.}
+#'   \item{`ensemble.ts.analysis.<var>.<years>.<id>.Rdata`}{(Optional)
+#'     Contains `ensemble.ts.analysis`: time series summary statistics.
+#'     Saved when `plot.timeseries` is not `NA`.}
+#' }
+#'
+#' **Note:** This is a terminal step — nothing downstream loads these files
+#' programmatically. The results are consumed by visualization or user
+#' inspection.
+#'
 #' @param settings PEcAn settings object
 #' @param plot.timeseries if TRUE plots a modeled timeseries of target variable(s) with CIs
 #' @param ensemble.id database ID, taken from settings if not specified
 #' @param variable variable name to process, taken from settings if not specified
 #' @param start.year,end.year taken from settings if not specified
-#' @param ... additional arguments passed to [ensemble.ts()]
+#' @param ... additional arguments passed to \code{\link[PEcAn.uncertainty]{ensemble.ts}}
 #'
-#' @return nothing, creates ensemble plots as ensemble.analysis.pdf
-#' @export
+#' @return Nothing (called for side effects). Creates ensemble plots as PDF
+#'   files and optionally saves time series analysis results.
+#'
+#' @md
+#'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly
+#' @export
 run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = NULL, 
                                   variable = NULL, start.year = NULL, end.year = NULL, ...) {
   
@@ -153,7 +176,12 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
 } # run.ensemble.analysis
 
 
-##' @export
+#' Run ensemble analyses across all sites in settings
+#'
+#' @param settings PEcAn settings object
+#' @param ... arguments passed on to run.ensemble.analysis
+#'
+#' @export
 runModule.run.ensemble.analysis <- function(settings, ...) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, runModule.run.ensemble.analysis, ...))
@@ -250,7 +278,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     for(var in seq_along(variables)){
       out.tmp <- PEcAn.utils::read.output(
         run.id,
-        file.path(settings$outdir, "out", run.id),
+        file.path(settings$modeloutdir, run.id),
         start.year,
         end.year,
         variables[var])

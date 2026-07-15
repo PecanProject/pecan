@@ -73,6 +73,11 @@ root$mount("/api/availableModels", runs_pr)
 runs_pr <- plumber::Plumber$new("posteriors.R")
 root$mount("/api/posteriors", runs_pr)
 
+# Run a meta-analysis from an uploaded XML file
+# Caution: Minimally tested.
+ma_pr <- plumber::Plumber$new("ma.R")
+root$mount("/api/ma", ma_pr)
+
 # set swagger documentation
 root$setApiSpec("../pecanapi-spec.yml")
 
