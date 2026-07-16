@@ -161,8 +161,11 @@ segment_dataframe <- function(run_settings) {
         .data$end_date > .env$run_start
       )
     if (nrow(segments) == 0) {
-      return(segments)
-    }
+    PEcAn.logger::logger.info(
+      "no crop cycle segments fall within the run window; running unsegmented"
+    )
+    return(segments)
+  }
     segments[1, "start_date"] <- run_start
   }
 
