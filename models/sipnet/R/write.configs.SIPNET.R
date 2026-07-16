@@ -594,6 +594,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("GDD" %in% pft.trait.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.trait.names == "GDD")]
     }
+    if ("leafOnReallocFrac" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafOnReallocFrac"), 2] <- pft.traits[which(pft.trait.names == "leafOnReallocFrac")]
+    }
     
     # Fraction of leaf fall per year (should be 1 for decid)
     if ("fracLeafFall" %in% pft.trait.names) {
