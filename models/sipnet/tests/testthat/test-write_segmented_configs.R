@@ -117,7 +117,10 @@ test_that("segment_dataframe returns empty when run start is after all crop cycl
   result <- PEcAn.SIPNET:::segment_dataframe(run_settings)
 
   expect_equal(nrow(result), 0)
-  expect_gt(ncol(result), 0)
+  expect_named(
+    result, 
+    c("start_date", "crop_code", "end_date")
+  )
 })
 
 test_that("write_segment_configs returns unaltered job.sh when no segments remain", {
