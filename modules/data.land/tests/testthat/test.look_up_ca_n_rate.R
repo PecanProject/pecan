@@ -142,3 +142,38 @@ test_that("ca_organic_amendment_app_rate dataset has expected structure", {
                     "app_rate_max", "source") %in% names(dat)))
   expect_true(all(dat$crop_structure %in% c("rows", "trees")))
 })
+
+# dataset invariants: ranges, unit round trip, and cross table integrity
+
+test_that("ca_n_application_rate ranges are ordered and units round-trip", {
+  dat <- PEcAn.data.land::ca_n_application_rate
+  expect_true(all(dat$min_n_lbs_acre >= 0))
+  expect_true(all(dat$min_n_lbs_acre <= dat$max_n_lbs_acre))
+  expect_equal(dat$min_n_g_m2,
+               round(PEcAn.utils::ud_convert(dat$min_n_lbs_acre, "lb/acre", "g/m^2"), 3))
+  expect_equal(dat$max_n_g_m2,
+               round(PEcAn.utils::ud_convert(dat$max_n_lbs_acre, "lb/acre", "g/m^2"), 3))
+  # one range per crop, and every source is a citation not a url
+  expect_equal(dplyr::n_distinct(dat$crop), nrow(dat))
+  expect_false(any(is.na(dat$source)))
+  expect_false(any(grepl("^http", dat$source)))
+})
+
+test_that("ca_organic_amendment_properties has a class for every material", {
+  dat <- PEcAn.data.land::ca_organic_amendment_properties
+  expect_false(any(is.na(dat$material_class)))
+  expect_true(all(dat$cn_min <= dat$cn_max))
+})
+
+test_that("ca_organic_amendment_app_rate matches properties and round-trips", {
+  app <- PEcAn.data.land::ca_organic_amendment_app_rate
+  props <- PEcAn.data.land::ca_organic_amendment_properties
+  # one rows record and one trees record per property row
+  expect_equal(nrow(app), 2 * nrow(props))
+  # every application rate material exists in the properties table
+  expect_true(all(app$material %in% props$material))
+  expect_equal(app$total_n_min_g_m2,
+               round(PEcAn.utils::ud_convert(app$total_n_min_lbs_acre, "lb/acre", "g/m^2"), 3))
+  expect_equal(app$total_n_max_g_m2,
+               round(PEcAn.utils::ud_convert(app$total_n_max_lbs_acre, "lb/acre", "g/m^2"), 3))
+})
