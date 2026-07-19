@@ -53,8 +53,8 @@ row	Cotton	starter		5	35	lbs N/acre	CDFA-FREP & UC Davis
 row	Cotton	sidedress		55	200	lbs N/acre	CDFA-FREP & UC Davis	
 row	Cotton	foliar		18	30	lbs N/acre	CDFA-FREP & UC Davis	*total spead over three applications
 woody	Grape, raisin			20	60	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
-woody	Grapevines	after budbreak until fruit set OR post-harvest	spring	0	60	lbs N/acre	Meyer et al. 2007. Pub. 8295	raisin production; dependent on vine "vigor" and soil* wine grapes may have lower N*
-woody	Grapevines			20	60	lbs N/acre	Meyer et al. 2007. Pub. 8296	raisin
+woody	Grapevines	after budbreak until fruit set OR post-harvest	spring	0	60	lbs N/acre	CDFA-FREP & UC Davis	raisin production; dependent on vine "vigor" and soil* wine grapes may have lower N*
+woody	Grapevines			20	60	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	raisin
 row	Lettuce			170	220	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
 row	Lettuce	preplant		20	40	lbs N/acre	CDFA-FREP & UC Davis	dependent on residual N concentration in soil (less than 20 ppm indicates no preplant N amendment)
 row	Lettuce	starter		0	0	lbs N/acre	CDFA-FREP & UC Davis	dependent on residual N concentration in soil (less than 20 ppm indicates no preplant N amendment)
