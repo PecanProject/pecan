@@ -1,0 +1,86 @@
+PFT Group	Crop	PlantStage	Season	MINN	MAXN	Unit	Source	Notes
+row	Alfalfa	starter		20	40	lbs N/acre	CDFA-FREP & UC Davis	when the residual nitrate concentration is below 3-4 ppm NO3-N (15 ppm NO3)
+row	Alfalfa			0	0	lbs N/acre	Meyer et al. 2007. Pub. 8292	From Meyer et al 2007 "Seldom: Less than 1% of the acreage shows need for fertilization."
+woody	Almonds	first-leaf trees		20	35	lbs N/acre	CDFA-FREP & UC Davis	
+woody	Almonds	first season		1	3	oz N/tree	Meyer et al. 2007. Pub. 8292	
+woody	Almonds	second season		2	6	oz N/tree	Meyer et al. 2007. Pub. 8293	
+woody	Almonds	third season		4	12	oz N/tree	Meyer et al. 2007. Pub. 8294	
+woody	Avocado			67	100	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Barley	preplant	fall	25	100	lbs N/acre	CDFA-FREP & UC Davis	
+row	Barley	starter		0	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Barley	topdress	spring	30	100	lbs N/acre	CDFA-FREP & UC Davis	
+row	Barley	foliar		10	20	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, blackeye	preplant		0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, blackeye	starter		0	8	lbs N/acre	CDFA-FREP & UC Davis	small amount
+row	Bean, blackeye	sidedress		0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, common	preplant			200	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, common	sidedress		70	100	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, dry			86	116	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Bean, dry	foliar		0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, lima	starter		0	8	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, lima	preplant			100	lbs N/acre	CDFA-FREP & UC Davis	
+row	Bean, lima	sidedress		55	125	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli			100	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Broccoli	preplant		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli	starter		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli		winter	180	240	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli		spring	180	240	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli		summer	150	180	lbs N/acre	CDFA-FREP & UC Davis	
+row	Broccoli		fall	150	180	lbs N/acre	CDFA-FREP & UC Davis	
+row	Carrot			100	250	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Carrot	preplant		40	50	lbs N/acre	CDFA-FREP & UC Davis	
+row	Carrot	sidedress		60	80	lbs N/acre	CDFA-FREP & UC Davis	
+row	Carrot	in-season			150	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cauliflower	preplant		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cauliflower	preplant	fall	0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cauliflower	starter		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Celery			200	275	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Celery	preplant		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Celery	starter		20	30	lbs N/acre	CDFA-FREP & UC Davis	
+row	Corn			150	275	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Corn	preplant		200	275	lbs N/acre	CDFA-FREP & UC Davis	
+row	Corn	starter		10	60	lbs N/acre	CDFA-FREP & UC Davis	
+row	Corn	sidedress		180	216	lbs N/acre	CDFA-FREP & UC Davis	
+row	Corn	foliar		0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Corn, sweet			100	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Cotton			100	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Cotton	preplant		0	0	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cotton	starter		5	35	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cotton	sidedress		55	200	lbs N/acre	CDFA-FREP & UC Davis	
+row	Cotton	foliar		18	30	lbs N/acre	CDFA-FREP & UC Davis	*total spead over three applications
+woody	Grape, raisin			20	60	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Grapevines	after budbreak until fruit set OR post-harvest	spring	0	60	lbs N/acre	Meyer et al. 2007. Pub. 8295	raisin production; dependent on vine "vigor" and soil* wine grapes may have lower N*
+woody	Grapevines			20	60	lbs N/acre	Meyer et al. 2007. Pub. 8296	raisin
+row	Lettuce			170	220	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Lettuce	preplant		20	40	lbs N/acre	CDFA-FREP & UC Davis	dependent on residual N concentration in soil (less than 20 ppm indicates no preplant N amendment)
+row	Lettuce	starter		0	0	lbs N/acre	CDFA-FREP & UC Davis	dependent on residual N concentration in soil (less than 20 ppm indicates no preplant N amendment)
+row	Lettuce	sidedress	winter	150	180	lbs N/acre	CDFA-FREP & UC Davis	
+row	Lettuce	sidedress	spring	150	180	lbs N/acre	CDFA-FREP & UC Davis	
+row	Lettuce	sidedress	fall	100	140	lbs N/acre	CDFA-FREP & UC Davis	
+row	Lettuce	sidedress	summer	100	140	lbs N/acre	CDFA-FREP & UC Davis	
+row	Melon, cantaloupe			80	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Melon, watermelon				160	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Melons	preplant		0	50	lbs N/acre	CDFA-FREP & UC Davis	
+row	Melons	sidedress		80	150	lbs N/acre	CDFA-FREP & UC Davis	
+row	Melons (mixed)			100	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Nectarine			100	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Oats			50	120	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Onion			100	400	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Onions	preplant				lbs N/acre	CDFA-FREP & UC Davis	1/3 of total N at preplant
+woody	Peach, bell			180	240	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Peach, chili			150	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Peach, cling			50	100	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Peach, free			50	100	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Pepper, bell			180	240	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Pepper, chili			150	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Pistachios			100	225	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Plums, dried				100	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Plums, fresh			110	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Potato	preplant				lbs N/acre	CDFA-FREP & UC Davis	2/3-3/4 should be applied pre-plant
+rice	Rice			110	145	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Safflower			100	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Strawberry			150	300	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Tomatoes, fresh market			125	350	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Tomatoes, processing			100	150	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+woody	Walnuts			150	200	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
+row	Wheat			100	240	lbs N/acre	https://escholarship.org/uc/item/5mk2q1sm	
