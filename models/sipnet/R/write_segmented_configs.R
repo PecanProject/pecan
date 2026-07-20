@@ -160,12 +160,12 @@ segment_dataframe <- function(run_settings) {
         # Also clip the end date to avoid edge cases where run_start == end_date
         .data$end_date > .env$run_start
       )
-    if (nrow(segments) < 1) {
-      PEcAn.logger::logger.error(
-        "Filtering resulted in no segments. ",
-        "This is an invalid state; check settings and events.json."
-      )
-    }
+    if (nrow(segments) == 0) {
+    PEcAn.logger::logger.info(
+      "no crop cycle segments fall within the run window; running unsegmented"
+    )
+    return(segments)
+  }
     segments[1, "start_date"] <- run_start
   }
 
