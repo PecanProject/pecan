@@ -1,17 +1,16 @@
-# Training Session 0 - Environment setup (portable)
+# Session 0 - Set up your machine (year pair 2024 + 2023)
 
-Users run the monitoring pipeline on **their own Linux cloud VM / HPC node**,
-not BU SCC. This session gets a blank machine ready to produce LandIQ -> phenology ->
-event files that feed GHG modeling elsewhere in PEcAn.
+**Goal:** one Linux cloud / HPC account ready to run the training year pair
+(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`): LandIQ -> gap-fill -> phenology -> events.
 
-**Navigation:** [Documentation index](../README.md) - [Full pipeline](../pipeline.md) -
-[Session 1 - LandIQ](01-landiq.md)
+You are **not** on BU SCC. Ignore `/projectnb/...` paths unless your site
+explicitly mirrors them.
 
-**Code home (PEcAn):** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
-branch `feature/ccmmf-statewide-monitoring-inst` on `sarahkanee/pecan`, under
-`modules/data.remote/inst/ccmmf/`.
+**Next:** [Session 1 - LandIQ](01-landiq.md) after this session. Index:
+[documentation README](../README.md) | [pipeline spine](../pipeline.md).
 
-Training examples use the year pair **2023 + 2024** (new LandIQ year + prior year).
+**Code:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
+`feature/ccmmf-statewide-monitoring-inst` -> `modules/data.remote/inst/ccmmf/`.
 
 ---
 
@@ -19,14 +18,16 @@ Training examples use the year pair **2023 + 2024** (new LandIQ year + prior yea
 
 | Piece | Role |
 |-------|------|
-| **PEcAn** (this branch) | CCMMF monitoring scripts (`inst/ccmmf/`) |
-| **R >= 4.4** + packages | Gap-fill, extract, match, events |
+| **PEcAn** (this branch) | R workflows: gap-fill, extract, match, events (`inst/ccmmf/`) |
+| **cadwr-landuse** | Python / **pixi**: LandIQ geometry harmonization (Session 1) |
+| **R >= 4.4** + packages | Gap-fill through events |
 | **GDAL / PROJ / GEOS** | Spatial I/O (`sf`, `terra`) |
-| **Data root** you choose | LandIQ, HLS, CDL, outputs (`$CCMMF_ROOT`) |
-| **[HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)** (external) | HLS download + MSLSP NetCDF production |
+| **Data root** `$CCMMF_ROOT` | LandIQ, HLS, CDL, products (you choose the path) |
+| **[HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)** (external) | HLS download + MSLSP NetCDF (Session 2) |
 
-SCC `module load` / `qsub -l buyin` are **lab-only**. On your cloud, use system packages
-or conda/spack and run the bash orchestrators (`run_*.sh`) or `Rscript` directly.
+Lab `module load` / `qsub -l buyin` are examples only. On your site use system
+packages or conda/spack and run `run_*.sh` / `Rscript` (and `pixi run` for
+harmonize).
 
 ---
 
@@ -46,6 +47,17 @@ ls "$CCMMF_CODE"
 
 After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
 `inst/ccmmf` path.
+
+### Also clone cadwr-landuse (Session 1 Python)
+
+```bash
+git clone https://github.com/ccmmf/cadwr-landuse.git
+cd cadwr-landuse
+# Until year auto-discover is on main:
+git fetch origin && git checkout feature/auto-discover-landiq-years
+# Install pixi once: https://pixi.prefix.dev/
+export PATH="$HOME/.pixi/bin:$PATH"
+```
 
 ---
 
@@ -84,12 +96,12 @@ If you run scripts from `$CCMMF_CODE`, set extract roots explicitly:
 
 ```bash
 export LANDIQ_GAPFILL_ROOT="$CCMMF_CODE/landiq-gapfill"
-export MSLSP_EXTRACT_ROOT="$CCMMF_CODE/mslsp-extract"   # when present in tree
-export NDTI_EXTRACT_ROOT="$CCMMF_CODE/ndti-extract"     # when present in tree
-# Until extract packages are fully synced into the PR, use the SCC management
-# copies or sync folders from the lab tree into $CCMMF_CODE.
+export MSLSP_EXTRACT_ROOT="$CCMMF_CODE/mslsp-extract"
+export NDTI_EXTRACT_ROOT="$CCMMF_CODE/ndti-extract"
 ```
 
+These are already set in [ccmmf_env.example.sh](../ccmmf_env.example.sh) when
+`CCMMF_CODE` points at `inst/ccmmf`.
 ---
 
 ## 0.4 Environment file (required)

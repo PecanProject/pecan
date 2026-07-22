@@ -1,31 +1,42 @@
-# Training Session 1 - LandIQ crop mapping and gap-fill
+# Session 1 - Add LandIQ 2024 and gap-fill 2023 + 2024
 
-This session documents how CCMMF builds **harmonized statewide parcel crop data** from
-California DWR LandIQ, fills missing years and incomplete rows, and produces the tabular
-and spatial products used downstream (HLS phenology, NDTI, SIPNET inputs).
+**Your job in this session**
 
-**Audience:** CARB staff or contractors reproducing or extending the workflow (2016-2023
-production series; 2024+ as a test case).
+1. Download the **2024** LandIQ shapefile (CNRA).
+2. Check crop codes against the lookup (legend QC).
+3. Harmonize geometry with **cadwr-landuse** (Python / pixi) so **2024** joins the
+   multi-year parcel series.
+4. Gap-fill the year pair **`2023,2024`** with **landiq-gapfill** (R).
+5. Point `CCMMF_LANDIQ_V4` at the gap-filled product for Session 2+.
 
-**Operator reference (run commands, QC, troubleshooting):**
-[landiq-gapfill/README.md](../../landiq-gapfill/README.md) and
-[landiq-gapfill/scripts/cdl/README.md](../../landiq-gapfill/scripts/cdl/README.md).
+| Variable | This training |
+|----------|----------------|
+| `TARGET_YEAR` | 2024 |
+| `PRIOR_YEAR` | 2023 |
 
-**Navigation:** [Documentation index](../README.md) - [Session 0 - Environment](00-environment.md) -
-[Full pipeline](../pipeline.md) - [Session 2 - Phenology](02-phenology.md)
+**Prereq:** [Session 0](00-environment.md) done (`source` your `ccmmf_env.sh`).
 
-**Canonical code locations (BU / NCSA):**
+**Detail docs (optional):** [landiq-gapfill/README.md](../../landiq-gapfill/README.md),
+[CDL README](../../landiq-gapfill/scripts/cdl/README.md). Algorithm for overlays:
+[cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) README / `docs/`.
 
-| Topic | Path |
-|-------|------|
-| Harmonized LandIQ v4.1 (geometry + tabular) | `/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/` |
-| Gap-filled product (downstream input) | `/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/` |
-| Geometry harmonization pipeline | `/projectnb/dietzelab/ccmmf/usr/ashiklom/cadwr-landuse/` |
-| Crop lookup, gap-fill orchestrator | `/projectnb/dietzelab/ccmmf/management/landiq-gapfill/` |
+**Navigation:** [Index](../README.md) | [Pipeline](../pipeline.md) | [Session 2](02-phenology.md)
+
+**Where things live on *your* machine** (set in Session 0):
+
+| What | Typical path |
+|------|----------------|
+| Raw LandIQ shapefiles | `$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles/` |
+| Harmonized v4.1 (after cadwr-landuse) | `$CCMMF_LANDIQ_V4` (e.g. `.../LandIQ-harmonized-v4.1`) |
+| Gap-filled v4.1.2 | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` |
+| Gap-fill code | `$LANDIQ_GAPFILL_ROOT` (= `$CCMMF_CODE/landiq-gapfill`) |
+| Harmonize code | your clone of `ccmmf/cadwr-landuse` |
+
+Lab SCC paths under `/projectnb/...` appear later only as optional examples.
 
 ---
 
-## 1.1 Background
+## 1.1 Background (why LandIQ looks like this)
 
 The CCMMF workflow uses **freely available** LandIQ (DWR statewide crop mapping) and **Harmonized Landsat Sentinel-2 (HLS)** imagery to build field-level inputs for the open ecosystem model **SIPNET**.
 

@@ -1,83 +1,56 @@
 # CCMMF monitoring pipeline - documentation
 
-**Start here.** This folder is the **user / training** entry point for the CCMMF
-LandIQ -> phenology -> management-events monitoring workflow.
+**You are here to process a new LandIQ year.**
 
-Users run on **their own cloud / HPC**, not BU SCC. Begin with
-[Session 0 - Environment](sessions/00-environment.md).
+This training walkthrough adds **2024** and re-runs **2023** (the year pair).
+You work on **your own Linux cloud / HPC** (not BU SCC).
 
-**PEcAn home:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
-`feature/ccmmf-statewide-monitoring-inst` -> `modules/data.remote/inst/ccmmf/`.
+| Variable | Value in this training |
+|----------|-------------------------|
+| `TARGET_YEAR` | **2024** (new CADWR / LandIQ release) |
+| `PRIOR_YEAR` | **2023** (re-gap-fill, rematch, rebuild events with the new series) |
 
-**Delivery vs training**
+When CADWR releases a later year, use the same steps with
+`TARGET_YEAR=<new>` and `PRIOR_YEAR=<new-1>`.
 
-| What | Years | Notes |
-|------|-------|--------|
-| **Delivered product** | Gap-filled **2016-2023** (v4.1.2) + match + events | Historical closeout (lab) |
-| **Training walkthrough** | **`TARGET_YEAR=2024`** + rerun **`PRIOR_YEAR=2023`** | Year-pair after a new CADWR release |
-
-Do not treat 2024 examples as already-on-disk until LandIQ 2024 is downloaded,
-harmonized, and gap-filled.
+**Code on GitHub:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
+branch `feature/ccmmf-statewide-monitoring-inst` ->
+`modules/data.remote/inst/ccmmf/`.
 
 ---
 
-## What to read (users / training)
+## Start here (read in order)
 
-Read in order. Everything a trainee needs for the walkthrough lives **in this
-`documentation/` folder**.
+| Step | Open | You will |
+|-----:|------|----------|
+| 0 | [sessions/00-environment.md](sessions/00-environment.md) | Clone code, install R (+ pixi for Python), create `$CCMMF_ROOT`, `source` your env file |
+| - | [ccmmf_env.example.sh](ccmmf_env.example.sh) | Copy to `$CCMMF_ROOT/ccmmf_env.sh` and set paths / years |
+| 1 | [sessions/01-landiq.md](sessions/01-landiq.md) | Download LandIQ **2024**, harmonize geometry, gap-fill **2023,2024** |
+| spine | [pipeline.md](pipeline.md) | Full year-pair checklist after LandIQ (HLS -> MSLSP/NDTI -> match -> events) |
+| 2 | [sessions/02-phenology.md](sessions/02-phenology.md) | Phenology extract, match, planting/harvest events for **2023 and 2024** |
+| 3 | [sessions/03-tillage-fertilizer.md](sessions/03-tillage-fertilizer.md) | NDTI tillage (opt-in); fert notes |
+| 4 | [sessions/04-irrigation.md](sessions/04-irrigation.md) | Irrigation (parallel; same parcels) |
 
-| Order | Document | Purpose |
-|------:|----------|---------|
-| 0 | [sessions/00-environment.md](sessions/00-environment.md) | Clone repos, deps, data root, `ccmmf_env` |
-| - | [ccmmf_env.example.sh](ccmmf_env.example.sh) | Portable env template (copy -> edit -> `source`) |
-| spine | [pipeline.md](pipeline.md) | End-to-end year-pair run order, env vars, checklist |
-| 1 | [sessions/01-landiq.md](sessions/01-landiq.md) | LandIQ download, harmonize, gap-fill |
-| 2 | [sessions/02-phenology.md](sessions/02-phenology.md) | HLS/MSLSP, match, traits, planting/harvest events |
-| 3 | [sessions/03-tillage-fertilizer.md](sessions/03-tillage-fertilizer.md) | NDTI tillage (+ fert notes) |
-| 4 | [sessions/04-irrigation.md](sessions/04-irrigation.md) | Irrigation (parallel track) |
+**Two languages, two repos**
 
-**[pipeline.md](pipeline.md)** is the technical spine for Sessions 1-3 (LandIQ ->
-gap-fill -> HLS -> MSLSP -> match -> events). Session 4 runs in parallel on the
-same parcel geometry.
+| Part | Language / tool | Repo |
+|------|-----------------|------|
+| Harmonize LandIQ parcels | **Python** via **pixi** | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) (`feature/auto-discover-landiq-years` until on `main`) |
+| Gap-fill, extract, match, events | **R** (`Rscript` / `run_*.sh`) | PEcAn `inst/ccmmf/` (this PR) |
 
-### Geometry harmonization (separate repo)
-
-Session 1 also uses **[ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse)**
-(Python / pixi). That repo's README and `docs/` are the algorithm reference;
-Session 1 only covers the CCMMF ops sequence.
+Session write-ups are the training path. Package READMEs next to the code
+(`landiq-gapfill/`, `mslsp-extract/`, …) are optional detail (flags, QC) linked
+from sessions - not a second curriculum.
 
 ---
 
-## Package READMEs (not a second curriculum)
+## What "done" looks like for this training
 
-Next to the code under `inst/ccmmf/` (or the lab `management/` mirror) each
-workflow has a **package README** (flags, QC, troubleshooting). Those are
-**linked from the sessions** when you need detail - they are not alternate
-training paths and are not listed as peer docs above.
+After Sessions 0-2 (core):
 
-Examples (relative to this folder):
+1. LandIQ **2024** is in your harmonized crop table and gap-filled product.
+2. **2023** and **2024** are gap-filled in `LandIQ-harmonized-v4.1.2` (or your writable copy).
+3. Matched MSLSP + planting/harvest/phenology events exist for **both** years.
 
-| Session | Package README |
-|---------|----------------|
-| 1 | [../landiq-gapfill/README.md](../landiq-gapfill/README.md) |
-| 2 | [../mslsp-extract/README.md](../mslsp-extract/README.md), [../phenology/match/README.md](../phenology/match/README.md), [../traits/README.md](../traits/README.md), [../events/README.md](../events/README.md) |
-| 2-3 | [../hls/README.md](../hls/README.md) (parcel-tile map / shared HLS helpers) |
-| 3 | [../ndti-extract/README.md](../ndti-extract/README.md), [../tillage/README.md](../tillage/README.md) |
-
-On the lab SCC tree, some of the same docs still live under `management/scripts/`
-(e.g. `scripts/phenology/match/`); prefer the paths in the PEcAn `inst/ccmmf`
-layout when cloning from GitHub.
-
----
-
-## How this folder is organized
-
-| Path | Role |
-|------|------|
-| `README.md` (this file) | User entry point and reading order |
-| `ccmmf_env.example.sh` | Env template for Session 0 |
-| `pipeline.md` | Year-processing spine (used with Sessions 1-3) |
-| `sessions/00-04.md` | Training sessions (background, walkthrough, verify) |
-
-Internal planning notes (`*_PLAN.md`, etc.) are not part of this documentation
-product.
+Lab note: a historical **2016-2023** product already exists on BU SCC. Your job in
+training is the **year-pair update**, not rebuilding all history from scratch.

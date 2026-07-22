@@ -1,26 +1,30 @@
-# CCMMF pipeline
+# CCMMF pipeline - year pair 2024 + 2023
 
-**Spine doc** - order of operations for LandIQ v4.1 -> gap-fill (v4.1.2) through MSLSP,
-NDTI, match, and events. **Draft (local outputs only).**
+**Who this is for:** you are updating the monitoring stack for a **new LandIQ
+year**. In this training that means:
 
-**Start with environment:** [Session 0 - portable setup](sessions/00-environment.md)
-and [ccmmf_env.example.sh](ccmmf_env.example.sh). Do not use BU `/projectnb` paths on
-user machines.
+| | |
+|--|--|
+| New year | `TARGET_YEAR=2024` |
+| Prior year (always re-run) | `PRIOR_YEAR=2023` |
 
-**Training year:** examples use `TARGET_YEAR=2024` and gap-fill / downstream for the
-**year pair `2023,2024`** (new release + prior year). The historical **2016-2023**
-gap-filled series is the delivered lab product; see [README.md](README.md).
+You will: add LandIQ 2024 -> gap-fill **both** years -> extract / match / events
+for **both** years. Commands below use those years; substitute when a newer
+CADWR release arrives.
 
-**PEcAn:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
-`feature/ccmmf-statewide-monitoring-inst`.
+**Before this file:** finish [Session 0](sessions/00-environment.md) (clone,
+`$CCMMF_ROOT`, `source ccmmf_env.sh`). Do **not** use BU `/projectnb` paths on
+your machine.
 
-**Users:** start at [documentation/README.md](README.md) for training sessions.
-This file is the full-year technical runbook.
+**Session detail:** [Session 1 - LandIQ](sessions/01-landiq.md) for download +
+harmonize + gap-fill. Later sessions cover phenology / tillage / irrigation.
+Package READMEs next to the code have flags and QC only.
 
-**Schedulers:** prefer `run_*.sh` / `Rscript` off-site. Lab SCC wrappers use
-`#$ -l buyin`; translate to your batch system if needed.
+**PEcAn code:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913).
+**Harmonize code:** [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse).
 
-Nested workflows (harmonization, CDL, gap-fill, HLS extract, match, events) have their own READMEs; this file gives env vars, sequencing, and commands. Each step below links to its component README. For the developer repo index, see [management/README.md](../README.md).
+**Schedulers:** prefer `run_*.sh` / `Rscript` on your cloud. Lab examples may
+show `qsub -l buyin` - translate to your batch system.
 
 ---
 
@@ -530,27 +534,27 @@ county/state transition matrices - county CSVs live at
 
 ---
 
-## 14. Checklist
+## 14. Checklist (training: finish 2024 + re-run 2023)
 
 | [ ] | Step | Key output |
 |---|------|------------|
-| [ ] | Session 0: clone PEcAn branch + `source ccmmf_env.sh` (portable paths) | env OK |
-| [ ] | Set `TARGET_YEAR=2024`, `PRIOR_YEAR=2023` | - |
-| [ ] | Download LandIQ shapefile for `TARGET_YEAR` -> `$CCMMF_ROOT/data_raw/.../landiq_shapefiles/` | year folder |
-| [ ] | Harmonized v4.1 baseline (S3 or local) | `$CCMMF_ROOT/LandIQ-harmonized-v4.1` |
-| [ ] | Harmonize `TARGET_YEAR` (cadwr-landuse auto-discovers years) | year in crops parquet |
-| [ ] | Gap-fill year pair `${PRIOR_YEAR},${TARGET_YEAR}` + set `CCMMF_LANDIQ_V4` -> v4.1.2 | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` |
-| [ ] | HLS phenology (imagery + MSLSP NetCDF) for both years via HLS_Phenology | `data_phen/` |
-| [ ] | `build_hls_parcel_tile_map.R` if geometry changed | `hls_parcel_tile_map_v4.1.rds` |
-| [ ] | MSLSP extract (`TARGET_YEAR` + `PRIOR_YEAR`) | `mslsp_year=*.parquet` |
-| [ ] | NDTI extract (12 months) for both years as needed | `ndti_year=*_month=*.parquet` |
-| [ ] | `match_landiq_mslsp` for both years | `assigned_year=*.parquet` |
-| [ ] | Phenology date gap-fill (optional) | `gapfill_dates/assigned_year=*_gapfilled.parquet` |
-| [ ] | Trait lookups (one-time) | `plant_traits/*_lookup_long.rds` |
-| [ ] | `make_events_statewide` for both years | `event_files/*_statewide_*` |
-| [ ] | Tillage events (optional) | `tillage_statewide_*.parquet` - [Session 3](sessions/03-tillage-fertilizer.md) |
-| [ ] | Irrigation events (parallel workflow) | [Session 4](sessions/04-irrigation.md) |
-| [ ] | *(future)* publish to S3 | `s3://carb/management/...` |
+| [ ] | Session 0: clone PEcAn + cadwr-landuse; `source ccmmf_env.sh` | env OK |
+| [ ] | Confirm `TARGET_YEAR=2024`, `PRIOR_YEAR=2023` in env | - |
+| [ ] | Download LandIQ **2024** shapefile -> `$CCMMF_ROOT/data_raw/.../landiq_shapefiles/` | year folder |
+| [ ] | Baseline harmonized v4.1 (S3 or local copy) if you do not already have one | `$CCMMF_LANDIQ_V4` |
+| [ ] | Harmonize so **2024** is in `crops_all_years.parq` (cadwr-landuse) | year in crops parquet |
+| [ ] | Gap-fill **`2023,2024`**; then point `CCMMF_LANDIQ_V4` at v4.1.2 product | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` |
+| [ ] | HLS / MSLSP NetCDF for **2023 and 2024** (HLS_Phenology) | `data_phen/` |
+| [ ] | Rebuild parcel-tile map if geometry changed | `hls_parcel_tile_map_v4.1.rds` |
+| [ ] | MSLSP extract for **2023 and 2024** | `mslsp_year=*.parquet` |
+| [ ] | NDTI extract for both years as needed | `ndti_year=*_month=*.parquet` |
+| [ ] | Match LandIQ-MSLSP for **both** years | `assigned_year=*.parquet` |
+| [ ] | Phenology date gap-fill (optional) | `gapfill_dates/...` |
+| [ ] | Trait lookups (one-time, if missing) | `plant_traits/*_lookup_long.rds` |
+| [ ] | Events (phenology/planting/harvest) for **both** years | `event_files/*_statewide_*` |
+| [ ] | Tillage events (optional; `EVENT_TYPE=tillage`) | [Session 3](sessions/03-tillage-fertilizer.md) |
+| [ ] | Irrigation (parallel) | [Session 4](sessions/04-irrigation.md) |
+| [ ] | *(future)* publish to S3 | your data contact / Henry |
 
 ---
 
