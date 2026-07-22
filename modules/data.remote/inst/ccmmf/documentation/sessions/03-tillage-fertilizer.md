@@ -1,24 +1,24 @@
-# Training Session 3 — Tillage and fertilization
+# Training Session 3 - Tillage and fertilization
 
 This session covers **tillage event generation** from NDTI + matched MSLSP phenology,
 and **California nitrogen / organic-amendment rate lookups** for PEcAn fertilization
 events.
 
-**Navigation:** [Documentation index](../README.md) · [Session 2 — Phenology](02-phenology.md) ·
-[Session 4 — Irrigation](04-irrigation.md) · [Full pipeline](../pipeline.md)
+**Navigation:** [Documentation index](../README.md) - [Session 2 - Phenology](02-phenology.md) -
+[Session 4 - Irrigation](04-irrigation.md) - [Full pipeline](../pipeline.md)
 
 **Audience:** CARB staff or contractors who completed [Session 2](02-phenology.md)
 (matched phenology and default planting/harvest events).
 
 **Prerequisites:**
 
-- NDTI monthly parquet for target year ± buffer (`tillage/ndti_v4.1/`)
-- Matched LandIQ–MSLSP assignments (`assigned_by == "matched"`)
+- NDTI monthly parquet for target year +/- buffer (`tillage/ndti_v4.1/`)
+- Matched LandIQ-MSLSP assignments (`assigned_by == "matched"`)
 - Gap-filled LandIQ product (Session 1)
 
 ---
 
-## Part A — Tillage (NDTI)
+## Part A - Tillage (NDTI)
 
 Tillage timing is inferred from **NDTI** (Normalized Difference Tillage Index) in each
 **fallow window** between one season's senescence (`OGMn`) and the next season's
@@ -54,14 +54,14 @@ qsub -v 'NDTI_ARGS=2024,CCMMF_LANDIQ_V4=/projectnb/dietzelab/ccmmf/LandIQ-harmon
 ```
 
 (`#$ -l buyin` is in the `.sge` wrapper. For pre-2020 years use `HLS_IMAGERY_LAYOUT=flat`
-— see [ndti-extract/README.md](../../ndti-extract/README.md).)
+- see [ndti-extract/README.md](../../ndti-extract/README.md).)
 
 Output: `tillage/ndti_v4.1/year=2024/ndti_year=2024_month=MM.parquet` (12 months).
 
 ### Run tillage events
 
-Tillage is **opt-in** — heavier than phenology/planting/harvest (loads NDTI for
-`year ± TILLAGE_BUFFER_YEARS`, default 1).
+Tillage is **opt-in** - heavier than phenology/planting/harvest (loads NDTI for
+`year +/- TILLAGE_BUFFER_YEARS`, default 1).
 
 ```bash
 module load R/4.4.3
@@ -96,7 +96,7 @@ Example statewide JSON outputs (historical): `usr/akash/management/tillage/tilla
 
 ---
 
-## Part B — Fertilization (Akash)
+## Part B - Fertilization (Akash)
 
 There is **no standalone README** in Akash's fertilization folder yet. The canonical
 workflow lives under:
@@ -107,15 +107,15 @@ workflow lives under:
 
 | File | Role |
 |------|------|
-| `CCMMF Fertilization - N_Fertilization.tsv` | Source spreadsheet export — N rates by crop and growth stage |
+| `CCMMF Fertilization - N_Fertilization.tsv` | Source spreadsheet export - N rates by crop and growth stage |
 | `CCMMF Fertilization - Compost.tsv` | Organic amendment properties and application rates |
 | `CCMMF Fertilization - Biochar.tsv` | Biochar amendment data |
 | `CCMMF_Fertilization_Crop_types.tsv` | Crop type crosswalk |
-| **`harmonize_fertilization_data.R`** | **Main script** — reads TSVs, writes harmonized CSVs |
+| **`harmonize_fertilization_data.R`** | **Main script** - reads TSVs, writes harmonized CSVs |
 | `diagnose.R` | Audit tool comparing raw TSV to PEcAn harmonized output |
 | `audit_n_rates.txt` | Example audit log from `diagnose.R` |
 
-### Harmonize source data → CSVs
+### Harmonize source data -> CSVs
 
 ```bash
 module load R/4.4.3   # needs PEcAn.utils for unit conversion
@@ -127,11 +127,11 @@ Rscript harmonize_fertilization_data.R
 
 | CSV | Contents |
 |-----|----------|
-| `ca_n_application_rate.csv` | Per-crop min/max N (lbs N/acre and g N/m²) |
+| `ca_n_application_rate.csv` | Per-crop min/max N (lbs N/acre and g N/m2) |
 | `ca_organic_amendment_properties.csv` | Material C:N, N%, PAN%, etc. |
 | `ca_organic_amendment_app_rate.csv` | Application rates by material and crop structure (rows vs trees) |
 
-The harmonizer aggregates within-year stage rows (preplant, sidedress, …) or uses
+The harmonizer aggregates within-year stage rows (preplant, sidedress, ...) or uses
 envelope totals depending on how each crop is reported in the source TSV. See the
 `build_n_rates()` logic in `harmonize_fertilization_data.R`.
 
@@ -161,7 +161,7 @@ A copy of the harmonization script also exists at
 and the current harmonizer.
 
 Statewide fertilization **event generation** (parcel-level application dates tied to
-planting/phenology) is handled in the PEcAn workflow layer — not yet wired into
+planting/phenology) is handled in the PEcAn workflow layer - not yet wired into
 `make_events_statewide.R` the way tillage is. Use `look_up_ca_n_rate()` for lookups
 and follow PEcAn fertilization event patterns for site-level runs until a statewide
 generator is documented.
@@ -172,7 +172,7 @@ generator is documented.
 
 **Tillage**
 
-- [ ] Confirm NDTI parquet exists for target year ± 1 (`ndti_v4.1/`).
+- [ ] Confirm NDTI parquet exists for target year +/- 1 (`ndti_v4.1/`).
 - [ ] Confirm `assigned_year=TARGET_YEAR.parquet` from Session 2.
 - [ ] Run `make_events_statewide.R TARGET_YEAR tillage`.
 - [ ] Verify `event_files/tillage_statewide_TARGET_YEAR.parquet`.
@@ -188,7 +188,7 @@ generator is documented.
 
 ## 3.2 What comes next
 
-- **[Session 4 — Irrigation](04-irrigation.md):** water-balance irrigation events
+- **[Session 4 - Irrigation](04-irrigation.md):** water-balance irrigation events
   (statewide parcel workflow + anchor-site prototype).
 - **Combine event types for SIPNET:** [combine_management_events_pecan.R](../../scripts/events/combine_management_events_pecan.R)
   merges planting, harvest, tillage, and irrigation into one PEcAn JSON bundle.

@@ -1,13 +1,13 @@
-# Training Session 0 — Environment setup (portable)
+# Training Session 0 - Environment setup (portable)
 
-Stakeholders run the monitoring pipeline on **their own Linux cloud VM / HPC node**,
-not BU SCC. This session gets a blank machine ready to produce LandIQ → phenology →
+Users run the monitoring pipeline on **their own Linux cloud VM / HPC node**,
+not BU SCC. This session gets a blank machine ready to produce LandIQ -> phenology ->
 event files that feed GHG modeling elsewhere in PEcAn.
 
-**Navigation:** [Documentation index](../README.md) · [Full pipeline](../pipeline.md) ·
-[Session 1 — LandIQ](01-landiq.md)
+**Navigation:** [Documentation index](../README.md) - [Full pipeline](../pipeline.md) -
+[Session 1 - LandIQ](01-landiq.md)
 
-**Code home (PEcAn):** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) —
+**Code home (PEcAn):** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
 branch `feature/ccmmf-statewide-monitoring-inst` on `sarahkanee/pecan`, under
 `modules/data.remote/inst/ccmmf/`.
 
@@ -20,7 +20,7 @@ Training examples use the year pair **2023 + 2024** (new LandIQ year + prior yea
 | Piece | Role |
 |-------|------|
 | **PEcAn** (this branch) | CCMMF monitoring scripts (`inst/ccmmf/`) |
-| **R ≥ 4.4** + packages | Gap-fill, extract, match, events |
+| **R >= 4.4** + packages | Gap-fill, extract, match, events |
 | **GDAL / PROJ / GEOS** | Spatial I/O (`sf`, `terra`) |
 | **Data root** you choose | LandIQ, HLS, CDL, outputs (`$CCMMF_ROOT`) |
 | **[HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)** (external) | HLS download + MSLSP NetCDF production |
@@ -41,7 +41,7 @@ git checkout feature/ccmmf-statewide-monitoring-inst
 # Scripts live here (until merged to develop):
 export CCMMF_CODE="$(pwd)/modules/data.remote/inst/ccmmf"
 ls "$CCMMF_CODE"
-# landiq-gapfill  phenology  events  hls  tillage  traits  …
+# landiq-gapfill  phenology  events  hls  tillage  traits  ...
 ```
 
 After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
@@ -54,7 +54,7 @@ After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
 Pick a writable directory with enough space (statewide HLS + CDL is large):
 
 ```bash
-export CCMMF_ROOT="$HOME/ccmmf"          # or /data/ccmmf, /scratch/ccmmf, …
+export CCMMF_ROOT="$HOME/ccmmf"          # or /data/ccmmf, /scratch/ccmmf, ...
 mkdir -p "$CCMMF_ROOT"/{data_raw/cadwr_land_use/landiq_shapefiles,data_phen/output,data_phen/HLS_data_sort/HLS30,CDL_data,LandIQ-harmonized-v4.1,LandIQ-harmonized-v4.1.2}
 
 # Code may live inside PEcAn; management-style layout for outputs:
@@ -62,7 +62,7 @@ export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
 mkdir -p "$CCMMF_MANAGEMENT"/{phenology,tillage,event_files,plant_traits}
 ```
 
-**Layout stakeholders should mirror:**
+**Layout users should mirror:**
 
 ```text
 $CCMMF_ROOT/
@@ -113,13 +113,13 @@ your machine.
 | Variable | Purpose |
 |----------|---------|
 | `CCMMF_ROOT` | Top of your data tree |
-| `CCMMF_MANAGEMENT` | Outputs + lookups (`event_files`, matched parquets, …) |
-| `CCMMF_LANDIQ_V4` | Harmonized or **gap-filled** LandIQ dir (after gap-fill → v4.1.2) |
+| `CCMMF_MANAGEMENT` | Outputs + lookups (`event_files`, matched parquets, ...) |
+| `CCMMF_LANDIQ_V4` | Harmonized or **gap-filled** LandIQ dir (after gap-fill -> v4.1.2) |
 | `CCMMF_LANDIQ_GAPFILL_PRODUCT` | Gap-fill write target (usually `.../LandIQ-harmonized-v4.1.2`) |
 | `HLS_IMAGERY_ROOT` / `HLS_IMAGERY_LAYOUT` | NDTI imagery (`phenology` layout for 2020+) |
 | `HLSL_BASE` / `HLSS_BASE` | Only if using `HLS_IMAGERY_LAYOUT=flat` |
 | `mslsp_new_base` | Directory of `MSLSP_<tile>_<year>.nc` |
-| `NDTI_PARCEL_TILEMAP` / `mslsp_parcel_tilemap` | Parcel→tile RDS |
+| `NDTI_PARCEL_TILEMAP` / `mslsp_parcel_tilemap` | Parcel->tile RDS |
 | `COUNTY_TRANSITION_MATRICES_DIR` | County `*_crop_matrix.csv` (full-gap CLASS fill) |
 | `EXTERNAL_TRANSITION_MATRIX_CSV` | Statewide transition matrix |
 | `TARGET_YEAR` / `PRIOR_YEAR` | Training pair (e.g. 2024 / 2023) |
@@ -138,7 +138,7 @@ sudo apt-get install -y \
   libxml2-dev libfontconfig1-dev
 ```
 
-Use your site’s equivalent on RHEL/Rocky/conda.
+Use your site's equivalent on RHEL/Rocky/conda.
 
 ### R packages
 
@@ -159,19 +159,19 @@ packageVersion("arrow")
 ```
 
 If `arrow` fails to load (`curl_multi_poll`, etc.), fix the system `libcurl` /
-reinstall arrow from source on that machine — do not point at another user’s
+reinstall arrow from source on that machine - do not point at another user's
 `~/R` library.
 
 ---
 
-## 0.6 External dependency — HLS / MSLSP NetCDF
+## 0.6 External dependency - HLS / MSLSP NetCDF
 
 MSLSP extract and NDTI need products from
-[Mrina Reddy — HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology):
+[Mrina Reddy - HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology):
 
 1. Clone and pin a commit (record the SHA in your run log).
 2. Follow that repo to download HLS and produce per-tile `MSLSP_*.nc`.
-3. Place NetCDF under `$mslsp_new_base` (default `$CCMMF_ROOT/data_phen/output/<tile>/…`
+3. Place NetCDF under `$mslsp_new_base` (default `$CCMMF_ROOT/data_phen/output/<tile>/...`
    or a flat layout your extract config expects).
 4. Place reflectance + Fmask under `$HLS_IMAGERY_ROOT` for NDTI.
 
@@ -200,7 +200,7 @@ Rscript "$CCMMF_MANAGEMENT/scripts/events/make_events_statewide.R" "$PRIOR_YEAR"
 ```
 
 Lab SCC wrappers (`*.sge`) document resource requests (`-l buyin`); translate those to
-your cloud’s batch system if you parallelize.
+your cloud's batch system if you parallelize.
 
 Full order: [pipeline.md](../pipeline.md).
 
@@ -215,13 +215,13 @@ test -d "$CCMMF_CODE" && echo "CCMMF_CODE ok"
 Rscript -e 'stopifnot(requireNamespace("arrow"), requireNamespace("sf"))'
 ```
 
-Optional: confirm a year in LandIQ once the harmonized product exists (see pipeline §4).
+Optional: confirm a year in LandIQ once the harmonized product exists (see pipeline section 4).
 
 ---
 
 ## 0.9 Checklist
 
-- [ ] Clone PEcAn → `feature/ccmmf-statewide-monitoring-inst`
+- [ ] Clone PEcAn -> `feature/ccmmf-statewide-monitoring-inst`
 - [ ] Create `$CCMMF_ROOT` data layout (no BU paths)
 - [ ] Write and `source` `ccmmf_env.sh` from the example
 - [ ] Install GDAL stack + R packages; arrow loads cleanly
@@ -240,4 +240,4 @@ Optional: confirm a year in LandIQ once the harmonized product exists (see pipel
 | Jobs | `qsub` wrappers with `#$ -l buyin` |
 | Flat HLS (pre-2020) | XinyuanJi `State_of_California_HLSL/HLSS` |
 
-Stakeholders should ignore this appendix unless collaborating on SCC.
+Users should ignore this appendix unless collaborating on SCC.

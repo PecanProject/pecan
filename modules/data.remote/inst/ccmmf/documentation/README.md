@@ -1,19 +1,19 @@
-# CCMMF monitoring pipeline — documentation
+# CCMMF monitoring pipeline - documentation
 
-**Start here.** This folder is the stakeholder entry point for the CCMMF LandIQ →
-phenology → management-events monitoring workflow.
+**Start here.** This folder is the user entry point for the CCMMF LandIQ ->
+phenology -> management-events monitoring workflow.
 
-Stakeholders run on **their own cloud / HPC**, not BU SCC. Begin with
-[Session 0 — Environment](sessions/00-environment.md).
+Users run on **their own cloud / HPC**, not BU SCC. Begin with
+[Session 0 - Environment](sessions/00-environment.md).
 
-**PEcAn home:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) —
-`feature/ccmmf-statewide-monitoring-inst` → `modules/data.remote/inst/ccmmf/`.
+**PEcAn home:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
+`feature/ccmmf-statewide-monitoring-inst` -> `modules/data.remote/inst/ccmmf/`.
 
 **Delivery vs training**
 
 | What | Years | Notes |
 |------|-------|--------|
-| **Delivered product** | Gap-filled **2016–2023** (v4.1.2) + match + events | Historical closeout (lab) |
+| **Delivered product** | Gap-filled **2016-2023** (v4.1.2) + match + events | Historical closeout (lab) |
 | **Training walkthrough** | **`TARGET_YEAR=2024`** + rerun **`PRIOR_YEAR=2023`** | Year-pair after a new CADWR release |
 
 Do not treat 2024 examples as already-on-disk until LandIQ 2024 is downloaded,
@@ -36,10 +36,10 @@ per-step operator READMEs beside the code.
 
 ---
 
-## Full pipeline (Sessions 1–3 core)
+## Full pipeline (Sessions 1-3 core)
 
-**[pipeline.md](pipeline.md)** — end-to-end run order, environment variables, commands,
-and a year-processing checklist (LandIQ → gap-fill → HLS → MSLSP → match → events).
+**[pipeline.md](pipeline.md)** - end-to-end run order, environment variables, commands,
+and a year-processing checklist (LandIQ -> gap-fill -> HLS -> MSLSP -> match -> events).
 
 Session 4 (irrigation) runs in parallel on the same parcel geometry; see
 [sessions/04-irrigation.md](sessions/04-irrigation.md).
@@ -50,14 +50,14 @@ Session 4 (irrigation) runs in parallel on the same parcel geometry; see
 
 | Path | Audience | Purpose |
 |------|----------|---------|
-| `README.md` (this file) | CARB / stakeholders | Entry point and session index |
-| `ccmmf_env.example.sh` | Everyone | Portable env template (copy → edit → `source`) |
+| `README.md` (this file) | CARB / users | Entry point and session index |
+| `ccmmf_env.example.sh` | Everyone | Portable env template (copy -> edit -> `source`) |
 | `pipeline.md` | Operators | Technical spine for crop/phenology/tillage year processing |
-| `sessions/00-environment.md` | Stakeholders | Clone, deps, paths, non-SGE runs |
-| `sessions/01–04.md` | Training | Session narratives (background, walkthrough, verify) |
+| `sessions/00-environment.md` | Users | Clone, deps, paths, non-SGE runs |
+| `sessions/01-04.md` | Training | Session narratives (background, walkthrough, verify) |
 | `../mslsp-extract/README.md` | Operators | MSLSP extraction (Session 2) |
 | `../ndti-extract/README.md` | Operators | NDTI extraction (Session 3) |
-| `../landiq-gapfill/README.md`, `../scripts/hls/README.md` | Operators | Gap-fill, parcel–tile map, shared HLS framework |
+| `../landiq-gapfill/README.md`, `../scripts/hls/README.md` | Operators | Gap-fill, parcel-tile map, shared HLS framework |
 
 Internal planning notes (`*_PLAN.md`, dev indexes) live under `scripts/` and are not
 part of this documentation product.

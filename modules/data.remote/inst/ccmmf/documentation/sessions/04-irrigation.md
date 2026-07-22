@@ -1,16 +1,16 @@
-# Training Session 4 — Irrigation
+# Training Session 4 - Irrigation
 
 This session covers how CCMMF derives **irrigation event files** from evapotranspiration,
 precipitation, and soil water-balance logic, and how those events connect to the rest of
 the monitoring pipeline (planting, harvest, phenology, tillage).
 
-**Navigation:** [Documentation index](../README.md) · [Session 3 — Tillage & fertilizer](03-tillage-fertilizer.md) ·
+**Navigation:** [Documentation index](../README.md) - [Session 3 - Tillage & fertilizer](03-tillage-fertilizer.md) -
 [Full pipeline](../pipeline.md)
 
-**Audience:** CARB staff or contractors familiar with Sessions 1–3 outputs.
+**Audience:** CARB staff or contractors familiar with Sessions 1-3 outputs.
 
 **Note:** Irrigation is a **parallel statewide workflow** (Alexey Shiklomanov), not a step
-in `pipeline.md` §7–11. It uses the same harmonized LandIQ **parcel_id** geometry as
+in `pipeline.md` section 7-11. It uses the same harmonized LandIQ **parcel_id** geometry as
 the crop/phenology pipeline.
 
 ---
@@ -75,8 +75,8 @@ preprocessed to parcel-level time series before the main workflow:
 | Dataset | Scripts |
 |---------|---------|
 | CHIRPS daily precipitation | `preprocessing/chirps-preprocess.R` |
-| CIMIS ETref | `cimis-01-weights.R` → `cimis-02-extract.R` → `cimis-03-combine.sql` |
-| SSURGO soil AWC | `ssurgo-01-spatial-weights.R` → `ssurgo-02-combine.R` |
+| CIMIS ETref | `cimis-01-weights.R` -> `cimis-02-extract.R` -> `cimis-03-combine.sql` |
+| SSURGO soil AWC | `ssurgo-01-spatial-weights.R` -> `ssurgo-02-combine.R` |
 
 CHIRPS raw files for the anchor-site prototype also live under
 `management/irrigation/chirps-v2.0.*.days_p05.nc`.
@@ -117,7 +117,7 @@ fork.
 | Folder | Contents |
 |--------|----------|
 | `WaterBalanceCSV/` | Per-location CSV backups |
-| `CCMMF_Irrigation_Parquet/` | Hive-partitioned parquet (location × year) |
+| `CCMMF_Irrigation_Parquet/` | Hive-partitioned parquet (location x year) |
 | `CCMMF_Irrigation_EventFiles/` | `irrigation_eventfile_{location_id}.txt` |
 
 **Scale up:** replace `design_points.csv` (columns `id`, `lat`, `lon`) with a parcel
@@ -130,7 +130,7 @@ site-specific water holding capacity and crop rooting depth.
 
 ## 4.4 Connect to the rest of the monitoring pipeline
 
-Sessions 1–3 produce **statewide** planting, harvest, phenology, and (optionally) tillage
+Sessions 1-3 produce **statewide** planting, harvest, phenology, and (optionally) tillage
 events under `management/event_files/`. Irrigation events from the statewide workflow
 are a **fourth event type** for SIPNET.
 
@@ -148,7 +148,7 @@ Rscript $CCMMF_MANAGEMENT/scripts/events/combine_management_events_pecan.R \
 See [scripts/events/README.md](../../scripts/events/README.md) and the header in
 `combine_management_events_pecan.R` for input schemas.
 
-Alexey's SIPNET restart workflow also loads irrigation parquet directly — see
+Alexey's SIPNET restart workflow also loads irrigation parquet directly - see
 `usr/ashiklom/pecan/sipnet-restart-workflow/workflows/sipnet-restart-workflow/01-prepare-events.R`.
 
 ---
@@ -158,7 +158,7 @@ Alexey's SIPNET restart workflow also loads irrigation parquet directly — see
 **Statewide (recommended)**
 
 - [ ] Read [irrigation-statewide/README.md](../../../usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/README.md).
-- [ ] Confirm preprocessing inputs exist (CHIRPS, CIMIS, SSURGO — see preprocessing README).
+- [ ] Confirm preprocessing inputs exist (CHIRPS, CIMIS, SSURGO - see preprocessing README).
 - [ ] Run `TAR_PROJECT=small` smoke test locally.
 - [ ] Inspect output with `check-result.R` before `TAR_PROJECT=all`.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CCMMF monitoring — portable environment template
+# CCMMF monitoring - portable environment template
 #
 # Copy to $CCMMF_ROOT/ccmmf_env.sh, edit paths, then:
 #   source /path/to/ccmmf_env.sh
@@ -50,7 +50,7 @@ export mslsp_legacy_dir="${mslsp_legacy_dir:-$CCMMF_ROOT/HLS_data}"
 # export HLSL_BASE=/path/to/State_of_California_HLSL
 # export HLSS_BASE=/path/to/State_of_California_HLSS
 
-# --- Parcel–tile map (build once after geometry exists) ---
+# --- Parcel-tile map (build once after geometry exists) ---
 export PARCEL_MAP="$CCMMF_MANAGEMENT/hls_parcel_tile_map_v4.1.rds"
 export NDTI_PARCEL_TILEMAP="$PARCEL_MAP"
 export mslsp_parcel_tilemap="$PARCEL_MAP"
