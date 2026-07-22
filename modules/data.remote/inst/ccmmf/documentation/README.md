@@ -1,7 +1,7 @@
 # CCMMF monitoring pipeline - documentation
 
-**Start here.** This folder is the user entry point for the CCMMF LandIQ ->
-phenology -> management-events monitoring workflow.
+**Start here.** This folder is the **user / training** entry point for the CCMMF
+LandIQ -> phenology -> management-events monitoring workflow.
 
 Users run on **their own cloud / HPC**, not BU SCC. Begin with
 [Session 0 - Environment](sessions/00-environment.md).
@@ -19,45 +19,65 @@ Users run on **their own cloud / HPC**, not BU SCC. Begin with
 Do not treat 2024 examples as already-on-disk until LandIQ 2024 is downloaded,
 harmonized, and gap-filled.
 
-Developers maintaining scripts should also see the [repo index](../README.md) for
-per-step operator READMEs beside the code.
+---
+
+## What to read (users / training)
+
+Read in order. Everything a trainee needs for the walkthrough lives **in this
+`documentation/` folder**.
+
+| Order | Document | Purpose |
+|------:|----------|---------|
+| 0 | [sessions/00-environment.md](sessions/00-environment.md) | Clone repos, deps, data root, `ccmmf_env` |
+| - | [ccmmf_env.example.sh](ccmmf_env.example.sh) | Portable env template (copy -> edit -> `source`) |
+| spine | [pipeline.md](pipeline.md) | End-to-end year-pair run order, env vars, checklist |
+| 1 | [sessions/01-landiq.md](sessions/01-landiq.md) | LandIQ download, harmonize, gap-fill |
+| 2 | [sessions/02-phenology.md](sessions/02-phenology.md) | HLS/MSLSP, match, traits, planting/harvest events |
+| 3 | [sessions/03-tillage-fertilizer.md](sessions/03-tillage-fertilizer.md) | NDTI tillage (+ fert notes) |
+| 4 | [sessions/04-irrigation.md](sessions/04-irrigation.md) | Irrigation (parallel track) |
+
+**[pipeline.md](pipeline.md)** is the technical spine for Sessions 1-3 (LandIQ ->
+gap-fill -> HLS -> MSLSP -> match -> events). Session 4 runs in parallel on the
+same parcel geometry.
+
+### Geometry harmonization (separate repo)
+
+Session 1 also uses **[ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse)**
+(Python / pixi). That repo's README and `docs/` are the algorithm reference;
+Session 1 only covers the CCMMF ops sequence.
 
 ---
 
-## Training sessions
+## Package READMEs (not a second curriculum)
 
-| Session | Topic | Document | Operator reference |
-|---------|--------|----------|-------------------|
-| **0** | **Environment setup (portable)** | [sessions/00-environment.md](sessions/00-environment.md) | [ccmmf_env.example.sh](ccmmf_env.example.sh) |
-| **1** | LandIQ harmonization + gap-fill | [sessions/01-landiq.md](sessions/01-landiq.md) | [landiq-gapfill/README.md](../landiq-gapfill/README.md) |
-| **2** | Phenology, traits, planting/harvest events | [sessions/02-phenology.md](sessions/02-phenology.md) | [mslsp-extract](../mslsp-extract/README.md), [match](../scripts/phenology/match/README.md), [traits](../scripts/traits/README.md), [events](../scripts/events/README.md) |
-| **3** | Tillage (NDTI) + fertilization (N rates) | [sessions/03-tillage-fertilizer.md](sessions/03-tillage-fertilizer.md) | [ndti-extract](../ndti-extract/README.md), [tillage](../scripts/tillage/README.md); fert under `usr/akash/...` (vendoring TBD) |
-| **4** | Irrigation (statewide water balance) | [sessions/04-irrigation.md](sessions/04-irrigation.md) | Alexey irrigation-statewide under PEcAn; anchor-site Python under `irrigation/` |
+Next to the code under `inst/ccmmf/` (or the lab `management/` mirror) each
+workflow has a **package README** (flags, QC, troubleshooting). Those are
+**linked from the sessions** when you need detail - they are not alternate
+training paths and are not listed as peer docs above.
 
----
+Examples (relative to this folder):
 
-## Full pipeline (Sessions 1-3 core)
+| Session | Package README |
+|---------|----------------|
+| 1 | [../landiq-gapfill/README.md](../landiq-gapfill/README.md) |
+| 2 | [../mslsp-extract/README.md](../mslsp-extract/README.md), [../phenology/match/README.md](../phenology/match/README.md), [../traits/README.md](../traits/README.md), [../events/README.md](../events/README.md) |
+| 2-3 | [../hls/README.md](../hls/README.md) (parcel-tile map / shared HLS helpers) |
+| 3 | [../ndti-extract/README.md](../ndti-extract/README.md), [../tillage/README.md](../tillage/README.md) |
 
-**[pipeline.md](pipeline.md)** - end-to-end run order, environment variables, commands,
-and a year-processing checklist (LandIQ -> gap-fill -> HLS -> MSLSP -> match -> events).
-
-Session 4 (irrigation) runs in parallel on the same parcel geometry; see
-[sessions/04-irrigation.md](sessions/04-irrigation.md).
+On the lab SCC tree, some of the same docs still live under `management/scripts/`
+(e.g. `scripts/phenology/match/`); prefer the paths in the PEcAn `inst/ccmmf`
+layout when cloning from GitHub.
 
 ---
 
 ## How this folder is organized
 
-| Path | Audience | Purpose |
-|------|----------|---------|
-| `README.md` (this file) | CARB / users | Entry point and session index |
-| `ccmmf_env.example.sh` | Everyone | Portable env template (copy -> edit -> `source`) |
-| `pipeline.md` | Operators | Technical spine for crop/phenology/tillage year processing |
-| `sessions/00-environment.md` | Users | Clone, deps, paths, non-SGE runs |
-| `sessions/01-04.md` | Training | Session narratives (background, walkthrough, verify) |
-| `../mslsp-extract/README.md` | Operators | MSLSP extraction (Session 2) |
-| `../ndti-extract/README.md` | Operators | NDTI extraction (Session 3) |
-| `../landiq-gapfill/README.md`, `../scripts/hls/README.md` | Operators | Gap-fill, parcel-tile map, shared HLS framework |
+| Path | Role |
+|------|------|
+| `README.md` (this file) | User entry point and reading order |
+| `ccmmf_env.example.sh` | Env template for Session 0 |
+| `pipeline.md` | Year-processing spine (used with Sessions 1-3) |
+| `sessions/00-04.md` | Training sessions (background, walkthrough, verify) |
 
-Internal planning notes (`*_PLAN.md`, dev indexes) live under `scripts/` and are not
-part of this documentation product.
+Internal planning notes (`*_PLAN.md`, etc.) are not part of this documentation
+product.
