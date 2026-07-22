@@ -1,0 +1,31 @@
+#!/bin/bash -l
+#
+# Combine tilepieces → Parquet after the tile array finishes.
+#
+# Submit via run_mslsp_submit_tiles.sh (recommended), or manually:
+#
+#   qsub -hold_jid <array_job_id> -v 'MSLSP_ARGS=2024' mslsp-extract/sge/run_mslsp_combine.sge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=2:00:00
+#$ -pe omp 4 -l mem_per_core=8G
+#$ -m ea
+#$ -N mslsp-combine
+#$ -o /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.err
+
+set -euo pipefail
+
+MSLSP_EXTRACT_ROOT="${MSLSP_EXTRACT_ROOT:-/projectnb/dietzelab/ccmmf/management/mslsp-extract}"
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+: "${MSLSP_ARGS:?Set MSLSP_ARGS for qsub -v, e.g. MSLSP_ARGS='2024'}"
+
+echo "=== MSLSP combine SGE $(date) ==="
+echo "MSLSP_ARGS=$MSLSP_ARGS"
+# shellcheck disable=SC2086
+bash "$MSLSP_EXTRACT_ROOT/run_mslsp.sh" --no-extract $MSLSP_ARGS
+echo "=== MSLSP combine SGE done $(date) ==="

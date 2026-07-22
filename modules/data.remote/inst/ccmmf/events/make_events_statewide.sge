@@ -1,0 +1,63 @@
+#!/bin/bash -l
+#
+# SGE job: generate statewide planting, phenology, and harvest event files for one year.
+# YEAR is passed via qsub -v YEAR=YYYY. No hardcoded year list.
+#
+# Outputs per year (written to event_files/; default run with no EVENT_TYPE):
+#   planting_statewide_{year}.parquet / .json
+#   phenology_statewide_{year}.parquet / .json
+#   harvest_statewide_{year}.parquet / .json
+#
+# Submit one year:
+#   qsub -v YEAR=2016 /projectnb/dietzelab/ccmmf/management/scripts/events/make_events_statewide.sge
+#
+# Submit multiple years (loop; one scheduler job per year — same settings as single-year qsub):
+#   S=/projectnb/dietzelab/ccmmf/management/scripts/events/make_events_statewide.sge
+#   for y in 2016 2018 2019 2020 2021 2022 2023; do qsub -v YEAR=$y "$S"; done
+#
+# Harvest only, all years (parallel across the cluster via separate jobs):
+#   S=/projectnb/dietzelab/ccmmf/management/scripts/events/make_events_statewide.sge
+#   for y in 2016 2018 2019 2020 2021 2022 2023; do qsub -v YEAR=$y,EVENT_TYPE=harvest "$S"; done
+#
+# One type only (pass EVENT_TYPE): phenology | planting | harvest | tillage
+#   qsub -v YEAR=2016,EVENT_TYPE=phenology .../make_events_statewide.sge
+#   qsub -v YEAR=2016,EVENT_TYPE=harvest .../make_events_statewide.sge
+#
+# Hold until MSLSP matching is done (replace <job_id> with match job ID):
+#   qsub -hold_jid <job_id> -v YEAR=2016 .../make_events_statewide.sge
+#
+# Test locally:
+#   YEAR=2016 bash .../make_events_statewide.sge
+#
+
+if [ -z "$YEAR" ]; then
+  echo "Error: YEAR must be set (e.g. qsub -v YEAR=2016 $0)" >&2
+  exit 1
+fi
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=12:00:00
+#$ -pe omp 4 -l mem_per_core=8G
+#$ -m ea
+#$ -N make_events_statewide
+#$ -o /projectnb/dietzelab/ccmmf/management/event_files/sge_logs/$JOB_NAME.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/event_files/sge_logs/$JOB_NAME.$JOB_ID.err
+
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/event_files/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+SCRIPT_PATH=/projectnb/dietzelab/ccmmf/management/scripts/events/make_events_statewide.R
+
+unset LD_PRELOAD LD_LIBRARY_PATH
+module purge
+module load R/4.4.3
+export R_LIBS_USER=/dev/null
+
+echo "=== EVENTS year=${YEAR}  $(date) ==="
+if [ -n "${EVENT_TYPE}" ]; then
+  Rscript "${SCRIPT_PATH}" "${YEAR}" "${EVENT_TYPE}"
+else
+  Rscript "${SCRIPT_PATH}" "${YEAR}"
+fi
+echo "=== EVENTS year=${YEAR}  exit $?  $(date) ==="

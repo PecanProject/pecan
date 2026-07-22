@@ -1,15 +1,26 @@
-# Build long-format harvest lookup from FAOSTAT-style crop statistics plus LandIQ codes.
-# Joins each FAOSTAT item to LandIQ crop_desc, aggregates DRYAD-style variables at subclass,
-# then class x PFT, then PFT, then global, and derives harvest removal fractions (mass-balanced
-# AGB using HI and yield, or clamped yield). Row levels follow coalesce(subclass, class, pft,
-# placeholder, global) so pool_calculations_from_lookup.R can fall back the same way as
-# build_harvest_lookup.R. If the Excel file is missing, uses HARVEST_PFT_SUMMARY_CSV only.
+# Build long-format harvest lookup from FAOSTAT-style crop stats plus LandIQ.
 #
-# Main inputs: CCMMF_MANAGEMENT; HARVEST_FAOSTAT_XLSX (columns item, variable, value);
-#   HARVEST_PFT_SUMMARY_CSV for PFT-only fallback; LandIQ_cropCode_lookup_table.csv.
-# Main outputs: plant_traits/harvest_lookup_long_faostat.rds and .csv (does not overwrite harvest_lookup_long.rds).
-# How to run: Rscript scripts/traits/build_harvest_lookup_faostat.R from repo root (set CCMMF_MANAGEMENT).
-# Workflow: optional harvest lookup for events; set HARVEST_LOOKUP_RDS to this RDS in make_events_statewide.R.
+# Same fallback idea as build_planting_lookup.R: join each observation to a LandIQ
+# crop (crop_desc / class / subclass / PFT), aggregate DRYAD variables at subclass,
+# then class x PFT, then PFT, then global, and compute harvest removal fractions at
+# each level (mass-balanced AGB: HI x AGB or clamped yield). Output rows use
+# coalesce(subclass, class, pft, placeholder, global) so pool_calculations_from_lookup.R
+# keeps a sane chain. If Excel is missing, falls back to a PFT summary CSV (same join
+# pattern as build_harvest_lookup.R).
+#
+# Writes plant_traits/harvest_lookup_long_faostat.rds and
+# harvest_lookup_long_faostat.csv under CCMMF_MANAGEMENT. Does not overwrite
+# harvest_lookup_long.rds.
+#
+# Run from management repo root:
+#   Rscript scripts/traits/build_harvest_lookup_faostat.R
+#
+# Env: CCMMF_MANAGEMENT, HARVEST_FAOSTAT_XLSX, HARVEST_PFT_SUMMARY_CSV
+#
+# SIPNET harvest fracs are of standing AG C (leaf+wood). CLASS V/D/C use the woody
+# placeholder until standing AGB exists for a real Y/B calc. Do not use annual
+# turnover mass balance (yield+prune+litter) as rem/lit — that sums to 1 and
+# clears perennial wood in SIPNET.
 
 #### Load packages
 
@@ -23,7 +34,7 @@ suppressPackageStartupMessages({
   library(tidyr)
 })
 
-#### Paths and constants
+#### Paths and outputs (CCMMF_MANAGEMENT and paths above override defaults)
 
 path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
 landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
@@ -39,7 +50,6 @@ pft_summary_csv <- Sys.getenv(
   "HARVEST_PFT_SUMMARY_CSV",
   "/projectnb/dietzelab/mkim/Harvest Data/harvest_pools_output.csv"
 )
-
 rs_root_shoot <- 0.20
 
 harvest_param_names <- c("AGB_REMOVED", "AGB_LITTER", "BGB_REMOVED", "BGB_LITTER")
@@ -64,7 +74,7 @@ req_var_names <- c(
   "Ratio_residues_removed_from_field"
 )
 
-#### LandIQ load and FAOSTAT item to crop_desc mapping
+#### Helper functions
 
 # Agricultural LandIQ rows only; need PFT (same as build_planting_lookup / harvest).
 load_landiq_mapping <- function(path = landiq_lookup_csv) {
@@ -158,8 +168,6 @@ map_item_to_landiq <- function(item_clean, codes_tbl, manual_tbl) {
   )
 }
 
-#### Harvest fractions from wide trait row (HI, yield, residue)
-
 harvest_fractions_from_wide <- function(df_wide, pft_for_placeholder, cr_fallback) {
   for (cn in req_var_names) {
     if (!cn %in% names(df_wide)) {
@@ -237,8 +245,6 @@ agg_to_fraction_row <- function(agg_slice, pft_label, cr_fb) {
   tibble::as_tibble(as.list(v))
 }
 
-#### Read FAOSTAT Excel and PFT summary CSV fallback
-
 read_faostat_excel <- function(path_xlsx) {
   if (!nzchar(path_xlsx) || !file.exists(path_xlsx)) {
     return(NULL)
@@ -298,8 +304,6 @@ merge_pft_with_placeholders <- function(summary_tbl) {
     ) %>%
     dplyr::select(PFT, AGB_REMOVED, AGB_LITTER, BGB_REMOVED, BGB_LITTER, n_crops, source)
 }
-
-#### LandIQ subclass and class frames (woody vs woody_destructive)
 
 # Same woody / woody_destructive duplication as build_harvest_lookup.R.
 landiq_subclass_class_frames <- function(mapping_df) {

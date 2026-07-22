@@ -1,13 +1,12 @@
-# Tillage metrics from NDTI time series relative to phenology dates (OGI, OGMn).
-# For each fallow window between harvest and next planting, interpolates NDTI, smooths,
-# and derives tillage effect metrics (dplyr tibble in, tibble out).
+# tillage_metrics(ndti_table, phenology_table)
 #
-# Main inputs: ndti_table with parcel_id, year, date, ndti_mean, ndti_sd, n_valid, PFT;
-#   phenology_table with parcel_id, year, OGI_date, OGMn_date (Date). Assign PFT before
-#   calling if NDTI lacks it.
-# Main outputs: one row per fallow window with tillage_eff and related columns.
-# How to run: source() and call tillage_metrics(); or sourced from make_events_statewide.R.
-# Workflow: monitoring workflow DERIVE stage before statewide tillage events.
+# NDTI: parcel_id, year, date, ndti_mean, ndti_sd, n_valid, PFT (join PFT from
+# assigned before calling if your NDTI table does not have it).
+#
+# Phenology: parcel_id, year, OGI_date, OGMn_date (Date). Include all cycles /
+# seasons per parcel across years so lead(OGI_date) can span cross-year fallow.
+#
+# Returns a tibble of per-fallow-window tillage metrics (dplyr).
 
 # Neighbor NDTI obs (n_valid > 0) before/after target_date; pooled SD when
 # target day has no obs. Vectorized over rows of q (parcel_id, target_date).
@@ -122,7 +121,7 @@ tillage_metrics <- function(ndti_table, phenology_table) {
     )
 
   # One row per fallow window: min-day SD / neighbor counts (was rowwise +
-  # get_metric_details per row; res_max branch was never selected - dropped).
+  # get_metric_details per row; res_max branch was never selected — dropped).
   smooth <- dplyr::distinct(dplyr::as_tibble(ndti_smooth), parcel_id, date, .keep_all = TRUE)
   rel <- dplyr::filter(smooth, !is.na(n_valid), n_valid > 0)
 

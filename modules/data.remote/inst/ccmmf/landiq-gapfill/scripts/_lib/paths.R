@@ -111,5 +111,7 @@ path_county_transition_dir <- function() {
   if (nzchar(env)) {
     return(env)
   }
-  file.path(path_data(), "county_transition_matrices")
+  # SCC default; county_transition.R redefines this after bootstrap with the
+  # same path. Local clones can symlink under data/county_transition_matrices/.
+  "/projectnb/dietzelab/ananyak/county_crop_matrices"
 }

@@ -1,0 +1,38 @@
+#!/bin/bash -l
+#
+# SGE array wrapper for ndti-extract/run_ndti.sh — one month per array task.
+# NDTI_ARGS carries the year(s) and any flags (e.g. --overwrite). Do NOT put
+# --months in NDTI_ARGS; the array task id selects the month.
+#
+#   qsub -v "NDTI_ARGS=2024" ndti-extract/sge/run_ndti.sge
+#   qsub -v "NDTI_ARGS=--overwrite 2023" ndti-extract/sge/run_ndti.sge
+#   qsub -t 3 -v "NDTI_ARGS=2024" ndti-extract/sge/run_ndti.sge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -t 1-12
+#$ -l h_rt=6:00:00
+#$ -pe omp 4 -l mem_per_core=8G
+#$ -m ea
+#$ -N ndti
+#$ -o /projectnb/dietzelab/ccmmf/management/tillage/ndti_v4.1/sge_logs/$JOB_NAME.$JOB_ID.$TASK_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/tillage/ndti_v4.1/sge_logs/$JOB_NAME.$JOB_ID.$TASK_ID.err
+
+set -euo pipefail
+
+NDTI_EXTRACT_ROOT="${NDTI_EXTRACT_ROOT:-/projectnb/dietzelab/ccmmf/management/ndti-extract}"
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/tillage/ndti_v4.1/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+export NDTI_TERRA_THREADS="${NDTI_TERRA_THREADS:-4}"
+
+: "${NDTI_ARGS:?Set NDTI_ARGS for qsub -v, e.g. NDTI_ARGS='2024' or '2016-2024'}"
+
+MONTH="${SGE_TASK_ID:-1}"
+
+echo "=== NDTI SGE task=${SGE_TASK_ID:-NA} month=${MONTH} $(date) ==="
+echo "NDTI_ARGS=$NDTI_ARGS"
+# shellcheck disable=SC2086
+bash "$NDTI_EXTRACT_ROOT/run_ndti.sh" --months "$MONTH" $NDTI_ARGS
+echo "=== NDTI SGE task=${SGE_TASK_ID:-NA} month=${MONTH} done $(date) ==="

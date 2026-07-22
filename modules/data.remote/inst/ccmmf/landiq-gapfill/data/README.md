@@ -12,7 +12,9 @@ Shipped with the package:
 
 | Path | Role |
 |------|------|
-| `county_transition_matrices/` | One `{County}_transition_matrix.csv` per county |
+| `county_transition_matrices/` | One `{County}_crop_matrix.csv` per county (legacy `*_transition_matrix.csv` also accepted) |
 | `state_transition_matrix.csv` | Statewide CLASS transition fallback |
 
-On SCC these are symlinks to the project training matrices. For other sites, copy your own CSVs here or set `COUNTY_TRANSITION_MATRICES_DIR` and `EXTERNAL_TRANSITION_MATRIX_CSV`.
+On SCC, lab trees may symlink to `/projectnb/dietzelab/ananyak/county_crop_matrices`.
+This package ships the CSVs directly so clones work off-site. Override with
+`COUNTY_TRANSITION_MATRICES_DIR` and `EXTERNAL_TRANSITION_MATRIX_CSV` if needed.

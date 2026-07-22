@@ -1,0 +1,44 @@
+#!/bin/bash -l
+#
+# SGE job: Phase 0 gap-fill audit (GAPFILL_PLAN.md).
+# Summarizes assigned_year=*.parquet under matched_landiq_mslsp_v4.1.2.
+#
+# Submit:
+#   qsub /projectnb/dietzelab/ccmmf/management/scripts/phenology/gapfill_phase0_audit.sge
+#
+# Optional env via qsub -v:
+#   RUN_LANDIQ_MSLSP_OVERLAP=1   (default 1 here)
+#   AUDIT_YEAR_MIN=2016 AUDIT_YEAR_MAX=2023
+#
+# Before qsub from Cursor or a conda-injected shell:
+#   unset LD_PRELOAD LD_LIBRARY_PATH && module purge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=4:00:00
+#$ -pe omp 4 -l mem_per_core=16G
+#$ -m ea
+#$ -N gapfill_phase0_audit
+#$ -o /projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.err
+
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+SCRIPT_PATH=/projectnb/dietzelab/ccmmf/management/scripts/phenology/gapfill_phase0_audit.R
+
+unset LD_PRELOAD LD_LIBRARY_PATH
+module purge
+module load R/4.4.3
+export R_LIBS_USER=/dev/null
+
+export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-/projectnb/dietzelab/ccmmf/management}"
+export CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2}"
+export AUDIT_YEAR_MIN="${AUDIT_YEAR_MIN:-2016}"
+export AUDIT_YEAR_MAX="${AUDIT_YEAR_MAX:-2023}"
+export RUN_LANDIQ_MSLSP_OVERLAP="${RUN_LANDIQ_MSLSP_OVERLAP:-1}"
+
+echo "=== Phase 0 audit  years=${AUDIT_YEAR_MIN}-${AUDIT_YEAR_MAX}  overlap=${RUN_LANDIQ_MSLSP_OVERLAP}  $(date) ==="
+Rscript "$SCRIPT_PATH"
+echo "=== Phase 0 audit  exit $?  $(date) ==="

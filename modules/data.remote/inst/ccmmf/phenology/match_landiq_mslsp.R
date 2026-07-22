@@ -1,13 +1,24 @@
 #!/usr/bin/env Rscript
-# Match LandIQ crop seasons to MSLSP cycles using rule-based assignment (no rank cost).
-# Primary rule: ADOY inside [OGI, OGMn]; tie-break by nearest Peak, then cycle 1 before 2.
-# CLASS-aware season order: season 2 first when CLASS present; MULTIUSE D/M favors season 1;
-# then seasons 3/4. MSLSP cycles follow User Guide (cycle 1 = largest EVI2 amplitude).
+# =====================================================================
+# match_landiq_mslsp.R
+# Rule-based matching (no rank-based cost).
 #
-# Main inputs: CCMMF_MANAGEMENT, CCMMF_LANDIQ_V4, raw_mslsp_v4.1 parquet, crops_all_years.parq.
-# Main outputs: assigned_year=Y.parquet and QC tables under phenology/matched_landiq_mslsp_v4.1.
-# How to run: Rscript match_landiq_mslsp.R (year from YEAR global or wrapper); see repo docs.
-# Workflow: monitoring workflow ASSIGN stage between MSLSP annual parquet and trait lookups.
+# LandIQ inventory: all ag parcel-years from CCMMF_LANDIQ_V4 (gap-filled v4.1.2
+# product by default) are assigned — left join to combined MSLSP, not inner join.
+# Parcel-years with LandIQ crop rows but no MSLSP retrieval get assigned_by = "no_mslsp".
+# - Primary: ADOY inside [OGI, OGMn]
+# - Tie-break: nearest Peak to ADOY, then mslsp_cycle (1 before 2)
+# - CLASS-aware season priority:
+#     * season 2 (main season) first when CLASS is present
+#     * season 1 prioritized for MULTIUSE D/M (double/mixed-use; per LandIQ documentation)
+#     * then seasons 3/4
+#
+# MSLSP cycle convention (MSLSP User Guide V1, Table 1; BU-LCSC/MSLSP):
+#   Cycle 1 = First Vegetation Cycle = largest EVI2 amplitude (dominant/strongest).
+#   Cycle 2 = Second Vegetation Cycle = second largest EVI2 amplitude.
+# When ADOY is missing we assign by season priority and tie-break by mslsp_cycle
+# (same for woody and non-woody). Using ADOY_EMRG as fallback is a possible next step.
+# =====================================================================
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -16,13 +27,14 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-#### Configuration
+# --- Configuration ---
 path_management  <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1")
-combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1")
+path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2")
+combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1.2")
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")
 cropcode_csv      <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
-out_dir           <- file.path(path_management, "phenology/matched_landiq_mslsp_v4.1")
+source(file.path(path_management, "scripts/phenology/matched_paths.R"))
+out_dir           <- matched_landiq_dir(path_management)
 
 eps_eviamp             <- 0.01
 heterogeneity_na_frac_thr <- 0.5
@@ -37,7 +49,7 @@ assign_subset_ids <- if (nzchar(trimws(assign_parcel_ids_file)) && file.exists(a
   ids[nzchar(ids)]
 } else character(0)
 
-#### Helpers
+# --- Helpers ---
 # Normalize DOY for same-year wrap (e.g. OGI=350, OGMn=50). Do NOT use for cross-year DOY.
 norm_doy <- function(doy) {
   d <- as.numeric(doy)
@@ -236,7 +248,9 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
     parcel_id = pid, year = yr, season = 1L:4L,
     assigned_by = "no_match", assigned_woody_tiebreak = FALSE,
     mslsp_cycle = NA_integer_,
-    landiq_PCNT = NA_real_, landiq_ADOY = NA_real_, landiq_PFT = NA_character_, landiq_CLASS = NA_character_, landiq_SUBCLASS = NA_character_, landiq_MULTIUSE = NA_character_,
+    landiq_PCNT = NA_real_, landiq_ADOY = NA_real_, landiq_PFT = NA_character_,
+    landiq_CLASS = NA_character_, landiq_SUBCLASS = NA_character_, landiq_SPECOND = NA_character_,
+    landiq_MULTIUSE = NA_character_,
     mslsp_Peak = as.Date(NA), mslsp_OGI = as.Date(NA), mslsp_OGMn = as.Date(NA),
     mslsp_50PCGI = as.Date(NA), mslsp_OGMx = as.Date(NA), mslsp_OGD = as.Date(NA), mslsp_50PCGD = as.Date(NA),
     mslsp_EVImax = NA_real_, mslsp_EVIamp = NA_real_, mslsp_EVIarea = NA_real_,
@@ -259,6 +273,7 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
         landiq_PCNT = r$PCNT[1], landiq_ADOY = r$ADOY[1], landiq_PFT = r$PFT[1],
         landiq_CLASS = if ("CLASS" %in% names(r)) r$CLASS[1] else NA_character_,
         landiq_SUBCLASS = if ("SUBCLASS" %in% names(r)) r$SUBCLASS[1] else NA_character_,
+        landiq_SPECOND = if ("SPECOND" %in% names(r)) trimws(as.character(r$SPECOND[1])) else NA_character_,
         landiq_MULTIUSE = if ("MULTIUSE" %in% names(r)) r$MULTIUSE[1] else NA_character_
       )]
       pcnt <- r$PCNT[1]
@@ -292,6 +307,9 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
       qc_cycle_season_counts = cyc$keep_reason,
       qc_mslsp_cycles_available = cyc$keep_reason
     )]
+    if (identical(cyc$keep_reason, "no_mslsp_pixels")) {
+      out[, assigned_by := "no_mslsp"]
+    }
     out[, match_outcome := cyc$keep_reason]
     return(list(assigned = out))
   }
@@ -498,7 +516,7 @@ extract_qc_summary <- function(assigned_path_or_dt, out_dir = NULL) {
   }
   if (nrow(out) > 0) {
     # Sort: level (row then field_year), qc_dimension (fixed order), pft (row/hay/rice/woody/noncrop then other), then n descending
-    pft_order <- c("row", "hay", "rice", "woody", "noncrop", "(no value)", "(all)")
+    pft_order <- c("row", "hay", "rice", "woody", "noncrop", "other", "(no value)", "(all)")
     dim_order <- c(
       "qc_adoy_vs_cycle", "qc_n_adoy_in_cycle", "qc_cycle_season_counts",
       "qc_mslsp_pixel_availability", "qc_heterogeneity", "qc_mslsp_qa_pixel_agreement",
@@ -558,11 +576,19 @@ run_assignment <- function(year, cr = combined_root,
   landiq <- merge(landiq, ag_pairs, by = c("CLASS", "SUBCLASS"))
   setkey(landiq, parcel_id, year)
   setkey(pheno, parcel_id, year)
-  fys <- if (isTRUE(assign_active_only)) unique(landiq[!is.na(PCNT) & PCNT >= 0, .(parcel_id, year)]) else unique(landiq[, .(parcel_id, year)])
-  in_pheno <- unique(pheno[fys, nomatch = 0][, .(parcel_id, year)])
-  if (nrow(in_pheno) == 0) stop("No field-years in common between combined MSLSP and LandIQ.")
-  message("[3/9] Overlap: ", nrow(in_pheno), " field-years in both")
-  fys <- in_pheno
+  fys <- if (isTRUE(assign_active_only)) {
+    unique(landiq[!is.na(PCNT) & PCNT >= 0, .(parcel_id, year)])
+  } else {
+    unique(landiq[, .(parcel_id, year)])
+  }
+  if (nrow(fys) == 0) stop("No LandIQ field-years for year ", yr)
+  n_with_mslsp <- nrow(unique(fys[pheno, on = c("parcel_id", "year"), nomatch = 0]))
+  message("[3/9] LandIQ field-years: ", nrow(fys),
+          "; with combined MSLSP: ", n_with_mslsp,
+          "; LandIQ-only (no MSLSP): ", nrow(fys) - n_with_mslsp)
+  if (n_with_mslsp == 0) {
+    warning("No overlap with combined MSLSP for year ", yr, "; all rows will be assigned_by=no_mslsp")
+  }
   if (length(assign_subset_ids) > 0) {
     fys[, parcel_id := as.character(parcel_id)]
     fys <- fys[parcel_id %in% assign_subset_ids]

@@ -364,7 +364,7 @@ added by gap-fill. `SUBCLASS` is on the Nov-2021 DWR RS legend.
 | `undefined symbol: curl_multi_poll` loading `arrow` | The login node has an older system library than `arrow` expects. Submit via `qsub` / `run_gapfill.sge` on a compute node instead. |
 | Emission tables rebuild on a routine run | Re-export `CDL_LANDIQ_TRAINING_YEAR_MIN=2016` and `CDL_LANDIQ_TRAINING_YEAR_MAX=2023` (Step 2). |
 | `Missing subclass assignment output …` | The crop step did not run for that year. Run crop before ADOY/product (the orchestrator does this in order). |
-| 2017 build fails on a transition-matrix path | The transition-matrix files linked under `data/` are missing or moved. Set `EXTERNAL_TRANSITION_MATRIX_CSV` and `COUNTY_TRANSITION_MATRICES_DIR` to valid paths. Only full-gap (2017) builds use these. |
+| 2017 build fails on a transition-matrix path | County matrices live at `/projectnb/dietzelab/ananyak/county_crop_matrices` (`*_crop_matrix.csv`). Set `EXTERNAL_TRANSITION_MATRIX_CSV` and `COUNTY_TRANSITION_MATRICES_DIR` if those defaults are wrong. Only full-gap (2017) builds use these. |
 | CDL extract errors / missing GeoTIFF | Run the CDL download step first, or place `cdl_YYYY.tif` in `$CDL_DIR`. |
 
 ## Special case: no-LandIQ year (2017)

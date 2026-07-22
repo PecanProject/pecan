@@ -1,0 +1,43 @@
+#!/bin/bash -l
+#
+# SGE tile array — one MGRS tile per task (parallel extract).
+#
+# Submit via run_mslsp_submit_tiles.sh (recommended), or manually after prep:
+#
+#   Rscript $MSLSP_EXTRACT_ROOT/scripts/prep_static.R 2024
+#   N=$(grep -c . $CCMMF_MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=2024/sge_tiles.txt)
+#   qsub -t 1-$N -v 'MSLSP_YEAR=2024' mslsp-extract/sge/run_mslsp_tiles.sge
+#
+# Combine after the array finishes (see run_mslsp_combine.sge).
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=2:00:00
+#$ -pe omp 4 -l mem_per_core=8G
+#$ -m ea
+#$ -N mslsp-tile
+#$ -o /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.$TASK_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.$TASK_ID.err
+
+set -euo pipefail
+
+MSLSP_EXTRACT_ROOT="${MSLSP_EXTRACT_ROOT:-/projectnb/dietzelab/ccmmf/management/mslsp-extract}"
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+: "${MSLSP_YEAR:?Set MSLSP_YEAR for qsub -v, e.g. MSLSP_YEAR=2024}"
+
+export MSLSP_EXTRACT_ROOT NDTI_TERRA_THREADS="${NDTI_TERRA_THREADS:-4}"
+
+MSLSP_ARGS="${MSLSP_YEAR}"
+if [[ "${MSLSP_OVERWRITE:-}" == "1" || "${MSLSP_OVERWRITE:-}" == "overwrite" ]]; then
+  MSLSP_ARGS="--overwrite ${MSLSP_ARGS}"
+fi
+
+echo "=== MSLSP tile SGE task=${SGE_TASK_ID:-NA} year=${MSLSP_YEAR} $(date) ==="
+
+# shellcheck disable=SC2086
+bash "$MSLSP_EXTRACT_ROOT/run_mslsp.sh" --sge-tile --no-combine $MSLSP_ARGS
+
+echo "=== MSLSP tile SGE task=${SGE_TASK_ID:-NA} done $(date) ==="

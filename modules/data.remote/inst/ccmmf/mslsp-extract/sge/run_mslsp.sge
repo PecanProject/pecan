@@ -1,0 +1,30 @@
+#!/bin/bash -l
+#
+# SGE wrapper for mslsp-extract/run_mslsp.sh
+#
+#   qsub -v "MSLSP_ARGS=2024" mslsp-extract/sge/run_mslsp.sge
+#   qsub -v "MSLSP_ARGS=--overwrite 2023" mslsp-extract/sge/run_mslsp.sge
+#
+
+#$ -P dietzelab
+#$ -l buyin
+#$ -l h_rt=6:00:00
+#$ -pe omp 4 -l mem_per_core=8G
+#$ -m ea
+#$ -N mslsp
+#$ -o /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.out
+#$ -e /projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs/$JOB_NAME.$JOB_ID.err
+
+set -euo pipefail
+
+MSLSP_EXTRACT_ROOT="${MSLSP_EXTRACT_ROOT:-/projectnb/dietzelab/ccmmf/management/mslsp-extract}"
+SGE_LOG_DIR=/projectnb/dietzelab/ccmmf/management/phenology/raw_mslsp_v4.1.2/sge_logs
+mkdir -p "$SGE_LOG_DIR"
+
+: "${MSLSP_ARGS:?Set MSLSP_ARGS for qsub -v, e.g. MSLSP_ARGS='2024' or '--overwrite 2023'}"
+
+echo "=== MSLSP SGE $(date) ==="
+echo "MSLSP_ARGS=$MSLSP_ARGS"
+# shellcheck disable=SC2086
+bash "$MSLSP_EXTRACT_ROOT/run_mslsp.sh" $MSLSP_ARGS
+echo "=== MSLSP SGE done $(date) ==="

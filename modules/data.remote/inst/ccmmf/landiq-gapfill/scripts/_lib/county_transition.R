@@ -8,7 +8,7 @@ county_matrix_stem <- function(county_name) {
 path_county_transition_dir <- function() {
   Sys.getenv(
     "COUNTY_TRANSITION_MATRICES_DIR",
-    "/projectnb/dietzelab/ananyak/county_transition_matrices"
+    "/projectnb/dietzelab/ananyak/county_crop_matrices"
   )
 }
 
@@ -66,14 +66,19 @@ load_county_transition_matrices <- function(dir, ag_class_vector) {
   if (!dir.exists(dir)) {
     stop("County transition matrix directory not found: ", dir)
   }
-  files <- list.files(dir, pattern = "_transition_matrix\\.csv$", full.names = TRUE)
+  # Prefer *_crop_matrix.csv (current Ananya training outputs); also accept
+  # legacy *_transition_matrix.csv.
+  files <- list.files(dir, pattern = "_crop_matrix\\.csv$", full.names = TRUE)
   if (length(files) == 0L) {
-    stop("No *_transition_matrix.csv files in: ", dir)
+    files <- list.files(dir, pattern = "_transition_matrix\\.csv$", full.names = TRUE)
+  }
+  if (length(files) == 0L) {
+    stop("No *_crop_matrix.csv or *_transition_matrix.csv files in: ", dir)
   }
 
   mats <- list()
   for (path_csv in files) {
-    stem <- sub("_transition_matrix\\.csv$", "", basename(path_csv))
+    stem <- sub("_(crop|transition)_matrix\\.csv$", "", basename(path_csv))
     mats[[stem]] <- load_transition_matrix_csv(path_csv, ag_class_vector)
   }
   mats
