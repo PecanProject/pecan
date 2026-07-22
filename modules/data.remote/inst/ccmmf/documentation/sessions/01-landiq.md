@@ -180,9 +180,8 @@ sequence** (commands, env, SCC quirks) only.
 
 Order after the shapefile is on disk:
 
-1. **Legend / lookup** - Compare the new-year legend to `LandIQ_cropCode_lookup_table.csv`
-   (PEcAn `inst/ccmmf` or lab `management/`). Add rows for any new CLASS/SUBCLASS pairs
-   (section 1.4).
+1. **Legend / lookup** - Run the **legend QC recipe** (section 1.4). Add rows only for
+   real new CLASS/SUBCLASS pairs (ignore DWR `**` sentinels).
 2. **Clone and harmonize** - Follow **section 1.5 (operator runbook)** end-to-end
    (`01-split` -> `02` tiles -> `03a`/`03b` -> publish product).
 3. **Confirm year present** - pipeline section 4 smoke check: rows with
@@ -221,6 +220,77 @@ Two CSV files in `management/` drive almost all downstream logic.
 CDL disambiguation for grouped RS codes **`T31`** and **`D16`** lives in `management/LandIQ_grouped_subclass_cdl_split.csv` (not in the crop lookup).
 
 **Do not edit the parquet by hand.** Scripts apply harmonization at read time via `landiq-gapfill/scripts/_lib/landiq_rs_harmonize.R` (loads this CSV only).
+
+### Legend QC recipe (before harmonizing a new year)
+
+Goal: every real `(CLASS, SUBCLASS)` in the new shapefile already exists in
+`LandIQ_cropCode_lookup_table.csv`. Gap-fill, PFT filters, and traits all key off that CSV.
+
+1. Prefer the current DWR **Land Use Legend** PDF from the CNRA dataset page (keep under
+   `management/documentation/` for review).
+2. Diff unique pairs in the shapefile (`CLASS1`..`CLASS4` / `SUBCLASS1`..`SUBCLASS4`)
+   against the lookup. Example using the cadwr-landuse `pixi` env:
+
+```bash
+export PATH="$HOME/.pixi/bin:$PATH"
+cd /path/to/cadwr-landuse   # needs geopandas from pixi
+export LOOKUP=$CCMMF_MANAGEMENT/LandIQ_cropCode_lookup_table.csv
+# or lab: /projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv
+export SHP=$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles/\
+i15_Crop_Mapping_${TARGET_YEAR}_Provisional_SHP/i15_Crop_Mapping_${TARGET_YEAR}_Provisional.shp
+# Final releases may drop "_Provisional" from the stem - adjust SHP if needed.
+
+pixi run python - <<'PY'
+import csv, os
+from pathlib import Path
+import geopandas as gpd
+
+lookup = Path(os.environ["LOOKUP"])
+shp = Path(os.environ["SHP"])
+
+def norm_sub(x):
+    if x is None or str(x).strip() in ("", "None", "nan", "****"):
+        return ""
+    s = str(x).strip()
+    try:
+        f = float(s)
+        if f == int(f):
+            return str(int(f))
+    except Exception:
+        pass
+    return s
+
+pairs_lu = set()
+for r in csv.DictReader(lookup.open()):
+    c = (r.get("CLASS") or "").strip()
+    if c:
+        pairs_lu.add((c, norm_sub(r.get("SUBCLASS"))))
+
+cols = [f"CLASS{i}" for i in range(1, 5)] + [f"SUBCLASS{i}" for i in range(1, 5)]
+dat = gpd.read_file(shp, columns=cols, ignore_geometry=True)
+pairs = set()
+for i in range(1, 5):
+    for c, s in zip(dat[f"CLASS{i}"], dat[f"SUBCLASS{i}"]):
+        if c is None or str(c).strip() in ("", "None", "nan", "****"):
+            continue
+        pairs.add((str(c).strip(), norm_sub(s)))
+
+missing = sorted(pairs - pairs_lu)
+print("unique shapefile pairs:", len(pairs))
+print("IN shapefile but NOT in lookup:", len(missing))
+for p in missing:
+    print("  MISSING", p)
+PY
+```
+3. Interpret results:
+   - **`('**', '**')` or empty subclass** - DWR unknown/empty sentinel. **Do not** add a
+     lookup row for these.
+   - **Any other MISSING pair** - open the legend PDF, add a row to
+     `LandIQ_cropCode_lookup_table.csv` (`legend_year`, descriptions, `PFT`,
+     `is_agricultural`, `harmonized_SUBCLASS`), then re-run the check until clear.
+
+**Training note (WY 2024 provisional):** the only shapefile-only pair was
+`('**', '**')`. No lookup edit was required.
 
 ### `cdl_to_landiq_lookup.csv` (optional - not production gap-fill)
 
@@ -289,15 +359,16 @@ size = **actual tile count** after `01-split` (not a hardcoded 274), (4) `pixi` 
 ```bash
 git clone https://github.com/ccmmf/cadwr-landuse.git
 cd cadwr-landuse
-# Until auto-discover lands on main:
-#   git fetch origin && git checkout feature/auto-discover-landiq-years
+# Until year auto-discover is on main, use the feature branch (open PR on ccmmf/cadwr-landuse):
+git fetch origin
+git checkout feature/auto-discover-landiq-years
 
 # Install pixi once: https://pixi.prefix.dev/
 export PATH="$HOME/.pixi/bin:$PATH"
 
 export CCMMF_ROOT=/projectnb/dietzelab/ccmmf   # or your portable root
 export LANDIQ_ROOT_DIR=$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles
-# Writable results dir (do not assume you can write ashiklom's published product)
+# Writable results dir (do not assume you can write the historical published product)
 export OUTDIR_ROOT=_results/v4.1-with-${TARGET_YEAR:-2024}
 mkdir -p "$OUTDIR_ROOT" _logs
 ```
@@ -363,18 +434,31 @@ and passing `"$OUTDIR_ROOT"` as the first argument.
 
 #### 4. Publish product dir
 
-Copy or symlink into a directory **you own**, then point env at it:
+Copy or symlink into a directory **you own**, then point env at it.
+
+Portable default:
 
 ```bash
-PROD=$CCMMF_ROOT/LandIQ-harmonized-v4.1   # or ...-v4.1-${TARGET_YEAR} if sharing
+PROD=$CCMMF_ROOT/LandIQ-harmonized-v4.1   # or ...-v4.1-with-${TARGET_YEAR} if sharing
 mkdir -p "$PROD"
 rsync -a "$OUTDIR_ROOT/03-final/" "$PROD/"
 export CCMMF_LANDIQ_V4="$PROD"
 ```
 
-On BU SCC, the historical published tree
-`/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/` may be owned by another user;
-if you cannot write there, keep using your `$PROD` path for all downstream steps.
+**BU SCC lab example** (historical
+`/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/` is often not writable by trainees):
+
+```bash
+PROD=$CCMMF_ROOT/management/LandIQ-harmonized-v4.1-with-${TARGET_YEAR:-2024}
+mkdir -p "$PROD"
+rsync -a "$OUTDIR_ROOT/03-final/" "$PROD/"
+export CCMMF_LANDIQ_V4="$PROD"
+# Gap-fill product (section 1.7) similarly under a path you own, e.g.:
+# export CCMMF_LANDIQ_GAPFILL_PRODUCT=$CCMMF_ROOT/management/LandIQ-harmonized-v4.1.2-with-${TARGET_YEAR:-2024}
+```
+
+Use `$PROD` / `$CCMMF_LANDIQ_GAPFILL_PRODUCT` for all downstream steps until the
+lab republishes under the shared tree.
 
 #### 5. Continue in PEcAn
 

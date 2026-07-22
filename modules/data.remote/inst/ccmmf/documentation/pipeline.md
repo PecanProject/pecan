@@ -301,7 +301,9 @@ $CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles/
    (required if you cannot write `LandIQ_data`).
 5. Verify: `test -f .../i15_Crop_Mapping_2024_Provisional.shp`.
 
-Compare the legend for `TARGET_YEAR`; update `LandIQ_cropCode_lookup_table.csv` if new codes appear.
+Run the **legend QC recipe** in [Session 1 section 1.4](sessions/01-landiq.md):
+diff shapefile `(CLASS, SUBCLASS)` pairs against `LandIQ_cropCode_lookup_table.csv`.
+Ignore DWR `**` sentinels; add rows only for real new codes.
 
 ### Harmonize into v4.1
 
@@ -317,12 +319,18 @@ Algorithm detail stays in the cadwr-landuse README / `docs/` (do not replace).
 ```bash
 git clone https://github.com/ccmmf/cadwr-landuse.git
 cd cadwr-landuse
+# Until auto-discover is on main:
+git fetch origin && git checkout feature/auto-discover-landiq-years
 export LANDIQ_ROOT_DIR=$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles
 export OUTDIR_ROOT=_results/v4.1-with-${TARGET_YEAR}
 # Then 01-split -> 02 array -> 03a/03b as in Session 1 section 1.5
 ```
 
 Copy or symlink `03-final` outputs to `$CCMMF_LANDIQ_V4` (a directory you can write).
+On BU SCC, a safe lab pattern is
+`$CCMMF_ROOT/management/LandIQ-harmonized-v4.1-with-${TARGET_YEAR}` (and
+`...-v4.1.2-with-${TARGET_YEAR}` for the gap-fill product) when the shared
+`LandIQ-harmonized-v4.1/` tree is not writable.
 
 ### CDL + crop/ADOY gap-fill
 

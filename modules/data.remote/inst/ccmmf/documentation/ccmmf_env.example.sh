@@ -28,6 +28,10 @@ export CCMMF_LANDIQ_GAPFILL_PRODUCT="$CCMMF_ROOT/LandIQ-harmonized-v4.1.2"
 export CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-$CCMMF_ROOT/LandIQ-harmonized-v4.1}"
 # After a successful gap-fill run, switch to:
 #   export CCMMF_LANDIQ_V4="$CCMMF_LANDIQ_GAPFILL_PRODUCT"
+#
+# BU SCC: if shared LandIQ-harmonized-v4.1 / v4.1.2 are not writable, use e.g.:
+#   export CCMMF_LANDIQ_V4="$CCMMF_ROOT/management/LandIQ-harmonized-v4.1-with-${TARGET_YEAR}"
+#   export CCMMF_LANDIQ_GAPFILL_PRODUCT="$CCMMF_ROOT/management/LandIQ-harmonized-v4.1.2-with-${TARGET_YEAR}"
 
 # --- Package roots (scripts inside PEcAn inst/ccmmf or a synced management tree) ---
 export LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$CCMMF_CODE/landiq-gapfill}"
