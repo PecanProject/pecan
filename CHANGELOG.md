@@ -37,6 +37,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
 - Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
 - `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
+- `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 
 ### Changed
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
