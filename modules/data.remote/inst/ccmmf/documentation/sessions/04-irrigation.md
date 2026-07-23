@@ -4,8 +4,7 @@ This session covers how CCMMF derives **irrigation event files** from evapotrans
 precipitation, and soil water-balance logic, and how those events connect to the rest of
 the monitoring pipeline (planting, harvest, phenology, tillage).
 
-**Navigation:** [Documentation index](../README.md) - [Session 3 - Tillage & fertilizer](03-tillage-fertilizer.md) -
-[Full pipeline](../pipeline.md)
+**Navigation:** [Pipeline](../pipeline.md) | [Session 3](03-tillage-fertilizer.md)
 
 **Audience:** CARB staff or contractors familiar with Sessions 1-3 outputs.
 

@@ -20,7 +20,7 @@
 [CDL README](../../landiq-gapfill/scripts/cdl/README.md). Algorithm for overlays:
 [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) README / `docs/`.
 
-**Navigation:** [Index](../README.md) | [Pipeline](../pipeline.md) | [Session 2](02-phenology.md)
+**Navigation:** [Pipeline](../pipeline.md) | [Session 0](00-environment.md) | [Session 2](02-phenology.md)
 
 **Where things live on *your* machine** (set in Session 0):
 

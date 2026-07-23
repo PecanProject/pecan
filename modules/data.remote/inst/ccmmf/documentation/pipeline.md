@@ -1,47 +1,74 @@
-# CCMMF pipeline - year pair 2024 + 2023
+# CCMMF pipeline
 
-**Who this is for:** you are updating the monitoring stack for a **new LandIQ
-year**. In this training that means:
+California farmland monitoring for PEcAn: take statewide crop maps, fill gaps,
+estimate field phenology from satellite data, and write management **event**
+files (planting, harvest, phenology, optionally tillage) that ecosystem models
+can use.
 
-| | |
-|--|--|
-| New year | `TARGET_YEAR=2024` |
-| Prior year (always re-run) | `PRIOR_YEAR=2023` |
+## What is LandIQ?
 
-You will: add LandIQ 2024 -> gap-fill **both** years -> extract / match / events
-for **both** years. Commands below use those years; substitute when a newer
-CADWR release arrives.
+**LandIQ** is California DWR's statewide crop-mapping product (field polygons +
+crop codes for each water year). A **LandIQ year** is one annual release (e.g.
+2024). Processing a new year means: download that shapefile, fold it into the
+harmonized multi-year parcel table, gap-fill crop labels, then refresh phenology
+and events for the **new year and the prior year**.
 
-**Before this file:** finish [Session 0](sessions/00-environment.md) (clone,
-`$CCMMF_ROOT`, `source ccmmf_env.sh`). Do **not** use BU `/projectnb` paths on
-your machine.
+This walkthrough uses:
 
-**Session detail:** [Session 1 - LandIQ](sessions/01-landiq.md) for download +
-harmonize + gap-fill. Later sessions cover phenology / tillage / irrigation.
-Package READMEs next to the code have flags and QC only.
+| Variable | Value |
+|----------|--------|
+| `TARGET_YEAR` | **2024** (new LandIQ release) |
+| `PRIOR_YEAR` | **2023** (always re-run with the new series) |
 
-**PEcAn code:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913).
-**Harmonize code:** [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse).
+For a later CADWR release, set `TARGET_YEAR` / `PRIOR_YEAR` the same way
+(`new`, `new-1`).
 
-**Schedulers:** prefer `run_*.sh` / `Rscript` on your cloud. Lab examples may
-show `qsub -l buyin` - translate to your batch system.
+## How to use these docs
+
+1. **This file (`pipeline.md`)** - end-to-end order, env vars, commands, checklist.
+2. **`sessions/`** - deeper walkthroughs for each stage (setup, LandIQ, phenology, ...).
+3. **`ccmmf_env.example.sh`** - copy, edit paths, `source` before running.
+
+| Session | Topic |
+|---------|--------|
+| [0 - Environment](sessions/00-environment.md) | Clone repos, R + pixi, data root, env file |
+| [1 - LandIQ](sessions/01-landiq.md) | Download 2024, harmonize, gap-fill 2023+2024 |
+| [2 - Phenology](sessions/02-phenology.md) | HLS/MSLSP, match, planting/harvest events |
+| [3 - Tillage & fertilizer](sessions/03-tillage-fertilizer.md) | NDTI tillage (optional); fert notes |
+| [4 - Irrigation](sessions/04-irrigation.md) | Parallel irrigation track |
+
+**Two codebases**
+
+| Step | Tooling | Where |
+|------|---------|--------|
+| Harmonize parcel geometry | Python + [pixi](https://pixi.prefix.dev/) | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) |
+| Gap-fill, extract, match, events | R (`Rscript` / `run_*.sh`) | this PEcAn tree: `modules/data.remote/inst/ccmmf/` |
+
+Package READMEs next to each workflow (`landiq-gapfill/`, `mslsp-extract/`, ...)
+have flags and QC detail. Prefer `run_*.sh` / `Rscript` on your machine; optional
+batch wrappers under `sge/` are examples for sites that use Grid Engine-style
+schedulers - adapt to yours.
+
+**Start:** [Session 0](sessions/00-environment.md), then follow this file's
+checklist.
 
 ---
 
 ## Configuration
 
-Copy [ccmmf_env.example.sh](ccmmf_env.example.sh) -> `$CCMMF_ROOT/ccmmf_env.sh`, edit, and
-`source` it. Illustrative block (paths are examples - replace with yours):
+Copy [ccmmf_env.example.sh](ccmmf_env.example.sh) to a path you choose (often next
+to your data root), edit it, and `source` it. Example values (replace with yours):
 
 ```bash
-# --- Workspace (PORTABLE - edit) ---
-export CCMMF_ROOT="$HOME/ccmmf"
-export CCMMF_CODE="$HOME/pecan/modules/data.remote/inst/ccmmf"
+# --- Workspace (edit) ---
+export CCMMF_ROOT="$HOME/ccmmf"   # writable data tree you create
+export CCMMF_CODE="$HOME/pecan/modules/data.remote/inst/ccmmf"  # this package
 export CCMMF_MANAGEMENT="$CCMMF_ROOT/management"
+# Harmonized LandIQ product directory (name is conventional; point at your copy)
 export LANDIQ_DIR="LandIQ-harmonized-v4.1"    # before gap-fill
 # export LANDIQ_DIR="LandIQ-harmonized-v4.1.2"  # after gap-fill
 
-# --- S3 (optional; lab CARB bucket - read-only in tutorials) ---
+# --- S3 (optional; if your project provides a data bucket) ---
 export S3_ENDPOINT="https://s3.garage.ccmmf.ncsa.cloud"
 export S3_BUCKET="carb"
 export LANDIQ_S3_PREFIX="management/crops/v4.1"
@@ -66,20 +93,17 @@ export PARCEL_MAP="$CCMMF_MANAGEMENT/hls_parcel_tile_map_v4.1.rds"
 export TILE_TO_PARCELS="$CCMMF_MANAGEMENT/hls_tile_to_parcels_v4.1.rds"
 ```
 
-> **Lab SCC only:** `CCMMF_ROOT=/projectnb/dietzelab/ccmmf` and
-> `CCMMF_MANAGEMENT=$CCMMF_ROOT/management`. Users must override.
-
 | Variable | Role |
 |----------|------|
 | `PARCEL_MAP` | Geometry-only parcel -> HLS tiles (built once) |
 | `TILE_TO_PARCELS` | Inverted map for tile-centric job scheduling |
 | `TARGET_YEAR` | New LandIQ year to harmonize, extract, match, events |
 | `PRIOR_YEAR` | Previous year to gap-fill / rematch with the new release |
-| `CCMMF_LANDIQ_GAPFILL_PRODUCT` | Gap-filled product (v4.1.2); downstream input after section 5 |
+| `CCMMF_LANDIQ_GAPFILL_PRODUCT` | Gap-filled product directory; downstream input after gap-fill |
 | `GAPFILL_YEAR` | Historical full-gap LandIQ year (e.g. 2017) |
 | `GAPFILL_NEIGHBOR_LO/HI` | Flanking years for that full-gap fill |
 
-> **Read-only S3:** This tutorial downloads from the CARB bucket only. It does not upload outputs.
+> **Read-only S3:** tutorials download from the project bucket only; they do not upload.
 
 ---
 
@@ -560,7 +584,6 @@ county/state transition matrices - county CSVs live at
 
 ## References
 
-- [Documentation index](README.md) - training sessions + this pipeline
-- [Session 1 - LandIQ](sessions/01-landiq.md) - [Session 2 - Phenology](sessions/02-phenology.md) - [Session 3 - Tillage & fertilizer](sessions/03-tillage-fertilizer.md) - [Session 4 - Irrigation](sessions/04-irrigation.md)
-- Progress Report 2 - S3 prefixes under `s3://carb/management/`
-- [Repo index](../README.md) - directory layout + per-step operator README index
+- Sessions: [0](sessions/00-environment.md) - [1](sessions/01-landiq.md) - [2](sessions/02-phenology.md) - [3](sessions/03-tillage-fertilizer.md) - [4](sessions/04-irrigation.md)
+- Env template: [ccmmf_env.example.sh](ccmmf_env.example.sh)
+- Package layout: [../README.md](../README.md)

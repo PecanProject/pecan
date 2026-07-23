@@ -4,8 +4,7 @@ This session covers how CCMMF turns **Harmonized Landsat Sentinel-2 (HLS)** phen
 and gap-filled **LandIQ** crop seasons into statewide **planting**, **harvest**, and
 **phenology** event files for SIPNET.
 
-**Navigation:** [Documentation index](../README.md) - [Session 1 - LandIQ](01-landiq.md) -
-[Full pipeline](../pipeline.md)
+**Navigation:** [Pipeline](../pipeline.md) | [Session 1](01-landiq.md) | [Session 3](03-tillage-fertilizer.md)
 
 **Audience:** CARB staff or contractors who completed [Session 1](01-landiq.md) and have
 the gap-filled LandIQ product available.

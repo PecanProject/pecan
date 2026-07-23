@@ -4,8 +4,7 @@ This session covers **tillage event generation** from NDTI + matched MSLSP pheno
 and **California nitrogen / organic-amendment rate lookups** for PEcAn fertilization
 events.
 
-**Navigation:** [Documentation index](../README.md) - [Session 2 - Phenology](02-phenology.md) -
-[Session 4 - Irrigation](04-irrigation.md) - [Full pipeline](../pipeline.md)
+**Navigation:** [Pipeline](../pipeline.md) | [Session 2](02-phenology.md) | [Session 4](04-irrigation.md)
 
 **Audience:** CARB staff or contractors who completed [Session 2](02-phenology.md)
 (matched phenology and default planting/harvest events).

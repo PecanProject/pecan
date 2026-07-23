@@ -3,14 +3,9 @@
 **Goal:** one Linux cloud / HPC account ready to run the training year pair
 (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`): LandIQ -> gap-fill -> phenology -> events.
 
-You are **not** on BU SCC. Ignore `/projectnb/...` paths unless your site
-explicitly mirrors them.
+**Next:** [Session 1 - LandIQ](01-landiq.md). **Spine:** [pipeline.md](../pipeline.md).
 
-**Next:** [Session 1 - LandIQ](01-landiq.md) after this session. Index:
-[documentation README](../README.md) | [pipeline spine](../pipeline.md).
-
-**Code:** [PR #3913](https://github.com/PecanProject/pecan/pull/3913) -
-`feature/ccmmf-statewide-monitoring-inst` -> `modules/data.remote/inst/ccmmf/`.
+**Code:** PEcAn `modules/data.remote/inst/ccmmf/` (monitoring branch).
 
 ---
 
