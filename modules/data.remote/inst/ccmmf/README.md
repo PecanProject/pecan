@@ -27,7 +27,7 @@ To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.
 | Organic amendments | Manure, compost, biochar, and similar *(parallel workflow)* |
 | Irrigation | Water applications *(parallel workflow)* |
 
-## Components in this tree
+## Components in this branch
 
 | Path | Role |
 |------|------|
