@@ -72,9 +72,6 @@ flowchart TD
   EVENTS --> OUT["event_files/*_statewide_*.parquet"]
 ```
 
-Tillage, N fertilization, organic amendments, and irrigation continue in
-Sessions 3-4; see the management table in [pipeline.md](../pipeline.md).
-
 ---
 
 ## 2.2 Upstream MSLSP vs CCMMF extract
