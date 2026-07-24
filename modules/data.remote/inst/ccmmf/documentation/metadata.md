@@ -1,11 +1,11 @@
 # Product metadata (column dictionaries)
 
-Column definitions live **with each product package**.
+Column definitions live **with each product component**.
 This page indexes the dictionaries saved in `inst/ccmmf`.
 Fertilization and irrigation column docs live with those separate workflows
 (not listed in the table below yet).
 
-| Product | File | Writer package |
+| Product | File | Writer component |
 |---------|------|----------------|
 | Harmonized / gap-filled LandIQ `crops_all_years.parq` | [landiq-gapfill/data/crops_all_years_metadata.csv](../landiq-gapfill/data/crops_all_years_metadata.csv) | cadwr-landuse + landiq-gapfill |
 | CDL parcel fractions | [landiq-gapfill/data/cdl_fractions_metadata.csv](../landiq-gapfill/data/cdl_fractions_metadata.csv) | landiq-gapfill |

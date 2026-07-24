@@ -7,7 +7,7 @@ parcel level for California.
 **Harmonized Landsat Sentinel-2 (HLS)** surface reflectance. For each HLS tile and
 calendar year it stores green-up / senescence timing (day-of-year) and Enhanced
 Vegetation Index (EVI) metrics in NetCDF. CCMMF does **not** re-run that tile
-algorithm here; this package only area-weights those metrics onto agricultural
+algorithm here; this component only area-weights those metrics onto agricultural
 parcels.
 
 For each ag parcel and year, write up to two phenological **cycles** (cycle 1 =
@@ -38,7 +38,7 @@ Orchestrator: [`../run_mslsp.sh`](../run_mslsp.sh).
 
 ---
 
-## Package layout
+## Component layout
 
 ```
 phenology/extract/

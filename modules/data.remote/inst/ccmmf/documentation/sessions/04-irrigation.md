@@ -19,7 +19,7 @@ pipeline. Operator docs: [pipeline.md](../pipeline.md) Session 4;
 | Track | Scope | Canonical doc |
 |-------|--------|---------------|
 | **Statewide (production)** | ~600k LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` in the PEcAn clone the session lead provides |
-| **Anchor-site prototype** | Design points (`id`, `lat`, `lon`); OpenET API + CHIRPS | Session lead / package Python README if present |
+| **Anchor-site prototype** | Design points (`id`, `lat`, `lon`); OpenET API + CHIRPS | Session lead / Python README if present |
 
 Use the **statewide workflow** for CARB-scale monitoring. The `management/irrigation/`
 Python stack is an earlier site-based prototype (Katherine Rein, Spring 2025) useful for

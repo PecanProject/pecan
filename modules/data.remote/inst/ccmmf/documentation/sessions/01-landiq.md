@@ -20,7 +20,7 @@ Paths used here (set by `setup_env.sh`):
 | Harmonized geometry | `$CCMMF_LANDIQ_V4` |
 | Gap-filled product | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` |
 | cadwr-landuse repo | `$HOME/src/cadwr-landuse` |
-| landiq-gapfill package | `$LANDIQ_GAPFILL_ROOT` |
+| landiq-gapfill component | `$LANDIQ_GAPFILL_ROOT` |
 
 Operator docs (how the code works): [pipeline.md](../pipeline.md) |
 [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) |

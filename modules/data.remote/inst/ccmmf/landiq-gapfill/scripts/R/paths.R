@@ -1,4 +1,4 @@
-# Path helpers for the landiq-gapfill package.
+# Path helpers for the landiq-gapfill component.
 # Defaults assume a standard CCMMF layout; override with environment variables.
 
 landiq_gapfill_root <- function() {

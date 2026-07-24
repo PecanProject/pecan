@@ -27,7 +27,7 @@ workflows for fertilization, organic amendments, and irrigation.
 
 To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.md).
 
-## Packages in this tree
+## Components in this tree
 
 | Path | Role |
 |------|------|
@@ -49,8 +49,8 @@ elsewhere:
 | N fertilization + organic (NCC) amendments | PEcAn `data.land` tables + statewide workflows | [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003); [Session 3](documentation/sessions/03-tillage-fertilizer.md) |
 | Irrigation | `workflows/irrigation-statewide` | [Session 4](documentation/sessions/04-irrigation.md) |
 
-Shared R helpers under a package's `R/` (or `scripts/R/`) are `source()`'d by that
-package's scripts. They are not yet part of the installed `PEcAn.data.remote` API.
+Shared R helpers under a component's `R/` (or `scripts/R/`) are `source()`'d by that
+component's scripts. They are not yet part of the installed `PEcAn.data.remote` API.
 
 ## External dependencies
 

@@ -401,7 +401,7 @@ build_landiq_product <- function(
       "",
       paste0("- Built: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")),
       paste0("- Source LandIQ: ", source_root),
-      paste0("- Gap-fill package: ", landiq_gapfill_root()),
+      paste0("- Gap-fill component: ", landiq_gapfill_root()),
       paste0("- Gap-fill years: ", paste(years, collapse = ", ")),
       "",
       "Pipeline:",

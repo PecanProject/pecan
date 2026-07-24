@@ -26,7 +26,7 @@ planting_lookup_rds <- file.path(plant_traits_dir, "planting_lookup_long.rds")
 harvest_lookup_rds  <- file.path(plant_traits_dir, "harvest_lookup_long.rds")
 landiq_lookup_csv   <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
 
-# Prefer sibling lai_from_mslsp.R in this traits package (training / PEcAn tree).
+# Prefer sibling lai_from_mslsp.R in this traits component (training / PEcAn tree).
 .traits_dir <- tryCatch(
   dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L]), mustWork = FALSE)),
   error = function(e) NA_character_

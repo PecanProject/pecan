@@ -45,7 +45,7 @@ Confirm those packages load. If any fail, fix the activate step before continuin
 
 ## 0.2 Clone PEcAn (monitoring branch)
 
-CCMMF runnable packages live under PEcAn `modules/data.remote/inst/ccmmf/`.
+CCMMF runnable components live under PEcAn `modules/data.remote/inst/ccmmf/`.
 
 ```bash
 # Pick a writable code directory (e.g. $HOME):
@@ -114,7 +114,7 @@ $CCMMF_ROOT/
     plant_traits/
 ```
 
-`setup_env.sh` (Sec. 0.4) sets package roots such as `LANDIQ_GAPFILL_ROOT` from
+`setup_env.sh` (Sec. 0.4) sets component roots such as `LANDIQ_GAPFILL_ROOT` from
 `CCMMF_CODE`.
 
 ---
@@ -129,7 +129,7 @@ and defaults to **`PRIOR_YEAR=2023`**, **`TARGET_YEAR=2024`**, data root
 source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
-That keeps years and package roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`,
+That keeps years and component roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`,
 `EVENTS_ROOT`, …) consistent for later sessions.
 
 For a later year pair, or if you change directory layout, set years and/or paths

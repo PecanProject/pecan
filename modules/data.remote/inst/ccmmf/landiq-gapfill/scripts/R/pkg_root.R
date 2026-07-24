@@ -1,5 +1,5 @@
-# Resolve the landiq-gapfill package root for CLI entry points.
-# Set LANDIQ_GAPFILL_ROOT, or run scripts via Rscript from this package (auto-detect).
+# Resolve the landiq-gapfill component root for CLI entry points.
+# Set LANDIQ_GAPFILL_ROOT, or run scripts via Rscript from this component (auto-detect).
 
 landiq_gapfill_pkg_root <- function() {
   env <- trimws(Sys.getenv("LANDIQ_GAPFILL_ROOT", ""))
@@ -11,7 +11,7 @@ landiq_gapfill_pkg_root <- function() {
   file_arg <- grep("^--file=", args, value = TRUE)
   if (length(file_arg) == 0L) {
     stop(
-      "Set LANDIQ_GAPFILL_ROOT to the landiq-gapfill package directory ",
+      "Set LANDIQ_GAPFILL_ROOT to the landiq-gapfill component directory ",
       "(the folder that contains scripts/R/bootstrap.R)."
     )
   }

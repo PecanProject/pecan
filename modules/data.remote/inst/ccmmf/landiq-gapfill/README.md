@@ -1,13 +1,13 @@
 # LandIQ gap-fill
 
-This package fills missing **crop identity** and **peak greenness** on the
+This component fills missing **crop identity** and **peak greenness** on the
 harmonized LandIQ parcel table so every parcel has usable main-season crop
 information for phenology matching and event generation.
 
 LandIQ is California's statewide field-level crop mapping product. After
 [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) harmonizes geometry and
 crop attributes across years, some parcels still lack `CLASS` / `SUBCLASS`
-and/or `ADOY` (adjusted day of year for peak greenness). This package fills
+and/or `ADOY` (adjusted day of year for peak greenness). This component fills
 those gaps, writes an updated product, and records per-row provenance.
 
 It does **not** change geometry or `parcel_id`. All `SUBCLASS` values use the
@@ -37,7 +37,7 @@ Training walkthrough: [documentation/sessions/01-landiq.md](../documentation/ses
 |--|------|
 | Harmonized input | `$CCMMF_LANDIQ_V4/crops_all_years.parq` (must already include the new year) |
 | Gap-filled product | `$CCMMF_LANDIQ_GAPFILL_PRODUCT/crops_all_years.parq` (+ geometry symlink) |
-| This package | `$LANDIQ_GAPFILL_ROOT` (defaults to `$CCMMF_CODE/landiq-gapfill`) |
+| This component | `$LANDIQ_GAPFILL_ROOT` (defaults to `$CCMMF_CODE/landiq-gapfill`) |
 | CDL GeoTIFFs | `$CDL_DIR/cdl_YYYY.tif` |
 | CDL parcel fractions | `$LANDIQ_GAPFILL_ROOT/cdl/cdl_fractions_year=YYYY.parquet` |
 

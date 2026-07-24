@@ -1,5 +1,5 @@
-# Resolve the scripts/hls package root for CLI entry points.
-# Set HLS_ROOT, or run scripts via Rscript from this package (auto-detect).
+# Resolve the hls component root for CLI entry points.
+# Set HLS_ROOT, or run scripts via Rscript from this component (auto-detect).
 
 hls_pkg_root <- function() {
   env <- trimws(Sys.getenv("HLS_ROOT", ""))
@@ -11,7 +11,7 @@ hls_pkg_root <- function() {
   file_arg <- grep("^--file=", args, value = TRUE)
   if (length(file_arg) == 0L) {
     stop(
-      "Set HLS_ROOT to the scripts/hls package directory ",
+      "Set HLS_ROOT to the hls component directory ",
       "(the folder that contains R/bootstrap.R)."
     )
   }

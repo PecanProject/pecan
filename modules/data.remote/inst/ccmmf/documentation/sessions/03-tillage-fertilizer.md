@@ -176,7 +176,7 @@ and run the statewide workflows from [#4003](https://github.com/PecanProject/pec
 **Fertilization / organic amendments**
 
 - [ ] Skim [#4002](https://github.com/PecanProject/pecan/pull/4002) and [#4003](https://github.com/PecanProject/pecan/pull/4003).
-- [ ] Review source fertilization TSVs (or packaged `data.land` tables).
+- [ ] Review source fertilization TSVs (or shipped `data.land` tables).
 - [ ] Spot-check crops with `look_up_ca_n_rate()` in R.
 - [ ] Optional: run / review `workflows/fertilization-statewide` and `workflows/ncc-statewide`.
 

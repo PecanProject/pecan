@@ -1,4 +1,4 @@
-# Resolve the phenology/extract package root for CLI entry points.
+# Resolve the phenology/extract component root for CLI entry points.
 # Set PHENOLOGY_ROOT (parent of extract/), or run scripts via Rscript (auto-detect).
 
 mslsp_extract_pkg_root <- function() {
@@ -11,7 +11,7 @@ mslsp_extract_pkg_root <- function() {
   file_arg <- grep("^--file=", args, value = TRUE)
   if (length(file_arg) == 0L) {
     stop(
-      "Set PHENOLOGY_ROOT to the phenology package directory ",
+      "Set PHENOLOGY_ROOT to the phenology component directory ",
       "(the folder that contains extract/scripts/R/bootstrap.R)."
     )
   }

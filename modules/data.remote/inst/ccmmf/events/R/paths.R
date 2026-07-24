@@ -8,7 +8,7 @@ events_pkg_root <- function() {
   args <- commandArgs(trailingOnly = FALSE)
   file_arg <- grep("^--file=", args, value = TRUE)
   if (length(file_arg) == 0L) {
-    stop("Set EVENTS_ROOT or run via Rscript from the events/ package.")
+    stop("Set EVENTS_ROOT or run via Rscript from the events/ component.")
   }
   dir <- dirname(normalizePath(sub("^--file=", "", file_arg[1L]), mustWork = FALSE))
   for (k in seq_len(6L)) {

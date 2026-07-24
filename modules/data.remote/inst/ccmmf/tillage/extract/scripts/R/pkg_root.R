@@ -1,4 +1,4 @@
-# Resolve the tillage/extract package root for CLI entry points.
+# Resolve the tillage/extract component root for CLI entry points.
 # Set TILLAGE_ROOT (parent of extract/), or run scripts via Rscript (auto-detect).
 
 ndti_extract_pkg_root <- function() {
@@ -11,7 +11,7 @@ ndti_extract_pkg_root <- function() {
   file_arg <- grep("^--file=", args, value = TRUE)
   if (length(file_arg) == 0L) {
     stop(
-      "Set TILLAGE_ROOT to the tillage package directory ",
+      "Set TILLAGE_ROOT to the tillage component directory ",
       "(the folder that contains extract/scripts/R/bootstrap.R)."
     )
   }

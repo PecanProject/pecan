@@ -51,7 +51,7 @@ REBUILD_ADOY_REF=0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-# Prefer explicit env; otherwise this script's package directory
+# Prefer explicit env; otherwise this script's component directory
 LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-${CCMMF_CODE:+$CCMMF_CODE/landiq-gapfill}}"
 LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$SCRIPT_DIR}"
 CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-$CCMMF_ROOT/LandIQ-harmonized-v4.1}"

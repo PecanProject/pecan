@@ -19,7 +19,7 @@ per parcel per HLS scene date.
 - **Input:** HLS reflectance + Fmask per scene, gap-filled LandIQ, parcel-tile map.
 - **Output:** `$CCMMF_MANAGEMENT/tillage/ndti_v4.1/year=Y/ndti_year=Y_month=MM.parquet`.
 
-This package mirrors the [`landiq-gapfill/`](../../landiq-gapfill/README.md) and
+This component mirrors the [`landiq-gapfill/`](../../landiq-gapfill/README.md) and
 [`phenology/extract/`](../../phenology/extract/README.md) layout: a bash orchestrator
 (`run_ndti.sh`), atomic R scripts per step, and shared `R/`.
 
@@ -42,7 +42,7 @@ Downstream tillage events: [events/README.md](../../events/README.md).
 
 ---
 
-## Package layout
+## Component layout
 
 ```
 tillage/extract/
