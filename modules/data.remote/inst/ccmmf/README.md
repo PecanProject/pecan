@@ -1,4 +1,4 @@
-# The California Cropland Carbon Monitoring and Modeling Framework (CCMMF)
+# The California Cropland Monitoring and Modeling Framework (CCMMF)
 
 This directory (`modules/data.remote/inst/ccmmf`) is the **monitoring pipeline**
 for CCMMF within [PEcAn](https://pecanproject.github.io): the code and operator
