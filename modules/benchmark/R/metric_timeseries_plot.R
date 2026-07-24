@@ -25,9 +25,8 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     }
   }
   
-  if (!all(c("model_q05", "model_q95") %in% colnames(metric_dat))) {
-    PEcAn.logger::logger.severe("Missing required columns 'model_q05' and 'model_q95' for timeseries plot ribbon.")
-  }
+  if (!"model_q05" %in% colnames(metric_dat)) metric_dat$model_q05 <- metric_dat$model
+  if (!"model_q95" %in% colnames(metric_dat)) metric_dat$model_q95 <- metric_dat$model
 
   is_multi_site <- "site" %in% colnames(metric_dat) && length(unique(metric_dat$site)) > 1
   is_multi_var <- "variable" %in% colnames(metric_dat) && length(unique(metric_dat$variable)) > 1

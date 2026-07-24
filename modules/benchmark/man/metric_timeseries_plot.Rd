@@ -7,6 +7,7 @@
 metric_timeseries_plot(
   metric_dat,
   var,
+  unit = NULL,
   filename = NA,
   draw.plot = is.na(filename)
 )
