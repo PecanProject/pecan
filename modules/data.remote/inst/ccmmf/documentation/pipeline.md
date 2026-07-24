@@ -1,7 +1,8 @@
 # CCMMF monitoring pipeline
 
 California cropland monitoring for PEcAn: turn public crop maps and satellite
-data into field-level **management inputs** for ecosystem models.
+data into field-level **management events** (management inputs) for ecosystem
+models.
 
 For each new LandIQ release you process a **year pair**: the new year
 (`TARGET_YEAR`, training default **2024**) and the prior year (`PRIOR_YEAR`,
@@ -9,7 +10,7 @@ For each new LandIQ release you process a **year pair**: the new year
 
 ## What you build
 
-| Management input | Plain language | Main source |
+| Management event | Plain language | Main source |
 |------------------|----------------|-------------|
 | Crop identity | Which crop is on each field each season | LandIQ (+ CDL gap-fill) |
 | Planting | When the model starts the crop | HLS phenology (green-up) + traits |

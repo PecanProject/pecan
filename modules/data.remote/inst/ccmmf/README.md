@@ -3,19 +3,20 @@
 This directory (`modules/data.remote/inst/ccmmf`) is the **monitoring pipeline**
 for CCMMF within [PEcAn](https://pecanproject.github.io): the code and operator
 documentation that turn public cropland maps and satellite remote sensing into
-field-level **management inputs** for statewide ecosystem modeling.
+field-level **management events** (management inputs) for statewide ecosystem
+modeling.
 
 CCMMF estimates carbon stocks and greenhouse-gas fluxes on California cropland.
 Models such as SIPNET need consistent, parcel-scale records of what was grown and
-how it was managed. This tree produces those records from LandIQ crop maps, HLS
-phenology and tillage indices, crop trait lookups, and linked statewide
+how it was managed. This tree produces those **events** from LandIQ crop maps,
+HLS phenology and tillage indices, crop trait lookups, and linked statewide
 workflows for fertilization, organic amendments, and irrigation.
 
-**Management inputs covered here**
+**Management events covered here**
 
-| Input | Role in the model |
+| Event | Role in the model |
 |-------|-------------------|
-| Crop identity | Crop / PFT on each parcel-season |
+| Crop identity | Crop / PFT on each parcel-season (defines the field-season for events) |
 | Planting | Crop start / initialization |
 | Harvest | Biomass removal |
 | Phenology | Leaf-on / leaf-off timing |
