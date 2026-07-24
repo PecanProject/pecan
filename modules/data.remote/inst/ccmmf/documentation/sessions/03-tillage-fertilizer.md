@@ -60,9 +60,6 @@ export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"
 $TILLAGE_ROOT/run_ndti.sh 2024
 ```
 
-For older flat imagery trees set `HLS_IMAGERY_LAYOUT=flat` - see
-[tillage/extract/README.md](../../tillage/extract/README.md).
-
 Output: `$CCMMF_MANAGEMENT/tillage/ndti_v4.1/year=2024/ndti_year=2024_month=MM.parquet`
 (12 months). Confirm coverage with the verify snippet in that README.
 
