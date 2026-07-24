@@ -58,5 +58,3 @@ component's scripts. They are not yet part of the installed `PEcAn.data.remote` 
 |------|--------|
 | Parcel geometry harmonization | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) (Python + pixi) |
 | HLS / MSLSP NetCDF production | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) |
-
-5. Follow [documentation/pipeline.md](documentation/pipeline.md).
