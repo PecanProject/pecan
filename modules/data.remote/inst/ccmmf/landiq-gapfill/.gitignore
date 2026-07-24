@@ -1,4 +1,3 @@
 /cdl/
-sge_logs/
 *.parquet
 README.html

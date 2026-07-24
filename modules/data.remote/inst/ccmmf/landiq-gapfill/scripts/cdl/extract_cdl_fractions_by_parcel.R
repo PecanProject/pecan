@@ -17,7 +17,7 @@
 #   CDL_PATH      — path to CDL GeoTIFF for the year (overrides default)
 #   CDL_DIR       — directory containing CDL GeoTIFFs (default: ccmmf/CDL_data)
 #   CDL_OUT_DIR   — output dir for parquet (default: landiq-gapfill/cdl)
-#   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4 — paths (see scripts/_lib/paths.R)
+#   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4 — paths (see scripts/R/paths.R)
 #   CDL_CHUNK_SIZE — parcel chunk size for extraction (default 5000)
 # =============================================================================
 
@@ -32,7 +32,7 @@ sf::sf_use_s2(FALSE)
 
 # --- Paths ---
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
-source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "..", "_lib", "pkg_root.R"))
+source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "..", "R", "pkg_root.R"))
 load_landiq_gapfill()
 path_parcels_gpkg <- path_parcels_gpkg()
 path_cdl_dir <- path_cdl_rasters()
@@ -109,7 +109,7 @@ cdl_path_arg <- if (length(args) >= 2) args[2] else NULL
 
 cdl_path <- get_cdl_path(year_arg, cdl_path_arg)
 if (is.null(cdl_path) || !file.exists(cdl_path)) {
-  stop("CDL GeoTIFF not found for year ", year_arg, ". Set CDL_PATH or CDL_DIR, or pass path as second argument. See scripts/cdl/README.md.")
+  stop("CDL GeoTIFF not found for year ", year_arg, ". Set CDL_PATH or CDL_DIR, or pass path as second argument. See landiq-gapfill/README.md (CDL section).")
 }
 
 message("CDL: ", cdl_path)

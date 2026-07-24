@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 })
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
-source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "_lib", "pkg_root.R"))
+source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "R", "pkg_root.R"))
 load_landiq_gapfill()
 
 build_emission_prob_tables()

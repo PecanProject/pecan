@@ -1,0 +1,23 @@
+column_number,column_name,contents,notes
+1,parcel_id,LandIQ parcel id,
+2,year,assigned calendar year,
+3,season,LandIQ season for this crop row,
+4,assigned_by,how the row was produced,"matched | no_mslsp | no_match"
+5,landiq_CLASS,LandIQ CLASS for season,
+6,landiq_SUBCLASS,LandIQ SUBCLASS for season,harmonized legend
+7,landiq_PFT,plant functional type from crop lookup,
+8,landiq_ADOY,LandIQ peak NDVI ADOY for season,
+9,landiq_SPECOND,LandIQ special condition,e.g. Y young perennial
+10,landiq_MULTIUSE,LandIQ multiuse code,if present
+11,mslsp_cycle,assigned MSLSP cycle,1 = dominant amplitude
+12,mslsp_OGI,greenup onset date,cross-year safe date/DOY fields as written by match
+13,mslsp_50PCGI,50% greenup date,
+14,mslsp_Peak,peak greenness date,
+15,mslsp_50PCGD,50% greendown date,
+16,mslsp_OGMn,maturity / greendown date,harvest metric for many PFTs
+17,mslsp_OGD,alternate greendown date,some woody PFTs
+18,mslsp_EVImax,peak EVI from assigned cycle,planting LAI
+19,mslsp_EVIamp,EVI amplitude from assigned cycle,planting LAI
+20,qc_adoy_vs_cycle,ADOY vs cycle window QC,"adoy_inside_cycle | adoy_outside_cycle | ..."
+21,qc_heterogeneity,masking / coverage QC from raw MSLSP,"low_na_frac | ..."
+22,match_outcome,shape of season-cycle match,e.g. mismatch_2cycles_1season

@@ -26,7 +26,24 @@ planting_lookup_rds <- file.path(plant_traits_dir, "planting_lookup_long.rds")
 harvest_lookup_rds  <- file.path(plant_traits_dir, "harvest_lookup_long.rds")
 landiq_lookup_csv   <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
 
-source(file.path(path_management, "scripts/traits/lai_from_mslsp.R"))
+# Prefer sibling lai_from_mslsp.R in this traits package (training / PEcAn tree).
+.traits_dir <- tryCatch(
+  dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L]), mustWork = FALSE)),
+  error = function(e) NA_character_
+)
+if (is.na(.traits_dir) || !nzchar(.traits_dir) || !file.exists(file.path(.traits_dir, "lai_from_mslsp.R"))) {
+  .traits_dir <- trimws(Sys.getenv("CCMMF_CODE", ""))
+  if (nzchar(.traits_dir)) {
+    .traits_dir <- file.path(.traits_dir, "traits")
+  }
+}
+if (!file.exists(file.path(.traits_dir, "lai_from_mslsp.R"))) {
+  stop(
+    "Missing lai_from_mslsp.R. Set CCMMF_CODE to inst/ccmmf, or source pool_calculations ",
+    "via Rscript from the traits/ directory."
+  )
+}
+source(file.path(.traits_dir, "lai_from_mslsp.R"))
 
 sla_pooled_key <- "SLA_POOLED"
 

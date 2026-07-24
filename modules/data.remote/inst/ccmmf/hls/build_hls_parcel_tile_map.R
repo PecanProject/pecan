@@ -4,7 +4,7 @@
 #
 # Harmonized LandIQ parcel polygons are stable; tile overlap depends on geometry
 # only. Which parcels are agricultural varies by year and is applied later in
-# mslsp-extract / ndti-extract prep (filter crops_all_years.parq).
+# phenology/extract / tillage/extract prep (filter crops_all_years.parq).
 #
 # Run build_hls_tile_extent.R first.
 #
@@ -26,7 +26,7 @@ sf::sf_use_s2(FALSE)
 script_dir <- if (length(fa <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE))) {
   dirname(sub("^--file=", "", fa[1L]))
 } else "."
-source(file.path(script_dir, "_lib", "parcel_tilemap.R"))
+source(file.path(script_dir, "R", "parcel_tilemap.R"))
 
 path_landiq_v4  <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1")
 path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")

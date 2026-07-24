@@ -48,10 +48,12 @@ DO_QC=1
 REBUILD_CDL=0
 REBUILD_EMISSION=0
 REBUILD_ADOY_REF=0
-R_MODULE="${R_MODULE:-R/4.4.3}"
 
-CCMMF_ROOT="${CCMMF_ROOT:-/projectnb/dietzelab/ccmmf}"
-LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$CCMMF_ROOT/management/landiq-gapfill}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
+# Prefer explicit env; otherwise this script's package directory
+LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-${CCMMF_CODE:+$CCMMF_CODE/landiq-gapfill}}"
+LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$SCRIPT_DIR}"
 CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-$CCMMF_ROOT/LandIQ-harmonized-v4.1}"
 CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL_data}"
 CDL_OUT_DIR="${CDL_OUT_DIR:-$LANDIQ_GAPFILL_ROOT/cdl}"
@@ -150,20 +152,22 @@ read -r -a YEARS <<< "$(parse_years "${YEAR_ARGS[@]}")"
 RUN_YEARS_CSV=$(IFS=,; echo "${YEARS[*]}")
 export LANDIQ_GAPFILL_RUN_YEARS="$RUN_YEARS_CSV"
 
-if [[ -f /etc/profile.d/modules.sh ]]; then
-  # shellcheck source=/dev/null
-  source /etc/profile.d/modules.sh
+# Prefer Rscript from the active environment (e.g. shared conda). Optional:
+# set R_MODULE and have environment-modules available if Rscript is not on PATH.
+if ! command -v Rscript >/dev/null 2>&1; then
+  if [[ -f /etc/profile.d/modules.sh ]]; then
+    # shellcheck source=/dev/null
+    source /etc/profile.d/modules.sh
+  fi
+  if [[ -n "${R_MODULE:-}" ]] && command -v module >/dev/null 2>&1; then
+    module load "$R_MODULE"
+  fi
 fi
-if command -v module >/dev/null 2>&1; then
-  module load "$R_MODULE"
-fi
+command -v Rscript >/dev/null 2>&1 || die "Rscript not found; activate your conda env (Session 0) or set PATH"
 
-# R 'arrow' on SCC links a newer libcurl than the system provides, so loading it
-# fails with "undefined symbol: curl_multi_poll" on login AND compute nodes.
-# Preload a compatible libcurl. Override with GAPFILL_LIBCURL_PRELOAD; unset it
-# (export GAPFILL_LIBCURL_PRELOAD=) if your arrow already loads cleanly.
-: "${GAPFILL_LIBCURL_PRELOAD=/share/pkg.8/miniconda/25.3.1/install/lib/libcurl.so.4.8.0}"
-if [[ -n "$GAPFILL_LIBCURL_PRELOAD" && -e "$GAPFILL_LIBCURL_PRELOAD" ]]; then
+# Optional: if arrow fails with a libcurl symbol error, set GAPFILL_LIBCURL_PRELOAD
+# to a compatible libcurl.so and re-run.
+if [[ -n "${GAPFILL_LIBCURL_PRELOAD:-}" && -e "$GAPFILL_LIBCURL_PRELOAD" ]]; then
   export LD_PRELOAD="${GAPFILL_LIBCURL_PRELOAD}${LD_PRELOAD:+:$LD_PRELOAD}"
   log "Preloading libcurl: $GAPFILL_LIBCURL_PRELOAD"
 fi

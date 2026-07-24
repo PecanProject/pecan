@@ -23,7 +23,7 @@ if (!requireNamespace("CropScapeR", quietly = TRUE)) {
 suppressPackageStartupMessages(library(CropScapeR))
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
-source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "..", "_lib", "pkg_root.R"))
+source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "..", "R", "pkg_root.R"))
 load_landiq_gapfill()
 path_cdl_dir <- path_cdl_rasters()
 

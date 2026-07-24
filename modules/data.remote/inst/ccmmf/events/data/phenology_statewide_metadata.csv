@@ -1,0 +1,6 @@
+column_number,column_name,contents,notes
+1,event_type,always phenology,
+2,site_id,parcel_id,
+3,year,year of mslsp_Peak,
+4,leafonday,leaf-on date,from mslsp_50PCGI
+5,leafoffday,leaf-off date,from mslsp_50PCGD

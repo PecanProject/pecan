@@ -1,59 +1,69 @@
 # CCMMF (`inst/ccmmf`)
 
-Scripts and training docs for **California cropland monitoring** in PEcAn: turn
-public statewide crop maps and satellite phenology into field-level management
-inputs (and related products) for ecosystem modeling.
-
-This folder is the portable home for that workflow. It will grow beyond phenology
-alone (crop gap-fill, tillage, irrigation hooks, lookups, etc.).
+Scripts and documentation for California cropland monitoring in PEcAn. This tree
+turns statewide crop maps and satellite phenology into field-level management
+inputs for ecosystem modeling: crop identity, planting / harvest / phenology,
+tillage, plus links to irrigation, N fertilization, and non-crop C (organic)
+amendments.
 
 **Start here:** [documentation/pipeline.md](documentation/pipeline.md)  
-**Then:** [documentation/sessions/](documentation/sessions/) (Session 0 = machine setup)
+**Machine setup:** [documentation/sessions/00-environment.md](documentation/sessions/00-environment.md)
 
-## What is in this folder
+Column dictionaries for each product live next to that package under
+`data/*_metadata.csv` (index: [documentation/metadata.md](documentation/metadata.md)).
 
-| Path | What it is |
-|------|------------|
-| `documentation/` | How to run the year-pair update: `pipeline.md` (spine) + `sessions/` (walkthroughs) + `ccmmf_env.example.sh` (env template) |
-| `landiq-gapfill/` | Fills missing crop class/subclass and peak-greenness day (`ADOY`) on the harmonized LandIQ table; writes the gap-filled product used downstream |
-| `mslsp-extract/` | Extracts MSLSP (multi-sensor land surface phenology) metrics onto LandIQ parcels from NetCDF tile products |
-| `ndti-extract/` | Extracts NDTI (tillage-related index) onto parcels from HLS imagery |
-| `hls/` | Shared helpers for HLS-based extracts, plus building the parcel-to-HLS-tile map |
-| `phenology/` | Matches LandIQ crop seasons to MSLSP cycles; optional date gap-fill on matched rows |
-| `traits/` | Builds planting/harvest trait lookup tables (LAI and C/N pools for planting events) |
-| `events/` | Writes statewide phenology, planting, harvest, and (opt-in) tillage event files |
-| `tillage/` | Helpers that turn NDTI time series into tillage timing / intensity metrics |
-| `LandIQ_cropCode_lookup_table.csv` | LandIQ CLASS/SUBCLASS metadata, agricultural flag, and plant-functional-type labels |
+## Documentation layers
 
-Shared R helpers for a workflow live under that workflow's `scripts/_lib/` (local
-library code sourced by the scripts - not a separate R package yet).
+1. **`documentation/pipeline.md`** - end-to-end map (order, env, checklist, links).
+2. **Package `README.md` files** (table below) - how each stage's code works.
+3. **`documentation/sessions/`** - training walkthroughs that link to those READMEs.
+
+## Packages in this tree
+
+| Path | Role |
+|------|------|
+| `landiq-gapfill/` | Fill missing `CLASS` / `SUBCLASS` / `ADOY`; write gap-filled LandIQ product |
+| `hls/` | Shared tilewise helpers; build parcel-to-HLS tile map (once) |
+| `phenology/` | MSLSP extract, LandIQ-MSLSP match, date gap-fill (Session 2 track) |
+| `tillage/` | NDTI extract; tillage events via `events/` |
+| `traits/` | Planting / harvest trait lookups |
+| `events/` | Statewide planting, harvest, phenology, tillage event files |
+| `landiq-gapfill/data/LandIQ_cropCode_lookup_table.csv` | CLASS/SUBCLASS to PFT / agricultural flag |
+
+## Parallel tracks
+
+These layers share LandIQ parcel identity with the pipeline above but are run
+elsewhere:
+
+| Product | Where | Docs |
+|---------|--------|------|
+| N fertilization + organic (NCC) amendments | PEcAn `data.land` tables + statewide workflows | [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003); [Session 3](documentation/sessions/03-tillage-fertilizer.md) |
+| Irrigation | `workflows/irrigation-statewide` | [Session 4](documentation/sessions/04-irrigation.md) |
+
+Each product that ships a column dictionary in this tree keeps it under
+`data/*_metadata.csv` (see [metadata.md](documentation/metadata.md)).
+
+Shared R helpers under a package's `R/` (or `scripts/R/`) are `source()`'d by that
+package's scripts. They are not yet part of the installed `PEcAn.data.remote` API.
+
+## External dependencies
+
+| Step | Where |
+|------|--------|
+| Parcel geometry harmonization | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) (Python + pixi) |
+| HLS / MSLSP NetCDF production | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) |
 
 ## First-time setup
 
-1. Clone PEcAn and check out the monitoring branch that contains this tree.
-2. From **this** directory (`inst/ccmmf`), note its absolute path - that is
-   `CCMMF_CODE`.
-3. Create a writable data root (call it `CCMMF_ROOT`) for LandIQ, CDL, HLS, and
-   outputs. It does not have to live inside PEcAn.
-4. Copy the env template next to your data (or into your project dir), edit paths,
-   and `source` it:
+1. Clone PEcAn; check out the monitoring branch that contains this tree.
+2. Set `CCMMF_CODE` to the absolute path of this directory.
+3. Create a writable data root (`CCMMF_ROOT`, e.g. `$HOME/ccmmf`).
+4. Source the env template:
 
 ```bash
-# Example if your shell is already in modules/data.remote/inst/ccmmf:
-export CCMMF_CODE="$(pwd)"
-export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"   # change if you prefer another data root
-mkdir -p "$CCMMF_ROOT"
-cp "$CCMMF_CODE/documentation/ccmmf_env.example.sh" "$CCMMF_ROOT/ccmmf_env.sh"
-# Edit CCMMF_ROOT, CCMMF_CODE, years, and product paths in that file, then:
-source "$CCMMF_ROOT/ccmmf_env.sh"
+export CCMMF_CODE="$(pwd)"   # if already in this directory
+export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
+source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
-5. Follow [documentation/pipeline.md](documentation/pipeline.md) starting at
-   Session 0.
-
-Geometry harmonization (Python) is a separate repo:
-[ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). Upstream HLS/MSLSP
-NetCDF production uses [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology).
-
-If extract scripts cannot find shared HLS helpers automatically, set
-`HLS_SHARED_LIB` to `$CCMMF_CODE/hls/_lib` in your env file.
+5. Follow [documentation/pipeline.md](documentation/pipeline.md).

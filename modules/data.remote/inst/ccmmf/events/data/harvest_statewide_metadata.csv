@@ -1,0 +1,13 @@
+column_number,column_name,contents,notes
+1,event_type,always harvest,
+2,site_id,parcel_id,
+3,year,event year,
+4,season,LandIQ season,
+5,date,harvest date,from MSLSP harvest metric / harvest_date_str
+6,CLASS_SUBCLASS,crop code string,
+7,PFT,plant functional type,
+8,destructive,woody destructive harvest flag,
+9,frac_above_removed_0to1,fraction aboveground removed,
+10,frac_above_to_litter_0to1,fraction aboveground to litter,
+11,frac_below_removed_0to1,fraction belowground removed,
+12,frac_below_to_litter_0to1,fraction belowground to litter,

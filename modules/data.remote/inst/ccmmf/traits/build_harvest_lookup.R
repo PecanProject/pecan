@@ -8,8 +8,8 @@
 #
 # Writes plant_traits/harvest_lookup_long.rds and .csv under CCMMF_MANAGEMENT.
 #
-# Run from management repo root:
-#   Rscript scripts/traits/build_harvest_lookup.R
+# Run:
+#   Rscript $CCMMF_CODE/traits/build_harvest_lookup.R
 # Env: CCMMF_MANAGEMENT
 
 #### Load packages

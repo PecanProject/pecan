@@ -2,15 +2,15 @@
 
 This session covers how CCMMF derives **irrigation event files** from evapotranspiration,
 precipitation, and soil water-balance logic, and how those events connect to the rest of
-the monitoring pipeline (planting, harvest, phenology, tillage).
+the monitoring pipeline (alongside planting, harvest, phenology, tillage,
+N fertilization, and organic amendments).
 
 **Navigation:** [Pipeline](../pipeline.md) | [Session 3](03-tillage-fertilizer.md)
 
-**Audience:** CARB staff or contractors familiar with Sessions 1-3 outputs.
-
-**Note:** Irrigation is a **parallel statewide workflow** (Alexey Shiklomanov), not a step
-in `pipeline.md` section 7-11. It uses the same harmonized LandIQ **parcel_id** geometry as
-the crop/phenology pipeline.
+**Note:** Irrigation is a parallel statewide workflow (Alexey Shiklomanov) that
+uses the same harmonized LandIQ **parcel_id** geometry as the crop/phenology
+pipeline. Operator docs: [pipeline.md](../pipeline.md) Session 4;
+`workflows/irrigation-statewide/` in the PEcAn clone the session lead provides.
 
 ---
 
@@ -18,8 +18,8 @@ the crop/phenology pipeline.
 
 | Track | Scope | Canonical doc |
 |-------|--------|---------------|
-| **Statewide (production)** | ~600k LandIQ parcels; `targets` pipeline | [irrigation-statewide/README.md](../../../usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/README.md) |
-| **Anchor-site prototype** | Design points (`id`, `lat`, `lon`); OpenET API + CHIRPS | [irrigation Python README.txt](../../irrigation/pecan/modules/data.remote/inst/Python/README.txt) |
+| **Statewide (production)** | ~600k LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` in the PEcAn clone the session lead provides |
+| **Anchor-site prototype** | Design points (`id`, `lat`, `lon`); OpenET API + CHIRPS | Session lead / package Python README if present |
 
 Use the **statewide workflow** for CARB-scale monitoring. The `management/irrigation/`
 Python stack is an earlier site-based prototype (Katherine Rein, Spring 2025) useful for
@@ -27,26 +27,25 @@ understanding data sources and water-balance event file format.
 
 ---
 
-## 4.2 Statewide irrigation (Alexey)
+## 4.2 Statewide irrigation
 
-**Location:**
-
-```
-/projectnb/dietzelab/ccmmf/usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/
-```
+**Location:** PEcAn workflow
+`workflows/irrigation-statewide/` (clone the branch/repo the session lead names;
+see that folder's README).
 
 **What it does:** Generates PEcAn-format **irrigation event files** for all California
 agricultural parcels using a reproducible **`targets`** pipeline.
 
 ### Setup
 
-Run from the PEcAn root (`sipnet-restart-workflow`). Set in `.Renviron`:
+Run from the PEcAn workflow root that contains `workflows/irrigation-statewide`.
+Set in `.Renviron`:
 
 ```
 TAR_CONFIG=workflows/irrigation-statewide/_targets.yaml
 ```
 
-On BU SCC, paths are preconfigured in `config_paths.yml`. Adjust if data roots move.
+Edit `config_paths.yml` so data roots point at **your** `$CCMMF_ROOT` (or equivalent).
 
 ### Run
 
@@ -55,21 +54,21 @@ Three configurations in `config.yml`:
 | Config | Parcels | Use case |
 |--------|---------|----------|
 | `small` (default) | 1,000 (batches of 100) | Local test |
-| `medium` | 10,000 (batches of 1,000) | SGE array (~15 workers) |
-| `all` | ~600,000 (batches of 5,000) | Full statewide (~60 SGE jobs) |
+| `medium` | 10,000 (batches of 1,000) | Parallel workers (~15) |
+| `all` | ~600,000 (batches of 5,000) | Full statewide (~60 workers) |
 
 ```bash
 TAR_PROJECT=all Rscript -e "targets::tar_make()"
 ```
 
-Full details: [irrigation-statewide/README.md](../../../usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/README.md).
+Full details: `workflows/irrigation-statewide/README.md` in the PEcAn clone the session lead provides.
 
 ### Input preprocessing
 
 Raster inputs (CHIRPS precipitation, CIMIS reference ET, SSURGO soil properties) are
 preprocessed to parcel-level time series before the main workflow:
 
-[irrigation-statewide/preprocessing/README.md](../../../usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/preprocessing/README.md)
+`workflows/irrigation-statewide/preprocessing/README.md` (same clone)
 
 | Dataset | Scripts |
 |---------|---------|
@@ -129,14 +128,15 @@ site-specific water holding capacity and crop rooting depth.
 
 ## 4.4 Connect to the rest of the monitoring pipeline
 
-Sessions 1-3 produce **statewide** planting, harvest, phenology, and (optionally) tillage
-events under `management/event_files/`. Irrigation events from the statewide workflow
-are a **fourth event type** for SIPNET.
+Sessions 1-3 produce **statewide** planting, harvest, phenology, and tillage
+events under `management/event_files/`. Irrigation from the statewide workflow is
+another event type for the SIPNET ecosystem model (alongside N fert / NCC from
+Session 3).
 
 Merge arbitrary event tables into one PEcAn JSON bundle:
 
 ```bash
-Rscript $CCMMF_MANAGEMENT/scripts/events/combine_management_events_pecan.R \
+Rscript $CCMMF_CODE/events/combine_management_events_pecan.R \
   --planting events_planting.csv \
   --harvest events_harvest.csv \
   --tillage events_tillage.csv \
@@ -144,11 +144,11 @@ Rscript $CCMMF_MANAGEMENT/scripts/events/combine_management_events_pecan.R \
   --out event_files/combined_events_pecanFormat.json
 ```
 
-See [scripts/events/README.md](../../scripts/events/README.md) and the header in
+See [events/README.md](../../events/README.md) and the header in
 `combine_management_events_pecan.R` for input schemas.
 
-Alexey's SIPNET restart workflow also loads irrigation parquet directly - see
-`usr/ashiklom/pecan/sipnet-restart-workflow/workflows/sipnet-restart-workflow/01-prepare-events.R`.
+Alexey's SIPNET (ecosystem model) restart workflow also loads irrigation parquet
+directly - see the irrigation / SIPNET restart workflow scripts (session lead).
 
 ---
 
@@ -156,7 +156,7 @@ Alexey's SIPNET restart workflow also loads irrigation parquet directly - see
 
 **Statewide (recommended)**
 
-- [ ] Read [irrigation-statewide/README.md](../../../usr/ashiklom/pecan/sipnet-restart-workflow/workflows/irrigation-statewide/README.md).
+- [ ] Read `workflows/irrigation-statewide/README.md` in your PEcAn clone.
 - [ ] Confirm preprocessing inputs exist (CHIRPS, CIMIS, SSURGO - see preprocessing README).
 - [ ] Run `TAR_PROJECT=small` smoke test locally.
 - [ ] Inspect output with `check-result.R` before `TAR_PROJECT=all`.

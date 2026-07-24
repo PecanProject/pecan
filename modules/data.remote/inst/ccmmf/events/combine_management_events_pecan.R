@@ -9,7 +9,7 @@
 # tillage, irrigation. See schemas below.
 # Main output: one JSON file (e.g. event_files/<prefix>_events_pecanFormat.json).
 # How to run: source() and call combine_management_events_pecan(), or
-#   Rscript scripts/events/combine_management_events_pecan.R --out ... [--planting ...] ...
+#   Rscript $CCMMF_CODE/events/combine_management_events_pecan.R --out ... [--planting ...] ...
 #
 # Contrast: make_events_statewide.R builds yearly statewide phenology + planting
 # from assigned MSLSP only. This script is for assembling multiple types from
@@ -42,10 +42,15 @@ combine_management_events_pecan <- function(planting   = NULL,
                                             pool_script = NULL) {
 
   if (is.null(pool_script)) {
-    pool_script <- file.path(
-      Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management"),
-      "scripts/traits/pool_calculations_from_lookup.R"
-    )
+    code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+    pool_script <- if (nzchar(code)) {
+      file.path(code, "traits", "pool_calculations_from_lookup.R")
+    } else {
+      file.path(
+        Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management"),
+        "scripts/traits/pool_calculations_from_lookup.R"
+      )
+    }
   }
   if (file.exists(pool_script)) {
     pool_env <- new.env(parent = globalenv())

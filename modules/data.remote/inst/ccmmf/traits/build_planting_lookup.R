@@ -10,8 +10,8 @@
 # Writes plant_traits/planting_lookup_long.rds and planting_lookup_long.csv
 # under CCMMF_MANAGEMENT (default: .../ccmmf/management).
 #
-# Run from management repo root:
-#   Rscript scripts/traits/build_planting_lookup.R
+# Run:
+#   Rscript $CCMMF_CODE/traits/build_planting_lookup.R
 # Env: CCMMF_MANAGEMENT, TRY_MASTER_DATA (path to master_data.RData with object master_data).
 
 #### Load packages

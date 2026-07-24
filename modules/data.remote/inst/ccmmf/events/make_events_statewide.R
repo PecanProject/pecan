@@ -2,7 +2,7 @@
 # =============================================================================
 # Generate statewide event files for a single output year (Parquet + PEcAn JSON).
 #
-# Orchestrator only: load matched assignments, dispatch to _lib/build_* modules,
+# Orchestrator only: load matched assignments, dispatch to R/build_* modules,
 # write outputs under event_files/.
 #
 #   Phenology: phenology_statewide_{year}.parquet / .json
@@ -18,18 +18,19 @@
 #
 # Implementation
 # --------------
-#   _lib/matched_input.R   — read assigned_year=Y, filter matched rows
-#   _lib/phenology_events.R — leaf-on/off from MSLSP (format only)
-#   _lib/planting_events.R  — C/N pools via traits/pool_calculations_from_lookup.R
-#   _lib/harvest_events.R   — removal fractions, young-woody skip, CLASS-level
+#   R/matched_input.R   — read assigned_year=Y, filter matched rows
+#   R/phenology_events.R — leaf-on/off from MSLSP (format only)
+#   R/planting_events.R  — C/N pools via traits/pool_calculations_from_lookup.R
+#   R/harvest_events.R   — removal fractions, young-woody skip, CLASS-level
 #                             woody destructive (LandIQ year → year+1 look-ahead)
-#   _lib/tillage_events.R   — NDTI + tillage_metrics (separate data path)
-#   _lib/io.R               — shared parquet + PEcAn JSON writer
+#   R/tillage_metrics.R  — fallow-window NDTI minimum / intensity
+#   R/tillage_events.R   — NDTI + matched phenology -> tillage events
+#   R/io.R               — shared parquet + PEcAn JSON writer
 #
 # ENV
 # ---
 #   CCMMF_LANDIQ_V4, HARVEST_LOOKUP_RDS, HARVEST_WOODY_DESTRUCTIVE,
-#   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK — see scripts/events/README.md
+#   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK — see events/README.md
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -41,8 +42,8 @@ suppressPackageStartupMessages({
 })
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
-source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "_lib", "bootstrap.R"))
-load_events_lib()
+source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "R", "bootstrap.R"))
+load_events_helpers()
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1L) {
@@ -104,8 +105,7 @@ if (run_tillage) {
     year_arg,
     paths$out_dir,
     paths$matched_dir,
-    paths$ndti_root,
-    paths$tillage_metrics_script
+    paths$ndti_root
   )
 }
 

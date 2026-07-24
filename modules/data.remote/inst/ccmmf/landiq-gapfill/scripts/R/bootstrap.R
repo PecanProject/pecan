@@ -1,0 +1,21 @@
+# Load shared landiq-gapfill libraries. Called by load_landiq_gapfill() in pkg_root.R.
+
+.gapfill_pkg_root <- landiq_gapfill_pkg_root()
+Sys.setenv(LANDIQ_GAPFILL_ROOT = .gapfill_pkg_root)
+.gapfill_lib <- file.path(.gapfill_pkg_root, "scripts", "R")
+
+source(file.path(.gapfill_lib, "paths.R"))
+source(file.path(.gapfill_lib, "gapfill_config.R"))
+source(file.path(.gapfill_lib, "county_transition.R"))
+source(file.path(.gapfill_lib, "gapfill_cli.R"))
+source(file.path(.gapfill_lib, "gapfill_lookup_build.R"))
+source(file.path(.gapfill_lib, "gapfill_lookup_probs.R"))
+source(file.path(.gapfill_lib, "gapfill_emission.R"))
+source(file.path(.gapfill_lib, "gapfill_cdl.R"))
+source(file.path(.gapfill_lib, "gapfill_class.R"))
+source(file.path(.gapfill_lib, "gapfill_subclass.R"))
+source(file.path(.gapfill_lib, "gapfill_adoy.R"))
+source(file.path(.gapfill_lib, "build_landiq_product.R"))
+source(file.path(.gapfill_lib, "gapfill_run.R"))
+source(file.path(.gapfill_lib, "landiq_rs_harmonize.R"))
+source(file.path(.gapfill_lib, "lookup_paths.R"))
