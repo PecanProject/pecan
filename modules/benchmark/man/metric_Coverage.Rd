@@ -7,17 +7,17 @@
 metric_Coverage(dat, ...)
 }
 \arguments{
-\item{dat}{dataframe with columns `model_q025` and `model_q975`}
+\item{dat}{dataframe with columns `model_q05` and `model_q95` (or `model_q025` and `model_q975`)}
 
 \item{...}{ignored}
 }
 \value{
-A numeric value representing the fraction of observations that fall within the 95% prediction interval.
+A numeric value representing the fraction of observations that fall within the prediction interval.
 }
 \description{
 Prediction Interval Coverage
 }
 \details{
 Measures the fraction of observations that fall within the model's
-stated 95% prediction interval.
+stated prediction interval (defaults to 90% interval via `model_q05`/`model_q95`, or 95% via `model_q025`/`model_q975`).
 }

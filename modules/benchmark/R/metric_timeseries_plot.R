@@ -40,17 +40,12 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
   annotations <- do.call(rbind, lapply(names(facet_groups), function(g) {
     sub_dat <- facet_groups[[g]]
     
-    valid_cov <- !is.na(sub_dat$obvs) & !is.na(sub_dat$model_q05) & !is.na(sub_dat$model_q95)
-    
-    if ("obvs_sd" %in% colnames(sub_dat)) {
-      valid_cov <- valid_cov & !is.na(sub_dat$obvs_sd)
-      covered <- (sub_dat$obvs[valid_cov] - sub_dat$obvs_sd[valid_cov]) <= sub_dat$model_q95[valid_cov] & 
-                 (sub_dat$obvs[valid_cov] + sub_dat$obvs_sd[valid_cov]) >= sub_dat$model_q05[valid_cov]
+    coverage_val <- try(metric_Coverage(sub_dat), silent = TRUE)
+    if (inherits(coverage_val, "try-error") || is.na(coverage_val)) {
+      coverage_pct <- NA_real_
     } else {
-      covered <- sub_dat$obvs[valid_cov] >= sub_dat$model_q05[valid_cov] & sub_dat$obvs[valid_cov] <= sub_dat$model_q95[valid_cov]
+      coverage_pct <- coverage_val * 100
     }
-    
-    coverage_pct <- mean(covered) * 100
     
     sharpness <- mean(sub_dat$model_q95 - sub_dat$model_q05, na.rm = TRUE)
     bias <- mean(sub_dat$model - sub_dat$obvs, na.rm = TRUE)
