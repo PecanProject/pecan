@@ -6,6 +6,8 @@ inputs for ecosystem modeling: crop identity, planting / harvest / phenology,
 tillage, plus links to irrigation, N fertilization, and non-crop C (organic)
 amendments.
 
+To run the pipeline, follow the steps in [documentation/pipeline.md](documentation/pipeline.md).
+
 ## Packages in this tree
 
 | Path | Role |
@@ -37,5 +39,3 @@ package's scripts. They are not yet part of the installed `PEcAn.data.remote` AP
 |------|--------|
 | Parcel geometry harmonization | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) (Python + pixi) |
 | HLS / MSLSP NetCDF production | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) |
-
-To run the pipeline, follow the steps in [documentation/pipeline.md](documentation/pipeline.md).
