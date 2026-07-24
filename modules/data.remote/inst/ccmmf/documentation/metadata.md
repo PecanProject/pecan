@@ -1,7 +1,7 @@
 # Product metadata (column dictionaries)
 
 Column definitions live **with each product package**.
-This page indexes the dictionaries that ship under `inst/ccmmf`.
+This page indexes the dictionaries saved in `inst/ccmmf`.
 Fertilization and irrigation column docs live with those separate workflows
 (not listed in the table below yet).
 
@@ -17,5 +17,3 @@ Fertilization and irrigation column docs live with those separate workflows
 | Harvest events | [events/data/harvest_statewide_metadata.csv](../events/data/harvest_statewide_metadata.csv) | events |
 | Phenology events | [events/data/phenology_statewide_metadata.csv](../events/data/phenology_statewide_metadata.csv) | events |
 | Tillage events | [events/data/tillage_statewide_metadata.csv](../events/data/tillage_statewide_metadata.csv) | events |
-
-Format follows cadwr: `column_number`, `column_name`, `contents`, `notes`.
