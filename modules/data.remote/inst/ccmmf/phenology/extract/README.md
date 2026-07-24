@@ -193,18 +193,6 @@ phenology and EVI `*_mean`/`*_sd`; QA `*_mode`/`*_mode_frac`.
 
 ---
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `undefined symbol: curl_multi_poll` | Set `LD_PRELOAD` via orchestrator (`HLS_LIBCURL_PRELOAD`), or run where `arrow` loads |
-| Parcel-tile map missing | See [hls/README.md](../../hls/README.md) |
-| No ag parcels for year | Check gap-filled `crops_all_years.parq` |
-| `empty_no_scenes` | Missing NetCDF under `mslsp_new_base` / `mslsp_legacy_dir` |
-| `EVImax_mean` ~ thousands | Re-run with `--overwrite` (2020+ EVI rescale) |
-
----
-
 ## Special cases
 
 - **NetCDF lookup:** `mslsp_legacy_dir` then `mslsp_new_base`.

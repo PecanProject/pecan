@@ -6,18 +6,6 @@ inputs for ecosystem modeling: crop identity, planting / harvest / phenology,
 tillage, plus links to irrigation, N fertilization, and non-crop C (organic)
 amendments.
 
-**Start here:** [documentation/pipeline.md](documentation/pipeline.md)  
-**Machine setup:** [documentation/sessions/00-environment.md](documentation/sessions/00-environment.md)
-
-Column dictionaries for each product live next to that package under
-`data/*_metadata.csv` (index: [documentation/metadata.md](documentation/metadata.md)).
-
-## Documentation layers
-
-1. **`documentation/pipeline.md`** - end-to-end map (order, env, checklist, links).
-2. **Package `README.md` files** (table below) - how each stage's code works.
-3. **`documentation/sessions/`** - training walkthroughs that link to those READMEs.
-
 ## Packages in this tree
 
 | Path | Role |

@@ -115,15 +115,6 @@ matched <- assigned |> filter(assigned_by == "matched")
 See [data/assigned_year_metadata.csv](data/assigned_year_metadata.csv) (column dictionary).
 Key fields: `assigned_by`, `landiq_*`, `mslsp_*` dates/EVI, `qc_*`, `match_outcome`.
 
-## Troubleshooting
-
-| Symptom | Cause / fix |
-|---------|-------------|
-| No rows for year | Raw MSLSP missing - run [extract](../extract/README.md) first |
-| All `mslsp_cycles_filtered_out` | High `na_frac` in raw MSLSP or no cycles for parcel |
-| Gap-fill year (2017) | Point `CCMMF_LANDIQ_V4` at gap-filled product with that year |
-| Rerun after gap-fill | Re-match prior year (e.g. 2023 after `2023,2024` gap-fill) |
-
 ## Reference
 
 | Path | Contents |

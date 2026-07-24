@@ -98,8 +98,8 @@ senescence), plus EVI metrics (**EVImax**, **EVIamp**).
 
 ## 2.3 Hands-on walkthrough
 
-Source the env once, then follow the operator READMEs for flags, schemas, and
-troubleshooting. Default training years: `TARGET_YEAR=2024`, `PRIOR_YEAR=2023`.
+Source the env once, then follow the operator READMEs for flags and schemas.
+Default training years: `TARGET_YEAR=2024`, `PRIOR_YEAR=2023`.
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
@@ -193,20 +193,7 @@ Cross-reference: [pipeline.md](../pipeline.md) checklist.
 
 ---
 
-## 2.5 Quick troubleshooting
-
-| Symptom | Likely fix |
-|---------|------------|
-| No MSLSP rows for year | Missing NetCDF - run HLS_Phenology for that year |
-| Empty `tiles_to_run.txt` | `$PHENOLOGY_ROOT/run_mslsp.sh --prep-only Y` |
-| All `mslsp_cycles_filtered_out` | Check raw MSLSP `na_frac` / cycles |
-| Low match rate | Review `match_outcome` in assigned parquet; see [match/README.md](../../phenology/match/README.md) |
-| Events empty | Need `assigned_by == "matched"` rows upstream |
-| `curl_multi_poll` / arrow | See [extract troubleshooting](../../phenology/extract/README.md) |
-
----
-
-## 2.6 What comes next
+## 2.5 What comes next
 
 - **[Session 3 - Tillage and fertilization](03-tillage-fertilizer.md):** NDTI,
   tillage events, N-rate lookups, organic amendments.

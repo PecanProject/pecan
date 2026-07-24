@@ -92,13 +92,4 @@ h <- initialize_harvest_from_lookup(100001, "2018-05-15", "T19", "row", lk)
 | `pool_calculations_from_lookup.R` | `initialize_planting` / `initialize_harvest_from_lookup` |
 | `lai_from_mslsp.R` | LAI from EVI; sourced by the pool script |
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `master_data` not found | Set `TRY_MASTER_DATA` to the TRY `master_data.RData` path |
-| `planting_lookup_long.rds` missing | Run `build_planting_lookup.R` |
-| Crop code maps to NA | Check lookup has that CLASS+SUBCLASS and `is_agricultural == TRUE` |
-| All traits fall back to global | No TRY species mapped to that `SUBCLASS_desc`; use `diagnostics = TRUE` |
-
 Next: [events/README.md](../events/README.md).

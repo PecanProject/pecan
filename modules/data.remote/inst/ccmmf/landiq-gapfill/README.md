@@ -170,13 +170,3 @@ d |> count(year, season) |> collect() |> arrange(year, season)
 d |> filter(year == 2024, season == 2L) |>
   summarize(n = n(), n_class = sum(!is.na(CLASS))) |> collect()
 ```
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `curl_multi_poll` / `arrow` | Use a compute node where R `arrow` loads |
-| Emission tables rebuild on routine run | Pin training year bounds; use shipped `outputs/` tables |
-| Missing subclass assignment | Crop step before ADOY/product (orchestrator order) |
-| 2017 transition matrix | `data/county_transition_matrices/` or `COUNTY_TRANSITION_MATRICES_DIR` |
-| CDL missing | Place `cdl_YYYY.tif` in `$CDL_DIR`, or run `scripts/cdl/` |

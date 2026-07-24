@@ -190,19 +190,6 @@ See [data/ndti_year_metadata.csv](data/ndti_year_metadata.csv) (column dictionar
 
 ---
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `undefined symbol: curl_multi_poll` | Set `LD_PRELOAD` via orchestrator (`HLS_LIBCURL_PRELOAD`) |
-| Parcel-tile map missing | See [hls/README.md](../../hls/README.md) |
-| `no scenes for year=Y time_key=M` | Imagery missing under `$HLS_IMAGERY_ROOT` |
-| Monthly Parquet is empty | Whole month cloud-covered (`ndti_mean` NA -> rows dropped) |
-| Rerunning existing output | Pass `--overwrite` |
-| Stale prep cache | `run_ndti.sh --prep-only 2024` |
-
----
-
 ## Special cases
 
 - **No-LandIQ year (2017).** Requires gap-filled product and parcel-tile map with
