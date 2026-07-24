@@ -2,7 +2,7 @@
 % Please edit documentation in R/metric_R2.R
 \name{metric_R2}
 \alias{metric_R2}
-\title{Coefficient of Determination (R2)}
+\title{Squared Pearson Correlation (R2)}
 \usage{
 metric_R2(metric_dat, ...)
 }
@@ -12,20 +12,16 @@ metric_R2(metric_dat, ...)
 \item{...}{ignored}
 }
 \description{
-Coefficient of Determination (R2)
+Squared Pearson Correlation (R2)
 }
 \details{
 Computes R-squared using the correlation-based formula:
 \eqn{R^2 = \left(\frac{\sum(obs - \bar{obs})(mod - \bar{mod})}
 {\sqrt{\sum(obs - \bar{obs})^2} \cdot \sqrt{\sum(mod - \bar{mod})^2}}\right)^2}
 
-If this formula returns \code{NA} (e.g. when model output is constant
-across all observations), the function silently falls back to an
-\code{lm()}-based R-squared via \code{summary(lm())$r.squared}.
-This fallback may produce unreliable results and triggers a warning
-from \code{stats::summary.lm}: "essentially perfect fit: summary may
-be unreliable". Consider checking for constant model output before
-calling this function.
+Note: Because this is a correlation-based R2, it is invariant to bias and slope.
+A model that is perfectly correlated but biased (e.g., model = obs + 100) will still
+score 1. This is distinct from variance explained or Nash-Sutcliffe Efficiency (NSE).
 }
 \author{
 Betsy Cowdery
