@@ -130,7 +130,6 @@ export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
 
 Details (flags, provenance, rebuilds):
 [landiq-gapfill/README.md](../../landiq-gapfill/README.md) |
-[cdl_fractions_metadata.csv](../../landiq-gapfill/data/cdl_fractions_metadata.csv)
 
 ---
 
