@@ -1,4 +1,4 @@
-# CCMMF (California Cropland Carbon Monitoring and Modeling Framework)
+# The California Cropland Carbon Monitoring and Modeling Framework (CCMMF)
 
 Scripts and documentation for California cropland monitoring in PEcAn. This tree
 turns statewide crop maps and satellite phenology into field-level management
