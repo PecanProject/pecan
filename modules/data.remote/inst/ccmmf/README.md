@@ -24,15 +24,7 @@ workflows for fertilization, organic amendments, and irrigation.
 | Organic amendments | Manure, compost, biochar, and similar *(parallel workflow)* |
 | Irrigation | Water applications *(parallel workflow)* |
 
-**How to use these docs**
-
-1. **End-to-end map** (order, year-pair workflow, checklist):
-   [documentation/pipeline.md](documentation/pipeline.md)
-2. **Machine setup**: [documentation/sessions/00-environment.md](documentation/sessions/00-environment.md)
-3. **Training walkthroughs**: [documentation/sessions/](documentation/sessions/)
-4. **Column dictionaries**: [documentation/metadata.md](documentation/metadata.md)
-
-Each package below has its own `README.md` for flags, schemas, and run details.
+To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.md).
 
 ## Packages in this tree
 
