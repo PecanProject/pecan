@@ -40,7 +40,6 @@ Rscript -e 'stopifnot(
 ```
 
 Confirm those packages load. If any fail, fix the activate step before continuing.
-`CropScapeR` is required for Cropland Data Layer (CDL) download in Session 1.
 
 ---
 
