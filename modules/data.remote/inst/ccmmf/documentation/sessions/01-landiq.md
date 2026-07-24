@@ -76,7 +76,7 @@ Sec. 1.3 points cadwr-landuse at this same `landiq_shapefiles/` folder.
 
 ## 1.2 Crop class/subclass harmonization (legend QC)
 
-LandIQ legend codes differ by era (**2014**, **2016-2020**, **2021+**). The
+LandIQ legend codes differ by year (**2014**, **2016-2020**, **2021+**). The
 crop-code lookup maps each stored `(CLASS, SUBCLASS)` pair onto one harmonized
 set so later years stay comparable. Compare the legend PDF from Sec. 1.1 to the
 lookup and add rows only if codes changed.
@@ -95,7 +95,6 @@ default (`main`) branch; it auto-discovers years including **2024**.
 
 Follow the runbook in the [cadwr-landuse README](https://github.com/ccmmf/cadwr-landuse)
 (and [`docs/harmonization_v0.1.md`](https://github.com/ccmmf/cadwr-landuse/blob/main/docs/harmonization_v0.1.md)).
-Do not paste the full pixi step list here.
 
 When finished, publish the cadwr `03-final/` output and point env at it:
 
