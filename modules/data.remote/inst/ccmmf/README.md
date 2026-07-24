@@ -37,7 +37,6 @@ To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.
 | `traits/` | Planting / harvest trait lookups |
 | `tillage/` | NDTI extract, tillage events |
 | `events/` | Statewide planting, harvest, phenology, tillage event files |
-| `landiq-gapfill/data/LandIQ_cropCode_lookup_table.csv` | CLASS/SUBCLASS harmonization / agricultural flag |
 
 ## Parallel tracks
 
