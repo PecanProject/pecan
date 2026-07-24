@@ -26,7 +26,7 @@ auto-generates designs when needed.
 \details{
 Input handling rules:
 \itemize{
-  \item If \code{input_design} is already a normalized list with
+  \item If \code{input_design} is already a list with
         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
         MultiSettings parent), return as-is.
   \item If \code{input_design} is the \code{list(X, samples)} from

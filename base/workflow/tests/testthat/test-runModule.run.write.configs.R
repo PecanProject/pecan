@@ -195,16 +195,22 @@ test_that(".prepare_input_designs rejects a design whose samples are NULL", {
   tmp <- withr::local_tempdir()
   settings <- make_prep_settings(tmp)
 
-  gps <- mockery::mock()
-  gen <- mockery::mock()
+  loader <- mockery::mock()
+  gps    <- mockery::mock()
+  gen    <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::load_pft_posteriors", loader)
   mockery::stub(.prepare_input_designs,
                 "PEcAn.uncertainty::get_parameter_samples", gps)
   mockery::stub(.prepare_input_designs,
                 "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
 
+  # with the loader stubbed out too, the only thing that can raise here is the guard
   expect_error(
-    .prepare_input_designs(settings, list(X = data.frame(param = 1:3), samples = NULL))
+    .prepare_input_designs(settings, list(X = data.frame(param = 1:3), samples = NULL)),
+    "Unrecognized input_design format"
   )
-  mockery::expect_called(gps, 0)   # no silent resample..
+  mockery::expect_called(loader, 0)
+  mockery::expect_called(gps, 0)
   mockery::expect_called(gen, 0)
 })

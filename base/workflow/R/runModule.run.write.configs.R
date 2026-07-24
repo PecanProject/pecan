@@ -158,7 +158,7 @@ runModule.run.write.configs <- function(settings,
 #' @details
 #' Input handling rules:
 #' \itemize{
-#'   \item If \code{input_design} is already a normalized list with
+#'   \item If \code{input_design} is already a list with
 #'         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
 #'         MultiSettings parent), return as-is.
 #'   \item If \code{input_design} is the \code{list(X, samples)} from
@@ -194,7 +194,8 @@ runModule.run.write.configs <- function(settings,
   # result (a list with X and samples) and reject a bare design.
   if (!is.null(input_design)) {
     if (is.list(input_design) && !is.data.frame(input_design) &&
-        all(c("X", "samples") %in% names(input_design))) {
+        all(c("X", "samples") %in% names(input_design)) &&
+        !is.null(input_design$samples)) {
       designs$ensemble <- input_design$X
       supplied_samples <- input_design$samples
     } else if (is.data.frame(input_design)) {
