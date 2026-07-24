@@ -104,6 +104,7 @@ export CCMMF_LANDIQ_V4=$CCMMF_ROOT/LandIQ-harmonized-v4.1
 
 Confirm `year == $TARGET_YEAR` rows exist in `$CCMMF_LANDIQ_V4/crops_all_years.parq`
 before gap-fill.
+
 ---
 
 ## 1.4 Gap-fill 2023 + 2024
