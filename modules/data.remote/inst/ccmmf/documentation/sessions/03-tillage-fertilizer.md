@@ -87,7 +87,7 @@ Outputs land under `$CCMMF_MANAGEMENT/event_files/tillage_statewide_*.parquet` (
 optional JSON). Full schema: [events/README.md](../../events/README.md) and
 [events/data/tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv).
 
-### A.4 Algorithm (one paragraph)
+### A.4 Algorithm
 
 Join NDTI scenes to phenology dates; build fallow periods (`OGMn` -> next `OGI`);
 smooth NDTI (4-day moving average); take the minimum in each window as the tillage
