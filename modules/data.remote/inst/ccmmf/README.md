@@ -12,6 +12,8 @@ how it was managed. This tree produces those **events** from LandIQ crop maps,
 HLS phenology and tillage indices, crop trait lookups, and linked statewide
 workflows for fertilization, organic amendments, and irrigation.
 
+To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.md).
+
 **Management events covered here**
 
 | Event | Role in the model |
@@ -24,8 +26,6 @@ workflows for fertilization, organic amendments, and irrigation.
 | N fertilization | Synthetic nitrogen applications *(parallel workflow)* |
 | Organic amendments | Manure, compost, biochar, and similar *(parallel workflow)* |
 | Irrigation | Water applications *(parallel workflow)* |
-
-To run this pipeline, follow [documentation/pipeline.md](documentation/pipeline.md).
 
 ## Components in this tree
 
