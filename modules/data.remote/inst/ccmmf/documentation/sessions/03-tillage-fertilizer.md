@@ -107,7 +107,7 @@ statewide event workflows sample those rates onto parcels.
 | [#4003](https://github.com/PecanProject/pecan/pull/4003) | Statewide workflows: `workflows/fertilization-statewide`, `workflows/ncc-statewide` (+ cleaners for preprocess-event-parquet) |
 
 Lab / training copies of source TSVs and the standalone harmonizer may still live
-under `$CCMMF_MANAGEMENT/fertilization/` (ask the session lead). Typical contents:
+under `$CCMMF_MANAGEMENT/fertilization/` (ask Akash). Typical contents:
 
 | File | Role |
 |------|------|
