@@ -13,6 +13,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     with units attached as an attribute.
 - New package `PEcAn.RothC` runs the RothC soil carbon model.
 - Added `inst/ilamb/` pipeline in PEcAn.benchmark to convert downscaled SDA reanalysis GeoTIFFs into ILAMB-compatible CF netCDF for carbon-cycle benchmarking (#4019).
+- Added multi-model benchmarking scripts to `inst/ilamb/` in PEcAn.benchmark: build the CMIP6 and TRENDY ensembles, score the PEcAn reanalysis and its individual SDA members against observational benchmarks over two evaluation windows, and summarize ensemble spread (#4038).
 - Added PEcAn.PEPRMT model, including a demo run with example data
 - Add `format_try_for_ma()` and `try_trait_mapping()` to `PEcAn.data.remote` to convert trait data from the external TRY database into the tabular format required by the PEcAn meta-analysis module (#3717).
 - Add function `qsub_sda()` for submitting SDA batch jobs by splitting a large number of sites into multiple small groups of sites (#3634).
@@ -30,11 +31,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
 
 ### Fixed
+- Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
 - Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
 - Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
 - `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
+- `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 
 ### Changed
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)

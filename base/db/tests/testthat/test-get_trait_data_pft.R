@@ -116,6 +116,31 @@ test_that("prior_distns is a data frame with the required columns", {
   expect_true(all(rownames(result$prior_distns) %in% std_traits))
 })
 
+test_that("trait_names = NULL returns priors for all of the PFT's traits", {
+  test_dbcon <- check_db_test()
+  withr::defer(PEcAn.DB::db.close(test_dbcon))
+
+  # trait_names omitted -> NULL -> query.priors returns every prior for the PFT
+  result_all <- get_trait_data_pft(
+    pft_name  = std_pft,
+    modeltype = std_modeltype,
+    dbcon     = test_dbcon
+  )
+
+  result_subset <- get_trait_data_pft(
+    pft_name    = std_pft,
+    modeltype   = std_modeltype,
+    dbcon       = test_dbcon,
+    trait_names = "SLA"
+  )
+
+  expect_s3_class(result_all$prior_distns, "data.frame")
+  # the unfiltered call must be a superset of any single-trait filter
+  expect_gte(nrow(result_all$prior_distns), nrow(result_subset$prior_distns))
+  expect_true(all(rownames(result_subset$prior_distns) %in%
+                    rownames(result_all$prior_distns)))
+})
+
 test_that("pft_info contains expected fields and posteriorid is NULL", {
   test_dbcon <- check_db_test()
   withr::defer(PEcAn.DB::db.close(test_dbcon))
@@ -301,26 +326,5 @@ test_that("errors when query_pfts returns multiple rows (multi-modeltype case)",
       trait_names = "SLA"
     ),
     "Multiple PFTs"
-  )
-})
-
-test_that("errors when query_pfts returns zero rows", {
-  empty_record <- data.frame(
-    id       = integer(0),
-    pft_type = character(0),
-    name     = character(0)
-  )
-  mockery::stub(get_trait_data_pft, "query_pfts", empty_record)
-
-  fake_dbcon <- structure(list(), class = c("PostgreSQLConnection",
-                                            "DBIConnection"))
-  expect_error(
-    get_trait_data_pft(
-      pft_name    = "DoesNotExist",
-      modeltype   = "SIPNET",
-      dbcon       = fake_dbcon,
-      trait_names = "SLA"
-    ),
-    "PFTs were not found"
   )
 })

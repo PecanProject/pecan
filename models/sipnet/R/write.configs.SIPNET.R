@@ -545,6 +545,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       id <- which(param[, 1] == "litterBreakdownRate")
       param[id, 2] <- pft.traits[which(pft.trait.names == "turn_over_time")]
     }
+
+    # fracLitterRespired, fraction of litter breakdown respired vs moved to soil
+    if ("fracLitterRespired" %in% pft.trait.names) {
+      param[which(param[, 1] == "fracLitterRespired"), 2] <- pft.traits[which(pft.trait.names == "fracLitterRespired")]
+    }
     # frozenSoilEff
     if ("frozenSoilEff" %in% pft.trait.names) {
       param[which(param[, 1] == "frozenSoilEff"), 2] <- pft.traits[which(pft.trait.names == "frozenSoilEff")]
@@ -593,6 +598,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ### ----- Phenology parameters GDD leaf on
     if ("GDD" %in% pft.trait.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.trait.names == "GDD")]
+    }
+    if ("leafOnReallocFrac" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafOnReallocFrac"), 2] <- pft.traits[which(pft.trait.names == "leafOnReallocFrac")]
     }
     
     # Fraction of leaf fall per year (should be 1 for decid)
