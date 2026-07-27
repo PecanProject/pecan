@@ -42,6 +42,15 @@ jobs:
   # As an ugly workaround, we assign it to a job output instead.
   # ----------------------------------------------------------------------
   rversion:
+    # Every build job below needs this job, so gating it here skips the whole
+    # push-based Docker stack for pull requests opened from forks. Forks get a
+    # read-only GITHUB_TOKEN and cannot push to ghcr.io/pecanproject, so those
+    # jobs always failed at the push step. Fork PRs are instead built (without
+    # pushing) by docker-build-pr.yml. Non-fork events (push, merge_group,
+    # schedule, workflow_dispatch) and same-repo PRs still run the full stack.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - id: mon
