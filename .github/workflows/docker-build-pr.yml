@@ -1,6 +1,8 @@
 name: Docker build (fork PRs)
 
-# Pull requests opened from forks get a read-only GITHUB_TOKEN and cannot push
+# A fast check for Docker build errors introduced by the current PR.
+# Implemented separately from the full-stack build in docker.yml because 
+# pull requests opened from forks get a read-only GITHUB_TOKEN and cannot push
 # to ghcr.io/pecanproject, so the normal Docker GHA workflow (docker.yml) skips
 # them (see the gate on its `rversion` job). This workflow gives those PRs a
 # real "does the image stack still build" signal without pushing anything.
@@ -19,6 +21,7 @@ name: Docker build (fork PRs)
 
 on:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
