@@ -1,26 +1,28 @@
-# Session 0 - Set up your environment
+# Session 0 - Setup
 
-**Goal:** prepare a cluster account to run the training year pair
-(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`) for the California Cropland Carbon
+**Goal:** prepare a machine to run the training year pair
+(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`) for the California Cropland
 Monitoring and Modeling Framework (CCMMF).
 
-This session is machine setup only. The end-to-end pipeline map (stages, one
-command per stage, links to operator docs) is
-[pipeline.md](../pipeline.md).
+**Prerequisite:** install `pecan-all-1.12` before this walkthrough if you do
+not already have it. This session assumes that environment is already installed.
 
-Log into the head node, clone the repos below, and activate a shared conda
-environment that already has the R and Python packages you need.
+Paths below use `$HOME` as an example; replace them with writable locations on
+your system.
 
 ---
 
-## 0.1 Log in, activate the training environment, and check packages
+## 0.1 Environment
+
+Log into the head node, activate `pecan-all-1.12`, and confirm the R and Python
+package checks pass.
 
 ```bash
-# SSH to your cluster head node (site-specific).
-# Then activate the shared conda env, for example:
-#   conda activate <env_name>
-# or:
-#   source /path/to/conda.sh && conda activate <env_name>
+# SSH to your cluster head node.
+# Default install path from setup-pecan-env.sh:
+#   conda activate "$HOME/.conda/envs/pecan-all"
+which conda
+conda activate <ENV_PATH_OR_NAME>
 
 which Rscript
 Rscript -e 'stopifnot(
@@ -37,15 +39,29 @@ Rscript -e 'stopifnot(
   requireNamespace("units"),
   requireNamespace("CropScapeR")
 )'
+
+python - <<'PY'
+import dask
+import fiona
+import geopandas
+import numpy
+import pandas
+import pyarrow
+import shapely
+import tqdm
+print("Python GIS dependencies: OK")
+PY
 ```
 
-Confirm those packages load. If any fail, fix the activate step before continuing.
+Confirm both checks pass. If either fails, stop and fix the environment before
+continuing.
 
 ---
 
-## 0.2 Clone PEcAn (monitoring branch)
+## 0.2 Repos
 
-CCMMF runnable components live under PEcAn `modules/data.remote/inst/ccmmf/`.
+Clone the PEcAn monitoring branch and `cadwr-landuse`. Set `CCMMF_CODE` to
+`modules/data.remote/inst/ccmmf` inside the PEcAn clone.
 
 ```bash
 # Pick a writable code directory (e.g. $HOME):
@@ -65,35 +81,28 @@ ls "$CCMMF_CODE"
 After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
 `inst/ccmmf` path.
 
-### Also clone cadwr-landuse (Session 1 Python)
-
-Geometry harmonization for LandIQ (statewide crop mapping) is a separate
-repository. Use **pixi** inside that clone for the Python stack; the shared
-conda env covers the R side in PEcAn.
+Geometry harmonization for LandIQ (Session 1) is a separate repository. Run its
+Python scripts from the same activated conda environment.
 
 ```bash
 cd "$HOME/src"
 git clone https://github.com/ccmmf/cadwr-landuse.git
 cd cadwr-landuse
-# Default branch (main) auto-discovers LandIQ years, including 2024+.
-# Pixi: if not already installed - https://pixi.prefix.dev/
-export PATH="$HOME/.pixi/bin:$PATH"
 ```
 
 ---
 
-## 0.3 Create a data root
+## 0.3 Data root
 
-Keep code clones under `$HOME/src` and put large data under a writable root
-(default `$HOME/ccmmf`). Pipeline *outputs* land under `management/` inside that
-root; runnable code stays in `$CCMMF_CODE`.
+Create `$CCMMF_ROOT` and `management/` for large inputs and pipeline outputs.
+Runnable code stays in `$CCMMF_CODE`.
 
 ```bash
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
 mkdir -p "$CCMMF_ROOT"/{data_raw/cadwr_land_use/landiq_shapefiles,data_phen/output,data_phen/HLS_data_sort/HLS30,CDL_data,LandIQ-harmonized-v4.1,LandIQ-harmonized-v4.1.2}
 
 export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
-mkdir -p "$CCMMF_MANAGEMENT"/{phenology,tillage,event_files,plant_traits}
+mkdir -p "$CCMMF_MANAGEMENT"/{phenology,plant_traits,tillage,fertilization,irrigation,event_files}
 ```
 
 **Layout:**
@@ -109,21 +118,19 @@ $CCMMF_ROOT/
   management/                                 # data hub for pipeline outputs
     phenology/raw_mslsp_v4.1.2/
     phenology/matched_landiq_mslsp_v4.1.2/
-    tillage/ndti_v4.1/
-    event_files/
     plant_traits/
+    tillage/ndti_v4.1/
+    fertilization/                            # N / amendment lookups (Session 3)
+    irrigation/                               # CHIRPS/CIMIS/SSURGO extracts + events (Session 4)
+    event_files/
 ```
-
-`setup_env.sh` (Sec. 0.4) sets component roots such as `LANDIQ_GAPFILL_ROOT` from
-`CCMMF_CODE`.
 
 ---
 
-## 0.4 Environment file (required)
+## 0.4 `setup_env.sh`
 
-`setup_env.sh` lives in your PEcAn clone. It uses the paths from Sec. 0.2-0.3
-and defaults to **`PRIOR_YEAR=2023`**, **`TARGET_YEAR=2024`**, data root
-`$HOME/ccmmf`. With `CCMMF_CODE` set, source it once per shell:
+Source once per shell so years and paths match Sec. 0.2-0.3. Defaults are
+**`PRIOR_YEAR=2023`**, **`TARGET_YEAR=2024`**, data root `$HOME/ccmmf`.
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
@@ -142,23 +149,33 @@ export TARGET_YEAR=2025
 source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
-After Session 1 gap-fill, point everything downstream at the filled product
-(also shown in [Session 1](01-landiq.md) / [pipeline.md](../pipeline.md)):
+---
+
+## 0.5 NASA Earthdata
+
+Create an Earthdata Login account and store credentials in `~/.netrc` for HLS
+downloads (Sessions 2-3).
+
+1. Create a free account at https://urs.earthdata.nasa.gov/
+2. Store credentials in `~/.netrc`:
 
 ```bash
-export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
+# Replace USERNAME and PASSWORD with your Earthdata Login values
+echo "machine urs.earthdata.nasa.gov login USERNAME password PASSWORD" > ~/.netrc
+chmod 0600 ~/.netrc
 ```
 
 ---
 
-## 0.5 Checklist
+## 0.6 Checklist
 
-- [ ] Logged into cluster head node; shared conda env active
-- [ ] Confirmed all libraries load
+- [ ] `pecan-all-1.12` already installed
+- [ ] Activated conda env; R and Python checks pass
 - [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf`
-- [ ] Cloned `cadwr-landuse` on `main`; pixi on `PATH` if needed
+- [ ] Cloned `cadwr-landuse` on `main`
 - [ ] Created `$CCMMF_ROOT` data layout on writable disk
 - [ ] Sourced `setup_env.sh` from the clone
+- [ ] Earthdata account + `~/.netrc` ready (for Sessions 2-3)
 
 **Next:** [Session 1 - LandIQ](01-landiq.md).
 
