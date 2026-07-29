@@ -10,7 +10,7 @@ inventory modeling. This session covers download, legend checks, geometry
 harmonization, and gap-fill only. Full stage order lives in
 [pipeline.md](../pipeline.md).
 
-**Prereq:** [Session 0](00-environment.md) done.
+**Prereq:** [Session 0](00-setup.md) done.
 
 Paths used here (set by `setup_env.sh`):
 

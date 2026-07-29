@@ -24,7 +24,7 @@ For each new LandIQ release you process a **year pair**: the new year
 ## Run order by session
 
 Follow each session walkthrough; open the linked README for flags and schemas.
-Machine setup (clone repos, source `setup_env.sh`): [Session 0](sessions/00-environment.md).
+Machine setup (clone repos, source `setup_env.sh`): [Session 0](sessions/00-setup.md).
 
 ### Session 1 - Crop identity (LandIQ)
 
@@ -146,4 +146,4 @@ workflows** that share the same LandIQ parcels (Sessions 3-4).
 | 4 | [ ] | Irrigation workflow reviewed or run |
 
 Code layout: [../README.md](../README.md).
-Env template: [setup_env.sh](setup_env.sh) (see [Session 0](sessions/00-environment.md)).
+Env template: [setup_env.sh](setup_env.sh) (see [Session 0](sessions/00-setup.md)).
