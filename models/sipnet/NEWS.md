@@ -2,6 +2,7 @@
 
 * `split_inputs.SIPNET` now avoids internal time format conversions, giving a
   substantial speedup and reduced memory use when processing multi-year files.
+* `model2netcdf.SIPNET` now detects the number of timesteps per day by taking the maximum count across all days in the first simulation year, rather than reading only from day 1. This prevents a factor-of-N error in flux unit conversions when the first day of output is partial (fewer timesteps than a complete day) (#3624, #3989).
 * Fixed a unit error in model2netcdf.SIPNET's calculation of `GWBI` (kgC/m2/sec)
     from `woodCreation` (actually gC/m2/timestep, was being treated as gC/m2/day).
 * `model2netcdf.SIPNET` now takes NPP directly from sipnet.out rather than repeat
@@ -26,6 +27,7 @@
   Sipnet version `sipnet.unk`.
 * Added trait to parameter mappings for 13 nitrogen cycle parameters in `write.config.SIPNET`,
   including tissue C:N ratios, N volatilization/leaching, fixation, and methane rates.
+* `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
   
 
 # PEcAn.SIPNET 1.10.0

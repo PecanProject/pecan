@@ -8,7 +8,7 @@ outdir_root <- config[["outdir_root"]]
 
 settings <- PEcAn.settings::read.settings(file.path(outdir_root, "settings.xml"))
 events_json_file <- settings |>
-  purrr::chuck("run", "inputs", "events", "source", "path1")
+  purrr::chuck("run", "inputs", "event_json", "path", "path1")
 
 events <- jsonlite::read_json(events_json_file, simplifyVector = FALSE)
 

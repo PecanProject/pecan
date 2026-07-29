@@ -26,7 +26,7 @@ hls2model.PEPRMT <- function(in.path, in.prefix, outfolder, start_date, end_date
   s = rstac::stac("https://cmr.earthdata.nasa.gov/stac/LPCLOUD/")
   HLS_col <- list("HLSS30_2.0", "HLSL30_2.0")
   #roi <- terra::vect(data.frame(latitude = lat, longitude = lon))
-  roi <- terra::vect("models/peprmt/example_data/Field_Boundary.geojson")
+  roi <- terra::vect("models/peprmt/demo_run/raw-data/Field_Boundary.geojson")
   roi_extent <- terra::ext(roi)
   bbox <- c(roi_extent$xmin, roi_extent$ymin, roi_extent$xmax, roi_extent$ymax)
   roi_datetime <- '2021-08-01T00:00:00Z/2021-09-30T23:59:59Z'

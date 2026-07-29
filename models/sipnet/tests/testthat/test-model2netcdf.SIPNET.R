@@ -239,3 +239,55 @@ test_that("fluxes are converted from gC/m2/timestep to kg/m2/sec", {
   )
   expect_equal(pec2$GWBI, sip2$woodCreation / 1000 / ts, tolerance = 1e-6)
 })
+
+test_that("out_day is correct when the first day of output is partial", {
+  # Simulate a run where SIPNET started mid-day on day 1 (only 1 timestep),
+  # while days 2 and 3 are complete (2 timesteps each, i.e. 12-hour intervals).
+  # The correct out_day is 2; the old code would have returned 1 by reading
+  # only the count from day 1, causing a factor-of-2 error in flux conversions.
+
+  base_row <- make_base_sipnet(n = 4L)[1, ]
+  sipnet_partial <- rbind(
+    transform(base_row, day = 1, time = 18),          # day 1: only 1 row
+    transform(base_row, day = 2, time =  6),           # day 2: row 1
+    transform(base_row, day = 2, time = 18),           # day 2: row 2
+    transform(base_row, day = 3, time =  6),           # day 3: row 1
+    transform(base_row, day = 3, time = 18)            # day 3: row 2
+  )
+  sipnet_partial$cumNEE <- cumsum(rep(0.1, 5))
+
+  base    <- withr::local_tempdir()
+  outdir  <- file.path(base, "out", "run1")
+  rundir  <- file.path(base, "run", "run1")
+  dir.create(outdir,  recursive = TRUE)
+  dir.create(rundir,  recursive = TRUE)
+  writeLines("leafCSpWt\t32", file.path(rundir, "sipnet.param"))
+
+  out_path <- file.path(outdir, "sipnet.out")
+  writeLines(
+    c("Notes: units in g/m2 per timestep; water in cm",
+      paste(colnames(sipnet_partial), collapse = " ")),
+    out_path
+  )
+  write.table(sipnet_partial, file = out_path, append = TRUE,
+              row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+
+  model2netcdf.SIPNET(
+    outdir     = outdir,
+    sitelat    = 38.0,
+    sitelon    = -121.0,
+    start_date = "2002-01-01",
+    end_date   = "2002-01-03"
+  )
+
+  nc <- ncdf4::nc_open(file.path(outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+
+  gpp <- as.vector(ncdf4::ncvar_get(nc, "GPP"))
+
+  # out_day = 2 (from the complete days), timestep.s = 43200 s (12 hours)
+  # If the old code had used day 1 (out_day = 1), timestep.s = 86400 and
+  # the values would be half as large.
+  ts_correct <- 86400 / 2
+  expect_equal(gpp, rep(base_row$gpp * 1e-3 / ts_correct, 5), tolerance = 1e-10)
+})

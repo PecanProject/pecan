@@ -20,8 +20,7 @@ settings <- PEcAn.workflow::runModule.run.write.configs(
   input_design = sens_design$X
 )
 
-source("workflows/sipnet-restart-workflow/utils.R")
-jobfiles <- write_segmented_configs.SIPNET(settings, sens_design$X)
+jobfiles <- PEcAn.SIPNET::write_segmented_configs.SIPNET(settings, sens_design$X)
 # Note: If running a multi-site workflow, use:
 # jobfiles <- papply(settings, \(s) write_segmented_configs.SIPNET(s, sens_design$X))
 
