@@ -8,20 +8,11 @@ ARG IMAGE_VERSION="latest"
 FROM pecan/models:${IMAGE_VERSION}
 
 # ----------------------------------------------------------------------
-# INSTALL MODEL SPECIFIC PIECES
-# ----------------------------------------------------------------------
-
-#RUN apt-get update \
-#    && apt-get install -y --no-install-recommends \
-#       python3.9 \
-#    && rm -rf /var/lib/apt/lists/*
-
-# ----------------------------------------------------------------------
 # SETUP FOR SPECIFIC MODEL
 # ----------------------------------------------------------------------
 
 # Some variables that can be used to set control the docker build
-ARG MODEL_VERSION=2.1.0
+ARG MODEL_VERSION=2.1.1
 
 RUN mkdir -p /tmp/rothc \
     && curl -sSL https://github.com/Rothamsted-Models/RothC_Code/archive/refs/tags/v${MODEL_VERSION}.tar.gz \

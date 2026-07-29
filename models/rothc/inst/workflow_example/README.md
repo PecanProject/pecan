@@ -11,21 +11,30 @@ this set simple enough to be easy to (1) understand as demos, and
 ## Important caveats
 
 This package is still under development and many inputs are still hard-coded.
-As I write this on 2025-12-04, only met data is read from site-specific files;
-all soil and management is hard-coded. Do not interpret the outputs as
-meaningful predictions yet.
+As I write this on 2026-01-09, met and soil data are read from site-specific
+files, and all management and initial conditions are hard-coded.
+Do not interpret the outputs as meaningful predictions yet.
 
 
 ## Required but not yet provided here
 
 * ERA5 weather data in PEcAn standard netcdf format (instructions TK)
-* a RothC binary, available from https://github.com/Rothamsted-Models/RothC_Code
+* a RothC binary, compiled from https://github.com/Rothamsted-Models/RothC_Code
 
 ## To run
 
-* put weather data in `data_raw/ERA5_CA_nc/` (or update paths to where your weather already is)
-* Update line 45 of `template.xml` to the path where you installed your copy of RothC
-	(or put RothC at `/usr/local/bin/RothC_v2.1.0`)
+* put weather data in `data_raw/ERA5_CA_nc/` (or update paths to where your
+	weather already is)
+* Update line 45 of `template.xml` to the path where you installed your copy
+	of RothC (or put RothC at `/usr/local/bin/RothC_v2.1.1`)
 * update `site_info.csv` with your sites of interest
 * TK: Add site-specific management and soil information once implemented
 * `./run.sh`
+
+## Troubleshooting
+
+* `fetch_soil_data.R` (called in `run.sh`) uses
+	`PEcAn.data.land::extract_soil_gssurgo()`, which sometimes fails for sites
+	with only one soil type. A more robust version is under test at
+	https://github.com/PecanProject/pecan/pull/3643/files
+	If some of your sites fail, try updating PEcAn.data.land from that branch.

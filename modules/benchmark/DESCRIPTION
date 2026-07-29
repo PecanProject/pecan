@@ -43,7 +43,8 @@ Imports:
     utils,
     grDevices,
     XML (>= 3.98-1.4),
-    zoo 
+    zoo,
+    yaml
 Suggests:
     PEcAn.data.land,
     testthat (>= 2.0.0)
