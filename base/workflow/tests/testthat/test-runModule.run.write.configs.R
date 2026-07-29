@@ -182,9 +182,13 @@ test_that(".prepare_input_designs threads SA samples into the OAT generator", {
   gps_args <- mockery::mock_args(gps)[[1]]
   expect_false(gps_args$do_ensemble)
 
-  # the OAT generator receives the SA samples directly (no disk re-read).
+  # the OAT generator receives the full sample bundle directly (no disk
+  # re-read), and uses sa.samples from it
   oat_args <- mockery::mock_args(oat)[[1]]
-  expect_identical(oat_args$sa_samples, sa_bundle$sa.samples)
+  # generate_OAT_SA_design(settings, samples = designs$samples): settings is
+  # positional (first), the bundle comes through named `samples`
+  # OAT is handed the resolved bundle itself (so it never re-reads samples.Rdata)
+  expect_equal(oat_args$samples, designs$samples)
 
   expect_equal(designs$sensitivity, data.frame(param = 1:4))
   expect_true(file.exists(file.path(tmp, "samples.Rdata")))
@@ -213,4 +217,38 @@ test_that(".prepare_input_designs rejects a design whose samples are NULL", {
   mockery::expect_called(loader, 0)
   mockery::expect_called(gps, 0)
   mockery::expect_called(gen, 0)
+})
+
+test_that(".prepare_input_designs warns when it auto-generates a design", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::load_pft_posteriors",
+                function(...) fake_loaded())
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::get_parameter_samples",
+                function(...) fake_bundle())
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design",
+                function(...) list(X = data.frame(param = 1:3)))
+
+  msgs <- capture.output(
+    invisible(.prepare_input_designs(settings, input_design = NULL)),
+    type = "message"
+  )
+  expect_match(paste(msgs, collapse = "\n"), "deprecated", all = FALSE)
+})
+
+test_that(".prepare_input_designs does not warn when a design is supplied", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  supplied <- list(X = data.frame(param = 1:3), samples = fake_bundle())
+
+  msgs <- capture.output(
+    invisible(.prepare_input_designs(settings, input_design = supplied)),
+    type = "message"
+  )
+  expect_false(any(grepl("deprecated", msgs)))
 })

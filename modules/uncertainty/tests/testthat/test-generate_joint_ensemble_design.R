@@ -85,7 +85,7 @@ test_that("passed-in samples skip the loader and sampler", {
 test_that("ensemble design allows variation in non-param columns unlike OAT", {
   settings <- make_test_settings()
 
-  sa_result <- generate_OAT_SA_design(settings, sa_samples = mock_sa_samples)
+  sa_result <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))
 
   settings$run <- list(inputs = list(met = list(path = c("m1.nc", "m2.nc", "m3.nc"))))
   mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
