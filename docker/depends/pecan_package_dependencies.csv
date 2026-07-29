@@ -495,6 +495,7 @@
 "rcrossref","*","base/db","Suggests",FALSE
 "readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
+"readr","*","modules/data.land","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -700,6 +701,7 @@
 "units","*","modules/data.atmosphere","Imports",FALSE
 "units",">= 0.8.7","base/utils","Imports",FALSE
 "urltools","*","base/remote","Imports",FALSE
+"usethis","*","modules/data.land","Suggests",FALSE
 "utils","*","base/all","Imports",FALSE
 "utils","*","base/logger","Imports",FALSE
 "utils","*","models/ed","Imports",FALSE
