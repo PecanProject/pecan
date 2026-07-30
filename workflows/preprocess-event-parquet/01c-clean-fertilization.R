@@ -89,12 +89,14 @@ DBI::dbExecute(conn, glue::glue("
 
 # sort and write the partitioned parquet output. rename parcel_id to site_id
 # and ens_id to event_member_id to match the schema the json converter
-# consumes
+# consumes. match compression to what the downstream arrow reader supports
+# (some arrow builds ship without zstd); same guard the 03 scripts use
+parquet_codec <- if (arrow::codec_is_available("zstd")) "ZSTD" else "SNAPPY"
 DBI::dbExecute(conn, glue::glue("
   COPY (
     {union_query}
     ORDER BY event_member_id, site_id, date
   ) TO
   '{outdir}/fertilization.parquet'
-  (FORMAT PARQUET, COMPRESSION ZSTD, OVERWRITE, PARTITION_BY (event_member_id))
+  (FORMAT PARQUET, COMPRESSION {parquet_codec}, OVERWRITE, PARTITION_BY (event_member_id))
 "))
