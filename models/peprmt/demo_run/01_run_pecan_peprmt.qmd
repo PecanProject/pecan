@@ -65,7 +65,7 @@ remotes::install_github("pecanproject/pecan", subdir = "models/peprmt",
                         ref = "develop")
 ```
 
-- A valid `pecan.xml` configuration file or use the example provided: `pecan/models/peprmt/demo_run/settings.xml`
+- You will also need a valid `pecan.xml` configuration file, such as the example provided: `pecan/models/peprmt/demo_run/settings.xml`
 
 ## How to Use This Notebook
 
