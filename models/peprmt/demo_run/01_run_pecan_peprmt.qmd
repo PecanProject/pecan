@@ -170,6 +170,7 @@ The directory structure created by PEcAn for this demo run will look like this:
 
 ```         
 demo_outdir/               # Root output directory
+├── ensemble.samples.<ensemble_id>.Rdata # contains the selected parameter values for each ensemble member
 ├── run/                   # Configuration & execution metadata
 │   ├── runs.txt           # List of run IDs (one per model realization)
 │   ├── <runid>/           # Model-specific configs, including run job and driver data
