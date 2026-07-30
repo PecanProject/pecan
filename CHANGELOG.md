@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added `make_scorecard.sh` and documentation to `inst/ilamb/` in PEcAn.benchmark for generating and serving the ILAMB HTML scorecard.
 - New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
     with units attached as an attribute.
 - New package `PEcAn.RothC` runs the RothC soil carbon model.
@@ -31,6 +32,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
 
 ### Fixed
+- Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
 - Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
