@@ -300,7 +300,10 @@ model_output_marginal |>
   )
 
 model_output_marginal |>
-  mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
+  mutate(
+    site_id = sub("ENS-\\d+-", "", run_id),
+    CH4_flux = PEcAn.utils::ud_convert(CH4_flux, "kg/m2/s", "mg/m2/d")
+  ) |>
   select("site_id", "run_id", "posix", "CH4_flux") |>
   ggplot() +
   aes(x = posix, 
