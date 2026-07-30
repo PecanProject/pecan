@@ -88,37 +88,51 @@ code_lookup <- code_map |>
 
 PEcAn.logger::logger.info(sprintf("Resolved %d LandIQ codes via crosswalk", nrow(code_lookup)))
 
-## load matched product
-# parcel_id is stored as a string in the source so cast to int on the way
-# in. filter keeps matched cycles with non NA crop class plus a valid EVI
-# signal.
-read_matched_year <- function(year) {
-  fn <- file.path(config[["matched_dir"]],
-                  sprintf("assigned_year=%d.parquet", year))
-  if (!file.exists(fn)) {
-    PEcAn.logger::logger.warn("Missing matched file for year ", year, ": ", fn)
-    return(NULL)
-  }
-  arrow::read_parquet(fn) |>
-    dplyr::filter(.data$assigned_by == "matched",
-                  !is.na(.data$landiq_CLASS),
-                  !is.na(.data$landiq_SUBCLASS),
-                  !is.na(.data$landiq_PFT),
-                  !is.na(.data$mslsp_EVImax),
-                  !is.na(.data$mslsp_EVIamp)) |>
-    dplyr::transmute(
-      parcel_id = as.integer(.data$parcel_id),
-      year      = as.integer(.data$year),
-      season    = as.integer(.data$season),
-      date      = as.Date(.data$mslsp_OGI),
-      code      = paste0(.data$landiq_CLASS, .data$landiq_SUBCLASS)
-    )
-}
+# the event date is anchored to green-up (leafonday) from the gap-filled
+# phenology product, observed where MSLSP retrieved it and crop-calendar
+# filled otherwise, so this covers the full ~600k ag universe instead of the
+# ~377k strict-matched subset. crop class per season comes from the LandIQ
+# crops product. the crops product's own emergence date is empty statewide,
+# so the gap-filled green-up is the only populated anchor available.
 
-PEcAn.logger::logger.info("Reading matched LandIQ MSLSP for years: ",
-                          paste(config[["years"]], collapse = ", "))
-plant <- purrr::map_dfr(config[["years"]], read_matched_year)
-PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels",
+years <- config[["years"]]
+PEcAn.logger::logger.info("Reading crops and gap-filled phenology for years: ",
+                          paste(years, collapse = ", "))
+
+# read via duckdb: it casts the bigint parcel_id cleanly and fast, where an
+# arrow collect returns integer64 that stalls the downstream integer coercion
+con <- DBI::dbConnect(duckdb::duckdb())
+on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+yr_list <- paste(years, collapse = ",")
+
+# crop class per real season from the LandIQ crops product; the 4-slot
+# season structure is mostly NA-padded, keep rows carrying a crop class
+crops <- DBI::dbGetQuery(con, sprintf(
+  "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
+          CAST(season AS INTEGER) AS season, CLASS, CAST(SUBCLASS AS INTEGER) AS SUBCLASS
+   FROM read_parquet('%s') WHERE \"year\" IN (%s) AND CLASS IS NOT NULL",
+  config[["crops_path"]], yr_list)) |>
+  dplyr::rename(year = "yr") |>
+  dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
+
+# earliest green-up per parcel-year from the gap-filled phenology. a few
+# double-crop parcels carry two green-up dates and phen_v2 dropped the
+# season/cycle key, so take the earliest as the single anchor (documented
+# approximation; the wide offset window and second-order date sensitivity
+# keep this low-impact). phenology_source is carried through for audit.
+phen <- DBI::dbGetQuery(con, sprintf(
+  "SELECT parcel_id, yr, dt, phenology_source FROM (
+     SELECT CAST(site_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
+            CAST(leafonday AS DATE) AS dt, phenology_source,
+            row_number() OVER (PARTITION BY site_id, \"year\" ORDER BY leafonday) AS rn
+     FROM read_parquet('%s/phenology_statewide_*.parquet') WHERE \"year\" IN (%s)
+   ) WHERE rn = 1",
+  config[["phen_dir"]], yr_list)) |>
+  dplyr::rename(year = "yr", date = "dt")
+
+plant <- crops |>
+  dplyr::inner_join(phen, by = c("parcel_id", "year"))
+PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels (phenology anchored)",
                                   nrow(plant), dplyr::n_distinct(plant$parcel_id)))
 
 ## subsample
@@ -181,8 +195,16 @@ if (nrow(zero_env) > 0) {
   }
 }
 
-design <- design |>
-  dplyr::filter(.data$rate_source == "crosswalk") |>
+kept <- design |> dplyr::filter(.data$rate_source == "crosswalk")
+src <- kept |> dplyr::count(.data$phenology_source, sort = TRUE)
+PEcAn.logger::logger.info("Anchor provenance (phenology_source):")
+for (i in seq_len(nrow(src))) {
+  PEcAn.logger::logger.info(sprintf("  %s: %d cycles (%.1f%%)",
+                                    src$phenology_source[i], src$n[i],
+                                    100 * src$n[i] / nrow(kept)))
+}
+
+design <- kept |>
   dplyr::select("parcel_id", "year", "season", "date", "code",
                 "min_n_lbs_acre", "max_n_lbs_acre")
 
