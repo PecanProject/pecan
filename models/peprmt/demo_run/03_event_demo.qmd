@@ -43,7 +43,7 @@ We assume here that you already have PEcAn and PEPRMT installed. See
 `01_run_pecan_peprmt.qmd` for installation instructions if needed.
 
 We also assume you have already run `02_input_demo.qmd`. This demo uses
-these files created by in the second demp:
+these files created by the second demo:
 
 - `settings_inputdemo.xml`
 - `data/met/`
