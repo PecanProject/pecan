@@ -176,6 +176,11 @@ demo_outdir/               # Root output directory
 │   └── config.*           # Generated model configs (not used for PEPRMT)
 ├── out/                   # Raw model outputs by run ID
 │   └── <runid>/           # E.g., PEPRMT output files
+├── STATUS                 # timestamp and ok/error status of each workflow step
+├── pecan.*.xml            # copies of the run settings saved at different steps
+├── run_manifest.csv       # info about site, PFT, etc for each runid
+└── samples.Rdata          # draws from parameter distributions
+
 ```
 
 The root output directory is defined here as `demo_outdir/` by `settings$outdir`. This directory contains log and record files from the PEcAn workflow. They provide a detailed record of how data was generated and are key components of the analysis metadata and provenance. These can be useful for debugging as well as for downstream analysis.
