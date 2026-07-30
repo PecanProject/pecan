@@ -24,7 +24,7 @@ Rosenstock, T. S., Liptzin, D., Six, J., Tomich, T. P. (2013).
   \url{https://escholarship.org/uc/item/5mk2q1sm}
 
 Meyer, R. D., Marcum, D. B., Orloff, S. B., Schmierer, J. L.
-  (2007). Alfalfa fertilization strategies. UC ANR Publication 8296.
+  (2007). Alfalfa fertilization strategies. UC ANR Publication 8292.
 
 Brown, P. H. et al. (2020). Nitrogen Best Management Practices
   for Almonds. Almond Board of California. Source for Almonds rates by

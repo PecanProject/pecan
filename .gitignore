@@ -81,6 +81,7 @@ tests/BC*
 compile_on_geo.sh
 documentation/tutorials/*/*.html
 pecan.Rproj
+.rcookies
 shiny/BenchmarkReport/*
 # Installation files from make
 .install/

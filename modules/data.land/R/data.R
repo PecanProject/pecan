@@ -233,7 +233,7 @@
 #'   way forward. California Agriculture 67(1).
 #'   \url{https://escholarship.org/uc/item/5mk2q1sm}
 #' @source Meyer, R. D., Marcum, D. B., Orloff, S. B., Schmierer, J. L.
-#'   (2007). Alfalfa fertilization strategies. UC ANR Publication 8296.
+#'   (2007). Alfalfa fertilization strategies. UC ANR Publication 8292.
 #' @source Brown, P. H. et al. (2020). Nitrogen Best Management Practices
 #'   for Almonds. Almond Board of California. Source for Almonds rates by
 #'   age.

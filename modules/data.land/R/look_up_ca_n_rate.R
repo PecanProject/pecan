@@ -22,7 +22,7 @@
 #'   way forward. California Agriculture, 67(1).
 #'   \url{https://escholarship.org/uc/item/5mk2q1sm}
 #' @source Meyer, R. D., Marcum, D. B., Orloff, S. B., & Schmierer, J. L.
-#'   (2007). Alfalfa fertilization strategies. UC ANR Publication 8296.
+#'   (2007). Alfalfa fertilization strategies. UC ANR Publication 8292.
 #'
 #' @seealso [look_up_fertilizer_components()] for fertilizer nutrient
 #'   composition (N/C fractions) from the SWAT/DayCent database.

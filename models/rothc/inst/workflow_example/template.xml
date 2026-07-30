@@ -29,20 +29,24 @@
   <!-- TODO disabled until running right without them
    <poolinitcond>
      <method>sampling</method>
-   </poolinitcond>
-   <soilphysics>
+   </poolinitcond> -->
+   <soil_physics>
     <method>sampling</method>
-   </soilphysics> -->
+   </soil_physics>
   </samplingspace>
   <start.year><!-- inserted at config time --></start.year>
   <end.year><!-- inserted at config time --></end.year>
  </ensemble>
  <model>
-  <id>rothc_2_1_0</id>
+  <id>rothc_2_1_1</id>
   <type>RothC</type>
-  <revision>2.1.0</revision>
+  <revision>2.1.1</revision>
   <delete.raw>FALSE</delete.raw>
-  <binary>/usr/local/bin/RothC_v2.1.0</binary>
+  <binary>/usr/local/bin/RothC_v2.1.1</binary>
+  <opt_RMmoist>1</opt_RMmoist> <!-- TODO validate these. Using 2 (van Genuchten) for both options may be a better default -->
+  <opt_SMDbare>1</opt_SMDbare>
+  <min_RM_moist>0.1</min_RM_moist> <!-- TODO ignored when opt_SMDbare == 1 -->
+  <soil_depth_cm>30</soil_depth_cm>
  </model>
  <run>
   <site><!-- inserted at config time --></site>

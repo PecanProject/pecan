@@ -15,6 +15,11 @@ if [[ ! -d data/ERA5_CA_RothC ]]; then
 	./ERA5_nc_to_RothC.R --n_cores="$NCPUS"
 fi
 
+
+echo "================= Retrieving soil data from gSSURGO ================="
+# fetches soil data for all sites
+./fetch_soil_data.R --n_cores="$NCPUS"
+
 echo "================= Building XML settings ================="
 # generates settings.xml
 ./xml_build.R --output_dir_name=output_"$start_time"

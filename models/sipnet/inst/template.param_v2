@@ -30,6 +30,7 @@ soilRespMoistEffect	1.000000
 leafOnDay		144
 gddLeafOn		500
 soilTempLeafOn	12.0
+leafOnReallocFrac	0.2
 leafOffDay		285
 leafGrowth		126
 fracLeafFall	1
