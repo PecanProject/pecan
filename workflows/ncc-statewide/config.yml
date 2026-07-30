@@ -3,7 +3,9 @@ default:
   n_ensemble: 20
   seed: 42
   years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
-  matched_dir: /projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1
+  crops_path: /projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq
+  phen_dir: /projectnb/dietzelab/ccmmf/usr/akash/phen_v2
+  cadwr_pfts_path: /projectnb/dietzelab/abv1/ccmmf/cadwr-landuse/data/cadwr_pfts.csv
 
   # probability of compost amendment per parcel year per ensemble member.
   # scenario knob, useful range 0.05 to 0.25
