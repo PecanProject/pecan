@@ -1,20 +1,21 @@
 # Statewide fertilization events workflow
 
-Builds an ensemble of synthetic N fertilization events for every California ag parcel in the LandIQ MSLSP matched product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
+Builds an ensemble of synthetic N fertilization events for every California ag parcel in the LandIQ crops product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
 
 # Config
 
-Everything tweakable lives in `config.yml`. Most setups only need to look at:
+Configuration parameters live in `config.yml`. Most setups only need:
 
-- `matched_dir`: the LandIQ MSLSP matched product directory
+- `crops_path`: the LandIQ harmonized crops parquet
+- `phen_dir`: the gap-filled phenology (green-up) directory
 - `crosswalk_path`: the LandIQ to FREP to UC ANR crop name crosswalk TSV
-- `output_dir`: where the parquet shards go
-- `n_parcels`, `n_ensemble`, `batch_size`, `workers`: scale knobs per profile
+- `output_dir`: output directory for parquet shards
+- `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
 - `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 0.5 for a 50/50 split)
 
 # Run
 
-Pick a profile (`default`, `medium`, `all`) and run from the PEcAn project root:
+Select a profile (`default`, `medium`, `all`) and run from the PEcAn project root:
 
 ```
 FERT_PROJECT=default bash workflows/fertilization-statewide/run-statewide.sh
