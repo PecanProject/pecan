@@ -2,7 +2,7 @@
 
 NCC is project shorthand for organic amendments like compost and manure. This workflow builds an ensemble of compost events for every California ag parcel in the LandIQ MSLSP matched product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year.
 
-Material properties (application rate, %N, C:N, PAN) come from `PEcAn.data.land::ca_compost_amendment`.
+Material properties (%N, C:N, PAN, CalRecycle class) come from `PEcAn.data.land::ca_organic_amendment_properties`; application rates come from `PEcAn.data.land::ca_organic_amendment_app_rate`, which splits row crop and orchard rates. The two join on `material` and `source`. Annuals draw the `rows` rate, perennials the `trees` rate.
 
 # Config
 
@@ -21,7 +21,7 @@ Pick a profile (`default`, `medium`, `all`) and run from PEcAn project root:
 NCC_PROJECT=default bash workflows/ncc-statewide/run-statewide.sh
 ```
 
-01 builds a design table and tags each PFT as annual (row, hay, rice) or perennial (woody). 02 runs Bernoulli gate, picks a material per fired row from `ca_compost_amendment` (constrained to CalRecycle classes that fit PFT family), draws app rate and C:N from that material's envelope. 03 does unit conversion, splits N into mineral and organic using PAN (clamped to zero for high C:N materials that immobilize), and writes parcel range sharded parquet.
+01 builds a design table and tags each PFT as annual (row, hay, rice) or perennial (woody). 02 runs Bernoulli gate, picks a material per fired row from the joined amendment tables (constrained to CalRecycle classes that fit PFT family, and to the crop structure that matches the family), draws app rate and C:N from that material's envelope. 03 does unit conversion, splits N into mineral and organic using PAN (clamped to zero for high C:N materials that immobilize), and writes parcel range sharded parquet.
 
 `check-result.R` reads output back and prints a summary.
 
