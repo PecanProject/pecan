@@ -41,27 +41,46 @@ if (nrow(events) == 0) {
   PEcAn.logger::logger.severe("No events fired. Check p_apply_default.")
 }
 
-# wood class is excluded from annuals; high C:N immobilizes more N than
-# row crop rotations can absorb within one season
-ca_compost <- PEcAn.data.land::ca_compost_amendment
+# join on source as well as material: some materials carry two source rows,
+# so material alone would cross pair one source's C:N with another's rate.
+# wood is excluded from annuals: high C:N immobilizes more N than a row crop
+# rotation absorbs in one season
+props <- PEcAn.data.land::ca_organic_amendment_properties
+rates <- PEcAn.data.land::ca_organic_amendment_app_rate
+amendments <- dplyr::inner_join(props, rates, by = c("material", "source"))
+
+# every app_rate row must match a properties row, else the inner_join drops it
+unmatched <- dplyr::anti_join(rates, props, by = c("material", "source"))
+if (nrow(unmatched) > 0L) {
+  PEcAn.logger::logger.severe(
+    "app_rate rows with no matching properties row: ",
+    paste(unique(unmatched$material), collapse = ", ")
+  )
+}
 
 allowed_classes <- list(
   annual = c("green", "food", "yard", "ag"),
   perennial = c("green", "food", "yard", "ag", "wood")
 )
+family_structure <- c(annual = "rows", perennial = "trees")
 
-mat_idx_by_family <- lapply(allowed_classes, function(cls) {
-  which(ca_compost$material_class %in% cls)
+mat_idx_by_family <- purrr::imap(allowed_classes, function(cls, fam) {
+  which(amendments$crop_structure == family_structure[[fam]] &
+        amendments$material_class %in% cls)
 })
 
-# one material draw per event row, conditional on pft family
+# one material draw per event row, conditional on pft family. index with
+# sample.int so a length-1 pool is not reinterpreted as a range by sample()
 events$mat_idx <- vapply(
   events$pft_family,
-  function(fam) sample(mat_idx_by_family[[fam]], 1L),
+  function(fam) {
+    pool <- mat_idx_by_family[[fam]]
+    pool[sample.int(length(pool), 1L)]
+  },
   integer(1)
 )
 
-mat_cols <- ca_compost[events$mat_idx,
+mat_cols <- amendments[events$mat_idx,
                        c("material", "material_class",
                          "app_rate_min", "app_rate_max",
                          "n_pct", "pan_pct",
