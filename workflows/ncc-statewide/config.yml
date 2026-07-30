@@ -8,7 +8,7 @@ default:
   cadwr_pfts_path: /projectnb/dietzelab/abv1/ccmmf/cadwr-landuse/data/cadwr_pfts.csv
 
   # probability of compost amendment per parcel year per ensemble member.
-  # scenario knob, useful range 0.05 to 0.25
+  # scenario parameter, useful range 0.05 to 0.25
   p_apply_default: 0.10
 
   output_dir: /projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc
