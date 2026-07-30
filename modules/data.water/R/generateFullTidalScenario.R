@@ -3,9 +3,13 @@
 ##' @name generateFullTidalScenario
 ##' @title Function to query NOAA tide gauge information and generate annual flood level scenearios
 ##' @param station_id
-##' @param start_year
-##' @param RSLR_RCP
-##' @param RSRL_probability
+##' @param  run_hindcast
+##' @param run_forecast
+##' @param hindcast_start
+##' @param forecast_start
+##' @param forecast_end
+##' @param RCP
+##' @param RCP_probability
 ##' @param ssc
 ##' @param ssc_storm
 ##' @param floods_to_include
@@ -15,15 +19,37 @@
 ##'
 ##' @export
 ##' @author J. Holmquist
-generateFullTidalScenario <- function(station_id=8575512, start_year=2018, end_year=2100, RCP = c("RCP4.5"), percentile=c(0.25,0.5,0.75),
-                                      ssc,  ssc_storm,  floods_to_include, include_lt_tidal_const,
-                                      include_lt_tidal_const, include_flood_anomalies
+generateFullTidalScenario <- function(station_id=8575512,
+                                      run_hindcast = T,
+                                      run_forecast = T,
+                                      hindcast_start = 1928,
+                                      forecast_start = 2018,
+                                      forecast_end = 2100,
+                                      RCP = c("RCP4.5"),
+                                      RCP_probability=c(0.25,0.5,0.75),
+                                      ssc,
+                                      ssc_storm,
+                                      floods_to_include,
+                                      include_lt_tidal_const,
+                                      include_lt_tidal_const,
+                                      include_flood_anomalies
                                       ) {
 
   require(arrow)
   require(tidyverse)
   require(VulnToolkit)
-  require(jsonlite)
+  # require(jsonlite)
+
+  # forecast_end needs to be one of the following
+  # 2030
+  # 2050
+  # 2100
+  # 2150
+  # 2200
+  # First, do we create a hindcast?
+  # if (run_hindcast) {
+  #
+  # }
 
   # Workflow in creating a sea-level rise scenario
 
@@ -32,13 +58,21 @@ generateFullTidalScenario <- function(station_id=8575512, start_year=2018, end_y
   # psmsl_id <- dplyr::filter(noaa_psml_tab, noaa_id == station_id) %>% dplyr::distinct_all()
 
   # 1. Query long term MSL
-  noaa_data <- VulnToolkit::noaa.parameters(stn = station_id)
 
-  # generate link psmsl link
-  # psmsl_link <- paste0("https://psmsl.org/data/obtaining/rlr.annual.data/", psmsl_id$psmsl_id[1], ".rlrdata")
-  # psmsl_data <-
-  msl <- VulnToolkit::noaa(begindate = min(noaa_data$startDate),
-                    enddate = max(noaa_data$endDate),
+  # We have to do this anyway
+  noaa_data <- VulnToolkit::noaa.parameters(stn = station_id) %>%
+    mutate(startDate = format(lubridate::ymd_hm(startDate), format = "%Y%m%d"),
+           endDate = format(lubridate::ymd_hm(endDate), format = "%Y%m%d")
+    )
+
+  mtl <- VulnToolkit::noaa(begindate = max(min(noaa_data$startDate),
+                                           paste0(hindcast_start, "0101"),
+                                           na.rm = T
+                                           ),
+                    enddate = min(max(noaa_data$endDate),
+                                  paste0(forecast_start, "1231"),
+                                  na.rm = T
+                                  ),
                     station = station_id,
                     interval = "monthly",
                     datum = "NAVD",
@@ -47,70 +81,116 @@ generateFullTidalScenario <- function(station_id=8575512, start_year=2018, end_y
                     )
 
   # annualize
-  msl_annual <- msl %>%
+  mtl_hindcast <- mtl %>%
     dplyr::group_by(Year) %>%
-    dplyr::summarise(MSL = mean(MSL),
-                     MHW = mean(MHW)) %>%
-    dplyr::mutate(MSL = MSL * 100,
-                  MHW = MHW * 100
-                  )
+    dplyr::summarise(MTL = mean(MTL)) %>%
+    dplyr::mutate(MTL = MTL * 100)
 
   # 2. Interpolate missing data
-  msl_spline <- loess(MSL ~ Year, data = msl_annual %>% dplyr::filter(complete.cases(.)))
+  mtl_spline <- loess(MTL ~ Year, data = mtl_hindcast %>% dplyr::filter(complete.cases(.)))
 
-  msl_annual$msl_smoothed <- predict(msl_spline, newdata = msl_annual$Year)
+  mtl_hindcast$meanTidalLevel <- predict(mtl_spline, newdata = mtl_hindcast$Year)
+
+  mtl_hindcast <- mtl_hindcast %>%
+    dplyr::select(-MTL) %>%
+    mutate(index = 1:n()-1) %>%
+    rename(year=Year)
 
   # 3. Get SLR rate at year of scenario start
-  init_msl <- msl_annual$msl_smoothed[msl_annual$Year == start_year] -
-    msl_annual$msl_smoothed[msl_annual$Year == start_year-1]
 
-  # 4. Query future SLR
-  kopp_2014 <- arrow::read_parquet("inst/extdata/Kopp_2014_projections_long.parquet")
+  # If forecast == T
+  if (run_forecast) {
 
-  kopp_filtered <- kopp_2014 %>%
-    dplyr::filter(noaa_id == station_id,
-                  year == end_year,
-                  rcp %in% RCP
-                  )
+    # Else if add the hindcast to a list
 
-  rcp_list <- list()
-  for (i in 1:length(RCP)) {
+    init_slr <- mtl_annual$mtl_smoothed[mtl_annual$Year == forecast_start] -
+      mtl_annual$mtl_smoothed[mtl_annual$Year == forecast_start-1]
 
-    kopp_rcp <- kopp_filtered %>%
-      dplyr::filter(rcp == RCP[i])
+    # 4. Query future SLR
+    kopp_2014 <- arrow::read_parquet("inst/extdata/Kopp_2014_projections_long.parquet")
 
-    msl_outputs <- approx(x = kopp_filtered$percentile,
-                          y = kopp_filtered$slr_cm,
-                          xout = percentile)
-    names(msl_outputs) <- c("percentile", "slr_cm")
+    kopp_filtered <- kopp_2014 %>%
+      dplyr::filter(noaa_id == station_id,
+                    year == forecast_end,
+                    rcp %in% RCP
+      )
 
-    rcp_list[[i]] <- kopp_rcp %>%
-      dplyr::select(-c(percentile, slr_cm)) %>%
-      dplyr::distinct_all() %>%
-      merge(msl_outputs)
+    rcp_list <- list()
+    for (i in 1:length(RCP)) {
 
-  }
+      kopp_rcp <- kopp_filtered %>%
+        dplyr::filter(rcp == RCP[i])
 
-  rcp_table <- bind_rows(rcp_list)
+      msl_outputs <- approx(x = kopp_filtered$percentile/100,
+                            y = kopp_filtered$slr_cm,
+                            xout = RCP_probability)
+      names(msl_outputs) <- c("probabiliy", "slr_cm")
+
+      scenario_list[[i]] <- kopp_rcp %>%
+        dplyr::select(-c(percentile, slr_cm)) %>%
+        dplyr::distinct_all() %>%
+        merge(msl_outputs)
+
+    }
+
+    rcp_table <- bind_rows(rcp_list)
+
+    # !!! Add a stop or warning for forecast starts greater than 2000
+
+    # Forecast start - 2000
+    slr_2000toStart <- mtl_hindcast$meanTidalLevel[mtl_hindcast$year == forecast_start] -
+      mtl_hindcast$meanTidalLevel[mtl_hindcast$year == 2000]
+
+    init_mtl <- rev(mtl_hindcast$meanTidalLevel)[1]
+
+    # Create an initial sea-level rise curve
+    scenario_curve_list <- list()
+
+    for (i in 1:nrow(rcp_table)) {
+
+      temp_curve <- buildScenarioCurve(startYear = forecast_start,
+                                       endYear = forecast_end,
+                                       meanTidalLevel = init_mtl,
+                                       relSeaLevelRiseInit = init_slr,
+                                       relSeaLevelRiseTotal = rcp_table$slr_cm[i]-slr_2000toStart
+      )
+
+      if (run_hindcast) {
+
+        temp_curve <- temp_curve[-1,] %>%
+          mutate(index = index+max(mtl_hindcast$index))
+
+        temp_curve <- bind_rows(mtl_hindcast,
+                                temp_curve
+                                )
+
+      }
+
+      scenario_curve_list[[i]] <- temp_curve
+
+    }
+
+
+  } else if (run_hindcast) {
+
+    scenario_curve_list <- list(mtl_hindcast)
+
+  } else {
+    # Else stop
+    stop("Must specify either a hindcast, a forecast, or both.")
+
+  } # end of run_forecast, run hindcast checks
 
   # 5. Query tidal constituents
+  constituents <- VulnToolkit::harcon(station_id)
 
-  url <- paste0(
-      "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/",
-      station_id,
-      "/harcon.json?units=metric"
-    )
-
-  harcon <- jsonlite::fromJSON(url)
-
-  constituents <- harcon$HarmonicConstituents
-
-  M2 <- constituents$amplitude[constituents$name == "M2"]
-  K1 <- constituents$amplitude[constituents$name == "K1"]
-  O1 <- constituents$amplitude[constituents$name == "O1"]
-  S2 <- constituents$amplitude[constituents$name == "S2"]
+  M2 <- constituents$hc.amp[constituents$hc.name == "M2"]
+  K1 <- constituents$hc.amp[constituents$hc.name == "K1"]
+  O1 <- constituents$hc.amp[constituents$hc.name == "O1"]
+  S2 <- constituents$hc.amp[constituents$hc.name == "S2"]
 
   F_factor <- (K1 + O1) / (M2 + S2)
+
   # F = (K1 + 01) / (M2 + S2)
 
   # 6. Approximate datums
@@ -128,26 +208,30 @@ generateFullTidalScenario <- function(station_id=8575512, start_year=2018, end_y
   # M2, K1, O1, S2,
   # N2, K2, P1, Q1
 
-
   if (F_factor > 3) {
 
-    mhwVect <- t(c(mhhwDatum, mhhwsDatum))
-    mlwVect <- -mhwVect
+    datumNames <- c("MHHW", "MHHWS")
+    ampVect <- matrix(c(c(mhhwDatum, mhhwsDatum),
+                 rep = ),
+                 nrow = 2)
 
     flood_freq <- c(353-24.8, 24.8)
     flood_time <- c(12.42,12.42)
-  } else {
 
+  } else {
+    datumNames <- c("MLHW", "MHHW", "MHHWS")
     mhwVect <- t(c(mhwDatum, mhhwDatum, mhhwsDatum))
     mlwVect <- -mhwVect
 
     flood_freq <- c(353, 353-24.8, 24.8)
-    flood_time <- c(6.21,6.21)
+    flood_time <- c(6.21,6.21,6.21)
   }
 
   # 7. Query anomalous flood events?
 
   # !!! Leave this blank for now. There is room to grow
+
+  # 8. Long term nodal cycles for
 
   # Output a vector of mean sea-level
 
