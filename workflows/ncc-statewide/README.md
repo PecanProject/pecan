@@ -1,21 +1,23 @@
 # Statewide compost (NCC) events workflow
 
-NCC is project shorthand for organic amendments like compost and manure. This workflow builds an ensemble of compost events for every California ag parcel in the LandIQ MSLSP matched product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year.
+NCC is project shorthand for organic amendments like compost and manure. This workflow builds an ensemble of compost events for every California ag parcel in the LandIQ crops product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year.
 
 Material properties (%N, C:N, PAN, CalRecycle class) come from `PEcAn.data.land::ca_organic_amendment_properties`; application rates come from `PEcAn.data.land::ca_organic_amendment_app_rate`, which splits row crop and orchard rates. The two join on `material` and `source`. Annuals draw the `rows` rate, perennials the `trees` rate.
 
 # Config
 
-Tweakable bits in `config.yml`:
+Configuration parameters in `config.yml`:
 
-- `matched_dir`: where LandIQ MSLSP matched product lives
-- `output_dir`: where parquet shards go
-- `n_parcels`, `n_ensemble`, `batch_size`, `workers`: scale knobs per profile
+- `crops_path`: the LandIQ harmonized crops parquet
+- `phen_dir`: the gap-filled phenology (green-up) directory
+- `cadwr_pfts_path`: the CADWR class/subclass to PFT map
+- `output_dir`: output directory for parquet shards
+- `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
 - `p_apply_default`: probability of compost per parcel year per ensemble member (default 0.10)
 
 # Run
 
-Pick a profile (`default`, `medium`, `all`) and run from PEcAn project root:
+Select a profile (`default`, `medium`, `all`) and run from PEcAn project root:
 
 ```
 NCC_PROJECT=default bash workflows/ncc-statewide/run-statewide.sh
@@ -30,7 +32,7 @@ NCC_PROJECT=default bash workflows/ncc-statewide/run-statewide.sh
 - `parcel_id`, `ens_id` (`ens_NNN`, shared with fertilization workflow), `date`
 - `nh4_n_kg_m2`: PAN release fraction. Zero when `pan_pct` is negative (high C:N materials immobilize N instead of releasing it)
 - `no3_n_kg_m2`: zero. Compost releases ammonium, nitrification happens later in soil pool
-- `org_c_kg_m2`: total organic C from application. Does not depend on PAN; C is C regardless of N fate
+- `org_c_kg_m2`: total organic C from application. Organic carbon is calculated independently of the PAN-based nitrogen partition
 - `org_n_kg_m2`: leftover organic N after PAN split
 - `crop_code`: passthrough
 - `material`: diagnostic column for `check-result.R` only. Cleaner strips it before union so it never reaches SIPNET
@@ -39,7 +41,7 @@ Downstream, `workflows/preprocess-event-parquet/01c-clean-fertilization.R` union
 
 # Compost timing
 
-Anchor is MSLSP green up date (`mslsp_OGI`). For annuals that's close to but not exactly planting date (emergence lags planting by a few days to weeks). For perennials it's bud break. Date offset is uniform within a family window:
+Anchor is the gap-filled green-up date (`leafonday`). For annuals that's close to but not exactly planting date (emergence lags planting by a few days to weeks). For perennials it's bud break. Date offset is uniform within a family window:
 
 - annuals (row, hay, rice): 14 to 180 days before green up
 - perennials (woody): 30 to 210 days before green up
