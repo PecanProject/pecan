@@ -10,36 +10,71 @@ dir.create(staging_dir, showWarnings = FALSE, recursive = TRUE)
 
 options(arrow.unsafe_metadata = TRUE)
 
-# compost application rate is conditioned on PFT family rather than crop
-# code so no rate crosswalk is needed at this stage.
-read_matched_year <- function(year) {
-  fn <- file.path(config[["matched_dir"]],
-                  sprintf("assigned_year=%d.parquet", year))
-  if (!file.exists(fn)) {
-    PEcAn.logger::logger.warn("Missing matched file for year ", year, ": ", fn)
-    return(NULL)
-  }
-  arrow::read_parquet(fn) |>
-    dplyr::filter(.data$assigned_by == "matched",
-                  !is.na(.data$landiq_CLASS),
-                  !is.na(.data$landiq_SUBCLASS),
-                  !is.na(.data$landiq_PFT),
-                  !is.na(.data$mslsp_EVImax),
-                  !is.na(.data$mslsp_EVIamp)) |>
-    dplyr::transmute(
-      parcel_id = as.integer(.data$parcel_id),
-      year      = as.integer(.data$year),
-      season    = as.integer(.data$season),
-      anchor    = as.Date(.data$mslsp_OGI),
-      code      = paste0(.data$landiq_CLASS, .data$landiq_SUBCLASS),
-      PFT       = as.character(.data$landiq_PFT)
-    )
-}
+# the event date is anchored to green-up (leafonday) from the gap-filled
+# phenology product. it carries a green-up for every ag parcel, observed
+# where MSLSP retrieved it and crop-calendar filled otherwise, so this
+# covers the full ~600k ag universe instead of the ~377k strict-matched
+# subset. crop class per season comes from the LandIQ crops product; pft is
+# derived from class/subclass via cadwr_pfts. the crops product's own
+# emergence date is empty statewide, so the gap-filled green-up is the only
+# populated anchor available. phenology_source is carried through so filled
+# vs observed anchors stay auditable downstream.
 
-PEcAn.logger::logger.info("Reading matched LandIQ MSLSP for years: ",
-                          paste(config[["years"]], collapse = ", "))
-plant <- purrr::map_dfr(config[["years"]], read_matched_year)
-PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels",
+# pft_group by (class, subclass); a class-level fallback covers rows whose
+# subclass is not specified, since cadwr resolves those by class alone
+cadwr <- readr::read_csv(config[["cadwr_pfts_path"]], show_col_types = FALSE) |>
+  dplyr::filter(!is.na(.data$pft_group))
+pft_by_code <- cadwr |>
+  dplyr::transmute(CLASS = .data$class,
+                   SUBCLASS = as.integer(.data$subclass),
+                   pft_group = .data$pft_group)
+pft_by_class <- cadwr |>
+  dplyr::count(.data$class, .data$pft_group) |>
+  dplyr::slice_max(.data$n, n = 1, by = "class", with_ties = FALSE) |>
+  dplyr::transmute(CLASS = .data$class, pft_group_class = .data$pft_group)
+
+years <- config[["years"]]
+PEcAn.logger::logger.info("Reading crops and gap-filled phenology for years: ",
+                          paste(years, collapse = ", "))
+
+# read via duckdb: it casts the bigint parcel_id cleanly and fast, where an
+# arrow collect returns integer64 that stalls the downstream integer coercion
+con <- DBI::dbConnect(duckdb::duckdb())
+on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+yr_list <- paste(years, collapse = ",")
+
+# crop class per real season from the LandIQ crops product; the 4-slot
+# season structure is mostly NA-padded, keep rows carrying a crop class
+crops <- DBI::dbGetQuery(con, sprintf(
+  "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
+          CAST(season AS INTEGER) AS season, CLASS, CAST(SUBCLASS AS INTEGER) AS SUBCLASS
+   FROM read_parquet('%s') WHERE \"year\" IN (%s) AND CLASS IS NOT NULL",
+  config[["crops_path"]], yr_list)) |>
+  dplyr::rename(year = "yr") |>
+  dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
+
+# earliest green-up per parcel-year from the gap-filled phenology. a few
+# double-crop parcels carry two green-up dates and phen_v2 dropped the
+# season/cycle key, so take the earliest as the single anchor (documented
+# approximation; the wide offset window and second-order date sensitivity
+# keep this low-impact). phenology_source is carried through for audit.
+phen <- DBI::dbGetQuery(con, sprintf(
+  "SELECT parcel_id, yr, anchor, phenology_source FROM (
+     SELECT CAST(site_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
+            CAST(leafonday AS DATE) AS anchor, phenology_source,
+            row_number() OVER (PARTITION BY site_id, \"year\" ORDER BY leafonday) AS rn
+     FROM read_parquet('%s/phenology_statewide_*.parquet') WHERE \"year\" IN (%s)
+   ) WHERE rn = 1",
+  config[["phen_dir"]], yr_list)) |>
+  dplyr::rename(year = "yr")
+
+plant <- crops |>
+  dplyr::inner_join(phen, by = c("parcel_id", "year")) |>
+  dplyr::left_join(pft_by_code, by = c("CLASS", "SUBCLASS")) |>
+  dplyr::left_join(pft_by_class, by = "CLASS") |>
+  dplyr::mutate(pft_group = dplyr::coalesce(.data$pft_group, .data$pft_group_class))
+
+PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels (phenology anchored)",
                                   nrow(plant), dplyr::n_distinct(plant$parcel_id)))
 
 ## subsample
@@ -63,23 +98,24 @@ pft_family <- function(pft) {
 }
 
 design <- plant |>
-  dplyr::mutate(pft_family = pft_family(.data$PFT))
+  dplyr::mutate(pft_family = pft_family(.data$pft_group))
 
+# non-crop classes (idle, urban, water) resolve to no pft and drop out here
 unknown <- design |> dplyr::filter(is.na(.data$pft_family))
 if (nrow(unknown) > 0) {
-  by_pft <- unknown |> dplyr::count(.data$PFT, sort = TRUE)
-  PEcAn.logger::logger.warn(sprintf(
-    "Dropping %d cycles with unknown PFT family. Breakdown:", nrow(unknown)))
-  for (i in seq_len(nrow(by_pft))) {
-    PEcAn.logger::logger.warn(sprintf("  PFT=%s: %d cycles",
-                                      by_pft$PFT[i], by_pft$n[i]))
+  by_class <- unknown |> dplyr::count(.data$CLASS, sort = TRUE)
+  PEcAn.logger::logger.info(sprintf(
+    "Dropping %d cycles with no crop pft (non-crop classes):", nrow(unknown)))
+  for (i in seq_len(nrow(by_class))) {
+    PEcAn.logger::logger.info(sprintf("  CLASS=%s: %d cycles",
+                                      by_class$CLASS[i], by_class$n[i]))
   }
 }
 
 design <- design |>
   dplyr::filter(!is.na(.data$pft_family)) |>
-  dplyr::select("parcel_id", "year", "season", "anchor",
-                "code", "PFT", "pft_family")
+  dplyr::select("parcel_id", "year", "season", "anchor", "code",
+                "pft_family", "phenology_source")
 
 PEcAn.logger::logger.info(sprintf("Design table: %d cycles, %d parcels, %d years",
                                   nrow(design),
@@ -88,6 +124,13 @@ PEcAn.logger::logger.info(sprintf("Design table: %d cycles, %d parcels, %d years
 PEcAn.logger::logger.info(sprintf("PFT family split: annual=%d, perennial=%d",
                                   sum(design$pft_family == "annual"),
                                   sum(design$pft_family == "perennial")))
+src <- design |> dplyr::count(.data$phenology_source, sort = TRUE)
+PEcAn.logger::logger.info("Anchor provenance (phenology_source):")
+for (i in seq_len(nrow(src))) {
+  PEcAn.logger::logger.info(sprintf("  %s: %d cycles (%.1f%%)",
+                                    src$phenology_source[i], src$n[i],
+                                    100 * src$n[i] / nrow(design)))
+}
 
 staging_file <- file.path(staging_dir, "_staging_01_design.rds")
 saveRDS(design, staging_file)
