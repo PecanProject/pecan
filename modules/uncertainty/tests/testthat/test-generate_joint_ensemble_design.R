@@ -100,3 +100,99 @@ test_that("ensemble design allows variation in non-param columns unlike OAT", {
   expect_equal(length(unique(sa_result$X$met)), 1)
   expect_true(length(unique(ens_result$X$met)) > 1)
 })
+
+# ------ sobol designs ---------
+# sensitivity is a hard dependency (Imports), so these exercise the real
+# soboljansen object rather than a stub.
+
+test_that("a sobol design carries its samples", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 10, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE)
+
+  # still the sensitivity object compute_sobol_indices() needs
+  expect_true(inherits(result, "soboljansen"))
+  expect_true(all(c("X1", "X2", "X") %in% names(result)))
+
+  # and it now carries the samples too, like the non-sobol return
+  expect_identical(result$samples, fake_parameter_samples())
+})
+
+
+test_that("sobol samples cover the doubled ensemble", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  sampler <- mockery::mock(fake_parameter_samples())
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 10, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE)
+
+  # sobol doubles the ensemble, so the samples must be drawn for the doubled
+  # size or the design's param indices would run past the end of them
+  args <- mockery::mock_args(sampler)[[1]]
+  expect_equal(args$ensemble.size, 10)
+
+  # the sobol matrix has more rows than that, but every param index it uses
+  # still falls inside the sampled set
+  expect_true(all(result$X$param >= 1))
+  expect_true(all(result$X$param <= 10))
+})
+
+
+test_that("passed-in samples are reused for a sobol design", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  loader  <- mockery::mock()
+  sampler <- mockery::mock()
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 10, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors", loader)
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
+
+  established <- fake_parameter_samples()
+  result <- generate_joint_ensemble_design(
+    settings, ensemble_size = 5, samples = established, sobol = TRUE
+  )
+
+  mockery::expect_called(loader, 0)
+  mockery::expect_called(sampler, 0)
+  expect_identical(result$samples, established)
+})
+
+
+test_that("attaching samples leaves the sobol object usable by tell()", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 10, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE)
+
+  # compute_sobol_indices() feeds model output back in through tell(); the
+  # samples we attached must not disturb that
+  told <- sensitivity::tell(result, y = stats::rnorm(nrow(result$X)))
+
+  expect_true(inherits(told, "soboljansen"))
+  expect_false(is.null(told$S))
+  expect_false(is.null(told$T))
+  expect_identical(told$samples, fake_parameter_samples())
+})

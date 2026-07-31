@@ -47,7 +47,8 @@ object for Sobol sensitivity analysis.}
 A list containing ensemble samples and indices.
   If \code{sobol = FALSE}, returns \code{list(X = design_matrix, samples = samples)}.
   If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
-  result object with the design matrix in \code{$X} plus additional
+  result object with the design matrix in \code{$X}, the parameter bundle in
+  \code{$samples}, plus additional
   components for Sobol index calculations.
 }
 \description{

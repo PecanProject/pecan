@@ -51,7 +51,8 @@
 #' @return A list containing ensemble samples and indices.
 #'   If \code{sobol = FALSE}, returns \code{list(X = design_matrix, samples = samples)}.
 #'   If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
-#'   result object with the design matrix in \code{$X} plus additional
+#'   result object with the design matrix in \code{$X}, the parameter bundle in
+#'   \code{$samples}, plus additional
 #'   components for Sobol index calculations.
 #'
 #' @export
@@ -123,6 +124,10 @@ generate_joint_ensemble_design <- function(settings,
     X1 <- design_matrix[1:half, ]
     X2 <- design_matrix[(half + 1):ensemble_size, ]
     sobol_obj <- sensitivity::soboljansen(model = NULL, X1 = X1, X2 = X2)
+    # Carry the samples on the object so a sobol design travels like any other:
+    # it already exposes the design as $X, and adding $samples leaves the
+    # components sensitivity::tell() uses untouched.
+    sobol_obj$samples <- samples
     return(sobol_obj)
   }
   # This ensures that regardless of whether the sobol or non-sobol version is called 
