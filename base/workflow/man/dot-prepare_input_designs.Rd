@@ -14,7 +14,9 @@
 \value{
 A list with \code{ensemble} and \code{sensitivity} entries (each a
   data.frame or NULL) and a \code{samples} entry holding the parameter bundle
-  when one was sampled (NULL otherwise, in which case callers fall back to disk).
+  used for the run. When the run has an ensemble or sensitivity analysis the
+  bundle is always resolved (reused from a supplied design, or sampled here)
+  and written to \code{samples.Rdata} for the downstream analysis steps.
 }
 \description{
 Normalizes and generates input design matrices. This helper ensures
@@ -22,15 +24,20 @@ consistent handling of the various input_design formats and
 auto-generates designs when needed.
 }
 \details{
-Input normalization rules:
+Input handling rules:
 \itemize{
-  \item If \code{input_design} is already a list with \code{ensemble}/\code{sensitivity}
-        keys, return as-is
-  \item If \code{input_design} is a single data.frame, interpret as ensemble design
-  \item If NULL and \code{settings$ensemble} exists, generate via
-        \code{generate_joint_ensemble_design}
-  \item If NULL and \code{settings$sensitivity.analysis} exists, generate via
-        \code{generate_OAT_SA_design}
+  \item If \code{input_design} is already a list with
+        \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
+        MultiSettings parent), return as-is.
+  \item If \code{input_design} is the \code{list(X, samples)} from
+        \code{generate_joint_ensemble_design()}, use \code{X} as the ensemble
+        design and \code{samples} as the bundle (no resampling).
+  \item If \code{input_design} is a bare data.frame (a design without its
+        samples), raise an error: the design's \code{param} indices only match
+        the samples they were drawn with.
+  \item If \code{NULL}, sample the bundle here and generate designs via
+        \code{generate_joint_ensemble_design} and/or
+        \code{generate_OAT_SA_design} as the settings require.
 }
 }
 \keyword{internal}
