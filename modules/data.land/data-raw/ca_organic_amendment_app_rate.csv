@@ -1,0 +1,65 @@
+material,crop_structure,app_rate_min,app_rate_max,total_n_min_lbs_acre,total_n_max_lbs_acre,source,total_n_min_g_m2,total_n_max_g_m2
+Alfalfa hay,rows,8000,10600,246.15,326.15,"Eghball, UNL Extension",27.59,36.556
+Alfalfa hay,trees,8000,10600,246.15,326.15,"Eghball, UNL Extension",27.59,36.556
+Apple pomace,rows,8000,10600,152.38,201.9,"Eghball, UNL Extension",17.079,22.63
+Apple pomace,trees,8000,10600,152.38,201.9,"Eghball, UNL Extension",17.079,22.63
+Bark,rows,8000,10600,27.83,36.87,"Eghball, UNL Extension",3.119,4.133
+Bark,trees,8000,10600,27.83,36.87,"Eghball, UNL Extension",3.119,4.133
+Blood meal,rows,4400,7200,440,720,"Eghball, UNL Extension",49.317,80.701
+Blood meal,trees,3000,5800,300,580,"Eghball, UNL Extension",33.625,65.009
+Coffee grounds,rows,8000,10600,160,212,"Eghball, UNL Extension",17.934,23.762
+Coffee grounds,trees,8000,10600,160,212,"Eghball, UNL Extension",17.934,23.762
+Corn cobs,rows,8000,10600,37.65,49.88,"Eghball, UNL Extension",4.22,5.591
+Corn cobs,trees,8000,10600,37.65,49.88,"Eghball, UNL Extension",4.22,5.591
+Corn stalks,rows,8000,10600,49.23,65.23,"Rynk, NC State Extension",5.518,7.311
+Corn stalks,rows,8000,10600,40,53,"Eghball, UNL Extension",4.483,5.94
+Corn stalks,trees,8000,10600,49.23,65.23,"Rynk, NC State Extension",5.518,7.311
+Corn stalks,trees,8000,10600,40,53,"Eghball, UNL Extension",4.483,5.94
+Cow manure,rows,8000,10600,142.22,188.44,"Rynk, NC State Extension",15.941,21.121
+Cow manure,rows,8000,10600,160,212,"Eghball, UNL Extension",17.934,23.762
+Cow manure,trees,8000,10600,142.22,188.44,"Rynk, NC State Extension",15.941,21.121
+Cow manure,trees,8000,10600,160,212,"Eghball, UNL Extension",17.934,23.762
+Dry leaves,rows,8000,10600,58.18,77.09,"Rynk, NC State Extension",6.521,8.641
+Dry leaves,trees,8000,10600,58.18,77.09,"Rynk, NC State Extension",6.521,8.641
+Fruit waste,rows,8000,10600,91.43,121.14,"Eghball, UNL Extension",10.248,13.578
+Fruit waste,trees,8000,10600,91.43,121.14,"Eghball, UNL Extension",10.248,13.578
+Grass,rows,8000,10600,172.97,229.19,"Rynk, NC State Extension",19.387,25.689
+Grass,trees,8000,10600,172.97,229.19,"Rynk, NC State Extension",19.387,25.689
+Grass clippings,rows,8000,10600,172.97,229.19,"Eghball, UNL Extension",19.387,25.689
+Grass clippings,trees,8000,10600,172.97,229.19,"Eghball, UNL Extension",19.387,25.689
+Horse manure,rows,8000,10600,128,169.6,"Rynk, NC State Extension",14.347,19.01
+Horse manure,trees,8000,10600,128,169.6,"Rynk, NC State Extension",14.347,19.01
+Leaves,rows,8000,10600,53.33,70.67,"Eghball, UNL Extension",5.977,7.921
+Leaves,trees,8000,10600,53.33,70.67,"Eghball, UNL Extension",5.977,7.921
+Manure with litter — horse,rows,8000,10600,71.11,94.22,"Eghball, UNL Extension",7.97,10.561
+Manure with litter — horse,trees,8000,10600,71.11,94.22,"Eghball, UNL Extension",7.97,10.561
+Manure with litter — poultry,rows,8000,10600,206.45,273.55,"Eghball, UNL Extension",23.14,30.661
+Manure with litter — poultry,trees,8000,10600,206.45,273.55,"Eghball, UNL Extension",23.14,30.661
+Manure — cow and horse,rows,8000,10600,142.22,188.44,"Eghball, UNL Extension",15.941,21.121
+Manure — cow and horse,trees,8000,10600,142.22,188.44,"Eghball, UNL Extension",15.941,21.121
+Manure — poultry (fresh),rows,4400,7200,176,288,"Eghball, UNL Extension",19.727,32.28
+Manure — poultry (fresh),trees,3000,5800,120,232,"Eghball, UNL Extension",13.45,26.004
+Newspaper,rows,8000,10600,5.33,7.07,"Rynk, NC State Extension",0.597,0.792
+Newspaper,trees,8000,10600,5.33,7.07,"Rynk, NC State Extension",0.597,0.792
+"Newspaper, shredded",rows,8000,10600,5.33,7.07,"Eghball, UNL Extension",0.597,0.792
+"Newspaper, shredded",trees,8000,10600,5.33,7.07,"Eghball, UNL Extension",0.597,0.792
+Paper,rows,8000,10600,18.29,24.23,"Eghball, UNL Extension",2.05,2.716
+Paper,trees,8000,10600,18.29,24.23,"Eghball, UNL Extension",2.05,2.716
+Pine needles,rows,8000,10600,40,53,"Eghball, UNL Extension",4.483,5.94
+Pine needles,trees,8000,10600,40,53,"Eghball, UNL Extension",4.483,5.94
+Poultry litter,rows,8000,10600,256,339.2,"Rynk, NC State Extension",28.694,38.019
+Poultry litter,trees,8000,10600,256,339.2,"Rynk, NC State Extension",28.694,38.019
+Sawdust and wood chips,rows,8000,10600,10.67,14.13,"Eghball, UNL Extension",1.196,1.584
+Sawdust and wood chips,trees,8000,10600,10.67,14.13,"Eghball, UNL Extension",1.196,1.584
+Straw,rows,8000,10600,45.71,60.57,"Rynk, NC State Extension",5.123,6.789
+Straw,trees,8000,10600,45.71,60.57,"Rynk, NC State Extension",5.123,6.789
+Straw — oats and wheat,rows,8000,10600,42.67,56.53,"Eghball, UNL Extension",4.783,6.336
+Straw — oats and wheat,trees,8000,10600,42.67,56.53,"Eghball, UNL Extension",4.783,6.336
+Swine manure,rows,8000,10600,228.57,302.86,"Rynk, NC State Extension",25.619,33.946
+Swine manure,trees,8000,10600,228.57,302.86,"Rynk, NC State Extension",25.619,33.946
+Vegetable waste,rows,8000,10600,213.33,282.67,"Rynk, NC State Extension",23.911,31.683
+Vegetable waste,rows,8000,10600,200,265,"Eghball, UNL Extension",22.417,29.702
+Vegetable waste,trees,8000,10600,213.33,282.67,"Rynk, NC State Extension",23.911,31.683
+Vegetable waste,trees,8000,10600,200,265,"Eghball, UNL Extension",22.417,29.702
+Woodchips,rows,8000,10600,10.67,14.13,"Rynk, NC State Extension",1.196,1.584
+Woodchips,trees,8000,10600,10.67,14.13,"Rynk, NC State Extension",1.196,1.584

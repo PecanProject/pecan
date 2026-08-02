@@ -37,9 +37,9 @@ This notebook demonstrates how to:
 
 ### The Scenario Being Modeled:
 
-We are modeling greenhouse gas dynamics (gross primary productivity, ecosystem respiration, and methane emissions) at ____ sites. The model configuration uses the PEPRMT-Tidal process-based ecosystem model. [model details]
+We are modeling greenhouse gas dynamics (gross primary productivity, ecosystem respiration, and methane emissions) at five sites. The model configuration uses the PEPRMT-Tidal process-based ecosystem model (Oikawa et al. 2024). 
 
-The simulation is run for _____ time period. 
+The simulation is run for the duration of data at each site, which ranges from 2011 to 2021.
 
 This scenario is designed to be a minimal, reproducible example to demonstrate how to run PEPRMT within the PEcAn workflow. In later steps, this same framework can be extended to include more ensemble members, longer time periods, or alternative meteorological inputs.
 
@@ -47,7 +47,7 @@ This scenario is designed to be a minimal, reproducible example to demonstrate h
 
 Before running this notebook, make sure you have:
 
--   All the PEcAn packages installed. You can install all PEcAn packages and their dependencies by running the following command in the root of your PEcAn repository:
+-   All the PEcAn packages installed. You can install all PEcAn packages and their dependencies by running the following command in the root of your PEcAn repository. This chunk does not run automatically since it will overwrite a version of PEcAn you installed by other methods. Run it by hand when needed.
 
 ```{r, eval = FALSE}
 
@@ -59,7 +59,14 @@ options(repos = c(
 install.packages(c('PEcAn.all', 'PEcAn.PEPRMT'))
 ```
 
-(Note that the chunk above does not run automatically since it will overwrite a version of PEcAn you installed by other methods. Run it by hand when needed.)
+-   Alternatively, install from GitHub.
+
+```{r, eval = FALSE}         
+remotes::install_github("pecanproject/pecan", subdir = "base/all", 
+                        ref = "develop", force = T)
+remotes::install_github("pecanproject/pecan", subdir = "models/peprmt", 
+                        ref = "develop")
+```
 
 
 ```{r}
@@ -95,6 +102,7 @@ First, we need to load the PEcAn R packages. These packages provide all the func
 ```{r libraries}
 # Load the PEcAn.all package, which includes all necessary PEcAn functionality
 library("PEcAn.all")
+library("PEcAn.PEPRMT")
 set.seed(20260326)
 logger.setUseConsole(console = TRUE, stderr = FALSE)
 logger.setLevel("INFO")
@@ -111,7 +119,7 @@ There is an example `pecan.xml` that has been configured for this demonstration.
 This is how PEcAn loads the settings file:
 
 ```{r load-settings}
-settings_path <- here::here("models/peprmt/demo_run/settings.xml")
+settings_path <- here::here("models/peprmt/demo_run/settings_inputdemo.xml")
 ```
 
 # Prepare and Validate Settings
@@ -268,15 +276,17 @@ model_output |>
   pivot_longer(cols = c("TotalResp", "GPP", "NEE"), names_to = "flux") |>
   ggplot() +
   aes(x = posix, y = value, color = flux, group = run_id) +
-  facet_grid(flux~site_id) +
+  facet_grid(flux~site_id, scales = "free", space = "free") +
+  geom_hline(yintercept = 0, color ="grey50")+
   geom_line() +
-  xlab("Date") +
   ylab(expression("Carbon Flux (kg C"~m^-2~s^-1*")")) +
   ggtitle("Carbon Fluxes Over Time") +
   theme_bw()+
-  theme(legend.position = "none")
-
-min(model_output$posix)
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y")+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank())
 ```
 
 ## Plot Methane emissions
@@ -289,13 +299,16 @@ model_output |>
   aes(x = posix, 
       y = CH4_flux * 1E6 * 60 * 60 * 24, # Convert from kg/m2/s to mg/m2/d
       group = run_id) +
-  facet_wrap(~site_id, nrow = 1) +
+  facet_wrap(~site_id, nrow = 1, scales = "free_x", space = "free_x") +
   geom_line() +
-  xlab("Date") +
   ylab(expression("Methane Flux (mg C"~m^-2~d^-1*")")) +
   ggtitle("Methane Fluxes Over Time") +
   theme_bw()+
-  theme(legend.position = "none")
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y")+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank())
 ```
 
 # Conclusion

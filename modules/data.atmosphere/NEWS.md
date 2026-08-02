@@ -1,3 +1,9 @@
+# PEcAn.data.atmosphere 1.9.1.9000
+
+## Fixed
+
+* `align.met()` now correctly calculates output timesteps in cases where the source data is at a coarser time step than the training data and `align == "repeat"` (#4012, @anshul23102).
+
 # PEcAn.data.atmosphere 1.9.1
 
 ## Added

@@ -69,8 +69,12 @@ recurse_dir = $(foreach d, $(wildcard $1*), $(call recurse_dir, $d/) $d)
 # For output from recurse_dir this removes all dirs, but in other cases beware.
 drop_parents = $(filter-out $(patsubst %/,%,$(dir $1)), $1)
 
-# Generates a list of regular files at any depth inside its argument
-files_in_dir = $(call drop_parents, $(call recurse_dir, $1))
+# Generates a list of regular files at any depth inside its argument,
+# excluding those in any `docs` folder
+files_in_dir = $(filter-out \
+  ${1}/docs/%, \
+  $(call drop_parents, $(call recurse_dir,$1)))
+
 
 # Git hash + clean status for this directory
 git_rev = $(shell \
@@ -118,9 +122,8 @@ check_modules: $(BASE_I) $(MODULES_C)
 
 document: $(ALL_PKGS_D) .doc/base/all
 
-pkgdocs:
+pkgdocs: $(ALL_PKGS_D) .doc/base/all
 	Rscript scripts/build_pkgdown.R $(ALL_PKGS) base/all || exit 1
-	
 
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
