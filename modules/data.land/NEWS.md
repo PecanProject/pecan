@@ -12,11 +12,12 @@
 * Datasets
   *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
-  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 33 California crops from CDFA-FREP and UC ANR sources.
-  *  `ca_compost_amendment` dataset with C:N ratios, carbon, nitrogen, and PAN (g/m2) for 32 organic amendment materials.
+  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 40 California crops from CDFA-FREP, UC ANR, Rosenstock 2013, Brown 2020 NBMP (Almonds age stages) and Lazicki 2016 (Potato) sources.
+  *  `ca_organic_amendment_properties` dataset with C:N ratios, nitrogen, and PAN for 32 organic amendment materials, plus a `material_class` column mapping each material to the CalRecycle taxonomy (14 CCR section 17852).
+  *  `ca_organic_amendment_app_rate` dataset with row-crop and orchard application rate envelopes (64 rows = 32 materials x 2 crop structures) that joins to `ca_organic_amendment_properties` on `material`.
 * Functions
   *  `look_up_ca_n_rate()` for looking up crop-specific N application rates by name (exact match first, partial match suggestions on miss).
-  *  `look_up_ca_compost_amendment()` for looking up organic amendment properties by material name.
+  *  `look_up_ca_organic_amendment()` for looking up organic amendment properties by material name.
   *  `to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 
 ## Changed

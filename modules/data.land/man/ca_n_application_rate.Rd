@@ -5,45 +5,46 @@
 \alias{ca_n_application_rate}
 \title{California recommended N application rates by crop}
 \format{
-A tibble with one row per crop and the following columns:
+A tibble with one row per crop and the columns:
 \describe{
-  \item{pft_group}{\code{character}. Plant functional type group
-    (e.g. "row", "woody", "rice").}
-  \item{crop}{\code{character}. Crop name as given in the source.}
-  \item{min_n_lbs_acre}{\code{numeric}. Minimum recommended N rate
-    (lbs N/acre).}
-  \item{max_n_lbs_acre}{\code{numeric}. Maximum recommended N rate
-    (lbs N/acre).}
-  \item{source}{\code{character}. Short citation for the source(s).
-    Multiple sources are separated by "; ".}
-  \item{min_n_g_m2}{\code{numeric}. Minimum N rate in SI units
-    (g N/m\eqn{^2}). Conversion: 1 lb/acre = 0.112085 g/m\eqn{^2}.}
-  \item{max_n_g_m2}{\code{numeric}. Maximum N rate in SI units
-    (g N/m\eqn{^2}).}
+  \item{pft_group}{Plant functional type group: \code{"row"},
+    \code{"woody"}, or \code{"rice"}.}
+  \item{crop}{Crop name as given in the source.}
+  \item{min_n_lbs_acre, max_n_lbs_acre}{Recommended N rate range
+    (lbs N / acre).}
+  \item{source}{Short citation. Multiple sources are joined with
+    \code{"; "}.}
+  \item{min_n_g_m2, max_n_g_m2}{Same range in SI units (g N / m\eqn{^2}).}
 }
 }
 \source{
-Rosenstock, T. S., Liptzin, D., Six, J., & Tomich, T. P. (2013).
+Rosenstock, T. S., Liptzin, D., Six, J., Tomich, T. P. (2013).
   Nitrogen fertilizer use in California: Assessing the data, trends and a
-  way forward. California Agriculture, 67(1).
+  way forward. California Agriculture 67(1).
   \url{https://escholarship.org/uc/item/5mk2q1sm}
 
-Meyer, R. D., Marcum, D. B., Orloff, S. B., & Schmierer, J. L.
-  (2007). Alfalfa fertilization strategies. UC ANR Publication 8296.
+Meyer, R. D., Marcum, D. B., Orloff, S. B., Schmierer, J. L.
+  (2007). Alfalfa fertilization strategies. UC ANR Publication 8292.
+
+Brown, P. H. et al. (2020). Nitrogen Best Management Practices
+  for Almonds. Almond Board of California. Source for Almonds rates by
+  age.
+
+Lazicki, P., Geisseler, D., Horwath, W. R. (2016). Potato
+  Production in California. CDFA FREP / UC Davis. Source for Potato.
 }
 \usage{
 ca_n_application_rate
 }
 \description{
-Crop-specific recommended nitrogen fertilizer application rates for
-California agriculture. Contains total-season rates (not per-stage
-breakdowns). When multiple sources report rates for the same crop,
-the rate represents the envelope (min of minimums, max of maximums)
-across sources.
+Recommended nitrogen fertilizer application rates for California crops.
+When multiple sources report rates for the same crop the value is the
+envelope across sources. Crops reported only as within year stages
+(Barley, Beans, Cauliflower, Melons) have stages summed to an annual
+total. Crops reported only by age (Almonds) get the envelope across
+ages.
 }
 \seealso{
-\code{\link{look_up_ca_n_rate}} for looking up rates by crop name.
-  \code{\link{look_up_fertilizer_components}} for fertilizer nutrient
-  composition (N/C fractions) from the SWAT/DayCent database.
+\code{\link{look_up_ca_n_rate}}.
 }
 \keyword{datasets}
