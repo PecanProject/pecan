@@ -1,17 +1,15 @@
 ##' @title Subset ensemble data for downscaling
-##' @name SDA_downscale_preprocess
+##' @name subset_ensemble
 ##' @author Sambhav Dixit, David LeBauer
 ##'
 ##' @param ensemble_data EFI standard tibble or data.frame
-##' @param site_coords data.frame with unique site id
+##' @param site_coords A data.frame with a unique `site_id` column.
 ##' @param date Date. The date for the run, must be a date within `ensemble_data`.
-##' @param carbon_pool Character. Carbon pool of interest. Name must match the carbon pool name in ensemble_data.
-##' found within the file or object supplied to 'ensemble_data'.
+##' @param carbon_pool Character. Carbon pool of interest. Name must match a value in `ensemble_data$variable`.
 ##' @details This function subsets ensemble data and ensures that the specified date and
 ##' carbon pool are present in the ensemble data.
 ##'
-##' @return A list containing the cleaned site coordinates and the ensemble carbon output for the
-##' specified date and carbon pool.
+##' @return A data.frame containing `site_id`, `ensemble`, and `prediction` for the specified date and carbon pool.
 ##'
 ##' @export
 
@@ -42,11 +40,11 @@ subset_ensemble <- function(ensemble_data, site_coords, date, carbon_pool) {
   # Filter the ensemble data to the specified date and carbon pool
   ensemble_data <- ensemble_data |>
     dplyr::filter(
-      lubridate::date(datetime) == lubridate::date(date),
-      site_id %in% unique(site_coords$site_id),
-      variable == carbon_pool
+      lubridate::date(.data$datetime) == lubridate::date(date),
+      .data$site_id %in% unique(site_coords$site_id),
+      .data$variable == carbon_pool
     ) |>
-    dplyr::select(site_id, ensemble, prediction) # use site_id instead of site
+    dplyr::select(dplyr::all_of(c("site_id", "ensemble", "prediction")))
 
   if (nrow(ensemble_data) == 0) {
     PEcAn.logger::logger.error("No carbon data found for the specified carbon pool.")
@@ -56,82 +54,13 @@ subset_ensemble <- function(ensemble_data, site_coords, date, carbon_pool) {
   return(ensemble_data)
 }
 
-## Helper function to convert table with lat, lon into an sf object
-.convert_coords_to_sf <- function(coords) {
-  if (inherits(coords, "sf")) {
-    return(coords)
-  } else if (is.data.frame(coords)) {
-    if (!all(c("lon", "lat") %in% names(coords))) {
-      PEcAn.logger::logger.error("Coordinates data frame must contain 'lon' and 'lat'.")
-    }
-    return(sf::st_as_sf(coords, coords = c("lon", "lat"), crs = 4326))
-  } else {
-    PEcAn.logger::logger.error("Unsupported coordinates format. Must be an sf object or a data.frame.")
-  }
-}
-
-## Helper function to convert sf object into table with lat, lon
-.convert_sf_to_coords <- function(sf_obj) {
-  # Check if it's an sf object
-  if (!inherits(sf_obj, "sf")) {
-    PEcAn.logger::logger.error("Input must be an 'sf' object.")
-  }
-
-  # Extract the geometry into columns named lon/lat
-  coord_mat <- sf::st_coordinates(sf_obj)
-  colnames(coord_mat) <- c("lon", "lat")
-
-  # Drop the geometry column from the sf, then bind coordinate columns
-  out <- sf_obj %>%
-    sf::st_drop_geometry() %>%
-    tibble::as_tibble() %>%
-    dplyr::bind_cols(as.data.frame(coord_mat))
-  return(out)
-}
-
-##' @noRd
-##'
-##' @title Create folds function
-##' @name .create_folds
-##' @author Sambhav Dixit
-##'
-##' @param y Vector. A vector of outcome data or indices.
-##' @param k Numeric. The number of folds to create.
-##' @param list Logical. If TRUE, returns a list of fold indices. If FALSE, returns a vector.
-##' @param returnTrain Logical. If TRUE, returns indices for training sets. If FALSE, returns indices for test sets.
-##' @details This function creates k-fold indices for cross-validation. It can return either training or test set indices, and the output can be in list or vector format.
-##'
-##' @description This function generates k-fold indices for cross-validation, allowing for flexible output formats.
-##'
-##' @return A list of k elements (if list = TRUE), each containing indices for a fold, or a vector of indices (if list = FALSE).
-
-.create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
-  n <- length(y)
-  indices <- seq_len(n)
-  folds <- split(indices, cut(seq_len(n), breaks = k, labels = FALSE))
-
-  if (!returnTrain) {
-    folds <- folds # Test indices are already what we want
-  } else {
-    folds <- lapply(folds, function(x) indices[-x]) # Return training indices
-  }
-
-  if (!list) {
-    folds <- unlist(folds)
-  }
-
-  return(folds)
-}
-
-
-
 ##' @title Ensemble Downscale
 ##' @name ensemble_downscale
 ##' @author Joshua Ploshay, Sambhav Dixit, David LeBauer
 ##'
 ##' @param ensemble_data EFI standard tibble or data.frame. Contains carbon data for downscaling.
 ##' @param site_coords data.frame, tibble, or sf object. Design points. If not sf object, must have
-##' 'lon' and 'lat' columns. Must have unique identifier 'site' field.
+##' 'lon' and 'lat' columns. Must have a unique `site_id` field.
 ##' @param covariates table containing numeric predictors to be used in downscaling.
 ##' Must have unique identifier 'site_id' field and predictor attributes
 ##' @details This function will downscale forecast data to unmodeled locations using covariates and site locations
@@ -148,7 +77,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
   ## - Add CNN functionality, use tidymodels?
 
   # Dynamically get covariate names
-  covariate_names <- colnames(covariates |> dplyr::select(-site_id))
+  covariate_names <- colnames(covariates |> dplyr::select(-dplyr::all_of("site_id")))
   # Drop zero-variance predictors (lead to NaN on scale())
   if (length(covariate_names) > 0) {
     cov_num <- as.data.frame(covariates[, covariate_names, drop = FALSE])
@@ -173,7 +102,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
       PEcAn.logger::logger.severe(
         "Non-finite values present after scaling in predictors:",
         paste(bad_cols, collapse = ", "),
-        " <U+2014> please fix upstream covariates."
+        "; please fix upstream covariates."
       )
     }
   }
@@ -197,15 +126,14 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
     paste("Start downscaling with", n_ensembles, "ensembles.")
   )
 
-  results <- furrr::future_map(seq_along(ensembles), function(i) {
-    ens_label <- ensembles[i]
+  downscale_one_ensemble <- function(ens_label, i) {
     formula <- as.formula(
       paste("prediction ~", paste(covariate_names, collapse = " + "))
     )
 
     # Build a per-ensemble stratified split (80/20), guaranteeing at least 1 train row
     ens_data <- design_pt_data |>
-      dplyr::filter(ensemble == ens_label)
+      dplyr::filter(.data$ensemble == ens_label)
     # Assert no NA in per-ensemble predictors (from join) before splitting
     if (length(covariate_names) > 0) {
       ens_preds <- as.data.frame(ens_data[, covariate_names, drop = FALSE])
@@ -325,9 +253,14 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
       test_data = .test_data,
       test_prediction = test_prediction
     )
-  },
-  .progress = TRUE,
-  .options = furrr::furrr_options(seed = TRUE) # Use global seed to silence warnings
+  }
+
+  results <- furrr::future_map2(
+    ensembles,
+    seq_along(ensembles),
+    downscale_one_ensemble,
+    .progress = TRUE,
+    .options = furrr::furrr_options(seed = TRUE) # Use global seed to silence warnings
   )
 
   # Organize the results into a single output list
@@ -351,21 +284,18 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
 ##'
 ##' @param downscale_output List. Output from the downscale function, containing data, models, maps, predictions,
 ##' and test predictions for each ensemble.
-##' @param carbon_pool Character. Name of the carbon pool used in the downscaling process.
-##'
-##' @details This function calculates performance metrics for the downscaling results. It computes Mean Squared Error (MSE),
+##' @details This function calculates performance metrics for the downscaling results. It computes Root Mean Squared Error (RMSE),
 ##' Mean Absolute Error (MAE), and R-squared for each ensemble. The function uses the actual values from the testing data and
 ##' the predictions generated during the downscaling process.
 ##'
 ##' @description This function takes the output from the downscale function and computes various performance metrics for each ensemble.
 ##' It provides a way to evaluate the accuracy of the downscaling results without modifying the main downscaling function.
 ##'
-##' @return A list of metrics for each ensemble, where each element contains MAE , RMSE ,R_squared ,CV,
-##' and actual values from testing data and predicted values for the testing data
+##' @return A data.frame with mean, RMSE, MAE, R-squared, and coefficient of variation for each ensemble.
 ##'
 ##' @export
 downscale_metrics <- function(downscale_output) {
-  test_data_list <- lapply(downscale_output$test_data, function(x) dplyr::pull(x, prediction))
+  test_data_list <- lapply(downscale_output$test_data, `[[`, "prediction")
   predicted_list <- downscale_output$test_predictions
 
   metric_fn <- function(actual, predicted) { # Could use PEcAn.benchmark pkg?

@@ -6,19 +6,16 @@
 \usage{
 SDA_downscale(
   preprocessed,
-  date = NULL,
   carbon_pool,
   covariates,
-  model_type = "rf",
+  model_type = c("rf", "cnn"),
   seed = NULL
 )
 }
 \arguments{
 \item{preprocessed}{List. Preprocessed data returned as an output from the SDA_downscale_preprocess function.}
 
-\item{date}{*Deprecated*. This argument has never been used and will be removed after 2026-04-01}
-
-\item{carbon_pool}{Character. Carbon pool of interest. Name must match carbon pool name found within file supplied to 'preprocessed' from the 'ensemble_data'.}
+\item{carbon_pool}{Character. Carbon pool of interest. Name must match the carbon pool in `preprocessed`.}
 
 \item{covariates}{SpatRaster stack or sf object. Used as predictors in downscaling. If providing a raster stack, layers should be named. If providing an sf object, predictor attributes should be present.}
 

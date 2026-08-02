@@ -3,32 +3,19 @@
 ##' @author Sambhav Dixit
 ##' @author David LeBauer
 ##'
-##' @param ensemble_data Character or list. Either a file path to an `.rds` file containing ensemble data, or an in-memory list where each element is a data.frame indexed by date.
-##' @param site_coordinates Character, data.frame, or sf object. Either:
-##'   - A file path to a `.csv` containing site coordinates with columns `"id"`, `"lat"`, and `"lon"`.
-##'   - A `data.frame` with the same structure.
-##'   - An `sf` object with point geometries.
-##' @param date Date. The date for the run, must be a year within `ensemble_data`.
-##' @param carbon_pool Character. Carbon pool of interest. Name must match the carbon pool name found within the file or object supplied to 'ensemble_data'.
-##' @details This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and aligns the number of rows between site coordinates and carbon data.
+##' @param ensemble_data List where each element is a data.frame indexed by date.
+##' @param site_coords A data.frame with `lon` and `lat` columns, or an sf object with point geometries.
+##' @param date Date. The date for the run, which must occur within `ensemble_data`.
+##' @param carbon_pool Character. Carbon pool of interest. Name must match a column in `ensemble_data`.
+##' @details This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and requires site coordinates and carbon data to have the same number of rows.
 ##'
-##' @description This function reads and checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
+##' @description This function checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
 ##'
-##' @return A list containing The read .rds data , The cleaned site coordinates, and the preprocessed carbon data.
+##' @return A list containing the input data, cleaned site coordinates, and preprocessed carbon data.
 
 SDA_downscale_preprocess <- function(ensemble_data, site_coords, date, carbon_pool) {
-  # Read the input data and site coordinates (if inputs are file paths, load them; otherwise, use as provided)
-  if (is.character(ensemble_data)) {
-    input_data <- readRDS(ensemble_data)
-  } else {
-    input_data <- ensemble_data
-  }
-
-  if (is.character(site_coords)) {
-    site_coordinates <- readr::read_csv(site_coords, show_col_types = FALSE)
-  } else {
-    site_coordinates <- site_coords
-  }
+  input_data <- ensemble_data
+  site_coordinates <- site_coords
 
   # If sf object, convert to data.frame with 'lon' and 'lat'
   if (inherits(site_coordinates, "sf")) {
@@ -48,10 +35,7 @@ SDA_downscale_preprocess <- function(ensemble_data, site_coords, date, carbon_po
   input_date_names <- lubridate::ymd(names(input_data))
   names(input_data) <- input_date_names
 
-  # Ensure 'date' is a Date object, if not, convert
-  if (!inherits(date, "Date")) {
-    standard_date <- lubridate::ymd(date)
-  }
+  standard_date <- lubridate::ymd(date)
 
   # Ensure the date exists in the input data
   if (!standard_date %in% input_date_names) {
@@ -79,78 +63,19 @@ SDA_downscale_preprocess <- function(ensemble_data, site_coords, date, carbon_po
       "There are", nrow(site_coordinates), "row(s) in site coordinates and",
       nrow(carbon_data), "row(s) in carbon data."
     )
-    PEcAn.logger::logger.error("I am not sure how to reconcile these differences.")
-    # see https://github.com/PecanProject/pecan/pull/3431/files#r1953601359
-  #    if (nrow(site_coordinates) > nrow(carbon_data)) {
-  #      PEcAn.logger::logger.info("Truncating site coordinates to match carbon data rows.")
-  #      site_coordinates <- site_coordinates[seq_len(nrow(carbon_data)), ]
-  #    } else {
-  #      PEcAn.logger::logger.info("Truncating carbon data to match site coordinates rows.")
-  #      carbon_data <- carbon_data[seq_len(nrow(site_coordinates)), ]
-  #    }
+    PEcAn.logger::logger.severe("I am not sure how to reconcile these differences.")
   }
 
   PEcAn.logger::logger.info("Preprocessing completed successfully.")
   return(list(input_data = input_data, site_coordinates = site_coordinates, carbon_data = carbon_data))
 }
 
-## Helper function to convert coordinates into an sf object
-.convert_coords_to_sf <- function(coords) {
-  if (inherits(coords, "sf")) {
-    return(coords)
-  } else if (is.data.frame(coords)) {
-    if (!all(c("lon", "lat") %in% names(coords))) {
-      PEcAn.logger::logger.error("Coordinates data frame must contain 'lon' and 'lat'.")
-    }
-    return(sf::st_as_sf(coords, coords = c("lon", "lat"), crs = 4326))
-  } else {
-    PEcAn.logger::logger.error("Unsupported coordinates format. Must be an sf object or a data.frame.")
-  }
-}
-
-##' @noRd
-##'
-##' @title Create folds function
-##' @name .create_folds
-##' @author Sambhav Dixit
-##'
-##' @param y Vector. A vector of outcome data or indices.
-##' @param k Numeric. The number of folds to create.
-##' @param list Logical. If TRUE, returns a list of fold indices. If FALSE, returns a vector.
-##' @param returnTrain Logical. If TRUE, returns indices for training sets. If FALSE, returns indices for test sets.
-##' @details This function creates k-fold indices for cross-validation. It can return either training or test set indices, and the output can be in list or vector format.
-##'
-##' @description This function generates k-fold indices for cross-validation, allowing for flexible output formats.
-##'
-##' @return A list of k elements (if list = TRUE), each containing indices for a fold, or a vector of indices (if list = FALSE).
-
-.create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
-  n <- length(y)
-  indices <- seq_len(n)
-  folds <- split(indices, cut(seq_len(n), breaks = k, labels = FALSE))
-
-  if (!returnTrain) {
-    folds <- folds # Test indices are already what we want
-  } else {
-    folds <- lapply(folds, function(x) indices[-x]) # Return training indices
-  }
-
-  if (!list) {
-    folds <- unlist(folds)
-  }
-
-  return(folds)
-}
-
-
-
 ##' @title SDA Downscale Function
 ##' @name SDA_downscale
 ##' @author Joshua Ploshay, Sambhav Dixit
 ##'
 ##' @param preprocessed List. Preprocessed data returned as an output from the SDA_downscale_preprocess function.
-##' @param date *Deprecated*. This argument has never been used and will be removed after 2026-04-01
-##' @param carbon_pool Character. Carbon pool of interest. Name must match carbon pool name found within file supplied to 'preprocessed' from the 'ensemble_data'.
+##' @param carbon_pool Character. Carbon pool of interest. Name must match the carbon pool in `preprocessed`.
 ##' @param covariates SpatRaster stack or sf object. Used as predictors in downscaling. If providing a raster stack, layers should be named. If providing an sf object, predictor attributes should be present.
 ##' @param model_type Character. Either "rf" for Random Forest or "cnn" for Convolutional Neural Network. Default is Random Forest.
 ##' @param seed Numeric or NULL. Optional seed for random number generation. Default is NULL.
@@ -160,22 +85,16 @@ SDA_downscale_preprocess <- function(ensemble_data, site_coords, date, carbon_po
 ##'
 ##' @return A list containing the training and testing data sets, models, predicted maps for each ensemble member, and predictions for testing data.
 
-SDA_downscale <- function(preprocessed, date = NULL, carbon_pool, covariates, model_type = "rf", seed = NULL) {
-  if (!missing(date)) {
-    ## If you see this and it is after 2026-04-01, please remove
-    #    1. line starting with ##' @param date
-    #    2. date = NULL from function call
-    #    3. this conditional starting with if (!missing(date)) and ending after the warning below
-    PEcAn.logger::logger.warn("'date' argument is not used and will be removed on or after 2026-04-01. It is currently ignored.", call. = FALSE)
-  }
+SDA_downscale <- function(preprocessed, carbon_pool, covariates, model_type = c("rf", "cnn"), seed = NULL) {
+  model_type <- match.arg(model_type)
   carbon_data <- preprocessed$carbon_data
 
   # Convert site coordinates to an sf object using the helper function
   site_coordinates_sf <- .convert_coords_to_sf(preprocessed$site_coordinates)
 
-  # Extract predictors from covariates <U+2013> support both SpatRaster and sf objects:
+  # Extract predictors from SpatRaster or sf covariates
   if (inherits(covariates, "SpatRaster")) {
-    # For raster objects, convert the sf coordinates to SpatVector before extraction
+    # Extract raster values at the site coordinates
     predictors <- as.data.frame(terra::extract(covariates, terra::vect(site_coordinates_sf), ID = FALSE))
   } else if (inherits(covariates, "sf")) {
     # For sf objects, spatial join
@@ -228,7 +147,8 @@ SDA_downscale <- function(preprocessed, date = NULL, carbon_pool, covariates, mo
     for (i in seq_along(carbon_data)) {
       ensemble_col <- paste0("ensemble", i)
       formula <- stats::as.formula(paste(ensemble_col, "~", paste(covariate_names, collapse = " + ")))
-      models[[i]] <- randomForest::randomForest(formula,
+      models[[i]] <- randomForest::randomForest(
+        formula,
         data = train_data,
         ntree = 1000,
         na.action = stats::na.omit,
@@ -377,8 +297,6 @@ SDA_downscale <- function(preprocessed, date = NULL, carbon_pool, covariates, mo
       # Make predictions on held-out test data
       predictions[[i]] <- cnn_ensemble_predict(models[[i]], x_data[-sample, ], scaling_params)
     }
-  } else {
-    PEcAn.logger::logger.error("Invalid model_type. Please choose either 'rf' for Random Forest or 'cnn' for Convolutional Neural Network.")
   }
 
   # Organize the results into a single output list

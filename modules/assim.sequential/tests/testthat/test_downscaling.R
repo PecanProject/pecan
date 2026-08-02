@@ -1,82 +1,104 @@
-# Test setup: temporary datasets and files
-withr::with_tempdir({
-  temp_ensemble_data_rds <- "ensemble_data.rds"
-  temp_coords_csv <- "final_design_points.csv"
-  file.remove(temp_ensemble_data_rds, temp_coords_csv)
-
-  set.seed(123)
+test_that("SDA_downscale_preprocess accepts in-memory inputs", {
   ensemble_data <- list(
     "2020-01-01" = data.frame(
       site_id = 1:10,
-      SOC = runif(10, 8, 15),
-      AGB = runif(10, -0.5, 0.5)
+      SOC = seq(8, 15, length.out = 10),
+      AGB = seq(-0.5, 0.5, length.out = 10)
     )
   )
-  saveRDS(ensemble_data, temp_ensemble_data)
 
-  # Generate test coordinates with 10 values
   site_coordinates <- data.frame(
-    id = 1:10,
-    lat = runif(10, 33.5, 34.5),
-    lon = runif(10, -118, -117)
+    id = 1,
+    lat = 34,
+    lon = -117.5
   )
-  write.csv(site_coordinates, temp_coords_csv, row.names = FALSE)
 
-  # Test `SDA_downscale_preprocess`
-  test_that("SDA_downscale_preprocess handles both file and objects as inputs", {
-    # file inputs
-    processed_data <- SDA_downscale_preprocess(
-      ensemble_data = temp_ensemble_data_rds,
-      date = "2020-01-01",
-      carbon_pool = "SOC",
-      site_coords = site_coordinates
+  processed_data <- SDA_downscale_preprocess(
+    ensemble_data = ensemble_data,
+    date = as.Date("2020-01-01"),
+    carbon_pool = "SOC",
+    site_coords = site_coordinates
+  )
+
+  expect_named(
+    processed_data,
+    c("input_data", "site_coordinates", "carbon_data")
+  )
+  expect_named(
+    processed_data$site_coordinates,
+    c("id", "lat", "lon")
+  )
+  expect_s3_class(processed_data$carbon_data, "data.frame")
+  expect_named(
+    processed_data$carbon_data,
+    paste0("ensemble", 1:10)
+  )
+
+})
+
+test_that("SDA_downscale_preprocess rejects mismatched coordinates", {
+  ensemble_data <- list(
+    "2020-01-01" = data.frame(
+      site_id = 1:10,
+      SOC = seq(8, 15, length.out = 10),
+      AGB = seq(-0.5, 0.5, length.out = 10)
     )
-    # object inputs
-    processed_data2 <- SDA_downscale_preprocess(
+  )
+  site_coordinates <- data.frame(
+    id = 1,
+    lat = 34,
+    lon = -117.5
+  )
+
+  expect_error(
+    SDA_downscale_preprocess(
       ensemble_data = ensemble_data,
-      date = "2020-01-01",
+      date = as.Date("2020-01-01"),
       carbon_pool = "SOC",
-      site_coords = temp_coords_csv
+      site_coords = site_coordinates[rep(1, 2), ]
+    ),
+    "not sure how to reconcile"
+  )
+
+})
+
+test_that("SDA_downscale returns models, maps, and predictions", {
+  ensemble_data <- list(
+    "2020-01-01" = data.frame(
+      site_id = 1:10,
+      SOC = seq(8, 15, length.out = 10),
+      AGB = seq(-0.5, 0.5, length.out = 10)
     )
-    expect_identical(processed_data, processed_data2)
-
-    expect_true(is.list(processed_data))
-    expect_true("input_data" %in% names(processed_data))
-    expect_true("site_coordinates" %in% names(processed_data))
-    expect_true("carbon_data" %in% names(processed_data))
-    expect_true(is.data.frame(processed_data$site_coordinates))
-    expect_true("id" %in% colnames(processed_data$site_coordinates))
-    expect_true("lat" %in% colnames(processed_data$site_coordinates))
-    expect_true("lon" %in% colnames(processed_data$site_coordinates))
-    expect_true(is.data.frame(processed_data$carbon_data))
-    expect_true("ensemble1" %in% colnames(processed_data$carbon_data))
-  })
-
-  # Generate test raster data
+  )
   r <- terra::rast(ncols = 10, nrows = 10)
-  values(r) <- runif(100)
+  terra::values(r) <- seq_len(terra::ncell(r))
 
-  # Create preprocessed data object with 10 values
   preprocessed <- list(
     input_data = ensemble_data,
-    site_coordinates = site_coordinates,
+    site_coordinates = sf::st_as_sf(
+      data.frame(
+        id = 1:10,
+        lat = seq(33.5, 34.5, length.out = 10),
+        lon = seq(-118, -117, length.out = 10)
+      ),
+      coords = c("lon", "lat"),
+      crs = 4326
+    ),
     carbon_data = data.frame(
-      ensemble1 = runif(10, 8, 15)
+      ensemble1 = seq(8, 15, length.out = 10)
     )
   )
 
-  # Test `SDA_downscale`
-  test_that("SDA_downscale works with sf coordinates and raster covariates", {
-    downscaled_results <- SDA_downscale(
-      preprocessed = preprocessed,
-      carbon_pool = "SOC",
-      covariates = r,
-      model_type = "rf"
-    )
+  downscaled_results <- SDA_downscale(
+    preprocessed = preprocessed,
+    carbon_pool = "SOC",
+    covariates = r,
+    model_type = "rf",
+    seed = 123
+  )
 
-    expect_true(is.list(downscaled_results))
-    expect_true("data" %in% names(downscaled_results))
-    expect_true("models" %in% names(downscaled_results))
-    expect_true("maps" %in% names(downscaled_results))
-  })
+  expect_contains(
+    names(downscaled_results),
+    c("data", "models", "maps")
+  )
 })

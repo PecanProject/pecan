@@ -4,21 +4,19 @@
 \alias{ensemble_downscale}
 \title{Ensemble Downscale}
 \usage{
-ensemble_downscale(ensemble_data, site_coords, covariates, seed = NULL)
+ensemble_downscale(ensemble_data, site_coords, covariates)
 }
 \arguments{
 \item{ensemble_data}{EFI standard tibble or data.frame. Contains carbon data for downscaling.}
 
 \item{site_coords}{data.frame, tibble, or sf object. Design points. If not sf object, must have
-'lon' and 'lat' columns. Must have unique identifier 'site' field.}
+'lon' and 'lat' columns. Must have a unique `site_id` field.}
 
-\item{covariates}{table containing numeric predictors to be used in downscaling. 
+\item{covariates}{table containing numeric predictors to be used in downscaling.
 Must have unique identifier 'site_id' field and predictor attributes}
-
-\item{seed}{Numeric or NULL. Optional seed for random number generation. Default is NULL.}
 }
 \value{
-A list containing the model, predictions for all values of covariates as well as test data and test predictions for downstream 
+A list containing the model, predictions for all values of covariates as well as test data and test predictions for downstream
 statistics.
 }
 \description{

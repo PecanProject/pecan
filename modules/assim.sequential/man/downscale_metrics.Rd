@@ -7,21 +7,19 @@
 downscale_metrics(downscale_output)
 }
 \arguments{
-\item{downscale_output}{List. Output from the downscale function, containing data, models, maps, predictions, 
+\item{downscale_output}{List. Output from the downscale function, containing data, models, maps, predictions,
 and test predictions for each ensemble.}
-
-\item{carbon_pool}{Character. Name of the carbon pool used in the downscaling process.}
 }
 \value{
-A list of metrics for each ensemble, where each element contains MAE , MSE ,R_squared ,actual values from testing data and predicted values for the testing data
+A data.frame with mean, RMSE, MAE, R-squared, and coefficient of variation for each ensemble.
 }
 \description{
-This function takes the output from the downscale function and computes various performance metrics for each ensemble. 
+This function takes the output from the downscale function and computes various performance metrics for each ensemble.
 It provides a way to evaluate the accuracy of the downscaling results without modifying the main downscaling function.
 }
 \details{
-This function calculates performance metrics for the downscaling results. It computes Mean Squared Error (MSE), 
-Mean Absolute Error (MAE), and R-squared for each ensemble. The function uses the actual values from the testing data and 
+This function calculates performance metrics for the downscaling results. It computes Root Mean Squared Error (RMSE),
+Mean Absolute Error (MAE), and R-squared for each ensemble. The function uses the actual values from the testing data and
 the predictions generated during the downscaling process.
 }
 \author{
