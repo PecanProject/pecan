@@ -142,7 +142,7 @@ SDA_downscale <- function(preprocessed, carbon_pool, covariates, model_type = c(
   models <- list()
   maps <- list()
   predictions <- list()
-
+# TODO: Consider extracting the RF and CNN branches into dedicated helper functions.
   if (model_type == "rf") {
     for (i in seq_along(carbon_data)) {
       ensemble_col <- paste0("ensemble", i)
@@ -155,7 +155,8 @@ SDA_downscale <- function(preprocessed, carbon_pool, covariates, model_type = c(
         keep.forest = TRUE,
         importance = TRUE
       )
-
+# TODO: Separate model fitting and held-out evaluation from spatial map prediction,
+# so models can be evaluated without the cost of generating raster maps.
       maps[[i]] <- terra::predict(covariates, model = models[[i]], na.rm = TRUE)
       predictions[[i]] <- stats::predict(models[[i]], test_data)
     }
