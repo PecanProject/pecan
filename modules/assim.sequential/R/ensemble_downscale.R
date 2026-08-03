@@ -127,7 +127,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
   )
 
   downscale_one_ensemble <- function(ens_label, i) {
-    formula <- as.formula(
+    formula <- stats::as.formula(
       paste("prediction ~", paste(covariate_names, collapse = " + "))
     )
 
@@ -211,7 +211,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
       "with", nrow(scaled_covariates), "design points."
     )
     start <- Sys.time()
-    prediction <- predict(model, scaled_covariates)
+    prediction <- stats::predict(model, scaled_covariates)
     end <- Sys.time()
     ### Optimization notes for when we scale up:
     ### for speed as this scales up use ranger::predict
@@ -245,7 +245,7 @@ ensemble_downscale <- function(ensemble_data, site_coords, covariates) {
         )
       }
     }
-    test_prediction <- predict(model, .test_data)
+    test_prediction <- stats::predict(model, .test_data)
 
     list(
       model = model,

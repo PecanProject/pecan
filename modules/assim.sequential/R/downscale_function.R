@@ -20,7 +20,7 @@ SDA_downscale_preprocess <- function(ensemble_data, site_coords, date, carbon_po
   # If sf object, convert to data.frame with 'lon' and 'lat'
   if (inherits(site_coordinates, "sf")) {
     site_coordinates <- sf::st_coordinates(site_coordinates) |>
-      dplyr::rename(lon = X, lat = Y) |>
+      dplyr::rename(lon = .data$X, lat = .data$Y) |>
       dplyr::bind_cols(
         site_coordinates
       )
