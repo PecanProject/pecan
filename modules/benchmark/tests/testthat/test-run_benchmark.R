@@ -14,7 +14,7 @@ test_that("run_benchmark returns correct structure", {
   expect_true("metrics" %in% names(res))
   expect_true("aligned" %in% names(res))
   expect_true("plot"    %in% names(res))
-  expect_equal(nrow(res$metrics), 2)
+  expect_equal(nrow(res$metrics), 1)
 })
 
 test_that("bm_validate rejects bad input", {
@@ -35,10 +35,10 @@ test_that("compute_metrics returns correct values", {
     obvs  = c(1, 2, 3, 4)
   )
   res <- compute_metrics(aligned, c("RMSE", "MAE", "NSE", "R2"))
-  expect_equal(res$value[res$metric == "RMSE"], 0)
-  expect_equal(res$value[res$metric == "MAE"],  0)
-  expect_equal(res$value[res$metric == "NSE"],  1)
-  expect_equal(res$value[res$metric == "R2"],   1)
+  expect_equal(res$RMSE[1], 0)
+  expect_equal(res$MAE[1],  0)
+  expect_equal(res$NSE[1],  1)
+  expect_equal(res$R2[1],   1)
 })
 
 test_that("register_metric extends the registry", {
@@ -49,7 +49,7 @@ test_that("register_metric extends the registry", {
   )
   register_metric("CUSTOM", function(dat) 999)
   res <- compute_metrics(aligned, c("CUSTOM"))
-  expect_equal(res$value[res$metric == "CUSTOM"], 999)
+  expect_equal(res$CUSTOM[1], 999)
 })
 
 test_that("align_by_time matches exact timestamps", {

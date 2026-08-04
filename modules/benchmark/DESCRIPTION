@@ -46,6 +46,8 @@ Imports:
     zoo,
     yaml
 Suggests:
+    quarto,
+    scoringRules,
     PEcAn.data.land,
     testthat (>= 2.0.0)
 License: BSD_3_clause + file LICENSE

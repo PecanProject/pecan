@@ -1,0 +1,41 @@
+{
+  "cVeg": [
+    "CABLE-POP",
+    "CLM5.0",
+    "ED",
+    "IBIS",
+    "ISAM",
+    "JSBACH",
+    "JULES",
+    "LPJ-GUESS",
+    "LPJml",
+    "LPJwsl",
+    "LPX",
+    "OCN",
+    "ORCHIDEE",
+    "SDGVM"
+  ],
+  "lai": [
+    "CABLE-POP",
+    "ELM",
+    "IBIS",
+    "ISBA-CTRIP",
+    "JSBACH",
+    "JULES",
+    "ORCHIDEE"
+  ],
+  "cSoil": [
+    "CABLE-POP",
+    "ED",
+    "IBIS",
+    "JSBACH",
+    "JULES",
+    "LPJ-GUESS",
+    "LPJml",
+    "LPJwsl",
+    "LPX",
+    "OCN",
+    "ORCHIDEE",
+    "SDGVM"
+  ]
+}
