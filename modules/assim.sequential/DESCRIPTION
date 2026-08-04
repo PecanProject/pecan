@@ -42,7 +42,6 @@ Suggests:
     ggrepel,
     glue,
     ggpubr,
-    ggrepel,
     gridExtra,
     keras3 (>= 1.0.0),
     itertools,
