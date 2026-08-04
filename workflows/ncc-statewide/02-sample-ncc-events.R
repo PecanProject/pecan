@@ -59,26 +59,49 @@ if (nrow(unmatched) > 0L) {
 }
 
 allowed_classes <- list(
-  annual = c("green", "food", "yard", "ag"),
-  perennial = c("green", "food", "yard", "ag", "wood")
+  annual = c("food", "yard", "ag"),
+  perennial = c("food", "yard", "ag", "wood")
 )
 family_structure <- c(annual = "rows", perennial = "trees")
 
-mat_idx_by_family <- purrr::imap(allowed_classes, function(cls, fam) {
-  which(amendments$crop_structure == family_structure[[fam]] &
-        amendments$material_class %in% cls)
-})
+# a class outside this set would join cleanly but be excluded from every pool
+# without trace, so check it rather than let materials disappear
+unknown_class <- setdiff(amendments$material_class, unlist(allowed_classes))
+if (length(unknown_class) > 0L) {
+  PEcAn.logger::logger.severe(
+    "material_class values not covered by allowed_classes: ",
+    paste(sort(unknown_class), collapse = ", "))
+}
 
-# one material draw per event row, conditional on pft family. index with
-# sample.int so a length-1 pool is not reinterpreted as a range by sample()
-events$mat_idx <- vapply(
-  events$pft_family,
-  function(fam) {
-    pool <- mat_idx_by_family[[fam]]
-    pool[sample.int(length(pool), 1L)]
-  },
-  integer(1)
-)
+# group each family's eligible rows by material. drawing the joined rows
+# directly would weight a material by how many sources report it, so the three
+# two-source materials would come up twice as often as any other
+pool_by_material <- function(family) {
+  rows <- which(amendments$crop_structure == family_structure[[family]] &
+                amendments$material_class %in% allowed_classes[[family]])
+  split(rows, amendments$material[rows])
+}
+families <- stats::setNames(names(allowed_classes), names(allowed_classes))
+pools <- lapply(families, pool_by_material)
+
+# uniform over materials, then uniform over that material's sources, so source
+# disagreement stays in the ensemble without biasing which material is picked.
+# drawn per family in one pass: a closure per event row costs millions of calls
+# at statewide scale
+draw_material_rows <- function(pool, n) {
+  n_source <- lengths(pool)
+  flat <- unlist(pool, use.names = FALSE)
+  offset <- cumsum(c(0L, n_source[-length(n_source)]))
+  material <- sample.int(length(pool), n, replace = TRUE)
+  within <- ceiling(stats::runif(n) * n_source[material])
+  flat[offset[material] + within]
+}
+
+events$mat_idx <- NA_integer_
+for (fam in names(pools)) {
+  sel <- which(events$pft_family == fam)
+  events$mat_idx[sel] <- draw_material_rows(pools[[fam]], length(sel))
+}
 
 mat_cols <- amendments[events$mat_idx,
                        c("material", "material_class",
