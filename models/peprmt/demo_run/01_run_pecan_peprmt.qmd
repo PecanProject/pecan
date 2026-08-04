@@ -1,8 +1,6 @@
 ---
 title: "Running PEPRMT Using PEcAn"
 author: 
-  - "Aritra Dey"
-  - "David LeBauer"
   - "Abby Lewis"
 format:
   html: default
@@ -29,10 +27,10 @@ PEcAn (Predictive Ecosystem Analyzer) is a scientific workflow system designed t
 
 ## What This Notebook Does
 
-This notebook demonstrates how to:
+This notebook is patterned after [PEcAn demo 1](https://pecanproject.github.io/pecan-documentation/develop/run-demo-1.html), which was written by Aritra Dey and David LeBauer. It demonstrates how to:
 
 1.  Set up and configure a PEcAn workflow
-2.  Run an ecosystem model simulation
+2.  Run an ecosystem model simulation using the PEPRMT model
 3.  Analyze and visualize the results
 
 ### The Scenario Being Modeled:
