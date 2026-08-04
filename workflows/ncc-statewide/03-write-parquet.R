@@ -15,18 +15,21 @@ if (!file.exists(events_file)) {
 PEcAn.logger::logger.info("Reading events from ", events_file)
 events <- readRDS(events_file)
 
-# split total N using PAN (plant available N at 4 weeks). pan_pct can be
-# negative for high C:N materials (immobilization); clamp to 0 in that
-# case since SIPNET doesn't take negative minN. total C is just bulk
-# material carbon, doesn't depend on PAN
+# all amendment N enters as organic N. PAN is an empirical estimate of N
+# availability over four weeks, not mineral N present at application, so it
+# is not used to populate the mineral pools; SIPNET mineralizes the organic
+# pool itself from the C:N it is given. mineral N is reported only when it
+# is known to be present at application, which these materials do not
+# report, so both mineral pools are zero. carrying the whole N as organic
+# also keeps org_c/org_n equal to the material C:N, which is what drives
+# decomposition in SIPNET
 out <- events |>
   dplyr::mutate(
     dry_mass_kg_m2 = PEcAn.utils::ud_convert(.data$app_rate_lb_acre, "lb/acre", "kg/m^2"),
     total_n_kg_m2 = .data$dry_mass_kg_m2 * (.data$n_pct / 100),
-    pan_frac = pmax(0, .data$pan_pct / 100),
-    nh4_n_kg_m2 = .data$total_n_kg_m2 * .data$pan_frac,
-    org_n_kg_m2 = .data$total_n_kg_m2 * (1 - .data$pan_frac),
+    org_n_kg_m2 = .data$total_n_kg_m2,
     org_c_kg_m2 = .data$total_n_kg_m2 * .data$cn_ratio,
+    nh4_n_kg_m2 = 0,
     no3_n_kg_m2 = 0
   ) |>
   dplyr::transmute(
@@ -82,6 +85,15 @@ if (workers > 1) {
   written <- parallel::mclapply(batches, write_batch, mc.cores = workers)
 } else {
   written <- lapply(batches, write_batch)
+}
+
+# mclapply returns a try-error per failed worker rather than raising, so a
+# partial write would otherwise be reported as success
+failed <- vapply(written, inherits, logical(1), what = "try-error")
+if (any(failed)) {
+  PEcAn.logger::logger.severe(sprintf(
+    "%d of %d shard writes failed. First error: %s",
+    sum(failed), length(written), conditionMessage(attr(written[failed][[1]], "condition"))))
 }
 
 PEcAn.logger::logger.info(sprintf(
