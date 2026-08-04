@@ -1,14 +1,16 @@
 # Statewide fertilization events workflow
 
-Builds an ensemble of synthetic N fertilization events for every California ag parcel in the LandIQ crops product, for 2016 and 2018 to 2023. 2017 is skipped because LandIQ did not run a statewide survey that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
+Builds an ensemble of synthetic N fertilization events for every California ag parcel in the harmonized CADWR Land Use crop map, for 2016 and 2018 to 2023. 2017 is skipped because no statewide survey was flown that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
+
+Source: California Department of Water Resources. (2016-2023). Statewide Crop Mapping. California Natural Resources Agency Open Data. https://data.cnra.ca.gov/dataset/statewide-crop-mapping
 
 # Config
 
 Configuration parameters live in `config.yml`. Most setups only need:
 
-- `crops_path`: the LandIQ harmonized crops parquet
+- `crops_path`: the harmonized CADWR Land Use crops parquet
 - `phen_dir`: the gap-filled phenology (green-up) directory
-- `crosswalk_path`: the LandIQ to FREP to UC ANR crop name crosswalk TSV
+- `crosswalk_path`: the CADWR to FREP to UC ANR crop name crosswalk TSV
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
 - `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 0.5 for a 50/50 split)
