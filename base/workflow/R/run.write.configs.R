@@ -1,6 +1,5 @@
 #' Write model-specific run scripts and configuration files
 #'
-#' @md
 #' Generates run scripts and configuration files for all analyses (ensemble
 #' and/or sensitivity analysis) specified in the provided settings. Delegates
 #' the model-specific config writing to the appropriate `write.config.*`
@@ -42,6 +41,8 @@
 #'    entry for each PFT. Specify filenames with no path; PFT outdirs will be
 #'    appended. This forces use of only files within this workflow, to avoid
 #'    confusion.
+#'
+#' @md
 #'
 #' @param settings a PEcAn settings list
 #' @param ensemble.size number of ensemble runs
