@@ -296,3 +296,21 @@ score relative to the other variables, and the `weight` on each dataset block
 sets how much that dataset counts within its variable. Both are relative
 weights, not percentages. See the inline comments in the config for the full
 per-field reference.
+
+## Generating the scorecard
+
+ILAMB produces an interactive HTML scorecard alongside the numeric scores. To
+generate it for a window, run `make_scorecard.sh` against that window's model
+root (built by the pipeline above):
+
+```bash
+export ILAMB_ROOT=/path/to/ILAMB_ROOT
+./make_scorecard.sh 2012_2014
+./make_scorecard.sh 2015_2023
+```
+
+Each run writes a self-contained static site (`index.html` plus assets) to a
+build directory, which can be served directly by copying it under a web
+server's document root. The scorecard uses the clean model roots, so it lists
+PEcAn alongside the individual CMIP6 and TRENDY models and the ensemble means,
+rather than the 100 individual PEcAn members used for the spread analysis.
