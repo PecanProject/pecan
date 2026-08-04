@@ -18,7 +18,8 @@ ncc_path  <- Sys.getenv("NCC_RAW_DIR",
 outdir <- "_output"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-dbdir <- file.path(Sys.getenv("TMPDIR", "/tmp"), "temp.duckdb")
+# unique per run so concurrent runs sharing TMPDIR do not collide
+dbdir <- tempfile("duckdb", fileext = ".duckdb")
 conn <- DBI::dbConnect(duckdb::duckdb(dbdir = dbdir))
 on.exit({
   DBI::dbDisconnect(conn, shutdown = TRUE)
