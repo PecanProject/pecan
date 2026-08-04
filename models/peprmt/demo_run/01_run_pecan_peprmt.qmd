@@ -171,8 +171,7 @@ demo_outdir/               # Root output directory
 ├── ensemble.samples.<ensemble_id>.Rdata # contains the selected parameter values for each ensemble member
 ├── run/                   # Configuration & execution metadata
 │   ├── runs.txt           # List of run IDs (one per model realization)
-│   ├── <runid>/           # Model-specific configs, including run job and driver data
-│   └── config.*           # Generated model configs (not used for PEPRMT)
+│   └── <runid>/           # Model-specific configs, including run job and driver data
 ├── out/                   # Raw model outputs by run ID
 │   └── <runid>/           # E.g., PEPRMT output files
 ├── STATUS                 # timestamp and ok/error status of each workflow step
