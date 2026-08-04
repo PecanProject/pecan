@@ -481,6 +481,7 @@
 "purrr",">= 0.2.3","base/workflow","Imports",FALSE
 "purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
 "pwr","*","modules/rtm","Suggests",FALSE
+"quarto","*","modules/benchmark","Suggests",FALSE
 "R.utils","*","base/db","Imports",FALSE
 "randomForest","*","modules/assim.sequential","Suggests",FALSE
 "randtoolbox","*","base/utils","Suggests",FALSE
@@ -589,6 +590,7 @@
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
 "rstac","*","models/peprmt","Suggests",FALSE
+"scoringRules","*","modules/benchmark","Suggests",FALSE
 "sensitivity","*","modules/uncertainty","Imports",FALSE
 "sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
