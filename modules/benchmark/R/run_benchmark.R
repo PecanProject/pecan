@@ -152,7 +152,7 @@ register_metric("COVERAGE", function(dat) {
 #'
 #' @param aligned data.frame with columns: model, obvs, time
 #' @param metrics character vector of metric names
-#' @return data.frame with columns: metric, value
+#' @return data.frame in wide format with columns `Site` and each requested metric column per site.
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
   # Treat data as one group if no site column
   if (!"site" %in% colnames(aligned)) {

@@ -50,6 +50,7 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     sharpness <- mean(sub_dat$model_q95 - sub_dat$model_q05, na.rm = TRUE)
     bias <- mean(sub_dat$model - sub_dat$obvs, na.rm = TRUE)
     
+    pmu_val_str <- "N/A"
     pass_str <- "N/A"
     if ("obs_se" %in% colnames(sub_dat) && "obs_n" %in% colnames(sub_dat)) {
       valid_pmu <- !is.na(sub_dat$obs_se) & !is.na(sub_dat$obs_n)
@@ -57,8 +58,9 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
         se2_n <- (sub_dat$obs_se[valid_pmu]^2) * sub_dat$obs_n[valid_pmu]
         pooled_var <- sum(se2_n) / sum(sub_dat$obs_n[valid_pmu])
         pmu <- sqrt(pooled_var)
+        pmu_val_str <- sprintf("%.2f", pmu)
         
-        passes_validation <- (coverage_pct >= 90) && (abs(bias) < pmu)
+        passes_validation <- (!is.na(coverage_pct) && coverage_pct >= 90) && (abs(bias) < pmu)
         pass_str <- ifelse(passes_validation, "PASS", "FAIL")
       }
     }
@@ -66,17 +68,12 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     data.frame(
       site = sub_dat$site[1],
       variable = sub_dat$variable[1],
-      label = sprintf("Coverage: %.1f%%\nSharpness: %.2f\nBias: %.2f\nPMU: %s", coverage_pct, sharpness, bias, pass_str)
+      label = sprintf("Coverage: %.1f%%\nSharpness: %.2f\nBias: %.2f\nPMU: %s\nStatus: %s", coverage_pct, sharpness, bias, pmu_val_str, pass_str)
     )
   }))
 
   # Determine if model "passes" at each point based on available intervals
-  if ("obvs_sd" %in% colnames(metric_dat)) {
-    metric_dat$Pass <- (metric_dat$obvs - metric_dat$obvs_sd) <= metric_dat$model_q95 &
-                       (metric_dat$obvs + metric_dat$obvs_sd) >= metric_dat$model_q05
-  } else {
-    metric_dat$Pass <- metric_dat$obvs >= metric_dat$model_q05 & metric_dat$obvs <= metric_dat$model_q95
-  }
+  metric_dat$Pass <- metric_dat$obvs >= metric_dat$model_q05 & metric_dat$obvs <= metric_dat$model_q95
 
   if (any(!is.na(metric_dat$Pass))) {
     metric_dat$Observation_Status <- ifelse(metric_dat$Pass, "Observed (Pass)", "Observed (Fail)")
