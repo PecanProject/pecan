@@ -1,6 +1,6 @@
 # Statewide fertilization events workflow
 
-Builds an ensemble of synthetic N fertilization events for every California ag parcel in the harmonized CADWR Land Use crop map, for 2016 and 2018 to 2023. 2017 is skipped because no statewide survey was flown that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
+Builds an ensemble of synthetic N fertilization events for California ag parcels in the harmonized CADWR Land Use crop map whose crop code resolves to an N rate, for 2016 and 2018 to 2023. 2017 is skipped because no statewide survey was flown that year. N rate envelopes come from `PEcAn.data.land::ca_n_application_rate`.
 
 Source: California Department of Water Resources. (2016-2023). Statewide Crop Mapping. California Natural Resources Agency Open Data. https://data.cnra.ca.gov/dataset/statewide-crop-mapping
 
