@@ -2,63 +2,79 @@
 title: "Event handling in PEPRMT"
 author:
   - "Chris Black"
+editor: 
+  markdown: 
+    wrap: 72
+format:
+  html: default
+  pdf: default
+toc: true
+number-sections: true
+fig-width: 10
+fig-height: 6
+fig-dpi: 300
 ---
+
+# Introduction
+
+Welcome to the third demo workbook for `PEcAn.PEPRMT`!
 
 ## Purpose
 
-Adds management events to a basic PEPRMT run using PEcAn.
-For demonstration we show a one-time step change in inundation depth and a
-temporary fractional change in salinity.
-The same approach could be extended to other event types that alter timeseries
-inputs.
+Through the previous demo workbooks, we have shown how to execute a
+minimal PEcAn run (`01_run_pecan_peprmt.qmd`), as well as how to set the
+parameters and input data for that run (`02_input_demo.qmd`). Here, we
+build on the outputs from `02_input_demo.qmd` by showing how to add
+management events to a PEPRMT run in PEcAn.
 
-Future development will add support for events that alter model parameters,
-e.g. changes in site vegetation type).
-This will require new capabilities for "restarting" the model,
-which exist for other PEcAn models but are not yet implemented for PEPRMT.
+For demonstration, the events we illustrate here include a one-time step
+change in inundation depth and a temporary fractional change in
+salinity. The same approach could be extended to other event types that
+alter timeseries inputs.
 
+Future development will add support for events that alter model
+parameters, e.g. changes in site vegetation type. This will require new
+capabilities for "restarting" the model, which exist for other PEcAn
+models but are not yet implemented for PEPRMT.
 
 ## Prerequisites
 
-We assume here that you already have PEcAn and PEPRMT installed.
-See run_pecan_peprmt.qmd for installation instructions if needed.
+We assume here that you already have PEcAn and PEPRMT installed. See
+`01_run_pecan_peprmt.qmd` for installation instructions if needed.
 
-We also assume you have already run `input_demo.qmd`,
-and this demo uses these files created by it:
+We also assume you have already run `02_input_demo.qmd`. This demo uses
+these files created by the second demo:
 
-* `settings_inputdemo.xml`
-* `data/met/`
-* `data/PEPRMT_specific_inputs/`
-* `data/pfts/default_marginal/`
-
+- `settings_inputdemo.xml`
+- `data/met/`
+- `data/PEPRMT_specific_inputs/`
+- `data/pfts/default_marginal/`
 
 ## Setup
-
 
 ```{r}
 #| label: setup
 here::i_am("models/peprmt/demo_run/event_demo.qmd")
 
+# Load packages
 library(tidyverse)
 library(PEcAn.all)
 library(PEcAn.PEPRMT)
 PEcAn.all::pecan_version()
 
-# prints logger messages into the notebook instead of to the terminal
+# Set PEcAn loggers
 logger.setUseConsole(console = TRUE, stderr = FALSE)
-# prints messages with levels INFO or higher (WARNING, ERROR, SEVERE)
-# For even more detail, change to "DEBUG"
 logger.setLevel("INFO")
 ```
 
 ### Define outdirs
 
-PEcAn accepts existing output directories and will attempt to overwrite them,
-but this often does not work cleanly.
-We advise always starting fresh.
+PEcAn accepts existing output directories and will attempt to overwrite
+them, but this often does not work cleanly. We advise always starting
+fresh.
 
-This check adds a step when trying to rerun the notebook quickly,
-but complaining here is better than clobbering outputs you were counting on.
+This check adds a step when trying to rerun the notebook quickly, but
+complaining here is better than clobbering outputs you were counting on.
 
 ```{r}
 #| label: outdir-check
@@ -71,17 +87,17 @@ if (any(have_outdirs)) {
 }
 ```
 
-
 ## Settings
 
-For brevity let's modify the settings used for the input demo rather than
-start from scratch.
-We'll use only the first two sites (US_EDN and US_SRR) and add an event file.
+For brevity let's modify the settings used for the input demo rather
+than start from scratch. We'll use only the first two sites (US_EDN and
+US_SRR) and add an event file.
 
-To add an input to a PEcAn run, first declare it in the sampling space and then
-provide (an ensemble of) paths to the input files in each site's input block.
-Note that these files don't exist yet -- we'll create them next.
-This step only constructs paths and does not check their contents.
+To add an input to a PEcAn run, first declare it in the sampling space
+and then provide (an ensemble of) paths to the input files in each
+site's input block. Note that these files don't exist yet -- we'll
+create them next. This step only constructs paths and does not check
+their contents.
 
 ```{r}
 #| label: settings
@@ -119,27 +135,25 @@ write.settings(
 )
 ```
 
-
 ## Event files
 
-For demo purposes let's imagine all sites experience a one-time permanent change
-in inundation depth of approximately 30 cm and a temporary step change in
-salinity of approximately 75 percent.
-These are chosen more for simplicity than for biological realism;
-suggestions for other simple event examples are very welcome.
+For demo purposes let's imagine all sites experience a one-time
+permanent change in inundation depth of approximately 30 cm and a
+temporary step change in salinity of approximately 75 percent. These are
+chosen more for simplicity than for biological realism; suggestions for
+other simple event examples are very welcome.
 
-PEcAn will treat these as "management events", and stores them as nested lists
-in JSON format.
-Each site has a site id, a list of events, and optionally other site-level
-metadata.
-Each event has a date, an event type, and optionally other parameters needed to
-specify the particulars of that event type.
-Models are allowed to ignore event types they do not recognize and to disregard
-event parameters not used in their representation of an event they do recognize.
-
+PEcAn will treat these as "management events", and stores them as nested
+lists in JSON format. Each site has a site id, a list of events, and
+optionally other site-level metadata. Each event has a date, an event
+type, and optionally other parameters needed to specify the particulars
+of that event type. Models are allowed to ignore event types they do not
+recognize and to disregard event parameters not used in their
+representation of an event they do recognize.
 
 ```{r}
 #| label: write-event-json
+
 dir.create(file.path("data", "events"))
 for (i in seq_len(settings$ensemble$size))  {
   dsal <- rnorm(n = 1, mean = 75, sd = 5) |> round(2)
@@ -196,13 +210,13 @@ for (i in seq_len(settings$ensemble$size))  {
 
 ### Generate sample design
 
-To get clean comparisons between treatments,
-we'll pair simulations with and without events by using the same ensemble of
-parameter and input values for both runs.
-
+To get clean comparisons between treatments, we'll pair simulations with
+and without events by using the same ensemble of parameter and input
+values for both runs.
 
 ```{r}
 #| label: design
+
 evt_design <- generate_joint_ensemble_design(
   settings_evt[[1]],
   settings_evt$ensemble$size
@@ -247,10 +261,10 @@ runModule_start_model_runs(settings_evt)
 
 ## Plot results
 
-Most non-carbon outputs are not yet written into the PEcAn standard outputs,
-so let's read read the raw PEPRMT output (`out.csv`) to verify the environment
-changes. See the input demo for an example of reading from PEcAn netcdf output.
-
+Most non-carbon outputs are not yet written into the PEcAn standard
+outputs, so let's read read the raw PEPRMT output (`out.csv`) to verify
+the environment changes. See the input demo for an example of reading
+from PEcAn netcdf output.
 
 ```{r}
 #| label: read
@@ -297,6 +311,7 @@ model_output <- dplyr::bind_rows(
   )
 
 ```
+
 Salinity and water table depth did change:
 
 ```{r}
@@ -316,10 +331,10 @@ base_plot + aes(y = Salinity_daily_ave_ppt)
 base_plot + aes(y = WTD_cm)
 ```
 
-...And as expected, salinity reduction at the normally-salty EDN site produces
-a visible increase in CH4 production, while salinity increase at the
-mostly-fresh SRR site produces a net inhibition of CH4.
-The change in water depth does not visibly affect CH4 in these simulations.
+...And as expected, salinity reduction at the normally-salty EDN site
+produces a visible increase in CH4 production, while salinity increase
+at the mostly-fresh SRR site produces a net inhibition of CH4. The
+change in water depth does not visibly affect CH4 in these simulations.
 
 ```{r}
 #| label: plot-ch4

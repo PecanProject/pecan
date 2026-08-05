@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <pecan>
  <info>
-  <notes>Compiled from template.xml at 2026-04-20 17:29:14.53096</notes>
+  <notes>Compiled from template.xml at 2026-06-24 11:41:32.880971</notes>
   <userid>-1</userid>
   <username></username>
  </info>
@@ -37,7 +37,7 @@
   <site.US_EDN>
    <site>
     <id>US_EDN</id>
-    <name>US_EDN</name>
+    <name>Eden Landing</name>
     <lat>37.615</lat>
     <lon>-122.114</lon>
     <site.pft>default</site.pft>
@@ -72,7 +72,7 @@
   <site.US_SRR>
    <site>
     <id>US_SRR</id>
-    <name>US_SRR</name>
+    <name>Rush Ranch</name>
     <lat>38.2</lat>
     <lon>-122.026</lon>
     <site.pft>default</site.pft>
@@ -107,7 +107,7 @@
   <site.US_DMG>
    <site>
     <id>US_DMG</id>
-    <name>US_DMG</name>
+    <name>Dutch Slough</name>
     <lat>38.0015</lat>
     <lon>-121.6691</lon>
     <site.pft>default</site.pft>
