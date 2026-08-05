@@ -89,12 +89,22 @@ if (any(dat$org_n_kg_m2 <= 0) || any(dat$org_c_kg_m2 <= 0)) {
   fail("non positive org_n_kg_m2 or org_c_kg_m2")
 }
 
-# org_c/org_n must reproduce the material C:N, which is what drives decomposition
-cn_out <- dat$org_c_kg_m2 / dat$org_n_kg_m2
-cn_range <- range(c(props$cn_min, props$cn_max))
-if (min(cn_out) < cn_range[1] - 1e-6 || max(cn_out) > cn_range[2] + 1e-6) {
-  fail(sprintf("delivered C:N %.1f to %.1f falls outside the material range %.1f to %.1f",
-               min(cn_out), max(cn_out), cn_range[1], cn_range[2]))
+# org_c/org_n must reproduce the C:N of the material on that row, which is what
+# drives decomposition. checking against the pooled range across all materials
+# would pass a scrambled material to C:N pairing, so bound each row by its own
+# material
+cn_bounds <- props |>
+  dplyr::summarize(cn_lo = min(.data$cn_min), cn_hi = max(.data$cn_max),
+                   .by = "material")
+cn_check <- dat |>
+  dplyr::transmute(.data$material, cn_out = .data$org_c_kg_m2 / .data$org_n_kg_m2) |>
+  dplyr::left_join(cn_bounds, by = "material")
+bad_cn <- cn_check$cn_out < cn_check$cn_lo - 1e-6 |
+  cn_check$cn_out > cn_check$cn_hi + 1e-6
+if (any(bad_cn)) {
+  worst <- cn_check[which(bad_cn)[1], ]
+  fail(sprintf("delivered C:N outside the material's own range on %d rows, e.g. %s at %.1f against %.1f to %.1f",
+               sum(bad_cn), worst$material, worst$cn_out, worst$cn_lo, worst$cn_hi))
 }
 
 unknown_material <- setdiff(dat$material, props$material)
@@ -103,11 +113,13 @@ if (length(unknown_material) > 0) {
        paste(unknown_material, collapse = ", "))
 }
 
-# the material draw is uniform over eligible materials, so no material should carry a
-# share far from the mean. a wide tolerance still catches a pool indexed the wrong way
+# the material draw is uniform over eligible materials, so no material should
+# carry a share far from the mean. the threshold has to sit below 2, since the
+# bug this guards against (indexing the joined rows, so a two source material is
+# drawn twice as often) only reaches about 2x the mean
 share <- table(dat$material) / nrow(dat)
-if (max(share) > 3 * mean(share)) {
-  fail(sprintf("material selection is skewed: %s holds %.1f%% against a %.1f%% mean",
+if (max(share) > 1.5 * mean(share)) {
+  fail(sprintf("material selection is skewed: %s holds %.2f%% against a %.2f%% mean",
                names(share)[which.max(share)], 100 * max(share), 100 * mean(share)))
 }
 

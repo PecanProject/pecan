@@ -101,7 +101,8 @@ if (dplyr::n_distinct(dat$ens_id) != n_ens) {
                dplyr::n_distinct(dat$ens_id), n_ens))
 }
 
-# events are anchored before green-up, so a cycle in year Y can fall in Y-1
+# the event date is the green-up date itself, and the phenology product assigns
+# some green-ups to the previous calendar year, so year Y can carry a Y-1 date
 expected_years <- as.integer(config[["years"]])
 allowed_years <- seq(min(expected_years) - 1L, max(expected_years))
 extra_years <- setdiff(unique(lubridate::year(dat$date)), allowed_years)
