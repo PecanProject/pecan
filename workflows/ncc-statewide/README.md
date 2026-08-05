@@ -15,7 +15,7 @@ Configuration parameters in `config.yml`:
 - `cadwr_pfts_path`: the CADWR class/subclass to PFT map
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
-- `p_apply_default`: probability of compost per parcel year per ensemble member (default 0.10)
+- `p_apply_default`: probability of compost per crop cycle per ensemble member (default 0.10); see Sampling design
 
 # Run
 
@@ -67,9 +67,12 @@ Eligibility rules, applied before the material draw:
 - The application probability is drawn per crop cycle, so a parcel-year with two crop
   seasons receives two independent draws and an effective annual probability of
   `1-(1-p)^2`. Compost is more naturally a per parcel-year decision; this is open.
-- The phenology product supplies one green-up per parcel-year with no season key, so in
-  a multi-season parcel-year every cycle is anchored to the same date. In 2016 this
-  affects 19,472 of 601,341 parcel-years, 3.2 percent.
+- The phenology product has no season key, so crop cycles are matched to green-ups by
+  rank: the nth cycle of a parcel-year takes the nth green-up. From 2018 on the product
+  carries a second green-up for most double-crop parcels, so this resolves the majority
+  of them. Where a parcel-year has fewer green-ups than cycles, the later cycles reuse
+  the last available green-up. 2016 is the exception, carrying one green-up per parcel
+  year, so its multi-season cycles all share an anchor.
 - SIPNET has no immobilization flux, so a high C:N amendment that would show negative
   first year plant available N still yields small positive net mineralization.
 - All organic C enters the single litter pool, so compost is not represented as more
@@ -79,7 +82,7 @@ Eligibility rules, applied before the material draw:
 
 - `parcel_id`, `ens_id` (`ens_NNN`, shared with fertilization workflow), `date`
 - `nh4_n_kg_m2`, `no3_n_kg_m2`: zero. These materials do not report mineral N present at application, so no mineral N is declared and SIPNET mineralizes the organic pool itself from the C:N supplied
-- `org_c_kg_m2`: total organic C from the application, the application rate times the material C:N
+- `org_c_kg_m2`: total organic C from the application, the applied N mass times the material C:N
 - `org_n_kg_m2`: total N in the application, all carried as organic N
 - `crop_code`: passthrough
 - `material`: diagnostic column for `check-result.R` only. Cleaner strips it before union so it never reaches SIPNET

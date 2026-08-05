@@ -36,11 +36,17 @@ Events carry no organic C or N: these are synthetic mineral fertilizer applicati
 
 # Known limitations
 
-- The phenology product supplies one green-up per parcel-year with no season key, so in
-  a multi-season parcel-year every cycle is anchored to the same date. In 2016 this
-  affects 19,472 of 601,341 parcel-years, 3.2 percent.
-- Applications precede green-up, so a crop cycle in year Y can carry an event dated Y-1.
-  Event dates therefore span one year earlier than the configured crop years.
+- The phenology product has no season key, so crop cycles are matched to green-ups by
+  rank: the nth cycle of a parcel-year takes the nth green-up. From 2018 on the product
+  carries a second green-up for most double-crop parcels, so this resolves the majority
+  of them. Where a parcel-year has fewer green-ups than cycles, the later cycles reuse
+  the last available green-up. 2016 is the exception, carrying one green-up per parcel
+  year, so its multi-season cycles all share an anchor.
+- The event date is the green-up date itself; this workflow applies no offset. Dates
+  outside the configured crop years occur because the phenology product itself assigns
+  some green-ups to the previous calendar year.
+- Only crop codes present in the crosswalk resolve to an N rate envelope. Cycles whose
+  code does not resolve are dropped and reported at run time.
 
 # Output
 
