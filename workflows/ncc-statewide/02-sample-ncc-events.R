@@ -106,7 +106,7 @@ for (fam in names(pools)) {
 mat_cols <- amendments[events$mat_idx,
                        c("material", "material_class",
                          "app_rate_min", "app_rate_max",
-                         "n_pct", "pan_pct",
+                         "n_pct",
                          "cn_min", "cn_max")]
 events <- dplyr::bind_cols(events, mat_cols)
 

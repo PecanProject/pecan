@@ -2,7 +2,7 @@
 
 # the cleaner ingests outputs from the two workflows. synthetic N comes from fertilization-
 # statewide as nh4 + no3 rows; compost comes from ncc-statewide as org_c +
-# org_n + (optionally) nh4 from the PAN fraction. they share the ens_NNN
+# org_n, with no mineral N. they share the ens_NNN
 # naming so an ensemble member can carry both kinds of rows under one
 # event_type = fertilization in the json output
 #

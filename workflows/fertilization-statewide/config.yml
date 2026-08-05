@@ -20,6 +20,6 @@ medium:
   workers: 4
 
 all:
-  n_parcels: null # null means all parcels in the matched product
+  n_parcels: null # null means all parcels in the crops product
   batch_size: 5000
   workers: 8
