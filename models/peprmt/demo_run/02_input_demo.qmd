@@ -459,11 +459,14 @@ model_output_mcmc |>
   )
 
 model_output_mcmc |>
-  mutate(site_id = sub("ENS-\\d+-", "", run_id)) |>
+  mutate(
+    site_id = sub("ENS-\\d+-", "", run_id),
+    CH4_flux = PEcAn.utils::ud_convert(CH4_flux, "kg/m2/sec", "mg/m2/day")
+  ) |>
   select("site_id", "run_id", "posix", "CH4_flux") |>
   ggplot() +
   aes(x = posix, 
-      y = CH4_flux * 1E6 * 60 * 60 * 24, # Convert from kg/m2/s to mg/m2/d
+      y = CH4_flux,
       group = run_id) +
   facet_wrap(~site_id, nrow = 1, scales = "free", space = "free_x") +
   geom_line(alpha = 0.5) +
