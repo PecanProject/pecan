@@ -3,7 +3,7 @@
 #' This function builds an annualized set of MEM inputs including sea-level rise and suspended sediment concentrations.
 #' @param startYear an integer, year in form YYYY, the start year of the scenario
 #' @param endYear an integer, year in form YYYY, the end year of the scenario
-#' @param meanTidalLevel a numeric or a vector of numbers, either indicating mean sea-level at the start of scenario, or mean sea-level at each year of the scenario
+#' @param meanSeaLevel a numeric or a vector of numbers, either indicating mean sea-level at the start of scenario, or mean sea-level at each year of the scenario
 #' @param relSeaLevelRiseInit a numeric, initial rate of relative sea-level rise
 #' @param relSeaLevelRiseTotal a numeric, total relative sea-level rise over the course of the scenario
 #' @param suspendedSediment a numeric or a vector of numbers, either average annual suspended sediment concentration, or a vector of annual suspended sediment concentration for each year of the scenario
@@ -13,7 +13,7 @@
 #'
 #' @return a data frame including columns for year, sea-level, and suspended sediment concentration, and rows for each year in the scenario
 #' @export
-buildScenarioCurve <- function(startYear, endYear=startYear+99, meanTidalLevel,
+buildScenarioCurve <- function(startYear, endYear=startYear+99, meanSeaLevel,
                                relSeaLevelRiseInit=0.3, relSeaLevelRiseTotal=100) {
 
   # Create a sequence of the number of year
@@ -21,16 +21,16 @@ buildScenarioCurve <- function(startYear, endYear=startYear+99, meanTidalLevel,
   nYearsOfSim <- length(years) # Put this in args. Replace this with yearEnd.
 
   scenario <- data.frame(index = 0:(nYearsOfSim-1), year = years,
-                         meanTidalLevel = rep(NA, nYearsOfSim)
+                         meanSeaLevel = rep(NA, nYearsOfSim)
                          # suspendedSediment = rep(NA, nYearsOfSim)
                          )
 
   # Build the Mean Sea Level Scenario
   # If the input only specifies an initial Mean Sea Level at time = 0 ...
-  if (length(meanTidalLevel) == 1) {
+  if (length(meanSeaLevel) == 1) {
     # ... create a sea-level rise scenario based on total sea-level rise and inital relative sea-level rise rate
     # Probably could use a stop here in case there are invalid entries of relSeaLevelRiseInit and slrTotal
-    scenario$meanTidalLevel[1] <- meanTidalLevel
+    scenario$meanSeaLevel[1] <- meanSeaLevel
 
     # IPCC, 2013 and Sweet et al., 2017
     # meanSeaLevel(t) = meanSeaLevel(0) + At + Bt^2 - where t is years from time zero
@@ -42,12 +42,12 @@ buildScenarioCurve <- function(startYear, endYear=startYear+99, meanTidalLevel,
     B <- ((relSeaLevelRiseTotal)/nYearsOfSim - relSeaLevelRiseInit) / (nYearsOfSim-1)
     A <- relSeaLevelRiseInit - B
 
-    scenario$meanTidalLevel[2:nYearsOfSim] <- scenario$meanTidalLevel[1] + A*scenario$index[2:nYearsOfSim] + B*scenario$index[2:nYearsOfSim]^2
+    scenario$meanSeaLevel[2:nYearsOfSim] <- scenario$meanSeaLevel[1] + A*scenario$index[2:nYearsOfSim] + B*scenario$index[2:nYearsOfSim]^2
 
-  } else if (length(meanTidalLevel) == length(years)) {
+  } else if (length(meanSeaLevel) == length(years)) {
 
     # If the user enters in a vector of meanSeaLevel that is equal to the number of years in the simulation.
-    scenario$meanTidalLevel <- meanTidalLevel
+    scenario$meanSeaLevel <- meanSeaLevel
 
   } else {
     stop("RSLR input is incorrect. Either enter a value at for the beginning and ending of the scenario, or a vector of RSLR one for each year of the scenario.")
