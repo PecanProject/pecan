@@ -84,6 +84,15 @@ if (workers > 1) {
   written <- lapply(batches, write_batch)
 }
 
+# mclapply does not raise when a worker fails: it returns a try-error for an R
+# level error and NULL for a killed worker, which is the realistic out of memory
+# case. write_batch returns the shard path, so anything that is not a path failed
+failed <- !vapply(written, is.character, logical(1))
+if (any(failed)) {
+  PEcAn.logger::logger.severe(sprintf(
+    "%d of %d shard writes failed", sum(failed), length(written)))
+}
+
 PEcAn.logger::logger.info(sprintf(
   "Done. wrote %d shards, %d total rows, parcels=%d, years=%d, ensemble=%d",
   length(written), nrow(out),

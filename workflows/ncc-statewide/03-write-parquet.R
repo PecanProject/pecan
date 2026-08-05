@@ -87,13 +87,13 @@ if (workers > 1) {
   written <- lapply(batches, write_batch)
 }
 
-# mclapply returns a try-error per failed worker rather than raising, so a
-# partial write would otherwise be reported as success
-failed <- vapply(written, inherits, logical(1), what = "try-error")
+# mclapply does not raise when a worker fails: it returns a try-error for an R
+# level error and NULL for a killed worker, which is the realistic out of memory
+# case. write_batch returns the shard path, so anything that is not a path failed
+failed <- !vapply(written, is.character, logical(1))
 if (any(failed)) {
   PEcAn.logger::logger.severe(sprintf(
-    "%d of %d shard writes failed. First error: %s",
-    sum(failed), length(written), conditionMessage(attr(written[failed][[1]], "condition"))))
+    "%d of %d shard writes failed", sum(failed), length(written)))
 }
 
 PEcAn.logger::logger.info(sprintf(
