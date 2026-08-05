@@ -10,8 +10,8 @@ dir.create(staging_dir, showWarnings = FALSE, recursive = TRUE)
 
 options(arrow.unsafe_metadata = TRUE)
 
-# strip parenthetical annotations, conjunctions, and punctuation so the
-# LandIQ, FREP, and UC ANR strings can be matched on a common key.
+# strip parenthetical annotations, conjunctions, and punctuation so the crop
+# name strings from the three sources can be matched on a common key.
 normalize_name <- function(s) {
   s |> tolower() |>
     stringr::str_replace_all("\\(.*?\\)", "") |>
@@ -55,7 +55,7 @@ ca_rates <- PEcAn.data.land::ca_n_application_rate
 code_map <- PEcAn.data.land::landiq_crop_mapping_codes
 
 ## crosswalk lookup
-# resolve each LandIQ CLASS+SUBCLASS code to an N rate envelope by walking
+# resolve each CADWR CLASS+SUBCLASS code to an N rate envelope by walking
 # the crosswalk to UC ANR or FREP names and matching against the bundled
 # rate table.
 known_crops <- ca_rates$crop
@@ -86,7 +86,7 @@ code_lookup <- code_map |>
   tidyr::unnest("rates") |>
   dplyr::select("code", "min_n_lbs_acre", "max_n_lbs_acre")
 
-PEcAn.logger::logger.info(sprintf("Resolved %d LandIQ codes via crosswalk", nrow(code_lookup)))
+PEcAn.logger::logger.info(sprintf("Resolved %d CADWR codes via crosswalk", nrow(code_lookup)))
 
 # the event date is anchored to green-up (leafonday) from the gap-filled
 # phenology product, observed where the satellite retrieval succeeded and
@@ -116,23 +116,29 @@ crops <- DBI::dbGetQuery(con, sprintf(
   dplyr::rename(year = "yr") |>
   dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
 
-# one green-up per parcel-year. the product carries no season key, so a
-# parcel-year with more than one crop cycle anchors every cycle to the same
-# date; see Known limitations in the README. the row_number filter only
-# resolves the few duplicate rows in the product itself, 26 of 529,285
-# site-years in 2016. phenology_source is carried through for audit.
+# the phenology product has no season key, but from 2018 on it carries a second
+# green-up for most double-crop parcels, so rank green-ups within a parcel-year
+# and match the nth crop cycle to the nth green-up rather than collapsing to the
+# earliest. phenology_source is carried through for audit.
 phen <- DBI::dbGetQuery(con, sprintf(
-  "SELECT parcel_id, yr, dt, phenology_source FROM (
-     SELECT CAST(site_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
-            CAST(leafonday AS DATE) AS dt, phenology_source,
-            row_number() OVER (PARTITION BY site_id, \"year\" ORDER BY leafonday) AS rn
-     FROM read_parquet('%s/phenology_statewide_*.parquet') WHERE \"year\" IN (%s)
-   ) WHERE rn = 1",
+  "SELECT CAST(site_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
+          CAST(leafonday AS DATE) AS dt, phenology_source,
+          row_number() OVER (PARTITION BY site_id, \"year\" ORDER BY leafonday) AS phen_rank
+   FROM read_parquet('%s/phenology_statewide_*.parquet') WHERE \"year\" IN (%s)",
   config[["phen_dir"]], yr_list)) |>
   dplyr::rename(year = "yr", date = "dt")
 
+# where a parcel-year has fewer green-ups than crop cycles, the later cycles
+# reuse the last available one
+phen_max <- phen |>
+  dplyr::summarize(max_rank = max(.data$phen_rank), .by = c("parcel_id", "year"))
+
 plant <- crops |>
-  dplyr::inner_join(phen, by = c("parcel_id", "year"))
+  dplyr::mutate(season_rank = dplyr::dense_rank(.data$season),
+                .by = c("parcel_id", "year")) |>
+  dplyr::inner_join(phen_max, by = c("parcel_id", "year")) |>
+  dplyr::mutate(phen_rank = pmin(.data$season_rank, .data$max_rank)) |>
+  dplyr::inner_join(phen, by = c("parcel_id", "year", "phen_rank"))
 PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels (phenology anchored)",
                                   nrow(plant), dplyr::n_distinct(plant$parcel_id)))
 
