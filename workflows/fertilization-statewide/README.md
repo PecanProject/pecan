@@ -25,6 +25,23 @@ FERT_PROJECT=default bash workflows/fertilization-statewide/run-statewide.sh
 
 `default` is 1000 random parcels, single threaded. `all` is full statewide (~660k parcels), eight workers. The three R scripts chain together: 01 builds the design, 02 samples rates, 03 writes parquet. `check-result.R` reads the output back and prints a summary.
 
+# Sampling design
+
+| quantity | distribution | basis |
+|---|---|---|
+| annual N rate | uniform on `[min_n_lbs_acre, max_n_lbs_acre]` for the crop | `ca_n_application_rate` reports a guideline envelope, not a distribution. With no information beyond the bounds, uniform is the maximum entropy choice and avoids implying a central tendency the guidelines do not give |
+| mineral N split | fixed, `nh4_fraction` of total N to ammonium and the remainder to nitrate, default 0.5 | project assumption; the guidelines report total N only. SIPNET sums the two into a single mineral pool, so the split affects the event record rather than the simulation |
+
+Events carry no organic C or N: these are synthetic mineral fertilizer applications.
+
+# Known limitations
+
+- The phenology product supplies one green-up per parcel-year with no season key, so in
+  a multi-season parcel-year every cycle is anchored to the same date. In 2016 this
+  affects 19,472 of 601,341 parcel-years, 3.2 percent.
+- Applications precede green-up, so a crop cycle in year Y can carry an event dated Y-1.
+  Event dates therefore span one year earlier than the configured crop years.
+
 # Output
 
 Parcel range sharded parquet at `<output_dir>/`. Columns: `parcel_id`, `ens_id` (`ens_NNN`, shared with ncc workflow), `date`, `nh4_n_kg_m2`, `no3_n_kg_m2`, `org_c_kg_m2` (zero), `org_n_kg_m2` (zero), `crop_code`.
