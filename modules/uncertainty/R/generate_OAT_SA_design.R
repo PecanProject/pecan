@@ -20,10 +20,10 @@
 #'   When supplied these are used directly; when \code{NULL} (default) they are
 #'   sampled in memory.
 #'
-#' @return A list with \code{X}, a data.frame with one row per SA run and one
-#'   column per input type (the \code{param} column holds sequential run indices,
-#'   every other column is held at 1), and \code{samples}, the parameter bundle
-#'   used.
+#' @return A list with \code{design_matrix}, a data.frame with one row per SA run
+#'   and one column per input type (the \code{param} column holds sequential run
+#'   indices, every other column is held at 1), \code{X}, the same matrix under
+#'   its older name, and \code{samples}, the parameter bundle used.
 #'
 #' @author Akash B V, Om Kapale
 #' @importFrom rlang %||%
@@ -98,5 +98,5 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
 
   design_matrix <- data.frame(design_list)
 
-  return(list(X = design_matrix, samples = samples))
+  return(list(design_matrix = design_matrix, X = design_matrix, samples = samples))
 }

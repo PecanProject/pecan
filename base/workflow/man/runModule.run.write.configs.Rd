@@ -13,12 +13,12 @@ runModule.run.write.configs(settings, overwrite = TRUE, input_design = NULL)
 
 \item{input_design}{Optional. The parameter/input design for the runs,
 normally the full result of \code{generate_joint_ensemble_design()}: a list
-with \code{X} (a data.frame whose \code{param} column selects rows of
+with \code{design_matrix} (a data.frame whose \code{param} column selects rows of
 \code{trait.samples}/\code{ensemble.samples}, plus optional columns named
 for \code{settings$run$inputs} tags such as \code{met} or \code{soil}) and
 \code{samples} (the parameter bundle those indices point into). Can be:
 \itemize{
-  \item The \code{list(X, samples)} returned by
+  \item The \code{list(design_matrix, samples)} returned by
         \code{generate_joint_ensemble_design()}
   \item \code{NULL} to generate the design and samples internally from
         \code{settings}

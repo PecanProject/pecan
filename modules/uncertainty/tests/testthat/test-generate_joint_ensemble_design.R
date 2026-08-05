@@ -196,3 +196,57 @@ test_that("attaching samples leaves the sobol object usable by tell()", {
   expect_false(is.null(told$T))
   expect_identical(told$samples, fake_parameter_samples())
 })
+
+test_that("the design comes back as design_matrix, with X kept as its older name", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 5, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5)
+
+  expect_true("design_matrix" %in% names(result))
+  expect_identical(result$design_matrix, result$X)
+})
+
+test_that("a sobol design also carries design_matrix", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 10, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE)
+
+  # sensitivity sets $X itself; design_matrix is the same matrix under the name
+  # the non-sobol return uses
+  expect_identical(result$design_matrix, result$X)
+  expect_true(inherits(result, "soboljansen"))
+})
+
+test_that("the design stays the first element of the return", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 5, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- generate_joint_ensemble_design(settings, ensemble_size = 5)
+
+  # sda.enkf_MultiSite and sda.enkf_parallel take the design positionally as
+  # [[1]], so reordering this list would silently hand them the wrong object
+  expect_identical(result[[1]], result$design_matrix)
+})

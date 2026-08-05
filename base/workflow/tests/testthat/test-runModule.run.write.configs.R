@@ -252,3 +252,38 @@ test_that(".prepare_input_designs does not warn when a design is supplied", {
   )
   expect_false(any(grepl("deprecated", msgs)))
 })
+
+test_that(".prepare_input_designs accepts a design supplied as design_matrix", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  bundle   <- fake_bundle()
+  supplied <- list(design_matrix = data.frame(param = 1:3), samples = bundle)
+
+  gen <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  mockery::expect_called(gen, 0)
+  expect_identical(designs$ensemble, supplied$design_matrix)
+  expect_identical(designs$samples, bundle)
+})
+
+test_that(".prepare_input_designs still accepts a design supplied as X", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  bundle   <- fake_bundle()
+  supplied <- list(X = data.frame(param = 1:3), samples = bundle)
+
+  gen <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  mockery::expect_called(gen, 0)
+  expect_identical(designs$ensemble, supplied$X)
+})

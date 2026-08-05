@@ -18,10 +18,10 @@ When supplied these are used directly; when \code{NULL} (default) they are
 sampled in memory.}
 }
 \value{
-A list with \code{X}, a data.frame with one row per SA run and one
-  column per input type (the \code{param} column holds sequential run indices,
-  every other column is held at 1), and \code{samples}, the parameter bundle
-  used.
+A list with \code{design_matrix}, a data.frame with one row per SA run
+  and one column per input type (the \code{param} column holds sequential run
+  indices, every other column is held at 1), \code{X}, the same matrix under
+  its older name, and \code{samples}, the parameter bundle used.
 }
 \description{
 Creates an input design matrix for sensitivity analysis where non-parameter
