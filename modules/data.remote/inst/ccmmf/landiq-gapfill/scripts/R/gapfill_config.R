@@ -1,27 +1,27 @@
 # Resolve gap-fill run mode, temporal neighbors, and bounding-year behavior.
 #
 # Modes:
-#   full         — entire calendar year has no usable LandIQ (e.g. 2017). Uses CDL +
+#   full         -- entire calendar year has no usable LandIQ (e.g. 2017). Uses CDL +
 #                  one or two LandIQ neighbor years + county transition matrices.
-#   within_year  — LandIQ exists for the year but some parcel-season rows are missing
+#   within_year  -- LandIQ exists for the year but some parcel-season rows are missing
 #                  crop identity (SUBCLASS fill via run_gapfill_crop_year.R).
 #
 # Temporal neighbors (full mode):
-#   both         — avg-of-three: (p_fwd + p_bwd + p_cdl) / 3
-#   before_only  — bounding last year without a later LandIQ neighbor (e.g. 2023 until 2024)
-#   after_only   — bounding first year without an earlier LandIQ neighbor (e.g. 2016)
+#   both         -- avg-of-three: (p_fwd + p_bwd + p_cdl) / 3
+#   before_only  -- bounding last year without a later LandIQ neighbor (e.g. 2023 until 2024)
+#   after_only   -- bounding first year without an earlier LandIQ neighbor (e.g. 2016)
 #   Single-neighbor cases average the available temporal message with p_cdl (divide by 2).
 #
 # Env:
 #   LANDIQ_GAPFILL_BOUND_MIN          default 2016
-#   LANDIQ_GAPFILL_BOUND_MAX          default 2024 (last year with LandIQ in the panel)
+#   LANDIQ_GAPFILL_BOUND_MAX          default 2023 (raise when 2024 LandIQ is released)
 #   LANDIQ_GAPFILL_AVAILABLE_YEARS    optional comma list of years with real LandIQ
 #   LANDIQ_GAPFILL_NEIGHBORING_YEARS  optional override (1 or 2 years); else auto-resolved
 #   LANDIQ_GAPFILL_FULL_GAP_YEARS     optional comma list treated as full-year gaps (default 2017)
 #   LANDIQ_GAPFILL_START_YEAR         first calendar year in a batch run (with END_YEAR)
 #   LANDIQ_GAPFILL_END_YEAR           last calendar year in a batch run (inclusive)
 #   LANDIQ_GAPFILL_RUN_YEARS          optional comma list (overrides START/END)
-#   LANDIQ_SUBCLASS_PRIOR_YEARS       optional comma list for subclass prior (default: all parquet years − full gaps)
+#   LANDIQ_SUBCLASS_PRIOR_YEARS       optional comma list for subclass prior (default: all parquet years - full gaps)
 #   CDL_LANDIQ_TRAINING_YEARS         optional comma list for emission training (default: prior years with CDL parquets)
 #   CDL_LANDIQ_TRAINING_YEAR_MIN/MAX  optional manual emission range (overrides auto when both set)
 #   CDL_LANDIQ_TRAINING_EXCLUDE_YEARS default 2017
@@ -73,7 +73,7 @@ landiq_gapfill_bound_min <- function() {
 }
 
 landiq_gapfill_bound_max <- function() {
-  as.integer(Sys.getenv("LANDIQ_GAPFILL_BOUND_MAX", "2024"))
+  as.integer(Sys.getenv("LANDIQ_GAPFILL_BOUND_MAX", "2023"))
 }
 
 landiq_gapfill_full_gap_years <- function() {

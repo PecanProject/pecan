@@ -1,5 +1,5 @@
 # =============================================================================
-# tilewise_mslsp_implementation.R — MSLSP product for the tilewise framework
+# tilewise_mslsp_implementation.R -- MSLSP product for the tilewise framework
 # =============================================================================
 #
 # Loaded via phenology/extract bootstrap.R (sources mslsp_combine.R first).
@@ -265,15 +265,15 @@ mslsp_process_scene_tilewise <- function(prep, scene_row, parcels_this_tile, til
   # Build an exactextractr per-polygon callback for a given set of layers.
   #
   # exactextractr calls this once per polygon with:
-  #   values    — data.frame with one column per raster layer, one row per pixel
-  #   cov_fracs — numeric vector of pixel coverage fractions (0-1)
+  #   values    -- data.frame with one column per raster layer, one row per pixel
+  #   cov_fracs -- numeric vector of pixel coverage fractions (0-1)
   #
   # Arguments:
-  #   metric_cols — layer names aggregated by weighted mean + SD
-  #   mode_cols   — layer names aggregated by weighted mode + mode_frac
-  #   key_col     — single layer used to define "valid" pixels:
+  #   metric_cols -- layer names aggregated by weighted mean + SD
+  #   mode_cols   -- layer names aggregated by weighted mode + mode_frac
+  #   key_col     -- single layer used to define "valid" pixels:
   #                 a pixel is valid if it overlaps the polygon and key_col is not NA
-  #   col_rename  — function applied to a layer name before naming the output column;
+  #   col_rename  -- function applied to a layer name before naming the output column;
   #                 for cycle 2 this strips "_2" so both cycles share the same schema
   #                 (e.g. "OGI_2" becomes "OGI", output is "OGI_mean" not "OGI_2_mean")
   make_summarize_poly <- function(metric_cols, mode_cols, key_col, col_rename = identity) {

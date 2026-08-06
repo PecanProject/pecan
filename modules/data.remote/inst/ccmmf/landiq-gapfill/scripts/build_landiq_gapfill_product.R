@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# Build gap-filled LandIQ harmonized product — pipeline step 3.
+# Build gap-filled LandIQ harmonized product -- pipeline step 3.
 #
 # Merges source LandIQ with per-year crop and ADOY gap-fill outputs.
 # Writes crops_all_years.parq + parcels-consolidated.gpkg symlink.
 #
 # ENV
-#   CCMMF_LANDIQ_GAPFILL_PRODUCT  — output directory
-#   LANDIQ_GAPFILL_START_YEAR / END_YEAR (or RUN_YEARS) — years to patch
+#   CCMMF_LANDIQ_GAPFILL_PRODUCT  -- output directory
+#   LANDIQ_GAPFILL_START_YEAR / END_YEAR (or RUN_YEARS) -- years to patch
 # =============================================================================
 
 .libPaths(c(file.path(R.home(), "library"), .libPaths()))

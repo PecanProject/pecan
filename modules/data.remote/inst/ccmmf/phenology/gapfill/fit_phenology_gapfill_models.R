@@ -1,11 +1,12 @@
 #!/usr/bin/env Rscript
-# Fit phenology date gap-fill models from matched LandIQ–MSLSP rows.
+# Fit phenology gap-fill models from matched LandIQ-MSLSP rows for all EVI-based
+# MSLSP phenometrics (dates + EVI magnitude).
 #
-# Training years (default 2018–2023): assigned_by == "matched" with usable MSLSP
-# planting/harvest dates and LandIQ CLASS. Fits:
-#   planting_doy ~ landiq_ADOY * landiq_CLASS
-#   harvest_doy  ~ landiq_ADOY * landiq_CLASS
-# plus crop-class means (and harvest means by CLASS×PFT) when ADOY is missing.
+# For each metric: value ~ landiq_ADOY * landiq_CLASS, plus CLASS / CLASSxPFT /
+# global means when ADOY is missing.
+#
+# Date metrics (fit as DOY): OGI, 50PCGI, OGMx, Peak, OGD, 50PCGD, OGMn
+# Continuous: EVImax, EVIamp, EVIarea
 #
 # USAGE
 #   Rscript fit_phenology_gapfill_models.R
@@ -39,6 +40,20 @@ doy_from_date <- function(x) {
   as.integer(lubridate::yday(d))
 }
 
+# Metric registry: column on matched parquet + type
+metric_specs <- list(
+  list(name = "OGI", col = "mslsp_OGI", type = "date"),
+  list(name = "50PCGI", col = "mslsp_50PCGI", type = "date"),
+  list(name = "OGMx", col = "mslsp_OGMx", type = "date"),
+  list(name = "Peak", col = "mslsp_Peak", type = "date"),
+  list(name = "OGD", col = "mslsp_OGD", type = "date"),
+  list(name = "50PCGD", col = "mslsp_50PCGD", type = "date"),
+  list(name = "OGMn", col = "mslsp_OGMn", type = "date"),
+  list(name = "EVImax", col = "mslsp_EVImax", type = "evi"),
+  list(name = "EVIamp", col = "mslsp_EVIamp", type = "evi"),
+  list(name = "EVIarea", col = "mslsp_EVIarea", type = "evi")
+)
+
 load_training_rows <- function(years, matched_dir) {
   rows <- lapply(years, function(yr) {
     f <- file.path(matched_dir, sprintf("assigned_year=%d.parquet", yr))
@@ -57,6 +72,68 @@ load_training_rows <- function(years, matched_dir) {
   rbindlist(rows, use.names = TRUE, fill = TRUE)
 }
 
+obs_value <- function(dt, col, type) {
+  if (!col %in% names(dt)) {
+    return(rep(NA_real_, nrow(dt)))
+  }
+  if (identical(type, "date")) {
+    v <- doy_from_date(dt[[col]])
+    v[v < 1L | v > 366L] <- NA_real_
+    return(as.numeric(v))
+  }
+  as.numeric(dt[[col]])
+}
+
+fit_one_metric <- function(train, spec, min_n_class = 30L) {
+  name <- spec$name
+  col <- spec$col
+  type <- spec$type
+  y <- obs_value(train, col, type)
+  train_m <- data.table::copy(train)
+  train_m[, y_obs := y]
+
+  lm_train <- train_m[!is.na(y_obs) & !is.na(landiq_ADOY)]
+  message("[fit] ", name, " LM candidates n=", nrow(lm_train))
+  if (nrow(lm_train) < 50L) {
+    stop("Insufficient training rows for metric ", name)
+  }
+  ok_cls <- lm_train[, .N, by = landiq_CLASS][N >= min_n_class, landiq_CLASS]
+  lm_train <- lm_train[landiq_CLASS %in% ok_cls]
+  lm_train[, landiq_CLASS := droplevels(landiq_CLASS)]
+  if (nrow(lm_train) < 50L || nlevels(lm_train$landiq_CLASS) < 2L) {
+    stop("Insufficient CLASS coverage for metric ", name)
+  }
+
+  lm_fit <- lm(y_obs ~ landiq_ADOY * landiq_CLASS, data = lm_train)
+
+  means_class_pft <- train_m[
+    !is.na(y_obs),
+    .(y_mean = mean(y_obs), n = .N),
+    by = .(
+      landiq_CLASS = as.character(landiq_CLASS),
+      landiq_PFT = as.character(landiq_PFT)
+    )
+  ]
+  means_class <- train_m[
+    !is.na(y_obs),
+    .(y_mean = mean(y_obs), n = .N),
+    by = .(landiq_CLASS = as.character(landiq_CLASS))
+  ]
+  global_mean <- mean(train_m$y_obs, na.rm = TRUE)
+
+  list(
+    name = name,
+    col = col,
+    type = type,
+    lm = lm_fit,
+    class_levels = levels(lm_train$landiq_CLASS),
+    means_class_pft = means_class_pft,
+    means_class = means_class,
+    global_mean = global_mean,
+    n_lm = nrow(lm_train)
+  )
+}
+
 message("[fit] training years: ", paste(train_years, collapse = ", "))
 message("[fit] matched_dir=", matched_dir)
 train <- load_training_rows(train_years, matched_dir)
@@ -70,75 +147,30 @@ train[, landiq_PFT := trimws(as.character(landiq_PFT))]
 train[, landiq_ADOY := suppressWarnings(as.numeric(landiq_ADOY))]
 train[landiq_ADOY <= 0, landiq_ADOY := NA_real_]
 
-train[, planting_doy := doy_from_date(mslsp_OGI)]
-train[, harvest_date_raw := as.Date(NA)]
-train[landiq_PFT %in% c("row", "rice"), harvest_date_raw := as.Date(mslsp_OGMn)]
-train[landiq_PFT %in% c("hay", "woody"), harvest_date_raw := as.Date(mslsp_OGD)]
-train[, harvest_doy := doy_from_date(harvest_date_raw)]
+# Crop PFTs only in training for means used on crop fill
+train <- train[tolower(landiq_PFT) %in% c("row", "rice", "hay", "woody")]
+message("[fit] crop-PFT training rows: ", nrow(train))
 
-# Stable DOY range for training
-train[planting_doy < 1L | planting_doy > 366L, planting_doy := NA_integer_]
-train[harvest_doy < 1L | harvest_doy > 366L, harvest_doy := NA_integer_]
-
-plant_train <- train[!is.na(planting_doy) & !is.na(landiq_ADOY)]
-harv_train <- train[!is.na(harvest_doy) & !is.na(landiq_ADOY)]
-message("[fit] planting LM n=", nrow(plant_train), "; harvest LM n=", nrow(harv_train))
-
-if (nrow(plant_train) < 50L || nrow(harv_train) < 50L) {
-  stop("Insufficient training rows with ADOY + MSLSP dates for LM fit.")
-}
-
-# Drop CLASS levels with too few ADOY rows for interaction stability
-min_n_class <- 30L
-plant_ok <- plant_train[, .N, by = landiq_CLASS][N >= min_n_class, landiq_CLASS]
-harv_ok <- harv_train[, .N, by = landiq_CLASS][N >= min_n_class, landiq_CLASS]
-plant_train <- plant_train[landiq_CLASS %in% plant_ok]
-harv_train <- harv_train[landiq_CLASS %in% harv_ok]
-plant_train[, landiq_CLASS := droplevels(landiq_CLASS)]
-harv_train[, landiq_CLASS := droplevels(landiq_CLASS)]
-
-lm_planting <- lm(planting_doy ~ landiq_ADOY * landiq_CLASS, data = plant_train)
-lm_harvest <- lm(harvest_doy ~ landiq_ADOY * landiq_CLASS, data = harv_train)
-
-# Class means (all matched with dates; ADOY not required)
-plant_means <- train[
-  !is.na(planting_doy),
-  .(planting_doy_mean = mean(planting_doy), n = .N),
-  by = .(landiq_CLASS = as.character(landiq_CLASS))
-]
-harv_means <- train[
-  !is.na(harvest_doy),
-  .(harvest_doy_mean = mean(harvest_doy), n = .N),
-  by = .(
-    landiq_CLASS = as.character(landiq_CLASS),
-    landiq_PFT = as.character(landiq_PFT)
-  )
-]
-# Fallback: CLASS-only harvest mean, then global
-harv_means_class <- train[
-  !is.na(harvest_doy),
-  .(harvest_doy_mean = mean(harvest_doy), n = .N),
-  by = .(landiq_CLASS = as.character(landiq_CLASS))
-]
-plant_global <- mean(train$planting_doy, na.rm = TRUE)
-harv_global <- mean(train$harvest_doy, na.rm = TRUE)
+metric_models <- lapply(metric_specs, function(spec) {
+  out <- fit_one_metric(train, spec)
+  gc(verbose = FALSE)
+  out
+})
+names(metric_models) <- vapply(metric_specs, `[[`, character(1), "name")
 
 models <- list(
-  version = "1",
+  version = "2",
   created = as.character(Sys.time()),
   train_years = train_years,
   matched_dir = matched_dir,
-  lm_planting = lm_planting,
-  lm_harvest = lm_harvest,
-  plant_class_levels = levels(plant_train$landiq_CLASS),
-  harvest_class_levels = levels(harv_train$landiq_CLASS),
-  plant_means = plant_means,
-  harvest_means_class_pft = harv_means,
-  harvest_means_class = harv_means_class,
-  planting_doy_global = plant_global,
-  harvest_doy_global = harv_global,
-  n_plant_lm = nrow(plant_train),
-  n_harvest_lm = nrow(harv_train)
+  metrics = metric_models,
+  # Back-compat aliases used by older docs / callers
+  lm_planting = metric_models$OGI$lm,
+  lm_harvest = metric_models$OGMn$lm,
+  plant_class_levels = metric_models$OGI$class_levels,
+  harvest_class_levels = metric_models$OGMn$class_levels,
+  planting_doy_global = metric_models$OGI$global_mean,
+  harvest_doy_global = metric_models$OGMn$global_mean
 )
 
 dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
@@ -146,18 +178,15 @@ out_rds <- file.path(model_dir, "phenology_date_gapfill_models.rds")
 saveRDS(models, out_rds)
 message("[fit] wrote ", out_rds)
 
-# Text summaries for docs / QC
 sink(file.path(model_dir, "phenology_date_gapfill_models_summary.txt"))
-cat("Phenology date gap-fill models\n")
+cat("Phenology EVI-metric gap-fill models (version 2)\n")
 cat("Created: ", models$created, "\n", sep = "")
 cat("Train years: ", paste(train_years, collapse = ", "), "\n\n", sep = "")
-cat("=== Planting LM ===\n")
-print(summary(lm_planting))
-cat("\n=== Harvest LM ===\n")
-print(summary(lm_harvest))
-cat("\n=== Planting means by CLASS ===\n")
-print(plant_means)
-cat("\n=== Harvest means by CLASS x PFT ===\n")
-print(harv_means)
+for (nm in names(metric_models)) {
+  m <- metric_models[[nm]]
+  cat("=== ", nm, " (", m$type, ", n_lm=", m$n_lm, ") ===\n", sep = "")
+  print(summary(m$lm))
+  cat("\n")
+}
 sink()
 message("[fit] wrote summary txt")

@@ -31,7 +31,7 @@ resolve_landiq_product_source_parquet <- function() {
 
 .product_adoy_source <- function(adoy) {
   adoy <- suppressWarnings(as.numeric(adoy))
-  dplyr::if_else(is_valid_adoy(adoy), "OBSERVED", "unfilled")
+  dplyr::if_else(is_valid_adoy(adoy), "observed", "unfilled")
 }
 
 .load_adoy_patch <- function(gapfill_year) {
@@ -278,7 +278,7 @@ LANDIQ_SEASONS <- 1:4
       season = as.integer(season),
       CLASS = trimws(as.character(CLASS)),
       SUBCLASS = .normalize_subclass(SUBCLASS),
-      subclass_source = "OBSERVED",
+      subclass_source = subclass_source_observed(),
       adoy_source = .product_adoy_source(ADOY)
     )
 
@@ -293,7 +293,7 @@ LANDIQ_SEASONS <- 1:4
 
 .init_provenance_cols <- function(df) {
   if (!"subclass_source" %in% names(df)) {
-    df$subclass_source <- "OBSERVED"
+    df$subclass_source <- subclass_source_observed()
   }
   if (!"adoy_source" %in% names(df)) {
     df$adoy_source <- .product_adoy_source(df$ADOY)
@@ -371,6 +371,21 @@ build_landiq_product <- function(
     " parcel_ids (dropped ", n_before - nrow(out), " rows outside consolidated geometry)"
   )
 
+  # Cover-crop flag (Violet): candidate CLASS/SUBCLASS + season alternation.
+  # Computed on non-absent rows, joined back so padded seasons stay in product.
+  cover_script <- file.path(
+    Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management"),
+    "scripts", "cover_crop_landiq.R"
+  )
+  if (!file.exists(cover_script)) {
+    stop("Missing cover-crop helper: ", cover_script)
+  }
+  source(cover_script, local = TRUE)
+  message("Attaching COVER column (flag on non-absent seasons, join back)")
+  out <- attach_cover_column(out)
+  n_cover <- sum(out$COVER %in% TRUE, na.rm = TRUE)
+  message("  COVER=TRUE rows: ", n_cover, " / ", nrow(out))
+
   arrow::write_parquet(out, path_out)
   message("Wrote ", nrow(out), " rows -> ", path_out)
 
@@ -393,18 +408,19 @@ build_landiq_product <- function(
       "",
       "Gap-filled crop identity and ADOY on top of harmonized LandIQ.",
       "Columns `subclass_source` and `adoy_source` record provenance per row.",
+      "Column `COVER` flags cover-crop seasons (candidate CLASS/SUBCLASS + alternation).",
       "All SUBCLASS values use the Nov 2021 DWR RS legend (harmonized_SUBCLASS).",
       "Tabular rows are restricted to consolidated parcel_ids (parcels-consolidated.gpkg).",
       "",
       paste0("- Built: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")),
       paste0("- Source LandIQ: ", source_root),
-      paste0("- Gap-fill component: ", landiq_gapfill_root()),
+      paste0("- Gap-fill package: ", landiq_gapfill_root()),
       paste0("- Gap-fill years: ", paste(years, collapse = ", ")),
       "",
       "Pipeline:",
       "1. `run_gapfill_crop_year.R` (CLASS / SUBCLASS)",
       "2. `run_gapfill_adoy_year.R` (ADOY)",
-      "3. `build_landiq_gapfill_product.R` (this product)",
+      "3. `build_landiq_gapfill_product.R` (this product, including COVER)",
       "",
       "Geometry unchanged from source (`parcels-consolidated.gpkg` symlink)."
     ),

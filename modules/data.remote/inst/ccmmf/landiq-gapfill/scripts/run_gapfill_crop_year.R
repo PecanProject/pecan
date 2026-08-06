@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# Crop identity gap-fill (CLASS / SUBCLASS) for one calendar year — pipeline step 1.
+# Crop identity gap-fill (CLASS / SUBCLASS) for one calendar year -- pipeline step 1.
 #
 # USAGE
 #   Rscript run_gapfill_crop_year.R <year>
 #
 # MODES (auto from year)
-#   full        — entire year missing from LandIQ (default: 2017); CLASS + SUBCLASS
-#   within_year — LandIQ present; fill missing SUBCLASS only (CLASS X / YP exempt)
+#   full        -- entire year missing from LandIQ (default: 2017); CLASS + SUBCLASS
+#   within_year -- LandIQ present; fill missing SUBCLASS only (CLASS X / YP exempt)
 #
 # ENV
 #   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4, CDL_OUT_DIR

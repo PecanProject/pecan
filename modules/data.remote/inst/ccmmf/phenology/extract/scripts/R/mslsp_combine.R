@@ -20,7 +20,7 @@ mslsp_combine <- function(prep, time_key, overwrite = FALSE, verbose = TRUE) {
   }), fill = TRUE, use.names = TRUE)
 
   if (nrow(dt) == 0) {
-    if (verbose) message("[combine] no rows — writing empty parquet")
+    if (verbose) message("[combine] no rows -- writing empty parquet")
     arrow::write_parquet(dt, out_path)
     return(invisible(out_path))
   }

@@ -12,9 +12,9 @@
 #
 # USAGE
 # -----
-#   Rscript make_events_statewide.R <year> [event_type]
-#   event_type (optional): phenology | planting | harvest | tillage
-#   Default (no event_type): phenology + planting + harvest (not tillage).
+#   Rscript make_events_statewide.R <year> <event_type>
+#   event_type (required): phenology | planting | harvest | tillage
+#   No default: every type is opt-in.
 #
 # Implementation
 # --------------
@@ -23,8 +23,7 @@
 #   R/planting_events.R  -- C/N pools via traits/pool_calculations_from_lookup.R
 #   R/harvest_events.R   -- removal fractions, young-woody skip, CLASS-level
 #                             woody destructive (LandIQ year -> year+1 look-ahead)
-#   R/tillage_metrics.R  -- fallow-window NDTI minimum / intensity
-#   R/tillage_events.R   -- NDTI + matched phenology -> tillage events
+#   R/tillage_events.R   -- NDTI + tillage_metrics (separate data path)
 #   R/io.R               -- shared parquet + PEcAn JSON writer
 #
 # ENV
@@ -43,33 +42,30 @@ suppressPackageStartupMessages({
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "R", "bootstrap.R"))
-load_events_helpers()
+load_events_lib()
 
+.valid_types <- c("phenology", "planting", "harvest", "tillage")
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 1L) {
-  stop("Usage: Rscript make_events_statewide.R <year> [phenology|planting|harvest|tillage]")
+if (length(args) < 2L) {
+  stop(
+    "Usage: Rscript make_events_statewide.R <year> <",
+    paste(.valid_types, collapse = "|"),
+    ">\n",
+    "  event_type is required (no default)."
+  )
 }
 year_arg <- as.integer(args[1L])
 if (is.na(year_arg)) {
   stop("Year must be an integer, got: ", args[1L])
 }
-event_type <- if (length(args) >= 2L) {
-  match.arg(args[2L], c("phenology", "planting", "harvest", "tillage"))
-} else {
-  NULL
-}
+event_type <- match.arg(args[2L], .valid_types)
 
-run_phenology <- is.null(event_type) || event_type == "phenology"
-run_planting <- is.null(event_type) || event_type == "planting"
-run_harvest <- is.null(event_type) || event_type == "harvest"
-run_tillage <- !is.null(event_type) && event_type == "tillage"
+run_phenology <- event_type == "phenology"
+run_planting <- event_type == "planting"
+run_harvest <- event_type == "harvest"
+run_tillage <- event_type == "tillage"
 
-msg_suffix <- if (is.null(event_type)) {
-  " (phenology + planting + harvest)"
-} else {
-  paste0(" event_type=", event_type)
-}
-message("[make_events_statewide] year=", year_arg, msg_suffix)
+message("[make_events_statewide] year=", year_arg, " event_type=", event_type)
 
 paths <- events_paths()
 dir.create(paths$out_dir, recursive = TRUE, showWarnings = FALSE)
@@ -105,8 +101,9 @@ if (run_tillage) {
     year_arg,
     paths$out_dir,
     paths$matched_dir,
-    paths$ndti_root
+    paths$ndti_root,
+    paths$tillage_metrics_script
   )
 }
 
-message("[make_events_statewide] Done for year=", year_arg)
+message("[make_events_statewide] Done for year=", year_arg, " event_type=", event_type)

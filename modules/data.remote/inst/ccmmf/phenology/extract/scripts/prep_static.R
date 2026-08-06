@@ -6,7 +6,7 @@
 #
 # ENV
 #   PHENOLOGY_ROOT, CCMMF_LANDIQ_V4, CCMMF_MANAGEMENT, mslsp_parcel_tilemap,
-#   mslsp_legacy_dir, mslsp_new_base — see ../README.md (phenology component)
+#   mslsp_legacy_dir, mslsp_new_base -- see ../README.md (phenology component)
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 .lib <- dirname(normalizePath(.fa, mustWork = FALSE))

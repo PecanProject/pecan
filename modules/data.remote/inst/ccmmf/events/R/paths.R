@@ -30,13 +30,18 @@ events_paths <- function() {
     "CCMMF_LANDIQ_V4",
     "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2"
   )
-  path_code <- Sys.getenv("CCMMF_CODE", "")
+  path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
   traits_root <- trimws(Sys.getenv("TRAITS_ROOT", ""))
-  if (!nzchar(traits_root) && nzchar(trimws(path_code))) {
+  if (!nzchar(traits_root) && nzchar(path_code)) {
     traits_root <- file.path(path_code, "traits")
   }
   if (!nzchar(traits_root)) {
     traits_root <- file.path(path_management, "scripts", "traits")
+  }
+  events_root <- events_pkg_root()
+  tillage_metrics_script <- file.path(events_root, "R", "tillage_metrics.R")
+  if (!file.exists(tillage_metrics_script)) {
+    tillage_metrics_script <- file.path(path_management, "scripts", "tillage", "tillage_metrics.R")
   }
   list(
     management = path_management,
@@ -48,8 +53,12 @@ events_paths <- function() {
       file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
     ),
     pool_script = file.path(traits_root, "pool_calculations_from_lookup.R"),
-    ndti_root = file.path(path_management, "tillage", "ndti_v4.1"),
-    out_dir = file.path(path_management, "event_files")
+    tillage_metrics_script = tillage_metrics_script,
+    ndti_root = file.path(path_management, "tillage", "ndti_v4.1.2"),
+    out_dir = Sys.getenv(
+      "EVENT_OUTPUT_DIR",
+      file.path(path_management, "event_files_v4.1.2")
+    )
   )
 }
 
@@ -57,5 +66,14 @@ event_output_paths <- function(out_dir, kind, year) {
   list(
     parquet = file.path(out_dir, sprintf("%s_statewide_%d.parquet", kind, year)),
     json = file.path(out_dir, sprintf("%s_statewide_%d.json", kind, year))
+  )
+}
+
+# Prior-year fallows found while running job_year (lookback). Safe for parallel
+# year jobs; merge_tillage_lookback() folds these into the canonical files.
+tillage_lookback_amend_path <- function(out_dir, prior_year, job_year) {
+  file.path(
+    out_dir,
+    sprintf("tillage_statewide_%d_lookback_from_%d.parquet", prior_year, job_year)
   )
 }

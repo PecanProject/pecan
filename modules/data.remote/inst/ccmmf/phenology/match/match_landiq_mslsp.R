@@ -4,7 +4,7 @@
 # Rule-based matching (no rank-based cost).
 #
 # LandIQ inventory: all ag parcel-years from CCMMF_LANDIQ_V4 (gap-filled v4.1.2
-# product by default) are assigned — left join to combined MSLSP, not inner join.
+# product by default) are assigned -- left join to combined MSLSP, not inner join.
 # Parcel-years with LandIQ crop rows but no MSLSP retrieval get assigned_by = "no_mslsp".
 # - Primary: ADOY inside [OGI, OGMn]
 # - Tie-break: nearest Peak to ADOY, then mslsp_cycle (1 before 2)
@@ -33,21 +33,7 @@ path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/L
 combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1.2")
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")
 cropcode_csv      <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
-match_dir <- tryCatch(
-  dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L]), mustWork = FALSE)),
-  error = function(e) NA_character_
-)
-matched_paths <- file.path(match_dir, "matched_paths.R")
-if (!isTRUE(file.exists(matched_paths))) {
-  pheno <- trimws(Sys.getenv("PHENOLOGY_ROOT", ""))
-  if (nzchar(pheno)) {
-    matched_paths <- file.path(pheno, "match", "matched_paths.R")
-  }
-}
-if (!isTRUE(file.exists(matched_paths))) {
-  stop("Missing matched_paths.R next to match_landiq_mslsp.R (or under $PHENOLOGY_ROOT/match/)")
-}
-source(matched_paths)
+source(file.path(path_management, "scripts/phenology/matched_paths.R"))
 out_dir           <- matched_landiq_dir(path_management)
 
 eps_eviamp             <- 0.01
@@ -264,7 +250,7 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
     mslsp_cycle = NA_integer_,
     landiq_PCNT = NA_real_, landiq_ADOY = NA_real_, landiq_PFT = NA_character_,
     landiq_CLASS = NA_character_, landiq_SUBCLASS = NA_character_, landiq_SPECOND = NA_character_,
-    landiq_MULTIUSE = NA_character_,
+    landiq_MULTIUSE = NA_character_, landiq_COVER = FALSE,
     mslsp_Peak = as.Date(NA), mslsp_OGI = as.Date(NA), mslsp_OGMn = as.Date(NA),
     mslsp_50PCGI = as.Date(NA), mslsp_OGMx = as.Date(NA), mslsp_OGD = as.Date(NA), mslsp_50PCGD = as.Date(NA),
     mslsp_EVImax = NA_real_, mslsp_EVIamp = NA_real_, mslsp_EVIarea = NA_real_,
@@ -288,7 +274,12 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
         landiq_CLASS = if ("CLASS" %in% names(r)) r$CLASS[1] else NA_character_,
         landiq_SUBCLASS = if ("SUBCLASS" %in% names(r)) r$SUBCLASS[1] else NA_character_,
         landiq_SPECOND = if ("SPECOND" %in% names(r)) trimws(as.character(r$SPECOND[1])) else NA_character_,
-        landiq_MULTIUSE = if ("MULTIUSE" %in% names(r)) r$MULTIUSE[1] else NA_character_
+        landiq_MULTIUSE = if ("MULTIUSE" %in% names(r)) r$MULTIUSE[1] else NA_character_,
+        landiq_COVER = if ("COVER" %in% names(r)) {
+          isTRUE(as.logical(r$COVER[1]))
+        } else {
+          FALSE
+        }
       )]
       pcnt <- r$PCNT[1]
       out[season == s, qc_landiq_season_data := fifelse(!is.na(pcnt) & pcnt >= 0, "landiq_season_has_data", NA_character_)]

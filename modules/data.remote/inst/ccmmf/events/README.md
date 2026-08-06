@@ -21,11 +21,13 @@ Full product set: [pipeline.md](../documentation/pipeline.md).
 (clean / rename -> `events.json` -> SIPNET `events.in`).
 
 - **Input (phenology / planting / harvest):** gap-filled overlay
-  `gapfill_dates/assigned_year=Y_gapfilled.parquet` (required; includes filled
-  planting/harvest dates for `no_mslsp` rows). Falls back to
-  `assigned_year=Y.parquet` only if the overlay is missing. See
+  `gapfill_dates/assigned_year=Y_gapfilled.parquet` when present (includes filled
+  planting/harvest dates and `gapfill_date_source` for `no_mslsp` / related rows).
+  Falls back to `assigned_year=Y.parquet` if the overlay is missing. See
   [phenology/gapfill/README.md](../phenology/gapfill/README.md).
-- **Input (tillage):** NDTI hive dataset + assigned parquet for `year +/- buffer`.
+- **Input (tillage):** NDTI hive dataset + gapfilled product (else assigned) for
+  `(year - buffer):year` (lookback only; next year's job finalizes cross-year
+  fallows via `merge_tillage_lookback.sh`).
 - **Output:** `$CCMMF_MANAGEMENT/event_files/*_statewide_{year}.parquet` (+ JSON).
 
 ```mermaid
@@ -78,30 +80,32 @@ Rscript $CCMMF_CODE/traits/build_harvest_lookup.R
 source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
-### Step 2 - Generate events (default: phenology + planting + harvest)
+### Step 2 - Generate events (`event_type` required)
+
+Every type is opt-in; there is no default bundle.
+`event_type`: `phenology` | `planting` | `harvest` | `tillage`.
 
 Why: turn matched seasons (+ trait lookups) into PEcAn event files under
 `$CCMMF_MANAGEMENT/event_files/`.
 
 ```bash
-$CCMMF_CODE/events/make_events_statewide.sh 2024
-$CCMMF_CODE/events/make_events_statewide.sh 2023   # after re-match
-```
-
-**One event type only:**
-
-```bash
 $CCMMF_CODE/events/make_events_statewide.sh 2024 phenology
 $CCMMF_CODE/events/make_events_statewide.sh 2024 planting
 $CCMMF_CODE/events/make_events_statewide.sh 2024 harvest
-$CCMMF_CODE/events/make_events_statewide.sh 2024 tillage    # heavy; needs NDTI +/- buffer years
+$CCMMF_CODE/events/make_events_statewide.sh 2024 tillage    # heavy; needs NDTI for (Y-buffer):Y
 ```
 
 Or call the R orchestrator directly:
 
 ```bash
-Rscript $CCMMF_CODE/events/make_events_statewide.R 2024
+Rscript $CCMMF_CODE/events/make_events_statewide.R 2024 planting
 Rscript $CCMMF_CODE/events/make_events_statewide.R 2024 tillage
+```
+
+After tillage years that amend prior lookbacks:
+
+```bash
+$CCMMF_CODE/events/merge_tillage_lookback.sh 2023 2024
 ```
 
 ### Step 3 - Verify
@@ -124,13 +128,12 @@ for (kind in c("planting", "harvest", "phenology", "tillage")) {
 | **Harvest** | row/rice -> `mslsp_OGMn`; hay/woody -> `mslsp_OGD` | Removal fractions via `initialize_harvest_from_lookup()`; skip young woody (`SPECOND=Y` / `CLASS=YP`); **orchard clearing** when LandIQ season-2 **CLASS** changes year->year+1 (or mature woody -> young / non-woody): same LandIQ PFT `woody` with `destructive=TRUE` (not a separate PFT). Subclass-only changes ignored. Re-run the prior year after a new LandIQ year exists so look-ahead can fire. |
 | **Tillage** | Minimum NDTI in fallow window | `tillage_metrics()` in `R/tillage_metrics.R` (loaded like planting/harvest helpers) |
 
-Default run (no `event_type` arg) produces **phenology + planting + harvest**, not tillage.
-
 ### Tillage algorithm (summary)
 
-Opt-in tillage needs monthly NDTI under `$CCMMF_MANAGEMENT/tillage/ndti_v4.1/` and
-matched seasons (`assigned_by == "matched"`). Loads NDTI for
-`year +/- TILLAGE_BUFFER_YEARS` (default 1) so cross-year fallow windows have coverage.
+Tillage needs monthly NDTI under `$CCMMF_MANAGEMENT/tillage/ndti_v4.1/` and
+matched seasons. Loads NDTI for `(year - TILLAGE_BUFFER_YEARS):year` (default
+buffer 1). Cross-year fallow amends are folded in with
+`merge_tillage_lookback.sh`.
 
 1. Join NDTI scenes to phenology dates (`OGI_date`, `OGMn_date`) per parcel-year.
 2. Build fallow periods: `OGMn` to next `OGI` on the same parcel (can cross years).
@@ -188,8 +191,9 @@ Fertilization / NCC and irrigation statewide builders:
 
 | File | Role |
 |------|------|
-| `make_events_statewide.sh` | Portable bash wrapper |
-| `make_events_statewide.R` | CLI orchestrator (year, optional event_type) |
+| `make_events_statewide.sh` | Portable bash wrapper (year + required event_type) |
+| `make_events_statewide.R` | CLI orchestrator (year + required event_type) |
+| `merge_tillage_lookback.sh` / `.R` | Fold tillage lookback amend parquets into yearly products |
 | `R/matched_input.R` | Load `assigned_year=Y`, filter matched rows |
 | `R/phenology_events.R` | Leaf-on/off from MSLSP columns |
 | `R/planting_events.R` | C/N pools via `initialize_planting()` |

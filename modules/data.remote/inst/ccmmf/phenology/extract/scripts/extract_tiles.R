@@ -4,7 +4,7 @@
 # USAGE
 #   Rscript extract_tiles.R <year> [tile_id] [overwrite]
 #
-# ENV — see README.md
+# ENV -- see README.md
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 .lib <- dirname(normalizePath(.fa, mustWork = FALSE))

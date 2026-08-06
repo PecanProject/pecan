@@ -1,4 +1,4 @@
-# MSLSP pipeline steps — called by atomic CLI scripts and run_mslsp.sh.
+# MSLSP pipeline steps -- called by atomic CLI scripts and run_mslsp.sh.
 
 MSLSP_TIME_KEY <- 1L
 
@@ -59,9 +59,9 @@ run_mslsp_extract <- function(year, overwrite = FALSE, tile = NULL) {
 
   if (nzchar(tile) && !tile %in% names(prep$tile_to_parcel_ids)) {
     if (exists("tw_log", mode = "function")) {
-      tw_log("INFO", "tile=", tile, " no ag parcels for year=", year, " — skip")
+      tw_log("INFO", "tile=", tile, " no ag parcels for year=", year, " -- skip")
     } else {
-      message("[MSLSP] tile ", tile, " has no ag parcels for year ", year, " — skip")
+      message("[MSLSP] tile ", tile, " has no ag parcels for year ", year, " -- skip")
     }
     return(invisible(NULL))
   }
@@ -102,7 +102,7 @@ read_mslsp_tile_list <- function() {
   if (!file.exists(path)) {
     stop(
       "MSLSP tile list not found: ", path, "\n",
-      "  Expected HLS_Phenology tileids.txt — set MSLSP_TILE_LIST or CCMMF_ROOT"
+      "  Expected HLS_Phenology tileids.txt -- set MSLSP_TILE_LIST or CCMMF_ROOT"
     )
   }
   tiles <- trimws(readLines(path, warn = FALSE))
@@ -160,7 +160,7 @@ run_mslsp_extract_task_tile <- function(year, overwrite = FALSE) {
   }
   tiles <- read_mslsp_tiles_to_run(year)
   if (task_id > length(tiles)) {
-    message("[MSLSP] TASK_ID ", task_id, " > ", length(tiles), " scheduled tiles — nothing to do")
+    message("[MSLSP] TASK_ID ", task_id, " > ", length(tiles), " scheduled tiles -- nothing to do")
     return(invisible(NULL))
   }
   run_mslsp_extract(year, overwrite = overwrite, tile = tiles[[task_id]])

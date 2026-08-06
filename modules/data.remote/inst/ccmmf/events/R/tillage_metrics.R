@@ -5,6 +5,9 @@
 #
 # Phenology: parcel_id, year, OGI_date, OGMn_date (Date). Include all cycles /
 # seasons per parcel across years so lead(OGI_date) can span cross-year fallow.
+# Optional provenance on phenology rows (carried through when present):
+# assigned_by, gapfill_date_source -> output as ogmn_*/ogi_* from fallow start
+# and lead(OGI).
 #
 # Returns a tibble of per-fallow-window tillage metrics (dplyr).
 
@@ -68,16 +71,23 @@ tillage_metrics <- function(ndti_table, phenology_table) {
       ss = ifelse(!is.na(n_valid) & n_valid > 0, n_valid * (ndti_sd^2), 0)
     )
 
-  pheno_date <- dplyr::transmute(
-    phenology_table,
-    parcel_id,
-    year,
-    OGI_date,
-    OGMn_date
+  pheno_cols <- c("parcel_id", "year", "OGI_date", "OGMn_date")
+  prov_cols <- intersect(
+    c("assigned_by", "gapfill_date_source"),
+    names(phenology_table)
   )
+  pheno_date <- dplyr::as_tibble(phenology_table) |>
+    dplyr::select(dplyr::all_of(c(pheno_cols, prov_cols))) |>
+    dplyr::mutate(
+      OGI_date = as.Date(OGI_date),
+      OGMn_date = as.Date(OGMn_date)
+    )
 
   ndti_smooth <- ndti_work |>
-    dplyr::inner_join(pheno_date, by = c("parcel_id", "year")) |>
+    dplyr::inner_join(
+      dplyr::select(pheno_date, parcel_id, year, OGI_date, OGMn_date),
+      by = c("parcel_id", "year")
+    ) |>
     dplyr::arrange(parcel_id, date) |>
     dplyr::group_by(parcel_id, year, PFT) |>
     tidyr::complete(date = seq.Date(min(date), max(date), by = "day")) |>
@@ -91,7 +101,30 @@ tillage_metrics <- function(ndti_table, phenology_table) {
   fallow_periods <- pheno_date |>
     dplyr::arrange(parcel_id, OGI_date) |>
     dplyr::group_by(parcel_id) |>
-    dplyr::mutate(fallow_start = OGMn_date, fallow_end = dplyr::lead(OGI_date)) |>
+    dplyr::mutate(
+      fallow_start = OGMn_date,
+      fallow_end = dplyr::lead(OGI_date),
+      ogmn_assigned_by = if ("assigned_by" %in% names(pheno_date)) {
+        assigned_by
+      } else {
+        NA_character_
+      },
+      ogmn_source = if ("gapfill_date_source" %in% names(pheno_date)) {
+        gapfill_date_source
+      } else {
+        NA_character_
+      },
+      ogi_assigned_by = if ("assigned_by" %in% names(pheno_date)) {
+        dplyr::lead(assigned_by)
+      } else {
+        NA_character_
+      },
+      ogi_source = if ("gapfill_date_source" %in% names(pheno_date)) {
+        dplyr::lead(gapfill_date_source)
+      } else {
+        NA_character_
+      }
+    ) |>
     dplyr::filter(!is.na(fallow_end)) |>
     dplyr::ungroup()
 
@@ -117,6 +150,10 @@ tillage_metrics <- function(ndti_table, phenology_table) {
       year = dplyr::first(.data[[yr_col]]),
       PFT = dplyr::first(PFT),
       OGMn_date = dplyr::first(fallow_start),
+      ogmn_assigned_by = dplyr::first(ogmn_assigned_by),
+      ogmn_source = dplyr::first(ogmn_source),
+      ogi_assigned_by = dplyr::first(ogi_assigned_by),
+      ogi_source = dplyr::first(ogi_source),
       .groups = "drop"
     )
 
@@ -172,6 +209,10 @@ tillage_metrics <- function(ndti_table, phenology_table) {
     min_val_date_before = nb$prev_date,
     min_val_n_before = nb$prev_nv,
     min_val_date_after = nb$foll_date,
-    min_val_n_after = nb$foll_nv
+    min_val_n_after = nb$foll_nv,
+    ogmn_assigned_by,
+    ogmn_source,
+    ogi_assigned_by,
+    ogi_source
   )
 }

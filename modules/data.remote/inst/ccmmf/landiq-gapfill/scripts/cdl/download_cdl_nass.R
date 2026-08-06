@@ -10,9 +10,9 @@
 #   CDL_DIR=/path/to/dir Rscript download_cdl_nass.R 2017
 #
 # Env:
-#   CDL_DIR  — directory to save GeoTIFFs (default: ccmmf/CDL_data)
-#   CCMMF_ROOT — ccmmf repo root (when CDL_DIR is unset)
-#   LANDIQ_GAPFILL_ROOT — optional; auto-detected from script path
+#   CDL_DIR  -- directory to save GeoTIFFs (default: ccmmf/CDL_data)
+#   CCMMF_ROOT -- ccmmf repo root (when CDL_DIR is unset)
+#   LANDIQ_GAPFILL_ROOT -- optional; auto-detected from script path
 # =============================================================================
 
 # Install CropScapeR if not present (skip if already installed)

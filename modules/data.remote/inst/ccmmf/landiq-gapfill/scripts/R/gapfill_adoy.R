@@ -1,5 +1,5 @@
 # ADOY gap-fill: step 2 after crop + subclass assignment.
-# Uses resolve_gapfill_mode() — same full-year / within-year split as crop gap-fill.
+# Uses resolve_gapfill_mode() -- same full-year / within-year split as crop gap-fill.
 
 is_valid_adoy <- function(x) {
   x <- suppressWarnings(as.numeric(x))
@@ -348,7 +348,7 @@ fill_adoy_panel <- function(panel, ref, cfg) {
 
   if (n_fill == 0L) {
     return(panel %>%
-      dplyr::mutate(adoy_source = "OBSERVED") %>%
+      dplyr::mutate(adoy_source = "observed") %>%
       dplyr::select(-.row_id, -needs_fill))
   }
 
@@ -383,13 +383,13 @@ fill_adoy_panel <- function(panel, ref, cfg) {
     dplyr::mutate(
       adoy_orig = ADOY,
       ADOY = dplyr::if_else(needs_fill, adoy_fill, ADOY),
-      adoy_source = dplyr::if_else(needs_fill, adoy_source, "OBSERVED")
+      adoy_source = dplyr::if_else(needs_fill, adoy_source, "observed")
     ) %>%
     dplyr::select(-.row_id, -adoy_fill, -needs_fill)
 
   bad <- out %>%
     dplyr::filter(is_valid_adoy(adoy_orig)) %>%
-    dplyr::filter(abs(ADOY - adoy_orig) > 1e-9 | adoy_source != "OBSERVED")
+    dplyr::filter(abs(ADOY - adoy_orig) > 1e-9 | adoy_source != "observed")
   if (nrow(bad) > 0L) {
     stop("ADOY gap-fill changed ", nrow(bad), " row(s) that already had ADOY.")
   }
@@ -556,7 +556,7 @@ run_adoy_gapfill <- function(gapfill_year) {
   )
   arrow::write_parquet(out, path_out)
 
-  filled_n <- sum(out$adoy_source != "OBSERVED" & out$adoy_source != "unfilled", na.rm = TRUE)
+  filled_n <- sum(out$adoy_source != "observed" & out$adoy_source != "unfilled", na.rm = TRUE)
   message(
     "Wrote ADOY gapfill: ", path_out,
     " (filled=", filled_n, " unfilled=", sum(out$adoy_source == "unfilled", na.rm = TRUE), ")"

@@ -29,11 +29,11 @@ load_matched_for_events <- function(year, matched_dir,
   }
 
   assigned[, parcel_id := as.character(parcel_id)]
-  has_fill <- all(c(
-    "planting_date_filled", "harvest_date_filled"
-  ) %in% names(assigned))
+  has_gapfill_src <- "gapfill_date_source" %in% names(assigned) ||
+    all(c("gapfill_planting_source", "gapfill_harvest_source") %in% names(assigned)) ||
+    all(c("planting_date_filled", "harvest_date_filled") %in% names(assigned))
 
-  if (has_fill) {
+  if (has_gapfill_src) {
     matched <- assigned[assigned_by %in% c("matched", "no_mslsp", "no_match")]
   } else {
     matched <- assigned[assigned_by == "matched"]
@@ -49,15 +49,17 @@ load_matched_for_events <- function(year, matched_dir,
     " rows missing crop/PFT; ", nrow(matched), " remain"
   )
 
-  # Attach planting / harvest date strings for builders
-  if (has_fill) {
+  # Planting / harvest dates from standard MSLSP metric columns (gap-fill
+  # writes into these in place when overlay is used).
+  if ("planting_date_filled" %in% names(matched)) {
+    # Legacy overlay with parallel filled columns
     matched[, planting_date_str := as.character(planting_date_filled)]
     matched[, harvest_date_str := as.character(harvest_date_filled)]
   } else {
     matched[, planting_date_str := as.character(mslsp_OGI)]
     for (col in c("mslsp_OGMn", "mslsp_OGD")) {
       if (!col %in% names(matched)) {
-        matched[, (col) := NA]
+        matched[, (col) := as.Date(NA)]
       }
     }
     matched[, pft_l := tolower(trimws(as.character(landiq_PFT)))]
@@ -67,11 +69,12 @@ load_matched_for_events <- function(year, matched_dir,
     matched[, pft_l := NULL]
   }
 
-  # Phenology-only path: need matched cycles + EVI
+  # Phenology-only path: need leaf-on/off dates (observed or gap-filled)
   if (isTRUE(run_phenology) && !isTRUE(run_planting) && !isTRUE(run_harvest)) {
-    matched <- matched[assigned_by == "matched"]
     n_ev <- nrow(matched)
-    matched <- matched[!is.na(mslsp_EVImax) & !is.na(mslsp_EVIamp)]
+    matched <- matched[
+      !is.na(mslsp_50PCGI) & !is.na(mslsp_50PCGD)
+    ]
     message("  Phenology filter: dropped to ", nrow(matched), " (from ", n_ev, ")")
   }
 
@@ -90,7 +93,11 @@ load_landiq_season2_identity <- function(year, landiq_crops, cropcode_csv) {
     return(NULL)
   }
 
+  # Harmonized LandIQ uses the 2021 DWR RS legend only (includes C**, V**).
   lookup <- data.table::fread(cropcode_csv, showProgress = FALSE)
+  if ("legend_year" %in% names(lookup)) {
+    lookup <- lookup[as.integer(legend_year) == 2021L]
+  }
   ag_pairs <- unique(
     lookup[is_agricultural == TRUE, .(
       CLASS = trimws(as.character(CLASS)),

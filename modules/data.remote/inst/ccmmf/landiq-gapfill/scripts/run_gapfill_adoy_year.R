@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# ADOY gap-fill for one calendar year — pipeline step 2 (after run_gapfill_crop_year.R).
+# ADOY gap-fill for one calendar year -- pipeline step 2 (after run_gapfill_crop_year.R).
 #
 # USAGE
 #   Rscript run_gapfill_adoy_year.R <year>
@@ -11,7 +11,7 @@
 #
 # ENV
 #   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4
-#   GAPFILL_REBUILD_ADOY_REF=1  — force reference-table rebuild
+#   GAPFILL_REBUILD_ADOY_REF=1  -- force reference-table rebuild
 # =============================================================================
 
 .libPaths(c(file.path(R.home(), "library"), .libPaths()))

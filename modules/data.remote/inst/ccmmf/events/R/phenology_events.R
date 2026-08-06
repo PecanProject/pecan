@@ -1,17 +1,35 @@
-# Phenology events: leaf-on / leaf-off dates from matched MSLSP columns.
+# Phenology events: leaf-on / leaf-off dates from MSLSP 50PCGI / 50PCGD
+# (including gap-filled values on the overlay).
+# Includes young woody (YP): planting/harvest are not emitted for those stands.
 
 build_phenology_events <- function(matched, year, out_dir) {
   message("[phenology] Building events")
-  if ("assigned_by" %in% names(matched)) {
-    matched <- matched[assigned_by == "matched"]
+  # Idle/fallow (PFT other) is not a crop phenology management event
+  if ("landiq_PFT" %in% names(matched)) {
+    is_other <- tolower(trimws(as.character(matched$landiq_PFT))) == "other"
+    n_skip_other <- sum(is_other, na.rm = TRUE)
+    if (n_skip_other > 0L) {
+      matched <- matched[!is_other]
+      message("  Skipped phenology (PFT other / idle-fallow): ", n_skip_other)
+    }
   }
+  # Prefer calendar year on the row when Peak is missing / gap-filled oddly
+  # (YP / young woody are included here; planting and harvest skip them.)
+  yr_fallback <- as.integer(year)
   pheno <- matched[, .(
     site_id = parcel_id,
-    year = lubridate::year(mslsp_Peak),
+    year = {
+      yp <- suppressWarnings(lubridate::year(as.Date(mslsp_Peak)))
+      data.table::fifelse(is.na(yp), yr_fallback, as.integer(yp))
+    },
     leafonday = as.character(mslsp_50PCGI),
     leafoffday = as.character(mslsp_50PCGD)
   )]
-  pheno <- pheno[!is.na(leafonday) & !is.na(leafoffday) & leafonday != "NA" & leafoffday != "NA"]
+  pheno <- pheno[
+    !is.na(leafonday) & !is.na(leafoffday) &
+      leafonday != "NA" & leafoffday != "NA" &
+      nzchar(leafonday) & nzchar(leafoffday)
+  ]
   message("  Phenology rows: ", nrow(pheno))
   data.table::setorder(pheno, site_id, year)
   pheno[, event_type := "phenology"]

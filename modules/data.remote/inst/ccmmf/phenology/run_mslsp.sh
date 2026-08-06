@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MSLSP parcel extraction orchestrator — chains atomic R steps per calendar year.
+# MSLSP parcel extraction orchestrator -- chains atomic R steps per calendar year.
 #
 # Usage:
 #   ./run_mslsp.sh [options] YEARS
@@ -7,8 +7,8 @@
 # YEARS: single year (2024), comma list (2023,2024), or inclusive range (2016-2024).
 #
 # Steps (on by default; disable with --no-*):
-#   extract  read MSLSP NetCDF per tile → tilepieces CSV.gz (includes prep)
-#   combine  aggregate tilepieces → mslsp_year=Y.parquet (includes prep)
+#   extract  read MSLSP NetCDF per tile -> tilepieces CSV.gz (includes prep)
+#   combine  aggregate tilepieces -> mslsp_year=Y.parquet (includes prep)
 #
 # Options:
 #   --prep-only      build/load per-year static prep cache only
@@ -127,15 +127,15 @@ log "MSLSP: years=$(IFS=,; echo "${YEARS[*]}") prep=$DO_PREP extract=$DO_EXTRACT
 
 for y in "${YEARS[@]}"; do
   if (( DO_PREP )); then
-    log "MSLSP year=$y → prep"
+    log "MSLSP year=$y -> prep"
     Rscript "$SCRIPTS/prep_static.R" "$y"
   fi
   if (( DO_TASK_TILE )); then
-    log "MSLSP year=$y → extract (TASK_ID=${TASK_ID:-NA})"
+    log "MSLSP year=$y -> extract (TASK_ID=${TASK_ID:-NA})"
     export MSLSP_YEAR="$y"
     Rscript "$SCRIPTS/extract_tiles_task.R" $OW_TOKEN
   elif (( DO_EXTRACT )); then
-    log "MSLSP year=$y → extract"
+    log "MSLSP year=$y -> extract"
     if [[ -n "${TILE_ARG:-}" ]]; then
       Rscript "$SCRIPTS/extract_tiles.R" "$y" "$TILE_ARG" $OW_TOKEN
     else
@@ -143,7 +143,7 @@ for y in "${YEARS[@]}"; do
     fi
   fi
   if (( DO_COMBINE )); then
-    log "MSLSP year=$y → combine"
+    log "MSLSP year=$y -> combine"
     Rscript "$SCRIPTS/combine_year.R" "$y" $OW_TOKEN
   fi
 done

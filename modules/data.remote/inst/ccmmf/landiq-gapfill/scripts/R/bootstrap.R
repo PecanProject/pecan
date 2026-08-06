@@ -2,7 +2,7 @@
 
 .gapfill_pkg_root <- landiq_gapfill_pkg_root()
 Sys.setenv(LANDIQ_GAPFILL_ROOT = .gapfill_pkg_root)
-.gapfill_lib <- file.path(.gapfill_pkg_root, "scripts", "R")
+.gapfill_lib <- file.path(.gapfill_pkg_root, "scripts", "_lib")
 
 source(file.path(.gapfill_lib, "paths.R"))
 source(file.path(.gapfill_lib, "gapfill_config.R"))

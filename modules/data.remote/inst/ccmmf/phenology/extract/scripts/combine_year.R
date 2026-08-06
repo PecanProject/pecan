@@ -4,7 +4,7 @@
 # USAGE
 #   Rscript combine_year.R <year> [overwrite]
 #
-# ENV — see README.md
+# ENV -- see README.md
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "R", "pkg_root.R"))

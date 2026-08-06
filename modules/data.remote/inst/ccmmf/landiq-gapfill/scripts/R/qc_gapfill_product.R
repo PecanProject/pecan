@@ -12,7 +12,11 @@
 }
 
 .qc_is_subclass_gapfilled <- function(subclass_source) {
-  !trimws(as.character(subclass_source)) %in% c("OBSERVED", "absent")
+  src <- trimws(as.character(subclass_source))
+  !src %in% c(
+    "observed", "OBSERVED", "absent",
+    "X/I/YP (no subclass)", "vineyard_fallback"
+  )
 }
 
 .qc_subclass_gapfill_table <- function(s2, n_s2) {
@@ -103,7 +107,7 @@
   subclass_gap_tab <- .qc_subclass_gapfill_table(s2, n_s2)
   subclass_gap <- sum(subclass_gap_tab$n, na.rm = TRUE)
   adoy_gap <- sum(
-    adoy_tab$n[!adoy_tab$source %in% c("OBSERVED", "not_applicable", "absent")],
+    adoy_tab$n[!adoy_tab$source %in% c("observed", "OBSERVED", "not_applicable", "absent")],
     na.rm = TRUE
   )
 
@@ -152,7 +156,7 @@
 .qc_write_subclass_md_table <- function(df, con, max_rows = 25L) {
   if (nrow(df) == 0L) {
     writeLines(
-      c("| CLASS | SUBCLASS | n | % gap-filled | % season 2 |", "|---|---|---:|---:|---:|", "| (none) | — | 0 | 0 | 0 |"),
+      c("| CLASS | SUBCLASS | n | % gap-filled | % season 2 |", "|---|---|---:|---:|---:|", "| (none) | -- | 0 | 0 | 0 |"),
       con
     )
     return(invisible())
@@ -174,7 +178,7 @@
     )
   )
   if (nrow(df) > max_rows) {
-    lines <- c(lines, "", paste0("_Showing top ", max_rows, " of ", nrow(df), " — see CSV for full list._"))
+    lines <- c(lines, "", paste0("_Showing top ", max_rows, " of ", nrow(df), " -- see CSV for full list._"))
   }
   writeLines(lines, con)
 }

@@ -1,5 +1,7 @@
-# Harvest events: removal fractions from harvest lookup; skip young woody (SPECOND=Y / YP);
-# CLASS-level woody stand removal via year -> year+1 LandIQ look-ahead.
+# Harvest events: removal fractions from harvest lookup; skip young woody
+# (SPECOND=Y / CLASS=YP -- phenology-only; no planting or harvest);
+# CLASS-level woody stand removal via year -> year+1 LandIQ look-ahead (replaces
+# the routine woody harvest for that parcel -- one destructive event, not two).
 
 build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
                                  destructive_default = harvest_destructive_default(),
@@ -18,6 +20,16 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
       as.character(harvest_date_str) != "NA"
   ]
   message("  Rows with harvest date: ", nrow(matched), " (from ", n0, ")")
+
+  # Idle/fallow (PFT other) is not a crop harvest event
+  if ("landiq_PFT" %in% names(matched)) {
+    is_other <- tolower(trimws(as.character(matched$landiq_PFT))) == "other"
+    n_skip_other <- sum(is_other, na.rm = TRUE)
+    if (n_skip_other > 0L) {
+      matched <- matched[!is_other]
+      message("  Skipped harvest (PFT other / idle-fallow): ", n_skip_other)
+    }
+  }
 
   has_dest_col <- "destructive" %in% names(matched)
   has_specond_col <- "landiq_SPECOND" %in% names(matched)
@@ -46,7 +58,8 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
         code = code,
         PFT = row$landiq_PFT,
         lk = lk,
-        destructive = dest
+        destructive = dest,
+        diagnostics = TRUE
       ),
       error = function(e) NULL
     )
@@ -62,7 +75,12 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
         frac_above_removed_0to1 = as.numeric(h$AGB_REMOVED[1]),
         frac_above_to_litter_0to1 = as.numeric(h$AGB_LITTER[1]),
         frac_below_removed_0to1 = as.numeric(h$BGB_REMOVED[1]),
-        frac_below_to_litter_0to1 = as.numeric(h$BGB_LITTER[1])
+        frac_below_to_litter_0to1 = as.numeric(h$BGB_LITTER[1]),
+        lookup_pft = as.character(h$lookup_pft[1]),
+        src_agb_removed = as.character(h$src_agb_removed[1]),
+        src_agb_litter = as.character(h$src_agb_litter[1]),
+        src_bgb_removed = as.character(h$src_bgb_removed[1]),
+        src_bgb_litter = as.character(h$src_bgb_litter[1])
       )
     }
     if (i %% 10000L == 0L) {
@@ -81,6 +99,18 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
     paths = paths
   )
   if (!is.null(dest_dt) && nrow(dest_dt) > 0L) {
+    dest_sites <- unique(as.character(dest_dt$site_id))
+    n_drop <- 0L
+    if (nrow(harvest_dt) > 0L) {
+      drop_idx <- tolower(trimws(as.character(harvest_dt$PFT))) == "woody" &
+        as.character(harvest_dt$site_id) %in% dest_sites
+      n_drop <- sum(drop_idx, na.rm = TRUE)
+      harvest_dt <- harvest_dt[!drop_idx]
+    }
+    message(
+      "  Replaced ", n_drop, " routine woody harvest row(s) with ",
+      nrow(dest_dt), " destructive event(s) (stand removal)"
+    )
     harvest_dt <- data.table::rbindlist(list(harvest_dt, dest_dt), use.names = TRUE, fill = TRUE)
   }
 
@@ -127,7 +157,11 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
         frac_above_removed_0to1 = rows$frac_above_removed_0to1[i],
         frac_above_to_litter_0to1 = rows$frac_above_to_litter_0to1[i],
         frac_below_removed_0to1 = rows$frac_below_removed_0to1[i],
-        frac_below_to_litter_0to1 = rows$frac_below_to_litter_0to1[i]
+        frac_below_to_litter_0to1 = rows$frac_below_to_litter_0to1[i],
+        # Provenance (optional for SIPNET; kept for audit)
+        lookup_pft = rows$lookup_pft[i],
+        src_agb_removed = rows$src_agb_removed[i],
+        src_agb_litter = rows$src_agb_litter[i]
       )
     }
   )
@@ -135,8 +169,10 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
 }
 
 # Look ahead year -> year+1 on LandIQ season 2. When a mature woody CLASS is replaced
-# (different CLASS, young woody, or non-woody), emit woody_destructive using the
-# prior stand's crop code. Subclass-only changes do not fire.
+# (different CLASS, young woody, or non-woody), emit one destructive harvest event
+# (PFT=woody + destructive=TRUE clearing fractions).
+# using the prior stand's crop code (caller drops any routine woody harvest for
+# those parcels). Subclass-only changes do not fire.
 build_woody_destructive_from_transition <- function(year, matched, pool_env, lk, paths) {
   yr <- as.integer(year)
   next_yr <- yr + 1L
@@ -227,7 +263,8 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
         code = code,
         PFT = "woody",
         lk = lk,
-        destructive = TRUE
+        destructive = TRUE,
+        diagnostics = TRUE
       ),
       error = function(e) NULL
     )
@@ -244,7 +281,12 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
         frac_above_removed_0to1 = as.numeric(h$AGB_REMOVED[1]),
         frac_above_to_litter_0to1 = as.numeric(h$AGB_LITTER[1]),
         frac_below_removed_0to1 = as.numeric(h$BGB_REMOVED[1]),
-        frac_below_to_litter_0to1 = as.numeric(h$BGB_LITTER[1])
+        frac_below_to_litter_0to1 = as.numeric(h$BGB_LITTER[1]),
+        lookup_pft = as.character(h$lookup_pft[1]),
+        src_agb_removed = as.character(h$src_agb_removed[1]),
+        src_agb_litter = as.character(h$src_agb_litter[1]),
+        src_bgb_removed = as.character(h$src_bgb_removed[1]),
+        src_bgb_litter = as.character(h$src_bgb_litter[1])
       )
     }
   }
