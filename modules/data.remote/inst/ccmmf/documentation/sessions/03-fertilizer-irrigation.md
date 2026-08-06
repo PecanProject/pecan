@@ -1,14 +1,20 @@
 # Session 3 - Fertilization and irrigation
 
-**Goal:** review how **nitrogen fertilization**, **organic amendments**, and
-**irrigation** management events are produced for the same LandIQ parcels as
-Sessions 1-2. These are parallel, non-HLS workflows (rate lookups and
-water-balance), not part of `make_events_statewide.sh`.
+**Deliverable:** nitrogen fertilization, organic (NCC) amendment, and irrigation
+management inputs for the same LandIQ parcels as Sessions 1-2 (parallel tracks
+into MAGIC / SIPNET).
+
+**Goal:** produce or review **nitrogen fertilization**, **organic amendments**,
+and **irrigation** management events. These are parallel, non-HLS workflows
+(rate lookups and water-balance), not part of `make_events_statewide.sh`.
+
+**Method class:** lookup (N / organic); water balance (irrigation). **Maturity:**
+MVP / parallel workflows -- not yet at the same production status as Session 2
+HLS event files. Prefer durable package and workflow documentation over pull
+request numbers alone.
 
 **Prerequisite:** [Session 1](01-landiq.md) LandIQ product; optional same demo
-parcel list as [Session 2](02-phenology.md) (`parcels_10SDH.csv`). Fert / organic
-and irrigation are **review-oriented** in the live training unless the session
-lead extends scope.
+parcel list as [Session 2](02-phenology.md) (`parcels_10SDH.csv`).
 
 ---
 
@@ -35,7 +41,7 @@ flowchart TB
   end
 
   subgraph S3["Session 3 - Fert + irrigation - you are here"]
-    FERT["N fert + organic\nPRs 4002 / 4003"]
+    FERT["N fert + organic\nlookups + statewide workflows"]
     IRR["Irrigation\nCHIRPS / CIMIS / SSURGO"]
   end
 
@@ -45,7 +51,8 @@ flowchart TB
   IRR --> OUT
 ```
 
-This session = Session 3 box.
+This session = Session 3 box. Shared contract with Sessions 1-2: LandIQ
+`parcel_id` (and demo filter when used).
 
 ---
 
@@ -55,12 +62,19 @@ N fertilization and non-crop C amendments (manure, compost, biochar, etc.) are
 **not** remotely sensed. Crop guidelines are compiled into lookup tables;
 statewide workflows sample those rates onto parcels.
 
-**Canonical PEcAn work:**
+**Durable entry points in PEcAn**
 
-| PR | What it adds |
-|----|----------------|
-| [#4002](https://github.com/PecanProject/pecan/pull/4002) | CA fertilization into `PEcAn.data.land` (`ca_n_application_rate`, organic amendment tables); `ncc` event type |
-| [#4003](https://github.com/PecanProject/pecan/pull/4003) | Statewide workflows: `workflows/fertilization-statewide`, `workflows/ncc-statewide` |
+| Piece | Role |
+|-------|------|
+| `PEcAn.data.land::look_up_ca_n_rate()` | Per-crop min/max N from CA rate tables |
+| `PEcAn.data.land::look_up_fertilizer_components()` | Fertilizer component helpers |
+| `workflows/fertilization-statewide` | Statewide N event generation |
+| `workflows/ncc-statewide` | Non-crop carbon (organic amendment) events |
+
+Historical merge context (optional reading): PEcAn PRs
+[#4002](https://github.com/PecanProject/pecan/pull/4002) and
+[#4003](https://github.com/PecanProject/pecan/pull/4003). Operate from the
+workflow READMEs and installed `data.land` helpers, not from the PR pages.
 
 Lab copies of source TSVs may live under `$CCMMF_MANAGEMENT/fertilization/`
 (ask the session lead). Typical contents:
@@ -97,11 +111,12 @@ look_up_ca_n_rate("corn", unit = "lbs_acre")
 ## Part B - Irrigation
 
 Irrigation events come from a water-balance model using **CHIRPS** (precip),
-**CIMIS ETref** (reference ET), and **SSURGO** (soil AWC).
+**CIMIS ETref** (reference ET), and **SSURGO** (soil AWC), plus LandIQ
+irrigation type where available.
 
 | Track | Scope | Doc |
 |-------|--------|-----|
-| Statewide / demo | LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` |
+| Statewide / demo | LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` (in the PEcAn tree that carries that workflow) |
 
 ### Inputs / Outputs
 
@@ -136,8 +151,8 @@ Rscript "$CCMMF_CODE/events/combine_management_events_pecan.R" \
   --out event_files/combined_events_pecanFormat.json
 ```
 
-See [events/README.md](../../events/README.md). Fertilization / NCC come from
-[#4003](https://github.com/PecanProject/pecan/pull/4003).
+See [events/README.md](../../events/README.md). For model drivers after combine,
+see the unofficial [SIPNET handoff](sipnet-handoff.md).
 
 ---
 
@@ -145,9 +160,10 @@ See [events/README.md](../../events/README.md). Fertilization / NCC come from
 
 **Fertilization / organic**
 
-- [ ] Skim [#4002](https://github.com/PecanProject/pecan/pull/4002) and [#4003](https://github.com/PecanProject/pecan/pull/4003)
+- [ ] Know durable entry points (`look_up_ca_n_rate`, fertilization / ncc workflows)
 - [ ] Know where rates live (`data.land` and/or `$CCMMF_MANAGEMENT/fertilization/`)
 - [ ] Spot-check a crop with `look_up_ca_n_rate()` (structure: returns min/max N)
+- [ ] Maturity acknowledged: MVP / parallel (not Session 2 production path)
 
 **Irrigation**
 
@@ -156,3 +172,5 @@ See [events/README.md](../../events/README.md). Fertilization / NCC come from
 - [ ] Reviewed or ran `targets` water balance; output event file present
 
 **Spine:** [pipeline.md](../pipeline.md).
+
+**Downstream (unofficial):** [SIPNET handoff](sipnet-handoff.md).

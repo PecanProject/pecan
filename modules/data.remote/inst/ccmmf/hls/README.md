@@ -12,7 +12,7 @@ reuse the same map and `R/tilewise_core.R`:
 | **NDTI** (Normalized Difference Tillage Index) | monthly | [tillage/extract/README.md](../tillage/extract/README.md) |
 
 End-to-end order: [documentation/pipeline.md](../documentation/pipeline.md).
-Training (MSLSP + NDTI): [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
+Session 2 (MSLSP + NDTI): [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
 
 ## What lives here
 

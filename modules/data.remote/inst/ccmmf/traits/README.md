@@ -17,9 +17,10 @@ flowchart LR
   EV --> OUT["planting / harvest events"]
 ```
 
-**Pipeline position:** one-time step 7 in [`../hls/README.md`](../hls/README.md#downstream),
-after [`../phenology/match/README.md`](../phenology/match/README.md) (step 6), before
-[`../events/README.md`](../events/README.md) (step 8).
+**Pipeline position:** Session 2 one-time trait build
+([documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md);
+[documentation/pipeline.md](../documentation/pipeline.md)), after LandIQ-MSLSP
+match, before statewide planting/harvest events.
 
 **TRY species matching:** only `AccSpeciesName` values listed in LandIQ
 `latin_names` (no genus fallback). Pool fallback for planting:
@@ -229,7 +230,7 @@ Planting: **`initialize_planting()`** (public). Internal: **`planting_pools_from
 ## Troubleshooting
 
 **"TRY allocation dir not found" / no .txt files**  
-Put TRY public dumps under `plant_traits/TRY_allocation_traits/` (or set `TRY_ALLOCATION_DIR`). Expected releases include root/shoot (9), allocation fractions (110/136/…), and organ N / SLA traits.
+Put TRY public dumps under `plant_traits/TRY_allocation_traits/` (or set `TRY_ALLOCATION_DIR`). Expected releases include root/shoot (9), allocation fractions (110/136/...), and organ N / SLA traits.
 
 **"planting_lookup.csv not found"**  
 Run `build_planting_lookup.R` (and `build_harvest_lookup.R`) first; products live in `plant_traits/*.csv`.

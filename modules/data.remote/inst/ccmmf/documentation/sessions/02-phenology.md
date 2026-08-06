@@ -1,10 +1,17 @@
 # Session 2 - HLS events (phenology and tillage)
 
+**Deliverable:** parcel-level planting, harvest, phenology, and tillage
+management event files for the year pair (MAGIC Management Tracking inputs
+from HLS).
+
 **Goal:** from Harmonized Landsat Sentinel-2 (HLS) products, build parcel-level
 **planting**, **harvest**, **phenology**, and **tillage** management events for
-the training year pair (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`). Multi-Source
+the operational year pair (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`). Multi-Source
 Land Surface Phenology (MSLSP) drives the first three; Normalized Difference
 Tillage Index (NDTI) drives tillage in fallow windows.
+
+**Method class:** hybrid RS + trait CSV lookups (planting/harvest); RS for
+phenology and tillage. **Maturity:** production (tillage build is opt-in).
 
 **Prerequisite:** complete [Session 1](01-landiq.md). Point
 `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`. Have NASA Earthdata
@@ -214,7 +221,10 @@ Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 - [ ] `planting_statewide_2024.parquet`, `harvest_statewide_2024.parquet`, `phenology_statewide_2024.parquet` under `event_files/`
 - [ ] NDTI hive under `tillage/ndti_v4.1/`; `tillage_statewide_2024.parquet` after opt-in run
 - [ ] Spot-check: parquet row count > 0; harvest clearing rows use `PFT=woody` + `destructive=TRUE` (no fake PFT)
+- [ ] Acceptance: event files are ready for Session 3 combine / SIPNET handoff appendix
 
 **Next:** [Session 3 - Fertilization and irrigation](03-fertilizer-irrigation.md).
 
 **Spine:** [pipeline.md](../pipeline.md).
+
+**Downstream (unofficial):** [SIPNET handoff](sipnet-handoff.md).

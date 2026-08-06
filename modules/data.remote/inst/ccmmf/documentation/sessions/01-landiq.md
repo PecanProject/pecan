@@ -1,10 +1,16 @@
-# Session 1 - Add LandIQ 2024 and gap-fill 2023 + 2024
+# Session 1 - LandIQ crop identity
+
+**Deliverable:** gap-filled LandIQ crop identity for the year pair (stable
+`parcel_id`, CLASS/SUBCLASS under the 2021 RS legend) for MAGIC Management
+Tracking.
 
 **Goal:** add a new LandIQ year to the existing CCMMF inventory product.
 Harmonize field boundaries and crop labels with the existing parcel history so
 the same field retains a stable parcel ID, then fill missing main-season crop
 information. Together, harmonization and gap-filling create the crop identity
 layer on which all downstream management products depend.
+
+**Method class:** map + gap-fill. **Maturity:** production.
 
 **Prerequisite:** complete [Session 0](00-setup.md), including activating
 `pecan-all-1.12`, cloning both repos, creating the data root, and sourcing
@@ -222,11 +228,12 @@ Details (flags, provenance, rebuilds):
 
 - [ ] Sourced `setup_env.sh` from the clone
 - [ ] Downloaded and unpacked 2024 provisional shapefile under `landiq_shapefiles/` (`.shp` present)
-- [ ] Confirmed 2024 legend unchanged (no lookup edit)
+- [ ] Confirmed 2024 legend QC against `LandIQ_cropCode_lookup_table.csv` (harmonized codes use `legend_year == 2021`)
 - [ ] Harmonized geometry; published to `$CCMMF_LANDIQ_V4` (`parcels.gpkg` + `crops_all_years.parq`)
 - [ ] Confirmed `year == 2024` rows in `crops_all_years.parq`
 - [ ] Ran `$LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}`
 - [ ] Pointed `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`; product opens as parquet
+- [ ] Acceptance: gap-filled product is the crop-identity input for Sessions 2-3 and MAGIC Management Tracking
 
 **Next:** [Session 2 - HLS events](02-phenology.md).
 

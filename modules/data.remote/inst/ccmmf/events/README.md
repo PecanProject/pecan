@@ -1,16 +1,22 @@
 # Statewide event file generation
 
 Builds PEcAn-ready **planting**, **harvest**, **phenology**, and **tillage** event
-files from matched LandIQ-MSLSP assignments (and NDTI for tillage).
+files from matched LandIQ-MSLSP assignments (and NDTI for tillage). Part of
+**Session 2** (HLS events).
 
-Related management layers live in parallel workflows (Session 3):
+Related management layers live in parallel workflows (**Session 3**):
 
 - **N fertilization / organic amendments:**
-  PRs [#4002](https://github.com/PecanProject/pecan/pull/4002),
-  [#4003](https://github.com/PecanProject/pecan/pull/4003)
+  [Session 3](../documentation/sessions/03-fertilizer-irrigation.md);
+  `PEcAn.data.land` helpers (`look_up_ca_n_rate`, etc.) and
+  `workflows/fertilization-statewide` / `workflows/ncc-statewide`
 - **Irrigation:** [Session 3](../documentation/sessions/03-fertilizer-irrigation.md)
 
 Full product set: [pipeline.md](../documentation/pipeline.md).
+
+**Downstream of `event_files/`:** unofficial
+[SIPNET handoff](../documentation/sessions/sipnet-handoff.md)
+(clean / rename -> `events.json` -> SIPNET `events.in`).
 
 - **Input (phenology / planting / harvest):** gap-filled overlay
   `gapfill_dates/assigned_year=Y_gapfilled.parquet` (required; includes filled

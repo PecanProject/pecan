@@ -1,8 +1,13 @@
 # Session 0 - Setup
 
-**Goal:** prepare a machine to run the training year pair
-(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`) for the California Cropland
-Monitoring and Modeling Framework (CCMMF).
+**Deliverable:** a ready operating environment for the CCMMF Management Tracking
+pipeline (inputs to the MAGIC annual inventory).
+
+**Goal:** prepare a machine to run the operational year pair
+(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`) for the California Cropland Monitoring
+and Modeling Framework (CCMMF).
+
+**Method / maturity:** environment and repository setup (not a data product).
 
 **Prerequisite:** install `pecan-all-1.12` before this walkthrough if you do
 not already have it. This session assumes that environment is already installed.
@@ -181,7 +186,7 @@ source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
 That keeps years and component roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`,
-`EVENTS_ROOT`, …) consistent for later sessions.
+`EVENTS_ROOT`, ...) consistent for later sessions.
 
 For a later year pair, or if you change directory layout, set years and/or paths
 **before** sourcing:
@@ -225,6 +230,6 @@ chmod 0600 ~/.netrc
 - [ ] Sourced `setup_env.sh`; `$PHENOLOGY_ROOT`, `$TILLAGE_ROOT`, `$EVENTS_ROOT` set
 - [ ] Earthdata account + `~/.netrc` ready (for Session 2)
 
-**Next:** [Session 1 - LandIQ](01-landiq.md).
+**Next:** [Session 1 - LandIQ crop identity](01-landiq.md).
 
 **Spine:** [pipeline.md](../pipeline.md).

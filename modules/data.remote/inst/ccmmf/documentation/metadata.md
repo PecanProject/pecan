@@ -23,3 +23,6 @@ Fertilization and irrigation column docs live with those separate workflows
 
 Trait lookup CSVs (`planting_lookup.csv`, `harvest_lookup.csv`) are documented in
 [traits/README.md](../traits/README.md) (harvest includes `destructive`).
+
+After statewide event parquet exist, model drivers are documented in the
+unofficial [SIPNET handoff appendix](sessions/sipnet-handoff.md).

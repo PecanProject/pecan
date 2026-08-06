@@ -21,7 +21,7 @@ flowchart LR
 | Statewide events | [../events/README.md](../events/README.md) | `$EVENTS_ROOT/make_events_statewide.sh YEAR` |
 
 Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
-Training walkthrough: [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
+Session 2 walkthrough: [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
 Shared HLS helpers / parcel-tile map: [../hls/README.md](../hls/README.md).
 
 ## Layout
