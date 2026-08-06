@@ -1,7 +1,7 @@
 # Phenology
 
-Session 2 track: extract MSLSP onto parcels, match LandIQ seasons to MSLSP cycles,
-then gap-fill planting/harvest dates (required before events).
+Part of Session 2 (HLS events): extract MSLSP onto parcels, match LandIQ seasons
+to MSLSP cycles, then gap-fill planting/harvest dates (required before events).
 
 ```mermaid
 flowchart LR
@@ -21,6 +21,7 @@ flowchart LR
 | Statewide events | [../events/README.md](../events/README.md) | `$EVENTS_ROOT/make_events_statewide.sh YEAR` |
 
 Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
+Training walkthrough: [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
 Shared HLS helpers / parcel-tile map: [../hls/README.md](../hls/README.md).
 
 ## Layout

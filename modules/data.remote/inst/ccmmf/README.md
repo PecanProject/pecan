@@ -45,8 +45,8 @@ elsewhere:
 
 | Product | Where | Docs |
 |---------|--------|------|
-| N fertilization + organic (NCC) amendments | PEcAn `data.land` tables + statewide workflows | [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003) |
-| Irrigation | `workflows/irrigation-statewide` |
+| N fertilization + organic (NCC) amendments | PEcAn `data.land` tables + statewide workflows | [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003); [Session 3](documentation/sessions/03-fertilizer-irrigation.md) |
+| Irrigation | `workflows/irrigation-statewide` | [Session 3](documentation/sessions/03-fertilizer-irrigation.md) |
 
 Shared R helpers under a component's `R/` (or `scripts/R/`) are `source()`'d by that
 component's scripts. They are not yet part of the installed `PEcAn.data.remote` API.

@@ -1,7 +1,7 @@
 # Tillage
 
-Session 3 track: extract NDTI onto parcels, then build tillage events from NDTI
-in fallow windows (matched phenology from Session 2).
+Part of Session 2 (HLS events): extract NDTI onto parcels, then build tillage
+events from NDTI in fallow windows (matched phenology from the MSLSP path).
 
 ```mermaid
 flowchart LR
@@ -17,6 +17,7 @@ flowchart LR
 | Tillage events | [../events/README.md](../events/README.md) | `$EVENTS_ROOT/make_events_statewide.sh YEAR tillage` |
 
 Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
+Training walkthrough: [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
 Shared HLS helpers / parcel-tile map: [../hls/README.md](../hls/README.md).
 Upstream match: [../phenology/match/README.md](../phenology/match/README.md).
 

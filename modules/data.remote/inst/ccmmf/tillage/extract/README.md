@@ -214,4 +214,4 @@ See [data/ndti_year_metadata.csv](data/ndti_year_metadata.csv) (column dictionar
 
 - Orchestrator: [`../run_ndti.sh`](../run_ndti.sh) (`--help`)
 - Downstream: [events/README.md](../../events/README.md) (tillage events)
-- Training: [documentation/sessions/03-tillage-fertilizer.md](../../documentation/sessions/03-tillage-fertilizer.md)
+- Training: [documentation/sessions/02-phenology.md](../../documentation/sessions/02-phenology.md)
