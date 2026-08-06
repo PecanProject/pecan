@@ -123,8 +123,8 @@ for (kind in c("planting", "harvest", "phenology", "tillage")) {
 
 | Type | Date source | Trait / logic |
 |------|-------------|---------------|
-| **Phenology** | `mslsp_50PCGI`, `mslsp_50PCGD` | Leaf-on / leaf-off dates; `year` = peak calendar year |
-| **Planting** | `mslsp_OGI` (or gap-filled planting date) | C/N pools via `initialize_planting()` + LAI from `mslsp_EVImax`/`EVIamp` (CLASS/PFT median LAI fallback when EVI missing); skip young woody (`SPECOND=Y` / `CLASS=YP`; phenology-only) and PFT `other` |
+| **Phenology** | `mslsp_50PCGI`, `mslsp_50PCGD` (50% of peak green-up / green-down) | Leaf-on / leaf-off dates; `year` = peak calendar year |
+| **Planting** | `mslsp_OGI` (~15% of peak; or gap-filled planting date) | RS effective plant (visible greenness / seedling stage), not seed-in-ground; C/N pools via `initialize_planting()` + LAI from `mslsp_EVImax`/`EVIamp` (CLASS/PFT median LAI fallback when EVI missing); skip young woody (`SPECOND=Y` / `CLASS=YP`; phenology-only) and PFT `other` |
 | **Harvest** | row/rice -> `mslsp_OGMn`; hay/woody -> `mslsp_OGD` | Removal fractions via `initialize_harvest_from_lookup()`; skip young woody (`SPECOND=Y` / `CLASS=YP`); **orchard clearing** when LandIQ season-2 **CLASS** changes year->year+1 (or mature woody -> young / non-woody): same LandIQ PFT `woody` with `destructive=TRUE` (not a separate PFT). Subclass-only changes ignored. Re-run the prior year after a new LandIQ year exists so look-ahead can fire. |
 | **Tillage** | Minimum NDTI in fallow window | `tillage_metrics()` in `R/tillage_metrics.R` (loaded like planting/harvest helpers) |
 

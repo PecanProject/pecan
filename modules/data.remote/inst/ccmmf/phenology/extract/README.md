@@ -15,6 +15,19 @@ dominant amplitude, cycle 2 = secondary). Those parcel metrics feed matching,
 then planting / harvest / phenology event files (see
 [pipeline.md](../../documentation/pipeline.md)).
 
+**MSLSP greenness thresholds (product definitions we use as dates):**
+
+| Layer | Meaning |
+|-------|---------|
+| OGI | ~15% of peak (onset of greenness) -- planting |
+| 50PCGI / 50PCGD | 50% of peak on green-up / green-down -- phenology leaf-on/off |
+| Peak, OGD, OGMn, ... | Peak and senescence metrics -- match / harvest by PFT |
+
+Keeping **two** cycles matches the common case (LandIQ seasons 1/3/4 are rare;
+see [landiq-gapfill data model](../../landiq-gapfill/README.md#data-model)).
+The extract could be extended to more cycles later if lower-amplitude seasons
+become a priority.
+
 - **Input:** `MSLSP_<tile>_<year>.nc` per MGRS tile, gap-filled LandIQ, parcel-tile map.
 - **Output:** `$CCMMF_MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/mslsp_year=Y.parquet`.
 

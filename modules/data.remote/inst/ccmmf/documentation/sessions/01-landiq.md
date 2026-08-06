@@ -8,7 +8,10 @@ Tracking.
 Harmonize field boundaries and crop labels with the existing parcel history so
 the same field retains a stable parcel ID, then fill missing main-season crop
 information. Together, harmonization and gap-filling create the crop identity
-layer on which all downstream management products depend.
+layer on which all downstream management products depend. The table is
+parcel x year x season (up to four seasons); **gap-fill focuses on season 2**
+because CDL is annual. Cover crops are flagged with boolean `COVER` on the
+product. Details: [landiq-gapfill/README.md](../../landiq-gapfill/README.md#data-model).
 
 **Method class:** map + gap-fill. **Maturity:** operational (inventory).
 

@@ -136,8 +136,10 @@ Default formula (Mourad et al. 2020):
 
 Default rule behavior:
 
-- `row` / `rice`: use `EVIamp`, `k = 0.15` (planting stage, ~15% of peak EVI)
-- `woody` with `CLASS == "YP"`: use `EVIamp`, `k = 0.50` (leaf-on / 50PGI, ~50% of peak EVI)
+- `row` / `rice`: use `EVIamp`, `k = 0.15` (planting-stage LAI ~15% of peak EVI
+  amplitude -- pool initialization only; **not** a separate date detector;
+  planting **dates** come from MSLSP **OGI**, which is itself ~15% of peak)
+- `woody` with `CLASS == "YP"`: use `EVIamp`, `k = 0.50` (leaf-on / 50PCGI scale)
 - other `woody`: use `EVImax`, `k = 0.50`
 - `hay`: use `EVImax`, `k = 0.50`
 

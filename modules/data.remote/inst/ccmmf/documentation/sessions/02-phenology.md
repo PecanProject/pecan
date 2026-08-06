@@ -117,10 +117,34 @@ Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R" overwrite
 LandIQ says *what* grows and peak greenness (**ADOY**). MSLSP gives satellite
 green-up, peak, and senescence for up to two cycles per parcel-year.
 
+### MSLSP timing (aligned with proposal 15% / 50% greenness)
+
+MSLSP defines thresholds on the cycle EVI2 curve. We use those product metrics
+directly; they implement the same greenness fractions the proposal named, under
+MSLSP names:
+
+| Metric | MSLSP meaning | Inventory use |
+|--------|---------------|---------------|
+| **OGI** | ~15% of peak greenness (onset of greenness) | Planting date |
+| **50PCGI** | 50% of peak on green-up | Phenology leaf-on |
+| **Peak** | Cycle peak | Match tie-break / year of phenology event |
+| **50PCGD** | 50% of peak on green-down | Phenology leaf-off |
+| **OGD / OGMn** | Senescence / onset of minimum (PFT rules) | Harvest date |
+
+**Planting** is therefore an **RS effective plant**: canopy becoming visible
+(~seedling / early greenness), not calendar seed-in-ground. That matches OGI
+and is what satellite phenology can support statewide.
+
+The extract keeps the **top two** MSLSP amplitude cycles per parcel-year. LandIQ
+has up to four seasons, but seasons 1/3/4 are uncommon (see
+[landiq-gapfill README](../../landiq-gapfill/README.md#data-model)); matching
+extra cycles for those seasons is future work, not blocked by the product
+format.
+
 | Event type | Typical date source | What SIPNET gets |
 |------------|---------------------|------------------|
-| Phenology | MSLSP 50% green-up / 50% senescence | Leaf-on / leaf-off |
-| Planting | MSLSP onset of greenness (OGI) | C/N pools (LAI from MSLSP EVI) |
+| Phenology | MSLSP 50PCGI / 50PCGD | Leaf-on / leaf-off |
+| Planting | MSLSP OGI (~15% of peak) | C/N pools (LAI from MSLSP EVI) |
 | Harvest | MSLSP senescence (PFT-specific) | Biomass removal fractions |
 
 **A. Extract + combine (demo tile)**

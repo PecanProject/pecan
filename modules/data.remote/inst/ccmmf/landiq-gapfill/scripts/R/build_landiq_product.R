@@ -373,12 +373,23 @@ build_landiq_product <- function(
 
   # Cover-crop flag (Violet): candidate CLASS/SUBCLASS + season alternation.
   # Computed on non-absent rows, joined back so padded seasons stay in product.
-  cover_script <- file.path(
-    Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management"),
-    "scripts", "cover_crop_landiq.R"
+  .code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+  .mgmt <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+  cover_candidates <- c(
+    file.path(landiq_gapfill_root(), "scripts", "R", "cover_crop_landiq.R"),
+    if (nzchar(.code)) {
+      file.path(.code, "landiq-gapfill", "scripts", "R", "cover_crop_landiq.R")
+    } else {
+      character()
+    },
+    file.path(.mgmt, "scripts", "cover_crop_landiq.R")
   )
-  if (!file.exists(cover_script)) {
-    stop("Missing cover-crop helper: ", cover_script)
+  cover_script <- cover_candidates[file.exists(cover_candidates)][1L]
+  if (is.na(cover_script) || !nzchar(cover_script)) {
+    stop(
+      "Missing cover-crop helper cover_crop_landiq.R ",
+      "(expected under landiq-gapfill/scripts/R/ or CCMMF_MANAGEMENT/scripts/)."
+    )
   }
   source(cover_script, local = TRUE)
   message("Attaching COVER column (flag on non-absent seasons, join back)")

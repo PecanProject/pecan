@@ -57,8 +57,33 @@ Upstream geometry: [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse)
 
 Long table: one row per `parcel_id` x `year` x `season`. Geometry is fixed by
 `parcel_id` (one polygon for all years). This product uses consolidated parcels
-only (`parcels-consolidated.gpkg`). Season 2 is the main crop; seasons 1/3/4 are
-mostly empty. 2016 has seasons 1-3 only.
+only (`parcels-consolidated.gpkg`).
+
+**Four seasons; season 2 is the inventory main crop**
+
+| Season | Role | Typical share with a crop (of parcels; ~2020 example) |
+|--------|------|------------------------------------------------------|
+| 2 | Primary annual crop | ~100% of ag parcels |
+| 1 | Extra cropping (often cover / early) | ~7% |
+| 3 | Extra cropping | ~2% |
+| 4 | Extra cropping | <1% |
+
+2016 has seasons 1-3 only (DWR added season 4 later).
+
+**Why crop/ADOY gap-fill targets season 2 only:** USDA CDL is an **annual**
+map, so the CDL-based crop fill is defined for the main season. Seasons 1/3/4
+keep observed LandIQ when present and are padded as `absent` when empty.
+Further modelling of those sparse seasons is future work; there is no solid
+statewide validation target for them yet, and they are a small fraction of
+fields.
+
+**`COVER` cover-crop flag:** boolean on each row from
+[`scripts/R/cover_crop_landiq.R`](scripts/R/cover_crop_landiq.R)
+(`attach_cover_column()` in the product build). `COVER=TRUE` when
+CLASS/SUBCLASS is a cover-crop candidate **and** the parcel alternates from
+the previous non-absent season (first observation cannot alternate). Padded
+`absent` seasons are `FALSE`. This is how cover crops are carried in the
+inventory product today (not a separate multi-PFT event stack).
 
 ## Core workflow
 
@@ -86,10 +111,10 @@ When the log ends with `Done.`, review
 1. **CDL** - California GeoTIFF -> `$CDL_DIR/cdl_YYYY.tif`, then parcel code
    fractions -> `$LANDIQ_GAPFILL_ROOT/cdl/cdl_fractions_year=YYYY.parquet`.
 2. **Crop identity** - fill missing season-2 `CLASS` / `SUBCLASS` from CDL +
-   history.
+   history (season 2 only; CDL is annual -- see [Data model](#data-model)).
 3. **ADOY** - fill missing season-2 peak day from neighbors / reference tables.
-4. **Product** - merge into `$CCMMF_LANDIQ_GAPFILL_PRODUCT`, carry other years
-   unchanged.
+4. **Product** - merge into `$CCMMF_LANDIQ_GAPFILL_PRODUCT`, attach `COVER`,
+   carry other years unchanged.
 5. **QC** - provenance tallies by year.
 
 Flags: `--no-cdl` / `--no-crop` / `--no-adoy` / `--no-product` / `--rebuild-cdl` /
@@ -140,6 +165,16 @@ prefer observed values and treat filled rows according to these codes.
 | `not_applicable` | CLASS is ADOY-exempt |
 | `unfilled` | No reference matched |
 | `absent` | Padded inactive-season row |
+
+**`COVER`** (cover-crop season flag; see [Data model](#data-model)):
+
+| Value | Meaning |
+|-------|---------|
+| `TRUE` | Cover-crop candidate CLASS/SUBCLASS and alternation from prior non-absent season |
+| `FALSE` | Not a cover crop (including padded `absent` seasons) |
+
+Built by [`scripts/R/cover_crop_landiq.R`](scripts/R/cover_crop_landiq.R) during
+the product step.
 
 ## Special case: 2017 (no LandIQ year)
 
