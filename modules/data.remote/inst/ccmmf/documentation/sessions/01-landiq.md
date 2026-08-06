@@ -10,7 +10,11 @@ the same field retains a stable parcel ID, then fill missing main-season crop
 information. Together, harmonization and gap-filling create the crop identity
 layer on which all downstream management products depend.
 
-**Method class:** map + gap-fill. **Maturity:** production.
+**Method class:** map + gap-fill. **Maturity:** operational (inventory).
+
+Every gap-filled row carries provenance (`subclass_source`, `adoy_source`).
+Season-2 crop identity and ADOY are a mix of observed LandIQ and modelled fills
+-- see [Observed vs filled](#observed-vs-filled-be-explicit).
 
 **Prerequisite:** complete [Session 0](00-setup.md), including activating
 `pecan-all-1.12`, cloning both repos, creating the data root, and sourcing
@@ -183,7 +187,7 @@ export CCMMF_LANDIQ_V4=$CCMMF_ROOT/LandIQ-harmonized-v4.1
 Confirm the required files and target year before gap-fill:
 
 ```bash
-test -f "$CCMMF_LANDIQ_V4/parcels.gpkg"
+test -f "$CCMMF_LANDIQ_V4/parcels-consolidated.gpkg"
 test -f "$CCMMF_LANDIQ_V4/crops_all_years.parq"
 Rscript -e 'd <- arrow::open_dataset(file.path(Sys.getenv("CCMMF_LANDIQ_V4"), "crops_all_years.parq")); target <- as.integer(Sys.getenv("TARGET_YEAR")); x <- dplyr::collect(dplyr::summarise(dplyr::filter(d, year == target), n = dplyr::n())); stopifnot(x$n[[1]] > 0); message("Found year ", target, ": ", x$n[[1]], " rows")'
 ```
@@ -219,8 +223,48 @@ Details (flags, provenance, rebuilds):
 | Item | Path / format | Key columns / metadata |
 |------|---------------|------------------------|
 | Input | `$CCMMF_ROOT/data_raw/.../landiq_shapefiles/` | Annual shapefiles |
-| Harmonized | `$CCMMF_ROOT/LandIQ-harmonized-v4.1/` (`parcels.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
-| Gap-filled | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` (v4.1.2) | `CLASS`, `SUBCLASS`, `ADOY`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
+| Harmonized | `$CCMMF_ROOT/LandIQ-harmonized-v4.1/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
+| Gap-filled | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` (v4.1.2) | `CLASS`, `SUBCLASS`, `ADOY`, `subclass_source`, `adoy_source`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
+
+### Observed vs filled (be explicit)
+
+The gap-filled table is not all observed LandIQ. Read each season-2 row with
+`subclass_source` and `adoy_source`.
+
+**Crop identity (`subclass_source`)**
+
+| Kind | Values | What it means |
+|------|--------|---------------|
+| Observed | `observed` | CLASS/SUBCLASS from source LandIQ. Vineyard `V/**` set to wine grapes (`V/2`) is also `observed`. |
+| Modelled | `emission_cdl`, `plurality`, `prior_only` | Missing subclass (or full-gap CLASS) filled from CDL emission tables, CDL plurality, or parcel crop prior. |
+| By design / pad | `X/I/YP (no subclass)`, `absent`, `unfilled` | Idle/young-perennial keep `**`; padded inactive seasons; unresolved gaps. |
+
+**Peak greenness day (`adoy_source`)**
+
+| Kind | Values | What it means |
+|------|--------|---------------|
+| Observed | `observed` | ADOY from source LandIQ. |
+| Modelled | `temporal`, `county_class_subclass`, `county_class`, `statewide_class_subclass`, `statewide_class`, `multiuse_season2` | Neighbor year, county/statewide crop reference tables, or season-2 copy for MULTIUSE M. |
+| Other | `not_applicable`, `unfilled`, `absent` | ADOY-exempt CLASS; no match; padded seasons. |
+
+**Season-2 shares on the shipped v4.1.2 product** ([qc_gapfill_report.md](../../landiq-gapfill/outputs/qc_gapfill_report.md)):
+
+- **2023 (within-year):** modelled subclass (`emission_cdl` + `plurality`) = **6.58%** of season 2; remainder observed (including `V/2` defaults). Gap-filled ADOY = **62.43%** of season 2 (mostly `county_class_subclass`).
+- **2016 (within-year):** gap-filled ADOY = **90.46%** of season 2 (mostly statewide class-subclass tables).
+- **2017 (full-gap):** season-2 crop identity = **100%** modelled; gap-filled ADOY = **98.27%**.
+
+Recount after you rebuild:
+
+```r
+library(arrow); library(dplyr)
+d <- open_dataset(file.path(Sys.getenv("CCMMF_LANDIQ_V4"), "crops_all_years.parq"))
+d |> filter(year == 2023L, season == 2L) |>
+  count(subclass_source) |> collect() |> mutate(pct = 100 * n / sum(n))
+d |> filter(year == 2023L, season == 2L) |>
+  count(adoy_source) |> collect() |> mutate(pct = 100 * n / sum(n))
+```
+
+QC report and CSVs: [landiq-gapfill/outputs/qc_gapfill_report.md](../../landiq-gapfill/outputs/qc_gapfill_report.md).
 
 ---
 
@@ -229,11 +273,12 @@ Details (flags, provenance, rebuilds):
 - [ ] Sourced `setup_env.sh` from the clone
 - [ ] Downloaded and unpacked 2024 provisional shapefile under `landiq_shapefiles/` (`.shp` present)
 - [ ] Confirmed 2024 legend QC against `LandIQ_cropCode_lookup_table.csv` (harmonized codes use `legend_year == 2021`)
-- [ ] Harmonized geometry; published to `$CCMMF_LANDIQ_V4` (`parcels.gpkg` + `crops_all_years.parq`)
+- [ ] Harmonized geometry; published to `$CCMMF_LANDIQ_V4` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
 - [ ] Confirmed `year == 2024` rows in `crops_all_years.parq`
 - [ ] Ran `$LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}`
+- [ ] Counted season-2 `subclass_source` / `adoy_source` for the shipped years (observed vs modelled)
 - [ ] Pointed `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`; product opens as parquet
-- [ ] Acceptance: gap-filled product is the crop-identity input for Sessions 2-3 and MAGIC Management Tracking
+- [ ] Acceptance: gap-filled product is the crop-identity input for Sessions 2-3 and MAGIC Management Tracking; provenance shares are known for those years
 
 **Next:** [Session 2 - HLS events](02-phenology.md).
 

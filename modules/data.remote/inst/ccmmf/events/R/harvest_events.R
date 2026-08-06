@@ -1,5 +1,5 @@
 # Harvest events: removal fractions from harvest lookup; skip young woody (SPECOND=Y / YP);
-# CLASS-level woody stand removal via year → year+1 LandIQ look-ahead.
+# CLASS-level woody stand removal via year -> year+1 LandIQ look-ahead.
 
 build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
                                  destructive_default = harvest_destructive_default(),
@@ -134,7 +134,7 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
   invisible(harvest_dt)
 }
 
-# Look ahead year → year+1 on LandIQ season 2. When a mature woody CLASS is replaced
+# Look ahead year -> year+1 on LandIQ season 2. When a mature woody CLASS is replaced
 # (different CLASS, young woody, or non-woody), emit woody_destructive using the
 # prior stand's crop code. Subclass-only changes do not fire.
 build_woody_destructive_from_transition <- function(year, matched, pool_env, lk, paths) {
@@ -142,7 +142,7 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
   next_yr <- yr + 1L
   message(
     "[harvest] Woody destructive look-ahead: LandIQ season 2 ",
-    yr, " → ", next_yr, " (CLASS-level)"
+    yr, " -> ", next_yr, " (CLASS-level)"
   )
 
   prior <- load_landiq_season2_identity(yr, paths$landiq_crops, paths$cropcode_csv)

@@ -6,12 +6,11 @@ into MAGIC / SIPNET).
 
 **Goal:** produce or review **nitrogen fertilization**, **organic amendments**,
 and **irrigation** management events. These are parallel, non-HLS workflows
-(rate lookups and water-balance), not part of `make_events_statewide.sh`.
+(rate lookups and water-balance).
 
-**Method class:** lookup (N / organic); water balance (irrigation). **Maturity:**
-MVP / parallel workflows -- not yet at the same production status as Session 2
-HLS event files. Prefer durable package and workflow documentation over pull
-request numbers alone.
+**Method class:** lookup (N / organic); water balance (irrigation). Lookups are in
+`PEcAn.data.land` on this tree; statewide fert/NCC event builders are in PEcAn PR
+[#4003](https://github.com/PecanProject/pecan/pull/4003).
 
 **Prerequisite:** [Session 1](01-landiq.md) LandIQ product; optional same demo
 parcel list as [Session 2](02-phenology.md) (`parcels_10SDH.csv`).
@@ -41,7 +40,7 @@ flowchart TB
   end
 
   subgraph S3["Session 3 - Fert + irrigation - you are here"]
-    FERT["N fert + organic\nlookups + statewide workflows"]
+    FERT["N fert + organic\nlookups; events via #4003"]
     IRR["Irrigation\nCHIRPS / CIMIS / SSURGO"]
   end
 
@@ -50,6 +49,8 @@ flowchart TB
   FERT --> OUT
   IRR --> OUT
 ```
+
+
 
 This session = Session 3 box. Shared contract with Sessions 1-2: LandIQ
 `parcel_id` (and demo filter when used).
@@ -62,41 +63,57 @@ N fertilization and non-crop C amendments (manure, compost, biochar, etc.) are
 **not** remotely sensed. Crop guidelines are compiled into lookup tables;
 statewide workflows sample those rates onto parcels.
 
-**Durable entry points in PEcAn**
+**Lookups (this tree)**
 
-| Piece | Role |
-|-------|------|
-| `PEcAn.data.land::look_up_ca_n_rate()` | Per-crop min/max N from CA rate tables |
-| `PEcAn.data.land::look_up_fertilizer_components()` | Fertilizer component helpers |
-| `workflows/fertilization-statewide` | Statewide N event generation |
-| `workflows/ncc-statewide` | Non-crop carbon (organic amendment) events |
 
-Historical merge context (optional reading): PEcAn PRs
-[#4002](https://github.com/PecanProject/pecan/pull/4002) and
-[#4003](https://github.com/PecanProject/pecan/pull/4003). Operate from the
-workflow READMEs and installed `data.land` helpers, not from the PR pages.
+| Piece                                                                                            | Role                                      |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `PEcAn.data.land::look_up_ca_n_rate()`                                                           | Per-crop min/max N from CA rate tables    |
+| `PEcAn.data.land::look_up_fertilizer_components()`                                               | Fertilizer component helpers              |
+| Packaged rate tables (PEcAn PR [#4002](https://github.com/PecanProject/pecan/pull/4002), merged) | Bundled reference data behind the lookups |
 
-Lab copies of source TSVs may live under `$CCMMF_MANAGEMENT/fertilization/`
-(ask the session lead). Typical contents:
 
-| File | Role |
-|------|------|
-| `CCMMF Fertilization - N_Fertilization.tsv` | N rates by crop and growth stage |
+**Statewide fert / NCC events**
+
+Parcel-level event builders are in PEcAn PR
+[#4003](https://github.com/PecanProject/pecan/pull/4003):
+
+
+| Piece                               | Role                                       |
+| ----------------------------------- | ------------------------------------------ |
+| `workflows/fertilization-statewide` | Statewide N event generation               |
+| `workflows/ncc-statewide`           | Non-crop carbon (organic amendment) events |
+
+
+Those workflow directories are not under `workflows/` on this monitoring tree.
+Use PR #4003 for fert/NCC statewide event runs; use `look_up_ca_n_rate()` here
+to inspect rates.
+
+Source TSVs for harmonization may live under `$CCMMF_MANAGEMENT/fertilization/`.
+Typical contents:
+
+
+| File                                                | Role                                   |
+| --------------------------------------------------- | -------------------------------------- |
+| `CCMMF Fertilization - N_Fertilization.tsv`         | N rates by crop and growth stage       |
 | `CCMMF Fertilization - Compost.tsv` / `Biochar.tsv` | Organic amendment properties and rates |
-| `CCMMF_Fertilization_Crop_types.tsv` | Crop type crosswalk |
-| `harmonize_fertilization_data.R` | Reads TSVs, writes harmonized CSVs |
+| `CCMMF_Fertilization_Crop_types.tsv`                | Crop type crosswalk                    |
+| `harmonize_fertilization_data.R`                    | Reads TSVs, writes harmonized CSVs     |
+
 
 ### Inputs / Outputs
 
-| Item | Path / format | Notes |
-|------|---------------|--------|
-| Input | Source TSVs under `$CCMMF_MANAGEMENT/fertilization/` (or shipped `data.land`) | Spreadsheet exports |
-| Output | `ca_n_application_rate.csv`, `ca_organic_amendment_*.csv` | Harmonized rates |
-| Runtime | `look_up_ca_n_rate()` in `PEcAn.data.land` | Per-crop min/max N |
-| Events | `workflows/fertilization-statewide`, `workflows/ncc-statewide` | Not wired into `make_events_statewide.R` |
+
+| Item    | Path / format                                                                                                              | Notes                                 |
+| ------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Input   | Source TSVs under `$CCMMF_MANAGEMENT/fertilization/` (or shipped `data.land`)                                              | Spreadsheet exports                   |
+| Output  | `ca_n_application_rate.csv`, `ca_organic_amendment_*.csv`                                                                  | Harmonized rates                      |
+| Runtime | `look_up_ca_n_rate()` in `PEcAn.data.land`                                                                                 | Per-crop min/max N                    |
+| Events  | PR [#4003](https://github.com/PecanProject/pecan/pull/4003) `workflows/fertilization-statewide`, `workflows/ncc-statewide` | Statewide fert/NCC event builders |
+
 
 ```bash
-# From the fertilization folder the session lead provides:
+# From $CCMMF_MANAGEMENT/fertilization/ (or the packaged data-raw path):
 Rscript harmonize_fertilization_data.R
 ```
 
@@ -116,31 +133,55 @@ irrigation type where available.
 
 | Track | Scope | Doc |
 |-------|--------|-----|
-| Statewide / demo | LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` (in the PEcAn tree that carries that workflow) |
+| Statewide or subset | LandIQ parcels; `targets` pipeline | `workflows/irrigation-statewide/README.md` |
+
+The irrig workflow does not take a tile id. It reads the LandIQ crops table (and
+joined extracts) named in `config_paths.yml`, then processes either a random
+sample or **every parcel in that table**. Scope the run by what you put on those
+paths - same idea as Session 2 restricting to parcels in a demo tile.
 
 ### Inputs / Outputs
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
-| Input | Parcel-level CHIRPS / CIMIS / SSURGO extracts | Preprocess: `workflows/irrigation-statewide/preprocessing/` |
-| Config | `config_paths.yml` under the irrigation workflow | Point at `$CCMMF_ROOT` extracts |
-| Demo filter | Same `parcels_10SDH.csv` as Session 2 | Parcel-based, not HLS-tile-native |
-| Output | Irrigation event files / parquet | Combine with other types for SIPNET |
+| Input | Parcel-level CHIRPS / CIMIS / SSURGO extracts (+ MSLSP canopy as configured) | Preprocess: `workflows/irrigation-statewide/preprocessing/` |
+| Config | `config.yml`, `config_paths.yml` under the irrigation workflow | Paths select the parcel universe; `TAR_PROJECT` selects sample vs all-in-table |
+| Output | Irrigation event files / parquet | Combine with other event types as needed |
+
+`TAR_PROJECT` must be one of the projects in
+`workflows/irrigation-statewide/config.yml` (and `_targets.yaml`):
+
+| `TAR_PROJECT` | Behavior |
+|---------------|----------|
+| `small` | Random 1,000 parcels from the configured crops table; local |
+| `medium` | Random 10,000 parcels; cluster |
+| `all` | Every parcel in the configured crops table; cluster |
+
+**Demo tile (align with Session 2):** build or point `crops_path` (and matching
+parcel-keyed extracts) at the Session 2 parcel list - e.g. rows whose
+`parcel_id` is in `$CCMMF_MANAGEMENT/demo/parcels_${DEMO_TILE}.csv`. Then run
+`TAR_PROJECT=all` so the workflow uses that whole subset (do not use `small` /
+`medium`, which would randomly subsample again). Keep other `config_paths.yml`
+inputs consistent with those parcel ids.
+
+**Full CA table:** leave paths on the statewide gap-filled product and use
+`small` / `medium` / `all` as in the workflow README.
 
 From the PEcAn root that contains `workflows/irrigation-statewide`:
 
 ```bash
-# Point TAR_CONFIG / config_paths.yml at your extracts first.
-TAR_PROJECT=demo Rscript -e "targets::tar_make()"
+# Point TAR_CONFIG and config_paths.yml at your extracts first.
+export TAR_CONFIG=workflows/irrigation-statewide/_targets.yaml
+# Demo-tile subset (crops_path already filtered to that parcel list):
+TAR_PROJECT=all Rscript -e "targets::tar_make()"
+# Or smoke on a full statewide table:
+# TAR_PROJECT=small Rscript -e "targets::tar_make()"
 Rscript workflows/irrigation-statewide/check-result.R
 ```
 
-Do **not** use default `TAR_PROJECT=small` (random 1k statewide) if you want the
-same fields as the Landsat tile story.
-
 ### Combine with HLS-built events
 
-After irrigation events exist for the demo parcels:
+After irrigation events exist for the parcels of interest:
 
 ```bash
 Rscript "$CCMMF_CODE/events/combine_management_events_pecan.R" \
@@ -160,15 +201,15 @@ see the unofficial [SIPNET handoff](sipnet-handoff.md).
 
 **Fertilization / organic**
 
-- [ ] Know durable entry points (`look_up_ca_n_rate`, fertilization / ncc workflows)
+- [ ] Know lookups (`look_up_ca_n_rate`) vs statewide fert/NCC events (PR #4003)
 - [ ] Know where rates live (`data.land` and/or `$CCMMF_MANAGEMENT/fertilization/`)
 - [ ] Spot-check a crop with `look_up_ca_n_rate()` (structure: returns min/max N)
-- [ ] Maturity acknowledged: MVP / parallel (not Session 2 production path)
 
 **Irrigation**
 
 - [ ] CHIRPS + CIMIS + SSURGO parcel extracts exist (or reviewed)
-- [ ] Demo parcel list matches Session 2 when running the water balance
+- [ ] `config_paths.yml` points at the intended parcel universe (statewide or Session 2 demo-tile subset)
+- [ ] Chose `TAR_PROJECT` accordingly (`all` on a subset table; `small`/`medium`/`all` on full CA)
 - [ ] Reviewed or ran `targets` water balance; output event file present
 
 **Spine:** [pipeline.md](../pipeline.md).

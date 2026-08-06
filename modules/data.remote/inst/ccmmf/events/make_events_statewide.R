@@ -18,19 +18,19 @@
 #
 # Implementation
 # --------------
-#   R/matched_input.R   — read assigned_year=Y, filter matched rows
-#   R/phenology_events.R — leaf-on/off from MSLSP (format only)
-#   R/planting_events.R  — C/N pools via traits/pool_calculations_from_lookup.R
-#   R/harvest_events.R   — removal fractions, young-woody skip, CLASS-level
-#                             woody destructive (LandIQ year → year+1 look-ahead)
-#   R/tillage_metrics.R  — fallow-window NDTI minimum / intensity
-#   R/tillage_events.R   — NDTI + matched phenology -> tillage events
-#   R/io.R               — shared parquet + PEcAn JSON writer
+#   R/matched_input.R   -- read assigned_year=Y, filter matched rows
+#   R/phenology_events.R -- leaf-on/off from MSLSP (format only)
+#   R/planting_events.R  -- C/N pools via traits/pool_calculations_from_lookup.R
+#   R/harvest_events.R   -- removal fractions, young-woody skip, CLASS-level
+#                             woody destructive (LandIQ year -> year+1 look-ahead)
+#   R/tillage_metrics.R  -- fallow-window NDTI minimum / intensity
+#   R/tillage_events.R   -- NDTI + matched phenology -> tillage events
+#   R/io.R               -- shared parquet + PEcAn JSON writer
 #
 # ENV
 # ---
 #   CCMMF_LANDIQ_V4, HARVEST_LOOKUP_RDS, HARVEST_WOODY_DESTRUCTIVE,
-#   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK — see events/README.md
+#   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK -- see events/README.md
 # =============================================================================
 
 suppressPackageStartupMessages({

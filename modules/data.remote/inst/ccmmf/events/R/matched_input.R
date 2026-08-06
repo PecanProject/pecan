@@ -1,4 +1,4 @@
-# Load assigned LandIQ–MSLSP rows for statewide events.
+# Load assigned LandIQ-MSLSP rows for statewide events.
 # Prefer gap-filled overlay when present so no_mslsp rows can get filled dates.
 # Date / EVI filtering happens in each build_* module (so planting+harvest can
 # keep different row sets).

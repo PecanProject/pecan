@@ -34,16 +34,18 @@ statewide; omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full runs.
 
 ## Products (deliverables)
 
-Aligned with the Monitoring Framework Management Tracking list. Maturity is
-stated honestly so incomplete tracks are not mistaken for finished production.
+Aligned with the Monitoring Framework Management Tracking list. These layers
+are **operational inventory** inputs (not projection scenarios). Maturity below
+uses that framing; Session 3 tracks stay parallel / MVP until their workflows
+ship on this tree.
 
 | Product | Definition | Method class | Primary inputs | Output artifacts | Maturity | Session |
 |---------|------------|--------------|----------------|------------------|----------|---------|
-| Crop identity | CLASS/SUBCLASS (and PFT) per parcel-season | Map + gap-fill | LandIQ, CDL | Gap-filled LandIQ product (`$CCMMF_LANDIQ_GAPFILL_PRODUCT`) | Production | 1 |
-| Planting | Crop start date; C/N pool initialization | Hybrid (RS + traits) | Matched MSLSP, trait CSV lookups | `planting_statewide_Y` under `event_files/` | Production | 2 |
-| Harvest | Biomass removal date and rem/lit fractions | Hybrid (RS + traits) | Matched MSLSP, harvest CSV lookup | `harvest_statewide_Y` | Production | 2 |
-| Phenology | Leaf-on / leaf-off timing | RS (MSLSP) | Matched MSLSP | `phenology_statewide_Y` | Production | 2 |
-| Tillage | Soil/residue disturbance in fallow windows | RS (NDTI) | NDTI + matched phenology | `tillage_statewide_Y` | Production (opt-in build) | 2 |
+| Crop identity | CLASS/SUBCLASS (and PFT) per parcel-season | Map + gap-fill (provenance per row; see Session 1 observed vs filled) | LandIQ, CDL | Gap-filled LandIQ product (`$CCMMF_LANDIQ_GAPFILL_PRODUCT`) | Operational (inventory) | 1 |
+| Planting | Crop start date; C/N pool initialization | Hybrid (RS + traits) | Matched MSLSP, trait CSV lookups | `planting_statewide_Y` under `event_files/` | Operational (inventory) | 2 |
+| Harvest | Biomass removal date and rem/lit fractions | Hybrid (RS + traits) | Matched MSLSP, harvest CSV lookup | `harvest_statewide_Y` | Operational (inventory) | 2 |
+| Phenology | Leaf-on / leaf-off timing | RS (MSLSP) | Matched MSLSP | `phenology_statewide_Y` | Operational (inventory) | 2 |
+| Tillage | Soil/residue disturbance in fallow windows | RS (NDTI) | NDTI + matched phenology | `tillage_statewide_Y` | Operational (inventory; opt-in build) | 2 |
 | N fertilization | Synthetic N applications by crop | Lookup | CA N-rate tables (`PEcAn.data.land`) | Fertilization event products (parallel workflow) | MVP / parallel | 3 |
 | Organic amendments | Manure, compost, biochar, similar | Lookup | Organic amendment tables | NCC event products (parallel workflow) | MVP / parallel | 3 |
 | Irrigation | Water applied over the season | Water balance | CHIRPS, CIMIS ETref, SSURGO AWC, LandIQ irrigation type | Irrigation event parquet / files | Parallel workflow | 3 |
@@ -184,17 +186,19 @@ Detail: [Session 2](sessions/02-phenology.md).
 |------|--------|
 | Legend / codes | New LandIQ year matches `LandIQ_cropCode_lookup_table.csv`; `legend_year == 2021` after harmonization |
 | Year-pair product | Gap-filled table contains `PRIOR_YEAR` and `TARGET_YEAR`; `CCMMF_LANDIQ_V4` points at gap-filled path |
+| LandIQ provenance | Season-2 `subclass_source` / `adoy_source` counted for shipped years; operators know observed vs modelled share ([Session 1](sessions/01-landiq.md#observed-vs-filled-be-explicit); [qc_gapfill_report.md](../landiq-gapfill/outputs/qc_gapfill_report.md)) |
 | Phenology coverage | MSLSP extract and match outputs present for both years; date gap-fill run before statewide planting/harvest |
-| Event files | Expected `*_statewide_Y` parquet (and CSV companions where used) open; required columns per [metadata.md](metadata.md) |
+| Event files | Expected `*_statewide_Y` parquet + JSON open; required columns per [metadata.md](metadata.md) |
 | Tillage | If tillage requested: NDTI year partitions exist; tillage events join matched phenology fallow windows |
 | Year-over-year | Spot-check parcel counts and event rates vs prior published year |
-| Handoff (if modeling) | Clean scripts succeed; `validate_events` (or schema check) passes before `write.events.SIPNET` |
+| Handoff (if modeling) | Clean scripts succeed; `validate_events_json` (or schema check) passes before `write.events.SIPNET` |
 
 ## Known gaps and residual risk
 
 | Area | Risk |
 |------|------|
-| N fertilization / organic amendments | Parallel MVP workflows; not produced by `make_events_statewide.sh`. Prefer durable `PEcAn.data.land` helpers and workflow READMEs over PR numbers alone. |
+| LandIQ fill fraction | On shipped v4.1.2 season 2: 2023 modelled subclass 6.58%, gap-filled ADOY 62.43%; 2016 gap-filled ADOY 90.46%; 2017 crop identity 100% modelled. Use `subclass_source` / `adoy_source` for skill and sensitivity work. |
+| N fertilization / organic amendments | Lookups: `PEcAn.data.land` on this tree. Statewide fert/NCC events: PEcAn PR [#4003](https://github.com/PecanProject/pecan/pull/4003) (not under `workflows/` here). |
 | Irrigation | Parallel `irrigation-statewide` water-balance track; confirm config paths before statewide runs. |
 | SIPNET handoff cleaners | Some preprocess scripts still use lab-absolute paths and assume monitoring column names; re-run after any event-schema change. |
 | Trait lookups | Must be rebuilt if LandIQ legend or literature/TRY inputs change; products are CSV under `plant_traits/`. |
@@ -208,7 +212,7 @@ Detail: [Session 2](sessions/02-phenology.md).
 | HLS / MSLSP NetCDF | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) |
 | Events schemas | [events/README.md](../events/README.md) |
 | Traits | [traits/README.md](../traits/README.md) |
-| PEcAn event validation / tillage map | `PEcAn.data.land` (`validate_events`, `ndti_to_sipnet_tillage`) |
+| PEcAn event validation / tillage map | `PEcAn.data.land` (`validate_events_json`, `ndti_to_sipnet_tillage`) |
 | SIPNET `events.in` | `PEcAn.SIPNET::write.events.SIPNET` |
 
 ## Checklist (operational example: 2024 + re-run 2023)

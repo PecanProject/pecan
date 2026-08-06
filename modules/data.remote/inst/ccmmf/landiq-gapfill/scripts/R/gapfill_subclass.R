@@ -278,9 +278,16 @@ assign_subclass <- function(
         vineyard_fallback_subclass(),
         pred_subclass_assignment
       ),
+      # V->wine-grapes default is not a separate provenance; keep observed.
       subclass_source = dplyr::if_else(
         pred_class == "V" & subclass_source == "unfilled",
-        "vineyard_fallback",
+        subclass_source_observed(),
+        subclass_source
+      ),
+      subclass_source = dplyr::if_else(
+        pred_class %in% classes_no_subclass_star() &
+          (pred_subclass_assignment == "**" | subclass_source == "unfilled"),
+        subclass_source_no_subclass_x_i_yp(),
         subclass_source
       )
     )

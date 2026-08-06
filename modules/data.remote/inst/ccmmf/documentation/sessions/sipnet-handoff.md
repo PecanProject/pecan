@@ -23,7 +23,7 @@ monitoring pipeline; they are not always identical to the PEcAn events schema.
 This handoff:
 
 1. Cleans and renames columns (naming drift).
-2. Builds validated `events.json`.
+2. Builds schema-checked `events.json`.
 3. Writes SIPNET `events.in` via `PEcAn.SIPNET::write.events.SIPNET`.
 
 Do not re-derive planting/harvest/tillage dates here.
@@ -46,10 +46,27 @@ Column dictionaries: [metadata.md](../metadata.md), [events/README.md](../../eve
 
 ---
 
+## Where the stages live
+
+| Stage | On this monitoring tree | Elsewhere (SIPNET restart line) |
+|-------|-------------------------|----------------------------------|
+| Clean / rename parquet | -- | `workflows/preprocess-event-parquet/` |
+| Parquet to `events.json` | -- | same workflow + `event_parquet_to_json()` in that line's `PEcAn.data.land` |
+| Schema check | `validate_events_json()` when present in your installed `data.land` | same |
+| SIPNET `events.in` | `PEcAn.SIPNET::write.events.SIPNET` | also used from restart drivers |
+| Restart / run drivers | `workflows/sipnet-restart-workflow/` (prepare settings, run) | fuller checkout may include preprocess beside restart |
+
+Stages 1-2 below are **not** under `workflows/` on this monitoring branch. Use a
+SIPNET restart workflow checkout that includes
+`workflows/preprocess-event-parquet/` (lab reference: ashiklom
+`sipnet-restart-workflow` tree). This appendix keeps the column map and the
+monitoring-side helpers that *are* here.
+
+---
+
 ## Stage 1 - Clean and rename
 
-Operator entry (lab reference; may live on a SIPNET restart workflow branch,
-not inside `inst/ccmmf`):
+Operator entry on the SIPNET restart line:
 
 `workflows/preprocess-event-parquet/`
 
@@ -70,21 +87,19 @@ against the script version you run):
 | `ndti_pct_change` | `tillage_eff_0to1` (mapped; see tillage helper) |
 | Phenology `leafonday` / `leafoffday` | Separate `leafon` / `leafoff` parquet with `site_id`, `date` |
 
-**Tillage intensity helper on this monitoring branch:**
+**Tillage intensity helper available with monitoring / shared `data.land`:**
 `PEcAn.data.land::ndti_to_sipnet_tillage()` maps fractional NDTI drop to
 `tillage_eff_0to1` for the PEcAn events schema
 (`modules/data.land/R/ndti_to_sipnet_tillage.R`).
 
-**Residual risk:** some clean scripts still hard-code lab absolute paths and
-assume current monitoring column names. Re-run after any event-schema change.
-Prefer env-based paths when adapting the scripts for portable sites.
+Re-run clean scripts after any monitoring event-schema change. Prefer env-based
+paths when adapting scripts for portable sites.
 
 ---
 
 ## Stage 2 - Parquet to `events.json`
 
-On lines that ship `event_parquet_to_json` (for example the SIPNET restart
-workflow / matching `PEcAn.data.land` version):
+On the same SIPNET restart line (and matching `PEcAn.data.land` there):
 
 | Piece | Role |
 |-------|------|
@@ -92,15 +107,16 @@ workflow / matching `PEcAn.data.land` version):
 | `event_parquet_to_json()` | Manifest-driven `events.json` |
 | Example driver | `workflows/preprocess-event-parquet/02-events-to-json.R` |
 
-Validate against the events JSON schema before modeling:
+Schema-check before modeling (function name on this monitoring tree's
+`data.land` when installed):
 
 | Piece | Role |
 |-------|------|
-| `PEcAn.data.land::validate_events()` | Schema validation helper on this branch |
+| `PEcAn.data.land::validate_events_json()` | JSON schema check |
 | `modules/data.land/inst/events_schema_*.json` | Schema files (version as installed) |
 
-Confirm the function names and schema version in **your** installed PEcAn
-packages; package surfaces differ slightly across branches.
+Confirm function names and schema version in **your** installed PEcAn packages;
+surfaces differ across branches.
 
 ---
 
@@ -119,6 +135,9 @@ inventory workflows (not every run):
 | `events_to_crop_cycle_starts()` | Planting-based cycle starts from events JSON |
 | `mslsp_to_canopycover()` | Canopy cover from MSLSP metrics (when used) |
 
+On this tree, `workflows/sipnet-restart-workflow/` covers prepare-settings / run
+drivers once `events.json` exist.
+
 ---
 
 ## Ownership
@@ -126,7 +145,9 @@ inventory workflows (not every run):
 | Layer | Owner |
 |-------|--------|
 | Statewide monitoring parquet | `inst/ccmmf` Sessions 2-3 |
-| Clean / rename / JSON / SIPNET write | PEcAn `data.land`, `PEcAn.SIPNET`, restart / preprocess workflows |
+| Clean / rename / parquet-to-JSON | SIPNET restart line: `workflows/preprocess-event-parquet/` |
+| Schema check / SIPNET write | `PEcAn.data.land`, `PEcAn.SIPNET` |
+| Restart drivers | `workflows/sipnet-restart-workflow/` |
 
 Do not duplicate conversion logic into `inst/ccmmf`; link and document.
 
@@ -135,10 +156,10 @@ Do not duplicate conversion logic into `inst/ccmmf`; link and document.
 ## Checklist
 
 - [ ] Monitoring `*_statewide_Y.parquet` present for required event types
-- [ ] Clean scripts run; renamed columns match PEcAn schema expectations
+- [ ] Ran clean scripts from `preprocess-event-parquet` on the SIPNET restart line
 - [ ] `tillage_eff_0to1` present when tillage is included (`ndti_to_sipnet_tillage` or clean mapping)
-- [ ] `events.json` validated
+- [ ] `events.json` passes `validate_events_json` (schema check)
 - [ ] `write.events.SIPNET` produces `events.in` for target sites
-- [ ] If clean scripts failed: check path hard-codes and column drift vs [events/README.md](../../events/README.md)
+- [ ] If clean scripts failed: check paths and column drift vs [events/README.md](../../events/README.md)
 
 **Spine:** [pipeline.md](../pipeline.md).

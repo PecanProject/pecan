@@ -16,6 +16,13 @@ legend). A routine run rewrites only the years you pass and carries every other
 year from the existing gap-filled product (or from the harmonized input on first
 build).
 
+**Observed vs filled:** every output row has `subclass_source` and `adoy_source`.
+On the shipped v4.1.2 product (season 2): 2023 modelled subclass = 6.58%;
+2023 gap-filled ADOY = 62.43%; 2016 gap-filled ADOY = 90.46%; 2017 crop
+identity = 100% modelled. Full counts:
+[documentation/sessions/01-landiq.md](../documentation/sessions/01-landiq.md#observed-vs-filled-be-explicit),
+[outputs/qc_gapfill_report.md](outputs/qc_gapfill_report.md).
+
 **Key features:**
 
 - Season-2 crop fill from USDA Cropland Data Layer (CDL) parcel fractions plus
@@ -113,11 +120,11 @@ prefer observed values and treat filled rows according to these codes.
 
 | Value | Meaning |
 |-------|---------|
-| `OBSERVED` | From source LandIQ |
+| `observed` | From source LandIQ (includes defaulting vineyard `V/**` -> `V/2` wine grapes) |
 | `plurality` | Full-gap CLASS prediction; subclass by plurality of CDL evidence |
 | `emission_cdl` | Subclass from the CDL-to-subclass emission table |
 | `prior_only` | Subclass from the parcel's historical crop prior |
-| `vineyard_fallback` | Vineyard (`CLASS = V`) with no subclass; set to wine grapes (`SUBCLASS = 2`) |
+| `X/I/YP (no subclass)` | Idle/fallow/young-perennial classes that keep `SUBCLASS = **` by design |
 | `unfilled` | Ag parcel, no confident subclass (stays `**`) |
 | `absent` | Padded inactive-season row (no crop) |
 
@@ -125,7 +132,7 @@ prefer observed values and treat filled rows according to these codes.
 
 | Value | Meaning |
 |-------|---------|
-| `OBSERVED` | From source LandIQ |
+| `observed` | From source LandIQ |
 | `temporal` | Borrowed from the same parcel in a neighbor year |
 | `county_class_subclass` / `county_class` | County-level reference table |
 | `statewide_class_subclass` / `statewide_class` | Statewide reference fallback |

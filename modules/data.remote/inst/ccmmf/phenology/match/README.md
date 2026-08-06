@@ -33,7 +33,10 @@ Events: [events/README.md](../../events/README.md).
 Only agricultural parcels (`is_agricultural == TRUE` in the lookup) are included.
 The matcher uses a **left join**: every ag parcel-year in LandIQ is written to
 `assigned_year=Y.parquet`. Parcel-years with no combined MSLSP row get
-`assigned_by == "no_mslsp"` (events still use only `"matched"` rows).
+`assigned_by == "no_mslsp"`. Without a gap-fill overlay, event builders keep only
+`"matched"` rows; with a gap-filled overlay present, planting/harvest intake can
+also include `"no_mslsp"` / `"no_match"` rows that received filled dates (see
+[events/README.md](../../events/README.md)).
 
 ## Run a year
 
@@ -78,7 +81,9 @@ Rule-based assignment (no cost matrix):
    prioritized for `MULTIUSE` D/M; then seasons 3/4.
 
 Rows with a successful assignment have `assigned_by == "matched"`. Event generation
-uses only those rows.
+defaults to those rows; when `$CCMMF_MANAGEMENT/phenology/.../gapfill_dates/`
+overlays exist, `load_matched_for_events()` also admits `"no_mslsp"` / `"no_match"`
+candidates so filled planting/harvest dates can flow into builders.
 
 ADOY is peak greenness timing (adjusted day of year), not emergence or senescence.
 

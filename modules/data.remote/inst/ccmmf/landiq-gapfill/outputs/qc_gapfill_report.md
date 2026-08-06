@@ -130,7 +130,7 @@ Which crop types account for the most subclass gap-fill. Full detail (including
 | D | 10 | 3080 | 0.74 | 0.74 |
 | YP | ** | 2873 | 0.69 | 0.69 |
 
-_Showing top 25 of 55 — see CSV for full list._
+_Showing top 25 of 55 - see CSV for full list._
 
 ## 2018 (within-year)
 

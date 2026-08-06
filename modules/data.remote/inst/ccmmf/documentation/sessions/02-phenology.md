@@ -11,7 +11,7 @@ Land Surface Phenology (MSLSP) drives the first three; Normalized Difference
 Tillage Index (NDTI) drives tillage in fallow windows.
 
 **Method class:** hybrid RS + trait CSV lookups (planting/harvest); RS for
-phenology and tillage. **Maturity:** production (tillage build is opt-in).
+phenology and tillage. **Maturity:** operational (inventory); tillage build is opt-in.
 
 **Prerequisite:** complete [Session 1](01-landiq.md). Point
 `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`. Have NASA Earthdata
@@ -163,7 +163,7 @@ $EVENTS_ROOT/make_events_statewide.sh 2024
 | Item | Path / format | Notes |
 |------|---------------|--------|
 | Lookups | `$CCMMF_MANAGEMENT/plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | CSV; harvest has `destructive` (see [traits/README.md](../../traits/README.md)) |
-| Events | `$CCMMF_MANAGEMENT/event_files/{planting,harvest,phenology}_statewide_Y.parquet` | [events metadata](../metadata.md) |
+| Events | `$CCMMF_MANAGEMENT/event_files/{planting,harvest,phenology}_statewide_Y.parquet` (+ `.json`) | [events metadata](../metadata.md) |
 
 For the demo, skip statewide date gap-fill or gap-fill only the subsample. Statewide:
 
@@ -204,7 +204,7 @@ $EVENTS_ROOT/make_events_statewide.sh 2024 tillage
 
 | Item | Path / format | Metadata |
 |------|---------------|----------|
-| Output | `$CCMMF_MANAGEMENT/event_files/tillage_statewide_Y.parquet` | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
+| Output | `$CCMMF_MANAGEMENT/event_files/tillage_statewide_Y.parquet` (+ `.json`) | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
 
 Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 
@@ -218,7 +218,7 @@ Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 - [ ] MSLSP NetCDF for `10SDH` under `data_phen/output/`; raw extract hive `phenology/raw_mslsp_v4.1.2/year=2024/` opens
 - [ ] Matched parquet has `assigned_by` / `match_outcome`; demo uses `ASSIGN_PARCEL_IDS_FILE`
 - [ ] `planting_lookup.csv` and `harvest_lookup.csv` present; harvest has a `destructive` column
-- [ ] `planting_statewide_2024.parquet`, `harvest_statewide_2024.parquet`, `phenology_statewide_2024.parquet` under `event_files/`
+- [ ] `planting_statewide_2024.parquet` / `.json`, `harvest_statewide_2024.parquet` / `.json`, `phenology_statewide_2024.parquet` / `.json` under `event_files/`
 - [ ] NDTI hive under `tillage/ndti_v4.1/`; `tillage_statewide_2024.parquet` after opt-in run
 - [ ] Spot-check: parquet row count > 0; harvest clearing rows use `PFT=woody` + `destructive=TRUE` (no fake PFT)
 - [ ] Acceptance: event files are ready for Session 3 combine / SIPNET handoff appendix

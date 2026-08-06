@@ -259,8 +259,41 @@ resolve_gapfill_neighbors <- function(gapfill_year) {
 
 #' Default SUBCLASS for vineyard (CLASS V) when no specific subclass is known.
 #' LandIQ tabular data often has V with missing subclass; policy treats these as wine grapes.
+#' Provenance stays `observed` (not a separate fallback flag).
 vineyard_fallback_subclass <- function() {
   trimws(Sys.getenv("LANDIQ_VINEYARD_FALLBACK_SUBCLASS", "2"))
+}
+
+#' Canonical subclass_source when identity comes from source LandIQ (or V->V/2 default).
+subclass_source_observed <- function() {
+  "observed"
+}
+
+#' CLASS X / I / YP keep SUBCLASS ** by design (not a failed fill).
+subclass_source_no_subclass_x_i_yp <- function() {
+  "X/I/YP (no subclass)"
+}
+
+classes_no_subclass_star <- function() {
+  c("X", "I", "YP")
+}
+
+#' Relabel subclass_source for product consistency.
+#' - OBSERVED / vineyard_fallback -> observed
+#' - unfilled on X/I/YP (or those classes with **) -> X/I/YP (no subclass)
+normalize_subclass_source <- function(class, subclass, source) {
+  cls <- trimws(as.character(class))
+  sub <- trimws(as.character(subclass))
+  src <- trimws(as.character(source))
+  src[is.na(src) | !nzchar(src)] <- NA_character_
+  src[toupper(src) == "OBSERVED" | src == "vineyard_fallback"] <- subclass_source_observed()
+  no_sub <- cls %in% classes_no_subclass_star() &
+    (
+      is.na(sub) | !nzchar(sub) | sub == "**" |
+        (!is.na(src) & src == "unfilled")
+    )
+  src[no_sub] <- subclass_source_no_subclass_x_i_yp()
+  src
 }
 
 gapfill_run_summary <- function(cfg) {

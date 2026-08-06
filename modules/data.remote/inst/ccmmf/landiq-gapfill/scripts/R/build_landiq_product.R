@@ -354,16 +354,13 @@ build_landiq_product <- function(
       )
     ) %>%
     dplyr::mutate(
-      subclass_source = dplyr::if_else(
-        CLASS == "V" & SUBCLASS == "**",
-        "vineyard_fallback",
-        subclass_source
-      ),
+      # Default missing vineyard subclass to wine grapes; keep observed provenance.
       SUBCLASS = dplyr::if_else(
         CLASS == "V" & SUBCLASS == "**",
         vineyard_fallback_subclass(),
         SUBCLASS
-      )
+      ),
+      subclass_source = normalize_subclass_source(CLASS, SUBCLASS, subclass_source)
     )
 
   consolidated_ids <- load_consolidated_parcel_ids()

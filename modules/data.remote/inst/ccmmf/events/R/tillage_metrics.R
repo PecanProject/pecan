@@ -121,7 +121,7 @@ tillage_metrics <- function(ndti_table, phenology_table) {
     )
 
   # One row per fallow window: min-day SD / neighbor counts (was rowwise +
-  # get_metric_details per row; res_max branch was never selected — dropped).
+  # get_metric_details per row; res_max branch was never selected -- dropped).
   smooth <- dplyr::distinct(dplyr::as_tibble(ndti_smooth), parcel_id, date, .keep_all = TRUE)
   rel <- dplyr::filter(smooth, !is.na(n_valid), n_valid > 0)
 
