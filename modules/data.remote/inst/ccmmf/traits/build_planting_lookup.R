@@ -1,18 +1,18 @@
-# Build long-format planting trait lookup for CCMMF / SIPNET-style pool init.
+# Build planting trait lookup for SIPNET pool init.
 #
-# Reads TRY master_data, maps each observation's species to a LandIQ SUBCLASS_desc
-# crop group (genus lookup), converts trait values to common units, then keeps
-# only rows that join to an agricultural LandIQ code with a PFT. Aggregates to
-# four fallback levels used downstream: subclass (class+subclass), class crossed
-# with PFT, PFT-only, and global. TRY SLA traits 3115-3117 are merged into one
-# pooled SLA trait (SLA_POOLED) before aggregation.
+# Inputs: TRY allocation files (plant_traits/TRY_allocation_traits/*.txt),
+# curated lit rows (planting_sources/literature_allocation_traits.csv), LandIQ 2021.
+# Output: plant_traits/planting_lookup.csv
+#   levels subclass|class|pft; sources try|literature|default
 #
-# Writes plant_traits/planting_lookup_long.rds and planting_lookup_long.csv
-# under CCMMF_MANAGEMENT (default: .../ccmmf/management).
+# TRY species matching: only AccSpeciesName listed in LandIQ latin_names
+# (no genus fallback / wild congeners).
 #
-# Run:
-#   Rscript $CCMMF_CODE/traits/build_planting_lookup.R
-# Env: CCMMF_MANAGEMENT, TRY_MASTER_DATA (path to master_data.RData with object master_data).
+# Fallback used by the pool: TRY subclass > TRY class > lit subclass > lit class >
+# TRY PFT > default PFT (programmatic fine/coarse root split when missing).
+#
+#   Rscript scripts/traits/build_planting_lookup.R
+# Env: CCMMF_MANAGEMENT, TRY_ALLOCATION_DIR
 
 #### Load packages
 
@@ -23,140 +23,299 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-#### Paths and outputs (CCMMF_MANAGEMENT and TRY_MASTER_DATA override defaults)
+#### Paths and outputs (CCMMF_MANAGEMENT and TRY_ALLOCATION_DIR override defaults)
 
 path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-master_data_path <- Sys.getenv("TRY_MASTER_DATA", "/projectnb/dietzelab/mkim/TRYDataR/master_data.RData")
+try_allocation_dir <- Sys.getenv(
+  "TRY_ALLOCATION_DIR",
+  file.path(path_management, "plant_traits/TRY_allocation_traits")
+)
 landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+trait_lit_csv <- file.path(
+  path_management, "plant_traits/planting_sources/literature_allocation_traits.csv"
+)
 plant_traits_dir <- file.path(path_management, "plant_traits")
-out_rds <- file.path(plant_traits_dir, "planting_lookup_long.rds")
-out_csv <- file.path(plant_traits_dir, "planting_lookup_long.csv")
+out_csv <- file.path(plant_traits_dir, "planting_lookup.csv")
+coverage_csv <- file.path(plant_traits_dir, "planting_lookup_coverage.csv")
 
-#### SLA pool: TRY IDs 3115, 3116, 3117 combined into one pseudo-trait
+#### Traits kept for pool_calculations_from_lookup.R
 
-sla_component_ids <- c(3115, 3116, 3117)
-sla_pooled_key <- "SLA_POOLED"
-sla_pooled_name <- "SLA (combined: 3115/3116/3117)"
+pool_trait_ids <- c(
+  9L,    # root/shoot
+  14L,   # leaf N (mg/g)
+  110L,  # LWR
+  136L,  # stem mass fraction
+  146L,  # leaf C/N
+  165L,  # stem C/N
+  470L,  # RMF
+  1019L, # coarse/fine root mass ratio
+  1055L, # root C/N
+  1534L, # coarse root mass fraction
+  2005L, # fine root mass fraction
+  2057L, # fine root C/N
+  3115L, # SLA (petiole excluded)
+  3116L, # SLA (petiole included)
+  3117L  # SLA (petiole undefined)
+)
+
 
 #### Helper functions
 
-# Agricultural LandIQ rows only; need PFT (same definition as build_harvest_lookup.R).
+# Agricultural LandIQ rows - 2021 RS legend only (matches harmonized products).
+# Keep CLASS+** when crops_included is set (C** citrus, V** vineyards).
+# latin_names (semicolon-separated) drives TRY species -> code matching.
 load_landiq_mapping <- function(path = landiq_lookup_csv) {
   d <- as.data.frame(fread(path))
   d %>%
-    mutate(SUBCLASS = as.character(SUBCLASS)) %>%
-    filter(is_agricultural == TRUE, !is.na(PFT)) %>%
-    transmute(class = CLASS, subclass = SUBCLASS, crop_desc = SUBCLASS_desc, class_desc = CLASS_desc, PFT = PFT)
+    mutate(
+      CLASS = as.character(CLASS),
+      SUBCLASS = as.character(SUBCLASS),
+      SUBCLASS_desc = as.character(SUBCLASS_desc),
+      PFT = as.character(PFT),
+      legend_year = suppressWarnings(as.integer(legend_year)),
+      crops_included = if ("crops_included" %in% names(.)) {
+        as.character(crops_included)
+      } else {
+        NA_character_
+      },
+      crops_included = dplyr::coalesce(crops_included, ""),
+      latin_names = if ("latin_names" %in% names(.)) {
+        as.character(dplyr::coalesce(latin_names, ""))
+      } else {
+        ""
+      }
+    ) %>%
+    filter(
+      legend_year == 2021L,
+      is_agricultural == TRUE,
+      !is.na(PFT),
+      PFT != "other",
+      !grepl(
+        "idle|not cropped|new lands prepped",
+        SUBCLASS_desc,
+        ignore.case = TRUE
+      ),
+      SUBCLASS != "**" | nzchar(trimws(crops_included))
+    ) %>%
+    transmute(
+      class = CLASS, subclass = SUBCLASS, crop_desc = SUBCLASS_desc,
+      class_desc = CLASS_desc, PFT = PFT, latin_names = latin_names,
+      landiq_code = paste0(CLASS, SUBCLASS)
+    )
 }
 
 
-# TRY reports mixed units; this maps OrigUnitStr to the unit system we aggregate in.
+# Pass-through for pool traits (TRY StdValue already in target units).
+# SLA only: keep rows whose UnitName is mm2/mg or m2/kg; drop unknown units.
 normalize_units <- function(trait_id, value, unit_str) {
   if (is.na(value)) return(NA_real_)
   trait_id <- as.numeric(trait_id)
   value_num <- suppressWarnings(as.numeric(value))
-
-  if (trait_id == 14) {
-    if (is.na(unit_str) || unit_str == "") return(value_num)
-    if (grepl("mg/g|mg g-1|mg N g-1|g/100g", unit_str, ignore.case = TRUE)) return(value_num)
-    if (grepl("%", unit_str, ignore.case = TRUE)) return(value_num * 10)
-    if (grepl("g/kg", unit_str, ignore.case = TRUE)) return(value_num)
-    return(value_num)
-  }
+  if (is.na(value_num)) return(NA_real_)
 
   if (trait_id %in% c(3115, 3116, 3117)) {
-    if (is.na(unit_str) || unit_str == "") return(NA_real_)
-    if (grepl("mm2/mg|mm2 mg-1|mm\\^2 mg-1", unit_str, ignore.case = TRUE)) return(value_num)
-    if (grepl("cm2/g|cm2 g-1|cm\\^2 g-1", unit_str, ignore.case = TRUE)) return(value_num * 0.1)
-    if (grepl("m2/kg|m\\^2 kg-1", unit_str, ignore.case = TRUE)) return(value_num)
-    if (grepl("g/m2|g m-2|mg/dm2", unit_str, ignore.case = TRUE)) return(NA_real_)
+    if (is.na(unit_str) || !nzchar(unit_str)) return(NA_real_)
+    if (grepl("mm2/mg|mm2 mg-1|mm\\^2 mg-1|m2/kg|m\\^2 kg-1", unit_str, ignore.case = TRUE)) {
+      return(value_num)
+    }
     return(NA_real_)
   }
 
-  if (trait_id %in% c(3441, 128, 3450, 3952, 3953)) {
-    if (is.na(unit_str) || unit_str == "") return(value_num)
-    if (grepl("kg", unit_str, ignore.case = TRUE)) return(value_num * 1000)
-    if (grepl("mg", unit_str, ignore.case = TRUE)) return(value_num / 1000)
-    return(value_num)
-  }
-
-  if (trait_id %in% c(1534, 2005)) {
-    if (is.na(unit_str) || unit_str == "") return(value_num)
-    if (grepl("%", unit_str, ignore.case = TRUE)) return(value_num / 100)
-    if (grepl("g/g|g g-1", unit_str, ignore.case = TRUE)) return(value_num)
-    return(value_num)
-  }
-
-  if (trait_id %in% c(146, 165, 2057, 1055)) return(value_num)
-  if (is.na(unit_str) || unit_str == "") return(value_num)
-  return(value_num)
+  value_num
 }
 
 
-# First word of AccSpeciesName is genus; value must match LandIQ SUBCLASS_desc text.
-genus_to_group <- c(
-  # Berries & small fruits
-  "Ribes" = "Bush berries",
-  "Rubus" = "Bush berries",
-  "Vaccinium" = "Bush berries",
-  "Fragaria" = "Strawberries",
-  # Tree fruits
-  "Malus" = "Apples",
-  "Pyrus" = "Pears",
-  "Vitis" = "Wine grapes",
-  "Persea" = "Avocados",
-  "Olea" = "Olives",
-  "Juglans" = "Walnuts",
-  "Pistacia" = "Pistachios",
-  "Punica" = "Pomegranates",
-  "Phoenix" = "Dates",
-  # Grains & row crops
-  "Zea" = "Corn, Sorghum or Sudan (grouped for RS only)",
-  "Sorghum" = "Corn, Sorghum or Sudan (grouped for RS only)",
-  "Triticum" = "Wheat",
-  "Oryza" = "Rice",
-  "Zizania" = "Wild rice",
-  "Gossypium" = "Cotton",
-  "Helianthus" = "Sunflowers",
-  # Legumes & forages
-  "Medicago" = "Alfalfa and alfalfa mixtures",
-  "Vigna" = "Beans (dry)",
-  "Glycine" = "Beans (dry)",
-  "Phaseolus" = "Beans (dry)",
-  # Vegetables
-  "Spinacia" = "Spinach",
-  "Lactuca" = "Lettuce (all types)",
-  "Brassica" = "Cole crops (mixture of 22-25)",
-  "Daucus" = "Carrots",
-  "Cucurbita" = "Melons, squash, cucumbers",
-  "Cucumis" = "Melons, squash, cucumbers",
-  "Capsicum" = "Peppers",
-  "Solanum" = "Potatoes",
-  "Ipomoea" = "Sweet potatoes",
-  "Allium" = "Onions & garlic",
-  # Miscellaneous
-  "Prunus" = "Miscellaneous deciduous",
-  "Agrostis" = "Miscellaneous grasses",
-  "Festuca" = "Miscellaneous grasses",
-  "Lolium" = "Miscellaneous grasses",
-  "Poa" = "Miscellaneous grasses",
-  "Achillea" = "Mixed pasture",
-  "Artemisia" = "Mixed pasture",
-  "Carex" = "Mixed pasture",
-  "Juncus" = "Mixed pasture",
-  "Coffea" = "Miscellaneous field",
-  "unknown" = "Miscellaneous field"
-)
-
-map_species_to_group <- function(species_vec) {
-  genus <- sub("^(\\w+).*", "\\1", species_vec)
-  group <- genus_to_group[genus]
-  group[is.na(group)] <- "NA"
-  unname(group)
+# Lowercase Genus + species key for cropcode matching ("Zea mays", "zea_mays" ->
+# "zea mays"). Strips hybrid markers (x). One-token names kept as genus-only.
+normalize_species_key <- function(species_vec) {
+  s <- tolower(trimws(as.character(species_vec)))
+  s <- gsub("_", " ", s)
+  s <- gsub("\\s+[x\u00d7]\\s+", " ", s)
+  s <- gsub("\\s+x$", "", s)
+  s <- gsub("\\s+", " ", s)
+  vapply(strsplit(s, " ", perl = TRUE), function(w) {
+    w <- w[nzchar(w) & w != "x" & w != "\u00d7"]
+    if (length(w) >= 2L) paste(w[1L], w[2L]) else if (length(w) == 1L) w[1L] else NA_character_
+  }, character(1))
 }
 
 
-# Per-level means plus species- and dataset-level diagnostics for the long lookup table.
+# Build species -> LandIQ code from mapping$latin_names.
+# If a name is listed under more than one code (rare; e.g. plums/prunes), keep
+# the first LandIQ row encountered so each TRY species maps to one subclass.
+load_species_code_maps <- function(mapping) {
+  stopifnot(all(c("landiq_code", "latin_names") %in% names(mapping)))
+
+  sp_rows <- list()
+  for (i in seq_len(nrow(mapping))) {
+    code <- mapping$landiq_code[[i]]
+    names_raw <- mapping$latin_names[[i]]
+    if (!nzchar(trimws(names_raw))) next
+    parts <- trimws(unlist(strsplit(names_raw, ";", fixed = TRUE)))
+    parts <- parts[nzchar(parts)]
+    for (nm in parts) {
+      key <- normalize_species_key(nm)
+      if (is.na(key) || !nzchar(key)) next
+      sp_rows[[length(sp_rows) + 1L]] <- data.frame(
+        sp_key = key, landiq_code = code, stringsAsFactors = FALSE
+      )
+    }
+  }
+
+  species_to_code <- character(0)
+  if (length(sp_rows)) {
+    sp_df <- bind_rows(sp_rows) %>% distinct(sp_key, landiq_code)
+    sp_df <- sp_df %>% group_by(sp_key) %>% slice(1L) %>% ungroup()
+    species_to_code <- setNames(sp_df$landiq_code, sp_df$sp_key)
+  }
+
+  list(species_to_code = species_to_code)
+}
+
+
+# Map TRY AccSpeciesName to LandIQ code only when the name is in latin_names.
+map_species_to_code <- function(species_vec, species_to_code) {
+  sp_key <- normalize_species_key(species_vec)
+  unname(species_to_code[sp_key])
+}
+
+
+# Read TRY .txt: pool TraitIDs. Prefer StdValue/UnitName so values share TRY's
+# units (we do not convert Orig* ourselves).
+load_try_allocation_releases <- function(dir) {
+  if (!dir.exists(dir)) {
+    stop("TRY allocation dir not found: ", dir, call. = FALSE)
+  }
+  files <- list.files(dir, pattern = "\\.txt$", full.names = TRUE)
+  if (length(files) == 0L) {
+    stop("No TRY allocation .txt files in ", dir, call. = FALSE)
+  }
+  want <- c(
+    "AccSpeciesName", "SpeciesName", "TraitID", "TraitName",
+    "OrigValueStr", "OrigUnitStr", "UnitName", "StdValue",
+    "DatasetID", "ErrorRisk"
+  )
+  cat("Loading TRY allocation releases (", length(files), " file(s))...\n", sep = "")
+  pieces <- lapply(files, function(f) {
+    cat("  ", basename(f), " ...\n", sep = "")
+    hdr <- names(fread(f, sep = "\t", nrows = 0L, quote = ""))
+    sel <- intersect(want, hdr)
+    d <- as.data.frame(fread(
+      f, sep = "\t", quote = "", select = sel,
+      na.strings = c("", "NA"), showProgress = TRUE
+    ))
+    if (!"TraitID" %in% names(d)) return(NULL)
+    d <- d[!is.na(d$TraitID) & nzchar(as.character(d$TraitID)), , drop = FALSE]
+    if (nrow(d) == 0L) return(NULL)
+    d$TraitID <- suppressWarnings(as.numeric(d$TraitID))
+    d <- d[!is.na(d$TraitID) & d$TraitID %in% pool_trait_ids, , drop = FALSE]
+    if (nrow(d) == 0L) return(NULL)
+    if ("ErrorRisk" %in% names(d)) {
+      d$ErrorRisk <- suppressWarnings(as.numeric(d$ErrorRisk))
+    }
+    if ("StdValue" %in% names(d)) {
+      d$StdValue <- suppressWarnings(as.numeric(d$StdValue))
+      d$OrigValueStr <- ifelse(!is.na(d$StdValue), as.character(d$StdValue), d$OrigValueStr)
+    }
+    if (nrow(d) == 0L) return(NULL)
+    if ("UnitName" %in% names(d)) {
+      d$OrigUnitStr <- ifelse(
+        !is.na(d$UnitName) & nzchar(as.character(d$UnitName)),
+        as.character(d$UnitName),
+        d$OrigUnitStr
+      )
+    }
+    if (!"AccSpeciesName" %in% names(d) && "SpeciesName" %in% names(d)) {
+      d$AccSpeciesName <- d$SpeciesName
+    }
+    keep <- intersect(
+      c(
+        "AccSpeciesName", "TraitID", "TraitName", "OrigValueStr", "OrigUnitStr",
+        "DatasetID", "ErrorRisk"
+      ),
+      names(d)
+    )
+    d[, keep, drop = FALSE]
+  })
+  pieces <- pieces[!vapply(pieces, is.null, logical(1))]
+  if (length(pieces) == 0L) {
+    stop("No pool TraitID rows found in TRY allocation .txt files under ", dir, call. = FALSE)
+  }
+  bind_rows(pieces)
+}
+
+
+# Last-resort fine/coarse root mass fractions (relative split of M_root after
+# pool normalize). Rice/row (incl. berries etc. in row): nearly all fine.
+# Woody/hay rely on TRY PFT coverage (no default).
+make_planting_pft_defaults <- function() {
+  split_rows <- function(pft, fine, coarse) {
+    tibble::tibble(
+      PFT = pft,
+      TraitKey = c("2005", "1534"),
+      TraitID = c(2005L, 1534L),
+      TraitName = c("Fine root mass fraction", "Coarse root mass fraction"),
+      mean_obs = c(fine, coarse)
+    )
+  }
+  dplyr::bind_rows(
+    lapply(c("rice", "row"), function(p) split_rows(p, 0.99, 0.01))
+  ) %>%
+    dplyr::mutate(
+      level = "pft",
+      source = "default",
+      class = NA_character_,
+      subclass = NA_character_,
+      crop_desc = NA_character_,
+      sd_obs = NA_real_,
+      n_obs = 0L,
+      n_species = NA_integer_,
+      n_datasets = NA_integer_,
+      mean_species = NA_real_,
+      sd_species_mean = NA_real_,
+      min_species_n_obs = NA_integer_,
+      median_species_n_obs = NA_integer_,
+      max_species_n_obs = NA_integer_,
+      mean_dataset = NA_real_,
+      sd_dataset_mean = NA_real_,
+      min_dataset_n_obs = NA_integer_,
+      median_dataset_n_obs = NA_integer_,
+      max_dataset_n_obs = NA_integer_
+    )
+}
+
+# Curated lit: planting_sources/literature_allocation_traits.csv
+# (subclass|class, source=literature, pool TraitKeys including SLA).
+load_lit_lookup_rows <- function(path = trait_lit_csv) {
+  if (!file.exists(path)) {
+    cat("Literature lookup CSV not found (skipping): ", path, "\n", sep = "")
+    return(tibble())
+  }
+  as.data.frame(fread(path)) %>%
+    mutate(
+      level = as.character(level),
+      source = as.character(dplyr::coalesce(source, "literature")),
+      PFT = as.character(PFT),
+      class = as.character(class),
+      subclass = as.character(subclass),
+      crop_desc = as.character(crop_desc),
+      TraitKey = as.character(TraitKey),
+      TraitID = suppressWarnings(as.numeric(TraitID)),
+      TraitID = ifelse(TraitKey == "SLA", NA_real_, TraitID),
+      TraitName = as.character(TraitName),
+      mean_obs = suppressWarnings(as.numeric(mean_obs)),
+      n_obs = suppressWarnings(as.integer(n_obs))
+    ) %>%
+    filter(
+      level %in% c("subclass", "class"),
+      !is.na(mean_obs),
+      is.finite(mean_obs)
+    )
+}
+
+
+# Aggregate observations at one fallback level (subclass / class|PFT / PFT).
+# mean_obs is what the pool uses; species_/dataset_ columns are diagnostics only.
 summarize_level <- function(df, level, level_id_col) {
   id_sym <- rlang::sym(level_id_col)
 
@@ -222,121 +381,190 @@ summarize_level <- function(df, level, level_id_col) {
 
 dir.create(plant_traits_dir, recursive = TRUE, showWarnings = FALSE)
 
-#### Load LandIQ and TRY master_data
+#### Load LandIQ and TRY allocation releases
 
-cat("Loading LandIQ mapping (is_agricultural only)...\n")
+cat("Loading LandIQ mapping (2021 ag only)...\n")
 mapping <- load_landiq_mapping(landiq_lookup_csv)
 
-cat("Loading master_data...\n")
-obj <- load(master_data_path)
-if (!("master_data" %in% obj)) {
-  stop("Expected object 'master_data' in ", master_data_path)
+cat("Building species->code map from cropcode latin_names...\n")
+code_maps <- load_species_code_maps(mapping)
+cat("  species keys: ", length(code_maps$species_to_code), "\n", sep = "")
+
+try_data <- load_try_allocation_releases(try_allocation_dir)
+cat(
+  "  TRY pool rows: ", nrow(try_data),
+  "; TraitIDs: ", paste(sort(unique(try_data$TraitID)), collapse = ", "), "\n", sep = ""
+)
+
+#### Normalize TRY units and map species string to LandIQ code
+
+# Strip invalid bytes from TRY string columns (occasional non-UTF8).
+scrub_chr <- function(x) {
+  x <- as.character(x)
+  x <- iconv(x, from = "", to = "UTF-8", sub = "")
+  x[is.na(x)] <- NA_character_
+  x
 }
 
-#### Normalize TRY units and map species string to LandIQ crop_desc group
-
-cat("Normalizing values + mapping species->group...\n")
-data_normalized <- master_data %>%
+cat("Normalizing values + mapping species->LandIQ code...\n")
+data_normalized <- try_data %>%
   mutate(
+    AccSpeciesName = scrub_chr(AccSpeciesName),
+    OrigValueStr = scrub_chr(OrigValueStr),
+    OrigUnitStr = scrub_chr(OrigUnitStr),
     value_num = suppressWarnings(as.numeric(OrigValueStr)),
     value_std = mapply(normalize_units, TraitID, value_num, OrigUnitStr),
-    TraitKey = as.character(TraitID),
-    group = map_species_to_group(AccSpeciesName)
+    is_sla = TraitID %in% c(3115L, 3116L, 3117L),
+    TraitKey = ifelse(is_sla, "SLA", as.character(TraitID)),
+    TraitID = ifelse(is_sla, NA_real_, TraitID),
+    TraitName = ifelse(
+      is_sla,
+      "Leaf area per leaf dry mass (specific leaf area, SLA)",
+      TraitName
+    ),
+    landiq_code = map_species_to_code(AccSpeciesName, code_maps$species_to_code),
+    mapped = !is.na(landiq_code)
   ) %>%
+  select(-is_sla) %>%
   filter(!is.na(value_std))
-cat("Rows after normalization (all traits): ", nrow(data_normalized), "\n", sep = "")
 
+n_mapped <- sum(data_normalized$mapped)
+n_unmapped <- sum(!data_normalized$mapped)
+cat("Rows after normalization (pool traits): ", nrow(data_normalized),
+    " (mapped: ", n_mapped, ", unmapped: ", n_unmapped, ")\n", sep = "")
 
-#### Restrict TRY rows to species that map into our LandIQ crop_desc list
+#### Unique-species coverage vs 2021 LandIQ codes
 
-group_to_codes <- mapping %>%
-  select(crop_desc, class, subclass, PFT) %>%
-  distinct()
+sp_cov <- data_normalized %>%
+  distinct(AccSpeciesName, landiq_code, mapped) %>%
+  mutate(match_level = ifelse(mapped, "species", "unmapped"))
 
-sub_df <- data_normalized %>%
-  filter(group != "NA") %>%
-  inner_join(group_to_codes, by = c("group" = "crop_desc"))
+code_cov <- mapping %>%
+  select(landiq_code, crop_desc, PFT, class, subclass, latin_names) %>%
+  left_join(
+    data_normalized %>%
+      filter(mapped) %>%
+      group_by(landiq_code) %>%
+      summarise(
+        n_obs = n(),
+        n_species = n_distinct(AccSpeciesName),
+        n_traits = n_distinct(TraitKey),
+        .groups = "drop"
+      ),
+    by = "landiq_code"
+  ) %>%
+  mutate(
+    n_obs = dplyr::coalesce(n_obs, 0L),
+    n_species = dplyr::coalesce(n_species, 0L),
+    n_traits = dplyr::coalesce(n_traits, 0L),
+    has_latin = nzchar(trimws(dplyr::coalesce(latin_names, ""))),
+    has_try = n_obs > 0L
+  ) %>%
+  arrange(desc(has_try), landiq_code)
 
-# Same joined TRY rows; we summarize them four ways (different grouping keys below).
-class_df <- sub_df
-pft_df <- sub_df
-glob_df <- sub_df %>%
-  mutate(GLOBAL = "GLOBAL")
+write_csv(code_cov, coverage_csv)
+cat("Wrote coverage table: ", coverage_csv, "\n", sep = "")
+cat(
+  "Unique AccSpeciesName: ", n_distinct(data_normalized$AccSpeciesName),
+  " | species-mapped spp: ", sum(sp_cov$match_level == "species"),
+  " | unmapped spp: ", sum(sp_cov$match_level == "unmapped"), "\n", sep = ""
+)
+cat(
+  "LandIQ codes with TRY hits: ", sum(code_cov$has_try),
+  " / ", nrow(code_cov),
+  " | with latin but no TRY: ", sum(code_cov$has_latin & !code_cov$has_try),
+  " | no latin (expected thin): ", sum(!code_cov$has_latin), "\n", sep = ""
+)
 
-# Copy SLA component traits under a single TraitKey so SLA pools with one fallback chain.
-sub_df_sla <- sub_df %>%
-  filter(TraitID %in% sla_component_ids) %>%
-  mutate(TraitKey = sla_pooled_key, TraitID = NA_real_, TraitName = sla_pooled_name)
-class_df_sla <- class_df %>%
-  filter(TraitID %in% sla_component_ids) %>%
-  mutate(TraitKey = sla_pooled_key, TraitID = NA_real_, TraitName = sla_pooled_name)
-pft_df_sla <- pft_df %>%
-  filter(TraitID %in% sla_component_ids) %>%
-  mutate(TraitKey = sla_pooled_key, TraitID = NA_real_, TraitName = sla_pooled_name)
-glob_df_sla <- glob_df %>%
-  filter(TraitID %in% sla_component_ids) %>%
-  mutate(TraitKey = sla_pooled_key, TraitID = NA_real_, TraitName = sla_pooled_name)
+code_to_meta <- mapping %>%
+  select(landiq_code, class, subclass, crop_desc, PFT)
 
-#### Summarize traits at each fallback level (subclass, class x PFT, PFT, global; plus SLA pooled)
+# Class/PFT means come only from species-matched rows (no genus extras)
+mapped_df <- data_normalized %>%
+  filter(mapped) %>%
+  inner_join(code_to_meta, by = "landiq_code")
 
-# Subclass key is first letter of class plus numeric subclass (matches LandIQ code layout).
-sub_df <- sub_df %>% mutate(subclass_id = paste0(class, subclass))
-sub_df_sla <- sub_df_sla %>% mutate(subclass_id = paste0(class, subclass))
+cat("Mapped rows joined to LandIQ: ", nrow(mapped_df), "\n", sep = "")
+
+#### Build level-specific data frames
+
+sub_df <- mapped_df %>% mutate(subclass_id = paste0(class, subclass))
+class_df <- mapped_df %>% mutate(class_pft = paste0(class, "|", PFT))
+pft_df <- mapped_df
+
+#### Summarize traits at each fallback level
+
 cat("Summarizing subclass level...\n")
-tbl_sub <- bind_rows(
-  summarize_level(sub_df, level = "subclass", level_id_col = "subclass_id"),
-  summarize_level(sub_df_sla, level = "subclass", level_id_col = "subclass_id")
-)
-# Class-level table is keyed by class and PFT together (one trait row per class|PFT).
-class_df <- class_df %>% mutate(class_pft = paste0(class, "|", PFT))
-class_df_sla <- class_df_sla %>% mutate(class_pft = paste0(class, "|", PFT))
+tbl_sub <- summarize_level(sub_df, level = "subclass", level_id_col = "subclass_id")
+
 cat("Summarizing class level (by class x PFT)...\n")
-tbl_class <- bind_rows(
-  summarize_level(class_df, level = "class", level_id_col = "class_pft"),
-  summarize_level(class_df_sla, level = "class", level_id_col = "class_pft")
-)
+tbl_class <- summarize_level(class_df, level = "class", level_id_col = "class_pft")
+
 cat("Summarizing PFT level...\n")
-tbl_pft <- bind_rows(
-  summarize_level(pft_df, level = "pft", level_id_col = "PFT"),
-  summarize_level(pft_df_sla, level = "pft", level_id_col = "PFT")
-)
-cat("Summarizing global level...\n")
-tbl_global <- bind_rows(
-  summarize_level(glob_df, level = "global", level_id_col = "GLOBAL"),
-  summarize_level(glob_df_sla, level = "global", level_id_col = "GLOBAL")
-)
+tbl_pft <- summarize_level(pft_df, level = "pft", level_id_col = "PFT")
 
 #### Parse level_id and add LandIQ identity columns for the long output
-
-# summarize_level() only keeps level_id plus trait stats. Below we split that id and
-# left_join LandIQ so each row carries class, subclass, crop_desc, PFT (the same
-# names pool_calculations uses). PFT-only and global levels have no LandIQ code;
-# we set those columns to NA so bind_rows() stacks one consistent schema.
 
 tbl_sub_parsed <- tbl_sub %>%
   mutate(class = sub("^(.)(.*)$", "\\1", level_id),
          subclass = sub("^.(.*)$", "\\1", level_id)) %>%
   left_join(mapping %>% distinct(class, subclass, crop_desc, PFT), by = c("class", "subclass")) %>%
   select(-level_id)
+
 tbl_class_parsed <- tbl_class %>%
   mutate(class = sub("^([^|]+)\\|(.*)$", "\\1", level_id),
          PFT = sub("^([^|]+)\\|(.*)$", "\\2", level_id)) %>%
   left_join(mapping %>% distinct(class, class_desc), by = "class") %>%
   mutate(subclass = NA_character_, crop_desc = class_desc) %>%
   select(-class_desc, -level_id)
+
 tbl_pft_parsed <- tbl_pft %>%
   mutate(PFT = level_id, class = NA_character_, subclass = NA_character_, crop_desc = NA_character_) %>%
   select(-level_id)
-tbl_global_parsed <- tbl_global %>%
-  mutate(class = NA_character_, subclass = NA_character_, crop_desc = NA_character_, PFT = NA_character_) %>%
-  select(-level_id)
 
-planting_lookup_long <- bind_rows(tbl_sub_parsed, tbl_class_parsed, tbl_pft_parsed, tbl_global_parsed) %>%
-  relocate(level, PFT, class, subclass, crop_desc) %>%
-  arrange(level, PFT, class, subclass, TraitID)
+planting_lookup_long <- bind_rows(tbl_sub_parsed, tbl_class_parsed, tbl_pft_parsed) %>%
+  mutate(source = "try")
 
+cat("Loading literature rows from ", basename(trait_lit_csv), "...\n", sep = "")
+lit_rows <- load_lit_lookup_rows(trait_lit_csv)
+cat(
+  "  lit rows: ", nrow(lit_rows),
+  " (subclass ", sum(lit_rows$level == "subclass"),
+  ", class ", sum(lit_rows$level == "class"), ")\n", sep = ""
+)
 
-#### Write RDS and CSV
+planting_lookup_long <- bind_rows(planting_lookup_long, lit_rows)
 
-saveRDS(planting_lookup_long, out_rds)
-write_csv(planting_lookup_long, out_csv)
+# PFT defaults only when TRY/lit has no PFT row for that TraitKey
+has_pft <- planting_lookup_long %>%
+  filter(.data$level == "pft", .data$source %in% c("try", "literature")) %>%
+  mutate(TraitKey = as.character(.data$TraitKey)) %>%
+  distinct(PFT, TraitKey)
+pft_defaults_all <- make_planting_pft_defaults()
+defaults <- pft_defaults_all %>%
+  anti_join(has_pft, by = c("PFT", "TraitKey"))
+cat(
+  "  default PFT root-split rows: ", nrow(defaults),
+  " (skipped ", nrow(pft_defaults_all) - nrow(defaults),
+  " already covered by try/lit)\n", sep = ""
+)
+
+planting_lookup_long <- bind_rows(planting_lookup_long, defaults) %>%
+  mutate(TraitKey = as.character(TraitKey)) %>%
+  relocate(level, source, PFT, class, subclass, crop_desc) %>%
+  arrange(level, PFT, class, subclass, TraitKey)
+
+#### Write CSV
+
+# quote so subclass "**" survives CSV round-trip
+planting_lookup_long <- planting_lookup_long %>%
+  mutate(class = as.character(class), subclass = as.character(subclass))
+fwrite(planting_lookup_long, out_csv, quote = TRUE)
+
+cat("Wrote ", out_csv, " (", nrow(planting_lookup_long), " rows)\n", sep = "")
+cat("Levels: ", paste(names(table(planting_lookup_long$level)), table(planting_lookup_long$level), sep = "=", collapse = ", "), "\n", sep = "")
+cat(
+  "Sources: ",
+  paste(names(table(planting_lookup_long$source)), table(planting_lookup_long$source), sep = "=", collapse = ", "),
+  "\n", sep = ""
+)

@@ -1,15 +1,15 @@
-# Build long-format harvest removal / litter fraction lookup for CCMMF.
+# Build harvest rem/lit lookup for SIPNET harvest events.
 #
-# Starts from agricultural LandIQ codes with a PFT. Uses placeholder fractions
-# by PFT (row, rice, hay, woody, woody_destructive) for AGB_REMOVED, AGB_LITTER,
-# BGB_REMOVED, BGB_LITTER. Duplicates every woody row as woody_destructive so
-# orchards can use a different harvest scenario. Stacks subclass, class, PFT,
-# and global levels so pool_calculations can use the same fallback order as traits.
+# Inputs: subclass rem/lit (harvest_sources/harvest_fractions_long.csv;
+# rebuild with write_harvest_fractions_long.R) and LandIQ crop-code mapping
+# (LandIQ_cropCode_lookup_table.csv, 2021 ag legend).
+# Output: plant_traits/harvest_lookup.csv
+#   levels subclass|class|pft; sources ludemann|holos|swat|ipcc|literature|default
+#   column destructive (FALSE/TRUE): orchard clearing is PFT=woody + destructive=TRUE
 #
-# Writes plant_traits/harvest_lookup_long.rds and .csv under CCMMF_MANAGEMENT.
+# Fallback used by the pool: subclass > class mean > PFT mean > default PFT.
 #
-# Run:
-#   Rscript $CCMMF_CODE/traits/build_harvest_lookup.R
+#   Rscript scripts/traits/build_harvest_lookup.R
 # Env: CCMMF_MANAGEMENT
 
 #### Load packages
@@ -17,105 +17,285 @@
 suppressPackageStartupMessages({
   library(data.table)
   library(dplyr)
-  library(readr)
   library(tibble)
-  library(tidyr)
 })
 
-#### Paths and constants (override root with CCMMF_MANAGEMENT)
+#### Paths and outputs (CCMMF_MANAGEMENT overrides default)
 
 path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
 plant_traits_dir <- file.path(path_management, "plant_traits")
-out_rds <- file.path(plant_traits_dir, "harvest_lookup_long.rds")
-out_csv <- file.path(plant_traits_dir, "harvest_lookup_long.csv")
+harvest_sources <- file.path(plant_traits_dir, "harvest_sources")
+landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+fractions_long_csv <- file.path(harvest_sources, "harvest_fractions_long.csv")
+out_csv <- file.path(plant_traits_dir, "harvest_lookup.csv")
 
-# Agricultural LandIQ rows only; need PFT (same filter as build_planting_lookup.R).
+#### Rem/lit params kept for initialize_harvest_from_lookup()
+
+params <- c("AGB_REMOVED", "AGB_LITTER", "BGB_REMOVED", "BGB_LITTER")
+ok_sources <- c("ludemann", "holos", "swat", "ipcc", "literature")
+
+#### Helper functions
+
+# Keep CLASS+** when crops_included is set (C** citrus, V** vineyards).
 load_landiq_mapping <- function(path = landiq_lookup_csv) {
   d <- as.data.frame(fread(path))
   d %>%
-    mutate(SUBCLASS = as.character(SUBCLASS)) %>%
-    filter(is_agricultural == TRUE, !is.na(PFT)) %>%
-    transmute(class = CLASS, subclass = SUBCLASS, crop_desc = SUBCLASS_desc, class_desc = CLASS_desc, PFT = PFT)
+    mutate(
+      CLASS = as.character(CLASS),
+      SUBCLASS = as.character(SUBCLASS),
+      SUBCLASS_desc = as.character(SUBCLASS_desc),
+      PFT = as.character(PFT),
+      legend_year = suppressWarnings(as.integer(legend_year)),
+      crops_included = if ("crops_included" %in% names(.)) {
+        as.character(crops_included)
+      } else {
+        NA_character_
+      },
+      crops_included = dplyr::coalesce(crops_included, "")
+    ) %>%
+    filter(
+      legend_year == 2021L,
+      is_agricultural == TRUE,
+      !is.na(PFT),
+      PFT != "other",
+      !grepl(
+        "idle|not cropped|new lands prepped",
+        SUBCLASS_desc,
+        ignore.case = TRUE
+      ),
+      SUBCLASS != "**" | nzchar(trimws(crops_included))
+    ) %>%
+    transmute(
+      class = CLASS,
+      subclass = SUBCLASS,
+      crop_desc = SUBCLASS_desc,
+      class_desc = as.character(CLASS_desc),
+      PFT = PFT,
+      landiq_code = paste0(CLASS, SUBCLASS)
+    )
 }
 
-# Until field-derived fractions exist, these are fixed means; sd_obs NA, n_obs 0.
-placeholder_means <- tibble::tribble(
-  ~PFT,                  ~AGB_REMOVED, ~AGB_LITTER, ~BGB_REMOVED, ~BGB_LITTER,
-  "row",                       0.80,       0.20,         0.00,        1.00,
-  "rice",                      0.80,       0.20,         0.00,        1.00,
-  "hay",                       0.75,       0.15,         0.00,        0.00,
-  "woody",                     0.15,       0.015,        0.00,        0.00,
-  "woody_destructive",         0.80,       0.20,         0.00,        1.00
-)
+# Subclass rem/lit from harvest_sources/harvest_fractions_long.csv
+load_fractions_long <- function(path = fractions_long_csv) {
+  stopifnot(file.exists(path))
+  raw <- as.data.frame(fread(
+    path,
+    colClasses = list(character = c("class", "subclass", "PFT", "source"))
+  ))
+  if (!("trait_key" %in% names(raw))) {
+    stop("harvest_fractions_long.csv needs trait_key", call. = FALSE)
+  }
+  raw$param <- as.character(raw$trait_key)
+  if ("value_as_used" %in% names(raw)) {
+    raw$mean_obs <- suppressWarnings(as.numeric(raw$value_as_used))
+  } else if ("value" %in% names(raw)) {
+    raw$mean_obs <- suppressWarnings(as.numeric(raw$value))
+  } else {
+    stop("harvest_fractions_long.csv needs value_as_used or value", call. = FALSE)
+  }
+  raw %>%
+    mutate(
+      source = as.character(source),
+      PFT = as.character(PFT),
+      class = as.character(class),
+      subclass = as.character(subclass),
+      crop_desc = as.character(crop_desc),
+      param = as.character(param),
+      mean_obs = suppressWarnings(as.numeric(mean_obs)),
+      n_obs = suppressWarnings(as.integer(dplyr::coalesce(n_obs, 1L)))
+    ) %>%
+    filter(
+      !is.na(subclass), nzchar(subclass), subclass != "CLASS",
+      param %in% params,
+      !is.na(mean_obs),
+      is.finite(mean_obs),
+      source %in% ok_sources
+    )
+}
 
-#### Build tables by level
+majority_source <- function(s) {
+  s <- s[!is.na(s) & nzchar(as.character(s))]
+  if (!length(s)) stop("aggregation hit empty source", call. = FALSE)
+  names(sort(table(s), decreasing = TRUE))[1]
+}
 
-dir.create(plant_traits_dir, recursive = TRUE, showWarnings = FALSE)
+# PFT rem/lit used only when subclass/class/PFT means are missing.
+# Orchard clearing: PFT=woody + destructive=TRUE.
+make_harvest_pft_defaults <- function() {
+  routine <- tibble::tribble(
+    ~PFT, ~param, ~mean_obs,
+    "row", "AGB_REMOVED", 0.8,
+    "row", "AGB_LITTER", 0.2,
+    "row", "BGB_REMOVED", 0.0,
+    "row", "BGB_LITTER", 1.0,
+    "rice", "AGB_REMOVED", 0.8,
+    "rice", "AGB_LITTER", 0.2,
+    "rice", "BGB_REMOVED", 0.0,
+    "rice", "BGB_LITTER", 1.0,
+    "hay", "AGB_REMOVED", 0.75,
+    "hay", "AGB_LITTER", 0.15,
+    "hay", "BGB_REMOVED", 0.0,
+    "hay", "BGB_LITTER", 1.0,
+    "woody", "AGB_REMOVED", 0.15,
+    "woody", "AGB_LITTER", 0.015,
+    "woody", "BGB_REMOVED", 0.0,
+    "woody", "BGB_LITTER", 0.0
+  ) %>%
+    mutate(destructive = FALSE)
 
-cat("Loading LandIQ mapping (agricultural classes only)...\n")
-mapping <- load_landiq_mapping(landiq_lookup_csv)
+  clearing <- tibble::tribble(
+    ~PFT, ~param, ~mean_obs,
+    "woody", "AGB_REMOVED", 0.9,
+    "woody", "AGB_LITTER", 0.1,
+    "woody", "BGB_REMOVED", 0.5,
+    "woody", "BGB_LITTER", 0.5
+  ) %>%
+    mutate(destructive = TRUE)
 
-subclass_valid <- mapping %>%
-  distinct(class, subclass, crop_desc, PFT)
+  dplyr::bind_rows(routine, clearing) %>%
+    mutate(
+      level = "pft",
+      source = "default",
+      class = NA_character_,
+      subclass = NA_character_,
+      crop_desc = NA_character_,
+      sd_obs = NA_real_,
+      n_obs = 0L
+    ) %>%
+    select(
+      level, source, PFT, destructive, class, subclass, crop_desc,
+      param, mean_obs, sd_obs, n_obs
+    )
+}
 
-# Class level uses CLASS_desc as the human-readable label (subclass left blank).
-class_valid <- mapping %>%
-  distinct(level_id = class, class_desc, PFT) %>%
-  mutate(class = level_id, crop_desc = class_desc, subclass = NA_character_) %>%
-  select(level_id, class, subclass, crop_desc, PFT)
+#### Load LandIQ + fractions long
 
-# Harvest lookup distinguishes full orchard removal (woody_destructive) from partial woody harvest.
-woody_sub <- subclass_valid %>% filter(PFT == "woody") %>% mutate(PFT = "woody_destructive")
-subclass_valid <- bind_rows(subclass_valid, woody_sub)
+cat("Loading LandIQ mapping (2021 ag only)...\n")
+mapping <- load_landiq_mapping()
+cat("  codes: ", nrow(mapping), "\n", sep = "")
 
-woody_cls <- class_valid %>% filter(PFT == "woody") %>% mutate(PFT = "woody_destructive")
-class_valid <- bind_rows(class_valid, woody_cls)
+cat("Loading ", basename(fractions_long_csv), "...\n", sep = "")
+raw <- load_fractions_long()
 
-placeholders <- placeholder_means %>%
-  pivot_longer(-PFT, names_to = "param", values_to = "mean_obs") %>%
-  mutate(sd_obs = NA_real_, n_obs = 0L)
+#### Summarize at each fallback level (subclass / class / pft)
 
-tbl_sub <- subclass_valid %>%
-  left_join(placeholders, by = "PFT", relationship = "many-to-many") %>%
-  mutate(level = "subclass")
+# Subclass: 2021 codes only; refresh crop_desc/PFT from mapping
+cat("Summarizing subclass level...\n")
+tbl_sub <- raw %>%
+  mutate(landiq_code = paste0(class, subclass)) %>%
+  filter(landiq_code %in% mapping$landiq_code) %>%
+  left_join(
+    mapping %>% select(landiq_code, crop_desc_m = crop_desc, PFT_m = PFT),
+    by = "landiq_code"
+  ) %>%
+  mutate(
+    crop_desc = dplyr::coalesce(crop_desc_m, crop_desc),
+    PFT = dplyr::coalesce(PFT_m, PFT),
+    level = "subclass",
+    destructive = FALSE
+  ) %>%
+  group_by(level, PFT, destructive, class, subclass, crop_desc, param) %>%
+  summarise(
+    mean_obs = mean(mean_obs, na.rm = TRUE),
+    n_obs = as.integer(sum(dplyr::coalesce(n_obs, 1L))),
+    source = majority_source(source),
+    .groups = "drop"
+  ) %>%
+  mutate(sd_obs = NA_real_) %>%
+  select(
+    level, source, PFT, destructive, class, subclass, crop_desc,
+    param, mean_obs, sd_obs, n_obs
+  )
 
-tbl_class <- class_valid %>%
-  select(-level_id) %>%
-  left_join(placeholders, by = "PFT", relationship = "many-to-many") %>%
-  mutate(level = "class")
+cat("Summarizing class level (by class x PFT)...\n")
+tbl_class <- tbl_sub %>%
+  group_by(class, PFT, destructive, param) %>%
+  summarise(
+    mean_obs = mean(mean_obs, na.rm = TRUE),
+    n_obs = as.integer(sum(dplyr::coalesce(n_obs, 1L))),
+    source = majority_source(source),
+    .groups = "drop"
+  ) %>%
+  left_join(mapping %>% distinct(class, class_desc), by = "class") %>%
+  mutate(
+    level = "class",
+    subclass = NA_character_,
+    crop_desc = dplyr::coalesce(class_desc, class),
+    sd_obs = NA_real_
+  ) %>%
+  select(
+    level, source, PFT, destructive, class, subclass, crop_desc,
+    param, mean_obs, sd_obs, n_obs
+  )
 
-# PFT-only rows: no spatial code; used when subclass and class both miss.
-tbl_pft <- placeholders %>%
+cat("Summarizing PFT level...\n")
+tbl_pft <- tbl_sub %>%
+  group_by(PFT, destructive, param) %>%
+  summarise(
+    mean_obs = mean(mean_obs, na.rm = TRUE),
+    n_obs = as.integer(sum(dplyr::coalesce(n_obs, 1L))),
+    source = majority_source(source),
+    .groups = "drop"
+  ) %>%
   mutate(
     level = "pft",
     class = NA_character_,
     subclass = NA_character_,
-    crop_desc = NA_character_
-  )
-
-# Global row per param: mean of the placeholder PFT values (still placeholders).
-tbl_global <- placeholders %>%
-  group_by(param) %>%
-  summarise(
-    mean_obs = mean(mean_obs, na.rm = TRUE),
-    sd_obs = NA_real_,
-    n_obs = 0L,
-    .groups = "drop"
-  ) %>%
-  mutate(
-    level = "global",
-    class = NA_character_,
-    subclass = NA_character_,
     crop_desc = NA_character_,
-    PFT = NA_character_
+    sd_obs = NA_real_
+  ) %>%
+  select(
+    level, source, PFT, destructive, class, subclass, crop_desc,
+    param, mean_obs, sd_obs, n_obs
   )
 
-harvest_lookup_long <- bind_rows(tbl_sub, tbl_class, tbl_pft, tbl_global) %>%
-  relocate(level, PFT, class, subclass, crop_desc, param, mean_obs, sd_obs, n_obs) %>%
-  arrange(level, PFT, class, subclass, param)
+harvest_lookup_long <- bind_rows(tbl_sub, tbl_class, tbl_pft)
 
-#### Write outputs
+# Defaults only when no PFT row exists for that PFT x destructive x param
+has_pft <- harvest_lookup_long %>%
+  filter(.data$level == "pft", .data$source != "default") %>%
+  distinct(PFT, destructive, param)
+pft_defaults_all <- make_harvest_pft_defaults()
+defaults <- pft_defaults_all %>%
+  anti_join(has_pft, by = c("PFT", "destructive", "param"))
+cat(
+  "  default PFT rem/lit rows: ", nrow(defaults),
+  " (skipped ", nrow(pft_defaults_all) - nrow(defaults),
+  " already covered)\n", sep = ""
+)
 
-saveRDS(harvest_lookup_long, out_rds)
-write_csv(harvest_lookup_long, out_csv)
+harvest_lookup_long <- bind_rows(harvest_lookup_long, defaults) %>%
+  filter(!is.na(mean_obs), is.finite(mean_obs), PFT != "other") %>%
+  mutate(
+    class = as.character(class),
+    subclass = as.character(subclass),
+    source = as.character(source),
+    destructive = as.logical(destructive)
+  ) %>%
+  relocate(
+    level, source, PFT, destructive, class, subclass, crop_desc,
+    param, mean_obs, sd_obs, n_obs
+  ) %>%
+  arrange(level, PFT, destructive, class, subclass, param)
+
+#### Write CSV
+
+# quote so subclass "**" survives CSV round-trip
+fwrite(harvest_lookup_long, out_csv, quote = TRUE)
+
+cat("Wrote ", out_csv, " (", nrow(harvest_lookup_long), " rows)\n", sep = "")
+cat(
+  "Levels: ",
+  paste(names(table(harvest_lookup_long$level)), table(harvest_lookup_long$level), sep = "=", collapse = ", "),
+  "\n", sep = ""
+)
+cat(
+  "Sources: ",
+  paste(names(table(harvest_lookup_long$source)), table(harvest_lookup_long$source), sep = "=", collapse = ", "),
+  "\n", sep = ""
+)
+cat(
+  "destructive: ",
+  paste(names(table(harvest_lookup_long$destructive)), table(harvest_lookup_long$destructive), sep = "=", collapse = ", "),
+  "\n", sep = ""
+)

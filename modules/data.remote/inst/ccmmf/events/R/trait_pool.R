@@ -3,13 +3,13 @@
 load_events_trait_pool <- function(pool_script) {
   pool_env <- new.env(parent = globalenv())
   source(pool_script, local = pool_env)
-  harvest_rds <- Sys.getenv("HARVEST_LOOKUP_RDS", "")
-  if (nzchar(harvest_rds)) {
-    lk <- pool_env$load_trait_lookup(harvest_path = harvest_rds)
-    message("[pool] Loaded trait lookup (harvest_path=", harvest_rds, ")")
+  harvest_csv <- Sys.getenv("HARVEST_LOOKUP_CSV", Sys.getenv("HARVEST_LOOKUP_RDS", ""))
+  if (nzchar(harvest_csv)) {
+    lk <- pool_env$load_trait_lookup(harvest_path = harvest_csv)
+    message("[pool] Loaded trait lookup (harvest_path=", harvest_csv, ")")
   } else {
     lk <- pool_env$load_trait_lookup()
-    message("[pool] Loaded trait lookup (default planting + harvest RDS paths)")
+    message("[pool] Loaded trait lookup (default planting + harvest CSV paths)")
   }
   list(pool_env = pool_env, lk = lk)
 }

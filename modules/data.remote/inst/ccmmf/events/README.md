@@ -3,12 +3,12 @@
 Builds PEcAn-ready **planting**, **harvest**, **phenology**, and **tillage** event
 files from matched LandIQ-MSLSP assignments (and NDTI for tillage).
 
-Related management layers live in parallel workflows:
+Related management layers live in parallel workflows (Session 3):
 
-- **N fertilization / organic amendments:** Session 3 Part B;
+- **N fertilization / organic amendments:**
   PRs [#4002](https://github.com/PecanProject/pecan/pull/4002),
   [#4003](https://github.com/PecanProject/pecan/pull/4003)
-- **Irrigation:** [Session 4](../documentation/sessions/04-irrigation.md)
+- **Irrigation:** [Session 3](../documentation/sessions/03-fertilizer-irrigation.md)
 
 Full product set: [pipeline.md](../documentation/pipeline.md).
 
@@ -23,7 +23,7 @@ Full product set: [pipeline.md](../documentation/pipeline.md).
 ```mermaid
 flowchart TD
   ASS["assigned_year=Y.parquet\n(matched rows)"] --> LOAD["R/matched_input.R"]
-  LK["plant_traits/*_lookup_long.rds"] --> PL["R/planting_events.R"]
+  LK["plant_traits/planting_lookup.csv\nplant_traits/harvest_lookup.csv"] --> PL["R/planting_events.R"]
   LK --> HV["R/harvest_events.R"]
   LOAD --> PH["R/phenology_events.R"]
   LOAD --> PL
@@ -113,7 +113,7 @@ for (kind in c("planting", "harvest", "phenology", "tillage")) {
 |------|-------------|---------------|
 | **Phenology** | `mslsp_50PCGI`, `mslsp_50PCGD` | Leaf-on / leaf-off dates; `year` = peak calendar year |
 | **Planting** | `mslsp_OGI` | C/N pools via `initialize_planting()` + LAI from `mslsp_EVImax`/`EVIamp` |
-| **Harvest** | row/rice -> `mslsp_OGMn`; hay/woody -> `mslsp_OGD` | Removal fractions via `initialize_harvest_from_lookup()`; skip young woody (`SPECOND=Y` / `CLASS=YP`); **woody destructive** when LandIQ season-2 **CLASS** changes year->year+1 (or mature woody -> young / non-woody). Subclass-only changes ignored. Re-run the prior year after a new LandIQ year exists so look-ahead can fire. |
+| **Harvest** | row/rice -> `mslsp_OGMn`; hay/woody -> `mslsp_OGD` | Removal fractions via `initialize_harvest_from_lookup()`; skip young woody (`SPECOND=Y` / `CLASS=YP`); **orchard clearing** when LandIQ season-2 **CLASS** changes year->year+1 (or mature woody -> young / non-woody): same LandIQ PFT `woody` with `destructive=TRUE` (not a separate PFT). Subclass-only changes ignored. Re-run the prior year after a new LandIQ year exists so look-ahead can fire. |
 | **Tillage** | Minimum NDTI in fallow window | `tillage_metrics()` in `R/tillage_metrics.R` (loaded like planting/harvest helpers) |
 
 Default run (no `event_type` arg) produces **phenology + planting + harvest**, not tillage.
@@ -152,7 +152,8 @@ Column dictionaries: [data/planting_statewide_metadata.csv](data/planting_statew
 [phenology](data/phenology_statewide_metadata.csv),
 [tillage](data/tillage_statewide_metadata.csv).
 LAI / pool rules for planting: [traits/README.md](../traits/README.md).
-`destructive=TRUE` harvest uses `woody_destructive` lookup fractions.
+Clearing harvests look up fractions with `PFT=woody` and `destructive=TRUE`
+(same CSV as routine woody harvest; no `woody_destructive` PFT).
 
 ## Combine multiple event types (PEcAn JSON)
 
@@ -165,9 +166,9 @@ Rscript $CCMMF_CODE/events/combine_management_events_pecan.R \
   --out event_files/combined_events_pecanFormat.json
 ```
 
-Fertilization / NCC and irrigation statewide builders: Session 3 Part B /
-[#4003](https://github.com/PecanProject/pecan/pull/4003) and
-[Session 4](../documentation/sessions/04-irrigation.md).
+Fertilization / NCC and irrigation statewide builders:
+[Session 3](../documentation/sessions/03-fertilizer-irrigation.md) and
+[#4003](https://github.com/PecanProject/pecan/pull/4003).
 
 ## Reference
 
@@ -184,7 +185,7 @@ Fertilization / NCC and irrigation statewide builders: Session 3 Part B /
 | `R/matched_input.R` | Load `assigned_year=Y`, filter matched rows |
 | `R/phenology_events.R` | Leaf-on/off from MSLSP columns |
 | `R/planting_events.R` | C/N pools via `initialize_planting()` |
-| `R/harvest_events.R` | Routine harvest + CLASS-level woody destructive look-ahead |
+| `R/harvest_events.R` | Routine harvest + CLASS-level woody clearing look-ahead (`destructive=TRUE`) |
 | `R/tillage_metrics.R` | Fallow-window NDTI minimum / intensity (`tillage_metrics()`) |
 | `R/tillage_events.R` | NDTI + matched phenology -> tillage events (multi-year) |
 | `R/trait_pool.R` | Load trait lookup + harvest helpers |
@@ -196,4 +197,5 @@ Fertilization / NCC and irrigation statewide builders: Session 3 Part B /
 - Traits: [traits/README.md](../traits/README.md)
 - Tillage track: [tillage/README.md](../tillage/README.md)
 - NDTI extract: [tillage/extract/README.md](../tillage/extract/README.md)
-- Training (tillage): [documentation/sessions/03-tillage-fertilizer.md](../documentation/sessions/03-tillage-fertilizer.md)
+- Training: [Session 2 HLS](../documentation/sessions/02-phenology.md),
+  [Session 3 fert/irrigation](../documentation/sessions/03-fertilizer-irrigation.md)
