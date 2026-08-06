@@ -2,8 +2,11 @@
 
 Column definitions live **with each product component**.
 This page indexes the dictionaries saved in `inst/ccmmf`.
+Session I/O tables in [pipeline.md](pipeline.md) and
+[sessions/](sessions/) link here instead of duplicating full schemas.
+
 Fertilization and irrigation column docs live with those separate workflows
-(not listed in the table below yet).
+([Session 3](sessions/03-fertilizer-irrigation.md); not listed below yet).
 
 | Product | File | Writer component |
 |---------|------|----------------|
@@ -17,3 +20,6 @@ Fertilization and irrigation column docs live with those separate workflows
 | Harvest events | [events/data/harvest_statewide_metadata.csv](../events/data/harvest_statewide_metadata.csv) | events |
 | Phenology events | [events/data/phenology_statewide_metadata.csv](../events/data/phenology_statewide_metadata.csv) | events |
 | Tillage events | [events/data/tillage_statewide_metadata.csv](../events/data/tillage_statewide_metadata.csv) | events |
+
+Trait lookup CSVs (`planting_lookup.csv`, `harvest_lookup.csv`) are documented in
+[traits/README.md](../traits/README.md) (harvest includes `destructive`).

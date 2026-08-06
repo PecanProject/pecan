@@ -1,199 +1,220 @@
-# Training Session 2 - Phenology, planting, and harvest
+# Session 2 - HLS events (phenology and tillage)
 
-This session walks the chain from **Harmonized Landsat Sentinel-2 (HLS)** /
-**Multi-Source Land Surface Phenology (MSLSP)** through LandIQ matching to
-statewide **planting**, **harvest**, and **phenology** event files.
+**Goal:** from Harmonized Landsat Sentinel-2 (HLS) products, build parcel-level
+**planting**, **harvest**, **phenology**, and **tillage** management events for
+the training year pair (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`). Multi-Source
+Land Surface Phenology (MSLSP) drives the first three; Normalized Difference
+Tillage Index (NDTI) drives tillage in fallow windows.
 
-Those three event types are **one slice** of the full management set in
-[pipeline.md](../pipeline.md). Sessions 3-4 cover tillage, fertilization /
-organic amendments, and irrigation.
+**Prerequisite:** complete [Session 1](01-landiq.md). Point
+`CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`. Have NASA Earthdata
+credentials from [Session 0](00-setup.md).
 
-**Navigation:** [Pipeline](../pipeline.md) | [Session 1](01-landiq.md) | [Session 3](03-tillage-fertilizer.md)
+---
 
-**Prerequisites:**
+## Where you are
 
-- Gap-filled product at `$CCMMF_LANDIQ_GAPFILL_PRODUCT` (v4.1.2) with `crops_all_years.parq`
-- MSLSP NetCDF tiles under `$CCMMF_ROOT/data_phen/output/` (from
-  [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology))
-- Parcel-tile map: `hls_parcel_tile_map_v4.1.rds` (geometry-only, built once)
+Same flow as [pipeline.md](../pipeline.md). This session is the HLS box.
 
-**Operator docs** (full runbooks - use during hands-on):
+```mermaid
+flowchart TB
+  subgraph S1["Session 1 - Crop identity"]
+    DWR["LandIQ shapefile"] --> CADWR["Harmonize geometry"]
+    CADWR --> GF["Gap-fill crops + ADOY"]
+  end
+
+  subgraph S2["Session 2 - HLS events - you are here"]
+    HLS["HLS_Phenology\nNetCDF + imagery"] --> MSLSP["MSLSP extract"]
+    GF --> MAP["Parcel-tile map"]
+    MAP --> MSLSP
+    GF --> MSLSP
+    MSLSP --> MATCH["Match seasons to cycles"]
+    GF --> MATCH
+    MATCH --> EV1["Planting + harvest\n+ phenology events"]
+    HLS --> NDTI["NDTI extract"]
+    MAP --> NDTI
+    GF --> NDTI
+    NDTI --> EV2["Tillage events"]
+    MATCH --> EV2
+  end
+
+  subgraph S3["Session 3 - Fert + irrigation"]
+    FERT["N fert + organic"]
+    IRR["Irrigation water-balance"]
+  end
+
+  EV1 --> OUT["Management event files"]
+  EV2 --> OUT
+  FERT --> OUT
+  IRR --> OUT
+```
+
+This session = Session 2 box (MSLSP path, then NDTI / tillage).
+
+**Demo vs statewide:** live path is one HLS tile (`10SDH`). Statewide omits
+`TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE`.
+
+**Operator docs** (algorithms and flags):
 
 | Step | README |
 |------|--------|
-| Pipeline map | [pipeline.md](../pipeline.md) |
 | Parcel-tile map + shared HLS helpers | [hls/README.md](../../hls/README.md) |
 | MSLSP parcel extraction | [phenology/extract/README.md](../../phenology/extract/README.md) |
 | LandIQ <-> MSLSP matching | [phenology/match/README.md](../../phenology/match/README.md) |
-| Date gap-fill (required) | [phenology/gapfill/README.md](../../phenology/gapfill/README.md) |
+| Date gap-fill (required statewide) | [phenology/gapfill/README.md](../../phenology/gapfill/README.md) |
 | Trait lookups | [traits/README.md](../../traits/README.md) |
+| NDTI parcel extraction | [tillage/extract/README.md](../../tillage/extract/README.md) |
 | Statewide events | [events/README.md](../../events/README.md) |
-
-**After this session you can:**
-
-- Explain how tile-level MSLSP NetCDF differs from CCMMF parcel extraction
-- Confirm or rebuild the one-time parcel-tile map
-- Run MSLSP extract and match for a target year (commands in the operator READMEs)
-- Interpret `assigned_by` / `match_outcome` and generate planting / harvest / phenology events
+| Column dictionaries | [metadata.md](../metadata.md) |
 
 ---
 
-## 2.1 Background
-
-**LandIQ** says *what* is growing on each parcel and when peak greenness occurred
-(**ADOY** = adjusted day-of-year of peak NDVI for that season). **MSLSP** gives
-satellite-observed green-up, peak, and senescence timing for up to **two
-phenological cycles** per parcel-year.
-
-Session 2 links those sources, then builds three management event types:
-
-| Event type | Typical date source | What SIPNET gets |
-|------------|---------------------|------------------|
-| **Phenology** | MSLSP 50% green-up / 50% senescence | Leaf-on / leaf-off dates |
-| **Planting** | MSLSP onset of greenness (OGI) | C/N pool initialization (LAI from MSLSP EVI) |
-| **Harvest** | MSLSP senescence metrics (PFT-specific) | Biomass removal fractions |
-
-```mermaid
-flowchart TD
-  LIQ["Gap-filled LandIQ\n(Session 1)"]
-  HLS["HLS_Phenology\nNetCDF per tile"]
-  EXT["MSLSP parcel extract\nphenology/extract"]
-  MATCH["match_landiq_mslsp"]
-  TRAITS["Trait lookups\nplant_traits/"]
-  EVENTS["make_events_statewide"]
-
-  LIQ --> EXT
-  HLS --> EXT
-  EXT --> MATCH
-  LIQ --> MATCH
-  MATCH --> TRAITS
-  TRAITS --> EVENTS
-  MATCH --> EVENTS
-  EVENTS --> OUT["event_files/*_statewide_*.parquet"]
-```
-
----
-
-## 2.2 Upstream MSLSP vs CCMMF extract
-
-MSLSP is computed **per HLS tile** from Landsat + Sentinel-2 reflectance. The
-CCMMF tree **consumes** pre-computed NetCDF; it does not re-run the tile algorithm.
-
-| Layer | Where | Role |
-|-------|-------|------|
-| Core MSLSP algorithm | [aliceni7/MSLSP](https://github.com/aliceni7/MSLSP) | Tile phenology |
-| California HLS workflow | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) | Download, conversion, CA tile list |
-| NetCDF on disk | `$CCMMF_ROOT/data_phen/output/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc` | Input to extract |
-| Parcel extract | [phenology/extract/README.md](../../phenology/extract/README.md) | Area-weight to LandIQ parcels |
-
-Each parcel-year can have up to two cycles (`cycle = 1` dominant, `cycle = 2`
-secondary) with timing metrics such as **OGI** (onset of greenness), **Peak**,
-**OGMn** (onset of minimum greenness), and **50PCGI** / **50PCGD** (50% green-up /
-senescence), plus EVI metrics (**EVImax**, **EVIamp**).
-
----
-
-## 2.3 Hands-on walkthrough
-
-Source the env once, then follow the operator READMEs for flags and schemas.
-Default training years: `TARGET_YEAR=2024`, `PRIOR_YEAR=2023`.
+## 2.1 Env and demo parcel list
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
 export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
+export DEMO_TILE=10SDH
+export ASSIGN_PARCEL_IDS_FILE=$CCMMF_MANAGEMENT/demo/parcels_${DEMO_TILE}.csv
 ```
 
-### A. Parcel-tile map (once)
+| Item | Path / format | Notes |
+|------|---------------|--------|
+| Input | `$CCMMF_LANDIQ_GAPFILL_PRODUCT/crops_all_years.parq` | Gap-filled LandIQ (Session 1) |
+| Input | `$CCMMF_ROOT/data_phen/output/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc` | Tile MSLSP NetCDF ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) |
+| Output (once) | `$CCMMF_MANAGEMENT/hls_parcel_tile_map_v4.1.rds` | Parcel -> tiles; see [hls/README.md](../../hls/README.md) |
+| Output (once) | `$CCMMF_MANAGEMENT/hls_tile_to_parcels_v4.1.rds` | Tile -> parcel ids |
+| Demo list | `$CCMMF_MANAGEMENT/demo/parcels_10SDH.csv` | CSV header `parcel_id` |
 
-Required before MSLSP or NDTI extract. Geometry-only; ag filtering happens later
-inside each extract. Rebuild only if harmonized parcel geometry changed.
+Build the demo CSV after the tile map exists:
+
+```r
+tp <- readRDS(file.path(Sys.getenv("CCMMF_MANAGEMENT"), "hls_tile_to_parcels_v4.1.rds"))
+tile <- "10SDH"
+ids <- sort(unique(as.character(tp[[tile]])))
+out <- file.path(Sys.getenv("CCMMF_MANAGEMENT"), "demo", paste0("parcels_", tile, ".csv"))
+dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
+write.csv(data.frame(parcel_id = ids), out, row.names = FALSE)
+```
+
+Parcel-tile map (once, when geometry changes):
 
 ```bash
-Rscript $CCMMF_CODE/hls/build_hls_parcel_tile_map.R overwrite
+Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R" overwrite
 ```
-
-Details: [hls/README.md](../../hls/README.md).
-
-### B. MSLSP parcel extraction
-
-Why: turn tile NetCDF into one Parquet per year under
-`phenology/raw_mslsp_v4.1.2/`.
-
-```bash
-$PHENOLOGY_ROOT/run_mslsp.sh 2024
-# smoke test one tile: $PHENOLOGY_ROOT/run_mslsp.sh --tile 10SDH --no-combine 2024
-```
-
-Full runbook (prep cache, parallel tiles, verify): [phenology/extract/README.md](../../phenology/extract/README.md).
-
-### C. Match LandIQ seasons to MSLSP cycles
-
-Why: each LandIQ row is **parcel x year x season**; MSLSP is **parcel x year x
-cycle**. Matching assigns seasons to cycles using ADOY inside `[OGI, OGMn]`.
-
-```bash
-$CCMMF_CODE/phenology/match_landiq_mslsp.sh 2024
-```
-
-Output: `phenology/matched_landiq_mslsp_v4.1.2/assigned_year=2024.parquet`.
-Rules, verify, QC: [phenology/match/README.md](../../phenology/match/README.md).
-
-### D. Date gap-fill (after match, required)
-
-Fill missing planting/harvest dates into overlays under `gapfill_dates/`
-(canonical assigned files unchanged). Required before planting/harvest events.
-
-```bash
-$CCMMF_CODE/phenology/run_phenology_date_gapfill.sh 2023 2024
-```
-
-Details: [phenology/gapfill/README.md](../../phenology/gapfill/README.md).
-
-### E. Trait lookups (one-time)
-
-Needed before the first event run; rebuild when TRY or LandIQ mappings change.
-
-```bash
-Rscript $CCMMF_CODE/traits/build_planting_lookup.R
-Rscript $CCMMF_CODE/traits/build_harvest_lookup.R
-```
-
-Details: [traits/README.md](../../traits/README.md).
-
-### F. Statewide planting / harvest / phenology events
-
-```bash
-export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2
-$CCMMF_CODE/events/make_events_statewide.sh 2024
-```
-
-Default run writes phenology + planting + harvest under `event_files/`. Tillage
-is Session 3. Details: [events/README.md](../../events/README.md).
 
 ---
 
-## 2.4 Checklist - process TARGET_YEAR=2024
+## 2.2 MSLSP extract and match
 
-After Session 1 gap-fill for `2023,2024`:
+LandIQ says *what* grows and peak greenness (**ADOY**). MSLSP gives satellite
+green-up, peak, and senescence for up to two cycles per parcel-year.
 
-- [ ] Point `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`
-- [ ] Confirm MSLSP NetCDF for 2024 under `$CCMMF_ROOT/data_phen/output/`
-- [ ] Confirm or build parcel-tile map if geometry changed ([hls/README.md](../../hls/README.md))
-- [ ] Run `$PHENOLOGY_ROOT/run_mslsp.sh 2024`; verify cycle counts
-- [ ] Run `match_landiq_mslsp.sh 2024`; review `assigned_by` counts
-- [ ] Run date gap-fill for 2023 and 2024
-- [ ] Build trait lookups if missing
-- [ ] Run `make_events_statewide.sh 2024`; confirm planting / harvest / phenology parquets
-- [ ] After LandIQ gap-fill improves 2023 labels, rerun 2023 MSLSP + match + date gap-fill + events as needed
+| Event type | Typical date source | What SIPNET gets |
+|------------|---------------------|------------------|
+| Phenology | MSLSP 50% green-up / 50% senescence | Leaf-on / leaf-off |
+| Planting | MSLSP onset of greenness (OGI) | C/N pools (LAI from MSLSP EVI) |
+| Harvest | MSLSP senescence (PFT-specific) | Biomass removal fractions |
 
-Cross-reference: [pipeline.md](../pipeline.md) checklist.
+**A. Extract + combine (demo tile)**
+
+```bash
+TILEWISE_ONE_TILE=$DEMO_TILE $PHENOLOGY_ROOT/run_mslsp.sh 2024
+TILEWISE_ONE_TILE=$DEMO_TILE $PHENOLOGY_ROOT/run_mslsp.sh 2023
+```
+
+| Item | Path / format | Key columns / metadata |
+|------|---------------|------------------------|
+| Input | MSLSP NetCDF under `data_phen/output/` | Per-tile annual NetCDF |
+| Output | `$CCMMF_MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/` | Hive parquet; [mslsp_year_metadata.csv](../../phenology/extract/data/mslsp_year_metadata.csv) |
+
+Prefer `TILEWISE_ONE_TILE` (includes combine). Details:
+[phenology/extract/README.md](../../phenology/extract/README.md).
+
+**B. Match (demo parcels)**
+
+```bash
+ASSIGN_PARCEL_IDS_FILE=$ASSIGN_PARCEL_IDS_FILE \
+  $PHENOLOGY_ROOT/match_landiq_mslsp.sh 2024
+```
+
+| Item | Path / format | Key columns / metadata |
+|------|---------------|------------------------|
+| Output | `phenology/matched_landiq_mslsp_v4.1.2/.../assigned_year=2024.parquet` | `assigned_by`, `match_outcome`; [assigned_year_metadata.csv](../../phenology/match/data/assigned_year_metadata.csv) |
+
+**C. Trait lookups (once)** and **events**
+
+```bash
+# If missing under $CCMMF_MANAGEMENT/plant_traits/:
+Rscript "$CCMMF_CODE/traits/build_planting_lookup.R"
+Rscript "$CCMMF_CODE/traits/build_harvest_lookup.R"
+
+export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+$EVENTS_ROOT/make_events_statewide.sh 2024
+```
+
+| Item | Path / format | Notes |
+|------|---------------|--------|
+| Lookups | `$CCMMF_MANAGEMENT/plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | CSV; harvest has `destructive` (see [traits/README.md](../../traits/README.md)) |
+| Events | `$CCMMF_MANAGEMENT/event_files/{planting,harvest,phenology}_statewide_Y.parquet` | [events metadata](../metadata.md) |
+
+For the demo, skip statewide date gap-fill or gap-fill only the subsample. Statewide:
+
+```bash
+$PHENOLOGY_ROOT/run_mslsp.sh $YEAR
+$PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
+$PHENOLOGY_ROOT/run_phenology_date_gapfill.sh $PRIOR_YEAR $TARGET_YEAR
+$EVENTS_ROOT/make_events_statewide.sh $YEAR
+```
+
+Date gap-fill is required before statewide planting/harvest events.
 
 ---
 
-## 2.5 What comes next
+## 2.3 NDTI and tillage events
 
-- **[Session 3 - Tillage and fertilization](03-tillage-fertilizer.md):** NDTI,
-  tillage events, N-rate lookups, organic amendments.
-- **[Session 4 - Irrigation](04-irrigation.md):** water-balance irrigation events
-  and combining all event types for SIPNET.
-- **Full pipeline spine:** [pipeline.md](../pipeline.md)
+Tillage is **opt-in** (not in the default `make_events_statewide.sh` run). Timing
+comes from NDTI in each fallow window between one season's senescence (`OGMn`)
+and the next green-up (`OGI`), using matched phenology from Sec. 2.2.
+
+**A. NDTI extract (demo)**
+
+```bash
+TILEWISE_ONE_TILE=$DEMO_TILE $TILLAGE_ROOT/run_ndti.sh 2024
+```
+
+| Item | Path / format | Key columns / metadata |
+|------|---------------|------------------------|
+| Input | HLS reflectance under `data_phen/HLS_data_sort/HLS30/$DEMO_TILE/` | Same imagery tree as phenology |
+| Output | `$CCMMF_MANAGEMENT/tillage/ndti_v4.1/year=Y/` | Monthly hive parquet; [ndti_year_metadata.csv](../../tillage/extract/data/ndti_year_metadata.csv) |
+
+**B. Tillage events**
+
+```bash
+export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+$EVENTS_ROOT/make_events_statewide.sh 2024 tillage
+```
+
+| Item | Path / format | Metadata |
+|------|---------------|----------|
+| Output | `$CCMMF_MANAGEMENT/event_files/tillage_statewide_Y.parquet` | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
+
+Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
+
+---
+
+## 2.4 Checklist
+
+**Structure checks (not only "job ran"):**
+
+- [ ] `hls_parcel_tile_map_v4.1.rds` and `parcels_10SDH.csv` exist under `$CCMMF_MANAGEMENT`
+- [ ] MSLSP NetCDF for `10SDH` under `data_phen/output/`; raw extract hive `phenology/raw_mslsp_v4.1.2/year=2024/` opens
+- [ ] Matched parquet has `assigned_by` / `match_outcome`; demo uses `ASSIGN_PARCEL_IDS_FILE`
+- [ ] `planting_lookup.csv` and `harvest_lookup.csv` present; harvest has a `destructive` column
+- [ ] `planting_statewide_2024.parquet`, `harvest_statewide_2024.parquet`, `phenology_statewide_2024.parquet` under `event_files/`
+- [ ] NDTI hive under `tillage/ndti_v4.1/`; `tillage_statewide_2024.parquet` after opt-in run
+- [ ] Spot-check: parquet row count > 0; harvest clearing rows use `PFT=woody` + `destructive=TRUE` (no fake PFT)
+
+**Next:** [Session 3 - Fertilization and irrigation](03-fertilizer-irrigation.md).
+
+**Spine:** [pipeline.md](../pipeline.md).

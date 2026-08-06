@@ -8,6 +8,16 @@ For each new LandIQ release you process a **year pair**: the new year
 (`TARGET_YEAR`, training default **2024**) and the prior year (`PRIOR_YEAR`,
 **2023**). Gap-fill, extracts, matching, and events are refreshed for both.
 
+## Demo (one tile) vs statewide
+
+| Path | What |
+|------|------|
+| **Demo** | HLS tile `10SDH`; match/events limited with `ASSIGN_PARCEL_IDS_FILE` |
+| **Statewide** | All tiles / full match; same steps without the tile / parcel-list limits |
+
+Walk through Sessions 0-3 in order. Each session covers how to build inputs, run,
+and verify outputs for that stage.
+
 ## What you build
 
 | Management event | Plain language | Main source |
@@ -19,7 +29,18 @@ For each new LandIQ release you process a **year pair**: the new year
 | Tillage | Soil/residue disturbance in fallow windows | Normalized Difference Tillage Index (NDTI) |
 | N fertilization | Nitrogen applied to the crop | Crop guidelines / lookups (not satellites) |
 | Organic amendments | Manure, compost, biochar, and similar | Material guidelines / lookups (not satellites) |
-| Irrigation | Water applied over the season | Precip, ET, and soil water balance |
+| Irrigation | Water applied over the season | Precip (CHIRPS), reference ET (CIMIS), soil AWC (SSURGO) |
+
+## Data sources and accounts
+
+| Session | Data | Account needed? |
+|---------|------|-----------------|
+| 1 | LandIQ (CNRA) | No (public download) |
+| 1 | CDL (CropScape / `CropScapeR`) | No API key for the default statewide download |
+| 2 | HLS / MSLSP / NDTI ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) | Yes: [NASA Earthdata Login](https://urs.earthdata.nasa.gov/) |
+| 3 | Fertilization lookups; CHIRPS, CIMIS, SSURGO | Usually public / preprocessed extracts; follow Session 3 if a portal account is required |
+
+Create the Earthdata account in [Session 0](sessions/00-setup.md) before HLS builds.
 
 ## Run order by session
 
@@ -41,57 +62,59 @@ $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
 export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
 ```
 
-### Session 2 - Phenology, planting, and harvest
+### Session 2 - HLS events (phenology and tillage)
 
-Why: green-up and senescence dates drive planting, harvest, and phenology events.
+Why: green-up and senescence dates drive planting, harvest, and phenology
+events; NDTI in fallow windows drives tillage.
 
 | Step | Output | Detail |
 |------|--------|--------|
 | Parcel-tile map (once) | `hls_parcel_tile_map_v4.1.rds` | [hls/README.md](../hls/README.md) |
 | MSLSP extract | `phenology/raw_mslsp_v4.1.2/year=Y/` | [phenology/extract/README.md](../phenology/extract/README.md) |
 | Match LandIQ seasons to MSLSP cycles | `assigned_year=Y.parquet` | [phenology/match/README.md](../phenology/match/README.md) |
-| Trait lookups (one-time) | `plant_traits/*_lookup_long.rds` | [traits/README.md](../traits/README.md) |
+| Trait lookups (one-time) | `plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | [traits/README.md](../traits/README.md) |
 | Date gap-fill | `gapfill_dates/` overlays | [phenology/gapfill/README.md](../phenology/gapfill/README.md) |
 | Planting + harvest + phenology events | `event_files/*_statewide_Y*` | [events/README.md](../events/README.md) |
+| NDTI extract | `tillage/ndti_v4.1/year=Y/` | [tillage/extract/README.md](../tillage/extract/README.md) |
+| Tillage events (opt-in) | `event_files/tillage_statewide_Y*` | [events/README.md](../events/README.md) |
 
 Walkthrough: [sessions/02-phenology.md](sessions/02-phenology.md)
 
 Run MSLSP, match, date gap-fill, and events for **both** `PRIOR_YEAR` and
-`TARGET_YEAR`. Date gap-fill is required before planting/harvest events.
+`TARGET_YEAR`. Date gap-fill is required before statewide planting/harvest
+events. Tillage is a separate opt-in call.
 
 ```bash
+# Demo (one tile):
+TILEWISE_ONE_TILE=10SDH $PHENOLOGY_ROOT/run_mslsp.sh $YEAR
+ASSIGN_PARCEL_IDS_FILE=$CCMMF_MANAGEMENT/demo/parcels_10SDH.csv \
+  $PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
+export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+$EVENTS_ROOT/make_events_statewide.sh $YEAR
+
+TILEWISE_ONE_TILE=10SDH $TILLAGE_ROOT/run_ndti.sh $YEAR
+$EVENTS_ROOT/make_events_statewide.sh $YEAR tillage
+
+# Statewide:
 $PHENOLOGY_ROOT/run_mslsp.sh $YEAR
 $PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
 $PHENOLOGY_ROOT/run_phenology_date_gapfill.sh $PRIOR_YEAR $TARGET_YEAR
 $EVENTS_ROOT/make_events_statewide.sh $YEAR
-```
-
-### Session 3 - Tillage, N fertilization, and organic amendments
-
-Why: tillage is inferred from residue/soil signals in fallow windows; fertilizer
-and organic amendments are not visible from satellites, so they use rate lookups
-and separate statewide workflows.
-
-| Step | Output | Detail |
-|------|--------|--------|
-| NDTI extract | `tillage/ndti_v4.1/year=Y/` | [tillage/extract/README.md](../tillage/extract/README.md) |
-| Tillage events | `event_files/tillage_statewide_Y*` | [events/README.md](../events/README.md) |
-| N fertilization + organic amendments | Parcel N / amendment event parquets | [Session 3](sessions/03-tillage-fertilizer.md); [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003) |
-
-```bash
 $TILLAGE_ROOT/run_ndti.sh $YEAR
 $EVENTS_ROOT/make_events_statewide.sh $YEAR tillage
 ```
 
-### Session 4 - Irrigation
+### Session 3 - Fertilization and irrigation
 
-Why: soil water and irrigation timing strongly affect carbon and nitrogen
-fluxes; irrigation is estimated with a water-balance model (plus LandIQ
-irrigation type), not from the phenology event builder.
+Why: fertilizer and organic amendments are not visible from satellites, so they
+use rate lookups and separate statewide workflows. Irrigation is estimated with
+a water-balance model (plus LandIQ irrigation type), not from the phenology
+event builder.
 
 | Step | Output | Detail |
 |------|--------|--------|
-| Irrigation events | Irrigation event files / parquet | [Session 4](sessions/04-irrigation.md) |
+| N fertilization + organic amendments | Parcel N / amendment event parquets | [Session 3](sessions/03-fertilizer-irrigation.md); [#4002](https://github.com/PecanProject/pecan/pull/4002), [#4003](https://github.com/PecanProject/pecan/pull/4003) |
+| Irrigation events (CHIRPS + CIMIS + SSURGO) | Irrigation event files / parquet | [Session 3](sessions/03-fertilizer-irrigation.md); same parcel list as Session 2 |
 
 ## Picture of the flow
 
@@ -102,7 +125,7 @@ flowchart TB
     CADWR --> GF["Gap-fill crops + ADOY\nlandiq-gapfill"]
   end
 
-  subgraph S2["Session 2 - Phenology / planting / harvest"]
+  subgraph S2["Session 2 - HLS events"]
     HLS["HLS_Phenology\nNetCDF + imagery"] --> MSLSP["MSLSP extract"]
     GF --> MAP["Parcel-tile map"]
     MAP --> MSLSP
@@ -110,18 +133,15 @@ flowchart TB
     MSLSP --> MATCH["Match seasons to cycles"]
     GF --> MATCH
     MATCH --> EV1["Planting + harvest\n+ phenology events"]
-  end
-
-  subgraph S3["Session 3 - Tillage + fertilizer"]
     HLS --> NDTI["NDTI extract"]
     MAP --> NDTI
     GF --> NDTI
     NDTI --> EV2["Tillage events"]
     MATCH --> EV2
-    FERT["N fert + organic\namendments\nPRs 4002 / 4003"]
   end
 
-  subgraph S4["Session 4 - Irrigation"]
+  subgraph S3["Session 3 - Fert + irrigation"]
+    FERT["N fert + organic\namendments\nPRs 4002 / 4003"]
     IRR["Irrigation events\nwater-balance workflow"]
   end
 
@@ -133,17 +153,17 @@ flowchart TB
 
 Planting, harvest, phenology, and tillage events are built in this tree
 (`events/`). N fertilization, organic amendments, and irrigation use **parallel
-workflows** that share the same LandIQ parcels (Sessions 3-4).
+workflows** that share the same LandIQ parcels (Session 3).
 
 ## Checklist (training: 2024 + re-run 2023)
 
 | Session | Done | Checkpoint |
 |---------|------|------------|
-| 0 | [ ] | Env sourced; repos cloned |
-| 1 | [ ] | 2024 in harmonized table; gap-fill `2023,2024`; `CCMMF_LANDIQ_V4` points at gap-filled product |
-| 2 | [ ] | MSLSP + match + date gap-fill + planting/harvest/phenology events for 2023 and 2024 |
-| 3 | [ ] | NDTI + tillage events; fert / organic-amendment workflows reviewed or run |
-| 4 | [ ] | Irrigation workflow reviewed or run |
+| 0 | [ ] | Env sourced; repos cloned; `$CCMMF_ROOT` layout ready |
+| 1 | [ ] | Built harmonized table; ran gap-fill `2023,2024`; `CCMMF_LANDIQ_V4` -> gap-filled product |
+| 2 | [ ] | One-tile MSLSP + match; planting/harvest/phenology events; one-tile NDTI + tillage |
+| 3 | [ ] | Fert / organic reviewed; irrigation on demo parcels reviewed or run |
 
 Code layout: [../README.md](../README.md).
 Env template: [setup_env.sh](setup_env.sh) (see [Session 0](sessions/00-setup.md)).
+Column dictionaries: [metadata.md](metadata.md).

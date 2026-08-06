@@ -12,6 +12,40 @@ your system.
 
 ---
 
+## Where you are
+
+Same flow as [pipeline.md](../pipeline.md). This session prepares the machine
+before Session 1.
+
+```mermaid
+flowchart TB
+  subgraph S0["Session 0 - Setup - you are here"]
+    ENV["conda + repos\n+ data root + setup_env"]
+  end
+
+  subgraph S1["Session 1 - Crop identity"]
+    GF["LandIQ + gap-fill"]
+  end
+
+  subgraph S2["Session 2 - HLS events"]
+    HLS["MSLSP + NDTI events"]
+  end
+
+  subgraph S3["Session 3 - Fert + irrigation"]
+    FI["N rates + water-balance"]
+  end
+
+  ENV --> GF
+  GF --> HLS
+  GF --> FI
+  HLS --> OUT["Management event files"]
+  FI --> OUT
+```
+
+This session = Session 0 (env, repos, `$CCMMF_ROOT`, Earthdata).
+
+---
+
 ## 0.1 Environment
 
 Log into the head node, activate `pecan-all-1.12`, and confirm the R and Python
@@ -58,6 +92,8 @@ continuing.
 
 ---
 
+
+
 ## 0.2 Repos
 
 Clone the PEcAn monitoring branch and `cadwr-landuse`. Set `CCMMF_CODE` to
@@ -92,6 +128,8 @@ cd cadwr-landuse
 
 ---
 
+
+
 ## 0.3 Data root
 
 Create `$CCMMF_ROOT` and `management/` for large inputs and pipeline outputs.
@@ -121,16 +159,22 @@ $CCMMF_ROOT/
     plant_traits/
     tillage/ndti_v4.1/
     fertilization/                            # N / amendment lookups (Session 3)
-    irrigation/                               # CHIRPS/CIMIS/SSURGO extracts + events (Session 4)
+    irrigation/                               # CHIRPS/CIMIS/SSURGO extracts + events (Session 3)
     event_files/
 ```
+
+| Item | Path / format | Notes |
+|------|---------------|--------|
+| Code | `$CCMMF_CODE` -> `modules/data.remote/inst/ccmmf` | Runnable scripts |
+| Data root | `$CCMMF_ROOT` (default `$HOME/ccmmf`) | Large inputs + products |
+| Management hub | `$CCMMF_MANAGEMENT` | Phenology, tillage, traits, event_files |
 
 ---
 
 ## 0.4 `setup_env.sh`
 
 Source once per shell so years and paths match Sec. 0.2-0.3. Defaults are
-**`PRIOR_YEAR=2023`**, **`TARGET_YEAR=2024`**, data root `$HOME/ccmmf`.
+`PRIOR_YEAR=2023`, `TARGET_YEAR=2024`, data root `$HOME/ccmmf`.
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
@@ -151,12 +195,14 @@ source "$CCMMF_CODE/documentation/setup_env.sh"
 
 ---
 
+
+
 ## 0.5 NASA Earthdata
 
 Create an Earthdata Login account and store credentials in `~/.netrc` for HLS
-downloads (Sessions 2-3).
+downloads (Session 2).
 
-1. Create a free account at https://urs.earthdata.nasa.gov/
+1. Create a free account at [https://urs.earthdata.nasa.gov/](https://urs.earthdata.nasa.gov/)
 2. Store credentials in `~/.netrc`:
 
 ```bash
@@ -167,15 +213,17 @@ chmod 0600 ~/.netrc
 
 ---
 
+
+
 ## 0.6 Checklist
 
 - [ ] `pecan-all-1.12` already installed
 - [ ] Activated conda env; R and Python checks pass
-- [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf`
+- [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf` (`ls` shows landiq-gapfill, phenology, events, ...)
 - [ ] Cloned `cadwr-landuse` on `main`
-- [ ] Created `$CCMMF_ROOT` data layout on writable disk
-- [ ] Sourced `setup_env.sh` from the clone
-- [ ] Earthdata account + `~/.netrc` ready (for Sessions 2-3)
+- [ ] `$CCMMF_ROOT` layout exists (`data_raw/`, `management/`, LandIQ dirs)
+- [ ] Sourced `setup_env.sh`; `$PHENOLOGY_ROOT`, `$TILLAGE_ROOT`, `$EVENTS_ROOT` set
+- [ ] Earthdata account + `~/.netrc` ready (for Session 2)
 
 **Next:** [Session 1 - LandIQ](01-landiq.md).
 
