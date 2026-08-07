@@ -43,7 +43,7 @@ flowchart TB
 ## 0.1 Environment
 
 Log into the head node, activate `pecan-all-1.12`, and confirm the R and Python
-package checks pass. Examples below use `$HOME` — change them if the
+package checks pass. Examples below use `$HOME` -- change them if the
 environment lives somewhere else.
 
 ```bash
