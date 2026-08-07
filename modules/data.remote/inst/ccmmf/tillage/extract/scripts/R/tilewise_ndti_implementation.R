@@ -23,11 +23,11 @@ terra::terraOptions(threads = max(1L, suppressWarnings(
 )))
 
 # --- Configuration ---
-ndti_management   <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(ndti_management))) {
+ndti_inventory   <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(ndti_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
-  ndti_management <- file.path(.root, "management")
+  if (!nzchar(.root)) stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
+  ndti_inventory <- file.path(.root, "products", "inventory")
 }
 ndti_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
 if (!nzchar(trimws(ndti_landiq_v4))) {
@@ -37,7 +37,7 @@ if (!nzchar(trimws(ndti_landiq_v4))) {
 }
 ndti_parcels_gpkg <- file.path(ndti_landiq_v4, "parcels-consolidated.gpkg")
 ndti_crops_parq   <- file.path(ndti_landiq_v4, "crops_all_years.parq")
-ndti_cropcode_csv <- file.path(ndti_management, "LandIQ_cropCode_lookup_table.csv")
+ndti_cropcode_csv <- file.path(ndti_inventory, "LandIQ_cropCode_lookup_table.csv")
 ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "")
 if (!nzchar(trimws(ndti_ccmmf_root))) {
   stop("Set CCMMF_ROOT (source documentation/setup_env.sh).")
@@ -45,15 +45,15 @@ if (!nzchar(trimws(ndti_ccmmf_root))) {
 # HLS reflectance for NDTI: phenology tile/images tree (HLS_Phenology layout).
 ndti_imagery_root <- {
   r <- trimws(Sys.getenv("HLS_IMAGERY_ROOT", ""))
-  if (nzchar(r)) r else file.path(ndti_ccmmf_root, "data_phen/HLS_data_sort/HLS30")
+  if (nzchar(r)) r else file.path(ndti_ccmmf_root, "HLS", "imagery")
 }
 if (!nzchar(trimws(ndti_imagery_root))) {
   stop("Set HLS_IMAGERY_ROOT (source documentation/setup_env.sh).")
 }
-ndti_out_root     <- file.path(ndti_management, "tillage/ndti_v4.1")
+ndti_out_root     <- file.path(ndti_inventory, "tillage/ndti_v4.1")
 ndti_parcel_tilemap <- {
   r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(r)) r else file.path(ndti_management, "hls_parcel_tile_map_v4.1.csv")
+  if (nzchar(r)) r else file.path(ndti_inventory, "hls_parcel_tile_map_v4.1.csv")
 }
 
 # --- Path helpers ---

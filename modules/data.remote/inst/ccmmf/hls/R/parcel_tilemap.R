@@ -6,13 +6,13 @@ parcel_tilemap_default_path <- function() {
   if (nzchar(env)) {
     return(env)
   }
-  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
+  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
   if (!nzchar(mgmt)) {
     ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(ccmmf)) {
-      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    mgmt <- file.path(ccmmf, "management")
+    mgmt <- file.path(ccmmf, "products", "inventory")
   }
   file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
 }
@@ -84,13 +84,13 @@ ag_parcel_ids_for_year <- function(year,
     crops_parq <- file.path(landiq, "crops_all_years.parq")
   }
   if (is.null(cropcode_csv) || !nzchar(trimws(cropcode_csv))) {
-    mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
+    mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
     if (!nzchar(mgmt)) {
       root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
       if (!nzchar(root)) {
-        stop("Set MANAGEMENT or CCMMF_ROOT.")
+        stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT.")
       }
-      mgmt <- file.path(root, "management")
+      mgmt <- file.path(root, "products", "inventory")
     }
     cropcode_csv <- file.path(mgmt, "LandIQ_cropCode_lookup_table.csv")
   }

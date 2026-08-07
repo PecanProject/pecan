@@ -61,7 +61,7 @@ LandIQ is California's field-level crop mapping product and the main source of
 subclass, and peak-greenness timing.
 
 This is the only manual download on the LandIQ path. Later steps expect the
-shapefile under `landiq_shapefiles/`.
+shapefile under `$LANDIQ_RAW` (`LandIQ/raw/`).
 
 
 | Item       | Value                                                                                                                                                                                                         |
@@ -75,7 +75,7 @@ Prefer the **shapefile** ZIP. From the same CNRA page, also download the current
 **Land Use Legend** PDF (needed for Sec. 1.2). Unpack so files land here:
 
 ```text
-$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles/
+$LANDIQ_RAW/
   i15_Crop_Mapping_2024_Provisional_SHP/
     i15_Crop_Mapping_2024_Provisional.shp   # + .dbf .shx .prj ...
 ```
@@ -85,8 +85,8 @@ You can unpack by hand into that layout, or run:
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
 
-STAGING=$CCMMF_ROOT/data_raw/cadwr_land_use/_staging_${TARGET_YEAR}
-DROP=$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles
+STAGING=$LANDIQ_ROOT/_staging_${TARGET_YEAR}
+DROP=$LANDIQ_RAW
 FOLDER=i15_Crop_Mapping_${TARGET_YEAR}_Provisional_SHP
 STEM=i15_Crop_Mapping_${TARGET_YEAR}_Provisional
 
@@ -101,7 +101,7 @@ cp -a unpack/${STEM}.* "$DROP/$FOLDER/"
 test -f "$DROP/$FOLDER/${STEM}.shp" && echo "OK: $DROP/$FOLDER/${STEM}.shp"
 ```
 
-Sec. 1.3 points cadwr-landuse at this same `landiq_shapefiles/` folder.
+Sec. 1.3 points cadwr-landuse at this same `$LANDIQ_RAW` folder.
 
 ---
 
@@ -144,9 +144,9 @@ Point the workflow directories as follows:
 
 | Directory                    | Value                                                   |
 | ---------------------------- | ------------------------------------------------------- |
-| Annual LandIQ shapefiles     | `$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles` |
+| Annual LandIQ shapefiles     | `$LANDIQ_RAW` (`LandIQ/raw`)                            |
 | Harmonization working files  | `$CCMMF_ROOT/work/cadwr-landuse/v4.1`                   |
-| Published harmonized product | `$CCMMF_ROOT/LandIQ/harmonized`                         |
+| Published harmonized product | `$LANDIQ_HARMONIZED` (`LandIQ/harmonized`)              |
 
 
 From the cadwr-landuse clone:
@@ -154,7 +154,7 @@ From the cadwr-landuse clone:
 ```bash
 cd "$HOME/src/cadwr-landuse"
 
-export LANDIQ_ROOT_DIR="$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles"
+export LANDIQ_ROOT_DIR="$LANDIQ_RAW"
 export CADWR_WORK_DIR="$CCMMF_ROOT/work/cadwr-landuse/v4.1"
 mkdir -p "$CADWR_WORK_DIR"
 
@@ -181,10 +181,9 @@ python scripts/03b-finalize-crops.py \
 When finished, publish the generated `03-final/` output and point env at it:
 
 ```bash
-mkdir -p "$CCMMF_ROOT/LandIQ/harmonized"
+mkdir -p "$LANDIQ_HARMONIZED"
 cp -a "$CADWR_WORK_DIR/03-final/." \
-  "$CCMMF_ROOT/LandIQ/harmonized/"
-export LANDIQ_HARMONIZED=$CCMMF_ROOT/LandIQ/harmonized
+  "$LANDIQ_HARMONIZED/"
 ```
 
 Confirm the required files and target year before gap-fill:
@@ -224,8 +223,8 @@ Details (flags, provenance, rebuilds):
 
 | Item | Path / format | Key columns / metadata |
 |------|---------------|------------------------|
-| Input | `$CCMMF_ROOT/data_raw/.../landiq_shapefiles/` | Annual shapefiles |
-| Harmonized | `$CCMMF_ROOT/LandIQ/harmonized/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
+| Input | `$LANDIQ_RAW/` | Annual shapefiles |
+| Harmonized | `$LANDIQ_HARMONIZED/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
 | Gap-filled | `$LANDIQ_GAPFILLED` (`LandIQ/gapfilled`) | `CLASS`, `SUBCLASS`, `ADOY`, `subclass_source`, `adoy_source`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
 
 ### Observed vs filled (be explicit)
@@ -273,7 +272,7 @@ QC report and CSVs: [landiq-gapfill/outputs/qc_gapfill_report.md](../../landiq-g
 ## 1.5 Checklist
 
 - [ ] Sourced `setup_env.sh` from the clone
-- [ ] Downloaded and unpacked 2024 provisional shapefile under `landiq_shapefiles/` (`.shp` present)
+- [ ] Downloaded and unpacked 2024 provisional shapefile under `$LANDIQ_RAW/` (`.shp` present)
 - [ ] Confirmed 2024 legend QC against `LandIQ_cropCode_lookup_table.csv` (harmonized codes use `legend_year == 2021`)
 - [ ] Harmonized geometry; published to `$LANDIQ_HARMONIZED` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
 - [ ] Confirmed `year == 2024` rows in `crops_all_years.parq`

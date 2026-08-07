@@ -6,7 +6,7 @@
 # Example:
 #   Rscript smoke_tillage_metrics_year.R 2021 40
 #
-# Env: MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh)
+# Env: PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh)
 #      TILLAGE_BUFFER_YEARS -- same semantics as make_events_statewide.R (default 1)
 
 suppressPackageStartupMessages({
@@ -28,18 +28,18 @@ if (is.na(n_take) || n_take < 1L) {
   n_take <- 30L
 }
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
-source(file.path(path_management, "scripts/phenology/matched_paths.R"))
-matched_dir <- matched_landiq_dir(path_management)
-ndti_root <- file.path(path_management, "tillage", "ndti_v4.1.2")
-tillage_metrics_script <- file.path(path_management, "scripts", "tillage", "tillage_metrics.R")
+source(file.path(path_inventory, "scripts/phenology/matched_paths.R"))
+matched_dir <- matched_landiq_dir(path_inventory)
+ndti_root <- file.path(path_inventory, "tillage", "ndti_v4.1.2")
+tillage_metrics_script <- file.path(path_inventory, "scripts", "tillage", "tillage_metrics.R")
 
 buf <- suppressWarnings(as.integer(Sys.getenv("TILLAGE_BUFFER_YEARS", "1")))
 if (is.na(buf) || buf < 0L) {
@@ -56,7 +56,7 @@ if (!file.exists(tillage_metrics_script)) {
 source(tillage_metrics_script)
 
 # Prefer gapfilled product (same loader as production tillage events).
-source(file.path(path_management, "scripts/events/_lib/tillage_events.R"), local = TRUE)
+source(file.path(path_inventory, "scripts/events/_lib/tillage_events.R"), local = TRUE)
 mslsp_all <- load_assigned_years_for_tillage(load_years, matched_dir)
 if (nrow(mslsp_all) == 0L) {
   stop("[smoke] No assigned/gapfill parquet for load years")

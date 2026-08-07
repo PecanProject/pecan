@@ -15,16 +15,16 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
-hs <- file.path(path_management, "plant_traits/harvest_sources")
-landiq_path <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+hs <- file.path(path_inventory, "plant_traits/harvest_sources")
+landiq_path <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
 woody_csv <- file.path(hs, "woody_harvest_fractions.csv")
 diag_csv <- file.path(hs, "harvest_faostat_curated_wide_diagnostics.csv")
 prov_csv <- file.path(hs, "harvest_faostat_curated_provenance.csv")

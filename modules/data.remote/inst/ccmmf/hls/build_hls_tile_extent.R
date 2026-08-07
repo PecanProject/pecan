@@ -19,13 +19,13 @@ suppressPackageStartupMessages({
 })
 sf::sf_use_s2(FALSE)
 
-path_management   <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory   <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 path_landiq_v4 <- trimws(Sys.getenv("LANDIQ_HARMONIZED", ""))
 if (!nzchar(path_landiq_v4)) {
@@ -43,13 +43,13 @@ if (!nzchar(imagery_root)) {
   if (!nzchar(.root)) {
     stop("Set HLS_IMAGERY_ROOT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  imagery_root <- file.path(.root, "data_phen/HLS_data_sort/HLS30")
+  imagery_root <- file.path(.root, "HLS", "imagery")
 }
 if (!dir.exists(imagery_root)) {
   stop("HLS imagery root not found: ", imagery_root)
 }
 
-path_hls_tile_extent <- file.path(path_management, "hls_tile_extent.rds")
+path_hls_tile_extent <- file.path(path_inventory, "hls_tile_extent.rds")
 
 # --- CRS: use parcels so tile extent matches LandIQ / NDTI ---
 parcels_layer  <- st_layers(path_parcels_gpkg)$name[1]
@@ -121,6 +121,6 @@ tile_polygons <- lapply(paths_one_per_tile, function(p) {
 tile_extent_sf <- st_sf(tile_id = tile_ids, geometry = do.call(c, tile_polygons))
 
 # --- Write ---
-dir.create(path_management, recursive = TRUE, showWarnings = FALSE)
+dir.create(path_inventory, recursive = TRUE, showWarnings = FALSE)
 saveRDS(list(tile_extent_sf = tile_extent_sf, used_crs = used_crs), path_hls_tile_extent)
 message("[hls_tile_extent] wrote ", path_hls_tile_extent)

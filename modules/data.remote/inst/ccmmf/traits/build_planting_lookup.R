@@ -12,7 +12,7 @@
 # TRY PFT > default PFT (programmatic fine/coarse root split when missing).
 #
 #   Rscript scripts/traits/build_planting_lookup.R
-# Env: MANAGEMENT, TRY_ALLOCATION_DIR
+# Env: PRODUCTS_INVENTORY, TRY_ALLOCATION_DIR
 
 #### Load packages
 
@@ -23,25 +23,25 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-#### Paths and outputs (MANAGEMENT and TRY_ALLOCATION_DIR override defaults)
+#### Paths and outputs (PRODUCTS_INVENTORY and TRY_ALLOCATION_DIR override defaults)
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 try_allocation_dir <- Sys.getenv(
   "TRY_ALLOCATION_DIR",
-  file.path(path_management, "plant_traits/TRY_allocation_traits")
+  file.path(path_inventory, "plant_traits/TRY_allocation_traits")
 )
-landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+landiq_lookup_csv <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
 trait_lit_csv <- file.path(
-  path_management, "plant_traits/planting_sources/literature_allocation_traits.csv"
+  path_inventory, "plant_traits/planting_sources/literature_allocation_traits.csv"
 )
-plant_traits_dir <- file.path(path_management, "plant_traits")
+plant_traits_dir <- file.path(path_inventory, "plant_traits")
 out_csv <- file.path(plant_traits_dir, "planting_lookup.csv")
 coverage_csv <- file.path(plant_traits_dir, "planting_lookup_coverage.csv")
 

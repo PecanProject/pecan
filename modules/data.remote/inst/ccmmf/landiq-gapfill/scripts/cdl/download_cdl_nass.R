@@ -10,7 +10,7 @@
 #   CDL_DIR=/path/to/dir Rscript download_cdl_nass.R 2017
 #
 # Env:
-#   CDL_DIR  -- directory to save GeoTIFFs (default: ccmmf/CDL_data)
+#   CDL_DIR  -- directory to save GeoTIFFs (default: ccmmf/CDL)
 #   CCMMF_ROOT -- ccmmf repo root (when CDL_DIR is unset)
 #   LANDIQ_GAPFILL_ROOT -- optional; auto-detected from script path
 # =============================================================================

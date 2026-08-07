@@ -17,7 +17,7 @@ per parcel per HLS scene date.
 - Cloud / shadow / snow masked via Fmask (bits 1, 3, 4).
 
 - **Input:** HLS reflectance + Fmask per scene, gap-filled LandIQ, parcel-tile map.
-- **Output:** `$MANAGEMENT/tillage/ndti_v4.1/year=Y/ndti_year=Y_month=MM.parquet`.
+- **Output:** `$PRODUCTS_INVENTORY/tillage/ndti_v4.1/year=Y/ndti_year=Y_month=MM.parquet`.
 
 This component mirrors the [`landiq-gapfill/`](../../landiq-gapfill/README.md) and
 [`phenology/extract/`](../../phenology/extract/README.md) layout: a bash orchestrator
@@ -65,13 +65,13 @@ tillage/extract/
 
 | Prerequisite | Source |
 |--------------|--------|
-| HLS reflectance + Fmask | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30/` |
+| HLS reflectance + Fmask | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$HLS_IMAGERY_ROOT/` |
 | Gap-filled LandIQ | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
 | Parcel-tile map | `hls_parcel_tile_map_v4.1.csv` - build once; see [hls/README.md](../../hls/README.md) |
 
 Default imagery layout (set by `setup_env.sh`):
 
-`$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30/<tile>/images/<scene>/`
+`$HLS_IMAGERY_ROOT/<tile>/images/<scene>/`
 
 with B06/B07 or B11/B12 + Fmask per scene. Point `HLS_IMAGERY_ROOT` at that tree.
 
@@ -85,18 +85,18 @@ with B06/B07 or B11/B12 + Fmask per scene. Point `HLS_IMAGERY_ROOT` at that tree
 
 ```bash
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
+export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$CCMMF_ROOT/products/inventory}"
 export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"
 export LANDIQ_GAPFILLED="$CCMMF_ROOT/LandIQ/gapfilled"
 
-export HLS_IMAGERY_ROOT=$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30
-export HLS_PARCEL_TILEMAP=$MANAGEMENT/hls_parcel_tile_map_v4.1.csv
+export HLS_IMAGERY_ROOT=$HLS_IMAGERY_ROOT
+export HLS_PARCEL_TILEMAP=$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv
 ```
 
 ### Step 2 - Orchestrator (recommended)
 
 Why: one command runs extract then combine for every month; outputs land under
-`$MANAGEMENT/tillage/ndti_v4.1/`.
+`$PRODUCTS_INVENTORY/tillage/ndti_v4.1/`.
 
 ```bash
 $TILLAGE_ROOT/run_ndti.sh 2024
@@ -145,7 +145,7 @@ modules, the orchestrator may load GDAL/NetCDF/R via `HLS_MODULES`.
 - **One row per `parcel_id x scene date`.** Each monthly Parquet holds every HLS scene
   in that month.
 - **Hive-partitioned dataset:** `open_dataset(".../tillage/ndti_v4.1")` under
-  `$MANAGEMENT`.
+  `$PRODUCTS_INVENTORY`.
 - **Area-weighted** over unmasked pixels, aggregated across tiles for boundary parcels.
 - **Quality:** `n_eff = w_valid^2 / sum_w2`; `na_frac` is masked fraction.
 
@@ -166,7 +166,7 @@ $TILLAGE_ROOT/run_ndti.sh --overwrite 2023
 
 ```r
 library(arrow); library(dplyr); library(lubridate)
-ds <- open_dataset(file.path(Sys.getenv("MANAGEMENT"), "tillage/ndti_v4.1"))
+ds <- open_dataset(file.path(Sys.getenv("PRODUCTS_INVENTORY"), "tillage/ndti_v4.1"))
 
 ds |> mutate(month = month(date)) |> count(year, month) |>
   collect() |> arrange(year, month) |> print(n = 60)
@@ -200,7 +200,7 @@ See [data/ndti_year_metadata.csv](data/ndti_year_metadata.csv) (column dictionar
 
 ## Reference
 
-| Path (under `$MANAGEMENT`) | Contents |
+| Path (under `$PRODUCTS_INVENTORY`) | Contents |
 |----------------------------------|----------|
 | `tillage/ndti_v4.1/year=Y/ndti_year=Y_month=MM.parquet` | Final monthly output |
 | `tillage/ndti_v4.1/year=Y/tilepieces_year=Y_month=MM/` | Per-tile intermediates + `_tile_timing.csv` |

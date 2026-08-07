@@ -5,7 +5,7 @@
 #   Rscript prep_static.R <year>
 #
 # ENV
-#   TILLAGE_ROOT, LANDIQ_GAPFILLED, MANAGEMENT, HLS_PARCEL_TILEMAP,
+#   TILLAGE_ROOT, LANDIQ_GAPFILLED, PRODUCTS_INVENTORY, HLS_PARCEL_TILEMAP,
 #   HLS_IMAGERY_ROOT — see README.md
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])

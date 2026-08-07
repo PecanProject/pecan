@@ -18,7 +18,7 @@
 #   Rscript apply_phenology_gapfill.R <year>
 #   Rscript apply_phenology_gapfill.R 2016 2017 2018
 #
-# ENV: MANAGEMENT, MATCHED_DIR, GAPFILL_MODEL_DIR, GAPFILL_DATES_DIR
+# ENV: PRODUCTS_INVENTORY, MATCHED_DIR, GAPFILL_MODEL_DIR, GAPFILL_DATES_DIR
 #
 # Writes: phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates/assigned_year=Y_gapfilled.parquet
 
@@ -37,21 +37,21 @@ if (any(is.na(years))) {
   stop("Years must be integers")
 }
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 matched_dir <- Sys.getenv(
   "MATCHED_DIR",
-  file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
+  file.path(path_inventory, "phenology", "matched_landiq_mslsp_v4.1.2")
 )
 model_dir <- Sys.getenv(
   "GAPFILL_MODEL_DIR",
-  file.path(path_management, "phenology", "gapfill_models")
+  file.path(path_inventory, "phenology", "gapfill_models")
 )
 out_dir <- Sys.getenv(
   "GAPFILL_DATES_DIR",

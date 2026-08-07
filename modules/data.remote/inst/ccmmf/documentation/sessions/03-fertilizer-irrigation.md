@@ -89,7 +89,7 @@ Those workflow directories are not under `workflows/` on this monitoring tree.
 Use PR #4003 for fert/NCC statewide event runs; use `look_up_ca_n_rate()` here
 to inspect rates.
 
-Source TSVs for harmonization may live under `$MANAGEMENT/fertilization/`.
+Source TSVs for harmonization may live under `$PRODUCTS_INVENTORY/fertilization/`.
 Typical contents:
 
 
@@ -106,14 +106,14 @@ Typical contents:
 
 | Item    | Path / format                                                                                                              | Notes                                 |
 | ------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Input   | Source TSVs under `$MANAGEMENT/fertilization/` (or shipped `data.land`)                                              | Spreadsheet exports                   |
+| Input   | Source TSVs under `$PRODUCTS_INVENTORY/fertilization/` (or shipped `data.land`)                                              | Spreadsheet exports                   |
 | Output  | `ca_n_application_rate.csv`, `ca_organic_amendment_*.csv`                                                                  | Harmonized rates                      |
 | Runtime | `look_up_ca_n_rate()` in `PEcAn.data.land`                                                                                 | Per-crop min/max N                    |
 | Events  | PR [#4003](https://github.com/PecanProject/pecan/pull/4003) `workflows/fertilization-statewide`, `workflows/ncc-statewide` | Statewide fert/NCC event builders |
 
 
 ```bash
-# From $MANAGEMENT/fertilization/ (or the packaged data-raw path):
+# From $PRODUCTS_INVENTORY/fertilization/ (or the packaged data-raw path):
 Rscript harmonize_fertilization_data.R
 ```
 
@@ -159,7 +159,7 @@ paths - same idea as Session 2 restricting to parcels in a demo tile.
 
 **Demo tile (align with Session 2):** build or point `crops_path` (and matching
 parcel-keyed extracts) at the Session 2 parcel list - e.g. rows whose
-`parcel_id` is in `$MANAGEMENT/demo/parcels_${DEMO_TILE}.csv`. Then run
+`parcel_id` is in `$PRODUCTS_INVENTORY/demo/parcels_${DEMO_TILE}.csv`. Then run
 `TAR_PROJECT=all` so the workflow uses that whole subset (do not use `small` /
 `medium`, which would randomly subsample again). Keep other `config_paths.yml`
 inputs consistent with those parcel ids.
@@ -202,7 +202,7 @@ see the unofficial [SIPNET handoff](sipnet-handoff.md).
 **Fertilization / organic**
 
 - [ ] Know lookups (`look_up_ca_n_rate`) vs statewide fert/NCC events (PR #4003)
-- [ ] Know where rates live (`data.land` and/or `$MANAGEMENT/fertilization/`)
+- [ ] Know where rates live (`data.land` and/or `$PRODUCTS_INVENTORY/fertilization/`)
 - [ ] Spot-check a crop with `look_up_ca_n_rate()` (structure: returns min/max N)
 
 **Irrigation**

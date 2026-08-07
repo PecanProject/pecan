@@ -7,16 +7,16 @@
 #   ./run_phenology_date_gapfill.sh 2023 2024
 # Default years if none given: 2016-2023
 #
-# Requires: source your documentation/setup_env.sh first (MANAGEMENT, MATCHED_DIR, ...).
+# Requires: source your documentation/setup_env.sh first (PRODUCTS_INVENTORY, MATCHED_DIR, ...).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 YEARS=("$@")
 if [[ ${#YEARS[@]} -eq 0 ]]; then
   YEARS=(2016 2017 2018 2019 2020 2021 2022 2023)
 fi
-: "${MANAGEMENT:?Set MANAGEMENT (source documentation/setup_env.sh)}"
-export MATCHED_DIR="${MATCHED_DIR:-$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2}"
-export GAPFILL_MODEL_DIR="${GAPFILL_MODEL_DIR:-$MANAGEMENT/phenology/gapfill_models}"
+: "${PRODUCTS_INVENTORY:?Set PRODUCTS_INVENTORY (source documentation/setup_env.sh)}"
+export MATCHED_DIR="${MATCHED_DIR:-$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2}"
+export GAPFILL_MODEL_DIR="${GAPFILL_MODEL_DIR:-$PRODUCTS_INVENTORY/phenology/gapfill_models}"
 mkdir -p "$GAPFILL_MODEL_DIR" "$MATCHED_DIR/gapfill_dates"
 
 echo "=== phenology date gapfill years=${YEARS[*]} $(date) ==="

@@ -7,7 +7,7 @@
 #   Rscript gapfill_phase0_audit.R
 #   RUN_LANDIQ_MSLSP_OVERLAP_ONLY=1 Rscript gapfill_phase0_audit.R   # overlap CSV only (no assigned re-read)
 # Env:
-#   MANAGEMENT or CCMMF_ROOT -- source documentation/setup_env.sh
+#   PRODUCTS_INVENTORY or CCMMF_ROOT -- source documentation/setup_env.sh
 #   MATCHED_DIR -- default phenology/matched_landiq_mslsp_v4.1.2
 #   AUDIT_YEAR_MIN, AUDIT_YEAR_MAX -- default 2016 and 2023
 #   RUN_LANDIQ_MSLSP_OVERLAP -- if "1", also compare parcel sets (slower; run after main audit)
@@ -19,13 +19,13 @@ suppressPackageStartupMessages({
   library(dplyr)
 })
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 .path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
 .script_dir <- tryCatch(
@@ -36,15 +36,15 @@ if (!nzchar(trimws(path_management))) {
   if (nzchar(.path_code)) file.path(.path_code, "phenology", "match", "matched_paths.R") else character(),
   file.path(.script_dir, "matched_paths.R"),
   file.path(.script_dir, "..", "match", "matched_paths.R"),
-  file.path(path_management, "scripts", "phenology", "matched_paths.R")
+  file.path(path_inventory, "scripts", "phenology", "matched_paths.R")
 )
 .matched_paths <- .matched_candidates[file.exists(.matched_candidates)][1L]
 if (is.na(.matched_paths) || !nzchar(.matched_paths)) {
   stop("Could not find matched_paths.R (set CCMMF_CODE or place next to this script).")
 }
 source(.matched_paths)
-matched_dir <- matched_landiq_dir(path_management)
-mslsp_root <- file.path(path_management, "phenology", "raw_mslsp_v4.1.2")
+matched_dir <- matched_landiq_dir(path_inventory)
+mslsp_root <- file.path(path_inventory, "phenology", "raw_mslsp_v4.1.2")
 landiq_parq <- {
   .liq <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
   if (!nzchar(.liq)) {
@@ -66,7 +66,7 @@ dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 if (overlap_only) {
   if (!file.exists(landiq_parq)) stop("LandIQ parquet not found: ", landiq_parq)
-  lookup <- fread(file.path(path_management, "LandIQ_cropCode_lookup_table.csv"))
+  lookup <- fread(file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv"))
   ag_classes <- unique(lookup[is_agricultural == TRUE, trimws(as.character(CLASS))])
   overlap_dt <- NULL
   for (yr in year_min:year_max) {
@@ -238,7 +238,7 @@ if (nrow(py_all) > 0) {
 # --- Optional: LandIQ agricultural parcels vs MSLSP combined parcels ---
 overlap_dt <- NULL
 if (run_overlap && file.exists(landiq_parq)) {
-  lookup <- fread(file.path(path_management, "LandIQ_cropCode_lookup_table.csv"))
+  lookup <- fread(file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv"))
   ag_classes <- unique(lookup[is_agricultural == TRUE, trimws(as.character(CLASS))])
   for (yr in years) {
     mpath <- file.path(mslsp_root, sprintf("year=%d", yr), sprintf("mslsp_year=%d.parquet", yr))

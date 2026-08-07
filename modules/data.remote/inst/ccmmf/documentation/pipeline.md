@@ -150,9 +150,9 @@ Detail: [Session 1](sessions/01-landiq.md),
 ```bash
 # Demo (one tile):
 TILEWISE_ONE_TILE=10SDH $PHENOLOGY_ROOT/run_mslsp.sh $YEAR
-ASSIGN_PARCEL_IDS_FILE=$MANAGEMENT/demo/parcels_10SDH.csv \
+ASSIGN_PARCEL_IDS_FILE=$PRODUCTS_INVENTORY/demo/parcels_10SDH.csv \
   $PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
-export MATCHED_DIR=$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
 $EVENTS_ROOT/make_events_statewide.sh $YEAR
 
 TILEWISE_ONE_TILE=10SDH $TILLAGE_ROOT/run_ndti.sh $YEAR

@@ -3,6 +3,12 @@
 #
 #   source "$CCMMF_CODE/documentation/setup_env.sh"
 #   source ./setup_env.sh
+#
+# Layout roles under $CCMMF_ROOT:
+#   LandIQ / HLS / CDL / climate / soils       -- external inputs
+#   lookups                                    -- small tables
+#   products/inventory                         -- Management Tracking outputs
+#   products/projections                       -- scenario / model outputs
 
 # Workspace roots
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"          # data
@@ -13,22 +19,38 @@ export PRIOR_YEAR="${PRIOR_YEAR:-2023}"
 export TARGET_YEAR="${TARGET_YEAR:-2024}"
 export CCMMF_TARGET_YEAR=$TARGET_YEAR
 
-# Data products ($CCMMF_ROOT)
-export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"           # outputs / lookups
+# --- External inputs ---
 export LANDIQ_ROOT="${LANDIQ_ROOT:-$CCMMF_ROOT/LandIQ}"
+export LANDIQ_RAW="${LANDIQ_RAW:-$LANDIQ_ROOT/raw}"                       # annual shapefiles
 export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$LANDIQ_ROOT/harmonized}"  # gap-fill input
-export LANDIQ_GAPFILLED="${LANDIQ_GAPFILLED:-$LANDIQ_ROOT/gapfilled}"     # inventory product
+export LANDIQ_GAPFILLED="${LANDIQ_GAPFILLED:-$LANDIQ_ROOT/gapfilled}"     # gap-filled crops
 
-# Remote-sensing inputs
-export HLS_IMAGERY_ROOT="$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30"  # HLS GeoTIFF
-export MSLSP_NETCDF_ROOT="$CCMMF_ROOT/data_phen/output"             # MSLSP NetCDF
-export CDL_DIR="$CCMMF_ROOT/CDL_data"                               # CDL GeoTIFF
+export HLS_ROOT="${HLS_ROOT:-$CCMMF_ROOT/HLS}"
+export HLS_IMAGERY_ROOT="${HLS_IMAGERY_ROOT:-$HLS_ROOT/imagery}"          # HLS GeoTIFF
+export MSLSP_NETCDF_ROOT="${MSLSP_NETCDF_ROOT:-$HLS_ROOT/MSLSP}"          # MSLSP NetCDF
+export CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL}"                              # CDL GeoTIFF
 
-# Lookups ($MANAGEMENT)
-export HLS_PARCEL_TILEMAP="$MANAGEMENT/hls_parcel_tile_map_v4.1.csv"
-export MATCHED_DIR="$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2"
+export CLIMATE_ROOT="${CLIMATE_ROOT:-$CCMMF_ROOT/climate}"
+export CHIRPS_DIR="${CHIRPS_DIR:-$CLIMATE_ROOT/CHIRPS}"
+export CIMIS_DIR="${CIMIS_DIR:-$CLIMATE_ROOT/CIMIS}"
 
-# Code components ($CCMMF_CODE)
+export SOILS_ROOT="${SOILS_ROOT:-$CCMMF_ROOT/soils}"
+export SSURGO_DIR="${SSURGO_DIR:-$SOILS_ROOT/SSURGO}"
+
+# --- Lookups ---
+export LOOKUPS_ROOT="${LOOKUPS_ROOT:-$CCMMF_ROOT/lookups}"
+export PLANT_TRAITS_DIR="${PLANT_TRAITS_DIR:-$LOOKUPS_ROOT/plant_traits}"
+export FERTILIZATION_LOOKUPS="${FERTILIZATION_LOOKUPS:-$LOOKUPS_ROOT/fertilization}"
+
+# --- Products ---
+export PRODUCTS_ROOT="${PRODUCTS_ROOT:-$CCMMF_ROOT/products}"
+export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$PRODUCTS_ROOT/inventory}"
+export PRODUCTS_PROJECTIONS="${PRODUCTS_PROJECTIONS:-$PRODUCTS_ROOT/projections}"
+
+export HLS_PARCEL_TILEMAP="${HLS_PARCEL_TILEMAP:-$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv}"
+export MATCHED_DIR="${MATCHED_DIR:-$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2}"
+
+# --- Code components ($CCMMF_CODE) ---
 export LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$CCMMF_CODE/landiq-gapfill}"
 export PHENOLOGY_ROOT="${PHENOLOGY_ROOT:-$CCMMF_CODE/phenology}"
 export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"

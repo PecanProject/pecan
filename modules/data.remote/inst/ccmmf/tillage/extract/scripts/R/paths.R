@@ -24,7 +24,7 @@ hls_shared_lib_dir <- function() {
   }
   ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (nzchar(ccmmf)) {
-    cand <- file.path(ccmmf, "management", "scripts", "hls", "R")
+    cand <- file.path(ccmmf, "products", "inventory", "scripts", "hls", "R")
     if (dir.exists(cand)) {
       return(normalizePath(cand, mustWork = FALSE))
     }
@@ -36,13 +36,13 @@ hls_shared_lib_dir <- function() {
 }
 
 path_ndti_out_root <- function() {
-  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
+  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
   if (!nzchar(mgmt)) {
     ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(ccmmf)) {
-      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    mgmt <- file.path(ccmmf, "management")
+    mgmt <- file.path(ccmmf, "products", "inventory")
   }
   file.path(mgmt, "tillage", "ndti_v4.1")
 }
@@ -52,13 +52,13 @@ path_parcel_tilemap <- function() {
   if (nzchar(env)) {
     return(env)
   }
-  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
+  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
   if (!nzchar(mgmt)) {
     ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(ccmmf)) {
-      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    mgmt <- file.path(ccmmf, "management")
+    mgmt <- file.path(ccmmf, "products", "inventory")
   }
   file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
 }

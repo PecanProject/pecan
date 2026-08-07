@@ -12,7 +12,7 @@
 #   Rscript fit_phenology_gapfill_models.R
 #   GAPFILL_TRAIN_YEARS=2018,2019,2020,2021,2022,2023 Rscript fit_phenology_gapfill_models.R
 #
-# ENV: MANAGEMENT, MATCHED_DIR, GAPFILL_TRAIN_YEARS, GAPFILL_MODEL_DIR
+# ENV: PRODUCTS_INVENTORY, MATCHED_DIR, GAPFILL_TRAIN_YEARS, GAPFILL_MODEL_DIR
 #
 # Writes: phenology/gapfill_models/phenology_date_gapfill_models.rds (+ summaries)
 
@@ -22,21 +22,21 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 matched_dir <- Sys.getenv(
   "MATCHED_DIR",
-  file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
+  file.path(path_inventory, "phenology", "matched_landiq_mslsp_v4.1.2")
 )
 model_dir <- Sys.getenv(
   "GAPFILL_MODEL_DIR",
-  file.path(path_management, "phenology", "gapfill_models")
+  file.path(path_inventory, "phenology", "gapfill_models")
 )
 train_years_raw <- Sys.getenv("GAPFILL_TRAIN_YEARS", "2018,2019,2020,2021,2022,2023")
 train_years <- as.integer(strsplit(train_years_raw, ",", fixed = TRUE)[[1L]])

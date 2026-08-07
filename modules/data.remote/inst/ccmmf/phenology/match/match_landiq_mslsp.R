@@ -28,13 +28,13 @@ suppressPackageStartupMessages({
 })
 
 # --- Configuration ---
-path_management  <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory  <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 path_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
 if (!nzchar(trimws(path_landiq_v4))) {
@@ -44,11 +44,11 @@ if (!nzchar(trimws(path_landiq_v4))) {
   }
   path_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
-combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1.2")
+combined_root     <- file.path(path_inventory, "phenology/raw_mslsp_v4.1.2")
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")
-cropcode_csv      <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
-source(file.path(path_management, "scripts/phenology/matched_paths.R"))
-out_dir           <- matched_landiq_dir(path_management)
+cropcode_csv      <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
+source(file.path(path_inventory, "scripts/phenology/matched_paths.R"))
+out_dir           <- matched_landiq_dir(path_inventory)
 
 eps_eviamp             <- 0.01
 heterogeneity_na_frac_thr <- 0.5

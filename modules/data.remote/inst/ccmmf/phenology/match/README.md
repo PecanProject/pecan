@@ -7,7 +7,7 @@ Matched rows carry MSLSP timing columns (`mslsp_OGI`, `mslsp_Peak`,
 harvest, and phenology events.
 
 - **Input:** gap-filled LandIQ (`crops_all_years.parq`), raw MSLSP parquet for the year.
-- **Output:** `$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/assigned_year=Y.parquet`.
+- **Output:** `$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/assigned_year=Y.parquet`.
 
 ```mermaid
 flowchart LR
@@ -28,7 +28,7 @@ Events: [events/README.md](../../events/README.md).
 |--------------|--------|
 | Gap-filled LandIQ | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
 | Raw MSLSP for the year | [extract/README.md](../extract/README.md) -> `phenology/raw_mslsp_v4.1.2/` |
-| Crop code lookup | `$MANAGEMENT/LandIQ_cropCode_lookup_table.csv` |
+| Crop code lookup | `$PRODUCTS_INVENTORY/LandIQ_cropCode_lookup_table.csv` |
 
 Only agricultural parcels (`is_agricultural == TRUE` in the lookup) are included.
 The matcher uses a **left join**: every ag parcel-year in LandIQ is written to
@@ -81,7 +81,7 @@ Rule-based assignment (no cost matrix):
    prioritized for `MULTIUSE` D/M; then seasons 3/4.
 
 Rows with a successful assignment have `assigned_by == "matched"`. Event generation
-defaults to those rows; when `$MANAGEMENT/phenology/.../gapfill_dates/`
+defaults to those rows; when `$PRODUCTS_INVENTORY/phenology/.../gapfill_dates/`
 overlays exist, `load_matched_for_events()` also admits `"no_mslsp"` / `"no_match"`
 candidates so filled planting/harvest dates can flow into builders.
 
@@ -100,7 +100,7 @@ ADOY is peak greenness timing (adjusted day of year), not emergence or senescenc
 
 ```r
 library(arrow); library(dplyr)
-p <- file.path(Sys.getenv("MANAGEMENT"), "phenology/matched_landiq_mslsp_v4.1.2",
+p <- file.path(Sys.getenv("PRODUCTS_INVENTORY"), "phenology/matched_landiq_mslsp_v4.1.2",
                "assigned_year=2024.parquet")
 assigned <- read_parquet(p)
 

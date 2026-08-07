@@ -5,7 +5,7 @@
 #   Rscript prep_static.R <year> [overwrite]
 #
 # ENV
-#   PHENOLOGY_ROOT, LANDIQ_GAPFILLED, MANAGEMENT, HLS_PARCEL_TILEMAP,
+#   PHENOLOGY_ROOT, LANDIQ_GAPFILLED, PRODUCTS_INVENTORY, HLS_PARCEL_TILEMAP,
 #   MSLSP_NETCDF_ROOT -- see ../README.md (phenology component)
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])

@@ -46,7 +46,7 @@ source "$CCMMF_CODE/documentation/setup_env.sh"
 Required R packages: `dplyr`, `readr`, `tibble`, `tidyr`, `data.table` (conda
 `pecan-all` provides these).
 
-### Input data (under `$MANAGEMENT`)
+### Input data (under `$PRODUCTS_INVENTORY`)
 
 | What | Path |
 |------|------|
@@ -75,7 +75,7 @@ Inputs: `plant_traits/harvest_sources/harvest_fractions_long.csv` (+ in-script
 PFT defaults). Optional rebuild of the long file:
 `write_harvest_fractions_long.R`.
 
-**Outputs** (in `$MANAGEMENT/plant_traits/`):
+**Outputs** (in `$PRODUCTS_INVENTORY/plant_traits/`):
 
 | File | Description |
 |------|-------------|

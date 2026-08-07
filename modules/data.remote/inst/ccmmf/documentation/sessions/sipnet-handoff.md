@@ -18,7 +18,7 @@ outputs for MAGIC inventory runs.
 
 MAGIC annual inventory and scenario runs need agronomic events in the formats
 SIPNET and PEcAn expect. Monitoring writes parcel-year parquet under
-`$MANAGEMENT/event_files/`. Those columns are convenient for the
+`$PRODUCTS_INVENTORY/event_files/`. Those columns are convenient for the
 monitoring pipeline; they are not always identical to the PEcAn events schema.
 This handoff:
 
@@ -32,7 +32,7 @@ Do not re-derive planting/harvest/tillage dates here.
 
 ## Input contract (monitoring)
 
-Typical products from Sessions 2-3 (paths relative to `$MANAGEMENT`):
+Typical products from Sessions 2-3 (paths relative to `$PRODUCTS_INVENTORY`):
 
 | Product | Example path pattern |
 |---------|----------------------|

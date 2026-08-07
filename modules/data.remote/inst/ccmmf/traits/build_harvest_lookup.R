@@ -10,7 +10,7 @@
 # Fallback used by the pool: subclass > class mean > PFT mean > default PFT.
 #
 #   Rscript scripts/traits/build_harvest_lookup.R
-# Env: MANAGEMENT
+# Env: PRODUCTS_INVENTORY
 
 #### Load packages
 
@@ -20,19 +20,19 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-#### Paths and outputs (MANAGEMENT overrides default)
+#### Paths and outputs (PRODUCTS_INVENTORY overrides default)
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
-plant_traits_dir <- file.path(path_management, "plant_traits")
+plant_traits_dir <- file.path(path_inventory, "plant_traits")
 harvest_sources <- file.path(plant_traits_dir, "harvest_sources")
-landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+landiq_lookup_csv <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
 fractions_long_csv <- file.path(harvest_sources, "harvest_fractions_long.csv")
 out_csv <- file.path(plant_traits_dir, "harvest_lookup.csv")
 

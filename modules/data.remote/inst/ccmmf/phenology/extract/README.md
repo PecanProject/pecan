@@ -29,7 +29,7 @@ The extract could be extended to more cycles later if lower-amplitude seasons
 become a priority.
 
 - **Input:** `MSLSP_<tile>_<year>.nc` per MGRS tile, gap-filled LandIQ, parcel-tile map.
-- **Output:** `$MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/mslsp_year=Y.parquet`.
+- **Output:** `$PRODUCTS_INVENTORY/phenology/raw_mslsp_v4.1.2/year=Y/mslsp_year=Y.parquet`.
 
 ```mermaid
 flowchart LR
@@ -75,7 +75,7 @@ phenology/extract/
 
 | Prerequisite | Source |
 |--------------|--------|
-| MSLSP NetCDF per tile | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$CCMMF_ROOT/data_phen/output/` |
+| MSLSP NetCDF per tile | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$MSLSP_NETCDF_ROOT/` |
 | Gap-filled LandIQ | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
 | Parcel-tile map | `hls_parcel_tile_map_v4.1.csv` - build once; see [hls/README.md](../../hls/README.md) |
 
@@ -89,13 +89,13 @@ phenology/extract/
 
 ```bash
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
+export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$CCMMF_ROOT/products/inventory}"
 export PHENOLOGY_ROOT="${PHENOLOGY_ROOT:-$CCMMF_CODE/phenology}"
 export LANDIQ_GAPFILLED="$CCMMF_ROOT/LandIQ/gapfilled"
 
-export MSLSP_NETCDF_ROOT=$CCMMF_ROOT/data_phen/output
-export HLS_PARCEL_TILEMAP=$MANAGEMENT/hls_parcel_tile_map_v4.1.csv
-export MSLSP_TILE_LIST=$CCMMF_ROOT/data_phen/tileLists/tileids.txt
+export MSLSP_NETCDF_ROOT=$MSLSP_NETCDF_ROOT
+export HLS_PARCEL_TILEMAP=$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv
+export MSLSP_TILE_LIST=$CCMMF_ROOT/HLS/tileLists/tileids.txt
 ```
 
 ### Step 2 - Orchestrator (recommended)
@@ -187,7 +187,7 @@ $PHENOLOGY_ROOT/run_mslsp.sh --overwrite 2023
 
 ```r
 library(arrow); library(dplyr)
-ds <- open_dataset(file.path(Sys.getenv("MANAGEMENT"),
+ds <- open_dataset(file.path(Sys.getenv("PRODUCTS_INVENTORY"),
                              "phenology/raw_mslsp_v4.1.2"))
 ds |> filter(year == 2024) |> count(cycle) |> collect()
 ```

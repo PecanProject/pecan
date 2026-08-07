@@ -30,7 +30,7 @@ path_cdl_rasters <- function() {
   if (!nzchar(ccmmf)) {
     stop("Set CDL_DIR or CCMMF_ROOT for CDL GeoTIFF location.")
   }
-  file.path(ccmmf, "CDL_data")
+  file.path(ccmmf, "CDL")
 }
 
 path_landiq_root <- function() {

@@ -28,7 +28,7 @@ Full product set: [pipeline.md](../documentation/pipeline.md).
 - **Input (tillage):** NDTI hive dataset + gapfilled product (else assigned) for
   `(year - buffer):year` (lookback only; next year's job finalizes cross-year
   fallows via `merge_tillage_lookback.sh`).
-- **Output:** `$MANAGEMENT/event_files/*_statewide_{year}.parquet` (+ JSON).
+- **Output:** `$PRODUCTS_INVENTORY/event_files/*_statewide_{year}.parquet` (+ JSON).
 
 ```mermaid
 flowchart TD
@@ -62,8 +62,8 @@ NDTI extract (tillage input): [tillage/extract/README.md](../tillage/extract/REA
 | Prerequisite | Source |
 |--------------|--------|
 | Matched seasons | [phenology/match/README.md](../phenology/match/README.md) |
-| Planting + harvest lookups | [traits/README.md](../traits/README.md) -> `$MANAGEMENT/plant_traits/` |
-| NDTI (tillage only) | [tillage/extract/README.md](../tillage/extract/README.md) -> `$MANAGEMENT/tillage/ndti_v4.1/` |
+| Planting + harvest lookups | [traits/README.md](../traits/README.md) -> `$PRODUCTS_INVENTORY/plant_traits/` |
+| NDTI (tillage only) | [tillage/extract/README.md](../tillage/extract/README.md) -> `$PRODUCTS_INVENTORY/tillage/ndti_v4.1/` |
 
 Build trait lookups once before first planting/harvest event run:
 
@@ -86,7 +86,7 @@ Every type is opt-in; there is no default bundle.
 `event_type`: `phenology` | `planting` | `harvest` | `tillage`.
 
 Why: turn matched seasons (+ trait lookups) into PEcAn event files under
-`$MANAGEMENT/event_files/`.
+`$PRODUCTS_INVENTORY/event_files/`.
 
 ```bash
 $CCMMF_CODE/events/make_events_statewide.sh 2024 phenology
@@ -112,7 +112,7 @@ $CCMMF_CODE/events/merge_tillage_lookback.sh 2023 2024
 
 ```r
 library(arrow)
-od <- file.path(Sys.getenv("MANAGEMENT"), "event_files")
+od <- file.path(Sys.getenv("PRODUCTS_INVENTORY"), "event_files")
 for (kind in c("planting", "harvest", "phenology", "tillage")) {
   f <- file.path(od, paste0(kind, "_statewide_2024.parquet"))
   if (file.exists(f)) message(kind, ": ", nrow(read_parquet(f)), " rows")
@@ -130,7 +130,7 @@ for (kind in c("planting", "harvest", "phenology", "tillage")) {
 
 ### Tillage algorithm (summary)
 
-Tillage needs monthly NDTI under `$MANAGEMENT/tillage/ndti_v4.1/` and
+Tillage needs monthly NDTI under `$PRODUCTS_INVENTORY/tillage/ndti_v4.1/` and
 matched seasons. Loads NDTI for `(year - TILLAGE_BUFFER_YEARS):year` (default
 buffer 1). Cross-year fallow amends are folded in with
 `merge_tillage_lookback.sh`.
@@ -149,7 +149,7 @@ Core function: [`R/tillage_metrics.R`](R/tillage_metrics.R). Runner: [`R/tillage
 
 ## Outputs per year
 
-| File (under `$MANAGEMENT/event_files/`) | Description |
+| File (under `$PRODUCTS_INVENTORY/event_files/`) | Description |
 |-----------------------------------------------|-------------|
 | `planting_statewide_{year}.parquet` / `.json` | Planting events with C/N pools |
 | `harvest_statewide_{year}.parquet` / `.json` | Harvest removal fractions |
@@ -187,7 +187,7 @@ Fertilization / NCC and irrigation statewide builders:
 
 ## Reference
 
-| Path (under `$MANAGEMENT`) | Contents |
+| Path (under `$PRODUCTS_INVENTORY`) | Contents |
 |----------------------------------|----------|
 | `event_files/*_statewide_{year}.parquet` | Event outputs |
 

@@ -13,15 +13,15 @@ if (!nzchar(trimws(mslsp_landiq_v4))) {
   if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
   mslsp_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
-mslsp_management   <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(mslsp_management))) {
+mslsp_inventory   <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(mslsp_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
-  mslsp_management <- file.path(.root, "management")
+  if (!nzchar(.root)) stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
+  mslsp_inventory <- file.path(.root, "products", "inventory")
 }
 mslsp_parcels_gpkg <- file.path(mslsp_landiq_v4, "parcels-consolidated.gpkg")
 mslsp_crops_parq   <- file.path(mslsp_landiq_v4, "crops_all_years.parq")
-mslsp_cropcode_lookup <- file.path(mslsp_management, "LandIQ_cropCode_lookup_table.csv")
+mslsp_cropcode_lookup <- file.path(mslsp_inventory, "LandIQ_cropCode_lookup_table.csv")
 mslsp_netcdf_root <- {
   r <- trimws(Sys.getenv("MSLSP_NETCDF_ROOT", Sys.getenv("mslsp_new_base", "")))
   if (nzchar(r)) {
@@ -29,13 +29,13 @@ mslsp_netcdf_root <- {
   } else {
     .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(.root)) stop("Set MSLSP_NETCDF_ROOT or CCMMF_ROOT.")
-    file.path(.root, "data_phen/output")
+    file.path(.root, "HLS", "MSLSP")
   }
 }
-mslsp_out_root     <- file.path(mslsp_management, "phenology/raw_mslsp_v4.1.2")
+mslsp_out_root     <- file.path(mslsp_inventory, "phenology/raw_mslsp_v4.1.2")
 mslsp_parcel_tilemap <- {
   r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(r)) r else file.path(mslsp_management, "hls_parcel_tile_map_v4.1.csv")
+  if (nzchar(r)) r else file.path(mslsp_inventory, "hls_parcel_tile_map_v4.1.csv")
 }
 
 mslsp_metrics   <- c("OGI", "50PCGI", "OGMx", "Peak", "OGD", "50PCGD", "OGMn",

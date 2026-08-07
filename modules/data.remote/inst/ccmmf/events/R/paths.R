@@ -26,13 +26,13 @@ events_pkg_root <- function() {
 }
 
 events_paths <- function() {
-  path_management <- trimws(Sys.getenv("MANAGEMENT", ""))
-  if (!nzchar(path_management)) {
+  path_inventory <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
+  if (!nzchar(path_inventory)) {
     root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(root)) {
-      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    path_management <- file.path(root, "management")
+    path_inventory <- file.path(root, "products", "inventory")
   }
   path_landiq <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
   if (!nzchar(path_landiq)) {
@@ -48,28 +48,28 @@ events_paths <- function() {
     traits_root <- file.path(path_code, "traits")
   }
   if (!nzchar(traits_root)) {
-    traits_root <- file.path(path_management, "scripts", "traits")
+    traits_root <- file.path(path_inventory, "scripts", "traits")
   }
   events_root <- events_pkg_root()
   tillage_metrics_script <- file.path(events_root, "R", "tillage_metrics.R")
   if (!file.exists(tillage_metrics_script)) {
-    tillage_metrics_script <- file.path(path_management, "scripts", "tillage", "tillage_metrics.R")
+    tillage_metrics_script <- file.path(path_inventory, "scripts", "tillage", "tillage_metrics.R")
   }
   list(
-    management = path_management,
+    inventory = path_inventory,
     landiq_dir = path_landiq,
     landiq_crops = file.path(path_landiq, "crops_all_years.parq"),
-    cropcode_csv = file.path(path_management, "LandIQ_cropCode_lookup_table.csv"),
+    cropcode_csv = file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv"),
     matched_dir = {
       md <- trimws(Sys.getenv("MATCHED_DIR", ""))
-      if (nzchar(md)) md else file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
+      if (nzchar(md)) md else file.path(path_inventory, "phenology", "matched_landiq_mslsp_v4.1.2")
     },
     pool_script = file.path(traits_root, "pool_calculations_from_lookup.R"),
     tillage_metrics_script = tillage_metrics_script,
-    ndti_root = file.path(path_management, "tillage", "ndti_v4.1.2"),
+    ndti_root = file.path(path_inventory, "tillage", "ndti_v4.1.2"),
     out_dir = {
       od <- trimws(Sys.getenv("EVENT_OUTPUT_DIR", ""))
-      if (nzchar(od)) od else file.path(path_management, "event_files_v4.1.2")
+      if (nzchar(od)) od else file.path(path_inventory, "event_files_v4.1.2")
     }
   )
 }

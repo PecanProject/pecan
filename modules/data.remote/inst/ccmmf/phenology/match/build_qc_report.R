@@ -18,13 +18,13 @@ suppressPackageStartupMessages({
   library(arrow)
 })
 
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 .path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
 .script_dir <- tryCatch(
@@ -35,14 +35,14 @@ if (!nzchar(trimws(path_management))) {
   if (nzchar(.path_code)) file.path(.path_code, "phenology", "match", "matched_paths.R") else character(),
   file.path(.script_dir, "matched_paths.R"),
   file.path(.script_dir, "..", "match", "matched_paths.R"),
-  file.path(path_management, "scripts", "phenology", "matched_paths.R")
+  file.path(path_inventory, "scripts", "phenology", "matched_paths.R")
 )
 .matched_paths <- .matched_candidates[file.exists(.matched_candidates)][1L]
 if (is.na(.matched_paths) || !nzchar(.matched_paths)) {
   stop("Could not find matched_paths.R (set CCMMF_CODE or place next to this script).")
 }
 source(.matched_paths)
-matched_dir    <- matched_landiq_dir(path_management)
+matched_dir    <- matched_landiq_dir(path_inventory)
 report_dir     <- if (exists("REPORT_DIR", envir = .GlobalEnv)) get("REPORT_DIR", envir = .GlobalEnv) else matched_dir
 report_years   <- if (exists("REPORT_YEARS", envir = .GlobalEnv)) get("REPORT_YEARS", envir = .GlobalEnv) else NULL
 

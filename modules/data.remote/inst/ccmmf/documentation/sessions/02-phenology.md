@@ -81,15 +81,15 @@ This session = Session 2 box (MSLSP path, then NDTI / tillage).
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
 export DEMO_TILE=10SDH
-export ASSIGN_PARCEL_IDS_FILE=$MANAGEMENT/demo/parcels_${DEMO_TILE}.csv
+export ASSIGN_PARCEL_IDS_FILE=$PRODUCTS_INVENTORY/demo/parcels_${DEMO_TILE}.csv
 ```
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
 | Input | `$LANDIQ_GAPFILLED/crops_all_years.parq` | Gap-filled LandIQ (Session 1) |
-| Input | `$CCMMF_ROOT/data_phen/output/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc` | Tile MSLSP NetCDF ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) |
-| Output (once) | `$MANAGEMENT/hls_parcel_tile_map_v4.1.csv` | Parcel -> tiles; see [hls/README.md](../../hls/README.md) |
-| Demo list | `$MANAGEMENT/demo/parcels_10SDH.csv` | CSV header `parcel_id` |
+| Input | `$MSLSP_NETCDF_ROOT/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc` | Tile MSLSP NetCDF ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) |
+| Output (once) | `$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv` | Parcel -> tiles; see [hls/README.md](../../hls/README.md) |
+| Demo list | `$PRODUCTS_INVENTORY/demo/parcels_10SDH.csv` | CSV header `parcel_id` |
 
 Build the demo CSV after the tile map exists (or run `scripts/demo/write_demo_parcel_list.R`):
 
@@ -97,7 +97,7 @@ Build the demo CSV after the tile map exists (or run `scripts/demo/write_demo_pa
 tp <- read_tile_to_parcels()  # from hls/R/parcel_tilemap.R
 tile <- "10SDH"
 ids <- sort(unique(as.character(tp[[tile]])))
-out <- file.path(Sys.getenv("MANAGEMENT"), "demo", paste0("parcels_", tile, ".csv"))
+out <- file.path(Sys.getenv("PRODUCTS_INVENTORY"), "demo", paste0("parcels_", tile, ".csv"))
 dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
 write.csv(data.frame(parcel_id = ids), out, row.names = FALSE)
 ```
@@ -154,8 +154,8 @@ TILEWISE_ONE_TILE=$DEMO_TILE $PHENOLOGY_ROOT/run_mslsp.sh 2023
 
 | Item | Path / format | Key columns / metadata |
 |------|---------------|------------------------|
-| Input | MSLSP NetCDF under `data_phen/output/` | Per-tile annual NetCDF |
-| Output | `$MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/` | Hive parquet; [mslsp_year_metadata.csv](../../phenology/extract/data/mslsp_year_metadata.csv) |
+| Input | MSLSP NetCDF under `HLS/MSLSP/` | Per-tile annual NetCDF |
+| Output | `$PRODUCTS_INVENTORY/phenology/raw_mslsp_v4.1.2/year=Y/` | Hive parquet; [mslsp_year_metadata.csv](../../phenology/extract/data/mslsp_year_metadata.csv) |
 
 Prefer `TILEWISE_ONE_TILE` (includes combine). Details:
 [phenology/extract/README.md](../../phenology/extract/README.md).
@@ -174,18 +174,18 @@ ASSIGN_PARCEL_IDS_FILE=$ASSIGN_PARCEL_IDS_FILE \
 **C. Trait lookups (once)** and **events**
 
 ```bash
-# If missing under $MANAGEMENT/plant_traits/:
+# If missing under $PRODUCTS_INVENTORY/plant_traits/:
 Rscript "$CCMMF_CODE/traits/build_planting_lookup.R"
 Rscript "$CCMMF_CODE/traits/build_harvest_lookup.R"
 
-export MATCHED_DIR=$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
 $EVENTS_ROOT/make_events_statewide.sh 2024
 ```
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
-| Lookups | `$MANAGEMENT/plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | CSV; harvest has `destructive` (see [traits/README.md](../../traits/README.md)) |
-| Events | `$MANAGEMENT/event_files/{planting,harvest,phenology}_statewide_Y.parquet` (+ `.json`) | [events metadata](../metadata.md) |
+| Lookups | `$PRODUCTS_INVENTORY/plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | CSV; harvest has `destructive` (see [traits/README.md](../../traits/README.md)) |
+| Events | `$PRODUCTS_INVENTORY/event_files/{planting,harvest,phenology}_statewide_Y.parquet` (+ `.json`) | [events metadata](../metadata.md) |
 
 For the demo, skip statewide date gap-fill or gap-fill only the subsample. Statewide:
 
@@ -214,19 +214,19 @@ TILEWISE_ONE_TILE=$DEMO_TILE $TILLAGE_ROOT/run_ndti.sh 2024
 
 | Item | Path / format | Key columns / metadata |
 |------|---------------|------------------------|
-| Input | HLS reflectance under `data_phen/HLS_data_sort/HLS30/$DEMO_TILE/` | Same imagery tree as phenology |
-| Output | `$MANAGEMENT/tillage/ndti_v4.1/year=Y/` | Monthly hive parquet; [ndti_year_metadata.csv](../../tillage/extract/data/ndti_year_metadata.csv) |
+| Input | HLS reflectance under `HLS/imagery/$DEMO_TILE/` | Same imagery tree as phenology |
+| Output | `$PRODUCTS_INVENTORY/tillage/ndti_v4.1/year=Y/` | Monthly hive parquet; [ndti_year_metadata.csv](../../tillage/extract/data/ndti_year_metadata.csv) |
 
 **B. Tillage events**
 
 ```bash
-export MATCHED_DIR=$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
 $EVENTS_ROOT/make_events_statewide.sh 2024 tillage
 ```
 
 | Item | Path / format | Metadata |
 |------|---------------|----------|
-| Output | `$MANAGEMENT/event_files/tillage_statewide_Y.parquet` (+ `.json`) | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
+| Output | `$PRODUCTS_INVENTORY/event_files/tillage_statewide_Y.parquet` (+ `.json`) | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
 
 Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 
@@ -236,8 +236,8 @@ Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 
 **Structure checks (not only "job ran"):**
 
-- [ ] `hls_parcel_tile_map_v4.1.csv` and `parcels_10SDH.csv` exist under `$MANAGEMENT`
-- [ ] MSLSP NetCDF for `10SDH` under `data_phen/output/`; raw extract hive `phenology/raw_mslsp_v4.1.2/year=2024/` opens
+- [ ] `hls_parcel_tile_map_v4.1.csv` and `parcels_10SDH.csv` exist under `$PRODUCTS_INVENTORY`
+- [ ] MSLSP NetCDF for `10SDH` under `HLS/MSLSP/`; raw extract hive `phenology/raw_mslsp_v4.1.2/year=2024/` opens
 - [ ] Matched parquet has `assigned_by` / `match_outcome`; demo uses `ASSIGN_PARCEL_IDS_FILE`
 - [ ] `planting_lookup.csv` and `harvest_lookup.csv` present; harvest has a `destructive` column
 - [ ] `planting_statewide_2024.parquet` / `.json`, `harvest_statewide_2024.parquet` / `.json`, `phenology_statewide_2024.parquet` / `.json` under `event_files/`

@@ -18,23 +18,23 @@ suppressPackageStartupMessages({
 
 #### Paths and configuration
 
-path_management     <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory     <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
-plant_traits_dir    <- file.path(path_management, "plant_traits")
+plant_traits_dir    <- file.path(path_inventory, "plant_traits")
 planting_lookup_csv <- file.path(plant_traits_dir, "planting_lookup.csv")
 harvest_lookup_csv <- file.path(plant_traits_dir, "harvest_lookup.csv")
-landiq_lookup_csv <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")
+landiq_lookup_csv <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
 
 # local=TRUE so compute_lai_from_mslsp lands in the same env as this script
 # (events load this via source(..., local = pool_env)).
 source(
-  file.path(path_management, "scripts/traits/lai_from_mslsp.R"),
+  file.path(path_inventory, "scripts/traits/lai_from_mslsp.R"),
   local = TRUE
 )
 

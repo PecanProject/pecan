@@ -8,7 +8,7 @@
 #
 # Run build_hls_tile_extent.R first.
 #
-# Outputs (in MANAGEMENT):
+# Outputs (in PRODUCTS_INVENTORY):
 #   hls_parcel_tile_map_v4.1.csv         parcel_id, tileIDs, n_tiles
 #   hls_tile_parcel_counts_v4.1.csv      tile_id, n_parcels (static geometry counts)
 #   hls_parcel_tile_map_removed_v4.1.csv dropped invalid geometries (if any)
@@ -37,17 +37,17 @@ if (!nzchar(trimws(path_landiq_v4))) {
   }
   path_landiq_v4 <- file.path(.root, "LandIQ", "harmonized")
 }
-path_management <- Sys.getenv("MANAGEMENT", "")
-if (!nzchar(trimws(path_management))) {
+path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
+if (!nzchar(trimws(path_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_management <- file.path(.root, "management")
+  path_inventory <- file.path(.root, "products", "inventory")
 }
 path_parcels    <- file.path(path_landiq_v4, "parcels-consolidated.gpkg")
-path_tiles      <- file.path(path_management, "hls_tile_extent.rds")
-path_out        <- path_management
+path_tiles      <- file.path(path_inventory, "hls_tile_extent.rds")
+path_out        <- path_inventory
 
 args <- commandArgs(trailingOnly = TRUE)
 overwrite <- length(args) >= 1L && tolower(args[1L]) %in% c("overwrite", "true", "t", "1", "yes", "y")

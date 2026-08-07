@@ -101,11 +101,10 @@ continuing.
 
 ## 0.2 Repos
 
-Clone the PEcAn monitoring branch and `cadwr-landuse`. Set `CCMMF_CODE` to
-`modules/data.remote/inst/ccmmf` inside the PEcAn clone.
+Clone the PEcAn monitoring branch and `cadwr-landuse`. Scripts live under
+`modules/data.remote/inst/ccmmf` in the PEcAn clone.
 
 ```bash
-# Pick a writable code directory (e.g. $HOME):
 mkdir -p "$HOME/src" && cd "$HOME/src"
 
 git clone https://github.com/sarahkanee/pecan.git
@@ -113,7 +112,7 @@ cd pecan
 git fetch origin feature/ccmmf-statewide-monitoring-inst
 git checkout feature/ccmmf-statewide-monitoring-inst
 
-# Scripts live here (until merged to develop):
+# Until merged to develop:
 export CCMMF_CODE="$(pwd)/modules/data.remote/inst/ccmmf"
 ls "$CCMMF_CODE"
 # landiq-gapfill  phenology  events  hls  tillage  traits  ...
@@ -122,82 +121,80 @@ ls "$CCMMF_CODE"
 After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
 `inst/ccmmf` path.
 
-Geometry harmonization for LandIQ (Session 1) is a separate repository. Run its
-Python scripts from the same activated conda environment.
+Geometry harmonization for LandIQ (Session 1) is a separate repository:
 
 ```bash
 cd "$HOME/src"
 git clone https://github.com/ccmmf/cadwr-landuse.git
-cd cadwr-landuse
 ```
 
 ---
 
+## 0.3 `setup_env.sh`
 
-
-## 0.3 Data root
-
-Create `$CCMMF_ROOT` and `management/` for large inputs and pipeline outputs.
-Runnable code stays in `$CCMMF_CODE`.
+Source once per shell. This sets years, `$CCMMF_ROOT`, input/lookup/product
+roots, and component roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`, ...).
 
 ```bash
-export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-mkdir -p "$CCMMF_ROOT"/{data_raw/cadwr_land_use/landiq_shapefiles,data_phen/output,data_phen/HLS_data_sort/HLS30,CDL_data,LandIQ/harmonized,LandIQ/gapfilled}
-
-export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
-mkdir -p "$MANAGEMENT"/{phenology,plant_traits,tillage,fertilization,irrigation,event_files}
+# Optional overrides before sourcing (defaults: 2023/2024, $HOME/ccmmf):
+# export PRIOR_YEAR=2023 TARGET_YEAR=2024
+# export CCMMF_ROOT=/path/to/data
+source "$CCMMF_CODE/documentation/setup_env.sh"
 ```
 
-**Layout:**
+---
+
+## 0.4 Data directories
+
+`setup_env` only exports paths; create the directories once:
+
+```bash
+mkdir -p "$LANDIQ_ROOT"/{raw,harmonized,gapfilled}
+mkdir -p "$HLS_ROOT"/{imagery,MSLSP}
+mkdir -p "$CDL_DIR"
+mkdir -p "$CLIMATE_ROOT"/{CHIRPS,CIMIS}
+mkdir -p "$SOILS_ROOT"/SSURGO
+mkdir -p "$LOOKUPS_ROOT"/{plant_traits,fertilization}
+mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event_files}
+mkdir -p "$PRODUCTS_PROJECTIONS"
+```
+
+**Layout** (three roles: inputs, lookups, products):
 
 ```text
 $CCMMF_ROOT/
-  data_raw/cadwr_land_use/landiq_shapefiles/   # LandIQ shapefiles by year
-  LandIQ/
+  LandIQ/                                     # crop inventory inputs
+    raw/                                      # annual shapefiles as downloaded
     harmonized/                               # geometry + crops (pre-gap-fill)
     gapfilled/                                # gap-filled crops product
-  data_phen/HLS_data_sort/HLS30/              # HLS reflectance (phenology layout)
-  data_phen/output/                           # MSLSP_*.nc per tile
-  CDL_data/                                   # cdl_YYYY.tif
-  management/                                 # data hub for pipeline outputs
-    phenology/raw_mslsp_v4.1.2/
-    phenology/matched_landiq_mslsp_v4.1.2/
+  HLS/
+    imagery/                                  # HLS GeoTIFF
+    MSLSP/                                    # HLS Phenology Product (MSLSP NetCDF)
+  CDL/                                        # USDA Cropland Data Layer
+  climate/                                    # weather / ET (irrigation)
+    CHIRPS/
+    CIMIS/
+  soils/
+    SSURGO/
+  lookups/                                    # plant_traits, fertilization rates
     plant_traits/
-    tillage/ndti_v4.1/
-    fertilization/                            # N / amendment lookups (Session 3)
-    irrigation/                               # CHIRPS/CIMIS/SSURGO extracts + events (Session 3)
-    event_files/
+    fertilization/                            # N / organic rate tables
+  products/
+    inventory/                                # Management Tracking ($PRODUCTS_INVENTORY)
+      phenology/
+      tillage/
+      fertilization/                          # fert/NCC event outputs
+      irrigation/                             # water-balance + irrig events
+      event_files/                            # planting/harvest/phenology/tillage
+    projections/                              # scenarios / model outputs
 ```
 
-| Item | Path / format | Notes |
-|------|---------------|--------|
-| Code | `$CCMMF_CODE` -> `modules/data.remote/inst/ccmmf` | Runnable scripts |
-| Data root | `$CCMMF_ROOT` (default `$HOME/ccmmf`) | Large inputs + products |
-| Management hub | `$MANAGEMENT` | Phenology, tillage, traits, event_files |
-
----
-
-## 0.4 `setup_env.sh`
-
-Source once per shell so years and paths match Sec. 0.2-0.3. Defaults are
-`PRIOR_YEAR=2023`, `TARGET_YEAR=2024`, data root `$HOME/ccmmf`.
-
-```bash
-source "$CCMMF_CODE/documentation/setup_env.sh"
-```
-
-That keeps years and component roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`,
-`EVENTS_ROOT`, ...) consistent for later sessions.
-
-For a later year pair, or if you change directory layout, set years and/or paths
-**before** sourcing:
-
-```bash
-export PRIOR_YEAR=2024
-export TARGET_YEAR=2025
-# export CCMMF_ROOT=...   # only if not using $HOME/ccmmf
-source "$CCMMF_CODE/documentation/setup_env.sh"
-```
+| Item | Path | Notes |
+|------|------|--------|
+| Code | `$CCMMF_CODE` | `inst/ccmmf` scripts |
+| Data | `$CCMMF_ROOT` | Inputs + lookups + products |
+| Inventory | `$PRODUCTS_INVENTORY` | Management Tracking outputs |
+| Projections | `$PRODUCTS_PROJECTIONS` | Scenario / model outputs |
 
 ---
 
@@ -225,10 +222,10 @@ chmod 0600 ~/.netrc
 
 - [ ] `pecan-all-1.12` already installed
 - [ ] Activated conda env; R and Python checks pass
-- [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf` (`ls` shows landiq-gapfill, phenology, events, ...)
+- [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf`
 - [ ] Cloned `cadwr-landuse` on `main`
-- [ ] `$CCMMF_ROOT` layout exists (`data_raw/`, `management/`, LandIQ dirs)
-- [ ] Sourced `setup_env.sh`; `$PHENOLOGY_ROOT`, `$TILLAGE_ROOT`, `$EVENTS_ROOT` set
+- [ ] Sourced `setup_env.sh`; `$CCMMF_ROOT`, `$PRODUCTS_INVENTORY`, `$PHENOLOGY_ROOT`, ... set
+- [ ] Data dirs created under `$CCMMF_ROOT` (inputs / lookups / products)
 - [ ] Earthdata account + `~/.netrc` ready (for Session 2)
 
 **Next:** [Session 1 - LandIQ crop identity](01-landiq.md).
