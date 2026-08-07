@@ -6,7 +6,7 @@
 # Example:
 #   Rscript smoke_tillage_metrics_year.R 2021 40
 #
-# Env: CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh)
+# Env: MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh)
 #      TILLAGE_BUFFER_YEARS -- same semantics as make_events_statewide.R (default 1)
 
 suppressPackageStartupMessages({
@@ -28,11 +28,11 @@ if (is.na(n_take) || n_take < 1L) {
   n_take <- 30L
 }
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }

@@ -3,7 +3,7 @@
 # match_landiq_mslsp.R
 # Rule-based matching (no rank-based cost).
 #
-# LandIQ inventory: all ag parcel-years from CCMMF_LANDIQ_V4 (gap-filled v4.1.2
+# LandIQ inventory: all ag parcel-years from LANDIQ_GAPFILLED (gap-filled v4.1.2
 # product by default) are assigned -- left join to combined MSLSP, not inner join.
 # Parcel-years with LandIQ crop rows but no MSLSP retrieval get assigned_by = "no_mslsp".
 # - Primary: ADOY inside [OGI, OGMn]
@@ -28,21 +28,21 @@ suppressPackageStartupMessages({
 })
 
 # --- Configuration ---
-path_management  <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management  <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
-path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+path_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
 if (!nzchar(trimws(path_landiq_v4))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1.2")
+  path_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
 combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1.2")
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")

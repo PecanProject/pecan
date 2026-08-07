@@ -5,10 +5,11 @@
 # Creates polygon boundaries for each HLS tile in the same CRS as the parcels
 # gpkg so other scripts can assign parcels to tiles without reprojecting.
 #
+# Imagery: phenology layout under HLS_IMAGERY_ROOT
+#   <root>/<tile>/images/<scene>/*.tif
+#
 # Output: management/hls_tile_extent.rds (list: tile_extent_sf, used_crs)
 # Usage:  Rscript build_hls_tile_extent.R
-#
-# Paths can be overridden via environment variables (see Configuration).
 # -----------------------------------------------------------------------------
 
 suppressPackageStartupMessages({
@@ -16,33 +17,36 @@ suppressPackageStartupMessages({
   library(terra)
   library(stringr)
 })
-# Disable s2 for projected CRS operations (default sf::sf_use_s2 is TRUE).
 sf::sf_use_s2(FALSE)
 
-# --- Configuration ---
-# Override via env: CCMMF_MANAGEMENT, CCMMF_LANDIQ_V4, HLSL_BASE, HLSS_BASE
-path_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management   <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
-path_landiq_v4 <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+path_landiq_v4 <- trimws(Sys.getenv("LANDIQ_HARMONIZED", ""))
 if (!nzchar(path_landiq_v4)) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT.")
-  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+  if (!nzchar(.root)) stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT.")
+  path_landiq_v4 <- file.path(.root, "LandIQ", "harmonized")
 }
 path_parcels_gpkg <- {
-  gpkg <- trimws(Sys.getenv("CCMMF_LANDIQ_GPKG", ""))
+  gpkg <- trimws(Sys.getenv("LANDIQ_GPKG", ""))
   if (nzchar(gpkg)) gpkg else file.path(path_landiq_v4, "parcels-consolidated.gpkg")
 }
-hlsl_base         <- Sys.getenv("HLSL_BASE", "")
-hlss_base         <- Sys.getenv("HLSS_BASE", "")
-if (!nzchar(trimws(hlsl_base)) || !nzchar(trimws(hlss_base))) {
-  stop("Set HLSL_BASE and HLSS_BASE to HLS L30/S30 imagery roots (no lab default).")
+imagery_root <- trimws(Sys.getenv("HLS_IMAGERY_ROOT", ""))
+if (!nzchar(imagery_root)) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set HLS_IMAGERY_ROOT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  imagery_root <- file.path(.root, "data_phen/HLS_data_sort/HLS30")
+}
+if (!dir.exists(imagery_root)) {
+  stop("HLS imagery root not found: ", imagery_root)
 }
 
 path_hls_tile_extent <- file.path(path_management, "hls_tile_extent.rds")
@@ -56,46 +60,45 @@ parcels_sample <- st_read(
 )
 used_crs <- st_crs(parcels_sample)
 
-# --- Helpers: tile ID from basename; list year dirs under HLS roots ---
-tile_id_from_basename <- function(basename) {
-  matched <- str_extract(basename, "T[0-9A-Z]{5}\\.")
-  sub("\\.+$", "", sub("^T|\\.$", "", matched))
+# One sample raster path per tile from phenology layout
+# (<root>/<tile>/images/<scene>/*B06*.tif or *B11*.tif).
+tile_dirs <- list.dirs(imagery_root, recursive = FALSE, full.names = TRUE)
+tile_dirs <- tile_dirs[grepl("^[0-9]", basename(tile_dirs))]
+if (length(tile_dirs) == 0L) {
+  stop("No tile directories under HLS_IMAGERY_ROOT: ", imagery_root)
 }
 
-list_year_dirs <- function(base_path) {
-  if (!dir.exists(base_path)) return(integer())
-  dirs <- basename(list.dirs(base_path, recursive = FALSE, full.names = TRUE))
-  years <- suppressWarnings(as.integer(dirs))
-  years[!is.na(years)]
+sample_path_for_tile <- function(tile_dir) {
+  img_dir <- file.path(tile_dir, "images")
+  if (!dir.exists(img_dir)) {
+    return(NA_character_)
+  }
+  for (sc in list.dirs(img_dir, recursive = FALSE, full.names = TRUE)) {
+    hits <- list.files(
+      sc,
+      pattern = "\\.(B06|B11)\\.tif$",
+      full.names = TRUE,
+      ignore.case = TRUE
+    )
+    if (length(hits) > 0L) {
+      return(hits[[1L]])
+    }
+  }
+  NA_character_
 }
 
-# --- Collect one raster path per unique tile (HLSL B06 + HLSS B11) ---
-years_available <- sort(unique(c(list_year_dirs(hlsl_base), list_year_dirs(hlss_base))))
-if (length(years_available) == 0) stop("No year directories found in HLS roots.")
-
-all_paths <- character()
-for (year in years_available) {
-  hlsl_dir  <- file.path(hlsl_base, year)
-  hlss_dir  <- file.path(hlss_base, year)
-  paths_year <- character()
-  if (dir.exists(hlsl_dir)) {
-    paths_year <- c(paths_year, list.files(hlsl_dir, pattern = ".*B06.*\\.tif$", full.names = TRUE))
-  }
-  if (dir.exists(hlss_dir)) {
-    paths_year <- c(paths_year, list.files(hlss_dir, pattern = ".*B11.*\\.tif$", full.names = TRUE))
-  }
-  if (length(paths_year) > 0) {
-    all_paths <- paths_year
-    break
-  }
+tile_ids <- basename(tile_dirs)
+paths_one_per_tile <- vapply(tile_dirs, sample_path_for_tile, character(1))
+ok <- !is.na(paths_one_per_tile)
+if (!any(ok)) {
+  stop("No B06/B11 rasters found under tiles in: ", imagery_root)
 }
-if (length(all_paths) == 0) stop("No HLS files found in any available year directory.")
-
-tile_ids          <- tile_id_from_basename(basename(all_paths))
-tile_ids          <- sub("\\.+$", "", tile_ids)
-keep_first_per_tile <- !duplicated(tile_ids)
-paths_one_per_tile <- all_paths[keep_first_per_tile]
-tile_ids          <- tile_ids[keep_first_per_tile]
+tile_ids <- tile_ids[ok]
+paths_one_per_tile <- paths_one_per_tile[ok]
+message(
+  "[hls_tile_extent] ", length(tile_ids), " tiles with sample rasters under ",
+  imagery_root
+)
 
 # --- Raster extent to polygon per tile, reprojected to parcels CRS ---
 extent_to_polygon_in_crs <- function(raster_path, target_crs) {
@@ -120,3 +123,4 @@ tile_extent_sf <- st_sf(tile_id = tile_ids, geometry = do.call(c, tile_polygons)
 # --- Write ---
 dir.create(path_management, recursive = TRUE, showWarnings = FALSE)
 saveRDS(list(tile_extent_sf = tile_extent_sf, used_crs = used_crs), path_hls_tile_extent)
+message("[hls_tile_extent] wrote ", path_hls_tile_extent)

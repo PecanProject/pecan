@@ -2,43 +2,36 @@
 # Built once by build_hls_parcel_tile_map.R; year filtering happens at extract time.
 
 parcel_tilemap_default_path <- function() {
-  for (env_name in c("HLS_PARCEL_TILEMAP", "NDTI_PARCEL_TILEMAP", "mslsp_parcel_tilemap")) {
-    env <- trimws(Sys.getenv(env_name, ""))
-    if (nzchar(env)) {
-      return(env)
-    }
-  }
-  mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
-  if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-    if (!nzchar(ccmmf)) {
-      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
-    }
-    mgmt <- file.path(ccmmf, "management")
-  }
-  file.path(mgmt, "hls_parcel_tile_map_v4.1.rds")
-}
-
-tile_to_parcels_default_path <- function() {
-  env <- trimws(Sys.getenv("HLS_TILE_TO_PARCELS", ""))
+  env <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
   if (nzchar(env)) {
     return(env)
   }
-  mgmt <- dirname(parcel_tilemap_default_path())
-  file.path(mgmt, "hls_tile_to_parcels_v4.1.rds")
+  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
+  if (!nzchar(mgmt)) {
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    mgmt <- file.path(ccmmf, "management")
+  }
+  file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
 }
 
 read_parcel_tilemap <- function(path = parcel_tilemap_default_path()) {
   if (!file.exists(path)) {
     stop("Parcel-tile map not found: ", path,
-         "\nBuild it: Rscript scripts/hls/build_hls_parcel_tile_map.R overwrite")
+         "\nBuild it: Rscript hls/build_hls_parcel_tile_map.R overwrite")
   }
-  dt <- data.table::as.data.table(readRDS(path))
+  dt <- if (grepl("\\.rds$", path, ignore.case = TRUE)) {
+    data.table::as.data.table(readRDS(path))
+  } else {
+    data.table::fread(path, colClasses = c(parcel_id = "character", tileIDs = "character"))
+  }
   if ("year" %in% names(dt)) {
     stop(
       "Legacy year-keyed tile map at: ", path, "\n",
       "Rebuild the geometry-only map:\n",
-      "  Rscript scripts/hls/build_hls_parcel_tile_map.R overwrite"
+      "  Rscript hls/build_hls_parcel_tile_map.R overwrite"
     )
   }
   if (!all(c("parcel_id", "tileIDs") %in% names(dt))) {
@@ -46,7 +39,7 @@ read_parcel_tilemap <- function(path = parcel_tilemap_default_path()) {
   }
   dt[, parcel_id := as.character(parcel_id)]
   dt[, tileIDs := as.character(tileIDs)]
-  if (!"n_tiles" %in% names(dt) && "tileIDs" %in% names(dt)) {
+  if (!"n_tiles" %in% names(dt)) {
     dt[, n_tiles := lengths(strsplit(tileIDs, ",", fixed = TRUE))]
   }
   data.table::setkey(dt, parcel_id)
@@ -71,38 +64,31 @@ parcel_tilemap_to_tile_list <- function(dt) {
   split(as.character(long$parcel_id), long$tile_id)
 }
 
-read_tile_to_parcels <- function(path = tile_to_parcels_default_path()) {
-  if (!file.exists(path)) {
-    stop("Tile-to-parcels map not found: ", path,
-         "\nBuild it: Rscript scripts/hls/build_hls_parcel_tile_map.R overwrite")
-  }
-  obj <- readRDS(path)
-  if (is.list(obj) && !data.table::is.data.table(obj)) {
-    return(obj)
-  }
-  stop("Unexpected tile-to-parcels object at: ", path)
+# Inverse map derived from the parcel CSV (no separate on-disk list).
+read_tile_to_parcels <- function(path = parcel_tilemap_default_path()) {
+  parcel_tilemap_to_tile_list(read_parcel_tilemap(path))
 }
 
 ag_parcel_ids_for_year <- function(year,
                                    crops_parq = NULL,
                                    cropcode_csv = NULL) {
   if (is.null(crops_parq) || !nzchar(trimws(crops_parq))) {
-    landiq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+    landiq <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
     if (!nzchar(landiq)) {
       root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
       if (!nzchar(root)) {
-        stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT.")
+        stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT.")
       }
-      landiq <- file.path(root, "LandIQ-harmonized-v4.1")
+      landiq <- file.path(root, "LandIQ", "gapfilled")
     }
     crops_parq <- file.path(landiq, "crops_all_years.parq")
   }
   if (is.null(cropcode_csv) || !nzchar(trimws(cropcode_csv))) {
-    mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+    mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
     if (!nzchar(mgmt)) {
       root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
       if (!nzchar(root)) {
-        stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT.")
+        stop("Set MANAGEMENT or CCMMF_ROOT.")
       }
       mgmt <- file.path(root, "management")
     }

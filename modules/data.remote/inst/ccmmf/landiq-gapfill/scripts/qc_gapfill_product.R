@@ -6,7 +6,7 @@
 # outputs/qc_gapfill_report.md and outputs/qc_gapfill_summary.csv.
 #
 # ENV
-#   CCMMF_LANDIQ_GAPFILL_PRODUCT  -- product directory
+#   LANDIQ_GAPFILLED  -- product directory
 #   LANDIQ_GAPFILL_RUN_YEARS      -- years to summarize (set by run_gapfill.sh)
 # =============================================================================
 

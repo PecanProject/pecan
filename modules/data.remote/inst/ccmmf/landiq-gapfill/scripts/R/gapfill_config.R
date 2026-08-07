@@ -13,9 +13,8 @@
 #   Single-neighbor cases average the available temporal message with p_cdl (divide by 2).
 #
 # Env:
-#   LANDIQ_GAPFILL_BOUND_MIN          default 2016
-#   LANDIQ_GAPFILL_BOUND_MAX          default 2023 (raise when 2024 LandIQ is released)
-#   LANDIQ_GAPFILL_AVAILABLE_YEARS    optional comma list of years with real LandIQ
+#   LANDIQ_GAPFILL_AVAILABLE_YEARS    optional comma list; default = years in
+#                                     LANDIQ_HARMONIZED crops parquet minus full-gap years
 #   LANDIQ_GAPFILL_NEIGHBORING_YEARS  optional override (1 or 2 years); else auto-resolved
 #   LANDIQ_GAPFILL_FULL_GAP_YEARS     optional comma list treated as full-year gaps (default 2017)
 #   LANDIQ_GAPFILL_START_YEAR         first calendar year in a batch run (with END_YEAR)
@@ -68,27 +67,44 @@ resolve_gapfill_run_years <- function() {
   seq.int(y0, y1)
 }
 
-landiq_gapfill_bound_min <- function() {
-  as.integer(Sys.getenv("LANDIQ_GAPFILL_BOUND_MIN", "2016"))
-}
-
-landiq_gapfill_bound_max <- function() {
-  as.integer(Sys.getenv("LANDIQ_GAPFILL_BOUND_MAX", "2023"))
-}
-
 landiq_gapfill_full_gap_years <- function() {
   .gapfill_parse_year_csv(Sys.getenv("LANDIQ_GAPFILL_FULL_GAP_YEARS", "2017"))
 }
 
+#' Calendar years present in the (non-gap-filled) LandIQ product.
+landiq_product_years <- function() {
+  yrs <- arrow::open_dataset(path_landiq_parquet()) %>%
+    dplyr::distinct(year) %>%
+    dplyr::collect() %>%
+    dplyr::pull(year) %>%
+    as.integer() %>%
+    sort()
+  yrs[!is.na(yrs)]
+}
+
+#' Years with real LandIQ usable as neighbors / training support.
+#' Default: all years in LANDIQ_HARMONIZED minus full-gap years.
 landiq_gapfill_available_years <- function() {
   env <- Sys.getenv("LANDIQ_GAPFILL_AVAILABLE_YEARS", "")
   if (nzchar(env)) {
     return(.gapfill_parse_year_csv(env))
   }
-  bound_min <- landiq_gapfill_bound_min()
-  bound_max <- landiq_gapfill_bound_max()
-  full_gaps <- landiq_gapfill_full_gap_years()
-  sort(setdiff(seq.int(bound_min, bound_max), full_gaps))
+  yrs <- setdiff(landiq_product_years(), landiq_gapfill_full_gap_years())
+  if (length(yrs) == 0L) {
+    stop(
+      "No LandIQ years found in ", path_landiq_parquet(),
+      ". Set LANDIQ_HARMONIZED or LANDIQ_GAPFILL_AVAILABLE_YEARS."
+    )
+  }
+  yrs
+}
+
+landiq_gapfill_bound_min <- function() {
+  min(landiq_gapfill_available_years())
+}
+
+landiq_gapfill_bound_max <- function() {
+  max(landiq_gapfill_available_years())
 }
 
 #' Calendar years used to build the subclass prior (P(subclass | CLASS)).

@@ -146,7 +146,7 @@ Point the workflow directories as follows:
 | ---------------------------- | ------------------------------------------------------- |
 | Annual LandIQ shapefiles     | `$CCMMF_ROOT/data_raw/cadwr_land_use/landiq_shapefiles` |
 | Harmonization working files  | `$CCMMF_ROOT/work/cadwr-landuse/v4.1`                   |
-| Published harmonized product | `$CCMMF_ROOT/LandIQ-harmonized-v4.1`                    |
+| Published harmonized product | `$CCMMF_ROOT/LandIQ/harmonized`                         |
 
 
 From the cadwr-landuse clone:
@@ -181,18 +181,18 @@ python scripts/03b-finalize-crops.py \
 When finished, publish the generated `03-final/` output and point env at it:
 
 ```bash
-mkdir -p "$CCMMF_ROOT/LandIQ-harmonized-v4.1"
+mkdir -p "$CCMMF_ROOT/LandIQ/harmonized"
 cp -a "$CADWR_WORK_DIR/03-final/." \
-  "$CCMMF_ROOT/LandIQ-harmonized-v4.1/"
-export CCMMF_LANDIQ_V4=$CCMMF_ROOT/LandIQ-harmonized-v4.1
+  "$CCMMF_ROOT/LandIQ/harmonized/"
+export LANDIQ_HARMONIZED=$CCMMF_ROOT/LandIQ/harmonized
 ```
 
 Confirm the required files and target year before gap-fill:
 
 ```bash
-test -f "$CCMMF_LANDIQ_V4/parcels-consolidated.gpkg"
-test -f "$CCMMF_LANDIQ_V4/crops_all_years.parq"
-Rscript -e 'd <- arrow::open_dataset(file.path(Sys.getenv("CCMMF_LANDIQ_V4"), "crops_all_years.parq")); target <- as.integer(Sys.getenv("TARGET_YEAR")); x <- dplyr::collect(dplyr::summarise(dplyr::filter(d, year == target), n = dplyr::n())); stopifnot(x$n[[1]] > 0); message("Found year ", target, ": ", x$n[[1]], " rows")'
+test -f "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg"
+test -f "$LANDIQ_HARMONIZED/crops_all_years.parq"
+Rscript -e 'd <- arrow::open_dataset(file.path(Sys.getenv("LANDIQ_HARMONIZED"), "crops_all_years.parq")); target <- as.integer(Sys.getenv("TARGET_YEAR")); x <- dplyr::collect(dplyr::summarise(dplyr::filter(d, year == target), n = dplyr::n())); stopifnot(x$n[[1]] > 0); message("Found year ", target, ": ", x$n[[1]], " rows")'
 ```
 
 ---
@@ -217,7 +217,6 @@ Layer (CDL) download and extract for those years:
 
 ```bash
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
-export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
 ```
 
 Details (flags, provenance, rebuilds):
@@ -226,8 +225,8 @@ Details (flags, provenance, rebuilds):
 | Item | Path / format | Key columns / metadata |
 |------|---------------|------------------------|
 | Input | `$CCMMF_ROOT/data_raw/.../landiq_shapefiles/` | Annual shapefiles |
-| Harmonized | `$CCMMF_ROOT/LandIQ-harmonized-v4.1/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
-| Gap-filled | `$CCMMF_LANDIQ_GAPFILL_PRODUCT` (v4.1.2) | `CLASS`, `SUBCLASS`, `ADOY`, `subclass_source`, `adoy_source`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
+| Harmonized | `$CCMMF_ROOT/LandIQ/harmonized/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
+| Gap-filled | `$LANDIQ_GAPFILLED` (`LandIQ/gapfilled`) | `CLASS`, `SUBCLASS`, `ADOY`, `subclass_source`, `adoy_source`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
 
 ### Observed vs filled (be explicit)
 
@@ -260,7 +259,7 @@ Recount after you rebuild:
 
 ```r
 library(arrow); library(dplyr)
-d <- open_dataset(file.path(Sys.getenv("CCMMF_LANDIQ_V4"), "crops_all_years.parq"))
+d <- open_dataset(file.path(Sys.getenv("LANDIQ_HARMONIZED"), "crops_all_years.parq"))
 d |> filter(year == 2023L, season == 2L) |>
   count(subclass_source) |> collect() |> mutate(pct = 100 * n / sum(n))
 d |> filter(year == 2023L, season == 2L) |>
@@ -276,11 +275,11 @@ QC report and CSVs: [landiq-gapfill/outputs/qc_gapfill_report.md](../../landiq-g
 - [ ] Sourced `setup_env.sh` from the clone
 - [ ] Downloaded and unpacked 2024 provisional shapefile under `landiq_shapefiles/` (`.shp` present)
 - [ ] Confirmed 2024 legend QC against `LandIQ_cropCode_lookup_table.csv` (harmonized codes use `legend_year == 2021`)
-- [ ] Harmonized geometry; published to `$CCMMF_LANDIQ_V4` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
+- [ ] Harmonized geometry; published to `$LANDIQ_HARMONIZED` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
 - [ ] Confirmed `year == 2024` rows in `crops_all_years.parq`
 - [ ] Ran `$LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}`
 - [ ] Counted season-2 `subclass_source` / `adoy_source` for the shipped years (observed vs modelled)
-- [ ] Pointed `CCMMF_LANDIQ_V4` at `$CCMMF_LANDIQ_GAPFILL_PRODUCT`; product opens as parquet
+- [ ] Gap-filled product at `$LANDIQ_GAPFILLED` opens as parquet (env already points there)
 - [ ] Acceptance: gap-filled product is the crop-identity input for Sessions 2-3 and MAGIC Management Tracking; provenance shares are known for those years
 
 **Next:** [Session 2 - HLS events](02-phenology.md).

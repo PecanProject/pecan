@@ -7,37 +7,36 @@
 # =============================================================================
 
 # --- Configuration ---
-mslsp_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+mslsp_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
 if (!nzchar(trimws(mslsp_landiq_v4))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
-  mslsp_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+  if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
+  mslsp_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
-mslsp_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+mslsp_management   <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(mslsp_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  if (!nzchar(.root)) stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   mslsp_management <- file.path(.root, "management")
 }
 mslsp_parcels_gpkg <- file.path(mslsp_landiq_v4, "parcels-consolidated.gpkg")
 mslsp_crops_parq   <- file.path(mslsp_landiq_v4, "crops_all_years.parq")
 mslsp_cropcode_lookup <- file.path(mslsp_management, "LandIQ_cropCode_lookup_table.csv")
-mslsp_legacy_dir   <- Sys.getenv("mslsp_legacy_dir", "")
-mslsp_new_base     <- Sys.getenv("mslsp_new_base", "")
-if (!nzchar(trimws(mslsp_new_base))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set mslsp_new_base or CCMMF_ROOT.")
-  mslsp_new_base <- file.path(.root, "data_phen/output")
-}
-if (!nzchar(trimws(mslsp_legacy_dir))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (nzchar(.root)) mslsp_legacy_dir <- file.path(.root, "HLS_data")
+mslsp_netcdf_root <- {
+  r <- trimws(Sys.getenv("MSLSP_NETCDF_ROOT", Sys.getenv("mslsp_new_base", "")))
+  if (nzchar(r)) {
+    r
+  } else {
+    .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(.root)) stop("Set MSLSP_NETCDF_ROOT or CCMMF_ROOT.")
+    file.path(.root, "data_phen/output")
+  }
 }
 mslsp_out_root     <- file.path(mslsp_management, "phenology/raw_mslsp_v4.1.2")
-mslsp_parcel_tilemap <- Sys.getenv(
-  "mslsp_parcel_tilemap",
-  file.path(mslsp_management, "hls_parcel_tile_map_v4.1.rds")
-)
+mslsp_parcel_tilemap <- {
+  r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
+  if (nzchar(r)) r else file.path(mslsp_management, "hls_parcel_tile_map_v4.1.csv")
+}
 
 mslsp_metrics   <- c("OGI", "50PCGI", "OGMx", "Peak", "OGD", "50PCGD", "OGMn",
                      "EVImax", "EVIamp", "EVIarea")
@@ -51,12 +50,11 @@ mslsp_state <- new.env(parent = emptyenv())
 
 mslsp_nc_path <- function(tile_id, year) {
   yr  <- as.integer(year)
-  candidates <- c(
-    file.path(mslsp_legacy_dir, paste0("MSLSP_", tile_id, "_", yr, ".nc")),
-    file.path(mslsp_new_base, tile_id, "phenoMetrics", paste0("MSLSP_", tile_id, "_", yr, ".nc"))
+  path <- file.path(
+    mslsp_netcdf_root, tile_id, "phenoMetrics",
+    paste0("MSLSP_", tile_id, "_", yr, ".nc")
   )
-  hit <- candidates[file.exists(candidates)]
-  if (length(hit) == 0) NA_character_ else hit[1]
+  if (file.exists(path)) path else NA_character_
 }
 
 mslsp_load_parcel_tilemap <- function(year) {

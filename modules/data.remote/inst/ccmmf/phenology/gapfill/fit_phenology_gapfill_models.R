@@ -12,7 +12,7 @@
 #   Rscript fit_phenology_gapfill_models.R
 #   GAPFILL_TRAIN_YEARS=2018,2019,2020,2021,2022,2023 Rscript fit_phenology_gapfill_models.R
 #
-# ENV: CCMMF_MANAGEMENT, CCMMF_MATCHED_DIR, GAPFILL_TRAIN_YEARS, GAPFILL_MODEL_DIR
+# ENV: MANAGEMENT, MATCHED_DIR, GAPFILL_TRAIN_YEARS, GAPFILL_MODEL_DIR
 #
 # Writes: phenology/gapfill_models/phenology_date_gapfill_models.rds (+ summaries)
 
@@ -22,16 +22,16 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
 matched_dir <- Sys.getenv(
-  "CCMMF_MATCHED_DIR",
+  "MATCHED_DIR",
   file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
 )
 model_dir <- Sys.getenv(

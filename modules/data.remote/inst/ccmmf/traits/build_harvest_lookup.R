@@ -10,7 +10,7 @@
 # Fallback used by the pool: subclass > class mean > PFT mean > default PFT.
 #
 #   Rscript scripts/traits/build_harvest_lookup.R
-# Env: CCMMF_MANAGEMENT
+# Env: MANAGEMENT
 
 #### Load packages
 
@@ -20,13 +20,13 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-#### Paths and outputs (CCMMF_MANAGEMENT overrides default)
+#### Paths and outputs (MANAGEMENT overrides default)
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }

@@ -23,17 +23,17 @@ terra::terraOptions(threads = max(1L, suppressWarnings(
 )))
 
 # --- Configuration ---
-ndti_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+ndti_management   <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(ndti_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  if (!nzchar(.root)) stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   ndti_management <- file.path(.root, "management")
 }
-ndti_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+ndti_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
 if (!nzchar(trimws(ndti_landiq_v4))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
-  ndti_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+  if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
+  ndti_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
 ndti_parcels_gpkg <- file.path(ndti_landiq_v4, "parcels-consolidated.gpkg")
 ndti_crops_parq   <- file.path(ndti_landiq_v4, "crops_all_years.parq")
@@ -42,23 +42,19 @@ ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "")
 if (!nzchar(trimws(ndti_ccmmf_root))) {
   stop("Set CCMMF_ROOT (source documentation/setup_env.sh).")
 }
-# HLS reflectance for NDTI — phenology workflow layout under data_phen
-# (see phenology/extract/README.md — upstream HLS_Phenology repo).
-ndti_imagery_layout <- tolower(Sys.getenv("HLS_IMAGERY_LAYOUT", "phenology"))
-ndti_imagery_root   <- Sys.getenv(
-  "HLS_IMAGERY_ROOT",
-  file.path(ndti_ccmmf_root, "data_phen/HLS_data_sort/HLS30")
-)
-ndti_hlsl_base <- Sys.getenv("HLSL_BASE", "")
-ndti_hlss_base <- Sys.getenv("HLSS_BASE", "")
-if (!nzchar(trimws(ndti_hlsl_base)) || !nzchar(trimws(ndti_hlss_base))) {
-  stop("Set HLSL_BASE and HLSS_BASE (no lab default).")
+# HLS reflectance for NDTI: phenology tile/images tree (HLS_Phenology layout).
+ndti_imagery_root <- {
+  r <- trimws(Sys.getenv("HLS_IMAGERY_ROOT", ""))
+  if (nzchar(r)) r else file.path(ndti_ccmmf_root, "data_phen/HLS_data_sort/HLS30")
+}
+if (!nzchar(trimws(ndti_imagery_root))) {
+  stop("Set HLS_IMAGERY_ROOT (source documentation/setup_env.sh).")
 }
 ndti_out_root     <- file.path(ndti_management, "tillage/ndti_v4.1")
-ndti_parcel_tilemap <- Sys.getenv(
-  "NDTI_PARCEL_TILEMAP",
-  file.path(ndti_management, "hls_parcel_tile_map_v4.1.rds")
-)
+ndti_parcel_tilemap <- {
+  r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
+  if (nzchar(r)) r else file.path(ndti_management, "hls_parcel_tile_map_v4.1.csv")
+}
 
 # --- Path helpers ---
 
@@ -111,43 +107,9 @@ append_to_csv <- function(data, filepath) {
 # =============================================================================
 
 # Build a table of all HLS scenes (date x sensor x tile) for a given year-month.
+# Phenology layout: <HLS_IMAGERY_ROOT>/<tile>/images/<scene_id>/*.tif
 build_scene_index <- function(year, month, verbose = TRUE) {
-  if (identical(ndti_imagery_layout, "phenology")) {
-    build_scene_index_phenology(year, month, verbose)
-  } else {
-    build_scene_index_flat(year, month, verbose)
-  }
-}
-
-# Flat year directories: HLSL/<year>/*.B06.tif, etc. (used when HLS_IMAGERY_LAYOUT=flat).
-build_scene_index_flat <- function(year, month, verbose = TRUE) {
-  month_start <- as.Date(paste(year, month, 1, sep = "-"))
-  month_end   <- seq(month_start, by = "month", length.out = 2L)[2L] - 1L
-
-  list_scenes <- function(dir_path, band_pattern, sensor_name) {
-    if (!dir.exists(dir_path)) return(data.table())
-    files   <- list.files(dir_path, pattern = band_pattern, full.names = TRUE)
-    if (length(files) == 0) return(data.table())
-    doy_str <- str_extract(basename(files), "\\d{7}")
-    dates   <- as.Date(doy_str, "%Y%j")
-    keep    <- !is.na(dates) & dates >= month_start & dates <= month_end
-    if (!any(keep)) return(data.table())
-    data.table(
-      date    = dates[keep],
-      sensor  = sensor_name,
-      tile_id = extract_tile_id_from_filename(basename(files)[keep]),
-      path    = files[keep]
-    )
-  }
-
-  scenes <- rbindlist(list(
-    list_scenes(file.path(ndti_hlsl_base, year), ".*B06.*\\.tif$", "HLSL"),
-    list_scenes(file.path(ndti_hlss_base, year), ".*B11.*\\.tif$", "HLSS")
-  ))
-  scenes <- scenes[!is.na(tile_id)]
-  scenes[, tile_id := normalize_tile_id(tile_id)]
-  if (verbose) message("[scene] ", nrow(scenes), " scenes for ", year, "-", sprintf("%02d", month))
-  scenes
+  build_scene_index_phenology(year, month, verbose)
 }
 
 # Phenology workflow layout: <root>/<tile>/images/<scene_id>/*.tif (all bands + Fmask).
@@ -283,11 +245,8 @@ ndti_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE) {
       year               = yr,
       out_dir            = output_dir,
       tile_to_parcel_ids = tile_to_parcel_ids,
-      imagery_layout     = ndti_imagery_layout,
-      imagery_root       = if (identical(ndti_imagery_layout, "phenology")) ndti_imagery_root else NULL,
-      base_dirs          = list(HLSL = ndti_hlsl_base, HLSS = ndti_hlss_base),
-      band_other         = list(HLSL = c("B06", "B07"), HLSS = c("B11", "B12")),
-      fmask_suffix       = list(HLSL = "B06.tif$",     HLSS = "B11.tif$")
+      imagery_root       = ndti_imagery_root,
+      band_other         = list(HLSL = c("B06", "B07"), HLSS = c("B11", "B12"))
     )
     saveRDS(prep, cache_path)
     if (verbose) message("[prep] saved: ", cache_path)
@@ -396,16 +355,7 @@ product_ndti <- function() {
       b1     <- scene_row$path[1]
       bands  <- list(HLSL = c("B06", "B07"), HLSS = c("B11", "B12"))[[sensor]]
       b2     <- sub(bands[1], bands[2], b1, fixed = TRUE)
-      layout <- if (!is.null(prep$imagery_layout)) prep$imagery_layout else ndti_imagery_layout
-      fmask  <- if (identical(layout, "phenology")) {
-        sub(paste0(bands[1], "\\.tif$"), "Fmask.tif", b1)
-      } else {
-        yr_str <- stringr::str_extract(basename(b1), "\\d{4}")
-        file.path(
-          prep$base_dirs[[sensor]], paste0(yr_str, "_Fmask"),
-          sub(prep$fmask_suffix[[sensor]], "Fmask.tif", basename(b1))
-        )
-      }
+      fmask  <- sub(paste0(bands[1], "\\.tif$"), "Fmask.tif", b1)
       if (!file.exists(b2) || !file.exists(fmask)) return(NULL)
       extract_ndti_scene(b1, b2, fmask, tile_parcels, tile_parcels$parcel_id,
                            scene_row$date[1])

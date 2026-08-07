@@ -41,7 +41,7 @@ ship on this tree.
 
 | Product | Definition | Method class | Primary inputs | Output artifacts | Maturity | Session |
 |---------|------------|--------------|----------------|------------------|----------|---------|
-| Crop identity | CLASS/SUBCLASS (and PFT) per parcel-season | Map + gap-fill (provenance per row; see Session 1 observed vs filled) | LandIQ, CDL | Gap-filled LandIQ product (`$CCMMF_LANDIQ_GAPFILL_PRODUCT`) | Operational (inventory) | 1 |
+| Crop identity | CLASS/SUBCLASS (and PFT) per parcel-season | Map + gap-fill (provenance per row; see Session 1 observed vs filled) | LandIQ, CDL | Gap-filled LandIQ product (`$LANDIQ_GAPFILLED`) | Operational (inventory) | 1 |
 | Planting | Crop start date; C/N pool initialization | Hybrid (RS + traits) | Matched MSLSP, trait CSV lookups | `planting_statewide_Y` under `event_files/` | Operational (inventory) | 2 |
 | Harvest | Biomass removal date and rem/lit fractions | Hybrid (RS + traits) | Matched MSLSP, harvest CSV lookup | `harvest_statewide_Y` | Operational (inventory) | 2 |
 | Phenology | Leaf-on / leaf-off timing | RS (MSLSP) | Matched MSLSP | `phenology_statewide_Y` | Operational (inventory) | 2 |
@@ -113,8 +113,8 @@ per shell.
    for HLS.
 2. **Crop identity** -- [Session 1](sessions/01-landiq.md): download LandIQ
    `TARGET_YEAR`, legend QC, harmonize geometry, gap-fill
-   `${PRIOR_YEAR},${TARGET_YEAR}`, point `CCMMF_LANDIQ_V4` at the gap-filled
-   product.
+   `${PRIOR_YEAR},${TARGET_YEAR}`. Gap-fill reads `$LANDIQ_HARMONIZED`
+   and writes `$LANDIQ_GAPFILLED` (no env retarget).
 3. **HLS events** -- [Session 2](sessions/02-phenology.md): parcel-tile map
    (once), MSLSP extract and match for both years, date gap-fill (required
    before statewide planting/harvest), trait CSVs if missing, planting /
@@ -139,7 +139,6 @@ per shell.
 
 ```bash
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
-export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
 ```
 
 Detail: [Session 1](sessions/01-landiq.md),
@@ -151,9 +150,9 @@ Detail: [Session 1](sessions/01-landiq.md),
 ```bash
 # Demo (one tile):
 TILEWISE_ONE_TILE=10SDH $PHENOLOGY_ROOT/run_mslsp.sh $YEAR
-ASSIGN_PARCEL_IDS_FILE=$CCMMF_MANAGEMENT/demo/parcels_10SDH.csv \
+ASSIGN_PARCEL_IDS_FILE=$MANAGEMENT/demo/parcels_10SDH.csv \
   $PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
-export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
+export MATCHED_DIR=$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
 $EVENTS_ROOT/make_events_statewide.sh $YEAR
 
 TILEWISE_ONE_TILE=10SDH $TILLAGE_ROOT/run_ndti.sh $YEAR
@@ -185,7 +184,7 @@ Detail: [Session 2](sessions/02-phenology.md).
 | Gate | Check |
 |------|--------|
 | Legend / codes | New LandIQ year matches `LandIQ_cropCode_lookup_table.csv`; `legend_year == 2021` after harmonization |
-| Year-pair product | Gap-filled table contains `PRIOR_YEAR` and `TARGET_YEAR`; `CCMMF_LANDIQ_V4` points at gap-filled path |
+| Year-pair product | Gap-filled table contains `PRIOR_YEAR` and `TARGET_YEAR`; `$LANDIQ_GAPFILLED` holds the gap-filled product |
 | LandIQ provenance | Season-2 `subclass_source` / `adoy_source` counted for shipped years; operators know observed vs modelled share ([Session 1](sessions/01-landiq.md#observed-vs-filled-be-explicit); [qc_gapfill_report.md](../landiq-gapfill/outputs/qc_gapfill_report.md)) |
 | Phenology coverage | MSLSP extract and match outputs present for both years; date gap-fill run before statewide planting/harvest |
 | Event files | Expected `*_statewide_Y` parquet + JSON open; required columns per [metadata.md](metadata.md) |
@@ -220,7 +219,7 @@ Detail: [Session 2](sessions/02-phenology.md).
 | Session | Done | Checkpoint |
 |---------|------|------------|
 | 0 | [ ] | Env sourced; repos cloned; `$CCMMF_ROOT` layout ready; Earthdata for HLS |
-| 1 | [ ] | Harmonized table; gap-fill `2023,2024`; `CCMMF_LANDIQ_V4` -> gap-filled product |
+| 1 | [ ] | Harmonized table; gap-fill `2023,2024`; `$LANDIQ_GAPFILLED` gap-filled product ready |
 | 2 | [ ] | MSLSP + match + date gap-fill + planting/harvest/phenology; NDTI + tillage as required |
 | 3 | [ ] | Fert / organic and irrigation workflows reviewed or run for the year pair |
 | Appendix | [ ] | If modeling: cleaned parquet -> `events.json` -> SIPNET `events.in` |

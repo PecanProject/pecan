@@ -28,7 +28,7 @@
 #
 # ENV
 # ---
-#   CCMMF_LANDIQ_V4, HARVEST_LOOKUP_RDS, HARVEST_WOODY_DESTRUCTIVE,
+#   LANDIQ_GAPFILLED, HARVEST_LOOKUP_RDS, HARVEST_WOODY_DESTRUCTIVE,
 #   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK -- see events/README.md
 # =============================================================================
 

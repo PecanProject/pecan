@@ -42,8 +42,8 @@ Training walkthrough: [documentation/sessions/01-landiq.md](../documentation/ses
 
 | | Path |
 |--|------|
-| Harmonized input | `$CCMMF_LANDIQ_V4/crops_all_years.parq` (must already include the new year) |
-| Gap-filled product | `$CCMMF_LANDIQ_GAPFILL_PRODUCT/crops_all_years.parq` (+ geometry symlink) |
+| Harmonized input | `$LANDIQ_HARMONIZED/crops_all_years.parq` (must already include the new year) |
+| Gap-filled product | `$LANDIQ_GAPFILLED/crops_all_years.parq` (+ geometry symlink) |
 | This component | `$LANDIQ_GAPFILL_ROOT` (defaults to `$CCMMF_CODE/landiq-gapfill`) |
 | CDL GeoTIFFs | `$CDL_DIR/cdl_YYYY.tif` |
 | CDL parcel fractions | `$LANDIQ_GAPFILL_ROOT/cdl/cdl_fractions_year=YYYY.parquet` |
@@ -92,9 +92,8 @@ Confirm the new year exists in the harmonized table, then run the year pair
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
-# CCMMF_LANDIQ_V4 should still point at the harmonized (pre-gap-fill) product
+# Reads LANDIQ_HARMONIZED; writes LANDIQ_GAPFILLED (no env retarget needed)
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
-export CCMMF_LANDIQ_V4=$CCMMF_LANDIQ_GAPFILL_PRODUCT
 ```
 
 Earlier years supply context only; shipped tables under `outputs/` are used
@@ -113,7 +112,7 @@ When the log ends with `Done.`, review
 2. **Crop identity** - fill missing season-2 `CLASS` / `SUBCLASS` from CDL +
    history (season 2 only; CDL is annual -- see [Data model](#data-model)).
 3. **ADOY** - fill missing season-2 peak day from neighbors / reference tables.
-4. **Product** - merge into `$CCMMF_LANDIQ_GAPFILL_PRODUCT`, attach `COVER`,
+4. **Product** - merge into `$LANDIQ_GAPFILLED`, attach `COVER`,
    carry other years unchanged.
 5. **QC** - provenance tallies by year.
 
@@ -192,22 +191,22 @@ Only after changing gap-fill logic or lookups - **not** for a routine year-pair
 update. Retrains emission/ADOY tables and re-extracts CDL.
 
 ```bash
-mv $CCMMF_LANDIQ_GAPFILL_PRODUCT ${CCMMF_LANDIQ_GAPFILL_PRODUCT}.bak-$(date +%Y%m%d)
+mv $LANDIQ_GAPFILLED ${LANDIQ_GAPFILLED}.bak-$(date +%Y%m%d)
 
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh \
   --rebuild-cdl --rebuild-emission --rebuild-adoy-ref 2016-2023
 ```
 
 Routine runs should **not** rebuild emission tables. If they do, pin training
-bounds (for example `CDL_LANDIQ_TRAINING_YEAR_MIN=2016` and
-`CDL_LANDIQ_TRAINING_YEAR_MAX=2023`) and rely on the shipped `outputs/` tables.
-`setup_env.sh` also sets `LANDIQ_GAPFILL_BOUND_MIN` / `LANDIQ_GAPFILL_BOUND_MAX`.
+years (for example `CDL_LANDIQ_TRAINING_YEARS=2016,2018,2019,...,2023`) or rely
+on the shipped `outputs/` tables. Neighbor/training support years default to
+whatever calendar years are present in `$LANDIQ_HARMONIZED` (minus full-gap years).
 
 ## Spot-check
 
 ```r
 library(arrow); library(dplyr)
-d <- open_dataset(file.path(Sys.getenv("CCMMF_LANDIQ_GAPFILL_PRODUCT"), "crops_all_years.parq"))
+d <- open_dataset(file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq"))
 d |> count(year, season) |> collect() |> arrange(year, season)
 d |> filter(year == 2024, season == 2L) |>
   summarize(n = n(), n_class = sum(!is.na(CLASS))) |> collect()

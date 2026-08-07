@@ -8,11 +8,12 @@
 #
 # Run build_hls_tile_extent.R first.
 #
-# Outputs (in CCMMF_MANAGEMENT):
-#   hls_parcel_tile_map_v4.1.rds      parcel_id, tileIDs, n_tiles
-#   hls_tile_to_parcels_v4.1.rds       named list: tile_id -> character parcel_ids
-#   hls_tile_parcel_counts_v4.1.csv    tile_id, n_parcels (static geometry counts)
-#   hls_parcel_tile_map_removed_v4.1.csv  dropped invalid geometries (if any)
+# Outputs (in MANAGEMENT):
+#   hls_parcel_tile_map_v4.1.csv         parcel_id, tileIDs, n_tiles
+#   hls_tile_parcel_counts_v4.1.csv      tile_id, n_parcels (static geometry counts)
+#   hls_parcel_tile_map_removed_v4.1.csv dropped invalid geometries (if any)
+#
+# Tile -> parcels is derived from the CSV via read_tile_to_parcels().
 #
 # Usage: Rscript build_hls_parcel_tile_map.R [overwrite]
 # -----------------------------------------------------------------------------
@@ -28,19 +29,19 @@ script_dir <- if (length(fa <- grep("^--file=", commandArgs(trailingOnly = FALSE
 } else "."
 source(file.path(script_dir, "R", "parcel_tilemap.R"))
 
-path_landiq_v4  <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+path_landiq_v4  <- Sys.getenv("LANDIQ_HARMONIZED", "")
 if (!nzchar(trimws(path_landiq_v4))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+  path_landiq_v4 <- file.path(.root, "LandIQ", "harmonized")
 }
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
@@ -51,8 +52,7 @@ path_out        <- path_management
 args <- commandArgs(trailingOnly = TRUE)
 overwrite <- length(args) >= 1L && tolower(args[1L]) %in% c("overwrite", "true", "t", "1", "yes", "y")
 
-out_parcel_file <- file.path(path_out, "hls_parcel_tile_map_v4.1.rds")
-out_tile_file   <- file.path(path_out, "hls_tile_to_parcels_v4.1.rds")
+out_parcel_file <- file.path(path_out, "hls_parcel_tile_map_v4.1.csv")
 out_counts_file <- file.path(path_out, "hls_tile_parcel_counts_v4.1.csv")
 out_removed_file <- file.path(path_out, "hls_parcel_tile_map_removed_v4.1.csv")
 
@@ -185,10 +185,8 @@ tile_counts <- data.table(
 setorder(tile_counts, tile_id)
 
 dir.create(path_out, recursive = TRUE, showWarnings = FALSE)
-saveRDS(parcel_tilemap, out_parcel_file)
-saveRDS(tile_to_parcels, out_tile_file)
+fwrite(parcel_tilemap, out_parcel_file)
 fwrite(tile_counts, out_counts_file)
 
 message("Wrote parcel->tiles: ", out_parcel_file, " (", nrow(parcel_tilemap), " parcels)")
-message("Wrote tile->parcels: ", out_tile_file, " (", length(tile_to_parcels), " tiles)")
-message("Wrote tile counts:   ", out_counts_file)
+message("Wrote tile counts:   ", out_counts_file, " (", nrow(tile_counts), " tiles)")

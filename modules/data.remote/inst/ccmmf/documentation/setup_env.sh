@@ -1,46 +1,39 @@
 #!/usr/bin/env bash
-# CCMMF training environment (in your PEcAn clone)
+# CCMMF env defaults. Override any var before sourcing.
 #
 #   source "$CCMMF_CODE/documentation/setup_env.sh"
-# or, from this directory:
 #   source ./setup_env.sh
 
-# --- Defaults: Session 0 training (2023/2024). Override for future year pairs. ---
-export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-export CCMMF_CODE="${CCMMF_CODE:-$HOME/src/pecan/modules/data.remote/inst/ccmmf}"
+# Workspace roots
+export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"          # data
+export CCMMF_CODE="${CCMMF_CODE:-$HOME/src/pecan/modules/data.remote/inst/ccmmf}"  # pipeline code
 
+# Inventory year pair
 export PRIOR_YEAR="${PRIOR_YEAR:-2023}"
 export TARGET_YEAR="${TARGET_YEAR:-2024}"
 export CCMMF_TARGET_YEAR=$TARGET_YEAR
-export LANDIQ_GAPFILL_BOUND_MIN="${LANDIQ_GAPFILL_BOUND_MIN:-2016}"
-export LANDIQ_GAPFILL_BOUND_MAX="${LANDIQ_GAPFILL_BOUND_MAX:-$TARGET_YEAR}"
 
-# --- Derived from the roots above (override only if needed) ---
-export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
-export CCMMF_LANDIQ_V4="${CCMMF_LANDIQ_V4:-$CCMMF_ROOT/LandIQ-harmonized-v4.1}"
-export CCMMF_LANDIQ_GAPFILL_PRODUCT="${CCMMF_LANDIQ_GAPFILL_PRODUCT:-$CCMMF_ROOT/LandIQ-harmonized-v4.1.2}"
+# Data products ($CCMMF_ROOT)
+export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"           # outputs / lookups
+export LANDIQ_ROOT="${LANDIQ_ROOT:-$CCMMF_ROOT/LandIQ}"
+export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$LANDIQ_ROOT/harmonized}"  # gap-fill input
+export LANDIQ_GAPFILLED="${LANDIQ_GAPFILLED:-$LANDIQ_ROOT/gapfilled}"     # inventory product
 
+# Remote-sensing inputs
+export HLS_IMAGERY_ROOT="$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30"  # HLS GeoTIFF
+export MSLSP_NETCDF_ROOT="$CCMMF_ROOT/data_phen/output"             # MSLSP NetCDF
+export CDL_DIR="$CCMMF_ROOT/CDL_data"                               # CDL GeoTIFF
+
+# Lookups ($MANAGEMENT)
+export HLS_PARCEL_TILEMAP="$MANAGEMENT/hls_parcel_tile_map_v4.1.csv"
+export MATCHED_DIR="$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2"
+
+# Code components ($CCMMF_CODE)
 export LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$CCMMF_CODE/landiq-gapfill}"
 export PHENOLOGY_ROOT="${PHENOLOGY_ROOT:-$CCMMF_CODE/phenology}"
 export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"
 export EVENTS_ROOT="${EVENTS_ROOT:-$CCMMF_CODE/events}"
 export HLS_SHARED_LIB="${HLS_SHARED_LIB:-$CCMMF_CODE/hls/R}"
-
-export HLS_IMAGERY_LAYOUT=phenology
-export HLS_IMAGERY_ROOT="$CCMMF_ROOT/data_phen/HLS_data_sort/HLS30"
-export mslsp_new_base="$CCMMF_ROOT/data_phen/output"
-export CDL_DIR="$CCMMF_ROOT/CDL_data"
-
-export PARCEL_MAP="$CCMMF_MANAGEMENT/hls_parcel_tile_map_v4.1.rds"
-export NDTI_PARCEL_TILEMAP="$PARCEL_MAP"
-export mslsp_parcel_tilemap="$PARCEL_MAP"
-export HLS_PARCEL_TILEMAP="$PARCEL_MAP"
-
-export CCMMF_MATCHED_DIR="$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2"
-
-# Optional lab-specific imagery / transition inputs (no defaults in R):
-#   export HLSL_BASE=...
-#   export HLSS_BASE=...
-#   export COUNTY_TRANSITION_MATRICES_DIR=...
+export COUNTY_TRANSITION_MATRICES_DIR="${COUNTY_TRANSITION_MATRICES_DIR:-$LANDIQ_GAPFILL_ROOT/data/county_transition_matrices}"
 
 echo "[setup_env] ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"

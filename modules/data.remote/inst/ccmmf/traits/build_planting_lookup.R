@@ -12,7 +12,7 @@
 # TRY PFT > default PFT (programmatic fine/coarse root split when missing).
 #
 #   Rscript scripts/traits/build_planting_lookup.R
-# Env: CCMMF_MANAGEMENT, TRY_ALLOCATION_DIR
+# Env: MANAGEMENT, TRY_ALLOCATION_DIR
 
 #### Load packages
 
@@ -23,13 +23,13 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
-#### Paths and outputs (CCMMF_MANAGEMENT and TRY_ALLOCATION_DIR override defaults)
+#### Paths and outputs (MANAGEMENT and TRY_ALLOCATION_DIR override defaults)
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }

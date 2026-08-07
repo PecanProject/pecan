@@ -20,10 +20,7 @@ apply_adoy_class_exempt <- function(df) {
 adoy_reference_suffix <- function() {
   yrs <- adoy_training_years()
   suf <- sprintf("%d-%d", min(yrs), max(yrs))
-  excluded <- setdiff(
-    seq.int(landiq_gapfill_bound_min(), landiq_gapfill_bound_max()),
-    c(yrs, landiq_gapfill_full_gap_years())
-  )
+  excluded <- setdiff(landiq_gapfill_available_years(), yrs)
   excluded <- sort(unique(excluded))
   if (length(excluded) > 0L) {
     suf <- paste0(suf, "_excl", paste(excluded, collapse = "-"))
@@ -36,12 +33,13 @@ adoy_training_years <- function() {
   if (nzchar(trimws(env))) {
     return(.gapfill_parse_year_csv(env))
   }
-  yr_min <- as.integer(Sys.getenv("LANDIQ_ADOY_TRAINING_YEAR_MIN", "2018"))
-  yr_max <- as.integer(Sys.getenv("LANDIQ_ADOY_TRAINING_YEAR_MAX", "2023"))
-  exclude <- .gapfill_parse_year_csv(
-    Sys.getenv("LANDIQ_ADOY_TRAINING_EXCLUDE_YEARS", "2016,2017")
-  )
-  sort(setdiff(seq.int(yr_min, yr_max), exclude))
+  # Default: every year present in the (non-gap-filled) LandIQ product.
+  yrs <- landiq_gapfill_available_years()
+  exclude_env <- trimws(Sys.getenv("LANDIQ_ADOY_TRAINING_EXCLUDE_YEARS", ""))
+  if (nzchar(exclude_env)) {
+    yrs <- setdiff(yrs, .gapfill_parse_year_csv(exclude_env))
+  }
+  sort(yrs)
 }
 
 adoy_reference_stat <- function() {

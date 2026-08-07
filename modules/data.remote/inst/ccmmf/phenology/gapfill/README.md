@@ -15,8 +15,8 @@ Planting outcome: `mslsp_OGI`. Harvest: `mslsp_OGMn` (row/rice) or `mslsp_OGD` (
 ## Run
 
 ```bash
-export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
-export CCMMF_MATCHED_DIR=$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2
+export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
+export MATCHED_DIR=$MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2
 
 # Fit + apply overlays (default years 2016-2023 if none given)
 $CCMMF_CODE/phenology/run_phenology_date_gapfill.sh 2023 2024

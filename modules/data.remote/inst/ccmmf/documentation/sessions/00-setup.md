@@ -142,10 +142,10 @@ Runnable code stays in `$CCMMF_CODE`.
 
 ```bash
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-mkdir -p "$CCMMF_ROOT"/{data_raw/cadwr_land_use/landiq_shapefiles,data_phen/output,data_phen/HLS_data_sort/HLS30,CDL_data,LandIQ-harmonized-v4.1,LandIQ-harmonized-v4.1.2}
+mkdir -p "$CCMMF_ROOT"/{data_raw/cadwr_land_use/landiq_shapefiles,data_phen/output,data_phen/HLS_data_sort/HLS30,CDL_data,LandIQ/harmonized,LandIQ/gapfilled}
 
-export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
-mkdir -p "$CCMMF_MANAGEMENT"/{phenology,plant_traits,tillage,fertilization,irrigation,event_files}
+export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
+mkdir -p "$MANAGEMENT"/{phenology,plant_traits,tillage,fertilization,irrigation,event_files}
 ```
 
 **Layout:**
@@ -153,8 +153,9 @@ mkdir -p "$CCMMF_MANAGEMENT"/{phenology,plant_traits,tillage,fertilization,irrig
 ```text
 $CCMMF_ROOT/
   data_raw/cadwr_land_use/landiq_shapefiles/   # LandIQ shapefiles by year
-  LandIQ-harmonized-v4.1/                     # harmonized geometry + crops
-  LandIQ-harmonized-v4.1.2/                   # gap-filled crop product
+  LandIQ/
+    harmonized/                               # geometry + crops (pre-gap-fill)
+    gapfilled/                                # gap-filled crops product
   data_phen/HLS_data_sort/HLS30/              # HLS reflectance (phenology layout)
   data_phen/output/                           # MSLSP_*.nc per tile
   CDL_data/                                   # cdl_YYYY.tif
@@ -172,7 +173,7 @@ $CCMMF_ROOT/
 |------|---------------|--------|
 | Code | `$CCMMF_CODE` -> `modules/data.remote/inst/ccmmf` | Runnable scripts |
 | Data root | `$CCMMF_ROOT` (default `$HOME/ccmmf`) | Large inputs + products |
-| Management hub | `$CCMMF_MANAGEMENT` | Phenology, tillage, traits, event_files |
+| Management hub | `$MANAGEMENT` | Phenology, tillage, traits, event_files |
 
 ---
 

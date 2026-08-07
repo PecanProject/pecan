@@ -7,8 +7,8 @@
 #   Rscript gapfill_phase0_audit.R
 #   RUN_LANDIQ_MSLSP_OVERLAP_ONLY=1 Rscript gapfill_phase0_audit.R   # overlap CSV only (no assigned re-read)
 # Env:
-#   CCMMF_MANAGEMENT or CCMMF_ROOT -- source documentation/setup_env.sh
-#   CCMMF_MATCHED_DIR -- default phenology/matched_landiq_mslsp_v4.1.2
+#   MANAGEMENT or CCMMF_ROOT -- source documentation/setup_env.sh
+#   MATCHED_DIR -- default phenology/matched_landiq_mslsp_v4.1.2
 #   AUDIT_YEAR_MIN, AUDIT_YEAR_MAX -- default 2016 and 2023
 #   RUN_LANDIQ_MSLSP_OVERLAP -- if "1", also compare parcel sets (slower; run after main audit)
 #   RUN_LANDIQ_MSLSP_OVERLAP_ONLY -- if "1", only write landiq_vs_mslsp_parcel_counts.csv (same year env)
@@ -19,11 +19,11 @@ suppressPackageStartupMessages({
   library(dplyr)
 })
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
@@ -46,13 +46,13 @@ source(.matched_paths)
 matched_dir <- matched_landiq_dir(path_management)
 mslsp_root <- file.path(path_management, "phenology", "raw_mslsp_v4.1.2")
 landiq_parq <- {
-  .liq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+  .liq <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
   if (!nzchar(.liq)) {
     .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(.root)) {
-      stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    .liq <- file.path(.root, "LandIQ-harmonized-v4.1.2")
+    .liq <- file.path(.root, "LandIQ", "gapfilled")
   }
   file.path(.liq, "crops_all_years.parq")
 }

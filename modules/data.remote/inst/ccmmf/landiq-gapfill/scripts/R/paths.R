@@ -34,13 +34,17 @@ path_cdl_rasters <- function() {
 }
 
 path_landiq_root <- function() {
-  root <- Sys.getenv("CCMMF_LANDIQ_V4", "")
-  if (!nzchar(trimws(root))) {
-    stop("Set CCMMF_LANDIQ_V4 to the source harmonized LandIQ directory.")
+  # Harmonized (pre-gap-fill) product -- gap-fill input only.
+  root <- trimws(Sys.getenv("LANDIQ_HARMONIZED", ""))
+  if (!nzchar(root)) {
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    root <- file.path(ccmmf, "LandIQ", "harmonized")
   }
   root
 }
-
 path_landiq_parquet <- function() {
   file.path(path_landiq_root(), "crops_all_years.parq")
 }
@@ -111,13 +115,13 @@ path_county_transition_dir <- function() {
   if (nzchar(env)) {
     return(env)
   }
-  # No lab-absolute default (ADV-05). Symlink matrices under data/ or set env.
+  # Prefer COUNTY_TRANSITION_MATRICES_DIR; else package data/ (see setup_env.sh).
   local <- file.path(path_data(), "county_transition_matrices")
   if (dir.exists(local)) {
     return(normalizePath(local, mustWork = FALSE))
   }
   stop(
     "Set COUNTY_TRANSITION_MATRICES_DIR to county CLASS transition matrices, ",
-    "or place them under ", local, "."
+    "or place them under ", local, " (source documentation/setup_env.sh)."
   )
 }

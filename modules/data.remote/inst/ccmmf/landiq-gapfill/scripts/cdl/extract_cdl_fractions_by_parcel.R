@@ -17,7 +17,7 @@
 #   CDL_PATH      -- path to CDL GeoTIFF for the year (overrides default)
 #   CDL_DIR       -- directory containing CDL GeoTIFFs (default: ccmmf/CDL_data)
 #   CDL_OUT_DIR   -- output dir for parquet (default: landiq-gapfill/cdl)
-#   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4 -- paths (see scripts/R/paths.R)
+#   LANDIQ_GAPFILL_ROOT, LANDIQ_GAPFILLED -- paths (see scripts/R/paths.R)
 #   CDL_CHUNK_SIZE -- parcel chunk size for extraction (default 5000)
 # =============================================================================
 

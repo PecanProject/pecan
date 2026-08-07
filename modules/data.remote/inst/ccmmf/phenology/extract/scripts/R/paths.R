@@ -36,11 +36,11 @@ hls_shared_lib_dir <- function() {
 }
 
 path_mslsp_out_root <- function() {
-  mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
   if (!nzchar(mgmt)) {
     ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(ccmmf)) {
-      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
     mgmt <- file.path(ccmmf, "management")
   }
@@ -48,19 +48,19 @@ path_mslsp_out_root <- function() {
 }
 
 path_parcel_tilemap <- function() {
-  env <- trimws(Sys.getenv("mslsp_parcel_tilemap", ""))
+  env <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
   if (nzchar(env)) {
     return(env)
   }
-  mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
   if (!nzchar(mgmt)) {
     ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(ccmmf)) {
-      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
     mgmt <- file.path(ccmmf, "management")
   }
-  file.path(mgmt, "hls_parcel_tile_map_v4.1.rds")
+  file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
 }
 
 # Canonical MGRS tile list from HLS_Phenology (109 CA tiles).

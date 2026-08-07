@@ -18,7 +18,7 @@
 #   Rscript apply_phenology_gapfill.R <year>
 #   Rscript apply_phenology_gapfill.R 2016 2017 2018
 #
-# ENV: CCMMF_MANAGEMENT, CCMMF_MATCHED_DIR, GAPFILL_MODEL_DIR, GAPFILL_DATES_DIR
+# ENV: MANAGEMENT, MATCHED_DIR, GAPFILL_MODEL_DIR, GAPFILL_DATES_DIR
 #
 # Writes: phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates/assigned_year=Y_gapfilled.parquet
 
@@ -37,16 +37,16 @@ if (any(is.na(years))) {
   stop("Years must be integers")
 }
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+path_management <- Sys.getenv("MANAGEMENT", "")
 if (!nzchar(trimws(path_management))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) {
-    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
   path_management <- file.path(.root, "management")
 }
 matched_dir <- Sys.getenv(
-  "CCMMF_MATCHED_DIR",
+  "MATCHED_DIR",
   file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
 )
 model_dir <- Sys.getenv(

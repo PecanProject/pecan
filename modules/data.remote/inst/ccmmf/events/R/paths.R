@@ -26,21 +26,21 @@ events_pkg_root <- function() {
 }
 
 events_paths <- function() {
-  path_management <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  path_management <- trimws(Sys.getenv("MANAGEMENT", ""))
   if (!nzchar(path_management)) {
     root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(root)) {
-      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
     path_management <- file.path(root, "management")
   }
-  path_landiq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+  path_landiq <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
   if (!nzchar(path_landiq)) {
     root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (!nzchar(root)) {
-      stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+      stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    path_landiq <- file.path(root, "LandIQ-harmonized-v4.1.2")
+    path_landiq <- file.path(root, "LandIQ", "gapfilled")
   }
   path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
   traits_root <- trimws(Sys.getenv("TRAITS_ROOT", ""))
@@ -61,7 +61,7 @@ events_paths <- function() {
     landiq_crops = file.path(path_landiq, "crops_all_years.parq"),
     cropcode_csv = file.path(path_management, "LandIQ_cropCode_lookup_table.csv"),
     matched_dir = {
-      md <- trimws(Sys.getenv("CCMMF_MATCHED_DIR", ""))
+      md <- trimws(Sys.getenv("MATCHED_DIR", ""))
       if (nzchar(md)) md else file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
     },
     pool_script = file.path(traits_root, "pool_calculations_from_lookup.R"),

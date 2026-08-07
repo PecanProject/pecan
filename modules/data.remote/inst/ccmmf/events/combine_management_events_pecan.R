@@ -46,13 +46,13 @@ combine_management_events_pecan <- function(planting   = NULL,
     if (nzchar(code)) {
       pool_script <- file.path(code, "traits", "pool_calculations_from_lookup.R")
     } else {
-      mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+      mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
       if (!nzchar(mgmt)) {
         root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
         if (nzchar(root)) mgmt <- file.path(root, "management")
       }
       if (!nzchar(mgmt)) {
-        stop("Set CCMMF_CODE, CCMMF_MANAGEMENT, or CCMMF_ROOT for pool_script.")
+        stop("Set CCMMF_CODE, MANAGEMENT, or CCMMF_ROOT for pool_script.")
       }
       pool_script <- file.path(mgmt, "scripts/traits/pool_calculations_from_lookup.R")
     }

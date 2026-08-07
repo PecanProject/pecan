@@ -12,7 +12,8 @@ path_county_transition_dir <- function() {
   }
   stop(
     "Set COUNTY_TRANSITION_MATRICES_DIR to the county CLASS transition matrix ",
-    "directory (no lab-absolute default; see landiq-gapfill paths.R)."
+    "directory (source documentation/setup_env.sh; default under ",
+    "landiq-gapfill/data/county_transition_matrices)."
   )
 }
 

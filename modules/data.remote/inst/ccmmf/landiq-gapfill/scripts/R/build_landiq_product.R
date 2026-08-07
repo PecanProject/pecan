@@ -2,15 +2,15 @@
 # Adds subclass_source and adoy_source provenance columns; harmonizes SUBCLASS to 2021 RS legend.
 
 landiq_product_root <- function() {
-  env <- Sys.getenv("CCMMF_LANDIQ_GAPFILL_PRODUCT", "")
-  if (nzchar(trimws(env))) {
+  env <- trimws(Sys.getenv("LANDIQ_GAPFILLED", ""))
+  if (nzchar(env)) {
     return(normalizePath(env, mustWork = FALSE))
   }
   root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(root)) {
-    stop("Set CCMMF_LANDIQ_GAPFILL_PRODUCT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  file.path(root, "LandIQ-harmonized-gapfill")
+  file.path(root, "LandIQ", "gapfilled")
 }
 
 resolve_landiq_product_source_parquet <- function() {
@@ -375,7 +375,7 @@ build_landiq_product <- function(
   # Cover-crop flag (Violet): candidate CLASS/SUBCLASS + season alternation.
   # Computed on non-absent rows, joined back so padded seasons stay in product.
   .code <- trimws(Sys.getenv("CCMMF_CODE", ""))
-  .mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  .mgmt <- trimws(Sys.getenv("MANAGEMENT", ""))
   if (!nzchar(.mgmt)) {
     .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
     if (nzchar(.root)) .mgmt <- file.path(.root, "management")
@@ -393,7 +393,7 @@ build_landiq_product <- function(
   if (is.na(cover_script) || !nzchar(cover_script)) {
     stop(
       "Missing cover-crop helper cover_crop_landiq.R ",
-      "(expected under landiq-gapfill/scripts/R/ or CCMMF_MANAGEMENT/scripts/)."
+      "(expected under landiq-gapfill/scripts/R/ or MANAGEMENT/scripts/)."
     )
   }
   source(cover_script, local = TRUE)

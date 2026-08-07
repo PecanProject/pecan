@@ -10,7 +10,7 @@
 #   within_year -- LandIQ present; fill missing SUBCLASS only (CLASS X / YP exempt)
 #
 # ENV
-#   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4, CDL_OUT_DIR
+#   LANDIQ_GAPFILL_ROOT, LANDIQ_GAPFILLED, CDL_OUT_DIR
 #   COUNTY_TRANSITION_MATRICES_DIR, EXTERNAL_TRANSITION_MATRIX_CSV (full-year mode)
 #   See README.md
 # =============================================================================

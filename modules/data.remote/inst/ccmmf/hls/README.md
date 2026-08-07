@@ -38,12 +38,14 @@ from `crops_all_years.parq`.
 Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R" overwrite
 ```
 
-Outputs under `$CCMMF_MANAGEMENT`:
+Outputs under `$MANAGEMENT`:
 
 | File | Contents |
 |------|----------|
-| `hls_parcel_tile_map_v4.1.rds` | `parcel_id`, `tileIDs`, `n_tiles` |
-| `hls_tile_to_parcels_v4.1.rds` | inverted list (tile -> parcels) |
+| `hls_parcel_tile_map_v4.1.csv` | `parcel_id`, `tileIDs`, `n_tiles` |
+| `hls_tile_parcel_counts_v4.1.csv` | `tile_id`, `n_parcels` |
+
+Tile -> parcels is derived in R via `read_tile_to_parcels()` (no separate file).
 
 Upstream HLS imagery and MSLSP NetCDF come from
 [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)

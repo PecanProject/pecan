@@ -10,7 +10,7 @@
 #             statewide CLASS+SUBCLASS, statewide CLASS.
 #
 # ENV
-#   LANDIQ_GAPFILL_ROOT, CCMMF_LANDIQ_V4
+#   LANDIQ_GAPFILL_ROOT, LANDIQ_GAPFILLED
 #   GAPFILL_REBUILD_ADOY_REF=1  -- force reference-table rebuild
 # =============================================================================
 

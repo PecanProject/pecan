@@ -6,7 +6,7 @@
 # Writes crops_all_years.parq + parcels-consolidated.gpkg symlink.
 #
 # ENV
-#   CCMMF_LANDIQ_GAPFILL_PRODUCT  -- output directory
+#   LANDIQ_GAPFILLED  -- output directory
 #   LANDIQ_GAPFILL_START_YEAR / END_YEAR (or RUN_YEARS) -- years to patch
 # =============================================================================
 

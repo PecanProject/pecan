@@ -29,7 +29,7 @@ The extract could be extended to more cycles later if lower-amplitude seasons
 become a priority.
 
 - **Input:** `MSLSP_<tile>_<year>.nc` per MGRS tile, gap-filled LandIQ, parcel-tile map.
-- **Output:** `$CCMMF_MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/mslsp_year=Y.parquet`.
+- **Output:** `$MANAGEMENT/phenology/raw_mslsp_v4.1.2/year=Y/mslsp_year=Y.parquet`.
 
 ```mermaid
 flowchart LR
@@ -76,8 +76,8 @@ phenology/extract/
 | Prerequisite | Source |
 |--------------|--------|
 | MSLSP NetCDF per tile | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$CCMMF_ROOT/data_phen/output/` |
-| Gap-filled LandIQ | `CCMMF_LANDIQ_V4` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
-| Parcel-tile map | `hls_parcel_tile_map_v4.1.rds` - build once; see [hls/README.md](../../hls/README.md) |
+| Gap-filled LandIQ | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
+| Parcel-tile map | `hls_parcel_tile_map_v4.1.csv` - build once; see [hls/README.md](../../hls/README.md) |
 
 ---
 
@@ -89,14 +89,12 @@ phenology/extract/
 
 ```bash
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
-export CCMMF_MANAGEMENT="${CCMMF_MANAGEMENT:-$CCMMF_ROOT/management}"
+export MANAGEMENT="${MANAGEMENT:-$CCMMF_ROOT/management}"
 export PHENOLOGY_ROOT="${PHENOLOGY_ROOT:-$CCMMF_CODE/phenology}"
-export CCMMF_LANDIQ_V4="$CCMMF_ROOT/LandIQ-harmonized-v4.1.2"
+export LANDIQ_GAPFILLED="$CCMMF_ROOT/LandIQ/gapfilled"
 
-export mslsp_new_base=$CCMMF_ROOT/data_phen/output
-export mslsp_legacy_dir=$CCMMF_ROOT/HLS_data
-export HLS_PARCEL_TILEMAP=$CCMMF_MANAGEMENT/hls_parcel_tile_map_v4.1.rds
-export mslsp_parcel_tilemap=$HLS_PARCEL_TILEMAP
+export MSLSP_NETCDF_ROOT=$CCMMF_ROOT/data_phen/output
+export HLS_PARCEL_TILEMAP=$MANAGEMENT/hls_parcel_tile_map_v4.1.csv
 export MSLSP_TILE_LIST=$CCMMF_ROOT/data_phen/tileLists/tileids.txt
 ```
 
@@ -189,7 +187,7 @@ $PHENOLOGY_ROOT/run_mslsp.sh --overwrite 2023
 
 ```r
 library(arrow); library(dplyr)
-ds <- open_dataset(file.path(Sys.getenv("CCMMF_MANAGEMENT"),
+ds <- open_dataset(file.path(Sys.getenv("MANAGEMENT"),
                              "phenology/raw_mslsp_v4.1.2"))
 ds |> filter(year == 2024) |> count(cycle) |> collect()
 ```
@@ -208,7 +206,7 @@ phenology and EVI `*_mean`/`*_sd`; QA `*_mode`/`*_mode_frac`.
 
 ## Special cases
 
-- **NetCDF lookup:** `mslsp_legacy_dir` then `mslsp_new_base`.
+- **NetCDF lookup:** `$MSLSP_NETCDF_ROOT/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc`.
 - **Smoke test:** `TILEWISE_ONE_TILE=10SDH $PHENOLOGY_ROOT/run_mslsp.sh 2024` or `$PHENOLOGY_ROOT/run_mslsp.sh --tile 10SDH --no-combine 2024`
 
 ---
