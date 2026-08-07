@@ -10,7 +10,7 @@ Configuration parameters live in `config.yml`. Most setups only need:
 
 - `crops_path`: the harmonized CADWR Land Use crops parquet
 - `phen_dir`: the gap-filled phenology (green-up) directory
-- `crosswalk_path`: the CADWR to FREP to UC ANR crop name crosswalk TSV
+- `crosswalk_path`: the CADWR to FREP to UC ANR crop name crosswalk TSV, versioned in this folder
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
 - `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 0.5 for a 50/50 split)
@@ -30,7 +30,7 @@ FERT_PROJECT=default bash workflows/fertilization-statewide/run-statewide.sh
 | quantity | distribution | basis |
 |---|---|---|
 | annual N rate | uniform on `[min_n_lbs_acre, max_n_lbs_acre]` for the crop | `ca_n_application_rate` reports a guideline envelope, not a distribution. With no information beyond the bounds, uniform is the maximum entropy choice and avoids implying a central tendency the guidelines do not give |
-| mineral N split | fixed, `nh4_fraction` of total N to ammonium and the remainder to nitrate, default 0.5 | project assumption; the guidelines report total N only. SIPNET sums the two into a single mineral pool, so the split affects the event record rather than the simulation |
+| mineral N split | fixed, `nh4_fraction` of total N to ammonium and the remainder to nitrate, default 1 | SIPNET sums the two into a single mineral pool before the model sees them, so the split is invisible to the simulation. Defaulting to all ammonium avoids asserting a split we cannot justify without knowing the material mix |
 
 Events carry no organic C or N: these are synthetic mineral fertilizer applications.
 
