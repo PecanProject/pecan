@@ -192,11 +192,25 @@ Additional outputs include logs, a `STATUS` file that records the steps of the w
 
 # Write Model Configuration Files
 
-This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process involves generating SIPNET configuration files using the `runModule.run.write.configs()` function.
+This step decides which model runs to do, then writes the configuration files for them.
+
+`generate_joint_ensemble_design()` builds the design: one row per run, holding indices that say which parameter draw and which input file each run uses. It returns those samples alongside the design, since the indices only mean anything together with the samples they point into.
+
+`runModule.run.write.configs()` then takes that whole object and writes the SIPNET configuration files.
 
 ```{r write-configs}
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+  settings,
+  ensemble_size = settings$ensemble$size
+)
+
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = design
+)
 ```
+
+You can call `runModule.run.write.configs()` without a design and it will build one for itself, but that path is deprecated and will warn. Generating the design yourself also lets you inspect it before any runs happen: `design$design_matrix` is the table of runs, and `design$samples` holds the parameter draws behind it.
 
 # Run Model Simulations and Fetch Results
 

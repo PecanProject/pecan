@@ -262,16 +262,15 @@ runModule.run.write.configs <- function(settings,
   }
 
   # Deprecation: internal design generation is going away. Passing input_design
-  # explicitly (the generate_joint_ensemble_design() result) will become the
-  # required path. Warn only when we are actually about to auto-generate.
-  auto_generating <-
-    (is.null(designs$ensemble) && need_ensemble) ||
-    (is.null(designs$sensitivity) && need_sa)
-  if (auto_generating) {
+  # explicitly will become the required path. Warn only about the design we are
+  # actually about to generate, so a caller who supplied one is not told to
+  # supply it again.
+  if (is.null(designs$ensemble) && need_ensemble) {
     PEcAn.logger::logger.warn(
-      "Internal input design generation is deprecated and will be removed.",
-      "Pass input_design explicitly as the list(design_matrix, samples) returned",
-      "by generate_joint_ensemble_design(); this will become required."
+      "Generating the ensemble design internally is deprecated and will be",
+      "removed. Pass input_design explicitly as the list(design_matrix,",
+      "samples) returned by generate_joint_ensemble_design(); this will",
+      "become required."
     )
   }
 

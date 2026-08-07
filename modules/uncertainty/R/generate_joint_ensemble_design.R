@@ -1,4 +1,5 @@
 #' Generate joint ensemble design for parameter sampling
+#'
 #' Creates a joint ensemble design that maintains parameter correlations across
 #' all sites in a multi-site run. This function generates sample indices that
 #' are shared across sites to ensure consistent parameter sampling.
