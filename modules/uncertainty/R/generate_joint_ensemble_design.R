@@ -102,7 +102,7 @@ generate_joint_ensemble_design <- function(settings,
       trait_mcmc_list   = loaded$trait_mcmc_list,
       ensemble.size     = ensemble_size,
       ens.sample.method = ens.sample.method,
-      sa_quantiles      = NULL,
+      sa_quantiles      = settings$sensitivity.analysis$quantiles,
       do_ensemble       = TRUE,
       independent       = loaded$independent
     )
