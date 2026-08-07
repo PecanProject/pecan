@@ -1,19 +1,10 @@
 # Session 0 - Setup
 
-**Deliverable:** a ready operating environment for the CCMMF Management Tracking
-pipeline (inputs to the MAGIC annual inventory).
-
-**Goal:** prepare a machine to run the operational year pair
-(`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`) for the California Cropland Monitoring
-and Modeling Framework (CCMMF).
-
-**Method / maturity:** environment and repository setup (not a data product).
+**Deliverable:** a ready operating environment (repos, data layout, `setup_env`)
+to run a Management Tracking year-pair update.
 
 **Prerequisite:** install `pecan-all-1.12` before this walkthrough if you do
 not already have it. This session assumes that environment is already installed.
-
-Paths below use `$HOME` as an example; replace them with writable locations on
-your system.
 
 ---
 
@@ -32,8 +23,8 @@ flowchart TB
     GF["LandIQ + gap-fill"]
   end
 
-  subgraph S2["Session 2 - HLS events"]
-    HLS["MSLSP + NDTI events"]
+  subgraph S2["Session 2 - Phenology + tillage"]
+    S2N["MSLSP + NDTI extract"]
   end
 
   subgraph S3["Session 3 - Fert + irrigation"]
@@ -41,20 +32,19 @@ flowchart TB
   end
 
   ENV --> GF
-  GF --> HLS
+  GF --> S2N
   GF --> FI
-  HLS --> OUT["Management event files"]
+  S2N --> OUT["Management event files"]
   FI --> OUT
 ```
-
-This session = Session 0 (env, repos, `$CCMMF_ROOT`, Earthdata).
 
 ---
 
 ## 0.1 Environment
 
 Log into the head node, activate `pecan-all-1.12`, and confirm the R and Python
-package checks pass.
+package checks pass. Examples below use `$HOME` — change them if the
+environment lives somewhere else.
 
 ```bash
 # SSH to your cluster head node.
@@ -97,12 +87,11 @@ continuing.
 
 ---
 
-
-
 ## 0.2 Repos
 
-Clone the PEcAn monitoring branch and `cadwr-landuse`. Scripts live under
-`modules/data.remote/inst/ccmmf` in the PEcAn clone.
+Clone the PEcAn monitoring branch. Pipeline scripts live under
+`modules/data.remote/inst/ccmmf` in that clone. Export that path as
+`$CCMMF_CODE`.
 
 ```bash
 mkdir -p "$HOME/src" && cd "$HOME/src"
@@ -118,10 +107,8 @@ ls "$CCMMF_CODE"
 # landiq-gapfill  phenology  events  hls  tillage  traits  ...
 ```
 
-After merge into `PecanProject/pecan`, clone upstream `develop` and use the same
-`inst/ccmmf` path.
-
-Geometry harmonization for LandIQ (Session 1) is a separate repository:
+Geometry harmonization for Session 1 uses a separate repo, not under
+`$CCMMF_CODE`:
 
 ```bash
 cd "$HOME/src"
@@ -132,8 +119,9 @@ git clone https://github.com/ccmmf/cadwr-landuse.git
 
 ## 0.3 `setup_env.sh`
 
-Source once per shell. This sets years, `$CCMMF_ROOT`, input/lookup/product
-roots, and component roots (`PHENOLOGY_ROOT`, `TILLAGE_ROOT`, ...).
+Create a data workspace and source `setup_env` once per shell. That sets the
+inventory year pair, `$CCMMF_ROOT` defaults, and component roots under
+`$CCMMF_CODE`.
 
 ```bash
 # Optional overrides before sourcing (defaults: 2023/2024, $HOME/ccmmf):
@@ -146,7 +134,7 @@ source "$CCMMF_CODE/documentation/setup_env.sh"
 
 ## 0.4 Data directories
 
-`setup_env` only exports paths; create the directories once:
+`setup_env` only exports paths; create the `$CCMMF_ROOT` tree once:
 
 ```bash
 mkdir -p "$LANDIQ_ROOT"/{raw,harmonized,gapfilled}
@@ -159,7 +147,7 @@ mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event
 mkdir -p "$PRODUCTS_PROJECTIONS"
 ```
 
-**Layout** (three roles: inputs, lookups, products):
+**Layout:**
 
 ```text
 $CCMMF_ROOT/
@@ -180,25 +168,16 @@ $CCMMF_ROOT/
     plant_traits/
     fertilization/                            # N / organic rate tables
   products/
-    inventory/                                # Management Tracking ($PRODUCTS_INVENTORY)
-      phenology/
-      tillage/
-      fertilization/                          # fert/NCC event outputs
+    inventory/                                # Management Tracking outputs
+      phenology/                              # MSLSP extract, match, date gap-fill
+      tillage/                                # NDTI extract
+      fertilization/                          # N / organic event outputs
       irrigation/                             # water-balance + irrig events
-      event_files/                            # planting/harvest/phenology/tillage
-    projections/                              # scenarios / model outputs
+      event_files/                            # planting / harvest / phenology / tillage
+    projections/                              # still empty for now
 ```
 
-| Item | Path | Notes |
-|------|------|--------|
-| Code | `$CCMMF_CODE` | `inst/ccmmf` scripts |
-| Data | `$CCMMF_ROOT` | Inputs + lookups + products |
-| Inventory | `$PRODUCTS_INVENTORY` | Management Tracking outputs |
-| Projections | `$PRODUCTS_PROJECTIONS` | Scenario / model outputs |
-
 ---
-
-
 
 ## 0.5 NASA Earthdata
 
@@ -216,16 +195,14 @@ chmod 0600 ~/.netrc
 
 ---
 
-
-
 ## 0.6 Checklist
 
 - [ ] `pecan-all-1.12` already installed
 - [ ] Activated conda env; R and Python checks pass
-- [ ] Cloned PEcAn monitoring branch; `CCMMF_CODE` points at `inst/ccmmf`
+- [ ] Cloned PEcAn monitoring branch; `$CCMMF_CODE` points at `inst/ccmmf`
 - [ ] Cloned `cadwr-landuse` on `main`
-- [ ] Sourced `setup_env.sh`; `$CCMMF_ROOT`, `$PRODUCTS_INVENTORY`, `$PHENOLOGY_ROOT`, ... set
-- [ ] Data dirs created under `$CCMMF_ROOT` (inputs / lookups / products)
+- [ ] Sourced `setup_env.sh`; `$CCMMF_ROOT` and product/input roots set
+- [ ] `$CCMMF_ROOT` directories created (inputs / lookups / products)
 - [ ] Earthdata account + `~/.netrc` ready (for Session 2)
 
 **Next:** [Session 1 - LandIQ crop identity](01-landiq.md).
