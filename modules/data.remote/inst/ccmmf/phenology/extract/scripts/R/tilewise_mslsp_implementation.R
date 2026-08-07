@@ -7,13 +7,32 @@
 # =============================================================================
 
 # --- Configuration ---
-mslsp_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1")
-mslsp_management   <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+mslsp_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+if (!nzchar(trimws(mslsp_landiq_v4))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+  mslsp_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+}
+mslsp_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(mslsp_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  mslsp_management <- file.path(.root, "management")
+}
 mslsp_parcels_gpkg <- file.path(mslsp_landiq_v4, "parcels-consolidated.gpkg")
 mslsp_crops_parq   <- file.path(mslsp_landiq_v4, "crops_all_years.parq")
 mslsp_cropcode_lookup <- file.path(mslsp_management, "LandIQ_cropCode_lookup_table.csv")
-mslsp_legacy_dir   <- Sys.getenv("mslsp_legacy_dir", "/projectnb/dietzelab/ccmmf/HLS_data")
-mslsp_new_base     <- Sys.getenv("mslsp_new_base", "/projectnb/dietzelab/ccmmf/data_phen/output")
+mslsp_legacy_dir   <- Sys.getenv("mslsp_legacy_dir", "")
+mslsp_new_base     <- Sys.getenv("mslsp_new_base", "")
+if (!nzchar(trimws(mslsp_new_base))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set mslsp_new_base or CCMMF_ROOT.")
+  mslsp_new_base <- file.path(.root, "data_phen/output")
+}
+if (!nzchar(trimws(mslsp_legacy_dir))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (nzchar(.root)) mslsp_legacy_dir <- file.path(.root, "HLS_data")
+}
 mslsp_out_root     <- file.path(mslsp_management, "phenology/raw_mslsp_v4.1.2")
 mslsp_parcel_tilemap <- Sys.getenv(
   "mslsp_parcel_tilemap",

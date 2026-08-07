@@ -6,12 +6,15 @@ column_number,column_name,contents,notes
 5,date,planting date,from mslsp_OGI or planting_date_str when gap-filled
 6,code,CLASS+SUBCLASS string,
 7,PFT,plant functional type,
-8,LAI,leaf area index at planting,from traits + MSLSP EVI
-9,C_LEAF,leaf C kg/m2,
-10,C_STEM,stem C kg/m2,
-11,C_FINEROOT,fine root C kg/m2,
-12,C_COARSEROOT,coarse root C kg/m2,
-13,N_LEAF,leaf N kg/m2,
-14,N_STEM,stem N kg/m2,
-15,N_FINEROOT,fine root N kg/m2,
-16,N_COARSEROOT,coarse root N kg/m2,
+8,assigned_by,match assignment,matched|no_mslsp|no_match (from assigned overlay)
+9,gapfill_date_source,date provenance,mslsp|lm_adoy|mean_crop|none (from gap-fill overlay; NA if no overlay)
+10,LAI,leaf area index at planting,from traits + MSLSP EVI
+11,lai_source,LAI provenance,mslsp_evi|lai_fallback
+12,C_LEAF,leaf C kg/m2,
+13,C_STEM,stem C kg/m2,
+14,C_FINEROOT,fine root C kg/m2,
+15,C_COARSEROOT,coarse root C kg/m2,
+16,N_LEAF,leaf N kg/m2,
+17,N_STEM,stem N kg/m2,
+18,N_FINEROOT,fine root N kg/m2,
+19,N_COARSEROOT,coarse root N kg/m2,

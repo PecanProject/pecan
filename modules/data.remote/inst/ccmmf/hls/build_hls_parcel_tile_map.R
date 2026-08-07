@@ -28,8 +28,22 @@ script_dir <- if (length(fa <- grep("^--file=", commandArgs(trailingOnly = FALSE
 } else "."
 source(file.path(script_dir, "R", "parcel_tilemap.R"))
 
-path_landiq_v4  <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1")
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+path_landiq_v4  <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+if (!nzchar(trimws(path_landiq_v4))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+}
+path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
 path_parcels    <- file.path(path_landiq_v4, "parcels-consolidated.gpkg")
 path_tiles      <- file.path(path_management, "hls_tile_extent.rds")
 path_out        <- path_management

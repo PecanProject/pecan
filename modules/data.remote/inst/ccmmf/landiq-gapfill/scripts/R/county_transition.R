@@ -6,9 +6,13 @@ county_matrix_stem <- function(county_name) {
 }
 
 path_county_transition_dir <- function() {
-  Sys.getenv(
-    "COUNTY_TRANSITION_MATRICES_DIR",
-    "/projectnb/dietzelab/ananyak/county_crop_matrices"
+  env <- trimws(Sys.getenv("COUNTY_TRANSITION_MATRICES_DIR", ""))
+  if (nzchar(env)) {
+    return(env)
+  }
+  stop(
+    "Set COUNTY_TRANSITION_MATRICES_DIR to the county CLASS transition matrix ",
+    "directory (no lab-absolute default; see landiq-gapfill paths.R)."
   )
 }
 

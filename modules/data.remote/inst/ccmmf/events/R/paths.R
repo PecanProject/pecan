@@ -1,4 +1,5 @@
 # Paths for statewide event generation (make_events_statewide.R).
+# Prefer env vars; else derive from CCMMF_ROOT. Source documentation/setup_env.sh.
 
 events_pkg_root <- function() {
   env <- trimws(Sys.getenv("EVENTS_ROOT", ""))
@@ -25,11 +26,22 @@ events_pkg_root <- function() {
 }
 
 events_paths <- function() {
-  path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-  path_landiq <- Sys.getenv(
-    "CCMMF_LANDIQ_V4",
-    "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2"
-  )
+  path_management <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  if (!nzchar(path_management)) {
+    root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(root)) {
+      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    path_management <- file.path(root, "management")
+  }
+  path_landiq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+  if (!nzchar(path_landiq)) {
+    root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(root)) {
+      stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    path_landiq <- file.path(root, "LandIQ-harmonized-v4.1.2")
+  }
   path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
   traits_root <- trimws(Sys.getenv("TRAITS_ROOT", ""))
   if (!nzchar(traits_root) && nzchar(path_code)) {
@@ -48,17 +60,17 @@ events_paths <- function() {
     landiq_dir = path_landiq,
     landiq_crops = file.path(path_landiq, "crops_all_years.parq"),
     cropcode_csv = file.path(path_management, "LandIQ_cropCode_lookup_table.csv"),
-    matched_dir = Sys.getenv(
-      "CCMMF_MATCHED_DIR",
-      file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
-    ),
+    matched_dir = {
+      md <- trimws(Sys.getenv("CCMMF_MATCHED_DIR", ""))
+      if (nzchar(md)) md else file.path(path_management, "phenology", "matched_landiq_mslsp_v4.1.2")
+    },
     pool_script = file.path(traits_root, "pool_calculations_from_lookup.R"),
     tillage_metrics_script = tillage_metrics_script,
     ndti_root = file.path(path_management, "tillage", "ndti_v4.1.2"),
-    out_dir = Sys.getenv(
-      "EVENT_OUTPUT_DIR",
-      file.path(path_management, "event_files_v4.1.2")
-    )
+    out_dir = {
+      od <- trimws(Sys.getenv("EVENT_OUTPUT_DIR", ""))
+      if (nzchar(od)) od else file.path(path_management, "event_files_v4.1.2")
+    }
   )
 }
 

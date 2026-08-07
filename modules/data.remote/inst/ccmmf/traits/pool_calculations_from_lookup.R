@@ -18,7 +18,14 @@ suppressPackageStartupMessages({
 
 #### Paths and configuration
 
-path_management     <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+path_management     <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
 plant_traits_dir    <- file.path(path_management, "plant_traits")
 planting_lookup_csv <- file.path(plant_traits_dir, "planting_lookup.csv")
 harvest_lookup_csv <- file.path(plant_traits_dir, "harvest_lookup.csv")

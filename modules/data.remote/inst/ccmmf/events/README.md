@@ -162,6 +162,10 @@ Column dictionaries: [data/planting_statewide_metadata.csv](data/planting_statew
 [harvest](data/harvest_statewide_metadata.csv),
 [phenology](data/phenology_statewide_metadata.csv),
 [tillage](data/tillage_statewide_metadata.csv).
+Planting / harvest / phenology parquet and JSON carry **`assigned_by`** and
+**`gapfill_date_source`** (`mslsp` | `lm_adoy` | `mean_crop` | `none`) from the
+gap-fill overlay so synthetic dates are distinguishable from observed MSLSP
+(ADV-02). Tillage already surfaces sources via `ogmn_source` / `ogi_source`.
 LAI / pool rules for planting: [traits/README.md](../traits/README.md).
 Clearing harvests look up fractions with `PFT=woody` and `destructive=TRUE`
 (same CSV as routine woody harvest; no `woody_destructive` PFT).

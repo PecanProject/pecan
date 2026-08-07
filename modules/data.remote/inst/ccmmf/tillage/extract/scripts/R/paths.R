@@ -38,7 +38,10 @@ hls_shared_lib_dir <- function() {
 path_ndti_out_root <- function() {
   mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
   if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", "/projectnb/dietzelab/ccmmf"))
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
     mgmt <- file.path(ccmmf, "management")
   }
   file.path(mgmt, "tillage", "ndti_v4.1")
@@ -51,7 +54,10 @@ path_parcel_tilemap <- function() {
   }
   mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
   if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", "/projectnb/dietzelab/ccmmf"))
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
     mgmt <- file.path(ccmmf, "management")
   }
   file.path(mgmt, "hls_parcel_tile_map_v4.1.rds")

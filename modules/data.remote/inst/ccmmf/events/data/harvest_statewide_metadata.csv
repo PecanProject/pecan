@@ -6,8 +6,10 @@ column_number,column_name,contents,notes
 5,date,harvest date,from MSLSP harvest metric / harvest_date_str
 6,CLASS_SUBCLASS,crop code string,
 7,PFT,plant functional type,
-8,destructive,woody destructive harvest flag,
-9,frac_above_removed_0to1,fraction aboveground removed,
-10,frac_above_to_litter_0to1,fraction aboveground to litter,
-11,frac_below_removed_0to1,fraction belowground removed,
-12,frac_below_to_litter_0to1,fraction belowground to litter,
+8,assigned_by,match assignment,matched|no_mslsp|no_match (from assigned overlay)
+9,gapfill_date_source,date provenance,mslsp|lm_adoy|mean_crop|none (from gap-fill overlay; NA if no overlay)
+10,destructive,woody destructive harvest flag,
+11,frac_above_removed_0to1,fraction aboveground removed,
+12,frac_above_to_litter_0to1,fraction aboveground to litter,
+13,frac_below_removed_0to1,fraction belowground removed,
+14,frac_below_to_litter_0to1,fraction belowground to litter,

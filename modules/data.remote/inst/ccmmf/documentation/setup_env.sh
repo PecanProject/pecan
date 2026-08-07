@@ -38,4 +38,9 @@ export HLS_PARCEL_TILEMAP="$PARCEL_MAP"
 
 export CCMMF_MATCHED_DIR="$CCMMF_MANAGEMENT/phenology/matched_landiq_mslsp_v4.1.2"
 
+# Optional lab-specific imagery / transition inputs (no defaults in R):
+#   export HLSL_BASE=...
+#   export HLSS_BASE=...
+#   export COUNTY_TRANSITION_MATRICES_DIR=...
+
 echo "[setup_env] ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"

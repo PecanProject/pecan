@@ -6,10 +6,11 @@ landiq_product_root <- function() {
   if (nzchar(trimws(env))) {
     return(normalizePath(env, mustWork = FALSE))
   }
-  file.path(
-    Sys.getenv("CCMMF_ROOT", "/projectnb/dietzelab/ccmmf"),
-    "LandIQ-harmonized-gapfill"
-  )
+  root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(root)) {
+    stop("Set CCMMF_LANDIQ_GAPFILL_PRODUCT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  file.path(root, "LandIQ-harmonized-gapfill")
 }
 
 resolve_landiq_product_source_parquet <- function() {
@@ -374,7 +375,11 @@ build_landiq_product <- function(
   # Cover-crop flag (Violet): candidate CLASS/SUBCLASS + season alternation.
   # Computed on non-absent rows, joined back so padded seasons stay in product.
   .code <- trimws(Sys.getenv("CCMMF_CODE", ""))
-  .mgmt <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+  .mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+  if (!nzchar(.mgmt)) {
+    .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (nzchar(.root)) .mgmt <- file.path(.root, "management")
+  }
   cover_candidates <- c(
     file.path(landiq_gapfill_root(), "scripts", "R", "cover_crop_landiq.R"),
     if (nzchar(.code)) {

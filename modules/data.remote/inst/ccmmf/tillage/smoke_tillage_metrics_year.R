@@ -6,7 +6,7 @@
 # Example:
 #   Rscript smoke_tillage_metrics_year.R 2021 40
 #
-# Env: CCMMF_MANAGEMENT (default /projectnb/dietzelab/ccmmf/management)
+# Env: CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh)
 #      TILLAGE_BUFFER_YEARS -- same semantics as make_events_statewide.R (default 1)
 
 suppressPackageStartupMessages({
@@ -28,7 +28,14 @@ if (is.na(n_take) || n_take < 1L) {
   n_take <- 30L
 }
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
 source(file.path(path_management, "scripts/phenology/matched_paths.R"))
 matched_dir <- matched_landiq_dir(path_management)
 ndti_root <- file.path(path_management, "tillage", "ndti_v4.1.2")

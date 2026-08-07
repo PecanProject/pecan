@@ -7,7 +7,7 @@
 #   Rscript gapfill_phase0_audit.R
 #   RUN_LANDIQ_MSLSP_OVERLAP_ONLY=1 Rscript gapfill_phase0_audit.R   # overlap CSV only (no assigned re-read)
 # Env:
-#   CCMMF_MANAGEMENT -- default /projectnb/dietzelab/ccmmf/management
+#   CCMMF_MANAGEMENT or CCMMF_ROOT -- source documentation/setup_env.sh
 #   CCMMF_MATCHED_DIR -- default phenology/matched_landiq_mslsp_v4.1.2
 #   AUDIT_YEAR_MIN, AUDIT_YEAR_MAX -- default 2016 and 2023
 #   RUN_LANDIQ_MSLSP_OVERLAP -- if "1", also compare parcel sets (slower; run after main audit)
@@ -19,7 +19,14 @@ suppressPackageStartupMessages({
   library(dplyr)
 })
 
-path_management <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
+path_management <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
 .path_code <- trimws(Sys.getenv("CCMMF_CODE", ""))
 .script_dir <- tryCatch(
   dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1L], mustWork = FALSE)),
@@ -38,10 +45,17 @@ if (is.na(.matched_paths) || !nzchar(.matched_paths)) {
 source(.matched_paths)
 matched_dir <- matched_landiq_dir(path_management)
 mslsp_root <- file.path(path_management, "phenology", "raw_mslsp_v4.1.2")
-landiq_parq <- file.path(
-  Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2"),
-  "crops_all_years.parq"
-)
+landiq_parq <- {
+  .liq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+  if (!nzchar(.liq)) {
+    .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(.root)) {
+      stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    .liq <- file.path(.root, "LandIQ-harmonized-v4.1.2")
+  }
+  file.path(.liq, "crops_all_years.parq")
+}
 out_dir <- file.path(matched_dir, "gapfill_phase0_audit")
 year_min <- as.integer(Sys.getenv("AUDIT_YEAR_MIN", "2016"))
 year_max <- as.integer(Sys.getenv("AUDIT_YEAR_MAX", "2024"))

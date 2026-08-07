@@ -5,7 +5,7 @@
 #   ./match_landiq_mslsp.sh YEAR
 #   YEAR=2024 ./match_landiq_mslsp.sh
 #
-# Requires: source your ccmmf_env.sh first.
+# Requires: source your documentation/setup_env.sh first.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 YEAR="${1:-${YEAR:-}}"

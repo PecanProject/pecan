@@ -69,6 +69,22 @@ load_matched_for_events <- function(year, matched_dir,
     matched[, pft_l := NULL]
   }
 
+  # Date provenance for event products (ADV-02): always present on writers.
+  if (!"assigned_by" %in% names(matched)) {
+    matched[, assigned_by := NA_character_]
+  } else {
+    matched[, assigned_by := as.character(assigned_by)]
+  }
+  if (!"gapfill_date_source" %in% names(matched)) {
+    if ("gapfill_planting_source" %in% names(matched)) {
+      matched[, gapfill_date_source := as.character(gapfill_planting_source)]
+    } else {
+      matched[, gapfill_date_source := NA_character_]
+    }
+  } else {
+    matched[, gapfill_date_source := as.character(gapfill_date_source)]
+  }
+
   # Phenology-only path: need leaf-on/off dates (observed or gap-filled)
   if (isTRUE(run_phenology) && !isTRUE(run_planting) && !isTRUE(run_harvest)) {
     n_ev <- nrow(matched)

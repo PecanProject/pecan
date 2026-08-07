@@ -23,7 +23,9 @@ build_phenology_events <- function(matched, year, out_dir) {
       data.table::fifelse(is.na(yp), yr_fallback, as.integer(yp))
     },
     leafonday = as.character(mslsp_50PCGI),
-    leafoffday = as.character(mslsp_50PCGD)
+    leafoffday = as.character(mslsp_50PCGD),
+    assigned_by = as.character(assigned_by),
+    gapfill_date_source = as.character(gapfill_date_source)
   )]
   pheno <- pheno[
     !is.na(leafonday) & !is.na(leafoffday) &
@@ -42,7 +44,9 @@ build_phenology_events <- function(matched, year, out_dir) {
         event_type = rows$event_type[i],
         year = rows$year[i],
         leafonday = rows$leafonday[i],
-        leafoffday = rows$leafoffday[i]
+        leafoffday = rows$leafoffday[i],
+        assigned_by = rows$assigned_by[i],
+        gapfill_date_source = rows$gapfill_date_source[i]
       )
     }
   )

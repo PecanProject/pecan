@@ -4,3 +4,5 @@ column_number,column_name,contents,notes
 3,year,year of mslsp_Peak,
 4,leafonday,leaf-on date,from mslsp_50PCGI
 5,leafoffday,leaf-off date,from mslsp_50PCGD
+6,assigned_by,match assignment,matched|no_mslsp|no_match (from assigned overlay)
+7,gapfill_date_source,date provenance,mslsp|lm_adoy|mean_crop|none (from gap-fill overlay; NA if no overlay)

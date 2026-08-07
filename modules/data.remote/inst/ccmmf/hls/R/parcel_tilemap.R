@@ -10,7 +10,10 @@ parcel_tilemap_default_path <- function() {
   }
   mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
   if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", "/projectnb/dietzelab/ccmmf"))
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
     mgmt <- file.path(ccmmf, "management")
   }
   file.path(mgmt, "hls_parcel_tile_map_v4.1.rds")
@@ -81,16 +84,30 @@ read_tile_to_parcels <- function(path = tile_to_parcels_default_path()) {
 }
 
 ag_parcel_ids_for_year <- function(year,
-                                   crops_parq = file.path(
-                                     Sys.getenv("CCMMF_LANDIQ_V4",
-                                                "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1"),
-                                     "crops_all_years.parq"
-                                   ),
-                                   cropcode_csv = file.path(
-                                     Sys.getenv("CCMMF_MANAGEMENT",
-                                                "/projectnb/dietzelab/ccmmf/management"),
-                                     "LandIQ_cropCode_lookup_table.csv"
-                                   )) {
+                                   crops_parq = NULL,
+                                   cropcode_csv = NULL) {
+  if (is.null(crops_parq) || !nzchar(trimws(crops_parq))) {
+    landiq <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+    if (!nzchar(landiq)) {
+      root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+      if (!nzchar(root)) {
+        stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT.")
+      }
+      landiq <- file.path(root, "LandIQ-harmonized-v4.1")
+    }
+    crops_parq <- file.path(landiq, "crops_all_years.parq")
+  }
+  if (is.null(cropcode_csv) || !nzchar(trimws(cropcode_csv))) {
+    mgmt <- trimws(Sys.getenv("CCMMF_MANAGEMENT", ""))
+    if (!nzchar(mgmt)) {
+      root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+      if (!nzchar(root)) {
+        stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT.")
+      }
+      mgmt <- file.path(root, "management")
+    }
+    cropcode_csv <- file.path(mgmt, "LandIQ_cropCode_lookup_table.csv")
+  }
   yr <- as.integer(year)
   lookup <- data.table::fread(cropcode_csv)
   ag_pairs <- unique(lookup[lookup$is_agricultural == TRUE,

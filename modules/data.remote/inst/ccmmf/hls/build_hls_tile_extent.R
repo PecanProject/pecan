@@ -21,11 +21,30 @@ sf::sf_use_s2(FALSE)
 
 # --- Configuration ---
 # Override via env: CCMMF_MANAGEMENT, CCMMF_LANDIQ_V4, HLSL_BASE, HLSS_BASE
-path_management   <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-path_parcels_gpkg <- Sys.getenv("CCMMF_LANDIQ_GPKG",
-  file.path(Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1"), "parcels-consolidated.gpkg"))
-hlsl_base         <- Sys.getenv("HLSL_BASE", "/projectnb/dietzelab/XinyuanJi/State_of_California_HLSL")
-hlss_base         <- Sys.getenv("HLSS_BASE", "/projectnb/dietzelab/XinyuanJi/State_of_California_HLSS")
+path_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
+path_landiq_v4 <- trimws(Sys.getenv("CCMMF_LANDIQ_V4", ""))
+if (!nzchar(path_landiq_v4)) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT.")
+  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+}
+path_parcels_gpkg <- {
+  gpkg <- trimws(Sys.getenv("CCMMF_LANDIQ_GPKG", ""))
+  if (nzchar(gpkg)) gpkg else file.path(path_landiq_v4, "parcels-consolidated.gpkg")
+}
+hlsl_base         <- Sys.getenv("HLSL_BASE", "")
+hlss_base         <- Sys.getenv("HLSS_BASE", "")
+if (!nzchar(trimws(hlsl_base)) || !nzchar(trimws(hlss_base))) {
+  stop("Set HLSL_BASE and HLSS_BASE to HLS L30/S30 imagery roots (no lab default).")
+}
+
 path_hls_tile_extent <- file.path(path_management, "hls_tile_extent.rds")
 
 # --- CRS: use parcels so tile extent matches LandIQ / NDTI ---

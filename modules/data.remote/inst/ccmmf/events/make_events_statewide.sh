@@ -5,7 +5,7 @@
 #   ./make_events_statewide.sh YEAR phenology|planting|harvest|tillage
 #   EVENT_TYPE=harvest ./make_events_statewide.sh 2024
 #
-# Requires: source your ccmmf_env.sh first (CCMMF_MANAGEMENT, CCMMF_LANDIQ_V4, ...).
+# Requires: source your documentation/setup_env.sh first (CCMMF_MANAGEMENT, CCMMF_LANDIQ_V4, ...).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 YEAR="${1:-${YEAR:-}}"

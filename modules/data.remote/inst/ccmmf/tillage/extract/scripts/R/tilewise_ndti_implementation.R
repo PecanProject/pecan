@@ -23,12 +23,25 @@ terra::terraOptions(threads = max(1L, suppressWarnings(
 )))
 
 # --- Configuration ---
-ndti_management   <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-ndti_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1")
+ndti_management   <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(ndti_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  ndti_management <- file.path(.root, "management")
+}
+ndti_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+if (!nzchar(trimws(ndti_landiq_v4))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+  ndti_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1")
+}
 ndti_parcels_gpkg <- file.path(ndti_landiq_v4, "parcels-consolidated.gpkg")
 ndti_crops_parq   <- file.path(ndti_landiq_v4, "crops_all_years.parq")
 ndti_cropcode_csv <- file.path(ndti_management, "LandIQ_cropCode_lookup_table.csv")
-ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "/projectnb/dietzelab/ccmmf")
+ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "")
+if (!nzchar(trimws(ndti_ccmmf_root))) {
+  stop("Set CCMMF_ROOT (source documentation/setup_env.sh).")
+}
 # HLS reflectance for NDTI — phenology workflow layout under data_phen
 # (see phenology/extract/README.md — upstream HLS_Phenology repo).
 ndti_imagery_layout <- tolower(Sys.getenv("HLS_IMAGERY_LAYOUT", "phenology"))
@@ -36,8 +49,11 @@ ndti_imagery_root   <- Sys.getenv(
   "HLS_IMAGERY_ROOT",
   file.path(ndti_ccmmf_root, "data_phen/HLS_data_sort/HLS30")
 )
-ndti_hlsl_base <- Sys.getenv("HLSL_BASE", "/projectnb/dietzelab/XinyuanJi/State_of_California_HLSL")
-ndti_hlss_base <- Sys.getenv("HLSS_BASE", "/projectnb/dietzelab/XinyuanJi/State_of_California_HLSS")
+ndti_hlsl_base <- Sys.getenv("HLSL_BASE", "")
+ndti_hlss_base <- Sys.getenv("HLSS_BASE", "")
+if (!nzchar(trimws(ndti_hlsl_base)) || !nzchar(trimws(ndti_hlss_base))) {
+  stop("Set HLSL_BASE and HLSS_BASE (no lab default).")
+}
 ndti_out_root     <- file.path(ndti_management, "tillage/ndti_v4.1")
 ndti_parcel_tilemap <- Sys.getenv(
   "NDTI_PARCEL_TILEMAP",

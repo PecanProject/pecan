@@ -28,8 +28,22 @@ suppressPackageStartupMessages({
 })
 
 # --- Configuration ---
-path_management  <- Sys.getenv("CCMMF_MANAGEMENT", "/projectnb/dietzelab/ccmmf/management")
-path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2")
+path_management  <- Sys.getenv("CCMMF_MANAGEMENT", "")
+if (!nzchar(trimws(path_management))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_MANAGEMENT or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_management <- file.path(.root, "management")
+}
+path_landiq_v4    <- Sys.getenv("CCMMF_LANDIQ_V4", "")
+if (!nzchar(trimws(path_landiq_v4))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) {
+    stop("Set CCMMF_LANDIQ_V4 or CCMMF_ROOT (source documentation/setup_env.sh).")
+  }
+  path_landiq_v4 <- file.path(.root, "LandIQ-harmonized-v4.1.2")
+}
 combined_root     <- file.path(path_management, "phenology/raw_mslsp_v4.1.2")
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")
 cropcode_csv      <- file.path(path_management, "LandIQ_cropCode_lookup_table.csv")

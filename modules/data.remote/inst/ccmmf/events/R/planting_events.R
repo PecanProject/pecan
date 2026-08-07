@@ -113,6 +113,8 @@ build_planting_events <- function(matched, year, out_dir, pool_env, lk) {
         date = planting_date_str[i],
         code = code,
         PFT = row$landiq_PFT,
+        assigned_by = as.character(row$assigned_by[1]),
+        gapfill_date_source = as.character(row$gapfill_date_source[1]),
         LAI = as.numeric(p$LAI[1]),
         lai_source = lai_source,
         C_LEAF = as.numeric(p$C_LEAF[1]),
@@ -169,6 +171,8 @@ build_planting_events <- function(matched, year, out_dir, pool_env, lk) {
         fineroot_n_kg_m2 = rows$N_FINEROOT[i],
         coarseroot_n_kg_m2 = rows$N_COARSEROOT[i],
         # Provenance (optional for SIPNET; kept for audit)
+        assigned_by = rows$assigned_by[i],
+        gapfill_date_source = rows$gapfill_date_source[i],
         lai_source = rows$lai_source[i],
         sla_src = rows$sla_src[i],
         src_9 = rows$src_9[i],

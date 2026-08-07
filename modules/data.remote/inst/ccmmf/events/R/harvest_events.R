@@ -71,6 +71,8 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
         date = as.character(row$harvest_date_str)[1],
         CLASS_SUBCLASS = code,
         PFT = row$landiq_PFT,
+        assigned_by = as.character(row$assigned_by[1]),
+        gapfill_date_source = as.character(row$gapfill_date_source[1]),
         destructive = isTRUE(dest),
         frac_above_removed_0to1 = as.numeric(h$AGB_REMOVED[1]),
         frac_above_to_litter_0to1 = as.numeric(h$AGB_LITTER[1]),
@@ -124,6 +126,8 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
       date = character(),
       CLASS_SUBCLASS = character(),
       PFT = character(),
+      assigned_by = character(),
+      gapfill_date_source = character(),
       destructive = logical(),
       frac_above_removed_0to1 = numeric(),
       frac_above_to_litter_0to1 = numeric(),
@@ -159,6 +163,8 @@ build_harvest_events <- function(matched, year, out_dir, pool_env, lk,
         frac_below_removed_0to1 = rows$frac_below_removed_0to1[i],
         frac_below_to_litter_0to1 = rows$frac_below_to_litter_0to1[i],
         # Provenance (optional for SIPNET; kept for audit)
+        assigned_by = rows$assigned_by[i],
+        gapfill_date_source = rows$gapfill_date_source[i],
         lookup_pft = rows$lookup_pft[i],
         src_agb_removed = rows$src_agb_removed[i],
         src_agb_litter = rows$src_agb_litter[i]
@@ -229,7 +235,9 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
       tolower(trimws(as.character(landiq_PFT))) == "woody",
       .(
         date = as.character(harvest_date_str)[1L],
-        season = as.integer(season)[1L]
+        season = as.integer(season)[1L],
+        assigned_by = as.character(assigned_by)[1L],
+        gapfill_date_source = as.character(gapfill_date_source)[1L]
       ),
       by = parcel_id
     ]
@@ -239,7 +247,9 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
     date_by_parcel <- data.table::data.table(
       parcel_id = character(),
       date = character(),
-      season = integer()
+      season = integer(),
+      assigned_by = character(),
+      gapfill_date_source = character()
     )
   }
 
@@ -277,6 +287,8 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
         date = as.character(row$date),
         CLASS_SUBCLASS = code,
         PFT = "woody",
+        assigned_by = as.character(row$assigned_by[1]),
+        gapfill_date_source = as.character(row$gapfill_date_source[1]),
         destructive = TRUE,
         frac_above_removed_0to1 = as.numeric(h$AGB_REMOVED[1]),
         frac_above_to_litter_0to1 = as.numeric(h$AGB_LITTER[1]),
