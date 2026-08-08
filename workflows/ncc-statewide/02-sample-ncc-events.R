@@ -42,9 +42,7 @@ if (nrow(events) == 0) {
 }
 
 # join on source as well as material: some materials carry two source rows,
-# so material alone would cross pair one source's C:N with another's rate.
-# wood is excluded from annuals: high C:N immobilizes more N than a row crop
-# rotation absorbs in one season
+# so material alone would cross pair one source's C:N with another's rate
 props <- PEcAn.data.land::ca_organic_amendment_properties
 rates <- PEcAn.data.land::ca_organic_amendment_app_rate
 amendments <- dplyr::inner_join(props, rates, by = c("material", "source"))
@@ -58,30 +56,20 @@ if (nrow(unmatched) > 0L) {
   )
 }
 
-allowed_classes <- list(
-  annual = c("food", "yard", "ag"),
-  perennial = c("food", "yard", "ag", "wood")
-)
+# annuals draw the row crop rate, perennials the orchard rate. every material is
+# eligible for both families: SIPNET already slows decomposition of high C:N
+# material through the litter C:N term in calcCNEffect, so screening materials
+# out here would double count what the model does
 family_structure <- c(annual = "rows", perennial = "trees")
 
-# a class outside this set would join cleanly but be excluded from every pool
-# without trace, so check it rather than let materials disappear
-unknown_class <- setdiff(amendments$material_class, unlist(allowed_classes))
-if (length(unknown_class) > 0L) {
-  PEcAn.logger::logger.severe(
-    "material_class values not covered by allowed_classes: ",
-    paste(sort(unknown_class), collapse = ", "))
-}
-
-# group each family's eligible rows by material. drawing the joined rows
-# directly would weight a material by how many sources report it, so the three
-# two-source materials would come up twice as often as any other
+# group each family's rows by material. drawing the joined rows directly would
+# weight a material by how many sources report it, so the three two-source
+# materials would come up twice as often as any other
 pool_by_material <- function(family) {
-  rows <- which(amendments$crop_structure == family_structure[[family]] &
-                amendments$material_class %in% allowed_classes[[family]])
+  rows <- which(amendments$crop_structure == family_structure[[family]])
   split(rows, amendments$material[rows])
 }
-families <- stats::setNames(names(allowed_classes), names(allowed_classes))
+families <- stats::setNames(names(family_structure), names(family_structure))
 pools <- lapply(families, pool_by_material)
 
 # uniform over materials, then uniform over that material's sources, so source
