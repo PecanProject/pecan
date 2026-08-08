@@ -258,16 +258,26 @@ names(ensemble_output) <- runids
 model_output <- ensemble_output[[1]]
 available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
 
+# sub-daily fluxes are too spiky to read as ten overlaid lines, so keep a
+# daily-averaged copy of each member for those plots
+daily_output <- lapply(ensemble_output, function(member) {
+  day <- as.Date(member$posix)
+  vars <- setdiff(names(member), c("posix", "time_bounds"))
+  averaged <- lapply(member[vars], function(x) as.numeric(tapply(x, day, mean, na.rm = TRUE)))
+  names(averaged) <- vars
+  c(list(posix = as.POSIXct(sort(unique(day)), tz = "UTC")), averaged)
+})
+
 # draw one line per ensemble member, so the spread across the ensemble is visible
-plot_ensemble <- function(vars, cols, ylab, main, labels = vars) {
+plot_ensemble <- function(vars, cols, ylab, main, labels = vars, data = ensemble_output) {
   yrange <- range(
-    unlist(lapply(ensemble_output, function(member) unlist(member[vars]))),
+    unlist(lapply(data, function(member) unlist(member[vars]))),
     na.rm = TRUE
   )
   # empty plot drawn off the real time axis, so the x axis stays dates
   plot(
-    ensemble_output[[1]]$posix,
-    ensemble_output[[1]][[vars[1]]],
+    data[[1]]$posix,
+    data[[1]][[vars[1]]],
     type = "n",
     ylim = yrange,
     xlab = "Date",
@@ -275,7 +285,7 @@ plot_ensemble <- function(vars, cols, ylab, main, labels = vars) {
     main = main
   )
   for (i in seq_along(vars)) {
-    for (member in ensemble_output) {
+    for (member in data) {
       lines(member$posix, member[[vars[i]]], col = adjustcolor(cols[i], alpha.f = 0.4))
     }
   }
@@ -316,12 +326,15 @@ Each plot draws one line per ensemble member. The members differ only in their p
 
 ## Plot Carbon Fluxes
 
+GPP and NPP are sub-daily fluxes, so ten overlaid members would just fill the panel. These are averaged to daily values first, which is enough to see the members apart.
+
 ```{r plot-carbon-fluxes}
 plot_ensemble(
   vars = c("GPP", "NPP"),
   cols = c("green", "blue"),
   ylab = "Carbon Flux (kg C m-2 s-1)",
-  main = "Carbon Fluxes Over Time"
+  main = "Carbon Fluxes Over Time (daily average)",
+  data = daily_output
 )
 ```
 
@@ -339,6 +352,8 @@ plot_ensemble(
 
 ## Plot Water Variables
 
+Soil moisture separates into ten lines once the growing season starts, but snow water equivalent stays a single line. That is expected: snow is driven by the met input, which is the same file for every member, while soil moisture responds to the sampled parameters.
+
 ```{r plot-water-variables}
 plot_ensemble(
   vars = c("SoilMoist", "SWE"),
@@ -349,15 +364,22 @@ plot_ensemble(
 )
 ```
 
-## Plot LAI and Biomass
+## Plot LAI and Above Ground Wood kar de.
 
 ```{r plot-lai-biomass}
 plot_ensemble(
-  vars = c("LAI", "AbvGrndWood"),
-  cols = c("darkgreen", "brown"),
-  labels = c("LAI", "Above Ground Wood"),
-  ylab = "LAI (m2 m-2) / Wood (kg C m-2)",
-  main = "Leaf Area Index and Above Ground Wood Over Time"
+  vars = "LAI",
+  cols = "darkgreen",
+  ylab = "LAI (m2 m-2)",
+  main = "Leaf Area Index Over Time"
+)
+
+plot_ensemble(
+  vars = "AbvGrndWood",
+  cols = "brown",
+  labels = "Above Ground Wood",
+  ylab = "Wood (kg C m-2)",
+  main = "Above Ground Wood Over Time"
 )
 ```
 
