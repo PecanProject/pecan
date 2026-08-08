@@ -25,7 +25,7 @@ Select a profile (`default`, `medium`, `all`) and run from PEcAn project root:
 NCC_PROJECT=default bash workflows/ncc-statewide/run-statewide.sh
 ```
 
-01 builds a design table and tags each PFT as annual (row, hay, rice) or perennial (woody). 02 runs Bernoulli gate, picks a material per fired row from the joined amendment tables (constrained to CalRecycle classes that fit PFT family, and to the crop structure that matches the family), draws app rate and C:N from that material's envelope. Materials are drawn uniformly, then a source is drawn uniformly among the materials reported by more than one source, so source disagreement enters the ensemble without biasing which material is selected. 03 converts units, carries all N as organic N, and writes parcel range sharded parquet.
+01 builds a design table and tags each PFT as annual (row, hay, rice) or perennial (woody). 02 runs Bernoulli gate, picks a material per fired row from the joined amendment tables, using the application rate that matches the family (row crop or orchard), and draws app rate and C:N from that material's envelope. Materials are drawn uniformly, then a source is drawn uniformly among the materials reported by more than one source, so source disagreement enters the ensemble without biasing which material is selected. 03 converts units, carries all N as organic N, and writes parcel range sharded parquet.
 
 `check-result.R` reads the output back, asserts the invariants listed under Checks, and
 prints a summary.
@@ -41,7 +41,7 @@ not established distributions.
 | quantity | distribution | basis |
 |---|---|---|
 | whether an application occurs | Bernoulli(`p_apply_default`), default 0.10 | scenario assumption; no statewide survey of organic amendment frequency is available. Drawn per crop cycle, see Known limitations |
-| material | uniform over distinct eligible materials | no statewide data on the relative frequency of amendment types, so no material is favored |
+| material | uniform over the 29 distinct materials | no statewide data on the relative frequency of amendment types, so no material is favored |
 | source, where a material is reported by more than one | uniform over that material's sources | keeps disagreement between sources in the ensemble instead of averaging it away |
 | application rate | uniform on `[app_rate_min, app_rate_max]` | sources report an envelope, not a distribution |
 | C:N | uniform on `[cn_min, cn_max]` | sources report an envelope, not a distribution |
@@ -51,16 +51,15 @@ Because applications precede green-up by up to 210 days, a crop cycle in year Y 
 an event dated Y-1. Event dates therefore span one year earlier than the configured crop
 years, and include 2017 even though 2017 has no crop cycles of its own.
 
-Eligibility rules, applied before the material draw:
+The only rule applied before the material draw is the rate lookup: annuals draw the row
+crop rate and perennials the orchard rate, matching the `crop_structure` split in
+`ca_organic_amendment_app_rate`. Every material is eligible for both families, with no
+screening by `material_class` or C:N.
 
-- Annuals draw the row crop rate, perennials the orchard rate, matching the
-  `crop_structure` split in `ca_organic_amendment_app_rate`.
-- `wood` class materials are excluded from annuals. Their C:N is high enough that net N
-  immobilization is expected within a single row crop season, which SIPNET cannot
-  represent since it has no immobilization flux.
-- All other CalRecycle classes present in the data (`ag`, `food`, `yard`) are eligible
-  for both families. A `material_class` outside this set raises an error rather than
-  being silently excluded.
+SIPNET represents the effect of a high C:N amendment itself. Litter breakdown is scaled by
+`calcCNEffect(kCN, litterC, litterN) = kCN / (kCN + C:N)`, so a material that raises the
+litter pool C:N decomposes, and releases N, more slowly. At `kCN = 80` wood chips at C:N
+300 break down at roughly a quarter the rate of poultry litter at C:N 12.5.
 
 # Known limitations
 
