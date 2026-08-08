@@ -83,21 +83,21 @@ args <- optparse::OptionParser(option_list = options) |>
 ## Whew, that was a lot of lines to define a few defaults!
 
 
-
+# Load site info
 site_info <- read.csv(args$site_file)
 
+# Ensure each site has one row
 stopifnot(
-  length(unique(site_info$id)) == nrow(site_info),
-  all(site_info$lat > 0), # just to simplify grid naming below
-  all(site_info$lon < 0)
+  length(unique(site_info$id)) == nrow(site_info)
 )
+
+# Parse lat lon
 site_info <- site_info |>
   dplyr::mutate(
     # match locations to half-degree ERA5 grid cell centers
-    # CAUTION: Calculation only correct when all lats are N and all lons are W!
     ERA5_grid_cell = paste0(
-      ((lat + 0.25) %/% 0.5) * 0.5, "N_",
-      ((abs(lon) + 0.25) %/% 0.5) * 0.5, "W"
+      ((lat + 0.25) %/% 0.5) * 0.5, ifelse(lat > 0, "N_", "S_"),
+      ((abs(lon) + 0.25) %/% 0.5) * 0.5, ifelse(lon > 0, "E", "W")
     ),
     # Hack: prepare.settings wants every site to have a name as well as an ID.
     # It's probably never used downstream, but add here to quiet the check.
@@ -105,6 +105,7 @@ site_info <- site_info |>
     name = id
   )
 
+# Load settings and set specifications
 settings_init <- read.settings(args$template_file) |>
   setDates(args$start_date, args$end_date)
 
@@ -112,33 +113,6 @@ settings_init$info$notes <- paste("Compiled from", args$template_file,
                                   "at", Sys.time())
 
 settings_init$ensemble$size <- args$n_ens
-
-# Hack: setEnsemblePaths leaves all path components other than siteid
-# identical across sites.
-# To use site-specific grid id, I'll string-replace each siteid
-id2grid <- function(s) {
-  # replacing in place to preserve names (easier than thinking)
-  for (p in seq_along(s$run$inputs$met$path)) {
-    s$run$inputs$met$path[[p]] <- gsub(
-      pattern = s$run$site$id,
-      replacement = s$run$site$ERA5_grid_cell,
-      x = s$run$inputs$met$path[[p]]
-    )
-  }
-  s
-}
-# Also replace start and end dates
-dates2grid <- function(s) {
-  for (p in seq_along(s$run$inputs$met$path)) {
-    s$run$inputs$met$path[[p]] <- gsub(
-      pattern = "DATES-HERE",
-      replacement = paste0(s$run$site$met.start, ".",
-                           s$run$site$met.end),
-      x = s$run$inputs$met$path[[p]]
-    )
-  }
-  s
-}
 
 settings <- settings_init |>
   
@@ -149,7 +123,6 @@ settings <- settings_init |>
   # Note the run dates differ by site (overridden below);
   # for ensemble we take a range that includes all.
   setDates(min(site_info$met.start), max(site_info$met.end)) |>
-  
   
   # Takes all sites listed in site_info.csv,
   # adds empty path templates to each `run$site.[siteid]`
@@ -179,7 +152,9 @@ settings <- settings_init |>
     path = file.path("data", "PEPRMT_specific_inputs"),
     path_template = "{path}/{id}_formatted.csv"
   ) |>
-  papply(id2grid) |> |>
+  # helper functions from peprmt/R/helpers.R to address having multiple grid 
+  # cells and date ranges in the same site_info file
+  papply(id2grid) |> 
   papply(dates2grid)
 
 # Update just the first component of the output directory,
@@ -199,6 +174,7 @@ settings$host$outdir <- sub("^output", args$output_dir_name,
 settings$host$rundir <- sub("^output", args$output_dir_name,
                             settings$host$rundir)
 
+# Export
 write.settings(
   settings,
   outputfile = basename(args$output_file),
