@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Added ensemble calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark (rank histogram, spread-skill ratio, coverage, reliability) for assessing whether an ensemble's spread is well calibrated against observations, complementing the ensemble-mean benchmarking.
+- Added regional calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark: break the ensemble calibration assessment down by land cover class and by EPA/CEC ecoregion, reusing the ensemble calibration diagnostics, with a notebook and figures.
 - Added `make_scorecard.sh` and documentation to `inst/ilamb/` in PEcAn.benchmark for generating and serving the ILAMB HTML scorecard.
 - New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
     with units attached as an attribute.
