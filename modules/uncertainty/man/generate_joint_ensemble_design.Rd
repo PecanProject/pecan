@@ -56,11 +56,17 @@ Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}
 and \code{\link{get_parameter_samples}}, or reused when a \code{samples}
 bundle is supplied. Nothing is read from or written to \code{samples.Rdata}.
 
-\code{load_pft_posteriors} resolves each PFT's posterior: it uses
-\code{pft$posterior.files} when that is set, otherwise works out a directory
-from \code{pft$outdir} or \code{pft$posteriorid}, then reads
-\code{post.distns.Rdata} there, falling back to \code{prior.distns.Rdata},
-and picks up MCMC chains from \code{trait.mcmc*.Rdata} where they exist.
+\code{load_pft_posteriors} finds and loads the parameter distributions.
+
+In practice it:
+- uses pft$posterior.files directly when it is defined (an Rdata file with
+  post.distns or prior.distns),
+- otherwise figures out an output directory from pft$outdir or, if needed,
+  via pft$posteriorid in the database,
+- then looks in that directory for post.distns.Rdata, falling back to
+  prior.distns.Rdata,
+- and, for MCMC posteriors, looks up trait.mcmc*.Rdata linked to the same
+  posteriorid or a trait.mcmc.Rdata file in that directory.
 
 Difference from generate_OAT_SA_design: This function samples inputs
 randomly or quasi-randomly, while generate_OAT_SA_design holds all
