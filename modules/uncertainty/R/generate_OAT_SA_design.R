@@ -5,16 +5,36 @@
 #' one-at-a-time across quantiles. This differs from ensemble design, where all
 #' inputs vary together.
 #'
+#' @details
+#' ## Settings requirements
+#'
+#' This function directly uses:
+#' \itemize{
+#'   \item \code{settings$pfts} - List of PFTs (extracts \code{posterior.files})
+#'   \item \code{settings$ensemble$samplingspace} - Input types to include in design
+#'   \item \code{settings$sensitivity.analysis$quantiles} - SA quantiles, when
+#'     sampling here rather than reusing a supplied bundle
+#' }
+#'
+#' When \code{samples = NULL}, \code{\link{load_pft_posteriors}} additionally
+#' uses \code{settings$database$bety} and \code{settings$host$name} for the
+#' optional posterior lookup.
+#'
+#' ## OAT design logic
+#' For sensitivity analysis, we must isolate the effect of each
+#' parameter by holding all other inputs constant. The param column contains
+#' sequential indices (1, 2, 3, ...) matching the SA run order in
+#' \code{write.sa.configs}. All other columns (met, ic, soil, etc.) are set to 1,
+#' meaning the first input file is always used.
+#'
+#' ## Where the samples come from
 #' Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}
 #' and \code{\link{get_parameter_samples}} (mirroring
 #' \code{\link{generate_joint_ensemble_design}}), or reused when a \code{samples}
-#' bundle is supplied. The design is built from the quantile-based
-#' \code{sa.samples} within that bundle.
+#' bundle is supplied. Nothing is read from or written to \code{samples.Rdata}.
+#' The design is built from the quantile-based \code{sa.samples} in that bundle.
 #'
-#' @param settings PEcAn settings object. Uses \code{settings$pfts},
-#'   \code{settings$sensitivity.analysis$quantiles} (the SA quantiles, when
-#'   sampling here), and \code{settings$ensemble$samplingspace} (the input types
-#'   that form the design columns).
+#' @param settings PEcAn settings object. See details for required elements.
 #' @param samples Optional pre-computed parameter samples (a list containing at
 #'   least \code{sa.samples}, as returned by \code{\link{get_parameter_samples}}).
 #'   When supplied these are used directly; when \code{NULL} (default) they are
@@ -24,6 +44,24 @@
 #'   and one column per input type (the \code{param} column holds sequential run
 #'   indices, every other column is held at 1), \code{X}, the same matrix under
 #'   its older name, and \code{samples}, the parameter bundle used.
+#'
+#' @examples
+#' \dontrun{
+#' # Generate the SA design, sampling parameters in memory
+#' sa_design <- generate_OAT_SA_design(settings)
+#'
+#' # View the design matrix
+#' print(sa_design$design_matrix)
+#' #   param met ic soil
+#' # 1     1   1  1    1   # Median run
+#' # 2     2   1  1    1   # trait1 @ q=2.3%
+#' # 3     3   1  1    1   # trait1 @ q=15.9%
+#' # 4     4   1  1    1   # trait1 @ q=84.1%
+#' # ...
+#'
+#' # Reuse an established set of samples instead of drawing new ones
+#' sa_design <- generate_OAT_SA_design(settings, samples = samples)
+#' }
 #'
 #' @author Akash B V, Om Kapale
 #' @importFrom rlang %||%
@@ -58,10 +96,10 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
     )
   }
 
-  # Total number of SA runs: 1 median run plus, for each PFT,
-  # (n traits) * (n non-median quantiles).
+  # calculate total number of SA runs
+  # 1 median + (traits * non-median quantiles) per PFT
   MEDIAN <- "50"
-  num_sa_runs <- 1
+  num_sa_runs <- 1 # start with median run
 
   for (pft_name in names(sa_samples)) {
     if (pft_name == "env") next
@@ -71,10 +109,11 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
     quantile_names <- rownames(pft_samples)
     n_non_median <- sum(quantile_names != MEDIAN)
 
+    # add runs for this pft: (traits) * (non-median quantiles)
     num_sa_runs <- num_sa_runs + (n_traits * n_non_median)
   }
 
-  # Input types come from the sampling space; parameters map to the "param" column.
+  # get input types from samplingspace
   samp <- settings$ensemble$samplingspace
   input_types <- names(samp)
   input_types[input_types == "parameters"] <- "param"
@@ -83,15 +122,26 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
     input_types <- c("param", input_types)
   }
 
-  # OAT design: the param column carries sequential indices matching the SA run
-  # order, and every other input column is held constant at 1 (the first input
-  # file), so each run isolates a single parameter.
+  # build design matrix
+  # key difference from ensemble design:
+  # - ensemble: all columns get random/quasi-random indices
+  # - SA (OAT): param column = sequential index, ALL other columns = 1
+  #
+  # the "1" means: use the FIRST (and only) input file for that type.
+  # this ensures all SA runs use the SAME met, same ic, etc.
+
   design_list <- list()
 
   for (input_type in input_types) {
     if (input_type == "param") {
+      # sequential indices map to SA run order
+      #   1 = median run
+      #   2 = first (pft, trait, quantile) combination
+      #   3 = second (pft, trait, quantile) combination
+      #   ...
       design_list[[input_type]] <- seq_len(num_sa_runs)
     } else {
+      # all other inputs constant (always use first input file)
       design_list[[input_type]] <- rep(1L, num_sa_runs)
     }
   }
