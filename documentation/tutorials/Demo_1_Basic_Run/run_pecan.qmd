@@ -326,6 +326,8 @@ Each plot draws one line per ensemble member. The members differ only in their p
 
 ## Plot Carbon Fluxes
 
+Some members run negative NPP even in the growing season. That happens when the drawn respiration parameters outweigh photosynthesis, and it shows up here because this demo samples from priors rather than from a meta-analysis, so the spread is wide. Demo 3 shows what constraining these parameters with data does to that spread.
+
 GPP and NPP are sub-daily fluxes, so ten overlaid members would just fill the panel. These are averaged to daily values first, which is enough to see the members apart.
 
 ```{r plot-carbon-fluxes}
@@ -364,7 +366,7 @@ plot_ensemble(
 )
 ```
 
-## Plot LAI and Above Ground Wood kar de.
+## Plot LAI and Above Ground Wood
 
 ```{r plot-lai-biomass}
 plot_ensemble(
