@@ -8,8 +8,8 @@ Source: California Department of Water Resources. (2016-2023). Statewide Crop Ma
 
 Configuration parameters live in `config.yml`. Most setups only need:
 
-- `crops_path`: the harmonized CADWR Land Use crops parquet
-- `phen_dir`: the gap-filled phenology (green-up) directory
+- `crops_path`: the harmonized CADWR Land Use crops parquet. Override with `CCMMF_CROPS_PATH`
+- `phen_dir`: the gap-filled phenology (green-up) directory. Override with `CCMMF_PHEN_DIR`
 - `crosswalk_path`: the CADWR to FREP to UC ANR crop name crosswalk TSV, versioned in this folder
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile

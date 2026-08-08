@@ -10,9 +10,9 @@ Material properties (%N, C:N, PAN, CalRecycle class) come from `PEcAn.data.land:
 
 Configuration parameters in `config.yml`:
 
-- `crops_path`: the harmonized CADWR Land Use crops parquet
-- `phen_dir`: the gap-filled phenology (green-up) directory
-- `cadwr_pfts_path`: the CADWR class/subclass to PFT map
+- `crops_path`: the harmonized CADWR Land Use crops parquet. Override with `CCMMF_CROPS_PATH`
+- `phen_dir`: the gap-filled phenology (green-up) directory. Override with `CCMMF_PHEN_DIR`
+- `cadwr_pfts_path`: the CADWR class/subclass to PFT map. Override with `CCMMF_CADWR_PFTS`
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
 - `p_apply_default`: probability of compost per crop cycle per ensemble member (default 0.10); see Sampling design
