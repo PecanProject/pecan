@@ -39,7 +39,7 @@ This notebook demonstrates how to:
 
 We are modeling carbon and productivity dynamics at the Niwot Ridge Forest AmeriFlux site ([US-NR1](https://ameriflux.lbl.gov/sites/siteinfo/US-NR1), a high-elevation temperate coniferous forest in Colorado. The model configuration uses the SIPNET process-based ecosystem model, parameterized with a temperate coniferous plant functional type (PFT).
 
-The simulation is run for the full year 2004 (January 1 – December 31) using AmeriFlux LBL meteorological drivers from the Niwot Ridge site. The ensemble setup specifies one model run focusing on net primary productivity (NPP) as the target output variable.
+The simulation is run for the full year 2004 (January 1 – December 31) using AmeriFlux LBL meteorological drivers from the Niwot Ridge site. The ensemble setup specifies a small ten member ensemble focusing on net primary productivity (NPP) as the target output variable, so the plots later on show the spread across members rather than a single line.
 
 This scenario is designed to be a minimal, reproducible example to demonstrate how to run SIPNET within the PEcAn workflow. In later steps, this same framework can be extended to include more ensemble members, additional PFTs, longer time periods, or alternative meteorological inputs.
 
@@ -229,27 +229,58 @@ This step generates raw model outputs in model-specific format (in this case, `s
 
 After the model simulation completes, we need to extract the results and prepare them for analysis. This involves:
 
-1. Reading the run ID
+1. Reading the run IDs
 2. Setting up output paths
 3. Defining time period
 4. Loading model output
 5. Convert to a standard format
 
 ```{r get-plot-vars}
-runid <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[1, 1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id
-outdir <- file.path(settings$outdir, "/out/", runid)
+runids <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[, 1])
 start.year <- lubridate::year(settings$run$start.date)
 end.year <- lubridate::year(settings$run$end.date)
-model_output <- PEcAn.utils::read.output(
-  runid,
-  outdir,
-  start.year,
-  end.year,
-  variables = NULL,
-  dataframe = TRUE,
-  verbose = FALSE
-)
+
+# one entry per ensemble member, keyed by run id
+ensemble_output <- lapply(runids, function(runid) {
+  PEcAn.utils::read.output(
+    runid,
+    file.path(settings$outdir, "/out/", runid),
+    start.year,
+    end.year,
+    variables = NULL,
+    dataframe = TRUE,
+    verbose = FALSE
+  )
+})
+names(ensemble_output) <- runids
+
+# the members share a variable set, so the first one describes them all
+model_output <- ensemble_output[[1]]
 available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
+
+# draw one line per ensemble member, so the spread across the ensemble is visible
+plot_ensemble <- function(vars, cols, ylab, main, labels = vars) {
+  yrange <- range(
+    unlist(lapply(ensemble_output, function(member) unlist(member[vars]))),
+    na.rm = TRUE
+  )
+  # empty plot drawn off the real time axis, so the x axis stays dates
+  plot(
+    ensemble_output[[1]]$posix,
+    ensemble_output[[1]][[vars[1]]],
+    type = "n",
+    ylim = yrange,
+    xlab = "Date",
+    ylab = ylab,
+    main = main
+  )
+  for (i in seq_along(vars)) {
+    for (member in ensemble_output) {
+      lines(member$posix, member[[vars[i]]], col = adjustcolor(cols[i], alpha.f = 0.4))
+    }
+  }
+  legend("topright", legend = labels, col = cols, lty = 1)
+}
 ```
 
 Running this code will convert model specific output files into a standardized netCDF ([year].nc) that can be downloaded for visualization and analysis (R, Matlab, ncview, panoply, etc). This is a key step, because this standardization enables PEcAn to apply downstream analyses to outputs from different ecosystem models.
@@ -281,64 +312,53 @@ knitr::kable(vars_df, caption = "Model Output Variables and Descriptions")
 
 This section provides examples of how to create time series plots of different model variables. The examples cover various ecosystem processes including carbon fluxes, carbon pools, water variables, and structural variables like Leaf Area Index (LAI).
 
+Each plot draws one line per ensemble member. The members differ only in their parameter draws, so the spread between the lines is the parameter uncertainty carried through the model.
+
 ## Plot Carbon Fluxes
 
 ```{r plot-carbon-fluxes}
-# Plot Gross Primary Productivity (GPP) and Net Primary Productivity (NPP)
-plot(model_output$posix, model_output$GPP,
-  type = "l",
-  col = "green",
-  xlab = "Date",
+plot_ensemble(
+  vars = c("GPP", "NPP"),
+  cols = c("green", "blue"),
   ylab = "Carbon Flux (kg C m-2 s-1)",
   main = "Carbon Fluxes Over Time"
 )
-lines(model_output$posix, model_output$NPP, col = "blue")
-legend("topright", legend = c("GPP", "NPP"), col = c("green", "blue"), lty = 1)
 ```
 
 ## Plot Carbon Pools
 
 ```{r plot-carbon-pools}
-# Plot Total Live Biomass and Total Soil Carbon
-plot(model_output$posix, model_output$TotLivBiom,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
+plot_ensemble(
+  vars = c("TotLivBiom", "TotSoilCarb"),
+  cols = c("darkgreen", "brown"),
+  labels = c("Total Live Biomass", "Total Soil Carbon"),
   ylab = "Carbon Pool (kg C m-2)",
   main = "Carbon Pools Over Time"
 )
-lines(model_output$posix, model_output$TotSoilCarb, col = "brown")
-legend("topright", legend = c("Total Live Biomass", "Total Soil Carbon"), col = c("darkgreen", "brown"), lty = 1)
 ```
 
 ## Plot Water Variables
 
 ```{r plot-water-variables}
-# Plot Soil Moisture and Snow Water Equivalent
-plot(model_output$posix, model_output$SoilMoist,
-  type = "l",
-  col = "blue",
-  xlab = "Date",
-  ylab = "Soil Moisture (kg m-2)",
-  main = "Soil Moisture Over Time"
+plot_ensemble(
+  vars = c("SoilMoist", "SWE"),
+  cols = c("blue", "lightblue"),
+  labels = c("Soil Moisture", "Snow Water Equivalent"),
+  ylab = "Water (kg m-2)",
+  main = "Soil Moisture and Snow Water Equivalent Over Time"
 )
-lines(model_output$posix, model_output$SWE, col = "lightblue")
-legend("topright", legend = c("Soil Moisture", "Snow Water Equivalent"), col = c("blue", "lightblue"), lty = 1)
 ```
 
 ## Plot LAI and Biomass
 
 ```{r plot-lai-biomass}
-# Plot Leaf Area Index (LAI) and Above Ground Wood
-plot(model_output$posix, model_output$LAI,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
-  ylab = "LAI (m2 m-2)",
-  main = "Leaf Area Index Over Time"
+plot_ensemble(
+  vars = c("LAI", "AbvGrndWood"),
+  cols = c("darkgreen", "brown"),
+  labels = c("LAI", "Above Ground Wood"),
+  ylab = "LAI (m2 m-2) / Wood (kg C m-2)",
+  main = "Leaf Area Index and Above Ground Wood Over Time"
 )
-lines(model_output$posix, model_output$AbvGrndWood, col = "brown")
-legend("topright", legend = c("LAI", "Above Ground Wood"), col = c("darkgreen", "brown"), lty = 1)
 ```
 
 # Conclusion
