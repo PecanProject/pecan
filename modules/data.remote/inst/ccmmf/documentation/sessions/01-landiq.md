@@ -1,78 +1,56 @@
 # Session 1 - LandIQ crop identity
 
-**Deliverable:** gap-filled LandIQ crop identity for the year pair (stable
-`parcel_id`, CLASS/SUBCLASS under the 2021 RS legend) for MAGIC Management
-Tracking.
+**Prerequisite:** [Session 0](00-setup.md) finished and `setup_env.sh` sourced so the LandIQ and gap-fill paths resolve.
 
-**Goal:** add a new LandIQ year to the existing CCMMF inventory product.
-Harmonize field boundaries and crop labels with the existing parcel history so
-the same field retains a stable parcel ID, then fill missing main-season crop
-information. Together, harmonization and gap-filling create the crop identity
-layer on which all downstream management products depend. The table is
-parcel x year x season (up to four seasons); **gap-fill focuses on season 2**
-because CDL is annual. Cover crops are flagged with boolean `COVER` on the
-product. Details: [landiq-gapfill/README.md](../../landiq-gapfill/README.md#data-model).
+This session adds a new LandIQ year: download the statewide map, check the legend, harmonize parcels across years, then fill gaps in crop identity and peak greenness. Method detail lives in [landiq-gapfill/README.md](../../landiq-gapfill/README.md).
 
-**Method class:** map + gap-fill. **Maturity:** operational (inventory).
-
-Every gap-filled row carries provenance (`subclass_source`, `adoy_source`).
-Season-2 crop identity and ADOY are a mix of observed LandIQ and modelled fills
--- see [Observed vs filled](#observed-vs-filled-be-explicit).
-
-**Prerequisite:** complete [Session 0](00-setup.md), including activating
-`pecan-all-1.12`, cloning both repos, creating the data root, and sourcing
-`setup_env.sh`.
+The walkthrough uses the inventory **year pair** from `setup_env.sh`: bring in `TARGET_YEAR` (default **2024**), then gap-fill both `PRIOR_YEAR` and `TARGET_YEAR` (default **2023,2024**) so the prior year can use the new map as neighbor context. See [pipeline.md](../pipeline.md#year-pair) for why the update is always a pair.
 
 ---
 
-## Where you are
+## Context
 
-Same flow as [pipeline.md](../pipeline.md). This session builds crop identity.
+Same flow as [pipeline.md](../pipeline.md).
 
 ```mermaid
-flowchart TB
-  subgraph S1["Session 1 - Crop identity - you are here"]
-    DWR["LandIQ shapefile"] --> CADWR["Harmonize geometry\ncadwr-landuse"]
-    CADWR --> GF["Gap-fill crops + ADOY\nlandiq-gapfill"]
-  end
-
-  subgraph S2["Session 2 - HLS events"]
-    HLS["MSLSP + NDTI events"]
-  end
-
-  subgraph S3["Session 3 - Fert + irrigation"]
-    FI["N rates + water-balance"]
-  end
-
-  GF --> HLS
-  GF --> FI
-  HLS --> OUT["Management event files"]
-  FI --> OUT
+flowchart LR
+  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S1 --> S2["Session 2\nPhenology + tillage"]
+  S1 --> S3["Session 3\nFert + irrigation"]
+  S2 --> OUT["Management Tracking products"]
+  S3 --> OUT
 ```
 
-This session = Session 1 box.
+Session 1 steps:
+
+```mermaid
+flowchart LR
+  subgraph S1["Session 1"]
+    direction LR
+    RAW["in: LandIQ shapefile\n$LANDIQ_RAW"] --> HARMN["harmonization"]
+    HARMN --> HARM["out: parcels .gpkg + crops .parq\n$LANDIQ_HARMONIZED"]
+    HARM --> GF["gap-fill"]
+
+    CDL["in: CDL .tif\n$CDL_DIR"] --> FRAC["out: parcel fractions .parq\n$CDL_DIR"]
+    FRAC --> GF
+
+    GF --> OUT["out: gap-filled crops .parq\n$LANDIQ_GAPFILLED"]
+  end
+```
 
 ---
 
-## 1.1 Download LandIQ 2024
+## 1.1 Download LandIQ
 
-LandIQ is California's field-level crop mapping product and the main source of
-**crop identity** for CCMMF inventory modeling. It includes crop class,
-subclass, and peak-greenness timing.
+Manual download of the statewide shapefile into `$LANDIQ_RAW`. Also grab the current Land Use Legend PDF (needed in Sec. 1.2).
 
-This is the only manual download on the LandIQ path. Later steps expect the
-shapefile under `$LANDIQ_RAW` (`LandIQ/raw/`).
+| Item | Value |
+|------|-------|
+| Portal | [CNRA - Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping) |
+| Resource | PROVISIONAL - 2024 Statewide Crop Mapping GIS Shapefile |
+| ZIP | [i15_crop_mapping_2024_provisional.zip](https://data.cnra.ca.gov/dataset/6c3d65e3-35bb-49e1-a51e-49d5a2cf09a9/resource/1a1c259c-4279-4868-a25f-b1f71665ca25/download/i15_crop_mapping_2024_provisional.zip) |
 
-
-| Item       | Value                                                                                                                                                                                                         |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Portal     | [CNRA - Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping) (California Natural Resources Agency)                                                                                |
-| Resource   | **PROVISIONAL - 2024 Statewide Crop Mapping GIS Shapefile**                                                                                                                                                   |
-| Direct ZIP | `[i15_crop_mapping_2024_provisional.zip](https://data.cnra.ca.gov/dataset/6c3d65e3-35bb-49e1-a51e-49d5a2cf09a9/resource/1a1c259c-4279-4868-a25f-b1f71665ca25/download/i15_crop_mapping_2024_provisional.zip)` |
-
-
-Prefer the **shapefile** ZIP. From the same CNRA page, also download the current
-**Land Use Legend** PDF (needed for Sec. 1.2). Unpack so files land here:
+Prefer the **shapefile** ZIP. Expected layout:
 
 ```text
 $LANDIQ_RAW/
@@ -80,7 +58,7 @@ $LANDIQ_RAW/
     i15_Crop_Mapping_2024_Provisional.shp   # + .dbf .shx .prj ...
 ```
 
-You can unpack by hand into that layout, or run:
+Or unpack with:
 
 ```bash
 source "$CCMMF_CODE/documentation/setup_env.sh"
@@ -101,55 +79,27 @@ cp -a unpack/${STEM}.* "$DROP/$FOLDER/"
 test -f "$DROP/$FOLDER/${STEM}.shp" && echo "OK: $DROP/$FOLDER/${STEM}.shp"
 ```
 
-Sec. 1.3 points cadwr-landuse at this same `$LANDIQ_RAW` folder.
-
 ---
 
+## 1.2 Legend QC
 
+LandIQ legend codes differ by year (2014, 2016-2020, 2021+). Compare the legend PDF from Sec. 1.1 to [LandIQ_cropCode_lookup_table.csv](../../landiq-gapfill/data/LandIQ_cropCode_lookup_table.csv) and add rows only if codes changed.
 
-## 1.2 Crop class/subclass harmonization (legend QC)
-
-LandIQ legend codes differ by year (**2014**, **2016-2020**, **2021+**). The
-crop-code lookup maps each stored `(CLASS, SUBCLASS)` pair onto one harmonized
-set so later years stay comparable. Compare the legend PDF from Sec. 1.1 to the
-lookup and add rows only if codes changed.
-
-**For this training run, 2024 is unchanged** - no lookup edits.
-
-Lookup: `[LandIQ_cropCode_lookup_table.csv](../../landiq-gapfill/data/LandIQ_cropCode_lookup_table.csv)`
+**For this training run, 2024 is unchanged** -- no lookup edits.
 
 ---
-
-
 
 ## 1.3 Harmonize geometry
 
-cadwr-landuse assigns stable `parcel_id`s across years and writes the multi-year
-crop table plus geometry. Point it at the shapefiles from Sec. 1.1. Use the
-default (`main`) branch; it auto-discovers years including **2024**.
+[cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) assigns stable `parcel_id`s across years and writes the multi-year crop table plus geometry. Use branch `main` (auto-discovers years including 2024). Keep the Session 0 conda env active.
 
-Harmonization currently runs across all available years in the shapefile
-directory. Future work will support adding one year without re-running the full
-history.
+A full re-harmonization can be slow -- plan time, or run ahead and show the published paths. Future work may support adding one year without re-running the full history.
 
-**Note:** A full re-harmonization can be slow. Plan time for Sec. 1.3 before a
-live walkthrough, or run it ahead and show the resulting product paths.
-
-Use the current Python workflow in the
-[cadwr-landuse README](https://github.com/ccmmf/cadwr-landuse#core-harmonization-workflow).
-Keep the Session 0 conda environment active.
-
-Point the workflow directories as follows:
-
-
-| Directory                    | Value                                                   |
-| ---------------------------- | ------------------------------------------------------- |
-| Annual LandIQ shapefiles     | `$LANDIQ_RAW` (`LandIQ/raw`)                            |
-| Harmonization working files  | `$CCMMF_ROOT/work/cadwr-landuse/v4.1`                   |
-| Published harmonized product | `$LANDIQ_HARMONIZED` (`LandIQ/harmonized`)              |
-
-
-From the cadwr-landuse clone:
+| Directory | Value |
+|-----------|-------|
+| Annual shapefiles | `$LANDIQ_RAW` |
+| Working files | `$CCMMF_ROOT/work/cadwr-landuse/v4.1` |
+| Published product | `$LANDIQ_HARMONIZED` |
 
 ```bash
 cd "$HOME/src/cadwr-landuse"
@@ -158,19 +108,17 @@ export LANDIQ_ROOT_DIR="$LANDIQ_RAW"
 export CADWR_WORK_DIR="$CCMMF_ROOT/work/cadwr-landuse/v4.1"
 mkdir -p "$CADWR_WORK_DIR"
 
-# 1. Split all discovered years into tiles.
 python scripts/01-split.py \
   --landiq-root-dir "$LANDIQ_ROOT_DIR" \
   --outdir-root "$CADWR_WORK_DIR"
 
-# 2. Process all tiles on a compute node. Set workers to allocated cores.
+# Compute node: set --ntasks to allocated cores
 python scripts/process-tiles-local.py \
   --ntasks 8 \
   --outdir-root "$CADWR_WORK_DIR" \
   --crs EPSG:3310 \
   --precision 10
 
-# 3. Combine parcel geometry and finalize the multi-year crop table.
 python scripts/03a-combine-parcels.py \
   --outdir-root "$CADWR_WORK_DIR"
 python scripts/03b-finalize-crops.py \
@@ -178,17 +126,12 @@ python scripts/03b-finalize-crops.py \
   --outdir-root "$CADWR_WORK_DIR"
 ```
 
-When finished, publish the generated `03-final/` output and point env at it:
+Publish and confirm the target year:
 
 ```bash
 mkdir -p "$LANDIQ_HARMONIZED"
-cp -a "$CADWR_WORK_DIR/03-final/." \
-  "$LANDIQ_HARMONIZED/"
-```
+cp -a "$CADWR_WORK_DIR/03-final/." "$LANDIQ_HARMONIZED/"
 
-Confirm the required files and target year before gap-fill:
-
-```bash
 test -f "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg"
 test -f "$LANDIQ_HARMONIZED/crops_all_years.parq"
 Rscript -e 'd <- arrow::open_dataset(file.path(Sys.getenv("LANDIQ_HARMONIZED"), "crops_all_years.parq")); target <- as.integer(Sys.getenv("TARGET_YEAR")); x <- dplyr::collect(dplyr::summarise(dplyr::filter(d, year == target), n = dplyr::n())); stopifnot(x$n[[1]] > 0); message("Found year ", target, ": ", x$n[[1]], " rows")'
@@ -196,90 +139,62 @@ Rscript -e 'd <- arrow::open_dataset(file.path(Sys.getenv("LANDIQ_HARMONIZED"), 
 
 ---
 
+## 1.4 Gap-fill
 
+Fill missing season-2 `CLASS` / `SUBCLASS` and `ADOY` for both years in the pair (`YEARS=${PRIOR_YEAR},${TARGET_YEAR}`, defaults `2023,2024`). The prior year is refreshed against the new LandIQ series as neighbor context; you do not re-download it. Methods and flags: [landiq-gapfill/README.md](../../landiq-gapfill/README.md).
 
-## 1.4 Gap-fill 2023 + 2024
+**Prerequisites** under `$LANDIQ_GAPFILL_ROOT/outputs/` (usually shipped; rebuild only when logic or training years change):
 
-Some parcels lack crop information (`CLASS` / `SUBCLASS`) or peak-greenness day
-(`ADOY`, adjusted day of year). Gap-fill focuses on **season 2** (the main
-growing season) so every parcel has a usable main-crop record for phenology and
-events.
+- CDL x LandIQ probability tables -- used by `crop` (`gapfill.R cdl-landiq-probs`)
+- ADOY reference tables -- used by `adoy` (`gapfill.R adoy-ref`)
 
-Run the prior year and the new year together
-(`${PRIOR_YEAR},${TARGET_YEAR}`). The prior year can then use the new series as
-neighbor context. One command does both fills and includes USDA Cropland Data
-Layer (CDL) download and extract for those years:
+Crop/adoy stop with a rebuild hint if either set is missing. CDL *fraction* files are different: download/extract runs when those parquets are missing (Option A below, or automatically inside `run_gapfill.sh`).
 
-1. **CLASS / SUBCLASS** from CDL parcel fractions plus LandIQ history.
-2. **ADOY** from the same parcel in other years, or typical peak day for that
-  crop and county.
+**Option A -- each command:**
+
+```bash
+YEARS=${PRIOR_YEAR},${TARGET_YEAR}
+CDL=$LANDIQ_GAPFILL_ROOT/scripts/cdl
+GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
+
+Rscript $CDL/download_cdl_nass.R $YEARS
+Rscript $CDL/extract_cdl_fractions_by_parcel.R $YEARS
+
+# Rebuild prerequisites only if missing or stale (check outputs/ first):
+# Rscript $GF cdl-landiq-probs
+# Rscript $GF adoy-ref
+
+Rscript $GF crop $YEARS
+Rscript $GF adoy $YEARS
+Rscript $GF merge $YEARS
+Rscript $GF cover
+Rscript $GF qc $YEARS
+```
+
+**Option B -- front door** (ensures CDL fractions if missing, then crop -> adoy -> merge -> cover -> qc). Does **not** rebuild the prerequisite tables unless you pass the flags:
 
 ```bash
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
+
+# If outputs/ is missing CDL x LandIQ probs and/or ADOY refs:
+# $LANDIQ_GAPFILL_ROOT/run_gapfill.sh --cdl-landiq-probs --adoy-ref ${PRIOR_YEAR},${TARGET_YEAR}
 ```
 
-Details (flags, provenance, rebuilds):
-[landiq-gapfill/README.md](../../landiq-gapfill/README.md).
-
-| Item | Path / format | Key columns / metadata |
-|------|---------------|------------------------|
-| Input | `$LANDIQ_RAW/` | Annual shapefiles |
-| Harmonized | `$LANDIQ_HARMONIZED/` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) | [metadata.md](../metadata.md) |
-| Gap-filled | `$LANDIQ_GAPFILLED` (`LandIQ/gapfilled`) | `CLASS`, `SUBCLASS`, `ADOY`, `subclass_source`, `adoy_source`; [crops_all_years_metadata.csv](../../landiq-gapfill/data/crops_all_years_metadata.csv) |
-
-### Observed vs filled (be explicit)
-
-The gap-filled table is not all observed LandIQ. Read each season-2 row with
-`subclass_source` and `adoy_source`.
-
-**Crop identity (`subclass_source`)**
-
-| Kind | Values | What it means |
-|------|--------|---------------|
-| Observed | `observed` | CLASS/SUBCLASS from source LandIQ. Vineyard `V/**` set to wine grapes (`V/2`) is also `observed`. |
-| Modelled | `emission_cdl`, `plurality`, `prior_only` | Missing subclass (or full-gap CLASS) filled from CDL emission tables, CDL plurality, or parcel crop prior. |
-| By design / pad | `X/I/YP (no subclass)`, `absent`, `unfilled` | Idle/young-perennial keep `**`; padded inactive seasons; unresolved gaps. |
-
-**Peak greenness day (`adoy_source`)**
-
-| Kind | Values | What it means |
-|------|--------|---------------|
-| Observed | `observed` | ADOY from source LandIQ. |
-| Modelled | `temporal`, `county_class_subclass`, `county_class`, `statewide_class_subclass`, `statewide_class`, `multiuse_season2` | Neighbor year, county/statewide crop reference tables, or season-2 copy for MULTIUSE M. |
-| Other | `not_applicable`, `unfilled`, `absent` | ADOY-exempt CLASS; no match; padded seasons. |
-
-**Season-2 shares on the shipped v4.1.2 product** ([qc_gapfill_report.md](../../landiq-gapfill/outputs/qc_gapfill_report.md)):
-
-- **2023 (within-year):** modelled subclass (`emission_cdl` + `plurality`) = **6.58%** of season 2; remainder observed (including `V/2` defaults). Gap-filled ADOY = **62.43%** of season 2 (mostly `county_class_subclass`).
-- **2016 (within-year):** gap-filled ADOY = **90.46%** of season 2 (mostly statewide class-subclass tables).
-- **2017 (full-gap):** season-2 crop identity = **100%** modelled; gap-filled ADOY = **98.27%**.
-
-Recount after you rebuild:
-
-```r
-library(arrow); library(dplyr)
-d <- open_dataset(file.path(Sys.getenv("LANDIQ_HARMONIZED"), "crops_all_years.parq"))
-d |> filter(year == 2023L, season == 2L) |>
-  count(subclass_source) |> collect() |> mutate(pct = 100 * n / sum(n))
-d |> filter(year == 2023L, season == 2L) |>
-  count(adoy_source) |> collect() |> mutate(pct = 100 * n / sum(n))
-```
-
-QC report and CSVs: [landiq-gapfill/outputs/qc_gapfill_report.md](../../landiq-gapfill/outputs/qc_gapfill_report.md).
+Output: `$LANDIQ_GAPFILLED/crops_all_years.parq`. Review season-2 `subclass_source` / `adoy_source` in [qc_gapfill_report.md](../../landiq-gapfill/outputs/qc_gapfill_report.md) (prefer `observed`).
 
 ---
 
 ## 1.5 Checklist
 
-- [ ] Sourced `setup_env.sh` from the clone
-- [ ] Downloaded and unpacked 2024 provisional shapefile under `$LANDIQ_RAW/` (`.shp` present)
-- [ ] Confirmed 2024 legend QC against `LandIQ_cropCode_lookup_table.csv` (harmonized codes use `legend_year == 2021`)
-- [ ] Harmonized geometry; published to `$LANDIQ_HARMONIZED` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
-- [ ] Confirmed `year == 2024` rows in `crops_all_years.parq`
-- [ ] Ran `$LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}`
-- [ ] Counted season-2 `subclass_source` / `adoy_source` for the shipped years (observed vs modelled)
-- [ ] Gap-filled product at `$LANDIQ_GAPFILLED` opens as parquet (env already points there)
-- [ ] Acceptance: gap-filled product is the crop-identity input for Sessions 2-3 and MAGIC Management Tracking; provenance shares are known for those years
+- [ ] Sourced `setup_env.sh`
+- [ ] 2024 shapefile under `$LANDIQ_RAW/` (`.shp` present)
+- [ ] Legend QC against `LandIQ_cropCode_lookup_table.csv` (no 2024 edits)
+- [ ] Published `$LANDIQ_HARMONIZED` (`parcels-consolidated.gpkg` + `crops_all_years.parq`)
+- [ ] Confirmed `year == TARGET_YEAR` rows in harmonized crops
+- [ ] CDL download + extract for prior and target years
+- [ ] Ran `run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}`
+- [ ] Refreshed QC (`gapfill.R qc`); reviewed season-2 provenance for all product years
+- [ ] Gap-filled product opens at `$LANDIQ_GAPFILLED`
 
 **Next:** [Session 2 - HLS events](02-phenology.md).
 

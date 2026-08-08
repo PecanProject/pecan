@@ -19,44 +19,36 @@ credentials from [Session 0](00-setup.md).
 
 ---
 
-## Where you are
+## Context
 
-Same flow as [pipeline.md](../pipeline.md). This session is the HLS box.
+Same flow as [pipeline.md](../pipeline.md).
 
 ```mermaid
-flowchart TB
-  subgraph S1["Session 1 - Crop identity"]
-    DWR["LandIQ shapefile"] --> CADWR["Harmonize geometry"]
-    CADWR --> GF["Gap-fill crops + ADOY"]
-  end
-
-  subgraph S2["Session 2 - HLS events - you are here"]
-    HLS["HLS_Phenology\nNetCDF + imagery"] --> MSLSP["MSLSP extract"]
-    GF --> MAP["Parcel-tile map"]
-    MAP --> MSLSP
-    GF --> MSLSP
-    MSLSP --> MATCH["Match seasons to cycles"]
-    GF --> MATCH
-    MATCH --> EV1["Planting + harvest\n+ phenology events"]
-    HLS --> NDTI["NDTI extract"]
-    MAP --> NDTI
-    GF --> NDTI
-    NDTI --> EV2["Tillage events"]
-    MATCH --> EV2
-  end
-
-  subgraph S3["Session 3 - Fert + irrigation"]
-    FERT["N fert + organic"]
-    IRR["Irrigation water-balance"]
-  end
-
-  EV1 --> OUT["Management event files"]
-  EV2 --> OUT
-  FERT --> OUT
-  IRR --> OUT
+flowchart LR
+  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S1 --> S2["Session 2\nPhenology + tillage"]
+  S1 --> S3["Session 3\nFert + irrigation"]
+  S2 --> OUT["Management Tracking products"]
+  S3 --> OUT
 ```
 
-This session = Session 2 box (MSLSP path, then NDTI / tillage).
+Session 2 steps:
+
+```mermaid
+flowchart LR
+  LANDIQ["$LANDIQ_GAPFILLED"] --> MAP["Parcel-tile map"]
+  LANDIQ --> MSLSP["MSLSP extract"]
+  LANDIQ --> MATCH["Match seasons to cycles"]
+  HLS["HLS_Phenology\nNetCDF + imagery"] --> MSLSP
+  MAP --> MSLSP
+  MSLSP --> MATCH
+  MATCH --> EV1["Planting + harvest\n+ phenology events"]
+  HLS --> NDTI["NDTI extract"]
+  MAP --> NDTI
+  LANDIQ --> NDTI
+  MATCH --> EV2["Tillage events"]
+  NDTI --> EV2
+```
 
 **Demo vs statewide:** live path is one HLS tile (`10SDH`). Statewide omits
 `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE`.

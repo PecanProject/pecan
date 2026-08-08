@@ -8,34 +8,27 @@ not already have it. This session assumes that environment is already installed.
 
 ---
 
-## Where you are
+## Context
 
-Same flow as [pipeline.md](../pipeline.md). This session prepares the machine
-before Session 1.
+Same flow as [pipeline.md](../pipeline.md).
 
 ```mermaid
-flowchart TB
-  subgraph S0["Session 0 - Setup - you are here"]
-    ENV["conda + repos\n+ data root + setup_env"]
-  end
+flowchart LR
+  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S1 --> S2["Session 2\nPhenology + tillage"]
+  S1 --> S3["Session 3\nFert + irrigation"]
+  S2 --> OUT["Management Tracking products"]
+  S3 --> OUT
+```
 
-  subgraph S1["Session 1 - Crop identity"]
-    GF["LandIQ + gap-fill"]
-  end
+Session 0 steps:
 
-  subgraph S2["Session 2 - Phenology + tillage"]
-    S2N["MSLSP + NDTI extract"]
-  end
-
-  subgraph S3["Session 3 - Fert + irrigation"]
-    FI["N rates + water-balance"]
-  end
-
-  ENV --> GF
-  GF --> S2N
-  GF --> FI
-  S2N --> OUT["Management event files"]
-  FI --> OUT
+```mermaid
+flowchart LR
+  CONDA["pecan-all-1.12"] --> REPOS["Clone pecan + cadwr-landuse"]
+  REPOS --> SETUP["setup_env.sh"]
+  SETUP --> DIRS["$CCMMF_ROOT tree"]
+  SETUP --> NASA["Earthdata login\n(for Session 2)"]
 ```
 
 ---
@@ -158,7 +151,7 @@ $CCMMF_ROOT/
   HLS/
     imagery/                                  # HLS GeoTIFF
     MSLSP/                                    # HLS Phenology Product (MSLSP NetCDF)
-  CDL/                                        # USDA Cropland Data Layer
+  CDL/                                        # CDL GeoTIFF + parcel fractions
   climate/                                    # weather / ET (irrigation)
     CHIRPS/
     CIMIS/

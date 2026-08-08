@@ -26,11 +26,21 @@ this page is the product map and annual update SOP.
 |-----------|------------|
 | Domain | California agricultural LandIQ parcels (`is_agricultural == TRUE`) |
 | Spatial grain | Parcel (`parcel_id`); crop seasons within a water year |
-| Temporal rule | Each new LandIQ release updates a **year pair**: `TARGET_YEAR` (example **2024**) and `PRIOR_YEAR` (example **2023**) |
+| Temporal rule | Inventory updates run on a **year pair** (see below) |
 | Crop codes | Harmonized to the **2021** DWR remote-sensing legend (`legend_year == 2021`) |
 
-Demo path (one HLS tile `10SDH`, optional parcel list) uses the same steps as
-statewide; omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full runs.
+### Year pair
+
+LandIQ publishes one statewide crop map per calendar year. Each Management Tracking update therefore has two years:
+
+- **`TARGET_YEAR`** -- the new LandIQ release you are bringing in (example: **2024**).
+- **`PRIOR_YEAR`** -- the previous inventory year (example: **2023**).
+
+You download and harmonize `TARGET_YEAR`, then gap-fill and build events for **both** years together. The prior year is not re-downloaded; it is refreshed so it can use the new year as neighbor context (crop/ADOY fill, phenology matching, and related steps).
+
+`setup_env.sh` exports `PRIOR_YEAR` and `TARGET_YEAR` (defaults 2023/2024). Override them before sourcing when a newer LandIQ year arrives. Session walkthroughs use `${PRIOR_YEAR}` and `${TARGET_YEAR}` with those defaults.
+
+Demo path (one HLS tile `10SDH`, optional parcel list) uses the same steps as statewide; omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full runs.
 
 ## Products (deliverables)
 
@@ -105,9 +115,7 @@ documented in the [SIPNET handoff appendix](sessions/sipnet-handoff.md)
 
 ## Annual update procedure
 
-Operational example uses `TARGET_YEAR=2024` and `PRIOR_YEAR=2023`. Replace years
-when a newer LandIQ release arrives. Source [setup_env.sh](setup_env.sh) once
-per shell.
+Each cycle uses the year pair from [Coverage](#year-pair) (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023` in the current example). Source [setup_env.sh](setup_env.sh) once per shell.
 
 1. **Setup** -- [Session 0](sessions/00-setup.md): repos, `$CCMMF_ROOT`, Earthdata
    for HLS.
@@ -138,6 +146,7 @@ per shell.
 ### Session 1 commands (summary)
 
 ```bash
+# CDL download + extract for each year, then:
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
 ```
 

@@ -17,43 +17,30 @@ parcel list as [Session 2](02-phenology.md) (`parcels_10SDH.csv`).
 
 ---
 
-## Where you are
+## Context
 
-Same flow as [pipeline.md](../pipeline.md). This session is the non-HLS box.
+Same flow as [pipeline.md](../pipeline.md).
 
 ```mermaid
-flowchart TB
-  subgraph S1["Session 1 - Crop identity"]
-    DWR["LandIQ shapefile"] --> CADWR["Harmonize geometry"]
-    CADWR --> GF["Gap-fill crops + ADOY"]
-  end
+flowchart LR
+  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S1 --> S2["Session 2\nPhenology + tillage"]
+  S1 --> S3["Session 3\nFert + irrigation"]
+  S2 --> OUT["Management Tracking products"]
+  S3 --> OUT
+```
 
-  subgraph S2["Session 2 - HLS events"]
-    HLS["HLS_Phenology"] --> MSLSP["MSLSP extract"]
-    GF --> MAP["Parcel-tile map"]
-    MAP --> MSLSP
-    MSLSP --> MATCH["Match"]
-    MATCH --> EV1["Planting + harvest\n+ phenology"]
-    HLS --> NDTI["NDTI"]
-    NDTI --> EV2["Tillage"]
-    MATCH --> EV2
-  end
+Session 3 steps:
 
-  subgraph S3["Session 3 - Fert + irrigation - you are here"]
-    FERT["N fert + organic\nlookups; events via #4003"]
-    IRR["Irrigation\nCHIRPS / CIMIS / SSURGO"]
-  end
-
-  EV1 --> OUT["Management event files"]
-  EV2 --> OUT
-  FERT --> OUT
+```mermaid
+flowchart LR
+  LANDIQ["$LANDIQ_GAPFILLED"] --> FERT["N fert + organic\nlookups; events via #4003"]
+  LANDIQ --> IRR["Irrigation\nCHIRPS / CIMIS / SSURGO"]
+  FERT --> OUT["Management event files"]
   IRR --> OUT
 ```
 
-
-
-This session = Session 3 box. Shared contract with Sessions 1-2: LandIQ
-`parcel_id` (and demo filter when used).
+Shared contract with Sessions 1-2: LandIQ `parcel_id` (and demo filter when used).
 
 ---
 
