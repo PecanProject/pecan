@@ -35,7 +35,13 @@ if (!nzchar(trimws(ndti_landiq_v4))) {
   if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
   ndti_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
-ndti_parcels_gpkg <- file.path(ndti_landiq_v4, "parcels-consolidated.gpkg")
+ndti_landiq_harmonized <- Sys.getenv("LANDIQ_HARMONIZED", "")
+if (!nzchar(trimws(ndti_landiq_harmonized))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
+  ndti_landiq_harmonized <- file.path(.root, "LandIQ", "harmonized")
+}
+ndti_parcels_gpkg <- file.path(ndti_landiq_harmonized, "parcels-consolidated.gpkg")
 ndti_crops_parq   <- file.path(ndti_landiq_v4, "crops_all_years.parq")
 ndti_cropcode_csv <- file.path(ndti_inventory, "LandIQ_cropCode_lookup_table.csv")
 ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "")

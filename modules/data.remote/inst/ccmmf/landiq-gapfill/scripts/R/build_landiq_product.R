@@ -175,8 +175,8 @@ LANDIQ_SEASONS <- 1:4
 #' years store one row per parcel per season, with inactive seasons present as
 #' "no-crop" rows (parcel-static attributes retained, crop-instance columns NA).
 #' This replicates the active-season rows across the remaining seasons so every
-#' parcel has the full season grid; the padded rows blank crop identity / ADOY and
-#' flag provenance as "absent".
+#' parcel has the full season grid; the padded rows blank crop identity / ADOY
+#' and leave provenance NA (not a fill outcome).
 .pad_full_gap_year_seasons <- function(active_rows, active_season) {
   pad_seasons <- setdiff(LANDIQ_SEASONS, as.integer(active_season)[1L])
   if (length(pad_seasons) == 0L || nrow(active_rows) == 0L) {
@@ -193,8 +193,8 @@ LANDIQ_SEASONS <- 1:4
     p$season <- as.integer(s)
     for (cc in intersect(crop_chr, names(p))) p[[cc]] <- NA_character_
     for (cc in intersect(crop_num, names(p))) p[[cc]] <- NA_real_
-    p$subclass_source <- "absent"
-    p$adoy_source <- "absent"
+    if ("subclass_source" %in% names(p)) p$subclass_source <- NA_character_
+    if ("adoy_source" %in% names(p)) p$adoy_source <- NA_character_
     p
   })
 
@@ -315,12 +315,12 @@ build_landiq_product <- function(
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   path_out <- file.path(out_dir, "crops_all_years.parq")
   path_src_gpkg <- file.path(source_root, "parcels-consolidated.gpkg")
-  path_dst_gpkg <- file.path(out_dir, "parcels-consolidated.gpkg")
 
   message("=== LandIQ gap-filled product ===")
   message("Source: ", source_root)
   message("Output: ", out_dir)
   message("Years: ", paste(years, collapse = ", "))
+  message("Geometry (unchanged): ", path_src_gpkg)
 
   crop_lk <- load_landiq_crop_lookup(path_crop_lookup_csv())
   source_parquet <- resolve_landiq_product_source_parquet()
@@ -372,49 +372,8 @@ build_landiq_product <- function(
     " parcel_ids (dropped ", n_before - nrow(out), " rows outside consolidated geometry)"
   )
 
-  # Cover-crop flag (Violet): candidate CLASS/SUBCLASS + season alternation.
-  # Computed on non-absent rows, joined back so padded seasons stay in product.
-  .code <- trimws(Sys.getenv("CCMMF_CODE", ""))
-  .inv <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
-  if (!nzchar(.inv)) {
-    .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-    if (nzchar(.root)) .inv <- file.path(.root, "products", "inventory")
-  }
-  cover_candidates <- c(
-    file.path(landiq_gapfill_root(), "scripts", "R", "cover_crop_landiq.R"),
-    if (nzchar(.code)) {
-      file.path(.code, "landiq-gapfill", "scripts", "R", "cover_crop_landiq.R")
-    } else {
-      character()
-    },
-    file.path(.inv, "scripts", "cover_crop_landiq.R")
-  )
-  cover_script <- cover_candidates[file.exists(cover_candidates)][1L]
-  if (is.na(cover_script) || !nzchar(cover_script)) {
-    stop(
-      "Missing cover-crop helper cover_crop_landiq.R ",
-      "(expected under landiq-gapfill/scripts/R/ or PRODUCTS_INVENTORY/scripts/)."
-    )
-  }
-  source(cover_script, local = TRUE)
-  message("Attaching COVER column (flag on non-absent seasons, join back)")
-  out <- attach_cover_column(out)
-  n_cover <- sum(out$COVER %in% TRUE, na.rm = TRUE)
-  message("  COVER=TRUE rows: ", n_cover, " / ", nrow(out))
-
   arrow::write_parquet(out, path_out)
   message("Wrote ", nrow(out), " rows -> ", path_out)
-
-  if (file.exists(path_src_gpkg)) {
-    if (file.exists(path_dst_gpkg)) {
-      file.remove(path_dst_gpkg)
-    }
-    ok <- file.symlink(normalizePath(path_src_gpkg), path_dst_gpkg)
-    if (!ok) {
-      file.copy(path_src_gpkg, path_dst_gpkg)
-    }
-    message("Linked geometry: ", path_dst_gpkg, " -> ", path_src_gpkg)
-  }
 
   product_label <- basename(out_dir)
   meta_path <- file.path(out_dir, "README.md")
@@ -424,24 +383,24 @@ build_landiq_product <- function(
       "",
       "Gap-filled crop identity and ADOY on top of harmonized LandIQ.",
       "Columns `subclass_source` and `adoy_source` record provenance per row.",
-      "Column `COVER` flags cover-crop seasons (candidate CLASS/SUBCLASS + alternation).",
       "All SUBCLASS values use the Nov 2021 DWR RS legend (harmonized_SUBCLASS).",
-      "Tabular rows are restricted to consolidated parcel_ids (parcels-consolidated.gpkg).",
+      "Tabular rows are restricted to consolidated parcel_ids.",
+      "After merge, run `scripts/R/cover_crop_landiq.R` for COVER (not gap-fill).",
       "",
       paste0("- Built: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")),
       paste0("- Source LandIQ: ", source_root),
       paste0("- Gap-fill package: ", landiq_gapfill_root()),
       paste0("- Gap-fill years: ", paste(years, collapse = ", ")),
+      paste0("- Geometry: ", path_src_gpkg, " (unchanged; join here, not under gapfilled)"),
       "",
-      "Pipeline:",
-      "1. `run_gapfill_crop_year.R` (CLASS / SUBCLASS)",
-      "2. `run_gapfill_adoy_year.R` (ADOY)",
-      "3. `build_landiq_gapfill_product.R` (this product, including COVER)",
-      "",
-      "Geometry unchanged from source (`parcels-consolidated.gpkg` symlink)."
+      "Gap-fill pipeline:",
+      "1. `gapfill.R crop` (CLASS / SUBCLASS)",
+      "2. `gapfill.R adoy` (ADOY)",
+      "3. `gapfill.R merge` (join crop+ADOY fills)",
+      "Then: `cover_crop_landiq.R` (COVER), `gapfill.R qc`"
     ),
     meta_path
   )
   message("Wrote ", meta_path)
-  invisible(list(path_parquet = path_out, path_gpkg = path_dst_gpkg, n_rows = nrow(out)))
+  invisible(list(path_parquet = path_out, path_gpkg = path_src_gpkg, n_rows = nrow(out)))
 }

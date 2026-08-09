@@ -4,7 +4,7 @@
 #   full         -- entire calendar year has no usable LandIQ (e.g. 2017). Uses CDL +
 #                  one or two LandIQ neighbor years + county transition matrices.
 #   within_year  -- LandIQ exists for the year but some parcel-season rows are missing
-#                  crop identity (SUBCLASS fill via run_gapfill_crop_year.R).
+#                  crop identity (SUBCLASS fill via `gapfill.R crop`).
 #
 # Temporal neighbors (full mode):
 #   both         -- avg-of-three: (p_fwd + p_bwd + p_cdl) / 3
@@ -191,7 +191,7 @@ resolve_gapfill_neighbors <- function(gapfill_year) {
       "resolve_gapfill_neighbors() is for full-year gap fill; year ", gapfill_year,
       " is not in LANDIQ_GAPFILL_FULL_GAP_YEARS (",
       paste(landiq_gapfill_full_gap_years(), collapse = ", "),
-      "). Use run_gapfill_crop_year.R (within-year mode) instead."
+      "). Use `gapfill.R crop` (within-year mode) instead."
     )
   }
 

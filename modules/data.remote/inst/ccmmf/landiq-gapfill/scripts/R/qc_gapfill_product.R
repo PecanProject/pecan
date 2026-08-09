@@ -13,9 +13,9 @@
 
 .qc_is_subclass_gapfilled <- function(subclass_source) {
   src <- trimws(as.character(subclass_source))
-  !src %in% c(
-    "observed", "OBSERVED", "absent",
-    "X/I/YP (no subclass)", "vineyard_fallback"
+  !is.na(src) & nzchar(src) & !src %in% c(
+    "observed", "OBSERVED",
+    "YP (no subclass)", "X/I/YP (no subclass)", "vineyard_fallback"
   )
 }
 
@@ -107,7 +107,10 @@
   subclass_gap_tab <- .qc_subclass_gapfill_table(s2, n_s2)
   subclass_gap <- sum(subclass_gap_tab$n, na.rm = TRUE)
   adoy_gap <- sum(
-    adoy_tab$n[!adoy_tab$source %in% c("observed", "OBSERVED", "not_applicable", "absent")],
+    adoy_tab$n[
+      !is.na(adoy_tab$source) &
+        !adoy_tab$source %in% c("observed", "OBSERVED", "not_applicable")
+    ],
     na.rm = TRUE
   )
 

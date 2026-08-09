@@ -1,213 +1,210 @@
 # LandIQ gap-fill
 
-This component fills missing **crop identity** and **peak greenness** on the
-harmonized LandIQ parcel table so every parcel has usable main-season crop
-information for phenology matching and event generation.
+Fills missing season-2 **crop identity** (`CLASS` / `SUBCLASS`) and **peak
+greenness** (`ADOY`) on harmonized LandIQ for phenology matching and events.
 
-LandIQ is California's statewide field-level crop mapping product. After
-[cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) harmonizes geometry and
-crop attributes across years, some parcels still lack `CLASS` / `SUBCLASS`
-and/or `ADOY` (adjusted day of year for peak greenness). This component fills
-those gaps, writes an updated product, and records per-row provenance.
+| Does | Does not |
+|------|----------|
+| Patch missing crop / ADOY; record provenance | Change geometry or `parcel_id` |
+| Rewrite only the years you pass | Retrain lookups on a routine year-pair run |
+| Keep `SUBCLASS` on the **Nov 2021 DWR RS legend** | Model sparse seasons 1/3/4 |
 
-It does **not** change geometry or `parcel_id`. All `SUBCLASS` values use the
-**November 2021 DWR RS legend** (Department of Water Resources remote-sensing
-legend). A routine run rewrites only the years you pass and carries every other
-year from the existing gap-filled product (or from the harmonized input on first
-build).
+Links: [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse),
+[pipeline.md](../documentation/pipeline.md),
+[01-landiq.md](../documentation/sessions/01-landiq.md),
+[qc_gapfill_report.md](outputs/qc_gapfill_report.md).
 
-**Observed vs filled:** every output row has `subclass_source` and `adoy_source`.
-On the shipped v4.1.2 product (season 2): 2023 modelled subclass = 6.58%;
-2023 gap-filled ADOY = 62.43%; 2016 gap-filled ADOY = 90.46%; 2017 crop
-identity = 100% modelled. Full counts:
-[documentation/sessions/01-landiq.md](../documentation/sessions/01-landiq.md#observed-vs-filled-be-explicit),
-[outputs/qc_gapfill_report.md](outputs/qc_gapfill_report.md).
+## Paths
 
-**Key features:**
+| Role | Path |
+|------|------|
+| Harmonized crops (in) | `$LANDIQ_HARMONIZED/crops_all_years.parq` (default: `$CADWR_WORK_DIR/03-final`) |
+| Geometry (join only) | `$LANDIQ_HARMONIZED/parcels-consolidated.gpkg` |
+| Gap-filled crops (out) | `$LANDIQ_GAPFILLED/crops_all_years.parq` |
+| Package / lookups | `$LANDIQ_GAPFILL_ROOT` (`outputs/`, `data/`) |
+| CDL rasters / fractions | `$CDL_DIR/cdl_YYYY.tif`, `cdl_fractions_year=YYYY.parquet` |
 
-- Season-2 crop fill from USDA Cropland Data Layer (CDL) parcel fractions plus
-  LandIQ history / emission tables
-- `ADOY` fill from same-parcel neighbors and county/statewide crop reference
-  tables
-- Automatic CDL download and fraction extract for years you request
-- Full-gap years (default **2017**) get CLASS+SUBCLASS prediction and season
-  padding
-- Shipped lookup tables under `outputs/` for routine year-pair updates (no
-  retrain)
-
-Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
-Training walkthrough: [documentation/sessions/01-landiq.md](../documentation/sessions/01-landiq.md).
-
-## Inputs and outputs
-
-| | Path |
-|--|------|
-| Harmonized input | `$LANDIQ_HARMONIZED/crops_all_years.parq` (must already include the new year) |
-| Gap-filled product | `$LANDIQ_GAPFILLED/crops_all_years.parq` (+ geometry symlink) |
-| This component | `$LANDIQ_GAPFILL_ROOT` (defaults to `$CCMMF_CODE/landiq-gapfill`) |
-| CDL GeoTIFFs | `$CDL_DIR/cdl_YYYY.tif` |
-| CDL parcel fractions | `$LANDIQ_GAPFILL_ROOT/cdl/cdl_fractions_year=YYYY.parquet` |
-
-Column dictionaries: [data/crops_all_years_metadata.csv](data/crops_all_years_metadata.csv),
-[data/cdl_fractions_metadata.csv](data/cdl_fractions_metadata.csv).
-
-Upstream geometry: [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse).
+Dictionaries: [crops_all_years_metadata.csv](data/crops_all_years_metadata.csv),
+[cdl_fractions_metadata.csv](data/cdl_fractions_metadata.csv),
+[cdl_nass_cropland_code_lookup.csv](data/cdl_nass_cropland_code_lookup.csv).
 
 ## Data model
 
-Long table: one row per `parcel_id` x `year` x `season`. Geometry is fixed by
-`parcel_id` (one polygon for all years). This product uses consolidated parcels
-only (`parcels-consolidated.gpkg`).
+One row per `parcel_id` x `year` x `season`. Geometry fixed by `parcel_id`
+(consolidated parcels only).
 
-**Four seasons; season 2 is the inventory main crop**
+| Season | Role | ~share with a crop (2020) |
+|--------|------|---------------------------|
+| **2** | Inventory main crop | ~100% ag |
+| 1 | Extra / cover | ~7% |
+| 3 / 4 | Extra | ~2% / <1% |
 
-| Season | Role | Typical share with a crop (of parcels; ~2020 example) |
-|--------|------|------------------------------------------------------|
-| 2 | Primary annual crop | ~100% of ag parcels |
-| 1 | Extra cropping (often cover / early) | ~7% |
-| 3 | Extra cropping | ~2% |
-| 4 | Extra cropping | <1% |
+Gap-fill targets **season 2** (CDL is annual). Other seasons keep observed
+LandIQ or stay NA. 2016 has seasons 1-3 only.
 
-2016 has seasons 1-3 only (DWR added season 4 later).
+`COVER` is a derived flag (not gap-fill): `TRUE` if cover-crop candidate and alternates from the previous cropped season; `FALSE` on other cropped seasons; `NA` if no CLASS. Downstream steps expect it. Attach with `scripts/R/cover_crop_landiq.R` (also run by default from `run_gapfill.sh` after merge).
 
-**Why crop/ADOY gap-fill targets season 2 only:** USDA CDL is an **annual**
-map, so the CDL-based crop fill is defined for the main season. Seasons 1/3/4
-keep observed LandIQ when present and are padded as `absent` when empty.
-Further modelling of those sparse seasons is future work; there is no solid
-statewide validation target for them yet, and they are a small fraction of
-fields.
+## Routine run
 
-**`COVER` cover-crop flag:** boolean on each row from
-[`scripts/R/cover_crop_landiq.R`](scripts/R/cover_crop_landiq.R)
-(`attach_cover_column()` in the product build). `COVER=TRUE` when
-CLASS/SUBCLASS is a cover-crop candidate **and** the parcel alternates from
-the previous non-absent season (first observation cannot alternate). Padded
-`absent` seasons are `FALSE`. This is how cover crops are carried in the
-inventory product today (not a separate multi-PFT event stack).
+Prerequisites under `outputs/` (usually shipped; not rebuilt on a routine run):
 
-## Core workflow
+- CDL x LandIQ probability tables (`gapfill.R cdl-landiq-probs`)
+- ADOY reference tables (`gapfill.R adoy-ref`)
 
-Confirm the new year exists in the harmonized table, then run the year pair
-(prior + new) so the prior year can use the new series as neighbor context:
+Crop/adoy error clearly if those are missing. Rebuild only when logic or training years change (`--cdl-landiq-probs` / `--adoy-ref` on the shell, or the matching `gapfill.R` commands).
 
-```bash
-source "$CCMMF_CODE/documentation/setup_env.sh"
-# Reads LANDIQ_HARMONIZED; writes LANDIQ_GAPFILLED (no env retarget needed)
-$LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
+1. New year in `$LANDIQ_HARMONIZED`.
+2. `run_gapfill.sh PRIOR,TARGET` (ensures CDL *fractions* if missing, then crop -> adoy -> merge -> cover_crop_landiq -> qc). Or the same steps by hand -- Session 1 sections 1.4–1.6 (one-shot note at end of that session).
+3. Review `outputs/qc_gapfill_report.md` when the log says `Done.` (CDL extract ~40 min/year when needed; gap-fill ~1-2 h after that).
+
+```mermaid
+flowchart LR
+  D[CDL download] --> E[CDL fractions]
+  E --> C[crop]
+  HARM[harmonized crops] --> C
+  C --> A[adoy]
+  A --> M[merge]
+  M --> CV[cover_crop_landiq]
+  CV --> Q[QC]
 ```
 
-Earlier years supply context only; shipped tables under `outputs/` are used
-as-is. CDL extract is the slow step (~40 min per year); use a compute node if
-the login node cannot load R `arrow`.
+### Commands and flags
 
-When the log ends with `Done.`, review
-`$LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md`.
-
-### Orchestrator steps
-
-`run_gapfill.sh` runs, in order:
-
-1. **CDL** - California GeoTIFF -> `$CDL_DIR/cdl_YYYY.tif`, then parcel code
-   fractions -> `$LANDIQ_GAPFILL_ROOT/cdl/cdl_fractions_year=YYYY.parquet`.
-2. **Crop identity** - fill missing season-2 `CLASS` / `SUBCLASS` from CDL +
-   history (season 2 only; CDL is annual -- see [Data model](#data-model)).
-3. **ADOY** - fill missing season-2 peak day from neighbors / reference tables.
-4. **Product** - merge into `$LANDIQ_GAPFILLED`, attach `COVER`,
-   carry other years unchanged.
-5. **QC** - provenance tallies by year.
-
-Flags: `--no-cdl` / `--no-crop` / `--no-adoy` / `--no-product` / `--rebuild-cdl` /
-`--rebuild-emission` / `--rebuild-adoy-ref` (see `run_gapfill.sh -h`).
-
-Approximate runtime: routine `2023,2024` ~1-2 h; full 2016-2023 rebuild ~7-8 h
-(sequential CDL).
-
-## CDL (USDA Cropland Data Layer)
-
-Normally handled inside `run_gapfill.sh`. Standalone:
+Year lists: `2023`, `2023,2024`, `2023 2024`, or `2023-2024`.
 
 ```bash
-$LANDIQ_GAPFILL_ROOT/run_gapfill.sh --no-crop --no-adoy --no-product 2024
-# or:
-Rscript $LANDIQ_GAPFILL_ROOT/scripts/cdl/download_cdl_nass.R 2024
-Rscript $LANDIQ_GAPFILL_ROOT/scripts/cdl/extract_cdl_fractions_by_parcel.R 2024
+YEARS=2023,2024
+
+# Routine year pair (CDL fractions auto-ensured; prerequisite tables must exist)
+$LANDIQ_GAPFILL_ROOT/run_gapfill.sh $YEARS
+
+# Rebuild prerequisite tables when missing or after logic/training changes:
+# $LANDIQ_GAPFILL_ROOT/run_gapfill.sh --cdl-landiq-probs --adoy-ref $YEARS
 ```
 
-Code names: [data/cdl_nass_cropland_code_lookup.csv](data/cdl_nass_cropland_code_lookup.csv).
+CDL fractions are not a flag: always ensured (skip years that exist). Prerequisite tables (`cdl-landiq-probs`, `adoy-ref`) are **off by default**; pass `--cdl-landiq-probs` and/or `--adoy-ref` to rebuild. Default-on: crop, adoy, merge, `cover_crop_landiq.R`, qc. Skip with `--no-crop`, `--no-adoy`, `--no-merge`, `--no-cover`, `--no-qc`. Help: `run_gapfill.sh -h` / `Rscript gapfill.R -h`.
 
-## Provenance
+If years are omitted on year-aware `gapfill.R` commands, they fall back to `LANDIQ_GAPFILL_RUN_YEARS`.
 
-Two columns record how each row was set. Downstream matching and events should
-prefer observed values and treat filled rows according to these codes.
+## Methods (within-year -- usual case)
 
-**`subclass_source`** (how `CLASS` / `SUBCLASS` was set):
+Default for every year that has LandIQ. Full-gap years (default **2017**) are
+the exception; see below.
 
-| Value | Meaning |
-|-------|---------|
-| `observed` | From source LandIQ (includes defaulting vineyard `V/**` -> `V/2` wine grapes) |
-| `plurality` | Full-gap CLASS prediction; subclass by plurality of CDL evidence |
-| `emission_cdl` | Subclass from the CDL-to-subclass emission table |
-| `prior_only` | Subclass from the parcel's historical crop prior |
-| `X/I/YP (no subclass)` | Idle/fallow/young-perennial classes that keep `SUBCLASS = **` by design |
-| `unfilled` | Ag parcel, no confident subclass (stays `**`) |
-| `absent` | Padded inactive-season row (no crop) |
+### CDL x LandIQ probability tables
 
-**`adoy_source`** (how `ADOY` was set):
+Shipped under `outputs/`. Trained on season-2 ag parcels with both LandIQ and
+CDL (full-gap years excluded). Routine runs load them; rebuild with
+`--cdl-landiq-probs` only when logic or training years change.
 
-| Value | Meaning |
-|-------|---------|
-| `observed` | From source LandIQ |
-| `temporal` | Borrowed from the same parcel in a neighbor year |
-| `county_class_subclass` / `county_class` | County-level reference table |
-| `statewide_class_subclass` / `statewide_class` | Statewide reference fallback |
-| `multiuse_season2` | Copied from season 2 for a `MULTIUSE = M` parcel |
-| `not_applicable` | CLASS is ADOY-exempt |
-| `unfilled` | No reference matched |
-| `absent` | Padded inactive-season row |
+| Table | Role |
+|-------|------|
+| P(CDL \| CLASS) | Class-level CDL likelihood |
+| P(CDL \| CLASS::SUBCLASS) | Subclass-level CDL likelihood |
+| P(SUBCLASS \| CLASS) | LandIQ subclass prior |
 
-**`COVER`** (cover-crop season flag; see [Data model](#data-model)):
+### Crop identity
 
-| Value | Meaning |
-|-------|---------|
-| `TRUE` | Cover-crop candidate CLASS/SUBCLASS and alternation from prior non-absent season |
-| `FALSE` | Not a cover crop (including padded `absent` seasons) |
+Fills missing season-2 **SUBCLASS** for ag parcels (`is_agricultural`). CLASS
+is never predicted. Already-specific subclass stays `observed`. Young perennial
+blank subclass is left by design (`YP (no subclass)`). Vineyard still missing
+subclass defaults to wine grapes (`observed`).
 
-Built by [`scripts/R/cover_crop_landiq.R`](scripts/R/cover_crop_landiq.R) during
-the product step.
+Dominant CDL code from that year's fraction parquet. Cascade (stop at first
+hit):
 
-## Special case: 2017 (no LandIQ year)
+| # | `subclass_source` | Rule |
+|---|-------------------|------|
+| 1 | `plurality` | Same parcel + CLASS in other years; vote (inverse year-distance) |
+| 2 | `emission_cdl` | Max prior x P(dominant CDL \| CLASS::SUBCLASS) if score > 0 |
+| 3 | `prior_only` | Argmax P(SUBCLASS \| CLASS) |
+| 4 | `unfilled` | Stays `**` |
 
-Detected via `LANDIQ_GAPFILL_FULL_GAP_YEARS` (default `2017`). Predicts season-2
-CLASS+SUBCLASS; pads other seasons as `absent`. Needs neighbor years and
-transition matrices under `data/`.
+Neighbors: nearest LandIQ year before/after (excluding full-gap years).
+
+### ADOY
+
+After crop. Missing = NA or 0. Valid original ADOY stays `observed`.
+
+Fills any season with invalid ADOY on ag parcels. Some CLASSes are exempt
+(`not_applicable`, ADOY NA).
+
+`adoy-ref` (opt-in `--adoy-ref`) is not a model. It writes lookup tables from
+observed LandIQ ADOY in the training years:
+
+1. **Group means** (or median via `ADOY_REFERENCE_STAT`) of ADOY by county or
+   statewide, CLASS, optional SUBCLASS, and season -- typical peak day for that
+   crop in that place.
+2. **Parcel panel** of every valid observed ADOY (parcel, year, season, CLASS,
+   SUBCLASS) -- used only so fill can reuse the *same parcel's* ADOY from a
+   nearby year when crop/season match (`temporal_neighbor`).
+
+Routine `adoy` loads these if present; rebuild when training years or the
+stat change.
+
+Cascade (stop at first hit):
+
+| # | `adoy_source` | Rule |
+|---|---------------|------|
+| 1 | `county_class_subclass` | County x CLASS x SUBCLASS mean |
+| 2 | `temporal_neighbor` | Same parcel / season / CLASS / SUBCLASS within +/- 3 years |
+| 3 | `county_class` | County x CLASS mean |
+| 4 | `statewide_class_subclass` | Statewide CSS mean |
+| 5 | `statewide_class` | Statewide CLASS mean |
+| 6 | `unfilled` | No match |
+| 7 | `multiuse_season2` | Post-pass: `MULTIUSE=M`, copy season-2 ADOY if crop matches |
+
+### Merge
+
+`gapfill.R merge` joins the per-year crop and ADOY fill outputs into
+`$LANDIQ_GAPFILLED` (existing gap-filled table, or harmonized on first build).
+Other years are carried unchanged. Harmonize SUBCLASS to 2021 RS legend; keep
+consolidated parcel IDs. Geometry stays under harmonized -- join
+`parcels-consolidated.gpkg`. Inactive seasons: crop and provenance **NA**.
+
+Crop and ADOY each write year-specific fill tables; merge overlays those filled
+values onto the multi-year base (internal helpers still say "patch" for that
+join -- software overlay, not field polygons).
+
+### Cover (required product step; not gap-fill)
+
+`COVER` does not fill missing values. It flags cover-crop candidates from the
+parcel season sequence on the product table. Not a `gapfill.R` command:
 
 ```bash
+Rscript $LANDIQ_GAPFILL_ROOT/scripts/R/cover_crop_landiq.R
+```
+
+## Exception: full-gap year (no LandIQ)
+
+Years in `LANDIQ_GAPFILL_FULL_GAP_YEARS` (default **2017**). Same pipeline
+order; differences:
+
+| Step | Difference from within-year |
+|------|-----------------------------|
+| Crop | Predict season-2 **CLASS** then SUBCLASS. CLASS = MAP of CDL likelihood plus neighbor transition (county matrix, statewide fallback). SUBCLASS uses the same cascade on the predicted CLASS. Other seasons empty (NA). |
+| ADOY | Season 2 only (default). |
+
+Needs neighbor LandIQ years, CDL fractions for the gap year, and transition
+matrices under `data/`.
+
+```bash
+Rscript $LANDIQ_GAPFILL_ROOT/scripts/cdl/download_cdl_nass.R 2017
+Rscript $LANDIQ_GAPFILL_ROOT/scripts/cdl/extract_cdl_fractions_by_parcel.R 2017
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh 2017
 ```
 
 ## Rebuild from scratch
 
-Only after changing gap-fill logic or lookups - **not** for a routine year-pair
-update. Retrains emission/ADOY tables and re-extracts CDL.
+Only after changing logic or lookups -- not for a routine year pair.
 
 ```bash
 mv $LANDIQ_GAPFILLED ${LANDIQ_GAPFILLED}.bak-$(date +%Y%m%d)
 
+# Re-download/extract CDL for each year as needed, then:
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh \
-  --rebuild-cdl --rebuild-emission --rebuild-adoy-ref 2016-2023
+  --cdl-landiq-probs --adoy-ref 2016-2023
 ```
 
-Routine runs should **not** rebuild emission tables. If they do, pin training
-years (for example `CDL_LANDIQ_TRAINING_YEARS=2016,2018,2019,...,2023`) or rely
-on the shipped `outputs/` tables. Neighbor/training support years default to
-whatever calendar years are present in `$LANDIQ_HARMONIZED` (minus full-gap years).
-
-## Spot-check
-
-```r
-library(arrow); library(dplyr)
-d <- open_dataset(file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq"))
-d |> count(year, season) |> collect() |> arrange(year, season)
-d |> filter(year == 2024, season == 2L) |>
-  summarize(n = n(), n_class = sum(!is.na(CLASS))) |> collect()
-```
+Do not rebuild CDL x LandIQ probability tables on routine runs. Pin
+`CDL_LANDIQ_TRAINING_YEARS` if you must, or use shipped `outputs/`.

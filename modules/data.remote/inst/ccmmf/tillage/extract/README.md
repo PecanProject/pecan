@@ -66,7 +66,8 @@ tillage/extract/
 | Prerequisite | Source |
 |--------------|--------|
 | HLS reflectance + Fmask | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) -> `$HLS_IMAGERY_ROOT/` |
-| Gap-filled LandIQ | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
+| Gap-filled LandIQ crops | `LANDIQ_GAPFILLED` -> [landiq-gapfill](../../landiq-gapfill/README.md) product |
+| Parcel geometry | `LANDIQ_HARMONIZED` -> `$LANDIQ_HARMONIZED/parcels-consolidated.gpkg` |
 | Parcel-tile map | `hls_parcel_tile_map_v4.1.csv` - build once; see [hls/README.md](../../hls/README.md) |
 
 Default imagery layout (set by `setup_env.sh`):
@@ -88,6 +89,7 @@ export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"
 export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$CCMMF_ROOT/products/inventory}"
 export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"
 export LANDIQ_GAPFILLED="$CCMMF_ROOT/LandIQ/gapfilled"
+export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$CCMMF_ROOT/LandIQ/work/cadwr-landuse/v4.1/03-final}"
 
 export HLS_IMAGERY_ROOT=$HLS_IMAGERY_ROOT
 export HLS_PARCEL_TILEMAP=$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv

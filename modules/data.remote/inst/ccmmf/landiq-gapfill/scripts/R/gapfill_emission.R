@@ -17,17 +17,35 @@ emission_tables_cached <- function(suffix = landiq_lookup_suffix()) {
   all(file.exists(unlist(paths[c("prior", "prob_class", "prob_sub", "lookup")])))
 }
 
-#' Build or load cached CDL emission lookup + probability tables.
+#' Load cached CDL x LandIQ probability tables, or rebuild when force=TRUE.
+#'
+#' Routine crop fill expects tables under outputs/. If they are missing, stop
+#' with a clear rebuild hint (do not silently train). Explicit rebuild:
+#'   Rscript gapfill.R cdl-landiq-probs
+#'   ./run_gapfill.sh --cdl-landiq-probs YEARS
 ensure_emission_tables <- function(force = NULL) {
   suffix <- landiq_lookup_suffix()
   if (is.null(force)) {
     force <- tolower(Sys.getenv("GAPFILL_REBUILD_EMISSION", "false")) %in% c("1", "true", "yes")
   }
+  paths <- emission_output_paths(suffix)
   if (!force && emission_tables_cached(suffix)) {
-    message("Emission tables cached (suffix=", suffix, "); skipping build")
-    return(invisible(emission_output_paths(suffix)))
+    message(
+      "CDL x LandIQ probability tables present (suffix=", suffix,
+      "); using cache under ", path_outputs()
+    )
+    return(invisible(paths))
   }
-  message("Building emission tables...")
+  if (!force) {
+    stop(
+      "Missing CDL x LandIQ probability tables (suffix=", suffix, ") under ",
+      path_outputs(), ".\n",
+      "  Confirm files exist, or rebuild with:\n",
+      "    Rscript scripts/gapfill.R cdl-landiq-probs\n",
+      "    # or: ./run_gapfill.sh --cdl-landiq-probs YEARS"
+    )
+  }
+  message("Building CDL x LandIQ probability tables (suffix=", suffix, ")...")
   build_emission_lookup()
   build_emission_prob_tables()
   invisible(emission_output_paths(suffix))
@@ -55,7 +73,11 @@ build_emission_matrix <- function(prob_class, ag_class_vector) {
 load_emission_bundle <- function() {
   paths <- emission_output_paths()
   if (!all(file.exists(unlist(paths[c("prob_class", "prob_sub", "prior")])))) {
-    stop("Missing emission tables; run ensure_emission_tables() first.")
+    stop(
+      "Missing CDL x LandIQ probability tables under ", path_outputs(), ".\n",
+      "  Rebuild with: Rscript scripts/gapfill.R cdl-landiq-probs\n",
+      "  # or: ./run_gapfill.sh --cdl-landiq-probs YEARS"
+    )
   }
   ag_class_vector <- load_ag_class_vector(path_crop_lookup_csv())
   prob_class <- arrow::read_parquet(paths$prob_class, as_data_frame = TRUE) %>%

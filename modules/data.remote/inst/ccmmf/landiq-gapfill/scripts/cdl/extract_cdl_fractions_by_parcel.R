@@ -9,14 +9,15 @@
 # LandIQ data (e.g. 2017) and for comparison with 2016/2018.
 #
 # Usage:
-#   Rscript extract_cdl_fractions_by_parcel.R <year> [path_to_cdl_geotiff]
+#   Rscript extract_cdl_fractions_by_parcel.R <YEARS> [path_to_cdl_geotiff]
 #   Rscript extract_cdl_fractions_by_parcel.R 2017
+#   Rscript extract_cdl_fractions_by_parcel.R 2023,2024
 #   CDL_PATH=/path/to/cdl_2017.tif Rscript extract_cdl_fractions_by_parcel.R 2017
 #
 # Env:
-#   CDL_PATH      -- path to CDL GeoTIFF for the year (overrides default)
+#   CDL_PATH      -- path to CDL GeoTIFF for a single year (overrides default)
 #   CDL_DIR       -- directory containing CDL GeoTIFFs (default: ccmmf/CDL)
-#   CDL_OUT_DIR   -- output dir for parquet (default: landiq-gapfill/cdl)
+#   CDL_OUT_DIR   -- output dir for parquet (default: $CDL_DIR)
 #   LANDIQ_GAPFILL_ROOT, LANDIQ_GAPFILLED -- paths (see scripts/R/paths.R)
 #   CDL_CHUNK_SIZE -- parcel chunk size for extraction (default 5000)
 # =============================================================================
@@ -102,55 +103,75 @@ get_cdl_path <- function(year, path_override = NULL) {
 # --- Main ---
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) {
-  stop("Usage: Rscript extract_cdl_fractions_by_parcel.R <year> [path_to_cdl_geotiff]")
-}
-year_arg <- as.integer(args[1])
-cdl_path_arg <- if (length(args) >= 2) args[2] else NULL
-
-cdl_path <- get_cdl_path(year_arg, cdl_path_arg)
-if (is.null(cdl_path) || !file.exists(cdl_path)) {
-  stop("CDL GeoTIFF not found for year ", year_arg, ". Set CDL_PATH or CDL_DIR, or pass path as second argument. See landiq-gapfill/README.md (CDL section).")
+  stop("Usage: Rscript extract_cdl_fractions_by_parcel.R <YEARS> [path_to_cdl_geotiff]")
 }
 
-message("CDL: ", cdl_path)
-message("Loading parcels and reprojecting to CDL CRS...")
-parcels_sf <- load_parcels_for_cdl(cdl_path)
-if (nrow(parcels_sf) == 0) stop("No parcel geometries loaded.")
-parcels_sf$parcel_id <- as.character(parcels_sf$parcel_id)
+# Optional geotiff path only when a single year is requested.
+path_override <- NULL
+year_tokens <- args
+if (length(args) >= 2L && grepl("\\.(tif|tiff)$", args[[length(args)]], ignore.case = TRUE)) {
+  path_override <- args[[length(args)]]
+  year_tokens <- args[-length(args)]
+}
+years <- parse_cli_gapfill_years(year_tokens)
+if (length(years) > 1L && !is.null(path_override)) {
+  stop("Pass a GeoTIFF path only with a single year; multi-year runs use CDL_DIR/cdl_YYYY.tif")
+}
+if (length(years) > 1L && nzchar(trimws(Sys.getenv("CDL_PATH", "")))) {
+  stop("CDL_PATH is for a single year only; unset it for multi-year extract")
+}
 
-n_parcels <- nrow(parcels_sf)
-message("Parcels: ", n_parcels, " (chunk size ", chunk_size, ")")
-
-cdl_rast <- terra::rast(cdl_path)
-dir.create(path_out_root, recursive = TRUE, showWarnings = FALSE)
-
-# Process in chunks to limit memory and allow progress.
-chunks <- split(seq_len(n_parcels), ceiling(seq_len(n_parcels) / chunk_size))
-results <- vector("list", length(chunks))
-
-for (i in seq_along(chunks)) {
-  idx <- chunks[[i]]
-  sub <- parcels_sf[idx, ]
-  message("Chunk ", i, "/", length(chunks), " (parcels ", min(idx), "-", max(idx), ")")
-  # summarize_df with multiple rows per polygon: exactextractr stacks rows and repeats
-  # append_cols on each row (include_cols does NOT; see exactextractr >= 0.9 docs).
-  extracted <- exactextractr::exact_extract(
-    cdl_rast, sub, summarize_cdl_fractions,
-    progress = FALSE, summarize_df = TRUE, append_cols = "parcel_id"
-  )
-  out_dt <- as.data.table(extracted)
-  if (!"parcel_id" %in% names(out_dt)) {
-    stop("exact_extract: missing parcel_id; use append_cols='parcel_id' with summarize_df.")
+extract_cdl_year <- function(year_arg, cdl_path_arg = NULL) {
+  cdl_path <- get_cdl_path(year_arg, cdl_path_arg)
+  if (is.null(cdl_path) || !file.exists(cdl_path)) {
+    stop(
+      "CDL GeoTIFF not found for year ", year_arg,
+      ". Set CDL_PATH or CDL_DIR, or pass path as second argument."
+    )
   }
-  out_dt[, parcel_id := as.character(parcel_id)]
-  out_dt[, year := year_arg]
-  results[[i]] <- out_dt
+
+  message("=== CDL fractions year=", year_arg, " ===")
+  message("CDL: ", cdl_path)
+  message("Loading parcels and reprojecting to CDL CRS...")
+  parcels_sf <- load_parcels_for_cdl(cdl_path)
+  if (nrow(parcels_sf) == 0) stop("No parcel geometries loaded.")
+  parcels_sf$parcel_id <- as.character(parcels_sf$parcel_id)
+
+  n_parcels <- nrow(parcels_sf)
+  message("Parcels: ", n_parcels, " (chunk size ", chunk_size, ")")
+
+  cdl_rast <- terra::rast(cdl_path)
+  dir.create(path_out_root, recursive = TRUE, showWarnings = FALSE)
+
+  chunks <- split(seq_len(n_parcels), ceiling(seq_len(n_parcels) / chunk_size))
+  results <- vector("list", length(chunks))
+
+  for (i in seq_along(chunks)) {
+    idx <- chunks[[i]]
+    sub <- parcels_sf[idx, ]
+    message("Chunk ", i, "/", length(chunks), " (parcels ", min(idx), "-", max(idx), ")")
+    extracted <- exactextractr::exact_extract(
+      cdl_rast, sub, summarize_cdl_fractions,
+      progress = FALSE, summarize_df = TRUE, append_cols = "parcel_id"
+    )
+    out_dt <- as.data.table(extracted)
+    if (!"parcel_id" %in% names(out_dt)) {
+      stop("exact_extract: missing parcel_id; use append_cols='parcel_id' with summarize_df.")
+    }
+    out_dt[, parcel_id := as.character(parcel_id)]
+    out_dt[, year := year_arg]
+    results[[i]] <- out_dt
+  }
+
+  result <- rbindlist(results)
+  result <- result[!is.na(cdl_code)]
+
+  out_file <- file.path(path_out_root, paste0("cdl_fractions_year=", year_arg, ".parquet"))
+  arrow::write_parquet(result, out_file)
+  message("Wrote ", nrow(result), " rows to ", out_file)
+  invisible(out_file)
 }
 
-result <- rbindlist(results)
-# Drop NA cdl_code rows (no data)
-result <- result[!is.na(cdl_code)]
-
-out_file <- file.path(path_out_root, paste0("cdl_fractions_year=", year_arg, ".parquet"))
-arrow::write_parquet(result, out_file)
-message("Wrote ", nrow(result), " rows to ", out_file)
+for (yr in years) {
+  extract_cdl_year(yr, if (length(years) == 1L) path_override else NULL)
+}

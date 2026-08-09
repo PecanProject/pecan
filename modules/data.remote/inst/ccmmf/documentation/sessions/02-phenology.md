@@ -1,35 +1,21 @@
 # Session 2 - HLS events (phenology and tillage)
 
-**Deliverable:** parcel-level planting, harvest, phenology, and tillage
-management event files for the year pair (MAGIC Management Tracking inputs
-from HLS).
+**What this session is for.** Session 1 gave you stable parcels and gap-filled crop identity. This session adds *when* management happened on those parcels for the same year pair: planting, harvest, and phenology from satellite land-surface phenology, plus optional tillage in fallow windows.
 
-**Goal:** from Harmonized Landsat Sentinel-2 (HLS) products, build parcel-level
-**planting**, **harvest**, **phenology**, and **tillage** management events for
-the operational year pair (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023`). Multi-Source
-Land Surface Phenology (MSLSP) drives the first three; Normalized Difference
-Tillage Index (NDTI) drives tillage in fallow windows.
+The satellite stack is Harmonized Landsat Sentinel-2 (**HLS**). Multi-Source Land Surface Phenology (**MSLSP**) NetCDF products drive planting, harvest, and phenology events (with crop trait CSVs for date windows). Normalized Difference Tillage Index (**NDTI**) drives tillage. You will extract HLS metrics to LandIQ parcels, match seasons to phenology cycles, then write statewide (or demo-tile) event files that MAGiC / SIPNET consume.
 
-**Method class:** hybrid RS + trait CSV lookups (planting/harvest); RS for
-phenology and tillage. **Maturity:** operational (inventory); tillage build is opt-in.
+Live training path uses one HLS tile (`10SDH`). Statewide uses the same steps without the tile / parcel-list filters.
 
-**Prerequisite:** complete [Session 1](01-landiq.md). Point
-`$LANDIQ_GAPFILLED` (gap-filled product from Session 1). Have NASA Earthdata
-credentials from [Session 0](00-setup.md).
+**Prerequisite:** [Session 0](00-setup.md) (incl. Earthdata `.netrc`); [Session 1](01-landiq.md) gap-filled product at `$LANDIQ_GAPFILLED`.
 
----
-
-## Context
-
-Same flow as [pipeline.md](../pipeline.md).
+**Where to go deeper:** [pipeline.md](../pipeline.md); step READMEs in the table below; [metadata.md](../metadata.md) for event columns.
 
 ```mermaid
 flowchart LR
   S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
   S1 --> S2["Session 2\nPhenology + tillage"]
-  S1 --> S3["Session 3\nFert + irrigation"]
-  S2 --> OUT["Management Tracking products"]
-  S3 --> OUT
+  S2 --> S3["Session 3\nFert + irrigation"]
+  S3 --> OUT["Inventory products"]
 ```
 
 Session 2 steps:
@@ -50,10 +36,9 @@ flowchart LR
   NDTI --> EV2
 ```
 
-**Demo vs statewide:** live path is one HLS tile (`10SDH`). Statewide omits
-`TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE`.
+**Demo vs statewide:** omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full statewide runs.
 
-**Operator docs** (algorithms and flags):
+**Operator docs** (algorithms and flags -- read when a step fails or you need parameters):
 
 | Step | README |
 |------|--------|
@@ -64,7 +49,22 @@ flowchart LR
 | Trait lookups | [traits/README.md](../../traits/README.md) |
 | NDTI parcel extraction | [tillage/extract/README.md](../../tillage/extract/README.md) |
 | Statewide events | [events/README.md](../../events/README.md) |
-| Column dictionaries | [metadata.md](../metadata.md) |
+
+## Paths for this session
+
+Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.5. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](../pipeline.md).
+
+To **produce** MSLSP NetCDF / HLS imagery (not only consume existing files), clone [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) and follow that repo's download steps into `$MSLSP_NETCDF_ROOT` / `$HLS_IMAGERY_ROOT`.
+
+| Role | Path | Notes |
+|------|------|-------|
+| In | `$LANDIQ_GAPFILLED` | Gap-filled crops from Session 1 |
+| In | `$HLS_IMAGERY_ROOT`, `$MSLSP_NETCDF_ROOT` | HLS imagery / MSLSP NetCDF (Earthdata) |
+| Out | `$HLS_PARCEL_TILEMAP` | Parcel-tile map |
+| Out | `$MATCHED_DIR` | Matched LandIQ-MSLSP (under phenology/) |
+| Out | `$PRODUCTS_INVENTORY/tillage/` | NDTI extracts |
+| Out | `$PRODUCTS_INVENTORY/event_files/` | Planting / harvest / phenology / tillage |
+| Lookups | `$LOOKUPS_ROOT/plant_traits` (`$PLANT_TRAITS_DIR`) | Trait CSVs for planting/harvest |
 
 ---
 

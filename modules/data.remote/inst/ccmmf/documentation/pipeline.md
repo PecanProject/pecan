@@ -3,7 +3,7 @@
 **Purpose.** This pipeline produces the California Cropland Monitoring and
 Modeling Framework (CCMMF) **Management Tracking** layers: parcel-scale records
 of what was grown and how it was managed. Those layers are required inputs to
-the MAGIC annual inventory and scenario projections (SIPNET driven through
+the MAGiC annual inventory and scenario projections (SIPNET driven through
 PEcAn).
 
 **Audience.** CARB technical staff and implementers who operate or review the
@@ -26,10 +26,12 @@ this page is the product map and annual update SOP.
 |-----------|------------|
 | Domain | California agricultural LandIQ parcels (`is_agricultural == TRUE`) |
 | Spatial grain | Parcel (`parcel_id`); crop seasons within a water year |
-| Temporal rule | Inventory updates run on a **year pair** (see below) |
+| Temporal rule | Inventory updates run on a **year pair** ([Year pair](#year-pair)) |
 | Crop codes | Harmonized to the **2021** DWR remote-sensing legend (`legend_year == 2021`) |
 
-### Year pair
+Demo path (one HLS tile `10SDH`, optional parcel list) uses the same steps as statewide; omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full runs.
+
+## Year pair
 
 LandIQ publishes one statewide crop map per calendar year. Each Management Tracking update therefore has two years:
 
@@ -40,7 +42,54 @@ You download and harmonize `TARGET_YEAR`, then gap-fill and build events for **b
 
 `setup_env.sh` exports `PRIOR_YEAR` and `TARGET_YEAR` (defaults 2023/2024). Override them before sourcing when a newer LandIQ year arrives. Session walkthroughs use `${PRIOR_YEAR}` and `${TARGET_YEAR}` with those defaults.
 
-Demo path (one HLS tile `10SDH`, optional parcel list) uses the same steps as statewide; omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full runs.
+<a id="data-layout"></a>
+
+## Data layout
+
+Finished `$CCMMF_ROOT` workspace (defaults from [setup_env.sh](setup_env.sh)). Create dirs once in [Session 0](sessions/00-setup.md); this is the full picture.
+
+```text
+$CCMMF_ROOT/                          # CCMMF_ROOT
+  LandIQ/                             # LANDIQ_ROOT
+    raw/                              # LANDIQ_RAW
+    work/cadwr-landuse/v4.1/          # CADWR_WORK_DIR
+      03-final/                       # LANDIQ_HARMONIZED (cadwr finals; no copy)
+    gapfilled/                        # LANDIQ_GAPFILLED
+  HLS/
+    imagery/                          # HLS_IMAGERY_ROOT
+    MSLSP/                            # MSLSP_NETCDF_ROOT
+  CDL/                                # CDL_DIR (GeoTIFF + parcel fraction parquets)
+  climate/
+    CHIRPS/                           # CHIRPS_DIR (raw download staging)
+    CIMIS/                            # CIMIS_DIR (raw download staging)
+  soils/
+    SSURGO/                           # SSURGO_DIR (gdb + weights for irrigation)
+  lookups/
+    plant_traits/                     # PLANT_TRAITS_DIR
+    fertilization/                    # FERTILIZATION_LOOKUPS (rate tables only)
+  products/
+    inventory/                        # PRODUCTS_INVENTORY
+      phenology/                      # extract, match (MATCHED_DIR default under here)
+      tillage/
+      fertilization/                  # fert / NCC event outputs (when builders available)
+      irrigation/                     # preferred irrig event_output_dir
+      event_files/                    # planting / harvest / phenology / tillage
+      demo/                           # optional parcel lists
+    projections/                      # PRODUCTS_PROJECTIONS
+```
+
+Roles: inputs (`LandIQ/raw`, `HLS/`, `CDL/`, `climate/`, `soils/`), work (`LandIQ/work`), lookups, and inventory products under `products/inventory/`. Irrigation path keys in `workflows/irrigation-statewide/config_paths.yml` should point into this tree (parcel extracts from `preprocessing/` may live under `$CHIRPS_DIR` / `$CIMIS_DIR` / `$SSURGO_DIR` or another path you set in YAML).
+
+### Product handoffs
+
+| Product | Default location |
+|---------|------------------|
+| Gap-filled crops | `$LANDIQ_GAPFILLED/crops_all_years.parq` |
+| Matched LandIQ-MSLSP | `$MATCHED_DIR` |
+| Parcel-tile map | `$HLS_PARCEL_TILEMAP` |
+| Planting / harvest / phenology / tillage events | `$PRODUCTS_INVENTORY/event_files/` |
+| Fert / NCC events | `$PRODUCTS_INVENTORY/fertilization/` (statewide builders: PR #4003) |
+| Irrigation events | Prefer `$PRODUCTS_INVENTORY/irrigation/` via irrig `event_output_dir` |
 
 ## Products (deliverables)
 
@@ -115,33 +164,36 @@ documented in the [SIPNET handoff appendix](sessions/sipnet-handoff.md)
 
 ## Annual update procedure
 
-Each cycle uses the year pair from [Coverage](#year-pair) (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023` in the current example). Source [setup_env.sh](setup_env.sh) once per shell.
+Each cycle uses the [year pair](#year-pair) (`TARGET_YEAR=2024`, `PRIOR_YEAR=2023` in the current example). Source [setup_env.sh](setup_env.sh) once per shell. Full finished tree: [Data layout](#data-layout).
 
-1. **Setup** -- [Session 0](sessions/00-setup.md): repos, `$CCMMF_ROOT`, Earthdata
-   for HLS.
-2. **Crop identity** -- [Session 1](sessions/01-landiq.md): download LandIQ
-   `TARGET_YEAR`, legend QC, harmonize geometry, gap-fill
-   `${PRIOR_YEAR},${TARGET_YEAR}`. Gap-fill reads `$LANDIQ_HARMONIZED`
-   and writes `$LANDIQ_GAPFILLED` (no env retarget).
-3. **HLS events** -- [Session 2](sessions/02-phenology.md): parcel-tile map
-   (once), MSLSP extract and match for both years, date gap-fill (required
-   before statewide planting/harvest), trait CSVs if missing, planting /
-   harvest / phenology events; NDTI extract and tillage events (opt-in).
-4. **Fertilizer and irrigation** -- [Session 3](sessions/03-fertilizer-irrigation.md):
-   refresh N / organic lookups and irrigation water-balance for the year pair
-   (parallel tracks; maturity as in the products table).
+1. **Setup** -- [Session 0](sessions/00-setup.md): repos, `$CCMMF_ROOT`, Earthdata for HLS.
+2. **Crop identity** -- [Session 1](sessions/01-landiq.md): download LandIQ `TARGET_YEAR`, legend QC, harmonize geometry (finals at `$LANDIQ_HARMONIZED` = cadwr `03-final`), gap-fill `${PRIOR_YEAR},${TARGET_YEAR}`. Gap-fill reads `$LANDIQ_HARMONIZED` and writes `$LANDIQ_GAPFILLED`.
+3. **HLS events** -- [Session 2](sessions/02-phenology.md): parcel-tile map (once), MSLSP extract and match for both years, date gap-fill (required before statewide planting/harvest), trait CSVs if missing, planting / harvest / phenology events; NDTI extract and tillage events (opt-in).
+4. **Fertilizer and irrigation** -- [Session 3](sessions/03-fertilizer-irrigation.md): refresh N / organic lookups and irrigation water-balance for the year pair (parallel tracks; maturity as in the products table).
 5. **SIPNET handoff** (when feeding models) --
    [Appendix](sessions/sipnet-handoff.md): clean / rename statewide parquet,
    build `events.json`, write SIPNET `events.in`.
 
+<a id="data-sources-and-accounts"></a>
+
 ### Data sources and accounts
 
-| Session | Data | Account |
-|---------|------|---------|
-| 1 | LandIQ (CNRA) | Public download |
-| 1 | CDL (CropScape / `CropScapeR`) | No API key for default statewide download |
-| 2 | HLS / MSLSP / NDTI ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) | [NASA Earthdata Login](https://urs.earthdata.nasa.gov/) |
-| 3 | Fertilization lookups; CHIRPS, CIMIS, SSURGO | Usually public / preprocessed; follow Session 3 |
+| Data | Session | Account? | Source / how obtained |
+|------|---------|----------|----------------------|
+| LandIQ statewide shapefile | 1 | No | CNRA public download ([Session 1](sessions/01-landiq.md)) |
+| LandIQ legend PDF | 1 | No | Same portal |
+| CDL GeoTIFF + parcel fractions | 1 | No | `landiq-gapfill/scripts/cdl/download_cdl_nass.R`, `extract_cdl_fractions_by_parcel.R` (CropScapeR; no API key for default statewide) |
+| HLS imagery | 2 | **Yes -- Earthdata** | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology); [Session 0](sessions/00-setup.md) section 0.5 |
+| MSLSP NetCDF | 2 | **Yes -- Earthdata** | Same |
+| NDTI (from HLS) | 2 | **Yes -- Earthdata** | `tillage/run_ndti.sh` |
+| Plant trait CSVs | 2 | No | [traits/README.md](../traits/README.md); `$LOOKUPS_ROOT/plant_traits` |
+| CA N / compost rate tables | 3 | No | Packaged `PEcAn.data.land` (`look_up_ca_n_rate`, data-raw CSVs) |
+| Fertilizer composition | 3 | No | `modules/data.land/data-raw/create_fertilizer_data.R` |
+| CHIRPS precip | 3 | No | [UCSB CHC](https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/netcdf/p05/); see `workflows/irrigation-statewide/preprocessing/README.md` |
+| CIMIS ETref | 3 | No | [spatial CIMIS](https://spatialcimis.water.ca.gov/); same preprocess README |
+| gSSURGO California gdb | 3 | No* | [NRCS Box soils folder](https://nrcs.app.box.com/v/soils/folder/233398887779); irrig uses local gdb via `config_paths.yml` (*Box may prompt a free login to download) |
+
+**Earthdata is the only required account** for Sessions 1-3 as implemented on this tree. Climate, soils, fert lookups, LandIQ, and CDL are public downloads or packaged data.
 
 ### Session 1 commands (summary)
 
@@ -215,7 +267,7 @@ Detail: [Session 2](sessions/02-phenology.md).
 
 | Need | Where |
 |------|--------|
-| Env | [setup_env.sh](setup_env.sh), [Session 0](sessions/00-setup.md) |
+| Env / layout / accounts | [Session 0](sessions/00-setup.md), [setup_env.sh](setup_env.sh), [Data layout](#data-layout), [Data sources and accounts](#data-sources-and-accounts) |
 | Geometry harmonization | [ccmmf/cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) |
 | HLS / MSLSP NetCDF | [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) |
 | Events schemas | [events/README.md](../events/README.md) |
@@ -227,7 +279,7 @@ Detail: [Session 2](sessions/02-phenology.md).
 
 | Session | Done | Checkpoint |
 |---------|------|------------|
-| 0 | [ ] | Env sourced; repos cloned; `$CCMMF_ROOT` layout ready; Earthdata for HLS |
+| 0 | [ ] | Env sourced; repos cloned; Earthdata for HLS; know [Data layout](#data-layout) |
 | 1 | [ ] | Harmonized table; gap-fill `2023,2024`; `$LANDIQ_GAPFILLED` gap-filled product ready |
 | 2 | [ ] | MSLSP + match + date gap-fill + planting/harvest/phenology; NDTI + tillage as required |
 | 3 | [ ] | Fert / organic and irrigation workflows reviewed or run for the year pair |

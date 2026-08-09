@@ -6,6 +6,7 @@
 #
 # Usage:
 #   Rscript download_cdl_nass.R 2017
+#   Rscript download_cdl_nass.R 2023,2024
 #   Rscript download_cdl_nass.R 2016 2017 2018
 #   CDL_DIR=/path/to/dir Rscript download_cdl_nass.R 2017
 #
@@ -50,9 +51,10 @@ download_cdl_year <- function(year, outdir = path_cdl_dir) {
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
-  stop("Usage: Rscript download_cdl_nass.R <year> [year ...]")
+  stop("Usage: Rscript download_cdl_nass.R <YEARS>  (e.g. 2023,2024 or 2016 2017 2018)")
 }
-years <- as.integer(args)
-bad <- is.na(years) | years < 2008 | years > 2024
-if (any(bad)) stop("Invalid year(s); use 2008--2024")
+years <- parse_cli_gapfill_years(args)
+if (any(years < 2008L)) {
+  stop("CDL years must be >= 2008; got: ", paste(years, collapse = ","))
+}
 for (yr in years) download_cdl_year(yr, outdir = path_cdl_dir)

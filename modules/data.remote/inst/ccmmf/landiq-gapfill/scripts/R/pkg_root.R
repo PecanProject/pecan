@@ -12,13 +12,17 @@ landiq_gapfill_pkg_root <- function() {
   if (length(file_arg) == 0L) {
     stop(
       "Set LANDIQ_GAPFILL_ROOT to the landiq-gapfill package directory ",
-      "(the folder that contains scripts/_lib/bootstrap.R)."
+      "(the folder that contains scripts/R/bootstrap.R)."
     )
   }
 
   dir <- dirname(normalizePath(sub("^--file=", "", file_arg[1L]), mustWork = FALSE))
   for (k in seq_len(6L)) {
-    if (file.exists(file.path(dir, "scripts", "_lib", "bootstrap.R"))) {
+    # Entry scripts live under scripts/; libs under scripts/R/
+    if (file.exists(file.path(dir, "R", "bootstrap.R"))) {
+      return(normalizePath(dirname(dir), mustWork = FALSE))
+    }
+    if (file.exists(file.path(dir, "scripts", "R", "bootstrap.R"))) {
       return(normalizePath(dir, mustWork = FALSE))
     }
     parent <- dirname(dir)
@@ -39,7 +43,7 @@ load_landiq_gapfill <- function() {
     return(invisible(TRUE))
   }
   root <- landiq_gapfill_pkg_root()
-  source(file.path(root, "scripts", "_lib", "bootstrap.R"))
+  source(file.path(root, "scripts", "R", "bootstrap.R"))
   options(landiq_gapfill.loaded = TRUE)
   invisible(TRUE)
 }

@@ -14,11 +14,12 @@ path_outputs <- function() {
 }
 
 path_cdl_fractions <- function() {
+  # Parcel fractions live with CDL GeoTIFFs under CDL_DIR (override with CDL_OUT_DIR).
   env <- Sys.getenv("CDL_OUT_DIR", "")
   if (nzchar(env)) {
     return(normalizePath(env, mustWork = FALSE))
   }
-  file.path(landiq_gapfill_root(), "cdl")
+  path_cdl_rasters()
 }
 
 path_cdl_rasters <- function() {

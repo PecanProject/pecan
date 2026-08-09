@@ -1,33 +1,19 @@
 # Session 3 - Fertilization and irrigation
 
-**Deliverable:** nitrogen fertilization, organic (NCC) amendment, and irrigation
-management inputs for the same LandIQ parcels as Sessions 1-2 (parallel tracks
-into MAGIC / SIPNET).
+**What this session is for.** Sessions 1-2 built crop identity and HLS-based timing (planting, harvest, phenology, optional tillage). Fertilizer, organic amendments, and irrigation are **not** read from HLS the same way. They are parallel tracks onto the same LandIQ `parcel_id`s: N and organic rates come from California guideline lookups (and event builders when available); irrigation comes from a water-balance workflow using climate and soils.
 
-**Goal:** produce or review **nitrogen fertilization**, **organic amendments**,
-and **irrigation** management events. These are parallel, non-HLS workflows
-(rate lookups and water-balance).
+Treat Part A (fert / organic) and Part B (irrigation) as independent after LandIQ exists. You can run a demo parcel list from Session 2 if you have one.
 
-**Method class:** lookup (N / organic); water balance (irrigation). Lookups are in
-`PEcAn.data.land` on this tree; statewide fert/NCC event builders are in PEcAn PR
-[#4003](https://github.com/PecanProject/pecan/pull/4003).
+**Prerequisite:** [Session 0](00-setup.md); [Session 1](01-landiq.md) LandIQ product; optional [Session 2](02-phenology.md) matched phenology for irrig canopy (`$MATCHED_DIR`) and demo `parcels_10SDH.csv`.
 
-**Prerequisite:** [Session 1](01-landiq.md) LandIQ product; optional same demo
-parcel list as [Session 2](02-phenology.md) (`parcels_10SDH.csv`).
-
----
-
-## Context
-
-Same flow as [pipeline.md](../pipeline.md).
+**Where to go deeper:** [pipeline.md](../pipeline.md); fert lookups in `PEcAn.data.land`; statewide fert/NCC builders in PEcAn PR [#4003](https://github.com/PecanProject/pecan/pull/4003); irrigation under `workflows/irrigation-statewide/`.
 
 ```mermaid
 flowchart LR
   S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
   S1 --> S2["Session 2\nPhenology + tillage"]
-  S1 --> S3["Session 3\nFert + irrigation"]
-  S2 --> OUT["Management Tracking products"]
-  S3 --> OUT
+  S2 --> S3["Session 3\nFert + irrigation"]
+  S3 --> OUT["Inventory products"]
 ```
 
 Session 3 steps:
@@ -41,6 +27,23 @@ flowchart LR
 ```
 
 Shared contract with Sessions 1-2: LandIQ `parcel_id` (and demo filter when used).
+
+## Paths for this session
+
+Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy, point YAML `mslsp_path` at `$MATCHED_DIR` (or the matched hive from [Session 2](02-phenology.md)). Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](../pipeline.md). Accounts for CHIRPS/CIMIS/SSURGO: [accounts](../pipeline.md) (no API keys).
+
+| Role | Path | Notes |
+|------|------|-------|
+| In | `$LANDIQ_GAPFILLED` | Crops table for fert/irrig |
+| In | `$MATCHED_DIR` | Prefer for irrig `mslsp_path` |
+| Lookups | `$FERTILIZATION_LOOKUPS` | Rate tables only (`$LOOKUPS_ROOT/fertilization`) |
+| Out | `$PRODUCTS_INVENTORY/fertilization/` | Fert/NCC **event** outputs when PR #4003 builders are available |
+| Staging | `$CHIRPS_DIR`, `$CIMIS_DIR`, `$SSURGO_DIR` | Raw downloads / gdb; parcel extracts from preprocess may live here or another path set in YAML |
+| Out | Prefer `$PRODUCTS_INVENTORY/irrigation/` | Set as irrig `event_output_dir` |
+
+Fert on this tree: `PEcAn.data.land::look_up_ca_n_rate()`, `look_up_fertilizer_components()`; package data-raw under `modules/data.land/data-raw/`. Statewide fert/NCC event workflows are **not** under `workflows/` here (PR [#4003](https://github.com/PecanProject/pecan/pull/4003)).
+
+Irrigation: `workflows/irrigation-statewide/` (`config_paths.yml`, `_targets.R`, `preprocessing/README.md`).
 
 ---
 
@@ -76,33 +79,24 @@ Those workflow directories are not under `workflows/` on this monitoring tree.
 Use PR #4003 for fert/NCC statewide event runs; use `look_up_ca_n_rate()` here
 to inspect rates.
 
-Source TSVs for harmonization may live under `$PRODUCTS_INVENTORY/fertilization/`.
-Typical contents:
+Optional source TSVs for rebuilding packaged rates may live under `$FERTILIZATION_LOOKUPS` (not under `$PRODUCTS_INVENTORY/fertilization/`, which is for event outputs). Typical spreadsheet exports:
 
-
-| File                                                | Role                                   |
-| --------------------------------------------------- | -------------------------------------- |
-| `CCMMF Fertilization - N_Fertilization.tsv`         | N rates by crop and growth stage       |
+| File | Role |
+|------|------|
+| `CCMMF Fertilization - N_Fertilization.tsv` | N rates by crop and growth stage |
 | `CCMMF Fertilization - Compost.tsv` / `Biochar.tsv` | Organic amendment properties and rates |
-| `CCMMF_Fertilization_Crop_types.tsv`                | Crop type crosswalk                    |
-| `harmonize_fertilization_data.R`                    | Reads TSVs, writes harmonized CSVs     |
+| `CCMMF_Fertilization_Crop_types.tsv` | Crop type crosswalk |
 
+There is **no** `harmonize_fertilization_data.R` on this tree. Packaged tables are built via `modules/data.land/data-raw/create_n_rate_data.R`, `create_compost_data.R`, and `create_fertilizer_data.R` (see comments there for any external harmonization script).
 
 ### Inputs / Outputs
 
-
-| Item    | Path / format                                                                                                              | Notes                                 |
-| ------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Input   | Source TSVs under `$PRODUCTS_INVENTORY/fertilization/` (or shipped `data.land`)                                              | Spreadsheet exports                   |
-| Output  | `ca_n_application_rate.csv`, `ca_organic_amendment_*.csv`                                                                  | Harmonized rates                      |
-| Runtime | `look_up_ca_n_rate()` in `PEcAn.data.land`                                                                                 | Per-crop min/max N                    |
-| Events  | PR [#4003](https://github.com/PecanProject/pecan/pull/4003) `workflows/fertilization-statewide`, `workflows/ncc-statewide` | Statewide fert/NCC event builders |
-
-
-```bash
-# From $PRODUCTS_INVENTORY/fertilization/ (or the packaged data-raw path):
-Rscript harmonize_fertilization_data.R
-```
+| Item | Path / format | Notes |
+|------|---------------|--------|
+| Runtime | `look_up_ca_n_rate()` / `look_up_fertilizer_components()` in `PEcAn.data.land` | Per-crop rates from packaged data |
+| Optional TSV inputs | `$FERTILIZATION_LOOKUPS` | Spreadsheet exports for rebuilding package data |
+| Event outputs | `$PRODUCTS_INVENTORY/fertilization/` | When using PR #4003 statewide builders |
+| Events | PR [#4003](https://github.com/PecanProject/pecan/pull/4003) `workflows/fertilization-statewide`, `workflows/ncc-statewide` | Not present under `workflows/` on this tree |
 
 ```r
 library(PEcAn.data.land)
@@ -131,9 +125,9 @@ paths - same idea as Session 2 restricting to parcels in a demo tile.
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
-| Input | Parcel-level CHIRPS / CIMIS / SSURGO extracts (+ MSLSP canopy as configured) | Preprocess: `workflows/irrigation-statewide/preprocessing/` |
-| Config | `config.yml`, `config_paths.yml` under the irrigation workflow | Paths select the parcel universe; `TAR_PROJECT` selects sample vs all-in-table |
-| Output | Irrigation event files / parquet | Combine with other event types as needed |
+| Input | Parcel-level CHIRPS / CIMIS / SSURGO extracts (+ MSLSP canopy as configured) | Preprocess: `workflows/irrigation-statewide/preprocessing/`; point YAML at those dirs (not necessarily `$CHIRPS_DIR` / `$CIMIS_DIR` raw staging) |
+| Config | `config.yml`, `config_paths.yml` under the irrigation workflow | Keys: `crops_path`, `mslsp_path`, `cimis_etref_path`, `chirps_precip_path`, `ssurgo_*`, `event_output_dir`; prefer shared-tree paths |
+| Output | Irrigation event files / parquet | Prefer `event_output_dir: $PRODUCTS_INVENTORY/irrigation` (expand to absolute path in YAML) |
 
 `TAR_PROJECT` must be one of the projects in
 `workflows/irrigation-statewide/config.yml` (and `_targets.yaml`):
@@ -188,8 +182,8 @@ see the unofficial [SIPNET handoff](sipnet-handoff.md).
 
 **Fertilization / organic**
 
-- [ ] Know lookups (`look_up_ca_n_rate`) vs statewide fert/NCC events (PR #4003)
-- [ ] Know where rates live (`data.land` and/or `$PRODUCTS_INVENTORY/fertilization/`)
+- [ ] Know lookups (`look_up_ca_n_rate`) vs statewide fert/NCC events (PR #4003; not under `workflows/` here)
+- [ ] Rate tables: packaged `data.land` and/or `$FERTILIZATION_LOOKUPS`; event outs: `$PRODUCTS_INVENTORY/fertilization/`
 - [ ] Spot-check a crop with `look_up_ca_n_rate()` (structure: returns min/max N)
 
 **Irrigation**

@@ -13,13 +13,19 @@ if (!nzchar(trimws(mslsp_landiq_v4))) {
   if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
   mslsp_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
+mslsp_landiq_harmonized <- Sys.getenv("LANDIQ_HARMONIZED", "")
+if (!nzchar(trimws(mslsp_landiq_harmonized))) {
+  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(.root)) stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
+  mslsp_landiq_harmonized <- file.path(.root, "LandIQ", "harmonized")
+}
 mslsp_inventory   <- Sys.getenv("PRODUCTS_INVENTORY", "")
 if (!nzchar(trimws(mslsp_inventory))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   mslsp_inventory <- file.path(.root, "products", "inventory")
 }
-mslsp_parcels_gpkg <- file.path(mslsp_landiq_v4, "parcels-consolidated.gpkg")
+mslsp_parcels_gpkg <- file.path(mslsp_landiq_harmonized, "parcels-consolidated.gpkg")
 mslsp_crops_parq   <- file.path(mslsp_landiq_v4, "crops_all_years.parq")
 mslsp_cropcode_lookup <- file.path(mslsp_inventory, "LandIQ_cropCode_lookup_table.csv")
 mslsp_netcdf_root <- {

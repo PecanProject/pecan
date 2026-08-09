@@ -174,22 +174,46 @@ build_adoy_reference <- function() {
   invisible(paths)
 }
 
+#' Load cached ADOY reference tables, or rebuild when force=TRUE.
+#'
+#' Routine adoy fill expects tables under outputs/. If they are missing, stop
+#' with a clear rebuild hint (do not silently rebuild). Explicit rebuild:
+#'   Rscript gapfill.R adoy-ref
+#'   ./run_gapfill.sh --adoy-ref YEARS
 ensure_adoy_reference <- function(force = NULL) {
   suffix <- adoy_reference_suffix()
   if (is.null(force)) {
     force <- tolower(Sys.getenv("GAPFILL_REBUILD_ADOY_REF", "false")) %in% c("1", "true", "yes")
   }
+  paths <- adoy_output_paths(suffix)
   if (!force && adoy_reference_cached(suffix)) {
-    message("ADOY reference cached (suffix=", suffix, "); skipping build")
-    return(invisible(adoy_output_paths(suffix)))
+    message(
+      "ADOY reference tables present (suffix=", suffix,
+      "); using cache under ", path_outputs()
+    )
+    return(invisible(paths))
   }
+  if (!force) {
+    stop(
+      "Missing ADOY reference tables (suffix=", suffix, ") under ",
+      path_outputs(), ".\n",
+      "  Confirm files exist, or rebuild with:\n",
+      "    Rscript scripts/gapfill.R adoy-ref\n",
+      "    # or: ./run_gapfill.sh --adoy-ref YEARS"
+    )
+  }
+  message("Building ADOY reference tables (suffix=", suffix, ")...")
   build_adoy_reference()
 }
 
 load_adoy_reference <- function() {
   paths <- adoy_output_paths()
   if (!adoy_reference_cached(adoy_reference_suffix())) {
-    stop("Missing ADOY reference tables; run ensure_adoy_reference() first")
+    stop(
+      "Missing ADOY reference tables under ", path_outputs(), ".\n",
+      "  Rebuild with: Rscript scripts/gapfill.R adoy-ref\n",
+      "  # or: ./run_gapfill.sh --adoy-ref YEARS"
+    )
   }
   list(
     suffix = adoy_reference_suffix(),
@@ -456,7 +480,7 @@ ensure_within_year_crop_prerequisite <- function(gapfill_year) {
     stop(
       "Within-year ADOY requires subclass gap-fill output when ag rows lack subclass (",
       n_missing, " season-2 row(s)): ", path_wy,
-      "\nRun run_gapfill_crop_year.R ", gapfill_year, " first."
+      "\nRun gapfill.R crop ", gapfill_year, " first."
     )
   }
   invisible(n_missing)
@@ -500,7 +524,7 @@ load_adoy_target_panel <- function(gapfill_year) {
     if (!file.exists(path_sub)) {
       stop(
         "Full-year ADOY requires subclass assignment output: ", path_sub,
-        "\nRun run_gapfill_crop_year.R ", gapfill_year, " first (crop + subclass)."
+        "\nRun gapfill.R crop ", gapfill_year, " first (crop + subclass)."
       )
     }
     sub_df <- arrow::read_parquet(path_sub, as_data_frame = TRUE)

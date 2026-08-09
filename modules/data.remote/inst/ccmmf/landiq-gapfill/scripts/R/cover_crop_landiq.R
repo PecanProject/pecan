@@ -1,20 +1,20 @@
+#!/usr/bin/env Rscript
 # Flag cover crops on an existing LandIQ-style crop table.
 #
 # Definition (Violet / cover_crop.R):
 #   COVER = TRUE when CLASS/SUBCLASS is a cover candidate AND the row
 #   alternates from the previous season on the same parcel (class or subclass).
 # First observation per parcel cannot alternate -> COVER = FALSE.
-# If subclass_source is present, absent seasons are dropped by default.
+# Inactive seasons (no CLASS) are skipped by default.
 #
-# Product attachment (padded LandIQ table): use attach_cover_column(), which
-# flags on non-absent rows then left-joins COVER back (missing -> FALSE).
-# Wired into landiq-gapfill build_landiq_product() and
-# scripts/landiq/add_cover_column_to_product.R for one-shot patches.
+# Product attachment: attach_cover_column() flags on seasons with a CLASS, then
+# left-joins COVER back (inactive seasons stay COVER = NA).
 #
-# Usage:
-#   source(file.path(Sys.getenv("CCMMF_CODE"), "landiq-gapfill/scripts/R/cover_crop_landiq.R"))
-#   crops <- flag_cover_crops(crops)
-#   crops <- attach_cover_column(crops)  # full product including absent seasons
+# CLI (rewrites $LANDIQ_GAPFILLED/crops_all_years.parq):
+#   Rscript "$LANDIQ_GAPFILL_ROOT/scripts/R/cover_crop_landiq.R"
+#
+# Library (sourced by load_landiq_gapfill):
+#   crops <- attach_cover_column(crops)
 
 suppressPackageStartupMessages(library(data.table))
 
@@ -29,18 +29,23 @@ default_cover_codes <- function() {
 #' Add a boolean COVER column to a LandIQ-style crop time series.
 #'
 #' Expects columns: parcel_id, year, season, CLASS, SUBCLASS.
-#' All other columns are preserved. If subclass_source exists and
-#' drop_absent = TRUE, rows with subclass_source == "absent" are removed.
+#' All other columns are preserved. If drop_inactive = TRUE, rows with missing
+#' CLASS are removed before flagging.
 #'
 #' @param crops data.frame / data.table of crop observations
 #' @param cover_codes data.table with CLASS, SUBCLASS character columns
-#' @param drop_absent if TRUE and subclass_source exists, drop absent seasons
+#' @param drop_inactive if TRUE, drop seasons with no CLASS
+#' @param drop_absent deprecated alias for drop_inactive
 #' @return data.table with COVER added
 flag_cover_crops <- function(
     crops,
     cover_codes = default_cover_codes(),
-    drop_absent = TRUE
+    drop_inactive = TRUE,
+    drop_absent = NULL
 ) {
+  if (!is.null(drop_absent)) {
+    drop_inactive <- isTRUE(drop_absent)
+  }
   dt <- as.data.table(copy(crops))
 
   required <- c("parcel_id", "year", "season", "CLASS", "SUBCLASS")
@@ -54,17 +59,12 @@ flag_cover_crops <- function(
     SUBCLASS = as.character(SUBCLASS)
   )]
 
-  if ("subclass_source" %in% names(dt) && isTRUE(drop_absent)) {
-    dt <- dt[is.na(subclass_source) | as.character(subclass_source) != "absent"]
+  if (isTRUE(drop_inactive)) {
+    class_chr0 <- trimws(as.character(dt$CLASS))
+    dt <- dt[!is.na(class_chr0) & nzchar(class_chr0)]
   }
 
-  # Typed copies for matching / lag (leave original columns unchanged)
-  class_chr <- as.character(dt$CLASS)
-  subclass_chr <- as.character(dt$SUBCLASS)
-  parcel_chr <- as.character(dt$parcel_id)
-
   setorderv(dt, c("parcel_id", "year", "season"))
-  # Recompute after reorder
   class_chr <- as.character(dt$CLASS)
   subclass_chr <- as.character(dt$SUBCLASS)
   parcel_chr <- as.character(dt$parcel_id)
@@ -82,12 +82,12 @@ flag_cover_crops <- function(
   dt
 }
 
-#' Attach COVER to a full LandIQ product table (including padded absent seasons).
+#' Attach COVER to a full LandIQ product table (including inactive season rows).
 #'
-#' Flags cover crops on non-absent rows only (Violet alternation rules), then
-#' left-joins COVER back so padded seasons are preserved. Missing -> FALSE.
+#' Flags cover crops on seasons with a CLASS only, then left-joins COVER back.
+#' Inactive / padded seasons keep COVER = NA.
 #'
-#' @param crops full LandIQ-style table (may include subclass_source == "absent")
+#' @param crops full LandIQ-style table
 #' @param cover_codes passed to flag_cover_crops()
 #' @return same rows as crops, with COVER (logical) added or replaced
 attach_cover_column <- function(crops, cover_codes = default_cover_codes()) {
@@ -96,7 +96,7 @@ attach_cover_column <- function(crops, cover_codes = default_cover_codes()) {
     dt[, COVER := NULL]
   }
 
-  flagged <- flag_cover_crops(dt, cover_codes = cover_codes, drop_absent = TRUE)
+  flagged <- flag_cover_crops(dt, cover_codes = cover_codes, drop_inactive = TRUE)
   cover_map <- unique(flagged[, .(
     parcel_id = as.character(parcel_id),
     year = as.integer(year),
@@ -109,7 +109,52 @@ attach_cover_column <- function(crops, cover_codes = default_cover_codes()) {
     year = as.integer(year),
     season = as.integer(season)
   )]
-  dt <- merge(dt, cover_map, by = c("parcel_id", "year", "season"), all.x = TRUE)
-  dt[is.na(COVER), COVER := FALSE]
-  dt
+  merge(dt, cover_map, by = c("parcel_id", "year", "season"), all.x = TRUE)
 }
+
+#' Attach COVER on the gap-filled product parquet and rewrite it.
+attach_cover_to_gapfill_product <- function(
+    path_parquet = file.path(landiq_product_root(), "crops_all_years.parq"),
+    cover_codes = default_cover_codes()) {
+  if (!file.exists(path_parquet)) {
+    stop("Missing gap-filled product: ", path_parquet)
+  }
+  message("Attaching COVER on ", path_parquet)
+  out <- arrow::read_parquet(path_parquet, as_data_frame = TRUE)
+  out <- attach_cover_column(out, cover_codes = cover_codes)
+  n_cover <- sum(out$COVER %in% TRUE, na.rm = TRUE)
+  message("  COVER=TRUE rows: ", n_cover, " / ", nrow(out))
+  arrow::write_parquet(out, path_parquet)
+  message("Wrote ", nrow(out), " rows -> ", path_parquet)
+  invisible(list(path_parquet = path_parquet, n_rows = nrow(out), n_cover = n_cover))
+}
+
+# Run as CLI only when this file is the Rscript entrypoint (not when sourced).
+local({
+  if (isTRUE(getOption("landiq.cover_crop_cli"))) {
+    return(invisible(NULL))
+  }
+  ca <- commandArgs(trailingOnly = FALSE)
+  file_arg <- sub("^--file=", "", grep("^--file=", ca, value = TRUE)[1L])
+  ofile <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+  if (!length(file_arg) || !nzchar(file_arg) || is.null(ofile)) {
+    return(invisible(NULL))
+  }
+  if (!identical(
+    normalizePath(file_arg, mustWork = FALSE),
+    normalizePath(ofile, mustWork = FALSE)
+  )) {
+    return(invisible(NULL))
+  }
+
+  options(landiq.cover_crop_cli = TRUE)
+  .libPaths(c(file.path(R.home(), "library"), .libPaths()))
+  suppressPackageStartupMessages({
+    library(tidyverse)
+    library(arrow)
+  })
+  source(file.path(dirname(normalizePath(ofile, mustWork = FALSE)), "pkg_root.R"))
+  load_landiq_gapfill()
+  attach_cover_to_gapfill_product()
+})
+

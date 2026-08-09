@@ -4,11 +4,14 @@
 #   source "$CCMMF_CODE/documentation/setup_env.sh"
 #   source ./setup_env.sh
 #
-# Layout roles under $CCMMF_ROOT:
-#   LandIQ / HLS / CDL / climate / soils       -- external inputs
+# Layout roles under $CCMMF_ROOT (full data workspace, not outputs-only):
+#   LandIQ / HLS / CDL / climate / soils       -- external inputs (+ LandIQ work)
 #   lookups                                    -- small tables
 #   products/inventory                         -- Management Tracking outputs
 #   products/projections                       -- scenario / model outputs
+# Finished tree + accounts: documentation/pipeline.md (Data layout; Data sources and accounts).
+# Irrigation: workflows/irrigation-statewide/config_paths.yml keys should point into this tree;
+#   CHIRPS_DIR/CIMIS_DIR are raw staging; parcel extracts from preprocessing/ may differ.
 
 # Workspace roots
 export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"          # data
@@ -22,8 +25,10 @@ export CCMMF_TARGET_YEAR=$TARGET_YEAR
 # --- External inputs ---
 export LANDIQ_ROOT="${LANDIQ_ROOT:-$CCMMF_ROOT/LandIQ}"
 export LANDIQ_RAW="${LANDIQ_RAW:-$LANDIQ_ROOT/raw}"                       # annual shapefiles
-export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$LANDIQ_ROOT/harmonized}"  # gap-fill input
 export LANDIQ_GAPFILLED="${LANDIQ_GAPFILLED:-$LANDIQ_ROOT/gapfilled}"     # gap-filled crops
+export CADWR_WORK_DIR="${CADWR_WORK_DIR:-$LANDIQ_ROOT/work/cadwr-landuse/v4.1}"  # cadwr work (raw -> finals)
+# Gap-fill / downstream input = cadwr published finals (no separate copy)
+export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$CADWR_WORK_DIR/03-final}"
 
 export HLS_ROOT="${HLS_ROOT:-$CCMMF_ROOT/HLS}"
 export HLS_IMAGERY_ROOT="${HLS_IMAGERY_ROOT:-$HLS_ROOT/imagery}"          # HLS GeoTIFF
@@ -31,11 +36,11 @@ export MSLSP_NETCDF_ROOT="${MSLSP_NETCDF_ROOT:-$HLS_ROOT/MSLSP}"          # MSLS
 export CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL}"                              # CDL GeoTIFF
 
 export CLIMATE_ROOT="${CLIMATE_ROOT:-$CCMMF_ROOT/climate}"
-export CHIRPS_DIR="${CHIRPS_DIR:-$CLIMATE_ROOT/CHIRPS}"
-export CIMIS_DIR="${CIMIS_DIR:-$CLIMATE_ROOT/CIMIS}"
+export CHIRPS_DIR="${CHIRPS_DIR:-$CLIMATE_ROOT/CHIRPS}"   # raw CHIRPS staging; irrig YAML chirps_precip_path = preprocess extract dir
+export CIMIS_DIR="${CIMIS_DIR:-$CLIMATE_ROOT/CIMIS}"       # raw CIMIS staging; irrig YAML cimis_etref_path = preprocess extract dir
 
 export SOILS_ROOT="${SOILS_ROOT:-$CCMMF_ROOT/soils}"
-export SSURGO_DIR="${SSURGO_DIR:-$SOILS_ROOT/SSURGO}"
+export SSURGO_DIR="${SSURGO_DIR:-$SOILS_ROOT/SSURGO}"      # gdb + weights; also set irrig ssurgo_* YAML keys
 
 # --- Lookups ---
 export LOOKUPS_ROOT="${LOOKUPS_ROOT:-$CCMMF_ROOT/lookups}"
