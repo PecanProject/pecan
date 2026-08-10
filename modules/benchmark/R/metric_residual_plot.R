@@ -78,7 +78,7 @@ metric_residual_plot <- function(metric_dat, var, unit = NULL, filename = NA, dr
   # Add per-panel annotations
   p <- p + ggplot2::geom_label(
     data = annotations,
-    ggplot2::aes(x = -Inf, y = Inf, label = label),
+    ggplot2::aes(x = -Inf, y = Inf, label = .data$label),
     hjust = -0.05, vjust = 1.1,
     inherit.aes = FALSE,
     alpha = 0.8
