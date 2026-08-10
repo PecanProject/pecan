@@ -4,10 +4,11 @@
 #' are shared across sites to ensure consistent parameter sampling.
 #'
 #' @details
-#' Note on internal dependencies
+#' Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}
+#' and \code{\link{get_parameter_samples}}, or reused when a \code{samples}
+#' bundle is supplied. Nothing is read from or written to \code{samples.Rdata}.
 #'
-#' If samples.Rdata doesn't exist we call get.parameter.samples(), which loads
-#' parameter distributions.
+#' \code{load_pft_posteriors} finds and loads the parameter distributions.
 #'
 #' In practice it:
 #' - uses pft$posterior.files directly when it is defined (an Rdata file with
@@ -25,18 +26,13 @@
 #'
 #' @param settings PEcAn settings object. This function directly uses:
 #'   \itemize{
-#'     \item \code{settings$outdir} - Output directory path for samples.Rdata
 #'     \item \code{settings$pfts} - List of PFTs (extracts \code{posterior.files})
 #'     \item \code{settings$ensemble$samplingspace} - Input sampling configuration
 #'     \item \code{settings$run$inputs} - Input paths for each input type
 #'   }
-#'   When samples.Rdata doesn't exist, settings is passed to
-#'   \code{\link{get.parameter.samples}} which additionally requires:
-#'   \itemize{
-#'     \item \code{settings$ensemble} - Ensemble configuration
-#'     \item \code{settings$database$bety} - Database connection (optional)
-#'     \item \code{settings$host$name} - Host name for dbfile.check (optional)
-#'   }
+#'   When \code{samples} is not supplied, \code{load_pft_posteriors} additionally
+#'   uses \code{settings$database$bety} and \code{settings$host$name} for the
+#'   optional posterior lookup.
 #' @param ensemble_size Integer specifying the number of ensemble members.
 #'   The input_design is generated once for the entire model run. You might
 #'   want to recycle existing ensemble_samples when splitting larger runs
@@ -48,11 +44,15 @@
 #' @param sobol Logical. If TRUE, returns a \code{sensitivity::soboljansen}
 #'   object for Sobol sensitivity analysis.
 #'
-#' @return A list containing ensemble samples and indices.
-#'   If \code{sobol = FALSE}, returns \code{list(X = design_matrix, samples = samples)}.
-#'   If \code{sobol = TRUE}, returns a \code{sensitivity::soboljansen()}
-#'   result object with the design matrix in \code{$X} plus additional
-#'   components for Sobol index calculations.
+#' @return If \code{sobol = FALSE}, a list with \code{design_matrix} (the design,
+#'   one row per run, whose \code{param} column indexes the samples), \code{X}
+#'   (the same matrix under its older name, kept so existing callers keep
+#'   working), and \code{samples} (the parameter bundle those indices point
+#'   into).
+#'   If \code{sobol = TRUE}, a \code{sensitivity::soboljansen()} result object
+#'   carrying the same \code{design_matrix} and \code{samples} entries, with
+#'   \code{$X} set by \pkg{sensitivity} itself, plus the extra components its
+#'   index calculations need.
 #'
 #' @export
 
@@ -123,11 +123,16 @@ generate_joint_ensemble_design <- function(settings,
     X1 <- design_matrix[1:half, ]
     X2 <- design_matrix[(half + 1):ensemble_size, ]
     sobol_obj <- sensitivity::soboljansen(model = NULL, X1 = X1, X2 = X2)
+    # Carry the design and samples on the object so a sobol design travels like
+    # any other. sensitivity sets $X itself; design_matrix is the same matrix
+    # under the name the non-sobol return uses. Neither addition touches the
+    # components sensitivity::tell() needs.
+    sobol_obj$design_matrix <- sobol_obj$X
+    sobol_obj$samples <- samples
     return(sobol_obj)
   }
-  # This ensures that regardless of whether the sobol or non-sobol version is called 
-  # that the output is a list that includes the design as X. In the sobol version the 
-  # list includes additional info beyond just X that's required by the function that 
-  # does the sobol index calculations, but not required to do the runs themselves.
-  return(list(X = design_matrix, samples = samples))
+  # Both returns expose the design as design_matrix, with X kept as its older
+  # name. The sobol return carries additional components that its index
+  # calculations need but the runs themselves do not.
+  return(list(design_matrix = design_matrix, X = design_matrix, samples = samples))
 }

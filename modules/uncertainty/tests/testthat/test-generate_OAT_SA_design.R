@@ -198,3 +198,12 @@ test_that("OAT design integrates with write.sa.configs for SA postprocessing", {
     expect_true(dir.exists(file.path(rundir, run_id)))
   }
 })
+
+test_that("the SA design comes back as design_matrix, with X kept alongside", {
+  settings <- make_test_settings()
+
+  result <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))
+
+  expect_true("design_matrix" %in% names(result))
+  expect_identical(result$design_matrix, result$X)
+})

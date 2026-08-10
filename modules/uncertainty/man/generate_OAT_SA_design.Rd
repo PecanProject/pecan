@@ -7,10 +7,7 @@
 generate_OAT_SA_design(settings, samples = NULL)
 }
 \arguments{
-\item{settings}{PEcAn settings object. Uses \code{settings$pfts},
-\code{settings$sensitivity.analysis$quantiles} (the SA quantiles, when
-sampling here), and \code{settings$ensemble$samplingspace} (the input types
-that form the design columns).}
+\item{settings}{PEcAn settings object. See details for required elements.}
 
 \item{samples}{Optional pre-computed parameter samples (a list containing at
 least \code{sa.samples}, as returned by \code{\link{get_parameter_samples}}).
@@ -18,10 +15,10 @@ When supplied these are used directly; when \code{NULL} (default) they are
 sampled in memory.}
 }
 \value{
-A list with \code{X}, a data.frame with one row per SA run and one
-  column per input type (the \code{param} column holds sequential run indices,
-  every other column is held at 1), and \code{samples}, the parameter bundle
-  used.
+A list with \code{design_matrix}, a data.frame with one row per SA run
+  and one column per input type (the \code{param} column holds sequential run
+  indices, every other column is held at 1), \code{X}, the same matrix under
+  its older name, and \code{samples}, the parameter bundle used.
 }
 \description{
 Creates an input design matrix for sensitivity analysis where non-parameter
@@ -30,11 +27,52 @@ one-at-a-time across quantiles. This differs from ensemble design, where all
 inputs vary together.
 }
 \details{
+## Settings requirements
+
+This function directly uses:
+\itemize{
+  \item \code{settings$pfts} - List of PFTs (extracts \code{posterior.files})
+  \item \code{settings$ensemble$samplingspace} - Input types to include in design
+  \item \code{settings$sensitivity.analysis$quantiles} - SA quantiles, when
+    sampling here rather than reusing a supplied bundle
+}
+
+When \code{samples = NULL}, \code{\link{load_pft_posteriors}} additionally
+uses \code{settings$database$bety} and \code{settings$host$name} for the
+optional posterior lookup.
+
+## OAT design logic
+For sensitivity analysis, we must isolate the effect of each
+parameter by holding all other inputs constant. The param column contains
+sequential indices (1, 2, 3, ...) matching the SA run order in
+\code{write.sa.configs}. All other columns (met, ic, soil, etc.) are set to 1,
+meaning the first input file is always used.
+
+## Where the samples come from
 Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}
 and \code{\link{get_parameter_samples}} (mirroring
 \code{\link{generate_joint_ensemble_design}}), or reused when a \code{samples}
-bundle is supplied. The design is built from the quantile-based
-\code{sa.samples} within that bundle.
+bundle is supplied. Nothing is read from or written to \code{samples.Rdata}.
+The design is built from the quantile-based \code{sa.samples} in that bundle.
+}
+\examples{
+\dontrun{
+# Generate the SA design, sampling parameters in memory
+sa_design <- generate_OAT_SA_design(settings)
+
+# View the design matrix
+print(sa_design$design_matrix)
+#   param met ic soil
+# 1     1   1  1    1   # Median run
+# 2     2   1  1    1   # trait1 @ q=2.3\%
+# 3     3   1  1    1   # trait1 @ q=15.9\%
+# 4     4   1  1    1   # trait1 @ q=84.1\%
+# ...
+
+# Reuse an established set of samples instead of drawing new ones
+sa_design <- generate_OAT_SA_design(settings, samples = samples)
+}
+
 }
 \author{
 Akash B V, Om Kapale
