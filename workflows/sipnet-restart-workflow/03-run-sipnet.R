@@ -17,7 +17,7 @@ write.csv(sens_design$X, file.path(settings_raw$outdir, "input_design.csv"))
 
 settings <- PEcAn.workflow::runModule.run.write.configs(
   settings_raw,
-  input_design = sens_design$X
+  input_design = sens_design
 )
 
 jobfiles <- PEcAn.SIPNET::write_segmented_configs.SIPNET(settings, sens_design$X)
