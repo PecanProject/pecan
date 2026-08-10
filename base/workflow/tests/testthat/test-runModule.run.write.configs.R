@@ -288,7 +288,7 @@ test_that(".prepare_input_designs still accepts a design supplied as X", {
   expect_identical(designs$ensemble, supplied$X)
 })
 
-test_that(".prepare_input_designs does not warn about a design the caller supplied", {
+test_that(".prepare_input_designs warns only about the design it generates itself", {
   tmp <- withr::local_tempdir()
   settings <- make_prep_settings(tmp)
   settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
@@ -299,8 +299,110 @@ test_that(".prepare_input_designs does not warn about a design the caller suppli
                 "PEcAn.uncertainty::generate_OAT_SA_design",
                 function(...) list(design_matrix = data.frame(param = 1:4)))
 
-  # the SA design is still generated internally, but there is no way to supply
-  # one, so a caller who did pass a design should not be told to pass one
+  msgs <- capture.output(
+    invisible(.prepare_input_designs(settings, input_design = supplied)),
+    type = "message"
+  )
+  joined <- paste(msgs, collapse = "\n")
+
+  # the ensemble design came from the caller, so nothing to warn about there;
+  # the SA design is still generated here, and now that one can be supplied
+  # too, that generation is worth warning about
+  expect_false(grepl("ensemble design internally", joined))
+  expect_match(joined, "sensitivity analysis design", all = FALSE)
+})
+
+# -- routing: an SA design can now be supplied, one call per run ----
+
+make_sa_settings <- function(outdir) {
+  list(
+    outdir = outdir,
+    pfts   = list(list(name = "temperate.deciduous")),
+    sensitivity.analysis = list(quantiles = c(0.025, 0.5, 0.975))
+  )
+}
+
+test_that(".prepare_input_designs takes a supplied design as the SA design when the settings are SA only", {
+  tmp <- withr::local_tempdir()
+  settings <- make_sa_settings(tmp)
+
+  bundle   <- fake_bundle()
+  supplied <- list(design_matrix = data.frame(param = 1:7), samples = bundle)
+
+  loader <- mockery::mock()
+  gps    <- mockery::mock()
+  oat    <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::load_pft_posteriors", loader)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::get_parameter_samples", gps)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_OAT_SA_design", oat)
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  expect_identical(designs$sensitivity, supplied$design_matrix)
+  expect_null(designs$ensemble)
+  mockery::expect_called(oat, 0)
+  mockery::expect_called(loader, 0)
+  mockery::expect_called(gps, 0)
+  # the bundle still reaches disk for the downstream analysis steps
+  expect_true(file.exists(file.path(tmp, "samples.Rdata")))
+})
+
+
+test_that(".prepare_input_designs still takes a supplied design as the ensemble design when the settings have an ensemble", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+  settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
+
+  supplied <- list(design_matrix = data.frame(param = 1:3), samples = fake_bundle())
+
+  gen <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_OAT_SA_design",
+                function(...) list(design_matrix = data.frame(param = 1:7)))
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  # with an ensemble in the settings the supplied design is the ensemble one,
+  # and the SA design is still generated, as before
+  expect_identical(designs$ensemble, supplied$design_matrix)
+  expect_equal(designs$sensitivity, data.frame(param = 1:7))
+  mockery::expect_called(gen, 0)
+})
+
+
+test_that(".prepare_input_designs warns when it generates the SA design itself", {
+  tmp <- withr::local_tempdir()
+  settings <- make_sa_settings(tmp)
+
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::load_pft_posteriors",
+                function(...) fake_loaded())
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::get_parameter_samples",
+                function(...) fake_bundle())
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_OAT_SA_design",
+                function(...) list(design_matrix = data.frame(param = 1:7)))
+
+  msgs <- capture.output(
+    invisible(.prepare_input_designs(settings, input_design = NULL)),
+    type = "message"
+  )
+  expect_match(paste(msgs, collapse = "\n"), "sensitivity analysis design", all = FALSE)
+})
+
+
+test_that(".prepare_input_designs does not warn when the SA design was supplied", {
+  tmp <- withr::local_tempdir()
+  settings <- make_sa_settings(tmp)
+
+  supplied <- list(design_matrix = data.frame(param = 1:7), samples = fake_bundle())
+
   msgs <- capture.output(
     invisible(.prepare_input_designs(settings, input_design = supplied)),
     type = "message"

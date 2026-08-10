@@ -162,9 +162,12 @@ runModule.run.write.configs <- function(settings,
 #'         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
 #'         MultiSettings parent), return as-is.
 #'   \item If \code{input_design} is the \code{list(design_matrix, samples)}
-#'         from \code{generate_joint_ensemble_design()}, use the design matrix
-#'         as the ensemble design and \code{samples} as the bundle (no
-#'         resampling). \code{X} is accepted as the older name for it.
+#'         returned by a design generator, use that design and \code{samples}
+#'         as the bundle (no resampling). \code{X} is accepted as the older
+#'         name for the design. The design goes to whichever run the settings
+#'         describe: a settings object carrying only a sensitivity analysis
+#'         takes it as the SA design, otherwise it is the ensemble design.
+#'         Running both means two calls, one settings object each.
 #'   \item If \code{input_design} is a bare data.frame (a design without its
 #'         samples), raise an error: the design's \code{param} indices only match
 #'         the samples they were drawn with.
@@ -187,6 +190,9 @@ runModule.run.write.configs <- function(settings,
 
   designs <- list(ensemble = NULL, sensitivity = NULL, samples = NULL)
   supplied_samples <- NULL
+  need_ensemble <- "ensemble" %in% names(settings)
+  need_sa       <- "sensitivity.analysis" %in% names(settings)
+  ensemble_size <- settings$ensemble$size %||% 1
 
   # Interpret a caller-supplied design. A design's `param` column only indexes
   # into the samples it was drawn with, so a design must arrive together with
@@ -204,7 +210,15 @@ runModule.run.write.configs <- function(settings,
     }
 
     if (!is.null(supplied_design) && !is.null(input_design$samples)) {
-      designs$ensemble <- supplied_design
+      # Route the design to the run these settings describe. Running an ensemble
+      # and a sensitivity analysis means two calls, one settings object each, so
+      # a settings object carrying only a sensitivity analysis means the design
+      # that came with it is the SA design.
+      if (need_sa && !need_ensemble) {
+        designs$sensitivity <- supplied_design
+      } else {
+        designs$ensemble <- supplied_design
+      }
       supplied_samples <- input_design$samples
     } else if (is.data.frame(input_design)) {
       PEcAn.logger::logger.severe(
@@ -221,10 +235,6 @@ runModule.run.write.configs <- function(settings,
       )
     }
   }
-
-  need_ensemble <- "ensemble" %in% names(settings)
-  need_sa       <- "sensitivity.analysis" %in% names(settings)
-  ensemble_size <- settings$ensemble$size %||% 1
 
   # Resolve the parameter bundle once for the whole run. Reuse the supplied
   # samples when the caller provided a design; otherwise sample now. This is
@@ -261,16 +271,21 @@ runModule.run.write.configs <- function(settings,
     designs$samples <- samples
   }
 
-  # Deprecation: internal design generation is going away. Passing input_design
-  # explicitly will become the required path. Warn only about the design we are
-  # actually about to generate, so a caller who supplied one is not told to
-  # supply it again.
+  # Deprecation: internal design generation is going away. Passing the design
+  # explicitly will become the required path, one call per run.
   if (is.null(designs$ensemble) && need_ensemble) {
     PEcAn.logger::logger.warn(
       "Generating the ensemble design internally is deprecated and will be",
       "removed. Pass input_design explicitly as the list(design_matrix,",
-      "samples) returned by generate_joint_ensemble_design(); this will",
-      "become required."
+      "samples) returned by generate_joint_ensemble_design()."
+    )
+  }
+  if (is.null(designs$sensitivity) && need_sa) {
+    PEcAn.logger::logger.warn(
+      "Generating the sensitivity analysis design internally is deprecated and",
+      "will be removed. Generate it with generate_OAT_SA_design() and pass it",
+      "as input_design, in its own call with a settings object that has no",
+      "ensemble in it."
     )
   }
 

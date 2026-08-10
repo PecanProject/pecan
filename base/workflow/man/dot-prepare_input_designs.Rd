@@ -30,9 +30,12 @@ Input handling rules:
         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
         MultiSettings parent), return as-is.
   \item If \code{input_design} is the \code{list(design_matrix, samples)}
-        from \code{generate_joint_ensemble_design()}, use the design matrix
-        as the ensemble design and \code{samples} as the bundle (no
-        resampling). \code{X} is accepted as the older name for it.
+        returned by a design generator, use that design and \code{samples}
+        as the bundle (no resampling). \code{X} is accepted as the older
+        name for the design. The design goes to whichever run the settings
+        describe: a settings object carrying only a sensitivity analysis
+        takes it as the SA design, otherwise it is the ensemble design.
+        Running both means two calls, one settings object each.
   \item If \code{input_design} is a bare data.frame (a design without its
         samples), raise an error: the design's \code{param} indices only match
         the samples they were drawn with.
