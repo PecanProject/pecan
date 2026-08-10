@@ -17,6 +17,8 @@ metric_residual_plot(
 
 \item{var}{variable name, used as plot title}
 
+\item{unit}{measurement unit for the variable, added to the y-axis label; NULL to omit}
+
 \item{filename}{path to save plot, or NA to not save}
 
 \item{draw.plot}{logical: Return the plot object?}
