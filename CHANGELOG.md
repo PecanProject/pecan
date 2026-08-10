@@ -42,6 +42,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 
 ### Changed
+- Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
 - Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).
 - Improved PEcAn.SIPNET documentation including README, model description, and current installation instructions (@Eshaan-byte; #3703, #3705).
