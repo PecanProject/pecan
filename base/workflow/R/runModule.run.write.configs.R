@@ -252,6 +252,20 @@ runModule.run.write.configs <- function(settings,
     designs$samples <- samples
   }
 
+  # Deprecation: internal design generation is going away. Passing input_design
+  # explicitly (the generate_joint_ensemble_design() result) will become the
+  # required path. Warn only when we are actually about to auto-generate.
+  auto_generating <-
+    (is.null(designs$ensemble) && need_ensemble) ||
+    (is.null(designs$sensitivity) && need_sa)
+  if (auto_generating) {
+    PEcAn.logger::logger.warn(
+      "Internal input design generation is deprecated and will be removed.",
+      "Pass input_design explicitly as the list(X, samples) returned by",
+      "generate_joint_ensemble_design(); this will become required."
+    )
+  }
+
   # Generate the ensemble design only when the caller did not supply one,
   # handing over the resolved samples so the generator does not resample.
   if (is.null(designs$ensemble) && need_ensemble) {
@@ -268,7 +282,7 @@ runModule.run.write.configs <- function(settings,
   if (is.null(designs$sensitivity) && need_sa) {
     design_result <- PEcAn.uncertainty::generate_OAT_SA_design(
       settings,
-      sa_samples = designs$samples$sa.samples
+      samples = designs$samples
     )
     designs$sensitivity <- design_result$X
   }
