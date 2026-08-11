@@ -51,9 +51,9 @@ The CDL x LandIQ map was counted on season-2 agricultural parcels that had both 
 
 | Table                      | File                                           | What it answers                                          |
 | -------------------------- | ---------------------------------------------- | -------------------------------------------------------- |
-| `P(CDL | CLASS)`           | `cdl_prob_by_class_*.parquet`                  | Given LandIQ CLASS, which CDL codes usually appear       |
-| `P(CDL | CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet`               | Same at subclass                                         |
-| `P(SUBCLASS | CLASS)`      | `landiq_subclass_frequency_*.parquet`          | How often each subclass occurs inside a CLASS            |
+| `P(CDL \| CLASS)`          | `cdl_prob_by_class_*.parquet`                  | Given LandIQ CLASS, which CDL codes usually appear       |
+| `P(CDL \| CLASS::SUBCLASS)`| `cdl_prob_by_subclass_*.parquet`               | Same at subclass                                         |
+| `P(SUBCLASS \| CLASS)`     | `landiq_subclass_frequency_*.parquet`          | How often each subclass occurs inside a CLASS            |
 | County CSS mean            | `adoy_mean_county_class_subclass_*.parquet`    | Mean observed ADOY by county x CLASS x SUBCLASS x season |
 | County CLASS mean          | `adoy_mean_county_class_*.parquet`             | Mean observed ADOY by county x CLASS x season            |
 | Statewide CSS mean         | `adoy_mean_statewide_class_subclass_*.parquet` | Mean observed ADOY by CLASS x SUBCLASS x season          |
