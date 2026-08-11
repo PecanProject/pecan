@@ -14,7 +14,7 @@ emission_output_paths <- function(suffix = landiq_lookup_suffix()) {
 
 emission_tables_cached <- function(suffix = landiq_lookup_suffix()) {
   paths <- emission_output_paths(suffix)
-  all(file.exists(unlist(paths[c("prior", "prob_class", "prob_sub", "lookup")])))
+  all(file.exists(unlist(paths[c("prior", "prob_class", "prob_sub")])))
 }
 
 #' Load cached CDL x LandIQ probability tables, or rebuild when force=TRUE.
