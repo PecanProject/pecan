@@ -44,7 +44,7 @@ Column dictionaries: [crops_all_years_metadata.csv](data/crops_all_years_metadat
 
 ## Lookups
 
-Eight tables live under `outputs/`. A later inventory year **reads** them; it does not recount them. Rebuild only if fill errors that a table is missing, or after a method, legend, or training-year change.
+Eight tables live under `outputs/`. Crop and ADOY **read whatever matching files are there** (newest if more than one set). Rebuild only if fill errors that a table is missing, or after a method, legend, or training-year change.
 
 The CDL x LandIQ map was counted on season-2 agricultural parcels that had both maps in **2016-2023 except 2017**. The ADOY means and parcel history were taken from years with a usable observed peak day: **2018-2023**. That window already covers the crop mix and typical greenness dates. Fold newer observed years in only if you want them in the training window.
 
@@ -245,12 +245,12 @@ Path defaults: [setup_env.sh](../documentation/setup_env.sh).
 
 | Variable                                                | Default / behavior                           |
 | ------------------------------------------------------- | -------------------------------------------- |
-| `CDL_LANDIQ_TRAINING_YEARS`                             | Explicit probability training years          |
-| `CDL_LANDIQ_TRAINING_YEAR_MIN` / `MAX`                  | Range (both required)                        |
-| `CDL_LANDIQ_TRAINING_EXCLUDE_YEARS`                     | `2017`                                       |
+| `CDL_LANDIQ_TRAINING_YEARS`                             | Rebuild only: probability training years     |
+| `CDL_LANDIQ_TRAINING_YEAR_MIN` / `MAX`                  | Rebuild only: range (both required)          |
+| `CDL_LANDIQ_TRAINING_EXCLUDE_YEARS`                     | Rebuild only: default `2017`                 |
 | `LANDIQ_SUBCLASS_PRIOR_YEARS`                           | Season-2 years minus full-gap                |
-| `LANDIQ_ADOY_TRAINING_YEARS`                            | Available LandIQ years                       |
-| `LANDIQ_ADOY_TRAINING_EXCLUDE_YEARS`                    | Optional exclusions                          |
+| `LANDIQ_ADOY_TRAINING_YEARS`                            | Rebuild only: ADOY reference training years  |
+| `LANDIQ_ADOY_TRAINING_EXCLUDE_YEARS`                    | Rebuild only: optional exclusions            |
 | `ADOY_REFERENCE_STAT`                                   | `mean`                                       |
 | `ADOY_TEMPORAL_MAX_YEAR_GAP`                            | `3`                                          |
 | `GAPFILL_REBUILD_EMISSION` / `GAPFILL_REBUILD_ADOY_REF` | Silent rebuild if true (prefer explicit CLI) |
@@ -307,13 +307,11 @@ If years are omitted on year-aware `gapfill.R` commands, they fall back to `LAND
 
 ### Rebuild lookups
 
-Only after a method, legend, or training-year change:
+Crop and ADOY read whatever matching tables are under `outputs/` (newest if more than one set). Rebuild writes a new set named from the training-year window.
 
 ```bash
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh --cdl-landiq-probs --adoy-ref 2016-2023
 ```
-
-Pin `CDL_LANDIQ_TRAINING_YEARS` to reproduce a specific window.
 
 ### Developer map
 

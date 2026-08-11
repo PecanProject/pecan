@@ -24,27 +24,26 @@ emission_tables_cached <- function(suffix = landiq_lookup_suffix()) {
 #'   Rscript gapfill.R cdl-landiq-probs
 #'   ./run_gapfill.sh --cdl-landiq-probs YEARS
 ensure_emission_tables <- function(force = NULL) {
-  suffix <- landiq_lookup_suffix()
   if (is.null(force)) {
     force <- tolower(Sys.getenv("GAPFILL_REBUILD_EMISSION", "false")) %in% c("1", "true", "yes")
   }
-  paths <- emission_output_paths(suffix)
-  if (!force && emission_tables_cached(suffix)) {
-    message(
-      "CDL x LandIQ probability tables present (suffix=", suffix,
-      "); using cache under ", path_outputs()
-    )
-    return(invisible(paths))
-  }
   if (!force) {
+    suf <- tryCatch(landiq_lookup_suffix(), error = function(e) NA_character_)
+    if (!is.na(suf) && emission_tables_cached(suf)) {
+      message(
+        "CDL x LandIQ probability tables present (suffix=", suf,
+        "); using cache under ", path_outputs()
+      )
+      return(invisible(emission_output_paths(suf)))
+    }
     stop(
-      "Missing CDL x LandIQ probability tables (suffix=", suffix, ") under ",
-      path_outputs(), ".\n",
+      "Missing CDL x LandIQ probability tables under ", path_outputs(), ".\n",
       "  Confirm files exist, or rebuild with:\n",
       "    Rscript scripts/gapfill.R cdl-landiq-probs\n",
       "    # or: ./run_gapfill.sh --cdl-landiq-probs YEARS"
     )
   }
+  suffix <- landiq_lookup_build_suffix()
   message("Building CDL x LandIQ probability tables (suffix=", suffix, ")...")
   build_emission_lookup()
   build_emission_prob_tables()

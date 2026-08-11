@@ -48,11 +48,37 @@ apply_adoy_class_exempt <- function(df) {
 
 # --- Reference table paths / training years ------------------------------------
 
+#' Suffix for reading ADOY reference tables (discover under outputs/).
 adoy_reference_suffix <- function() {
+  stat <- adoy_reference_stat()
+  stem <- sprintf("adoy_%s_county_class_subclass", stat)
+  suf <- .gapfill_discover_output_suffix(stem)
+  if (is.na(suf)) {
+    stop(
+      "No ", stem, "_*.parquet under ", path_outputs(), ".\n",
+      "  Rebuild with: Rscript scripts/gapfill.R adoy-ref"
+    )
+  }
+  paths <- adoy_output_paths(suf)
+  missing <- names(paths)[!file.exists(unlist(paths))]
+  if (length(missing) > 0L) {
+    stop(
+      "Incomplete ADOY reference tables (suffix=", suf, ") under ",
+      path_outputs(), ".\n",
+      "  Missing: ", paste(basename(unlist(paths[missing])), collapse = ", "), "\n",
+      "  Rebuild with: Rscript scripts/gapfill.R adoy-ref"
+    )
+  }
+  suf
+}
+
+#' Suffix for writing ADOY refs from the current training-year window.
+adoy_reference_build_suffix <- function() {
   yrs <- adoy_training_years()
   suf <- sprintf("%d-%d", min(yrs), max(yrs))
   excluded <- setdiff(landiq_gapfill_available_years(), yrs)
-  excluded <- sort(unique(excluded))
+  excluded <- sort(unique(as.integer(excluded)))
+  excluded <- excluded[!is.na(excluded)]
   if (length(excluded) > 0L) {
     suf <- paste0(suf, "_excl", paste(excluded, collapse = "-"))
   }
@@ -113,7 +139,7 @@ adoy_reference_cached <- function(suffix = adoy_reference_suffix()) {
 #' Writes four geographic summaries + a parcel-level observed history panel.
 #' Not a fitted model -- fill later joins these tables.
 build_adoy_reference <- function() {
-  suffix <- adoy_reference_suffix()
+  suffix <- adoy_reference_build_suffix()
   train_years <- adoy_training_years()
   ag_classes <- setdiff(
     load_ag_class_vector(path_crop_lookup_csv()),
@@ -218,27 +244,26 @@ build_adoy_reference <- function() {
 #'   Rscript gapfill.R adoy-ref
 #'   ./run_gapfill.sh --adoy-ref YEARS
 ensure_adoy_reference <- function(force = NULL) {
-  suffix <- adoy_reference_suffix()
   if (is.null(force)) {
     force <- tolower(Sys.getenv("GAPFILL_REBUILD_ADOY_REF", "false")) %in% c("1", "true", "yes")
   }
-  paths <- adoy_output_paths(suffix)
-  if (!force && adoy_reference_cached(suffix)) {
-    message(
-      "ADOY reference tables present (suffix=", suffix,
-      "); using cache under ", path_outputs()
-    )
-    return(invisible(paths))
-  }
   if (!force) {
+    suf <- tryCatch(adoy_reference_suffix(), error = function(e) NA_character_)
+    if (!is.na(suf) && adoy_reference_cached(suf)) {
+      message(
+        "ADOY reference tables present (suffix=", suf,
+        "); using cache under ", path_outputs()
+      )
+      return(invisible(adoy_output_paths(suf)))
+    }
     stop(
-      "Missing ADOY reference tables (suffix=", suffix, ") under ",
-      path_outputs(), ".\n",
+      "Missing ADOY reference tables under ", path_outputs(), ".\n",
       "  Confirm files exist, or rebuild with:\n",
       "    Rscript scripts/gapfill.R adoy-ref\n",
       "    # or: ./run_gapfill.sh --adoy-ref YEARS"
     )
   }
+  suffix <- adoy_reference_build_suffix()
   message("Building ADOY reference tables (suffix=", suffix, ")...")
   build_adoy_reference()
 }

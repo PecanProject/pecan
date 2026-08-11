@@ -2,9 +2,9 @@
 
 #' Output paths for emission lookup artifacts.
 #'
-#' @param suffix Training-year suffix from [landiq_lookup_suffix()].
+#' @param suffix Training-year suffix from [landiq_lookup_build_suffix()].
 #' @return Named list of parquet/CSV paths under [path_outputs()].
-emission_lookup_paths <- function(suffix = landiq_lookup_suffix()) {
+emission_lookup_paths <- function(suffix = landiq_lookup_build_suffix()) {
   out <- path_outputs()
   list(
     mass = file.path(out, sprintf("cdl_landiq_subclass_lookup_%s.parquet", suffix)),
@@ -133,7 +133,7 @@ build_subclass_prior_table <- function(
 #' @return Invisibly returns [emission_lookup_paths()].
 build_emission_lookup <- function() {
   yr_info <- landiq_lookup_years()
-  suffix <- landiq_lookup_suffix()
+  suffix <- landiq_lookup_build_suffix()
   paths <- emission_lookup_paths(suffix)
   dir.create(path_outputs(), recursive = TRUE, showWarnings = FALSE)
 

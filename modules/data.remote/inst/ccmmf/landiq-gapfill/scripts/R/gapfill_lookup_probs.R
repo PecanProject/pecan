@@ -2,7 +2,7 @@
 
 #' Resolve emission lookup source parquet (fraction or dominant weighting).
 emission_lookup_source_path <- function(
-    suffix = landiq_lookup_suffix(),
+    suffix = landiq_lookup_build_suffix(),
     weighting = tolower(trimws(Sys.getenv("CDL_LANDIQ_LOOKUP_WEIGHTING", "fraction")))) {
   if (!weighting %in% c("fraction", "dominant")) {
     stop("CDL_LANDIQ_LOOKUP_WEIGHTING must be fraction or dominant; got: ", weighting)
@@ -15,7 +15,7 @@ emission_lookup_source_path <- function(
 #'
 #' @return Invisibly returns paths to prob_class and prob_sub parquets.
 build_emission_prob_tables <- function(
-    suffix = landiq_lookup_suffix(),
+    suffix = landiq_lookup_build_suffix(),
     weighting = tolower(trimws(Sys.getenv("CDL_LANDIQ_LOOKUP_WEIGHTING", "fraction")))) {
   out_dir <- path_outputs()
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
