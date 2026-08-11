@@ -20,7 +20,7 @@
 generateFullTidalScenario <- function(station_id=9410660,
                                       run_hindcast = T,
                                       run_forecast = T,
-                                      hindcast_start = 1923,
+                                      hindcast_start = 1928,
                                       forecast_start = 2018,
                                       forecast_end = 2100,
                                       RCP = c("RCP4.5"),
@@ -180,9 +180,8 @@ generateFullTidalScenario <- function(station_id=9410660,
 
   } # end of run_forecast, run hindcast checks
 
-
   # plot(scenario_curve_list[[1]]$year, scenario_curve_list[[1]]$meanSeaLevel, type = "l")
-  #
+
   # for (i in 2:length(scenario_curve_list)) {
   #
   #   lines(scenario_curve_list[[i]]$year, scenario_curve_list[[i]]$meanSeaLevel)
@@ -212,7 +211,7 @@ generateFullTidalScenario <- function(station_id=9410660,
     mutate(observed = observed - MSL) %>%
     filter(year >= datum_start_year & year <= datum_end_year) %>%
     group_by(Datum) %>%
-    summarise(observed = mean(observed),
+    summarise(observed = mean(observed,na.rm=T),
               flood_n = mean(n_pred),
               risingTime = mean(risingTime),
               fallingTime = mean(fallingTime)) %>%
