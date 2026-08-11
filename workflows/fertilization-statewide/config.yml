@@ -1,0 +1,29 @@
+default:
+  n_parcels: 1000
+  n_ensemble: 20
+  # fraction of total synthetic N going to nh4. default 1 because SIPNET sums
+  # nh4 and no3 into one mineral pool before the model sees them, so any split
+  # is invisible to the simulation, and asserting a specific one would require
+  # knowing the typical material mix. 0 makes it all nitrate.
+  nh4_fraction: 1
+  seed: 42
+  years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
+  # large inputs are not distributed with the repo. the defaults resolve on SCC;
+  # set the matching environment variable to run anywhere else. final home for
+  # these is pending ccmmf/organization#257
+  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
+  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
+  crosswalk_path: workflows/fertilization-statewide/crop_name_crosswalk.tsv
+  output_dir: !expr path.expand(Sys.getenv("CCMMF_FERT_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization"))
+  batch_size: 100
+  workers: 1
+
+medium:
+  n_parcels: 10000
+  batch_size: 1000
+  workers: 4
+
+all:
+  n_parcels: null # null means all parcels in the crops product
+  batch_size: 5000
+  workers: 8
