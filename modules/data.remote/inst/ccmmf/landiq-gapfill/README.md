@@ -42,7 +42,7 @@ For the guided inventory year-pair workflow (download, legend QC, cadwr commands
 
 Column dictionaries: [crops_all_years_metadata.csv](data/crops_all_years_metadata.csv), [cdl_fractions_metadata.csv](data/cdl_fractions_metadata.csv), [cdl_nass_cropland_code_lookup.csv](data/cdl_nass_cropland_code_lookup.csv). Crop-code lookup: [LandIQ_cropCode_lookup_table.csv](data/LandIQ_cropCode_lookup_table.csv).
 
-**Note:** `outputs/*.parquet` is gitignored. Probability and ADOY-reference tables must be present on disk (lab cache or `gapfill.R cdl-landiq-probs` / `adoy-ref`). Routine crop/adoy **stop** with a rebuild hint if they are missing; they do not silently retrain.
+**Note:** Probability and ADOY-reference tables are in `outputs/` (year-patch parquets stay gitignored). Routine crop/adoy **stop** with a rebuild hint if they are missing; they do not silently retrain. Rebuild with `gapfill.R cdl-landiq-probs` / `adoy-ref` only after a method or training-year change.
 
 ---
 
@@ -331,7 +331,7 @@ $LANDIQ_GAPFILL_ROOT/run_gapfill.sh 2017
 
 | Script | Role |
 |--------|------|
-| `scripts/cdl/download_cdl_nass.R` | California CDL via CropScapeR -> `$CDL_DIR/cdl_YYYY.tif` (skip if exists; years >= 2008) |
+| `scripts/cdl/download_cdl_nass.R` | NASS national 30 m zip, clipped to California -> `$CDL_DIR/cdl_YYYY.tif` (skip if exists; years >= 2008) |
 | `scripts/cdl/extract_cdl_fractions_by_parcel.R` | Zonal fractions vs `parcels-consolidated.gpkg` -> `cdl_fractions_year=YYYY.parquet` (`parcel_id`, `year`, `cdl_code`, `frac`, weights) |
 
 `run_gapfill.sh` always ensures fractions for requested years before crop.
