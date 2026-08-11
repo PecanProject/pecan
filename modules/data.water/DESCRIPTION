@@ -5,11 +5,7 @@ Authors@R:
     person("Holmquist", "James", , "HolmquistJ@si.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2546-6766"))
 Description: Functions for querying databases and creating scenarios for models that take water level and flooding parameters as inputs.
-Imports: 
-    arrow,
-    dplyr
-    VulnToolKit
-
+Imports: arrow, dplyr, VulnToolkit
 Remotes: Smithsonian/VulnToolkit
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
