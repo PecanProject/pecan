@@ -117,7 +117,7 @@ The two files produced by the harmonization workflow:
 | `crops_all_years.parq`      | Tidy crop attributes: rows for `parcel_id` x `year` x `season` (up to four seasons) |
 
 
-From the cadwr-landuse clone, with the Session 0 conda env active:
+From the cadwr-landuse clone, with the Session 0 conda env active. Submit the tile overlays as a batch job (~3 hours).
 
 ```bash
 cd "$CCMMF_BASE/src/cadwr-landuse"
@@ -126,7 +126,7 @@ python scripts/01-split.py \
   --landiq-root-dir "$LANDIQ_RAW" \
   --outdir-root "$CADWR_WORK_DIR"
 
-python scripts/process-tiles-local.py \
+python scripts/process-tiles-local.py \    # batch job
   --outdir-root "$CADWR_WORK_DIR" \
   --ntasks 8 \
   --crs EPSG:3310 \
@@ -140,7 +140,7 @@ python scripts/03b-finalize-crops.py \
   --outdir-root "$CADWR_WORK_DIR"
 ```
 
-This takes about 3 hours (the tile overlays dominate). If it was not run in advance, a current version is already on S3 -- pull that into `$LANDIQ_HARMONIZED` and continue on:
+If it was not run in advance, a current version is already on S3 -- pull that into `$LANDIQ_HARMONIZED` and continue on:
 
 ```bash
 aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
@@ -173,16 +173,18 @@ Even after harmonization, LandIQ is incomplete on some parcels: the main-season 
 
 ### CDL rasters and fractions
 
-Download both years of CDL (NASS national 30 m GeoTIFF, clipped to California), then extract per-parcel fractions on the new harmonized parcels.
+Download both years of CDL (NASS national 30 m GeoTIFF, clipped to California). Submit each extract as a batch job (~40 min/year, one year per job).
 
 ```bash
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 CDL=$LANDIQ_GAPFILL_ROOT/scripts/cdl
 GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
 
-Rscript $CDL/download_cdl_nass.R $YEARS
-Rscript $CDL/extract_cdl_fractions_by_parcel.R $YEARS
+Rscript $CDL/download_cdl_nass.R $YEARS                        # skips existing tifs
+Rscript $CDL/extract_cdl_fractions_by_parcel.R $PRIOR_YEAR     # batch job
+Rscript $CDL/extract_cdl_fractions_by_parcel.R $TARGET_YEAR    # batch job
 
+# after both jobs finish:
 Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), paste0("cdl_fractions_year=", Sys.getenv("TARGET_YEAR"), ".parquet"))))'
 ```
 
@@ -224,9 +226,9 @@ How the tables are built and which years they train on: [landiq-gapfill/README.m
 Run both years in the pair. The prior year is now final (updated in Sec. 1.1) and can use the new LandIQ year as neighbor context.
 
 ```bash
-Rscript $GF crop $YEARS
-Rscript $GF adoy $YEARS
-Rscript $GF merge $YEARS
+Rscript $GF crop $YEARS    # missing season-2 crop
+Rscript $GF adoy $YEARS    # missing or zero ADOY
+Rscript $GF merge $YEARS   # write $LANDIQ_GAPFILLED product
 ```
 
 Output after merge: `$LANDIQ_GAPFILLED/crops_all_years.parq`.

@@ -21,8 +21,7 @@ Rscript -e 'stopifnot(
   requireNamespace("readr"),
   requireNamespace("stringr"),
   requireNamespace("lubridate"),
-  requireNamespace("jsonlite"),
-  requireNamespace("CropScapeR")
+  requireNamespace("jsonlite")
 )'
 
 python - <<'PY'
