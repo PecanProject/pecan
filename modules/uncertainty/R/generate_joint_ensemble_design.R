@@ -1,4 +1,5 @@
 #' Generate joint ensemble design for parameter sampling
+#'
 #' Creates a joint ensemble design that maintains parameter correlations across
 #' all sites in a multi-site run. This function generates sample indices that
 #' are shared across sites to ensure consistent parameter sampling.
@@ -107,7 +108,7 @@ generate_joint_ensemble_design <- function(settings,
       trait_mcmc_list   = loaded$trait_mcmc_list,
       ensemble.size     = ensemble_size,
       ens.sample.method = ens.sample.method,
-      sa_quantiles      = NULL,
+      sa_quantiles      = settings$sensitivity.analysis$quantiles,
       do_ensemble       = TRUE,
       independent       = loaded$independent
     )

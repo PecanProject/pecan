@@ -250,3 +250,23 @@ test_that("the design stays the first element of the return", {
   # [[1]], so reordering this list would silently hand them the wrong object
   expect_identical(result[[1]], result$design_matrix)
 })
+
+test_that("the bundle carries SA samples when the settings ask for a sensitivity analysis", {
+  settings <- make_test_settings()
+  settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
+  settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
+
+  sampler <- mockery::mock(fake_parameter_samples())
+  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+                function(...) list(ids = sample(1:2, 5, replace = TRUE)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
+
+  generate_joint_ensemble_design(settings, ensemble_size = 5)
+
+  # this bundle travels on to the SA design, so it has to be sampled the same
+  # way .prepare_input_designs would sample it
+  args <- mockery::mock_args(sampler)[[1]]
+  expect_identical(args$sa_quantiles, c(0.025, 0.5, 0.975))
+})

@@ -31,6 +31,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 - Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+- Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
 - Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
@@ -42,6 +43,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 
 ### Changed
+- Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
 - Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).
 - Improved PEcAn.SIPNET documentation including README, model description, and current installation instructions (@Eshaan-byte; #3703, #3705).

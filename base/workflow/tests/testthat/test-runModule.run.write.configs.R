@@ -287,3 +287,23 @@ test_that(".prepare_input_designs still accepts a design supplied as X", {
   mockery::expect_called(gen, 0)
   expect_identical(designs$ensemble, supplied$X)
 })
+
+test_that(".prepare_input_designs does not warn about a design the caller supplied", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+  settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
+
+  supplied <- list(design_matrix = data.frame(param = 1:3), samples = fake_bundle())
+
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_OAT_SA_design",
+                function(...) list(design_matrix = data.frame(param = 1:4)))
+
+  # the SA design is still generated internally, but there is no way to supply
+  # one, so a caller who did pass a design should not be told to pass one
+  msgs <- capture.output(
+    invisible(.prepare_input_designs(settings, input_design = supplied)),
+    type = "message"
+  )
+  expect_false(any(grepl("deprecated", msgs)))
+})
