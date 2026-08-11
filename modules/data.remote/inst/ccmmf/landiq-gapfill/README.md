@@ -79,9 +79,9 @@ When those tables are built, and whenever crop or ADOY reads an older LandIQ yea
 
 - CLASS -- observed LandIQ CLASS is kept.
 - A specific subclass that is already present -- `subclass_source = observed`.
-- `X` / `YP` with a blank or `**` subclass -- left blank; after merge the label is `X/I/YP (no subclass)`. `I` with a blank subclass gets the same label (it is allowed into the cascade, but a leftover `**` is not treated as a failed fill).
+- `X` / `YP` with a blank or `**` subclass -- left blank; after merge the label is `X/I/YP (no subclass)`. `I` with a blank subclass gets the same label (it is eligible for fill, but a leftover `**` is not treated as a failed fill).
 
-**After the cascade:** vineyard (`V`) still `**` becomes wine grapes (`LANDIQ_VINEYARD_FALLBACK_SUBCLASS`, default `"2"`) and `subclass_source` is set to `observed`. That is a product convention, not an empirical fill.
+**After those steps:** vineyard (`V`) still `**` becomes wine grapes (`LANDIQ_VINEYARD_FALLBACK_SUBCLASS`, default `"2"`) and `subclass_source` is set to `observed`. That is a product convention, not an empirical fill.
 
 Dominant CDL for the year is the code with the largest parcel fraction in that year's fraction parquet.
 
@@ -90,7 +90,7 @@ First hit wins (`assign_subclass`):
 | # | `subclass_source` | Rule |
 |---|-------------------|------|
 | 1 | `plurality` | Same parcel + same CLASS in other season-2 years; vote. Default pool = entire panel except the fill year |
-| 2 | `emission_cdl` | Argmax of (subclass frequency inside CLASS) x P(dominant CDL given CLASS::SUBCLASS) if score > 0. The label name is historical. |
+| 2 | `emission_cdl` | Argmax of (subclass frequency inside CLASS) x P(dominant CDL given CLASS::SUBCLASS) if score > 0 |
 | 3 | `prior_only` | Argmax of how often each subclass occurs inside that CLASS |
 | 4 | `unfilled` | Stays `**` |
 
@@ -183,7 +183,7 @@ Both neighbors: `(p_fwd + p_bwd + p_cdl) / 3`. One neighbor (a bounding year): a
 
 Who gets a row: season-2 agricultural CLASS in each required neighbor year, and nonzero CDL mass in the training code set. A parcel with only one of 2016 / 2018, or a non-ag neighbor, is not filled.
 
-SUBCLASS then uses the same cascade as within-year, on that predicted CLASS.
+SUBCLASS then uses the same fill order as within-year, on that predicted CLASS.
 
 Needs neighbor LandIQ years, CDL fractions for the gap year, the transition matrices, and the eight lookup tables.
 
@@ -318,7 +318,7 @@ Pin `CDL_LANDIQ_TRAINING_YEARS` to reproduce a specific window.
 ### Developer map
 
 - Entry: `scripts/gapfill.R` -> `gapfill_main()` in `scripts/R/gapfill_cli.R`; library via `scripts/R/bootstrap.R`.
-- Crop cascade: `gapfill_subclass.R`. Within-year vs full: `gapfill_run.R` / `gapfill_class.R`.
+- Crop fill: `gapfill_subclass.R`. Within-year vs full: `gapfill_run.R` / `gapfill_class.R`.
 - Probability build/load: `gapfill_emission.R`, `gapfill_lookup_*.R`.
 - Legend remap: `landiq_rs_harmonize.R`.
 - ADOY: `gapfill_adoy.R`. Merge: `build_landiq_product.R`.
