@@ -7,36 +7,38 @@ library(PEcAn.settings)
 ## Config section -- edit for your project
 options <- list(
   optparse::make_option("--n_ens",
-    default = 20,
+    default = 3,
     help = "number of ensemble simulations per site"
   ),
   optparse::make_option("--n_met",
     default = 10,
     help = "number of met files available (ensemble will sample from all)"
   ),
-  optparse::make_option("--start_date",
-    default = "2016-01-01",
+  optparse::make_option(
+    "--start_date",
+    default = "2016-01-01", 
     help = paste(
       "Date to begin simulations.",
       "Ensure your IC files are valid for this date"
     )
   ),
-  optparse::make_option("--end_date",
+  optparse::make_option(
+    "--end_date",
     default = "2024-12-31",
     help = "Date to end simulations"
   ),
   optparse::make_option("--met_dir",
-    default = "data/ERA5_PEPRMT",
+    default = "data/met",
     help = paste(
       "Directory containing climate data.",
       "Should contain subdirs named by site id"
     )
   ),
-  optparse::make_option("--soil_dir",
-    default = "data/soil",
+  optparse::make_option("--peprmt_input_dir",
+    default = "data/PEPRMT_specific_inputs",
     help = paste(
-      "Directory containing netCDFs of soil data.",
-      "Should contain subdirs named by site id"
+      "Directory containing csvs of PEPRMT-specific input data.",
+      "Includes salinity, nitrate, water level"
     )
   ),
   optparse::make_option("--site_file",
@@ -81,20 +83,21 @@ args <- optparse::OptionParser(option_list = options) |>
 ## Whew, that was a lot of lines to define a few defaults!
 
 
-
+# Load site info
 site_info <- read.csv(args$site_file)
+
+# Ensure each site has one row
 stopifnot(
-  length(unique(site_info$id)) == nrow(site_info),
-  all(site_info$lat > 0), # just to simplify grid naming below
-  all(site_info$lon < 0)
+  length(unique(site_info$id)) == nrow(site_info)
 )
+
+# Parse lat lon
 site_info <- site_info |>
   dplyr::mutate(
     # match locations to half-degree ERA5 grid cell centers
-    # CAUTION: Calculation only correct when all lats are N and all lons are W!
     ERA5_grid_cell = paste0(
-      ((lat + 0.25) %/% 0.5) * 0.5, "N_",
-      ((abs(lon) + 0.25) %/% 0.5) * 0.5, "W"
+      ((lat + 0.25) %/% 0.5) * 0.5, ifelse(lat > 0, "N_", "S_"),
+      ((abs(lon) + 0.25) %/% 0.5) * 0.5, ifelse(lon > 0, "E", "W")
     ),
     # Hack: prepare.settings wants every site to have a name as well as an ID.
     # It's probably never used downstream, but add here to quiet the check.
@@ -102,63 +105,57 @@ site_info <- site_info |>
     name = id
   )
 
-settings <- read.settings(args$template_file) |>
+# Load settings and set specifications
+settings_init <- read.settings(args$template_file) |>
   setDates(args$start_date, args$end_date)
-settings$info$notes <- paste("Compiled from", args$template_file,
-                             "at", Sys.time())
 
-settings$ensemble$size <- args$n_ens
-# settings$run$inputs$poolinitcond$ensemble <- args$n_ens
+settings_init$info$notes <- paste("Compiled from", args$template_file,
+                                  "at", Sys.time())
 
-# Hack: setEnsemblePaths leaves all path components other than siteid
-# identical across sites.
-# To use site-specific grid id, I'll string-replace each siteid
-id2grid <- function(s) {
-  # replacing in place to preserve names (easier than thinking)
-  for (p in seq_along(s$run$inputs$met$path)) {
-    s$run$inputs$met$path[[p]] <- gsub(
-      pattern = s$run$site$id,
-      replacement = s$run$site$ERA5_grid_cell,
-      x = s$run$inputs$met$path[[p]]
-    )
-  }
-  s
-}
+settings_init$ensemble$size <- args$n_ens
 
-add_soil_pft <- function(s) {
-  s$run$site$site.pft <- list(veg = s$run$site$site.pft, soil = "soil")
-  s
-}
-
-settings <- settings |>
+settings <- settings_init |>
+  
+  # Set where demo outputs go
+  # setOutDir("output") |>
+  
+  # Set ensemble dates
+  # Note the run dates differ by site (overridden below);
+  # for ensemble we take a range that includes all.
+  setDates(min(site_info$met.start), max(site_info$met.end)) |>
+  
+  # Takes all sites listed in site_info.csv,
+  # adds empty path templates to each `run$site.[siteid]`
   createMultiSiteSettings(site_info) |>
+  
+  # Set run start and end dates to match available met data
+  # (as hard-coded in site-info.csv -- consider getting from elsewhere?)
+  # If dates were equal for all sites, setDates() above this would handle this
+  papply(function(s) {
+    s$run$start.date <- s$run$site$met.start
+    s$run$end.date <- s$run$site$met.end
+    s
+  })  |>
+  # Declare naming scheme for met files.
+  # NB this creates paths in the XML that don't exist on disk yet --
+  # we'll create them in a separate operation below
   setEnsemblePaths(
-    n_reps = args$n_met,
+    n_reps = ensemble_size,
     input_type = "met",
-    path = args$met_dir,
-    d1 = args$start_date |> as.Date() |> format("%Y-%m"),
-    d2 = args$end_date |> as.Date() |> format("%Y-%m"),
-    path_template = "{path}/ERA5_{id}/ERA5.{n}.{d1}.{d2}.dat"
+    path = file.path("data", "met"),
+    d1 = "DATES-HERE",
+    path_template = "{path}/ERA5_{id}/ERA5.{n}.{d1}.dat"
   ) |>
-  papply(id2grid) |>
-  # setEnsemblePaths(
-  #   n_reps = args$n_ens,
-  #   input_type = "poolinitcond",
-  #   path = args$ic_dir,
-  #   path_template = "{path}/{id}/IC_site_{id}_{n}.nc"
-  # ) |>
   setEnsemblePaths(
-    n_reps = args$n_ens,
-    input_type = "soil_physics",
-    path = args$soil_dir,
-    # n+1 bc current implementation of extract_soil_gSSURGO saves a
-    # gSSURGO_soil_1.nc containing pseudo-layers from _every_
-    # soil type found at site, then at least n more files after that
-    # ("at least" bc it also writes at least 1 file per soil type)
-    # TODO
-    path_template = "{path}/{id}/gSSURGO_soil_{n+1}.nc"
+    n_reps = 1,
+    input_type = "PEPRMT",
+    path = file.path("data", "PEPRMT_specific_inputs"),
+    path_template = "{path}/{id}_formatted.csv"
   ) |>
-  papply(add_soil_pft)
+  # helper functions from peprmt/R/helpers.R to address having multiple grid 
+  # cells and date ranges in the same site_info file
+  papply(id2grid) |> 
+  papply(dates2grid)
 
 # Update just the first component of the output directory,
 # in all four places it's used.
@@ -177,6 +174,7 @@ settings$host$outdir <- sub("^output", args$output_dir_name,
 settings$host$rundir <- sub("^output", args$output_dir_name,
                             settings$host$rundir)
 
+# Export
 write.settings(
   settings,
   outputfile = basename(args$output_file),

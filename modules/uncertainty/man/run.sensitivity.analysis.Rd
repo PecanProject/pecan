@@ -41,7 +41,9 @@ Nothing (called for side effects). Saves \code{sensitivity.results} as
 \code{sensitivity.results.*.Rdata} and optional PDF plots.
 }
 \description{
-Run sensitivity analysis on finished model runs
+Loads parameter samples and parsed model output from disk, computes
+sensitivity coefficients and variance decomposition for each PFT/trait,
+and saves results and diagnostic plots.
 }
 \details{
 \strong{Upstream contract (reads from \code{settings$outdir}):}

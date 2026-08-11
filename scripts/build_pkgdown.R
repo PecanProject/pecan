@@ -33,6 +33,7 @@ build_and_copy <- function(pkg, branch, outdir) {
 
   pkgdown::build_site(
     pkg = ".",
+    lazy = TRUE,
     override = list(
       "llm-docs" = FALSE,
       repo = list(url = list(source = url_str)),
@@ -81,7 +82,7 @@ build_quietly <- function(pkg, ...) {
         "⚠️ Warning building pkgdown site for", pkg, ":", w$message
       )
       warns <<- append(warns, w)
-      invokeRestart("muffleWarning")
+      tryInvokeRestart("muffleWarning")
     }
   )
 

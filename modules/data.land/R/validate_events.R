@@ -26,7 +26,7 @@
 #' #                                package = "PEcAn.data.land"))
 #'
 #' @export
-validate_events_json <- function(events_json, schema_version = "0.1.1", verbose = TRUE, max_errs = 50) {
+validate_events_json <- function(events_json, schema_version = "0.1.2", verbose = TRUE, max_errs = 50) {
   if (!file.exists(events_json)) {
     PEcAn.logger::logger.error(glue::glue("events_json file does not exist: {events_json}"))
     return(FALSE)

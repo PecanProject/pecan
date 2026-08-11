@@ -2,6 +2,8 @@
 
 ## Added
 
+- Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+
 ## Fixed
 
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
@@ -10,22 +12,22 @@
 * Datasets
   *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
-  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 33 California crops from CDFA-FREP and UC ANR sources.
-  *  `ca_compost_amendment` dataset with C:N ratios, carbon, nitrogen, and PAN (g/m2) for 32 organic amendment materials.
+  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 40 California crops from CDFA-FREP, UC ANR, Rosenstock 2013, Brown 2020 NBMP (Almonds age stages) and Lazicki 2016 (Potato) sources.
+  *  `ca_organic_amendment_properties` dataset with C:N ratios, nitrogen, and PAN for 32 organic amendment materials, plus a `material_class` column mapping each material to the CalRecycle taxonomy (14 CCR section 17852).
+  *  `ca_organic_amendment_app_rate` dataset with row-crop and orchard application rate envelopes (64 rows = 32 materials x 2 crop structures) that joins to `ca_organic_amendment_properties` on `material`.
 * Functions
   *  `look_up_ca_n_rate()` for looking up crop-specific N application rates by name (exact match first, partial match suggestions on miss).
-  *  `look_up_ca_compost_amendment()` for looking up organic amendment properties by material name.
+  *  `look_up_ca_organic_amendment()` for looking up organic amendment properties by material name.
   *  `to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 
 ## Changed
 
 * Package `traits`, used by `match_pft()` and `match_species_id()` only when no database connection is provided, is now suggested rather than required.
-* Updated `validate_events_json()` to use events schema v0.1.1 by default. The previous default v0.1.0 is still available by setting `schema_version="0.1.0"`.
+* Updated `validate_events_json()` to use events schema v0.1.2 by default. Older versions are still accessible by setting, e.g., `schema_version="0.1.1"`.
 * Packages `doSNOW`, `dplR`, `httr`, `MCMCpack`, `mvtnorm`, `neonUtilities`,
   `neonstore`, `PEcAn.benchmark`, `PEcAn.visualization`, `rjags`, `sirt`, and
   `sp` are now suggested rather than required. They are only needed for
   specific optional functionality. (#3599)
-* Updated `validate_events_json()` to use events schema v0.1.1 by default. The previous default v0.1.0 is still available by setting `schema_version="0.1.0"`.
 
 # PEcAn.data.land 1.9.0
 

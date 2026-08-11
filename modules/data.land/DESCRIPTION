@@ -28,7 +28,9 @@ Imports:
     arrow,
     coda,
     curl,
+    DBI,
     dplyr,
+    duckdb,
     foreach,
     fs,
     future,
@@ -69,6 +71,7 @@ Suggests:
     PEcAn.settings,
     PEcAn.visualization,
     raster,
+    readr,
     redland,
     reticulate,
     rjags,
@@ -76,6 +79,7 @@ Suggests:
     sp,
     testthat (>= 3.1.0),
     traits,
+    usethis,
     withr
 Remotes:
     github::ropensci/traits

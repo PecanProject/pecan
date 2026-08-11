@@ -103,7 +103,9 @@ Externally imposed changes in system state, such as planting and harvest or till
 
 Event types are defined by the PEcAn events spec, which is currently provided as a JSON schema file bundled into the PEcAn.data.land package (TODO consider exposing this in a more linkable format?). Valid events files are stored as JSON, with each events file containing an array of sites. Each site contains an id, a schema version, and an array of events, usually recorded in date order. Each event has a date, an event type, and one or more values from the required and optional properties that are documented below for each event type. Any event is also allowed to contain arbitrary additional properties not mentioned in the spec; PEcAn will pass these on to models with no further validation.
 
-The currently supported event types are: planting, harvest, irrigation, fertilization, and tillage. Each of these is described briefly below. You will note that all of them are focused on agronomic management of croplands; future work will extend this framework to include disturbance of unmanaged systems such as fire, inundation or insect outbreaks.
+Although JSON is the official PEcAn format for management events, PEcAn supports more efficient storage of large collections of event data in parquet format. Such data can be converted to the JSON format with `data.land::event_parquet_to_json`. Data for each type of managmeent event must be stored in its own parquet file (e.g., you _cannot_ combine data for leaf on and leaf off events in a `phenology.parquet` file). Each parquet file must have columns `date`, `site_id`, and additional columns for event-specific data (e.g., `method` and `amount_mm` for irrigation). For ensemble uncertainty analysis, events may also (optionally, but highly recommended) include an `event_member_id` column (as a character) that uniquely identifies each ensemble member for downstream uncertainty analysis. (This is distinct from PEcAn's ensemble ID because PEcAn's ensemble code treats all management events as a single input type. The `event_member_id` for each event type is therefore used to extend PEcAn's ability to attribute sensitivity or uncertainty to specific event types. See `data.land::event_parquet_to_json` docs for additional details).
+
+The currently supported event types are: planting, harvest, irrigation, fertilization, tillage, and phenology (controlled by separate `leafon` and `leafoff` event types). Each of these is described briefly below. You will note that all of them are focused on agronomic management of croplands; future work will extend this framework to include disturbance of unmanaged systems such as fire, inundation or insect outbreaks.
 
 
 #### planting
@@ -176,6 +178,28 @@ Optional properties:
 * `intensity_category`: string giving additional information on the type or amount of tillage performed.
 * `depth_m`: Depth of soil affected by the event.
 
+#### phenology (`leafon` / `leafoff`)
+
+Prescribed dates of onset of leaf growth (`leafon`) and senescence (`leafoff`) phenological events. As with other events, the precise definition of these events varies significantly by model. Note also that the inclusion of leaf on / leaf off events *does not* guarantee that these will replace the internal model representation of these events; rather, models must be explicitly configured to turn off their internal representations of leaf phenology and to use prescribed events instead.
+
+These event types only take a date --- there are (currently) no additional properties.
+
+This event type is available in schema versions >= 0.1.2.
+
+Here is an example:
+
+```json
+[
+  {
+    "pecan_events_version": "0.1.2",
+    "site_id": "EX1",
+    "events": [
+      {"event_type": "leafon", "date": "2025-04-05"},
+      {"event_type": "leafoff", "date": "2025-10-08"}
+    ]
+  }
+]
+```
 
 ## Output Standards
 

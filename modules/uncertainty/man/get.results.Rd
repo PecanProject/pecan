@@ -32,9 +32,13 @@ Nothing (called for side effects). Saves \code{sensitivity.output} and/or
 \code{ensemble.output} \code{.Rdata} files to \code{settings$outdir}.
 }
 \description{
-Read model output and save parsed results for sensitivity and ensemble analyses
+Loads sample metadata and run IDs from disk, reads model output for each
+run, and saves parsed results for downstream analysis by
+\code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} and \code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}.
 }
 \details{
+Output is placed in model output directory (\code{settings$outdir}).
+
 \strong{Upstream contract (reads from \code{settings$outdir}):}
 \describe{
 \item{\verb{sensitivity.samples.<id>.Rdata} or \code{samples.Rdata}}{Loaded to

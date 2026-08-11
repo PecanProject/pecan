@@ -32,7 +32,9 @@ Nothing (called for side effects). Creates ensemble plots as PDF
 files and optionally saves time series analysis results.
 }
 \description{
-Run ensemble analysis on finished model runs
+Loads parsed ensemble model output from disk, computes summary statistics
+(mean, median, quantiles), and generates diagnostic plots (histogram,
+boxplot, and optionally time series).
 }
 \details{
 \strong{Upstream contract (reads from \code{settings$outdir}):}

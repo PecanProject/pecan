@@ -54,3 +54,20 @@ test_that("photosynthesis parameters", {
   # Photosynthesis energy parameters
   expect_equal(ud_convert(1000, "J/mol", "kJ/mol"), 1)
 })
+
+test_that("ud_convert handles vector inputs", {
+  expect_equal(ud_convert(c(0, 10, 100), "degC", "K"), c(273.15, 283.15, 373.15))
+  x <- seq(0, 100, length.out = 1000)
+  result <- ud_convert(x, "cm", "m")
+  expect_equal(result, x / 100)
+  expect_length(result, 1000)
+})
+
+test_that("ud_convert handles NA in vectors", {
+  result <- ud_convert(c(1, NA, 3), "m", "cm")
+  expect_equal(result, c(100, NA, 300))
+})
+
+test_that("ud_convert handles integer input", {
+  expect_equal(ud_convert(1L, "m", "cm"), 100)
+})

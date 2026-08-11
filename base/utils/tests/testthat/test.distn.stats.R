@@ -8,8 +8,8 @@ test_that("distn.stats works for different distributions",{
   expect_equal(distn.stats("t", 2), c(0, Inf))
   expect_equal(distn.stats("lnorm", 2, 3), 
                c(exp(2 + 0.5*3^2), sqrt(exp(2*2 + 3^2)*(exp(3^2)-1))))
-  expect_equal(distn.stats("weibull", 2,3), 
-               c(3 * gamma(1+1/2), 3^2 * (gamma(1 + 2/2) - (gamma(1 + 1/2))^2)))
+  expect_equal(distn.stats("weibull", 2,3),
+               c(3 * gamma(1+1/2), 3 * sqrt(gamma(1 + 2/2) - (gamma(1 + 1/2))^2)))
 })
 
 test_that("distn.table.stats works for different distributions",{

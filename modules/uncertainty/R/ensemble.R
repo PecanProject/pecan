@@ -601,17 +601,43 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
 
 
-#' Function for generating samples based on sampling method, parent or etc
+#' Generate an ensemble of samples from one input
+#'
+#' Given an input containing paths to multiple files, this function samples
+#' from the given paths to make an ensemble of the requested size.
+#' If method is `sampling` they are sampled with replacement from the full set;
+#' if method is `looping` they are taken sequentially with the sequence
+#' repeating as needed.
+#'
+#' If `parent_ids` is provided, it is used as the indices for the current input.
+#' Use this when you have multiple inputs whose files should be sampled as a
+#' coordinated set.
+#' For example if your soil moisture files are matched to the rainfall amounts
+#' in your weather files, generate the met ensemble first
+#' (`met_ids <- input.ens.gen(..., input = "met", parent_ids = NULL)`)
+#' and then pass those as parents to the soil moisture ensemble:
+#' `input.ens.gen(..., input = "soilmoist", parent_ids = met_ids)`.
+#'
+#' If any indices in `parent_ids` are larger than the length of the input
+#' being sampled (e.g. `53` when the input only has 25 paths),
+#' the result is determined by `bad_parent_action`:
+#' "error" stops execution and requests the user to fix their inputs,
+#' "resample" uses the valid parents as-is and replaces the invalid parents
+#' via method = "sampling".
+#' Note that method "resample" is provided for backwards compatibility;
+#' we strongly recommend validating parent-child alignment before calling
+#' `input.ens.gen`, ideally in the same process that generates your parent ids.
 #'
 #' @param settings list of PEcAn settings
 #' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
-#' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
+#' @param parent_ids integer vector of indices to be used as-is
 #' @param ensemble_size size of ensemble
+#' @param bad_parent_action How to handle entries in `parent_id` that are not
+#'  valid indices into the paths given for this input. See details
 #'
-#' @return For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
-#' @details If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
-#' parent_ids to this function.
+#' @return A list with elements `id` showing the order of sampling
+#'  and `samples` with the paths selected from those indices.
 #' @export
 #'
 #' @examples
@@ -625,12 +651,18 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #'   )
 #' }
 #'
-input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
+input.ens.gen <- function(settings,
+                          ensemble_size,
+                          input,
+                          method = "sampling",
+                          parent_ids = NULL,
+                          bad_parent_action = c("error", "resample")) {
 
   samples <- list()
   samples$ids <- c()
 
-  if (is.null(method)) return(NULL)
+  if (is.null(method) && is.null(parent_ids)) return(NULL)
+
   # parameter is exceptional it needs to be handled spearatly
   if (input == "parameters") return(NULL)
 
@@ -642,14 +674,36 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
   }
 
   if (!is.null(parent_ids)) {
-    samples$ids <- parent_ids$ids
-    out.of.sample.size <- length(samples$ids[samples$ids > length(input_path)])
-    # sample for those that our outside the param size -
-    # for example, parent id may send id number 200 but we have only 100 sample for param
-    samples$ids[samples$ids %in% out.of.sample.size] <- sample(
-      seq_along(input_path),
-      out.of.sample.size,
-      replace = TRUE)
+    bad_parent_action <- match.arg(bad_parent_action)
+
+    # Legacy support: versions through 1.9.0 expected parent_ids to be a list,
+    # but only component `ids` was used
+    if (is.list(parent_ids) && !is.null(parent_ids$ids)) {
+      parent_ids <- parent_ids$ids
+    }
+
+    if (length(parent_ids) != ensemble_size || !is.numeric(parent_ids)) {
+      PEcAn.logger::logger.error(
+        "parent_ids must be an integer vector the same length as the ensemble")
+    }
+
+    out.of.sample <- !(parent_ids %in% seq_along(input_path))
+    if (any(out.of.sample)) {
+      if (bad_parent_action == "error") {
+        PEcAn.logger::logger.error(
+          "parent_ids must be valid indices for input paths. Bad values:",
+          toString(parent_ids[out.of.sample])
+        )
+      } else if (bad_parent_action == "resample") {
+        # sample for those that are outside the param size -
+        # for example, parent id may send id number 200 but we have only 100 sample for param
+        parent_ids[out.of.sample] <- sample(
+          seq_along(input_path),
+          sum(out.of.sample),
+          replace = TRUE)
+      }
+    }
+    samples$ids <- parent_ids
   } else if (tolower(method) == "sampling") {
     samples$ids <- sample(
       seq_along(input_path),

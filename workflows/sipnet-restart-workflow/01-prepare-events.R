@@ -124,7 +124,7 @@ irrigation_n_list <- purrr::map(irrigation_events_list, make_event_list)
 make_all_events <- function(...) {
   dplyr::bind_rows(...) |>
     dplyr::summarize(events = list(purrr::list_c(.data$events)), .by = "site_id") |>
-    dplyr::mutate(pecan_events_version = "0.1.1", .before = "site_id")
+    dplyr::mutate(pecan_events_version = "0.1.2", .before = "site_id")
 }
 
 # NOTE: This only works if we each event type has either 1 ensemble or the same

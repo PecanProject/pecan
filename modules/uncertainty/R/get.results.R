@@ -1,6 +1,5 @@
 ##' Read model output and save parsed results for sensitivity and ensemble analyses
 ##'
-##' @md
 ##' Loads sample metadata and run IDs from disk, reads model output for each
 ##' run, and saves parsed results for downstream analysis by
 ##' \code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} and \code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}.
@@ -34,7 +33,6 @@
 ##' \code{\link[PEcAn.uncertainty]{run.ensemble.analysis}}. Both use these files to compute diagnostics
 ##' and plots. This implicit file-based coupling is a refactoring target.
 ##'
-##' @export
 ##' @param settings list, read from settings file (xml) using
 ##'   `PEcAn.settings::read.settings()`
 ##' @param sa.ensemble.id,ens.ensemble.id ensemble IDs for the sensitivity
@@ -47,6 +45,10 @@
 ##' @return Nothing (called for side effects). Saves `sensitivity.output` and/or
 ##'   `ensemble.output` `.Rdata` files to `settings$outdir`.
 ##' @author David LeBauer, Shawn Serbin, Mike Dietze, Ryan Kelly
+##'
+##' @md
+##'
+##' @export
 get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL, 
                         variable = NULL, start.year = NULL, end.year = NULL) {
   
@@ -121,9 +123,11 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     # Only handling one variable at a time for now
     if (length(variables.sa) >= 1) {
       for(variable.sa in variables.sa){
-        PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ",
-                                  variable.sa)
-        
+        PEcAn.logger::logger.info(
+          "Currently performing sensitivity analysis on variable ",
+          variable.sa
+        )
+
         # if an expression is provided, convert.expr returns names of the variables accordingly
         # if a derivation is not requested it returns the variable name as is
         variables <- PEcAn.utils::convert.expr(unlist(variable.sa))
@@ -232,9 +236,11 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     # Only handling one variable at a time for now
     if (length(variables.ens) >= 1) {
       for(variable.ens in variables.ens){
-        PEcAn.logger::logger.warn(paste0("Currently performing ensemble analysis on variable ", 
-                                         variable.ens, ")"))
-        
+        PEcAn.logger::logger.info(
+          "Currently performing ensemble analysis on variable ",
+          variable.ens
+        )
+
         # if an expression is provided, convert.expr returns names of the variables accordingly
         # if a derivation is not requested it returns the variable name as is
         variables <- PEcAn.utils::convert.expr(variable.ens)

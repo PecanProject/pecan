@@ -121,12 +121,23 @@ See Demo 1 Section 6 for details on what these functions do. Briefly, they read 
 
 # Write Model Configuration Files {#sec-write-configs}
 
-This step generates the model-specific configuration files that will be used to run the ecosystem model. The process involves:
+This step decides which model runs to do, then writes the configuration files for them.
 
-2. Generating SIPNET configuration files using the `runModule.run.write.configs()` function.
+`generate_joint_ensemble_design()` builds the ensemble design: one row per run, holding indices that say which parameter draw each run uses. It returns those samples alongside the design, since the indices only mean anything together with the samples they point into. Because this demo also runs a sensitivity analysis, the SA design is generated internally as well; passing one in yourself isn't supported yet.
+
 ```{r write-configs}
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+  settings,
+  ensemble_size = settings$ensemble$size
+)
+
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = design
+)
 ```
+
+Generating the design yourself lets you inspect it before any runs happen: `design$design_matrix` is the table of runs, and `design$samples` holds the parameter draws behind it, which is what the sensitivity and variance decomposition steps later report on.
 
 # Run Model Simulations
 
@@ -365,10 +376,7 @@ for (var in variables) {
         sensitivity.results[[pft$name]]$variance.decomposition.output
       )
       # Explicitly print the plot
-      gridExtra::grid.arrange(
-        grobs = vd_plots, ncol = 4,
-        top = paste("Variance Decomposition:", var)
-      )
+      vd_plots + ggplot2::ggtitle(paste("Variance Decomposition:", var))
     }
   } else {
     PEcAn.logger::logger.warn(paste("Could not find sensitivity results file for variable:", var))

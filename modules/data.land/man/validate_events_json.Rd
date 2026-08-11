@@ -6,7 +6,7 @@
 \usage{
 validate_events_json(
   events_json,
-  schema_version = "0.1.1",
+  schema_version = "0.1.2",
   verbose = TRUE,
   max_errs = 50
 )
