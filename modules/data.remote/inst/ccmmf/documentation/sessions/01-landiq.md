@@ -106,7 +106,7 @@ The two files produced by the harmonization workflow:
 From the cadwr-landuse clone, with the Session 0 conda env active:
 
 ```bash
-cd "$HOME/src/cadwr-landuse"
+cd "$CCMMF_BASE/src/cadwr-landuse"
 
 python scripts/01-split.py \
   --landiq-root-dir "$LANDIQ_RAW" \

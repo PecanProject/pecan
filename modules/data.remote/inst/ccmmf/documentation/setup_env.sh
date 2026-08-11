@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 # CCMMF env defaults. Override any var before sourcing.
 #
-#   source "$CCMMF_CODE/documentation/setup_env.sh"
+#   export CCMMF_BASE=/path/to/workdir
+#   source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup_env.sh"
 #   source ./setup_env.sh
 #
 # Layout roles under $CCMMF_ROOT (full data workspace, not outputs-only):
 #   LandIQ / HLS / CDL / climate / soils       -- external inputs (+ LandIQ work)
 #   lookups                                    -- small tables
 #   products/inventory                         -- Management Tracking outputs
-#   products/projections                       -- scenario / model outputs
 # Finished tree: documentation/sessions/00-setup.md (Data layout).
 # Product overview: ../README.md. Paths created in Session 0.
 # Irrigation: workflows/irrigation-statewide/config_paths.yml keys should point into this tree;
 #   CHIRPS_DIR/CIMIS_DIR are raw staging; parcel extracts from preprocessing/ may differ.
 
-# Workspace roots
-export CCMMF_ROOT="${CCMMF_ROOT:-$HOME/ccmmf}"          # data
-export CCMMF_CODE="${CCMMF_CODE:-$HOME/src/pecan/modules/data.remote/inst/ccmmf}"  # pipeline code
+# Workspace roots. Set CCMMF_BASE once; CODE and ROOT follow unless you override them.
+export CCMMF_BASE="${CCMMF_BASE:-$HOME}"
+export CCMMF_ROOT="${CCMMF_ROOT:-$CCMMF_BASE/ccmmf}"          # data
+export CCMMF_CODE="${CCMMF_CODE:-$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf}"  # pipeline code
 
 # Inventory year pair
 export PRIOR_YEAR="${PRIOR_YEAR:-2023}"
@@ -51,7 +52,6 @@ export FERTILIZATION_LOOKUPS="${FERTILIZATION_LOOKUPS:-$LOOKUPS_ROOT/fertilizati
 # --- Products ---
 export PRODUCTS_ROOT="${PRODUCTS_ROOT:-$CCMMF_ROOT/products}"
 export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$PRODUCTS_ROOT/inventory}"
-export PRODUCTS_PROJECTIONS="${PRODUCTS_PROJECTIONS:-$PRODUCTS_ROOT/projections}"
 
 export HLS_PARCEL_TILEMAP="${HLS_PARCEL_TILEMAP:-$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv}"
 export MATCHED_DIR="${MATCHED_DIR:-$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2}"
@@ -64,4 +64,4 @@ export EVENTS_ROOT="${EVENTS_ROOT:-$CCMMF_CODE/events}"
 export HLS_SHARED_LIB="${HLS_SHARED_LIB:-$CCMMF_CODE/hls/R}"
 export COUNTY_TRANSITION_MATRICES_DIR="${COUNTY_TRANSITION_MATRICES_DIR:-$LANDIQ_GAPFILL_ROOT/data/county_transition_matrices}"
 
-echo "[setup_env] ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"
+echo "[setup_env] BASE=$CCMMF_BASE ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"
