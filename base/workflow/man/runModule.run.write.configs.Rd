@@ -25,7 +25,11 @@ for \code{settings$run$inputs} tags such as \code{met} or \code{soil}) and
 }
 A bare design data.frame is not accepted: its \code{param} indices are only
 meaningful together with the samples they index into, so the design and its
-samples must travel together.}
+samples must travel together.
+The design goes to whichever run the settings describe. A settings object
+carrying only a sensitivity analysis takes it as the SA design, from
+\code{generate_OAT_SA_design()}; otherwise it is the ensemble design.
+Running both means two calls, one settings object each.}
 }
 \value{
 A modified settings object, invisibly

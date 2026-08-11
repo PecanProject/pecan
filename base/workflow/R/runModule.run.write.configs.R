@@ -27,6 +27,10 @@
 #'   A bare design data.frame is not accepted: its \code{param} indices are only
 #'   meaningful together with the samples they index into, so the design and its
 #'   samples must travel together.
+#'   The design goes to whichever run the settings describe. A settings object
+#'   carrying only a sensitivity analysis takes it as the SA design, from
+#'   \code{generate_OAT_SA_design()}; otherwise it is the ensemble design.
+#'   Running both means two calls, one settings object each.
 #' @return A modified settings object, invisibly
 #'
 #'
@@ -54,7 +58,11 @@ runModule.run.write.configs <- function(settings,
                                   input_design = designs))
 
   } else if (PEcAn.settings::is.Settings(settings)) {
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+    # only default the sampling method for a run that actually has an ensemble,
+    # so an SA-only settings object does not gain an empty ensemble here and get
+    # its design routed as an ensemble design
+    if ("ensemble" %in% names(settings) &&
+        is.null(settings$ensemble$samplingspace$parameters$method)) {
       settings$ensemble$samplingspace$parameters$method <- "uniform"
     }
 

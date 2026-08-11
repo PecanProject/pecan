@@ -409,3 +409,38 @@ test_that(".prepare_input_designs does not warn when the SA design was supplied"
   )
   expect_false(any(grepl("deprecated", msgs)))
 })
+
+test_that("runModule.run.write.configs keeps an SA-only settings object SA-only", {
+  tmp <- withr::local_tempdir()
+  settings <- list(
+    outdir = tmp,
+    pfts   = list(list(name = "temperate.deciduous")),
+    sensitivity.analysis = list(quantiles = c(0.025, 0.5, 0.975)),
+    database = list(bety = list(write = FALSE))
+  )
+
+  supplied <- list(design_matrix = data.frame(param = 1:7), samples = fake_bundle())
+
+  captured <- new.env(parent = emptyenv())
+  captured$calls <- character(0)
+
+  mockery::stub(runModule.run.write.configs,
+                "PEcAn.settings::is.MultiSettings", function(...) FALSE)
+  mockery::stub(runModule.run.write.configs,
+                "PEcAn.settings::is.Settings", function(...) TRUE)
+  mockery::stub(runModule.run.write.configs,
+                "PEcAn.workflow::run.write.configs",
+                function(settings, ensemble.size, input_design, samples, ...) {
+                  captured$input_design <- input_design
+                  captured$calls <- c(captured$calls, "sa")
+                  list(sensitivity.analysis = settings$sensitivity.analysis,
+                       pfts = settings$pfts)
+                })
+
+  runModule.run.write.configs(settings, input_design = supplied)
+
+  # defaulting the sampling method must not give an SA-only run an ensemble,
+  # or the design it was handed would be routed as an ensemble design
+  expect_identical(captured$input_design, supplied$design_matrix)
+  expect_identical(captured$calls, "sa")
+})
