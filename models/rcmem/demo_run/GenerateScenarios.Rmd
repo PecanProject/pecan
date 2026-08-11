@@ -34,8 +34,8 @@ all_scenario_info <- scenario_output[[1]]
 MSL_list <- list()
 amp_list <- list()
 
-MHW_names <- c("highest annual", "spring", "daily higher", "daily high")
-MLW_names <- c("daily high", "daily higher", "spring", "highest annual")
+MHW_names <- c("annual max", "spring", "daily larger", "daily smaller")
+MLW_names <- c("daily smaller", "daily larger", "spring", "annual max")
 
 for (i in 1:nrow(all_scenario_info)) {
   
