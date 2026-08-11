@@ -2,7 +2,7 @@
 
 **What this session is for.** Before downloading LandIQ or running HLS extracts, you need a working software stack, the pipeline code on disk, a data workspace with known path names, and (for Session 2) a NASA Earthdata login. This session gets that environment ready; it does not build inventory products yet.
 
-**Prerequisite:** install `pecan-all-1.13` before this walkthrough if you do not already have it.
+**Prerequisite:** install `pecan-all-1.14` before this walkthrough if you do not already have it.
 
 **Where to go deeper:** path names in [setup_env.sh](../setup_env.sh); product overview in [tree README](../../README.md).
 
@@ -10,7 +10,7 @@
 
 ## 0.1 Environment
 
-Log into the head node, activate `pecan-all-1.13`, and confirm the R and Python package checks pass. Examples below use `$HOME` -- change them if the environment lives somewhere else.
+Log into the head node, activate `pecan-all-1.14`, and confirm the R and Python package checks pass. Examples below use `$HOME` -- change them if the environment lives somewhere else.
 
 ```bash
 # SSH to your cluster head node.
@@ -110,7 +110,7 @@ sessions only refer to these vars (no per-session mkdir).
 $CCMMF_ROOT/
   LandIQ/
     raw/                              # LANDIQ_RAW
-    work/cadwr-landuse/v4.1/          # CADWR_WORK_DIR
+    work/                             # CADWR_WORK_DIR
       03-final/                       # LANDIQ_HARMONIZED
     gapfilled/                        # LANDIQ_GAPFILLED
   HLS/

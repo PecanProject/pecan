@@ -27,7 +27,7 @@ export CCMMF_TARGET_YEAR=$TARGET_YEAR
 export LANDIQ_ROOT="${LANDIQ_ROOT:-$CCMMF_ROOT/LandIQ}"
 export LANDIQ_RAW="${LANDIQ_RAW:-$LANDIQ_ROOT/raw}"                       # annual shapefiles
 export LANDIQ_GAPFILLED="${LANDIQ_GAPFILLED:-$LANDIQ_ROOT/gapfilled}"     # gap-filled crops
-export CADWR_WORK_DIR="${CADWR_WORK_DIR:-$LANDIQ_ROOT/work/cadwr-landuse/v4.1}"  # cadwr work (raw -> finals)
+export CADWR_WORK_DIR="${CADWR_WORK_DIR:-$LANDIQ_ROOT/work}"  # cadwr work (tiles -> 03-final)
 # Gap-fill / downstream input = cadwr published finals (no separate copy)
 export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$CADWR_WORK_DIR/03-final}"
 

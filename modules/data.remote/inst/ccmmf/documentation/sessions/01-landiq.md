@@ -9,13 +9,9 @@ You are updating for **`TARGET_YEAR`** (this training example: **2024**, often s
 
 **How to use this page.** This session is the guided inventory workflow: purpose, inputs/outputs, checks, and caveats for a routine year-pair update. Geometry harmonization is owned by a separate repo, [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse) (branch `main`) -- Sec. 1.2 is the CCMMF integration step, not a second copy of that tutorial. Gap-fill methodology lives in [landiq-gapfill/README.md](../../landiq-gapfill/README.md). You should be able to place every step in the larger workflow from this page alone; open cadwr-landuse or the gap-fill README when you need to run, debug, or change the method.
 
-**Prerequisite:** [Session 0](00-setup.md) (conda, `$CCMMF_CODE`, `cadwr-landuse` clone, sourced `setup_env.sh`, workspace dirs). If `$LANDIQ_RAW` (or other `$LANDIQ_*` vars) is empty in a new shell, re-run `source "$CCMMF_CODE/documentation/setup_env.sh"`.
-
-**Where else to look:** product map [tree README](../../README.md); geometry method [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse).
-
 ```mermaid
 flowchart LR
-  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S0["Session 0\nSetup"] --> S1["Session 1\nCrop identity"]
   S1 --> S2["Session 2\nPhenology + tillage"]
   S2 --> S3["Session 3\nFert + irrigation"]
   S3 --> OUT["Inventory products"]
@@ -38,17 +34,17 @@ flowchart LR
 
 ## Paths for this session
 
-Expect Session 0 done. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](00-setup.md#data-layout).
+Expect Session 0 done. Paths come from [setup_env.sh](../setup_env.sh). Full tree: [Data layout](00-setup.md#data-layout).
 
-`$LANDIQ_HARMONIZED` **is** `$CADWR_WORK_DIR/03-final` (cadwr-landuse published finals -- not a second copy).
-
-| Role | Path | Notes |
-|------|------|-------|
-| In | `$LANDIQ_RAW` | Annual LandIQ shapefiles |
-| Work | `$CADWR_WORK_DIR` | cadwr-landuse intermediates |
-| Out | `$LANDIQ_HARMONIZED` | `= $CADWR_WORK_DIR/03-final` (`parcels-consolidated.gpkg`, `crops_all_years.parq`) |
-| In / out | `$CDL_DIR` | USDA Cropland Data Layer `.tif` + parcel fraction `.parq` |
-| Out | `$LANDIQ_GAPFILLED` | Gap-filled `crops_all_years.parq` (includes `COVER` after Sec. 1.5) |
+```text
+$CCMMF_ROOT/
+  LandIQ/
+    raw/                              # LANDIQ_RAW -- annual shapefiles
+    work/                             # CADWR_WORK_DIR -- cadwr tiles + overlays
+      03-final/                       # LANDIQ_HARMONIZED -- parcels-consolidated.gpkg + crops_all_years.parq
+    gapfilled/                        # LANDIQ_GAPFILLED -- gap-filled crops_all_years.parq
+  CDL/                                # CDL_DIR -- CDL .tif + parcel fraction .parq
+```
 
 Walk Secs. 1.1–1.6 in order the first time. A one-shot shortcut for 1.4–1.6 is noted at the end -- use it only after you know what those steps do.
 
@@ -56,21 +52,31 @@ Walk Secs. 1.1–1.6 in order the first time. A one-shot shortcut for 1.4–1.6 
 
 ## 1.1 Download LandIQ
 
-Source: [CNRA Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping). Use the **GIS Shapefile** ZIP for each year. Also grab the current **Land Use Legend PDF** for Sec. 1.3.
+Each year DWR publishes a statewide LandIQ shapefile on the [CNRA Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping) portal (use the **GIS Shapefile** ZIP). The newest year is usually **provisional**; the previous year's provisional is typically replaced by a **final** on the same cycle.
 
-On a routine update, download **two** years and put them under `$LANDIQ_RAW`:
+Sec. 1.2 builds one parcel map by overlaying **all** of those annual shapefiles, so `$LANDIQ_RAW` needs the full series, not just the inventory year pair. For this training run you do not download history from the portal: pull last year's stack from the lab S3 cache (2016-2022 finals plus **2023 provisional**), then update the year pair the way an operational inventory would -- replace 2023 provisional with the new final, and add **2024** provisional.
+
+From the same portal, also download two PDFs:
+
+- **Land Use Legend** -- crop `CLASS` / `SUBCLASS` codes (used in Sec. 1.3).
+- **Metadata** -- in-depth description of the dataset itself, including what each column in the shapefile attribute table means (`UniqueID`, `CLASS`, `ADOY`, acreage, and the rest).
+
+```bash
+aws s3 --profile magic sync s3://carb/data/landiq_shapefiles/2016-2023/ "$LANDIQ_RAW/"
+```
+
+Then from the portal, put two years under `$LANDIQ_RAW`:
 
 | Year | Typical portal status | Action |
 |------|----------------------|--------|
-| `TARGET_YEAR` | Provisional | Add its folder under `$LANDIQ_RAW` |
-| `PRIOR_YEAR` | Final (was provisional last cycle) | Replace the old provisional folder; drop `_Provisional` from the name |
+| `PRIOR_YEAR` (2023) | Final (was provisional on S3) | Replace `i15_Crop_Mapping_2023_Provisional_SHP/` with the final folder; drop `_Provisional` from the name |
+| `TARGET_YEAR` (2024) | Provisional | Add `i15_Crop_Mapping_2024_Provisional_SHP/` |
 
-Older years (2016+, as available) should already be under `$LANDIQ_RAW` from earlier inventory runs. Do not re-download them on a routine update -- only `PRIOR_YEAR` and `TARGET_YEAR` need a fresh ZIP. If `$LANDIQ_RAW` is empty, download the full historical series from the portal, not just the year pair.
-
-For the training pair `PRIOR_YEAR=2023` / `TARGET_YEAR=2024`, the refreshed folders look like:
+After that the tree should look like:
 
 ```text
 $LANDIQ_RAW/
+  i15_Crop_Mapping_2016_SHP/
   ...
   i15_Crop_Mapping_2023_SHP/
     i15_Crop_Mapping_2023.shp
@@ -79,15 +85,14 @@ $LANDIQ_RAW/
 ```
 
 ```bash
-ls "$LANDIQ_RAW"/i15_Crop_Mapping_${PRIOR_YEAR}*/*.shp \
-   "$LANDIQ_RAW"/i15_Crop_Mapping_${TARGET_YEAR}*/*.shp
+ls "$LANDIQ_RAW"/i15_Crop_Mapping_*/*.shp
 ```
 
 ---
 
 ## 1.2 Harmonize geometry
 
-DWR publishes LandIQ as a separate statewide shapefile each year. Each field polygon in a given year has a year-specific identifier (`UniqueID` in the attribute table), but those IDs are not stable across years, and field boundaries also move (merge, split, grow, or shrink). Harmonization builds one consolidated parcel map with a stable **`parcel_id`** that tracks the same ground through time, and attaches each year's crop attributes to those parcels. Everything downstream (gap-fill, HLS phenology, fert, irrigation) joins on that `parcel_id`.
+Each field polygon in a given year has a year-specific identifier (`UniqueID` in the attribute table), but those IDs are not stable across years, and field boundaries also move (merge, split, grow, or shrink). Harmonization builds one consolidated parcel map with a stable **`parcel_id`** that tracks the same ground through time, and attaches each year's crop attributes to those parcels. Everything downstream (gap-fill, HLS phenology/tillage, fert, irrigation) joins on that `parcel_id`.
 
 This work lives in a separate repo, **[cadwr-landuse](https://github.com/ccmmf/cadwr-landuse)** (clone from Session 0). Its README is the runbook for scripts, flags, and environment.
 
@@ -98,17 +103,35 @@ The two files produced by the harmonization workflow:
 | `parcels-consolidated.gpkg` | One geometry per `parcel_id`, with each year's native LandIQ UniqueID |
 | `crops_all_years.parq` | Tidy crop attributes: rows for `parcel_id` x `year` x `season` (up to four seasons) |
 
-**For this session:** you will not run cadwr-landuse. Download the provided finals from the lab S3 bucket and place them under `$LANDIQ_HARMONIZED`, then continue to legend QC.
+From the cadwr-landuse clone, with the Session 0 conda env active:
 
 ```bash
-# Replace with the bucket path shown in the session
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/crops_all_years.parq "$LANDIQ_HARMONIZED/"
+cd "$HOME/src/cadwr-landuse"
 
-ls "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg" "$LANDIQ_HARMONIZED/crops_all_years.parq"
+python scripts/01-split.py \
+  --landiq-root-dir "$LANDIQ_RAW" \
+  --outdir-root "$CADWR_WORK_DIR"
+
+python scripts/process-tiles-local.py \
+  --outdir-root "$CADWR_WORK_DIR" \
+  --ntasks 8 \
+  --crs EPSG:3310 \
+  --precision 10.0
+
+python scripts/03a-combine-parcels.py \
+  --outdir-root "$CADWR_WORK_DIR"
+
+python scripts/03b-finalize-crops.py \
+  --landiq-root-dir "$LANDIQ_RAW" \
+  --outdir-root "$CADWR_WORK_DIR"
 ```
 
-**To rebuild yourself later:** follow the cadwr-landuse README with `--landiq-root-dir "$LANDIQ_RAW"` and `--outdir-root "$CADWR_WORK_DIR"` so outputs land in `$LANDIQ_HARMONIZED`.
+This takes about 3 hours (the tile overlays dominate). If it was not run in advance, a current version is already on S3 -- pull that into `$LANDIQ_HARMONIZED` and continue on:
+
+```bash
+aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
+aws s3 --profile magic cp s3://carb/management/crops/v4.2/crops_all_years.parq "$LANDIQ_HARMONIZED/"
+```
 
 ---
 
@@ -128,19 +151,11 @@ DWR has revised crop `CLASS` / `SUBCLASS` codes over time (legend versions: 2014
 
 ## 1.4 Gap-fill
 
-Even after harmonization, LandIQ is incomplete on some parcels: the main-season crop may be missing, or the day when vegetation peaked (`ADOY`) may be missing or zero. We fill those gaps using the USDA **Cropland Data Layer (CDL)** -- a yearly national crop map -- so later sessions can run statewide.
+Even after harmonization, LandIQ is incomplete on some parcels: the main-season crop may be missing, or the day when vegetation peaked (`ADOY`) may be missing or zero. We fill those gaps using the USDA **[Cropland Data Layer (CDL)](https://croplandcros.scinet.usda.gov/)** -- a yearly national crop map.
 
-You refresh both years in the pair here: the prior year is now final (updated in Sec. 1.1) and can use the new LandIQ year as neighbor context.
+### CDL rasters and fractions
 
-**Three different inputs (do not confuse them):**
-
-| Piece | Description | Routine year-pair run |
-|-------|-------------|------------------------|
-| CDL GeoTIFF + parcel **fractions** | Per-parcel CDL composition for each year | Download/extract below if missing |
-| CDL and LandIQ **probability** tables | `P(CDL \| CLASS)`, `P(CDL \| CLASS::SUBCLASS)`, and `P(SUBCLASS \| CLASS)` prior | Already under `landiq-gapfill/outputs/`; leave alone unless missing |
-| **ADOY reference** tables | County/statewide average observed peak-greenness day (`ADOY`) by crop | Already under `landiq-gapfill/outputs/`; leave alone unless missing |
-
-**Exact algorithms, fallbacks, training years, and full-gap-year behavior (e.g. 2017):** [landiq-gapfill/README.md](../../landiq-gapfill/README.md).
+Download the GeoTIFF for **both** years in the pair. Re-extract per-parcel CDL fractions for both years too -- the new harmonized parcels change the extract.
 
 ```bash
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
@@ -149,19 +164,37 @@ GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
 
 Rscript $CDL/download_cdl_nass.R $YEARS
 Rscript $CDL/extract_cdl_fractions_by_parcel.R $YEARS
+```
 
-# Rebuild shared tables only if missing or stale (usually leave commented):
+### Probability and ADOY tables
+
+These already live under `landiq-gapfill/outputs/`. Leave them alone on a routine update.
+
+| Table | What it is |
+|-------|------------|
+| CDL and LandIQ probability | `P(CDL \| CLASS)`, `P(CDL \| CLASS::SUBCLASS)`, and `P(SUBCLASS \| CLASS)` prior |
+| ADOY reference | County/statewide average observed peak-greenness day by crop |
+
+Rebuild only if `crop` or `adoy` errors that a table is missing, or after a deliberate method/training-year change:
+
+```bash
 # Rscript $GF cdl-landiq-probs
 # Rscript $GF adoy-ref
+```
 
+### Crop and ADOY fill
+
+Run both years in the pair. The prior year is now final (updated in Sec. 1.1) and can use the new LandIQ year as neighbor context.
+
+```bash
 Rscript $GF crop $YEARS
 Rscript $GF adoy $YEARS
 Rscript $GF merge $YEARS
 ```
 
-On a routine update, leave the commented `cdl-landiq-probs` / `adoy-ref` rebuilds alone. Only uncomment them if `crop` or `adoy` errors that those tables are missing, or after a deliberate method/training-year change.
+Output after merge: `$LANDIQ_GAPFILLED/crops_all_years.parq`.
 
-Gap-fill output after merge: `$LANDIQ_GAPFILLED/crops_all_years.parq`.
+**Exact algorithms, fallbacks, training years, and full-gap-year behavior (e.g. 2017):** [landiq-gapfill/README.md](../../landiq-gapfill/README.md).
 
 ---
 
