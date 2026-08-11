@@ -56,17 +56,19 @@ VARIABLES = {
 }
 VAR_LABEL = {"biomass": "Biomass", "cSoil": "Soil Carbon", "lai": "Leaf Area Index"}
 
-# Land cover class labels. INFERRED from geography + biomass/LAI signature,
-# pending confirmation. Swap in the confirmed names when available.
+# Land cover class labels: MODIS MCD12Q1 PFT classification (Zhang et al.,
+# North American carbon reanalysis). Class integers 1-8 follow the standard
+# MODIS PFT coding, confirmed here against site geography (class 2 southernmost,
+# class 3 northernmost, consistent with evergreen broadleaf and larch).
 LANDCOVER_LABELS = {
-    1: "Temperate/montane conifer forest",
-    2: "Tropical/subtropical broadleaf forest",
-    3: "Boreal forest",
-    4: "Temperate deciduous/mixed forest",
-    5: "Shrubland/sparse vegetation",
-    6: "Tundra/sparse arctic",
-    7: "Grassland/cropland",
-    8: "Savanna/grassland-cropland",
+    1: "Evergreen Needleleaf Trees",
+    2: "Evergreen Broadleaf Trees",
+    3: "Deciduous Needleleaf Trees",
+    4: "Deciduous Broadleaf Trees",
+    5: "Shrubs",
+    6: "Grass",
+    7: "Cereal Croplands",
+    8: "Broad Croplands",
 }
 
 

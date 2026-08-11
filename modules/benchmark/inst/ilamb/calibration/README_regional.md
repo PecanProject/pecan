@@ -58,9 +58,10 @@ and Arctic north is covered. Unzip them and point `ECO_DIR` in
 The paths in these modules (the SDA output directory, the downscaled-map layout,
 the benchmark locations, and `ECO_DIR`) reflect one particular setup and are
 illustrative; adapt them to your own data. The land cover class labels in
-`LANDCOVER_LABELS` are inferred from the geography and the biomass and LAI
-signature of each class and are intended to be replaced with the confirmed
-scheme; only these display strings change, not the computed numbers.
+`LANDCOVER_LABELS` are the MODIS MCD12Q1 PFT classification used in the North
+American carbon reanalysis (Zhang et al.), with the class integers 1-8 following
+the standard MODIS PFT coding, confirmed against the site geography. The labels
+are display strings only and do not affect the computed numbers.
 
 ## Testing
 
