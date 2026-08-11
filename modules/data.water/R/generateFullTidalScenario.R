@@ -2,22 +2,18 @@
 ##'
 ##' @name generateFullTidalScenario
 ##' @title Function to query NOAA tide gauge information and generate annual flood level scenearios
-##' @param station_id
-##' @param  run_hindcast
-##' @param run_forecast
-##' @param hindcast_start
-##' @param forecast_start
-##' @param forecast_end
-##' @param RCP
-##' @param RCP_probability
-##' @param ssc
-##' @param ssc_storm
-##' @param floods_to_include
-##' @param floods_to_include
-##' @param include_lt_tidal_const
-##' @param include_flood_anomalies
-##' @param datum_start_year
-##' @param datum_end_year
+##'
+##' @param station_id Unique NOAA station identifier
+##' @param run_hindcast True or False, run a hindcast
+##' @param run_forecast True or False, run a forecast
+##' @param hindcast_start Calendar year (YYYY) that hindcast starts
+##' @param forecast_start Calendar year (YYYY) that forecast starts
+##' @param forecast_end Calendar year (YYYY) that forecast ends, needs to be 2030, 2050, 2100, 2150 or 2200
+##' @param RCP Realized concentration pathway, either string or vector, must be RCP2.6, RCP4.5 or RCP8.5
+##' @param RCP_probability RCP probability, either numeric or vector, sea-level rise senario probabilities to test.
+##' @param include_lt_tidal_const Include long term tidal constituents, True or False.
+##' @param datum_start_year Datum start year over which to calculate tidal datums (calendar year, YYYY).
+##' @param datum_end_year Datum end year over which to calculate tidal datums (calendar year, YYYY).
 ##'
 ##' @export
 ##' @author J. Holmquist
@@ -29,11 +25,7 @@ generateFullTidalScenario <- function(station_id=9410660,
                                       forecast_end = 2100,
                                       RCP = c("RCP4.5"),
                                       RCP_probability=c(0.25,0.5,0.75),
-                                      ssc,
-                                      ssc_storm,
-                                      floods_to_include,
                                       include_lt_tidal_const = T,
-                                      include_flood_anomalies,
                                       datum_start_year = 1980,
                                       datum_end_year = 2025
                                       ) {
@@ -103,8 +95,6 @@ generateFullTidalScenario <- function(station_id=9410660,
 
   # If forecast == T
   if (run_forecast) {
-
-    # Else if add the hindcast to a list
 
     init_slr <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
       msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
@@ -176,6 +166,7 @@ generateFullTidalScenario <- function(station_id=9410660,
 
   } else if (run_hindcast) {
 
+    # Else if add the hindcast to a list
     scenario_curve_list <- list(msl_hindcast)
 
   } else {
