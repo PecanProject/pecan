@@ -36,7 +36,7 @@ Column dictionaries: [crops_all_years_metadata.csv](data/crops_all_years_metadat
 
 **Within-year** (usual): LandIQ exists for that calendar year. CLASS is kept. Missing season-2 SUBCLASS and invalid ADOY are filled.
 
-**Full-gap** (exception): years in `LANDIQ_GAPFILL_FULL_GAP_YEARS` (default **2017**) have no usable LandIQ. Season-2 CLASS is invented first, then SUBCLASS, then ADOY. Other seasons are empty. See [Full-gap](#full-gap) for only the differences.
+**Full-gap** (exception): years in `LANDIQ_GAPFILL_FULL_GAP_YEARS` (default **2017**) have no usable LandIQ. Season-2 CLASS is filled first, then SUBCLASS, then ADOY. Other seasons are empty. See [Full-gap](#full-gap) for only the differences.
 
 ---
 
@@ -162,14 +162,28 @@ On a season with a CLASS: `COVER = TRUE` when the pair is a candidate **and** CL
 
 ## Full-gap
 
-Same command order as within-year. Differences only:
+Same command order as within-year. Within-year never uses transition matrices. Differences only:
 
 
-| Step | What changes                                                                                                                                                                                                                                                                                                                   |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Crop | Invent season-2 **CLASS**, then SUBCLASS on that CLASS. CLASS = MAP of CDL likelihood plus neighbor transition (county matrix under `data/county_transition_matrices/`, statewide CSV fallback). Both neighbors: `(p_fwd+p_bwd+p_cdl)/3`. One neighbor: average the available temporal message with `p_cdl`. Other seasons NA. |
-| ADOY | Season `LANDIQ_ADOY_DEFAULT_SEASON` only (default 2).                                                                                                                                                                                                                                                                          |
+| Step | What changes                                                                 |
+| ---- | ---------------------------------------------------------------------------- |
+| Crop | Fill season-2 **CLASS**, then SUBCLASS on that CLASS. Other seasons NA.      |
+| ADOY | Season `LANDIQ_ADOY_DEFAULT_SEASON` only (default 2).                        |
 
+
+CLASS is missing, so it is predicted from three equally weighted messages, then MAP:
+
+1. Forward -- `P(CLASS at t | CLASS at t-1)` from the earlier neighbor
+2. Backward -- `P(CLASS at t | CLASS at t+1)` from the later neighbor
+3. CDL -- gap-year parcel fractions times `P(CDL | CLASS)`
+
+Those transition tables are the county CSVs under `data/county_transition_matrices/` (`GAPFILL_TRANSITION_LEVEL=county`). The statewide CSV is fallback when a county file is missing. They are loaded as-is; this package does not build them.
+
+Both neighbors: `(p_fwd + p_bwd + p_cdl) / 3`. One neighbor (a bounding year): average the available temporal message with `p_cdl`.
+
+Who gets a row: season-2 agricultural CLASS in each required neighbor year, and nonzero CDL mass in the training code set. A parcel with only one of 2016 / 2018, or a non-ag neighbor, is not filled.
+
+SUBCLASS then uses the same cascade as within-year, on that predicted CLASS.
 
 Needs neighbor LandIQ years, CDL fractions for the gap year, the transition matrices, and the eight lookup tables.
 
@@ -184,7 +198,7 @@ These are not restated from the sections above:
 - The default plurality pool is the **full** season-2 panel. A parcel with a long, inconsistent history can vote from distant years.
 - County and statewide mean peak day by crop are treated as usable stand-ins for a missing `ADOY`.
 - The CDL x LandIQ map is treated as stationary across its training window.
-- Full-gap CLASS invention is a different problem from within-year SUBCLASS fill. Do not read 2017 provenance shares as if they were an ordinary inventory year.
+- Full-gap CLASS prediction is a different problem from within-year SUBCLASS fill. Do not read 2017 provenance shares as if they were an ordinary inventory year.
 
 QC (`gapfill.R qc`) writes `outputs/qc_gapfill_report.md` and summary CSVs. "Gap-filled subclass" excludes `observed`, `X/I/YP (no subclass)`, legacy `YP (no subclass)`, and `vineyard_fallback`. ADOY gap-filled excludes `observed` / `not_applicable`. Prefer a high season-2 observed share on inventory years; there is no pass/fail threshold in code. Runtime labels are lowercase (the metadata CSV still says `OBSERVED` in places).
 
