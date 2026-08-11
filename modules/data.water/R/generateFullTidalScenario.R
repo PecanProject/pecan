@@ -49,7 +49,7 @@ generateFullTidalScenario <- function(station_id=9410660,
   # Workflow in creating a sea-level rise scenario
 
   # Steps
-  # noaa_psml_tab <- read_csv("inst/extdata/npsset_data.csv")
+  # noaa_psml_tab <- read.csv("inst/extdata/npsset_data.csv")
   # psmsl_id <- dplyr::filter(noaa_psml_tab, noaa_id == station_id) %>% dplyr::distinct_all()
 
   # 1. Query long term MSL
@@ -99,7 +99,9 @@ generateFullTidalScenario <- function(station_id=9410660,
     init_slr <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
       msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
 
-    path <- system.file("extdata", "Kopp_2014_projections_long.parquet", package = "data.water")
+    path <- system.file("extdata",
+                        "Kopp_2014_projections_long.parquet",
+                        package = "data.water")
 
     # 4. Query future SLR
     kopp_2014 <- arrow::read_parquet(path)
@@ -193,7 +195,7 @@ generateFullTidalScenario <- function(station_id=9410660,
                                   "annual_compiled_datums.csv",
                                   package = "data.water")
 
-  tidal_datums <- read_csv(tidal_datum_path) %>%
+  tidal_datums <- read.csv(tidal_datum_path) %>%
     dplyr::rename(noaa_id=station_id) %>%
     dplyr::filter(noaa_id == station_id) %>%
     filter(! Datum %in% c("HOT", "LOT"))
@@ -234,7 +236,11 @@ generateFullTidalScenario <- function(station_id=9410660,
   # 8. Long term nodal cycles for
   if (include_lt_tidal_const) {
 
-    lt_tide_const <- read_csv("inst/extdata/long_term_tidal_constituents.csv")
+    lt_tide_const_path <- system.file("extdata",
+                "long_term_tidal_constituents.csv",
+                package = "data.water")
+
+    lt_tide_const <- read.csv(lt_tide_const_path)
 
     lt_tide_const <- lt_tide_const %>%
       dplyr::rename(noaa_id=station_id) %>%
