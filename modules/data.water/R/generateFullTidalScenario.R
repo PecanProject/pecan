@@ -99,8 +99,11 @@ generateFullTidalScenario <- function(station_id=9410660,
     init_slr <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
       msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
 
+    path <- system.file("extdata", "Kopp_2014_projections_long.parquet", package = "data.water")
+
     # 4. Query future SLR
-    kopp_2014 <- arrow::read_parquet("inst/extdata/Kopp_2014_projections_long.parquet")
+    kopp_2014 <- arrow::read_parquet(path)
+
 
     kopp_filtered <- kopp_2014 %>%
       dplyr::filter(noaa_id == station_id,
@@ -185,7 +188,12 @@ generateFullTidalScenario <- function(station_id=9410660,
   # }
 
   # 5. Query tidal constituents
-  tidal_datums <- read_csv("inst/extdata/annual_compiled_datums.csv") %>%
+
+  tidal_datum_path <- system.file("extdata",
+                                  "annual_compiled_datums.csv",
+                                  package = "data.water")
+
+  tidal_datums <- read_csv(tidal_datum_path) %>%
     dplyr::rename(noaa_id=station_id) %>%
     dplyr::filter(noaa_id == station_id) %>%
     filter(! Datum %in% c("HOT", "LOT"))
