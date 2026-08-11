@@ -16,7 +16,7 @@ flowchart LR
 | NDTI parcel extract | [extract/README.md](extract/README.md) | `./run_ndti.sh YEAR` |
 | Tillage events | [../events/README.md](../events/README.md) | `$EVENTS_ROOT/make_events_statewide.sh YEAR tillage` |
 
-Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
+Pipeline map: [tree README](../README.md).
 Session 2 walkthrough: [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
 Shared HLS helpers / parcel-tile map: [../hls/README.md](../hls/README.md).
 Upstream match: [../phenology/match/README.md](../phenology/match/README.md).

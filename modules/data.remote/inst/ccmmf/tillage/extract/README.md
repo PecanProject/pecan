@@ -35,7 +35,7 @@ flowchart LR
 ```
 
 Parent index: [../README.md](../README.md).
-Pipeline map: [documentation/pipeline.md](../../documentation/pipeline.md).
+Pipeline map: [tree README](../../README.md).
 MSLSP sibling: [phenology/extract/README.md](../../phenology/extract/README.md).
 Shared helpers / parcel-tile map: [hls/README.md](../../hls/README.md).
 Downstream tillage events: [events/README.md](../../events/README.md).

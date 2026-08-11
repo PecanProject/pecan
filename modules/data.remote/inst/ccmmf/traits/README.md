@@ -19,7 +19,7 @@ flowchart LR
 
 **Pipeline position:** Session 2 one-time trait build
 ([documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md);
-[documentation/pipeline.md](../documentation/pipeline.md)), after LandIQ-MSLSP
+[tree README](../README.md)), after LandIQ-MSLSP
 match, before statewide planting/harvest events.
 
 **TRY species matching:** only `AccSpeciesName` values listed in LandIQ

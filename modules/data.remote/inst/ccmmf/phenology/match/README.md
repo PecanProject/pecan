@@ -17,7 +17,7 @@ flowchart LR
   O --> E["make_events_statewide.R"]
 ```
 
-Pipeline map: [documentation/pipeline.md](../../documentation/pipeline.md).
+Pipeline map: [tree README](../../README.md).
 MSLSP extract: [extract/README.md](../extract/README.md).
 Parent index: [phenology/README.md](../README.md).
 Events: [events/README.md](../../events/README.md).
