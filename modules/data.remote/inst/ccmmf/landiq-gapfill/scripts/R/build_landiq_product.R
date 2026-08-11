@@ -293,6 +293,14 @@ LANDIQ_SEASONS <- 1:4
 }
 
 .init_provenance_cols <- function(df) {
+  df <- df %>%
+    dplyr::mutate(
+      parcel_id = trimws(as.character(parcel_id)),
+      year = as.integer(year),
+      season = as.integer(season),
+      CLASS = trimws(as.character(CLASS)),
+      SUBCLASS = .normalize_subclass(SUBCLASS)
+    )
   if (!"subclass_source" %in% names(df)) {
     df$subclass_source <- subclass_source_observed()
   }
