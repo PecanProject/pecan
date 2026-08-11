@@ -19,7 +19,6 @@ Log into the head node, activate `pecan-all-1.14`, and confirm the R and Python 
 which conda
 conda activate <ENV_PATH_OR_NAME>
 
-which Rscript
 Rscript -e 'stopifnot(
   requireNamespace("arrow"),
   requireNamespace("dplyr"),
@@ -43,7 +42,6 @@ import pandas
 import pyarrow
 import shapely
 import tqdm
-print("Python GIS dependencies: OK")
 PY
 ```
 

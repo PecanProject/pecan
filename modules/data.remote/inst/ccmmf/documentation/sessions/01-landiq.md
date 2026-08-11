@@ -155,7 +155,7 @@ Even after harmonization, LandIQ is incomplete on some parcels: the main-season 
 
 ### CDL rasters and fractions
 
-Download the GeoTIFF for **both** years in the pair. Re-extract per-parcel CDL fractions for both years too -- the new harmonized parcels change the extract.
+Download both years of CDL, then extract per-parcel fractions on the new harmonized parcels.
 
 ```bash
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
@@ -164,6 +164,8 @@ GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
 
 Rscript $CDL/download_cdl_nass.R $YEARS
 Rscript $CDL/extract_cdl_fractions_by_parcel.R $YEARS
+
+Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), paste0("cdl_fractions_year=", Sys.getenv("TARGET_YEAR"), ".parquet"))))'
 ```
 
 ### Probability and ADOY tables
