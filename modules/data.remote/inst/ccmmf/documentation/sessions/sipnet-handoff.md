@@ -8,7 +8,7 @@ lives in **PEcAn `data.land` / SIPNET** and related restart workflows.
 **Deliverable:** PEcAn `events.json` (and SIPNET `events.in`) from monitoring
 outputs for MAGIC inventory runs.
 
-**Spine:** [pipeline.md](../pipeline.md). Upstream sessions:
+**Spine:** [tree README](../../README.md). Upstream sessions:
 [2 - HLS events](02-phenology.md),
 [3 - Fertilization and irrigation](03-fertilizer-irrigation.md).
 
@@ -153,13 +153,4 @@ Do not duplicate conversion logic into `inst/ccmmf`; link and document.
 
 ---
 
-## Checklist
-
-- [ ] Monitoring `*_statewide_Y.parquet` present for required event types
-- [ ] Ran clean scripts from `preprocess-event-parquet` on the SIPNET restart line
-- [ ] `tillage_eff_0to1` present when tillage is included (`ndti_to_sipnet_tillage` or clean mapping)
-- [ ] `events.json` passes `validate_events_json` (schema check)
-- [ ] `write.events.SIPNET` produces `events.in` for target sites
-- [ ] If clean scripts failed: check paths and column drift vs [events/README.md](../../events/README.md)
-
-**Spine:** [pipeline.md](../pipeline.md).
+**Spine:** [tree README](../../README.md).

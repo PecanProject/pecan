@@ -13,7 +13,7 @@ parcels.
 For each ag parcel and year, write up to two phenological **cycles** (cycle 1 =
 dominant amplitude, cycle 2 = secondary). Those parcel metrics feed matching,
 then planting / harvest / phenology event files (see
-[pipeline.md](../../documentation/pipeline.md)).
+[tree README](../../README.md)).
 
 **MSLSP greenness thresholds (product definitions we use as dates):**
 
@@ -43,7 +43,7 @@ flowchart LR
 ```
 
 Parent index: [../README.md](../README.md).
-Pipeline order: [documentation/pipeline.md](../../documentation/pipeline.md).
+Pipeline order: [../README.md](../../README.md).
 Shared helpers / parcel-tile map: [hls/README.md](../../hls/README.md).
 NDTI sibling: [tillage/extract/README.md](../../tillage/extract/README.md).
 Downstream match: [match/README.md](../match/README.md).

@@ -1,6 +1,31 @@
-# SUBCLASS assignment after CLASS is known: parcel plurality, CDL emission, CLASS prior.
-# Used by full-year and within-year crop gap-fill.
+# SUBCLASS assignment after CLASS is known (full-gap or within-year).
+#
+# Called from gapfill_run.R / assign_subclass(). Input class_df must include:
+#   parcel_id, map_class_avg_mean3 (or class_map_column), neighbor_year_lo/hi
+# Within-year: map_class_avg_mean3 is observed LandIQ CLASS.
+# Full-gap: map_class_avg_mean3 is predicted CLASS from gapfill_class.R.
+#
+# Cascade (first hit wins) -> subclass_source labels:
+#   1. plurality     -- same parcel + same CLASS in other S2 years; vote
+#   2. emission_cdl  -- prior * P(dominant CDL | CLASS::SUBCLASS); score > 0
+#   3. prior_only    -- argmax P(SUBCLASS | CLASS)
+#   4. unfilled      -- stays **
+#
+# Special cases after cascade:
+#   V still ** -> wine grapes (LANDIQ_VINEYARD_FALLBACK_SUBCLASS); source forced
+#                 to observed (product convention, not a fill label)
+#   X / I / YP with ** or unfilled -> subclass_source = X/I/YP (no subclass)
+#
+# Env:
+#   LANDIQ_SUBCLASS_PLURALITY_POOL   panel (default) | neighbors
+#   LANDIQ_SUBCLASS_PLURALITY_WEIGHT inverse_distance (default) | count
+# "panel" = all season-2 years in the harmonized table except gapfill_year.
+# "neighbors" = only neighbor_year_lo / neighbor_year_hi.
 
+#' Score one CLASS under a dominant CDL code: prior * P(CDL | CLASS::SUBCLASS).
+#'
+#' Used inside the emission_cdl step. If no subclass has score > 0, falls back
+#' to prior_only for that class (caller may still prefer plurality first).
 assign_subclass_emission <- function(pred_class, dom_code_chr, class_sub_prior, sub_prob_long) {
   prior_sub <- class_sub_prior %>%
     dplyr::filter(CLASS == pred_class, !is.na(SUBCLASS), nzchar(SUBCLASS), SUBCLASS != "**")
@@ -21,10 +46,19 @@ assign_subclass_emission <- function(pred_class, dom_code_chr, class_sub_prior, 
   if (nrow(best) == 1L) {
     return(list(SUBCLASS = best$SUBCLASS[1L], source = "emission_cdl"))
   }
+  # No positive CDL support: pick highest subclass prior alone.
   prior_best <- prior_sub %>% dplyr::arrange(dplyr::desc(prior), SUBCLASS) %>% dplyr::slice_head(n = 1L)
   list(SUBCLASS = prior_best$SUBCLASS[1L], source = "prior_only")
 }
 
+#' Assign season-2 SUBCLASS for parcels with a known/predicted CLASS.
+#'
+#' @param gapfill_year calendar year being filled
+#' @param class_df one row per parcel with CLASS map column + neighbor years
+#' @param emission bundle from load_emission_bundle() (priors + CDL likelihoods)
+#' @param use_plurality if FALSE, skip historical vote (emission/prior only)
+#' @param class_map_column name of CLASS column on class_df
+#' @return class_df plus pred_subclass_assignment, subclass_source, diagnostics
 assign_subclass <- function(
     gapfill_year,
     class_df,
@@ -57,6 +91,7 @@ assign_subclass <- function(
       pred_class = as.character(.data[[class_map_column]])
     )
 
+  # Empty shells if plurality is off or no votes land.
   plurality <- tibble::tibble(
     parcel_id = character(),
     pred_subclass_plurality = character(),
@@ -70,6 +105,7 @@ assign_subclass <- function(
   total_votes <- tibble::tibble(parcel_id = character(), n_subclass_votes_total = integer())
   n_distinct_sub <- tibble::tibble(parcel_id = character(), n_subclass_candidates = integer())
 
+  # --- Step 1: plurality (same parcel history) ---------------------------------
   if (isTRUE(use_plurality)) {
     if (!all(c("neighbor_year_lo", "neighbor_year_hi") %in% names(class_df))) {
       stop("Class predictions need neighbor_year_lo / neighbor_year_hi for plurality")
@@ -83,6 +119,7 @@ assign_subclass <- function(
     plurality_pool <- tolower(trimws(Sys.getenv("LANDIQ_SUBCLASS_PLURALITY_POOL", "panel")))
     plurality_weight <- tolower(trimws(Sys.getenv("LANDIQ_SUBCLASS_PLURALITY_WEIGHT", "inverse_distance")))
 
+    # Which other years may cast a vote for this parcel.
     panel_years <- arrow::open_dataset(path_landiq_parquet) %>%
       dplyr::filter(season == 2L) %>%
       dplyr::distinct(year) %>%
@@ -93,6 +130,7 @@ assign_subclass <- function(
     plurality_years <- if (identical(plurality_pool, "neighbors")) {
       neighboring_years
     } else {
+      # panel (default): every S2 year except the fill year
       setdiff(panel_years, gapfill_year)
     }
 
@@ -108,10 +146,12 @@ assign_subclass <- function(
       ) %>%
       dplyr::filter(!is.na(CLASS), CLASS != "")
 
+    # Harmonize historical subclasses to 2021 legend before voting.
     liq_hist <- dplyr::bind_rows(lapply(split(liq_hist, liq_hist$year), function(part) {
       apply_landiq_subclass_merge(part, crop_lk$merge, calendar_year = as.integer(part$year[1L]))
     }))
 
+    # Vote only when historical CLASS matches pred_class and SUBCLASS is specific.
     votes_specific <- pred %>%
       dplyr::inner_join(liq_hist %>% dplyr::filter(year %in% plurality_years), by = "parcel_id") %>%
       dplyr::filter(CLASS == pred_class) %>%
@@ -137,6 +177,7 @@ assign_subclass <- function(
       dplyr::group_by(parcel_id) %>%
       dplyr::summarise(plurality_vote_weight_total = sum(plurality_vote_weight, na.rm = TRUE), .groups = "drop")
 
+    # Winner = highest vote weight; ties broken by n_votes, then nearer year, etc.
     plurality <- vote_stats %>%
       dplyr::left_join(plur_weight_total, by = "parcel_id") %>%
       dplyr::mutate(
@@ -155,6 +196,8 @@ assign_subclass <- function(
     n_distinct_sub <- vote_stats %>% dplyr::count(parcel_id, name = "n_subclass_candidates")
   }
 
+  # --- Step 2: emission_cdl (dominant CDL code for gap year) -------------------
+  # Dominant code = CDL class with largest parcel fraction that year.
   cdl_gap_obs <- cdl_gap_full %>%
     dplyr::mutate(cdl_code = as.integer(cdl_code), parcel_id = as.character(parcel_id)) %>%
     dplyr::filter(!is.na(cdl_code)) %>%
@@ -168,6 +211,7 @@ assign_subclass <- function(
   cdl_keyed <- pred %>%
     dplyr::inner_join(cdl_gap_obs %>% dplyr::select(parcel_id, obs_key, frac_sum), by = "parcel_id")
 
+  # "confusion" naming is historical: score = prior * P(dominant CDL | CLASS::SUBCLASS).
   confusion_expanded <- cdl_keyed %>%
     dplyr::left_join(class_sub_prior, by = c("pred_class" = "CLASS"), relationship = "many-to-many") %>%
     dplyr::left_join(sub_prob_long, by = c("truth_key", "obs_key")) %>%
@@ -215,6 +259,7 @@ assign_subclass <- function(
       has_confusion_subclass
     )
 
+  # --- Step 3: prior_only (no CDL) ---------------------------------------------
   prior_sub <- class_sub_prior %>%
     dplyr::filter(!is.na(SUBCLASS), nzchar(SUBCLASS), SUBCLASS != "**")
 
@@ -233,6 +278,7 @@ assign_subclass <- function(
       .groups = "drop"
     )
 
+  # --- Combine cascade + special cases ----------------------------------------
   out <- class_df %>%
     dplyr::mutate(parcel_id = as.character(parcel_id)) %>%
     dplyr::left_join(pred, by = "parcel_id") %>%
@@ -258,6 +304,7 @@ assign_subclass <- function(
         n_votes / n_subclass_votes_total,
         NA_real_
       ),
+      # First non-** among plurality, emission_cdl, prior_only.
       pred_subclass_assignment = dplyr::case_when(
         pred_subclass_plurality != "**" ~ pred_subclass_plurality,
         pred_subclass_confusion != "**" ~ pred_subclass_confusion,
@@ -273,6 +320,7 @@ assign_subclass <- function(
       class_map_column = class_map_column
     ) %>%
     dplyr::mutate(
+      # Vineyard with no specific subclass: default wine grapes as observed.
       pred_subclass_assignment = dplyr::if_else(
         pred_class == "V" & pred_subclass_assignment == "**",
         vineyard_fallback_subclass(),
@@ -284,6 +332,7 @@ assign_subclass <- function(
         subclass_source_observed(),
         subclass_source
       ),
+      # Idle / young perennial / etc.: leave ** and label as no-subclass by design.
       subclass_source = dplyr::if_else(
         pred_class %in% classes_no_subclass_star() &
           (pred_subclass_assignment == "**" | subclass_source == "unfilled"),

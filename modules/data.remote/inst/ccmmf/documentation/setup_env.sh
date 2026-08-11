@@ -9,7 +9,8 @@
 #   lookups                                    -- small tables
 #   products/inventory                         -- Management Tracking outputs
 #   products/projections                       -- scenario / model outputs
-# Finished tree + accounts: documentation/pipeline.md (Data layout; Data sources and accounts).
+# Finished tree: documentation/sessions/00-setup.md (Data layout).
+# Product overview: ../README.md. Paths created in Session 0.
 # Irrigation: workflows/irrigation-statewide/config_paths.yml keys should point into this tree;
 #   CHIRPS_DIR/CIMIS_DIR are raw staging; parcel extracts from preprocessing/ may differ.
 

@@ -1,6 +1,6 @@
 # Session 2 - HLS events (phenology and tillage)
 
-**What this session is for.** Session 1 gave you stable parcels and gap-filled crop identity. This session adds *when* management happened on those parcels for the same year pair: planting, harvest, and phenology from satellite land-surface phenology, plus optional tillage in fallow windows.
+**What this session is for.** Session 1 gave you stable parcels and gap-filled crop identity. This session adds *when* management happened on those parcels for the same year pair: planting, harvest, and phenology from satellite land-surface phenology, and tillage in fallow windows. Each event type is opt-in; run only what you need for the update.
 
 The satellite stack is Harmonized Landsat Sentinel-2 (**HLS**). Multi-Source Land Surface Phenology (**MSLSP**) NetCDF products drive planting, harvest, and phenology events (with crop trait CSVs for date windows). Normalized Difference Tillage Index (**NDTI**) drives tillage. You will extract HLS metrics to LandIQ parcels, match seasons to phenology cycles, then write statewide (or demo-tile) event files that MAGiC / SIPNET consume.
 
@@ -8,7 +8,7 @@ Live training path uses one HLS tile (`10SDH`). Statewide uses the same steps wi
 
 **Prerequisite:** [Session 0](00-setup.md) (incl. Earthdata `.netrc`); [Session 1](01-landiq.md) gap-filled product at `$LANDIQ_GAPFILLED`.
 
-**Where to go deeper:** [pipeline.md](../pipeline.md); step READMEs in the table below; [metadata.md](../metadata.md) for event columns.
+**Where to go deeper:** [tree README](../../README.md); step READMEs in the table below; [metadata.md](../metadata.md) for event columns.
 
 ```mermaid
 flowchart LR
@@ -52,7 +52,7 @@ flowchart LR
 
 ## Paths for this session
 
-Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.5. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](../pipeline.md).
+Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.5. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](00-setup.md#data-layout).
 
 To **produce** MSLSP NetCDF / HLS imagery (not only consume existing files), clone [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) and follow that repo's download steps into `$MSLSP_NETCDF_ROOT` / `$HLS_IMAGERY_ROOT`.
 
@@ -194,9 +194,10 @@ Date gap-fill is required before statewide planting/harvest events.
 
 ## 2.3 NDTI and tillage events
 
-Tillage is **opt-in** (not in the default `make_events_statewide.sh` run). Timing
-comes from NDTI in each fallow window between one season's senescence (`OGMn`)
-and the next green-up (`OGI`), using matched phenology from Sec. 2.2.
+Like planting, harvest, and phenology, tillage is opt-in via
+`make_events_statewide.sh` (pass `tillage` as the event type). Timing comes from
+NDTI in each fallow window between one season's senescence (`OGMn`) and the next
+green-up (`OGI`), using matched phenology from Sec. 2.2.
 
 **A. NDTI extract (demo)**
 
@@ -224,21 +225,8 @@ Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 
 ---
 
-## 2.4 Checklist
-
-**Structure checks (not only "job ran"):**
-
-- [ ] `hls_parcel_tile_map_v4.1.csv` and `parcels_10SDH.csv` exist under `$PRODUCTS_INVENTORY`
-- [ ] MSLSP NetCDF for `10SDH` under `HLS/MSLSP/`; raw extract hive `phenology/raw_mslsp_v4.1.2/year=2024/` opens
-- [ ] Matched parquet has `assigned_by` / `match_outcome`; demo uses `ASSIGN_PARCEL_IDS_FILE`
-- [ ] `planting_lookup.csv` and `harvest_lookup.csv` present; harvest has a `destructive` column
-- [ ] `planting_statewide_2024.parquet` / `.json`, `harvest_statewide_2024.parquet` / `.json`, `phenology_statewide_2024.parquet` / `.json` under `event_files/`
-- [ ] NDTI hive under `tillage/ndti_v4.1/`; `tillage_statewide_2024.parquet` after opt-in run
-- [ ] Spot-check: parquet row count > 0; harvest clearing rows use `PFT=woody` + `destructive=TRUE` (no fake PFT)
-- [ ] Acceptance: event files are ready for Session 3 combine / SIPNET handoff appendix
-
 **Next:** [Session 3 - Fertilization and irrigation](03-fertilizer-irrigation.md).
 
-**Spine:** [pipeline.md](../pipeline.md).
+**Spine:** [tree README](../../README.md).
 
 **Downstream (unofficial):** [SIPNET handoff](sipnet-handoff.md).

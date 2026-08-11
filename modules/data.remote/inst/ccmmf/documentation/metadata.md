@@ -2,7 +2,7 @@
 
 Column definitions live **with each product component**.
 This page indexes the dictionaries saved in `inst/ccmmf`.
-Session I/O tables in [pipeline.md](pipeline.md) and
+Session I/O tables in [tree README](../README.md) and
 [sessions/](sessions/) link here instead of duplicating full schemas.
 
 Fertilization and irrigation column docs live with those separate workflows

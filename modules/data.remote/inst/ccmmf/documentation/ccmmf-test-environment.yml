@@ -1,0 +1,42 @@
+# Temporary test env for CCMMF Session 0–1 checks (until pecan-all-1.12 is available).
+# Create (SCC example):
+#   module load miniconda/25.3.1
+#   conda env create -f documentation/ccmmf-test-environment.yml -p /projectnb/dietzelab/skanee/conda/envs/ccmmf-test
+# Activate:
+#   conda activate /projectnb/dietzelab/skanee/conda/envs/ccmmf-test
+# Then install CropScapeR (not on conda-forge):
+#   Rscript -e 'install.packages("CropScapeR", repos = "https://cloud.r-project.org")'
+name: ccmmf-test
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - r-base=4.4
+  # Session 0 R checks + gap-fill / glimpse
+  - r-arrow
+  - r-dplyr
+  - r-data.table
+  - r-sf
+  - r-terra
+  - r-exactextractr
+  - r-readr
+  - r-stringr
+  - r-lubridate
+  - r-jsonlite
+  - r-units
+  - r-tidyverse
+  - r-remotes
+  # Session 0 Python / cadwr-landuse style GIS
+  - numpy
+  - pandas
+  - pyarrow
+  - shapely
+  - fiona
+  - geopandas
+  - pyogrio
+  - dask
+  - tqdm
+  - gdal
+  - geos
+  - proj
+  - udunits2

@@ -1,11 +1,40 @@
-# ADOY gap-fill: step 2 after crop + subclass assignment.
-# Uses resolve_gapfill_mode() -- same full-year / within-year split as crop gap-fill.
+# ADOY (peak-greenness day) gap-fill -- step 2 after crop identity (gapfill.R adoy).
+#
+# Same mode split as crop (resolve_gapfill_mode):
+#   within_year -- fill invalid ADOY on ag parcels for any season (LandIQ base +
+#                  within-year subclass overlay from crop step)
+#   full        -- season LANDIQ_ADOY_DEFAULT_SEASON only (default 2); CLASS/SUBCLASS
+#                  from full-gap subclass assignment; ADOY starts NA
+#
+# Invalid ADOY = NA or 0 (is_valid_adoy). Exempt CLASS X, I -> not_applicable
+# (YP still receives ADOY). Valid originals stay observed.
+#
+# Reference tables (adoy-ref; not a predictive model) under outputs/:
+#   county/statewide means (or median) by CLASS x optional SUBCLASS x season
+#   parcel panel of observed ADOY for temporal_neighbor reuse
+#
+# Fill cascade in fill_adoy_panel (coalesce order -> adoy_source):
+#   1. county_class_subclass
+#   2. temporal_neighbor   (same parcel/season/CLASS/SUBCLASS, year gap <= 3)
+#   3. county_class
+#   4. statewide_class_subclass
+#   5. statewide_class
+#   6. unfilled
+#   7. multiuse_season2    (post-pass: MULTIUSE=M copy season-2 ADOY)
+#
+# Env: ADOY_REFERENCE_STAT, LANDIQ_ADOY_TRAINING_YEARS,
+#      LANDIQ_ADOY_TRAINING_EXCLUDE_YEARS, ADOY_TEMPORAL_MAX_YEAR_GAP,
+#      LANDIQ_ADOY_DEFAULT_SEASON, GAPFILL_REBUILD_ADOY_REF
 
+# --- Validity / exemptions -----------------------------------------------------
+
+#' TRUE when ADOY is usable LandIQ peak day (numeric, not NA, not 0).
 is_valid_adoy <- function(x) {
   x <- suppressWarnings(as.numeric(x))
   !is.na(x) & x != 0
 }
 
+#' Force exempt CLASS (X, I) to ADOY NA and adoy_source = not_applicable.
 apply_adoy_class_exempt <- function(df) {
   exempt <- adoy_gapfill_exempt_classes()
   cls <- trimws(as.character(df$CLASS))
@@ -16,6 +45,8 @@ apply_adoy_class_exempt <- function(df) {
   }
   df
 }
+
+# --- Reference table paths / training years ------------------------------------
 
 adoy_reference_suffix <- function() {
   yrs <- adoy_training_years()
@@ -28,6 +59,7 @@ adoy_reference_suffix <- function() {
   suf
 }
 
+#' Years of observed LandIQ used to build ADOY reference tables.
 adoy_training_years <- function() {
   env <- Sys.getenv("LANDIQ_ADOY_TRAINING_YEARS", "")
   if (nzchar(trimws(env))) {
@@ -76,6 +108,10 @@ adoy_reference_cached <- function(suffix = adoy_reference_suffix()) {
   all(file.exists(unlist(paths)))
 }
 
+#' Build lookup tables from observed LandIQ ADOY (gapfill.R adoy-ref).
+#'
+#' Writes four geographic summaries + a parcel-level observed history panel.
+#' Not a fitted model -- fill later joins these tables.
 build_adoy_reference <- function() {
   suffix <- adoy_reference_suffix()
   train_years <- adoy_training_years()
@@ -155,6 +191,7 @@ build_adoy_reference <- function() {
       .groups = "drop"
     )
 
+  # Parcel panel for temporal_neighbor (same parcel reuse).
   hist <- obs %>%
     dplyr::select(parcel_id, year, season, CLASS, SUBCLASS, ADOY)
 
@@ -226,6 +263,13 @@ load_adoy_reference <- function() {
   )
 }
 
+# --- Temporal neighbor donors --------------------------------------------------
+
+#' Which years may donate ADOY for temporal_neighbor.
+#'
+#' Full-gap: neighbor LandIQ years from resolve_gapfill_neighbors.
+#' Within-year: training-year panel (adoy_training_years); temporal_mode label
+#' "panel" means donors are that set, not only nearest before/after.
 resolve_adoy_temporal_cfg <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   mode <- resolve_gapfill_mode(gapfill_year)
@@ -253,6 +297,10 @@ resolve_adoy_temporal_cfg <- function(gapfill_year) {
   dplyr::if_else(is.na(x) | x == "" | x == "**", "**", x)
 }
 
+#' Same parcel / season / CLASS / SUBCLASS ADOY from nearby years.
+#'
+#' Donor years from cfg; keep year_gap <= ADOY_TEMPORAL_MAX_YEAR_GAP (default 3).
+#' Aggregate multiple donors with ADOY_REFERENCE_STAT (mean/median).
 compute_temporal_adoy <- function(target, observed, cfg) {
   max_gap <- as.integer(Sys.getenv("ADOY_TEMPORAL_MAX_YEAR_GAP", "3"))
   key <- c("parcel_id", "season", "CLASS", "SUBCLASS")
@@ -350,6 +398,9 @@ apply_multiuse_s2_adoy_fallback <- function(df) {
     dplyr::select(-adoy_s2, -use_s2)
 }
 
+# --- Fill cascade --------------------------------------------------------------
+
+#' Apply reference + temporal fills to a target panel; never overwrite valid ADOY.
 fill_adoy_panel <- function(panel, ref, cfg) {
   panel <- panel %>%
     dplyr::mutate(
@@ -376,6 +427,7 @@ fill_adoy_panel <- function(panel, ref, cfg) {
 
   to_fill <- panel %>% dplyr::filter(needs_fill)
 
+  # Join all candidates, then coalesce in cascade order (see file header).
   filled <- compute_temporal_adoy(to_fill, ref$observed, cfg) %>%
     join_county_adoy(ref$county_css, c("COUNTY", "CLASS", "SUBCLASS", "season"), "adoy_county_css") %>%
     join_county_adoy(ref$county_class, c("COUNTY", "CLASS", "season"), "adoy_county_class") %>%
@@ -409,6 +461,7 @@ fill_adoy_panel <- function(panel, ref, cfg) {
     ) %>%
     dplyr::select(-.row_id, -adoy_fill, -needs_fill)
 
+  # Safety: never mutate rows that already had a valid ADOY.
   bad <- out %>%
     dplyr::filter(is_valid_adoy(adoy_orig)) %>%
     dplyr::filter(abs(ADOY - adoy_orig) > 1e-9 | adoy_source != "observed")
@@ -420,6 +473,8 @@ fill_adoy_panel <- function(panel, ref, cfg) {
     dplyr::select(-adoy_orig) %>%
     apply_multiuse_s2_adoy_fallback()
 }
+
+# --- Build target panel for one year -------------------------------------------
 
 path_subclass_assignment <- function(gapfill_year) {
   file.path(
@@ -435,6 +490,7 @@ path_within_year_gapfill <- function(gapfill_year) {
   )
 }
 
+#' Harmonized LandIQ rows for gapfill_year (all seasons) before ADOY fill.
 load_landiq_adoy_base <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   crop_lk <- load_landiq_crop_lookup(path_crop_lookup_csv())
@@ -473,6 +529,7 @@ count_needs_subclass_gapfill_s2 <- function(gapfill_year) {
     nrow()
 }
 
+#' Within-year ADOY needs crop patch if season-2 still has missing subclasses.
 ensure_within_year_crop_prerequisite <- function(gapfill_year) {
   n_missing <- count_needs_subclass_gapfill_s2(gapfill_year)
   path_wy <- path_within_year_gapfill(gapfill_year)
@@ -486,6 +543,9 @@ ensure_within_year_crop_prerequisite <- function(gapfill_year) {
   invisible(n_missing)
 }
 
+#' Overlay filled SUBCLASS from within-year crop patch onto the ADOY panel.
+#'
+#' So temporal/county joins use the post-crop CLASS::SUBCLASS identity.
 overlay_within_year_crop_fill <- function(panel, gapfill_year) {
   path_wy <- path_within_year_gapfill(gapfill_year)
   if (!file.exists(path_wy)) {
@@ -514,12 +574,14 @@ overlay_within_year_crop_fill <- function(panel, gapfill_year) {
     dplyr::select(-wy_SUBCLASS)
 }
 
+#' Rows that need ADOY consideration for gapfill_year (ag, non-exempt CLASS).
 load_adoy_target_panel <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   mode <- resolve_gapfill_mode(gapfill_year)
   ag_classes <- load_ag_class_vector(path_crop_lookup_csv())
 
   panel <- if (identical(mode, "full")) {
+    # Full-gap: crop step wrote subclass assignment; ADOY unknown -> NA.
     path_sub <- path_subclass_assignment(gapfill_year)
     if (!file.exists(path_sub)) {
       stop(
@@ -541,6 +603,7 @@ load_adoy_target_panel <- function(gapfill_year) {
       ) %>%
       dplyr::filter(!is.na(CLASS), CLASS %in% ag_classes)
   } else {
+    # Within-year: all seasons from LandIQ; overlay crop-filled subclasses.
     ensure_within_year_crop_prerequisite(gapfill_year)
     load_landiq_adoy_base(gapfill_year) %>%
       overlay_within_year_crop_fill(gapfill_year) %>%
@@ -551,6 +614,9 @@ load_adoy_target_panel <- function(gapfill_year) {
     dplyr::filter(!CLASS %in% adoy_gapfill_exempt_classes())
 }
 
+# --- Driver (gapfill.R adoy) ---------------------------------------------------
+
+#' Run ADOY gap-fill for one year; write landiq_adoy_gapfill_year=Y.parquet.
 run_adoy_gapfill <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   mode <- resolve_gapfill_mode(gapfill_year)

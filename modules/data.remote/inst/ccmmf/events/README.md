@@ -14,7 +14,7 @@ Related management layers live in parallel workflows (**Session 3**):
   this monitoring branch)
 - **Irrigation:** [Session 3](../documentation/sessions/03-fertilizer-irrigation.md)
 
-Full product set: [pipeline.md](../documentation/pipeline.md).
+Full product set: [tree README](../README.md).
 
 **Downstream of `event_files/`:** unofficial
 [SIPNET handoff](../documentation/sessions/sipnet-handoff.md)
@@ -51,7 +51,7 @@ flowchart TD
   E -.-> TL
 ```
 
-Pipeline map: [documentation/pipeline.md](../documentation/pipeline.md).
+Pipeline map: [../README.md](../README.md).
 Upstream match: [phenology/match/README.md](../phenology/match/README.md).
 Traits (one-time): [traits/README.md](../traits/README.md).
 MSLSP extract / date gap-fill: [phenology/README.md](../phenology/README.md).
@@ -154,7 +154,7 @@ Core function: [`R/tillage_metrics.R`](R/tillage_metrics.R). Runner: [`R/tillage
 | `planting_statewide_{year}.parquet` / `.json` | Planting events with C/N pools |
 | `harvest_statewide_{year}.parquet` / `.json` | Harvest removal fractions |
 | `phenology_statewide_{year}.parquet` / `.json` | Leaf-on / leaf-off phenology |
-| `tillage_statewide_{year}.parquet` / `.json` | Tillage timing from NDTI (opt-in) |
+| `tillage_statewide_{year}.parquet` / `.json` | Tillage timing from NDTI |
 
 Parquet is canonical; JSON is PEcAn nested-by-site format.
 

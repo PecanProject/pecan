@@ -1,5 +1,24 @@
-# Crop gap-fill driver: dispatches full-year (CLASS + SUBCLASS) or within-year (SUBCLASS only).
+# Crop gap-fill driver (gapfill.R crop -> run_gapfill).
+#
+# Two modes (see resolve_gapfill_mode() in gapfill_config.R):
+#   full         -- no usable LandIQ for the year (default: 2017). Predict season-2
+#                   CLASS (gapfill_class.R), then SUBCLASS (gapfill_subclass.R).
+#   within_year  -- LandIQ exists; only fill missing season-2 SUBCLASS. CLASS is
+#                   taken as observed (never predicted).
+#
+# Both modes call assign_subclass() with a class_df that has columns:
+#   parcel_id, gapfill_year, map_class_avg_mean3, neighbor_year_lo, neighbor_year_hi
+# Within-year sets map_class_avg_mean3 = LandIQ CLASS so the subclass cascade can
+# reuse the same code path as full-gap (where that column is a predicted CLASS).
+#
+# Writes year-specific patch parquets under outputs/; merge
+# (build_landiq_product.R) overlays them onto the multi-year product later.
+# CDL x LandIQ probability tables must already exist (ensure_emission_tables).
 
+#' Run crop identity gap-fill for one calendar year.
+#'
+#' @param gapfill_year integer year
+#' @return invisible(NULL); side effect is a patch parquet under path_outputs()
 run_gapfill <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   if (is.na(gapfill_year)) {
@@ -9,11 +28,13 @@ run_gapfill <- function(gapfill_year) {
   mode <- resolve_gapfill_mode(gapfill_year)
   message("=== gapfill year=", gapfill_year, " mode=", mode, " ===")
 
+  # Load (do not rebuild) CDL x LandIQ probability tables + subclass prior.
   ensure_emission_tables()
   emission <- load_emission_bundle()
   out_root <- path_outputs()
 
   if (identical(mode, "full")) {
+    # CLASS first (CDL + neighbor transitions), then SUBCLASS on that CLASS.
     class_df <- run_class_gapfill(gapfill_year, emission)
     path_sub_out <- file.path(
       out_root,
@@ -30,6 +51,12 @@ run_gapfill <- function(gapfill_year) {
   invisible(NULL)
 }
 
+#' Nearest LandIQ years before/after gapfill_year (excluding full-gap years).
+#'
+#' Used as neighbor_year_lo / neighbor_year_hi on within-year class_df. Those
+#' columns are required by assign_subclass() for plurality bookkeeping; the
+#' default plurality *pool* is still the full season-2 panel (see
+#' LANDIQ_SUBCLASS_PLURALITY_POOL), not only these two years.
 resolve_within_year_subclass_neighbors <- function(gapfill_year) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   available <- landiq_gapfill_available_years()
@@ -41,12 +68,22 @@ resolve_within_year_subclass_neighbors <- function(gapfill_year) {
   )
 }
 
+#' Within-year path: fill missing season-2 SUBCLASS where LandIQ CLASS is known.
+#'
+#' Eligibility: agricultural CLASS, missing subclass (NA / "" / **), not exempt
+#' (X, YP -- see needs_subclass_gapfill / subclass_gapfill_exempt_classes).
+#' Output patch is season 2 only; merge applies it onto the product table.
+#'
+#' @param gapfill_year integer year (must not be a full-gap year)
+#' @param emission optional bundle from load_emission_bundle(); loaded if NULL
+#' @return filled tibble (or invisible(NULL) if nothing to fill)
 run_within_year_gapfill <- function(gapfill_year, emission = NULL) {
   gapfill_year <- as.integer(gapfill_year)[1L]
   if (is.null(emission)) {
     ensure_emission_tables()
     emission <- load_emission_bundle()
   }
+  # Belt-and-suspenders: mode dispatch should already route 2017 to full.
   if (gapfill_year == 2017L) {
     stop("2017 has no LandIQ year - use full gapfill mode")
   }
@@ -56,6 +93,7 @@ run_within_year_gapfill <- function(gapfill_year, emission = NULL) {
   out_dir <- path_outputs()
   path_out <- file.path(out_dir, sprintf("landiq_s2_within_year_gapfill_year=%d.parquet", gapfill_year))
 
+  # Season-2 LandIQ for this year; harmonize subclass to 2021 legend before fill.
   landiq_s2 <- arrow::open_dataset(path_landiq_parquet) %>%
     dplyr::filter(year == gapfill_year, season == 2L) %>%
     dplyr::select(parcel_id, CLASS, SUBCLASS) %>%
@@ -80,6 +118,7 @@ run_within_year_gapfill <- function(gapfill_year, emission = NULL) {
     return(invisible(NULL))
   }
 
+  # Shape like full-gap class predictions, but CLASS is observed LandIQ.
   nbr <- resolve_within_year_subclass_neighbors(gapfill_year)
   class_df <- targets %>%
     dplyr::distinct(parcel_id, CLASS) %>%
@@ -91,8 +130,10 @@ run_within_year_gapfill <- function(gapfill_year, emission = NULL) {
       neighbor_year_hi = nbr$y_hi
     )
 
+  # Cascade: plurality -> emission_cdl -> prior_only -> unfilled (gapfill_subclass.R).
   sub_df <- assign_subclass(gapfill_year, class_df, emission, use_plurality = TRUE)
 
+  # Compact patch for merge: observed CLASS + filled SUBCLASS + provenance/CDL diag.
   filled <- sub_df %>%
     dplyr::inner_join(
       targets %>% dplyr::distinct(parcel_id, landiq_CLASS = CLASS),
