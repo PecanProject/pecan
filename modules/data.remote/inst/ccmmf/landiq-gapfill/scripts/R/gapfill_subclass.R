@@ -22,35 +22,6 @@
 # "panel" = all season-2 years in the harmonized table except gapfill_year.
 # "neighbors" = only neighbor_year_lo / neighbor_year_hi.
 
-#' Score one CLASS under a dominant CDL code: prior * P(CDL | CLASS::SUBCLASS).
-#'
-#' Used inside the emission_cdl step. If no subclass has score > 0, falls back
-#' to prior_only for that class (caller may still prefer plurality first).
-assign_subclass_emission <- function(pred_class, dom_code_chr, class_sub_prior, sub_prob_long) {
-  prior_sub <- class_sub_prior %>%
-    dplyr::filter(CLASS == pred_class, !is.na(SUBCLASS), nzchar(SUBCLASS), SUBCLASS != "**")
-  if (nrow(prior_sub) == 0L) {
-    return(list(SUBCLASS = "**", source = "unfilled_**"))
-  }
-  scored <- prior_sub %>%
-    dplyr::mutate(truth_key = paste(CLASS, SUBCLASS, sep = "::")) %>%
-    dplyr::left_join(
-      sub_prob_long %>% dplyr::filter(.data$obs_key == dom_code_chr),
-      by = "truth_key"
-    ) %>%
-    dplyr::mutate(prob = dplyr::coalesce(prob, 0), score = prior * prob)
-  best <- scored %>%
-    dplyr::filter(score > 0) %>%
-    dplyr::arrange(dplyr::desc(score), SUBCLASS) %>%
-    dplyr::slice_head(n = 1L)
-  if (nrow(best) == 1L) {
-    return(list(SUBCLASS = best$SUBCLASS[1L], source = "emission_cdl"))
-  }
-  # No positive CDL support: pick highest subclass prior alone.
-  prior_best <- prior_sub %>% dplyr::arrange(dplyr::desc(prior), SUBCLASS) %>% dplyr::slice_head(n = 1L)
-  list(SUBCLASS = prior_best$SUBCLASS[1L], source = "prior_only")
-}
-
 #' Assign season-2 SUBCLASS for parcels with a known/predicted CLASS.
 #'
 #' @param gapfill_year calendar year being filled

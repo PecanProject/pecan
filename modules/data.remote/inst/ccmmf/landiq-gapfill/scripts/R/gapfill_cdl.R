@@ -66,8 +66,3 @@ cdl_class_likelihood <- function(F_mat, E, ag_class_vector, cdl_class_obs = "fra
   }
   L_mat / L_rs
 }
-
-map_class_from_cdl <- function(cdl_panel, E, ag_class_vector, cdl_class_obs = "fraction") {
-  p_cdl <- cdl_class_likelihood(cdl_panel$F_mat, E, ag_class_vector, cdl_class_obs)
-  ag_class_vector[max.col(p_cdl, ties.method = "first")]
-}

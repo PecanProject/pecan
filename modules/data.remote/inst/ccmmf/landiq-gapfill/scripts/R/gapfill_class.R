@@ -197,27 +197,3 @@ run_class_gapfill <- function(
   message("Wrote class gapfill: ", path_out, " (", nrow(out), " rows)")
   invisible(out)
 }
-
-run_class_gapfill_cdl_only <- function(
-    gapfill_year,
-    emission,
-    parcel_ids,
-    cdl_class_obs = "fraction") {
-  path_cdl_dir <- path_cdl_fractions()
-  path_cdl <- file.path(path_cdl_dir, sprintf("cdl_fractions_year=%d.parquet", gapfill_year))
-  if (!file.exists(path_cdl)) {
-    stop("Missing CDL fractions: ", path_cdl)
-  }
-  cdl_gap_full <- arrow::read_parquet(path_cdl, as_data_frame = TRUE)
-  cdl_panel <- build_cdl_fraction_panel(cdl_gap_full, colnames(emission$E), parcel_ids)
-  if (is.null(cdl_panel)) {
-    return(tibble::tibble())
-  }
-  map_class <- map_class_from_cdl(cdl_panel, emission$E, emission$ag_class_vector, cdl_class_obs)
-  tibble::tibble(
-    parcel_id = cdl_panel$parcel_id,
-    pred_class = map_class,
-    cdl_code_gap_dominant_native = cdl_panel$dominant_code,
-    cdl_native_mass_in_emission = cdl_panel$native_mass
-  )
-}

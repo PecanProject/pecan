@@ -1,13 +1,5 @@
-# Shared helpers: agricultural CLASS list, missing-crop checks, gap-fill exemptions.
+# Shared helpers: agricultural CLASS list, gap-fill exemptions.
 # Subclass fill skips X and YP; ADOY fill skips X and I (YP still receives ADOY).
-
-parse_cli_gapfill_year <- function(argv) {
-  yrs <- parse_cli_gapfill_years(argv)
-  if (!length(yrs)) {
-    return(list(year = NA_integer_, cli_year = FALSE))
-  }
-  list(year = yrs[[1L]], cli_year = TRUE)
-}
 
 #' Parse calendar years from CLI tokens: `2023`, `2023,2024`, or `2023 2024`.
 parse_cli_gapfill_years <- function(argv) {
@@ -75,11 +67,6 @@ load_ag_class_vector <- function(path_crop_lookup_csv) {
     dplyr::distinct(CLASS) %>%
     dplyr::filter(!is.na(CLASS), CLASS != "") %>%
     dplyr::pull(CLASS)
-}
-
-is_missing_landiq_crop <- function(class_chr) {
-  class_chr <- trimws(as.character(class_chr))
-  is.na(class_chr) | class_chr == "" | class_chr %in% c("U", "X")
 }
 
 subclass_gapfill_exempt_classes <- function() {
