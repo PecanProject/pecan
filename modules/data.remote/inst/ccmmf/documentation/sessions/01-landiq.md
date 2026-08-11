@@ -193,11 +193,11 @@ Lookup tables are in `$LANDIQ_GAPFILL_ROOT/outputs/`. On a routine update, leave
 **Probability tables** start from fields where both maps exist. For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present: look up which LandIQ crop usually goes with the CDL mix on that field.
 
 
-| Table | File | What it answers |
-|-------|------|-----------------|
-| `P(CDL \| CLASS)` | `cdl_prob_by_class_*.parquet` | Given LandIQ CLASS, which CDL codes usually appear on that parcel |
-| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet` | Same question at subclass |
-| `P(SUBCLASS \| CLASS)` | `landiq_subclass_frequency_*.parquet` | How often each subclass occurs inside a CLASS |
+| Table                      | File                                  | What it answers                                                   |
+| -------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `P(CDL \| CLASS)`          | `cdl_prob_by_class_*.parquet`         | Given LandIQ CLASS, which CDL codes usually appear on that parcel |
+| `P(CDL \| CLASS::SUBCLASS)`| `cdl_prob_by_subclass_*.parquet`      | Same question at subclass                                         |
+| `P(SUBCLASS \| CLASS)`     | `landiq_subclass_frequency_*.parquet` | How often each subclass occurs inside a CLASS                     |
 
 
 **ADOY reference tables** are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero: copy a typical day for that crop (and county, when there are enough observations).
@@ -215,6 +215,13 @@ Lookup tables are in `$LANDIQ_GAPFILL_ROOT/outputs/`. On a routine update, leave
 The current tables were built from 2016-2023 for the CDL x LandIQ map (except 2017, which has no LandIQ) and from 2018-2023 for the ADOY means (those are the years with a usable observed peak day). That window already covers the crop mix and typical greenness dates we need, so a later inventory year just reads them -- there is nothing to recount unless you change the method or legend, or you want newer observed years in the training window. Rebuild only then, or if fill errors that a table is missing.
 
 ```bash
+# Window for the tables in outputs/ (needed to read them, and to rebuild with the same names).
+export CDL_LANDIQ_TRAINING_YEAR_MIN=2016
+export CDL_LANDIQ_TRAINING_YEAR_MAX=2023
+export CDL_LANDIQ_TRAINING_EXCLUDE_YEARS=2017
+export LANDIQ_ADOY_TRAINING_YEARS=2018,2019,2020,2021,2022,2023
+
+# Rebuild only if needed:
 # Rscript $GF cdl-landiq-probs
 # Rscript $GF adoy-ref
 ```
