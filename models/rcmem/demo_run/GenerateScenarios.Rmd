@@ -1,0 +1,95 @@
+## Scenario Generation for RCMEM
+
+```{r libraries}
+library(rCMEM)
+library(data.water)
+library(tidyverse)
+```
+
+
+### Run Some Queries
+
+``` {r run queries}
+
+scenario_output <- data.water::generateFullTidalScenario(
+   station_id = 9410660,
+   run_hindcast = T,
+   run_forecast = T,
+   hindcast_start = 1933,
+   forecast_start = 2024,
+   forecast_end = 2100,
+   RCP = c("RCP2.6", "RCP4.5"),
+   RCP_probability = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+   include_lt_tidal_const = T,
+   datum_start_year = 1980,
+   datum_end_year = 2025)
+
+```
+
+## Add files into one and visualize
+```{r compile data}
+
+all_scenario_info <- scenario_output[[1]]
+
+MSL_list <- list()
+amp_list <- list()
+
+MHW_names <- c("highest annual", "spring", "daily higher", "daily high")
+MLW_names <- c("daily high", "daily higher", "spring", "highest annual")
+
+for (i in 1:nrow(all_scenario_info)) {
+  
+  temp_scenario_info <- all_scenario_info[i,] %>% select(-year)
+  
+  MSL_list[[i]] <-  scenario_output[[2]][[i]] %>% cross_join(temp_scenario_info)
+  
+  temp_MHW <- as.data.frame(scenario_output[[3]][[i]])
+  
+  names(temp_MHW) <- MHW_names
+  
+  temp_MHW <- temp_MHW %>% 
+    mutate(year = MSL_list[[i]]$year) %>% 
+    pivot_longer(names_to = "flood level",
+                 values_to = "higher_flood",
+                 -year)
+  
+  temp_MLW <- as.data.frame(scenario_output[[4]][[i]])
+  
+  names(temp_MLW) <- MLW_names
+  
+  temp_MLW <- temp_MLW %>% 
+    mutate(year = MSL_list[[i]]$year) %>% 
+    pivot_longer(names_to = "flood level",
+                 values_to = "lower_flood",
+                 -year)
+  
+  amp_comp <- temp_MHW %>% 
+    left_join(temp_MLW) %>% 
+    cross_join(temp_scenario_info)
+  
+  amp_list[[i]] <- amp_comp
+  
+}
+
+MSL_vis <- bind_rows(MSL_list)
+amp_vis <- bind_rows(amp_list)
+
+ggplot(MSL_vis) +
+    geom_ribbon(data=amp_vis, aes(x = year,
+                           ymin = lower_flood, 
+                           ymax = higher_flood,
+                           group = `flood level`,
+                           col = `flood level`), 
+              # alpha = 0.5, 
+              fill = NA) +
+  geom_line(aes(x = year, y = meanSeaLevel)) +
+  # geom_point(aes(x = year, y = meanSeaLevel)) +
+  facet_wrap(rcp~probabiliy) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  ggtitle("Los Angeles - Flooding Scenarios by RCP and probability") +
+  ylab("Water Level (cm; NAVD88)")
+
+```
+
+
+
