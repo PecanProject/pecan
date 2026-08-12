@@ -310,6 +310,38 @@ LANDIQ_SEASONS <- 1:4
   df
 }
 
+#' Harmonize one year slice to the 2021 legend and normalize provenance.
+.finalize_product_year_slice <- function(df, crop_lk) {
+  df %>%
+    dplyr::mutate(
+      CLASS = trimws(as.character(CLASS)),
+      SUBCLASS = trimws(as.character(SUBCLASS))
+    ) %>%
+    harmonize_landiq_subclass_by_year(crop_lk$merge) %>%
+    dplyr::mutate(
+      SUBCLASS = dplyr::if_else(
+        is.na(SUBCLASS) | SUBCLASS == "",
+        "**",
+        SUBCLASS
+      ),
+      SUBCLASS = dplyr::if_else(
+        CLASS == "V" & SUBCLASS == "**",
+        vineyard_fallback_subclass(),
+        SUBCLASS
+      ),
+      subclass_source = normalize_subclass_source(CLASS, SUBCLASS, subclass_source)
+    ) %>%
+    filter_consolidated_parcels()
+}
+
+#' Combine year parquet slices into one file without collecting as R data.frames.
+.combine_year_parquets <- function(year_files, path_out) {
+  tabs <- lapply(year_files, function(f) arrow::read_parquet(f, as_data_frame = FALSE))
+  combined <- do.call(arrow::concat_tables, tabs)
+  arrow::write_parquet(combined, path_out)
+  combined$num_rows
+}
+
 build_landiq_product <- function(
     years = landiq_product_years(),
     source_root = path_landiq_root(),
@@ -332,56 +364,58 @@ build_landiq_product <- function(
 
   crop_lk <- load_landiq_crop_lookup(path_crop_lookup_csv())
   source_parquet <- resolve_landiq_product_source_parquet()
-
-  parts <- vector("list", length(years))
-  for (i in seq_along(years)) {
-    parts[[i]] <- .patch_landiq_year(years[[i]], source_parquet = source_parquet)
-    message("  year ", years[[i]], ": ", nrow(parts[[i]]), " rows")
-  }
-  out <- dplyr::bind_rows(parts)
-
-  other_years <- arrow::open_dataset(source_parquet) %>%
-    dplyr::filter(!year %in% years) %>%
-    dplyr::collect()
-  if (nrow(other_years) > 0L) {
-    message("Appending ", nrow(other_years), " rows outside gap-fill years")
-    out <- dplyr::bind_rows(out, .init_provenance_cols(other_years))
-  }
-
-  message("Harmonizing all SUBCLASS to 2021 RS legend (per calendar year input mapping)")
-  out <- out %>%
-    dplyr::mutate(
-      CLASS = trimws(as.character(CLASS)),
-      SUBCLASS = trimws(as.character(SUBCLASS))
-    ) %>%
-    harmonize_landiq_subclass_by_year(crop_lk$merge) %>%
-    dplyr::mutate(
-      SUBCLASS = dplyr::if_else(
-        is.na(SUBCLASS) | SUBCLASS == "",
-        "**",
-        SUBCLASS
-      )
-    ) %>%
-    dplyr::mutate(
-      # Default missing vineyard subclass to wine grapes; keep observed provenance.
-      SUBCLASS = dplyr::if_else(
-        CLASS == "V" & SUBCLASS == "**",
-        vineyard_fallback_subclass(),
-        SUBCLASS
-      ),
-      subclass_source = normalize_subclass_source(CLASS, SUBCLASS, subclass_source)
-    )
-
+  # Warm consolidated-id cache once (used per year below).
   consolidated_ids <- load_consolidated_parcel_ids()
-  n_before <- nrow(out)
-  out <- filter_consolidated_parcels(out)
+
+  all_years <- arrow::open_dataset(source_parquet) %>%
+    dplyr::distinct(year) %>%
+    dplyr::collect() %>%
+    dplyr::pull(year) %>%
+    as.integer() %>%
+    sort()
+  all_years <- unique(c(all_years, years))
+  all_years <- all_years[!is.na(all_years)]
+
+  tmp_dir <- file.path(out_dir, paste0(".merge_tmp_", Sys.getpid()))
+  if (dir.exists(tmp_dir)) {
+    unlink(tmp_dir, recursive = TRUE)
+  }
+  dir.create(tmp_dir, recursive = TRUE)
+
+  on.exit(unlink(tmp_dir, recursive = TRUE), add = TRUE)
+
   message(
-    "Restricted to consolidated parcels: ", length(consolidated_ids),
-    " parcel_ids (dropped ", n_before - nrow(out), " rows outside consolidated geometry)"
+    "Building product one calendar year at a time (",
+    length(all_years), " years; ", length(consolidated_ids), " consolidated parcels)"
   )
 
-  arrow::write_parquet(out, path_out)
-  message("Wrote ", nrow(out), " rows -> ", path_out)
+  year_files <- character(0)
+  n_total <- 0L
+  for (y in all_years) {
+    message("Building product slice year=", y,
+            if (y %in% years) " mode=gapfill" else " mode=carry")
+    if (y %in% years) {
+      df <- .patch_landiq_year(y, source_parquet = source_parquet)
+    } else {
+      df <- arrow::open_dataset(source_parquet) %>%
+        dplyr::filter(year == y) %>%
+        dplyr::collect() %>%
+        .init_provenance_cols()
+    }
+    message("  Harmonizing SUBCLASS to 2021 RS legend")
+    df <- .finalize_product_year_slice(df, crop_lk)
+    path_y <- file.path(tmp_dir, sprintf("year=%d.parquet", y))
+    arrow::write_parquet(df, path_y)
+    message("  year ", y, ": ", nrow(df), " rows")
+    n_total <- n_total + nrow(df)
+    year_files <- c(year_files, path_y)
+    rm(df)
+    gc(verbose = FALSE)
+  }
+
+  message("Combining ", length(year_files), " year slices -> ", path_out)
+  n_rows <- .combine_year_parquets(year_files, path_out)
+  message("Wrote ", n_rows, " rows -> ", path_out)
 
   product_label <- basename(out_dir)
   meta_path <- file.path(out_dir, "README.md")
@@ -410,5 +444,5 @@ build_landiq_product <- function(
     meta_path
   )
   message("Wrote ", meta_path)
-  invisible(list(path_parquet = path_out, path_gpkg = path_src_gpkg, n_rows = nrow(out)))
+  invisible(list(path_parquet = path_out, path_gpkg = path_src_gpkg, n_rows = as.integer(n_rows)))
 }
