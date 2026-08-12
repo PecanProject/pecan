@@ -14,7 +14,9 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  rename = FALSE
+  rename = FALSE,
+  run_ids = NULL,
+  paramlists = NULL
 )
 }
 \arguments{
@@ -44,6 +46,13 @@ new.state (initial condition), ensemble.id (ensemble id), start.time and stop.ti
 See Details.}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
+
+\item{run_ids}{optional character vector of run ids, one per design row, used
+instead of generating ENS ids. Lets a caller that already knows what each
+run is keep its own naming.}
+
+\item{paramlists}{optional character vector, one per design row, describing
+each run when writing to the database. Defaults to "ensemble=<i>".}
 }
 \value{
 list, containing

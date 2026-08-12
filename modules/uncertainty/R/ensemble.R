@@ -225,6 +225,11 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #'  See Details.
 #' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
 #'
+#' @param run_ids optional character vector of run ids, one per design row, used
+#'   instead of generating ENS ids. Lets a caller that already knows what each
+#'   run is keep its own naming.
+#' @param paramlists optional character vector, one per design row, describing
+#'   each run when writing to the database. Defaults to "ensemble=<i>".
 #' @return list, containing
 #'  $runs = data frame of runids,
 #'  $ensemble.id = the ensemble ID for these runs,
@@ -237,7 +242,8 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 
 write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model,
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE,
+                                   run_ids = NULL, paramlists = NULL) {
 
   # Check for required paths
   for (input_tag in names(settings$run$inputs)) {
@@ -404,7 +410,9 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     runs <- data.frame()
     for (i in seq_len(ensemble.size)) {
       if (!is.null(con) && write.to.db) {
-        paramlist <- paste("ensemble=", i, sep = "")
+        # a caller that knows what each run is, such as a sensitivity analysis,
+        # supplies its own descriptions; otherwise the run is just ensemble i
+        paramlist <- if (!is.null(paramlists)) paramlists[[i]] else paste("ensemble=", i, sep = "")
         # inserting this into the table and getting an id back
         run.id <- PEcAn.DB::db.query(paste0(
           "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
@@ -428,7 +436,11 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
       } else {
 
-        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id = settings$run$site$id)
+        run.id <- if (!is.null(run_ids)) {
+          run_ids[[i]]
+        } else {
+          PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id = settings$run$site$id)
+        }
 
       }
       runs[i, "id"] <- run.id

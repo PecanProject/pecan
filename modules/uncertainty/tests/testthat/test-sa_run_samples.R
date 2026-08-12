@@ -89,3 +89,67 @@ test_that("a design without the SA labels is rejected", {
 
   expect_error(sa_run_samples(sa_samples_fixture(), bare), "labels")
 })
+
+# ---- run ids and the lookup the post-processing reads ----
+
+test_that("the median run is named for what it is", {
+  ids <- sa_run_ids(sa_design_fixture(), site_id = "772", pft_names = "pft1")
+
+  expect_equal(ids$ids[1], "SA-median-772")
+  expect_match(ids$paramlists[1], "quantile=MEDIAN,trait=all")
+})
+
+
+test_that("a moved run is named for the trait and quantile it moves", {
+  ids <- sa_run_ids(sa_design_fixture(), site_id = "772", pft_names = "pft1")
+
+  # row 2 moves SLA to the 15.9 quantile, which the id carries as 0.159
+  expect_equal(ids$ids[2], "SA-pft1-SLA-0.159-772")
+  expect_equal(ids$paramlists[2], "quantile=15.9,trait=SLA,pft=pft1")
+})
+
+
+test_that("one id is built per design row", {
+  design <- sa_design_fixture()
+  ids <- sa_run_ids(design, site_id = "772", pft_names = "pft1")
+
+  expect_length(ids$ids, nrow(design))
+  expect_length(ids$paramlists, nrow(design))
+})
+
+
+test_that("the lookup finds each run by its trait and quantile", {
+  design <- sa_design_fixture()
+  ids <- sa_run_ids(design, site_id = "772", pft_names = "pft1")
+
+  table <- sa_run_id_table(design, ids$ids)
+
+  expect_equal(table$pft1["15.9", "SLA"], ids$ids[2])
+  expect_equal(table$pft1["84.1", "Vcmax"], ids$ids[5])
+})
+
+
+test_that("the one median run covers the median of every trait", {
+  design <- sa_design_fixture()
+  ids <- sa_run_ids(design, site_id = "772", pft_names = "pft1")
+
+  table <- sa_run_id_table(design, ids$ids)
+
+  expect_equal(table$pft1["50", "SLA"], "SA-median-772")
+  expect_equal(table$pft1["50", "Vcmax"], "SA-median-772")
+})
+
+
+test_that("each PFT gets its own lookup", {
+  design <- rbind(
+    sa_design_fixture(),
+    data.frame(param = 6, sa_pft = "pft2", sa_trait = "Amax", sa_quantile = "15.9",
+               stringsAsFactors = FALSE)
+  )
+  ids <- sa_run_ids(design, site_id = "772", pft_names = c("pft1", "pft2"))
+
+  table <- sa_run_id_table(design, ids$ids)
+
+  expect_named(table, c("pft1", "pft2"))
+  expect_equal(table$pft2["15.9", "Amax"], ids$ids[6])
+})
