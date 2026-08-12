@@ -44,7 +44,9 @@ PY
 
 Set `$CCMMF_BASE` to the directory that will hold your clones (`$CCMMF_BASE/src`) and data (`$CCMMF_BASE/ccmmf`).
 
-You also need `pecan-all-1.14` already installed, plus two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). If a repo is already on disk, skip it.
+You also need `pecan-all-1.14` already installed, plus two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). Later sessions assume those repos live at `$CCMMF_BASE/src/pecan` and `$CCMMF_BASE/src/cadwr-landuse`.
+
+**New clones**
 
 ```bash
 export CCMMF_BASE=/path/to/workdir
@@ -63,6 +65,22 @@ git clone https://github.com/ccmmf/cadwr-landuse.git
 cd cadwr-landuse
 git checkout main
 ```
+
+**Already cloned elsewhere.** Do not re-clone. Symlink into `$CCMMF_BASE/src/` so Session 0.3 and later path names still work.
+
+```bash
+export CCMMF_BASE=/path/to/workdir
+mkdir -p "$CCMMF_BASE/src"
+
+# ln -s <existing clone> <tutorial path>
+ln -s /actual/path/to/pecan          "$CCMMF_BASE/src/pecan"
+ln -s /actual/path/to/cadwr-landuse  "$CCMMF_BASE/src/cadwr-landuse"
+
+ls -l "$CCMMF_BASE/src/pecan" "$CCMMF_BASE/src/cadwr-landuse"
+ls "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf"
+```
+
+If a repo is already at `$CCMMF_BASE/src/pecan` or `$CCMMF_BASE/src/cadwr-landuse`, skip both the clone and the symlink for that repo.
 
 ---
 
