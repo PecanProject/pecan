@@ -6,10 +6,10 @@
 
 ## 0.1 Environment (once)
 
-Activate `pecan-all-1.14` and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
+Use conda env `pecan-all-1.14` for all sessions. Activate it and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
 
 ```bash
-conda activate <ENV_PATH_OR_NAME>
+conda activate <ENV_PATH_OR_NAME>   # pecan-all-1.14
 
 Rscript -e 'stopifnot(
   requireNamespace("arrow"),
@@ -38,13 +38,11 @@ PY
 
 ---
 
-
-
 ## 0.2 Clone (once)
 
 Set `$CCMMF_BASE` to the directory that will hold your clones (`$CCMMF_BASE/src`) and data (`$CCMMF_BASE/ccmmf`).
 
-You also need `pecan-all-1.14` already installed, plus two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). Later sessions assume those repos live at `$CCMMF_BASE/src/pecan` and `$CCMMF_BASE/src/cadwr-landuse`.
+You also need two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). Later sessions assume those repos live at `$CCMMF_BASE/src/pecan` and `$CCMMF_BASE/src/cadwr-landuse`.
 
 **New clones**
 
@@ -68,6 +66,8 @@ git checkout main
 
 **Already cloned elsewhere.** Do not re-clone. Symlink into `$CCMMF_BASE/src/` so Session 0.3 and later path names still work.
 
+`ln -s` takes two paths: **left** = existing clone on disk (edit this); **right** = the name the tutorials expect (leave as-is).
+
 ```bash
 export CCMMF_BASE=/path/to/workdir
 mkdir -p "$CCMMF_BASE/src"
@@ -84,14 +84,12 @@ If a repo is already at `$CCMMF_BASE/src/pecan` or `$CCMMF_BASE/src/cadwr-landus
 
 ---
 
-
-
 ## 0.3 Every new shell
 
-Activate `pecan-all-1.14`, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
+Activate the conda env from 0.1, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
 
 ```bash
-conda activate <ENV_PATH_OR_NAME>
+conda activate <ENV_PATH_OR_NAME>   # same env as 0.1
 
 export CCMMF_BASE=/path/to/workdir   # same as 0.2
 
@@ -107,8 +105,6 @@ source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup
 ```
 
 ---
-
-
 
 ## 0.4 Workspace (once)
 
@@ -157,8 +153,6 @@ mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event
 
 ---
 
-
-
 ## 0.5 Confirm setup
 
 Confirm the code and data roots are real on disk.
@@ -174,8 +168,6 @@ ls "$CCMMF_ROOT"   # data workspace
 If you do not see the directories you made, go back and fix the section above before Session 1.
 
 ---
-
-
 
 ## 0.6 NASA Earthdata
 
