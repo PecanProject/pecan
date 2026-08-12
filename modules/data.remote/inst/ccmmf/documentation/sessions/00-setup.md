@@ -64,9 +64,7 @@ cd cadwr-landuse
 git checkout main
 ```
 
-**Already cloned elsewhere.** Do not re-clone. Symlink into `$CCMMF_BASE/src/` so Session 0.3 and later path names still work.
-
-`ln -s` takes two paths: **left** = existing clone on disk (edit this); **right** = the name the tutorials expect (leave as-is).
+**Already cloned elsewhere.**
 
 ```bash
 export CCMMF_BASE=/path/to/workdir
@@ -76,11 +74,8 @@ mkdir -p "$CCMMF_BASE/src"
 ln -s /actual/path/to/pecan          "$CCMMF_BASE/src/pecan"
 ln -s /actual/path/to/cadwr-landuse  "$CCMMF_BASE/src/cadwr-landuse"
 
-ls -l "$CCMMF_BASE/src/pecan" "$CCMMF_BASE/src/cadwr-landuse"
-ls "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf"
+ls -ld "$CCMMF_BASE/src/pecan" "$CCMMF_BASE/src/cadwr-landuse"
 ```
-
-If a repo is already at `$CCMMF_BASE/src/pecan` or `$CCMMF_BASE/src/cadwr-landuse`, skip both the clone and the symlink for that repo.
 
 ---
 
