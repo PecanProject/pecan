@@ -6,7 +6,7 @@ You can scope either track to a Session 2 demo parcel list when you have one.
 
 **Prerequisite:** [Session 0](00-setup.md); [Session 1](01-landiq.md) gap-filled LandIQ product. For irrigation canopy cover, prefer [Session 2](02-phenology.md) matched phenology (`$MATCHED_DIR`) and optional demo `parcels_10SDH.csv`.
 
-**Where to go deeper:** [tree README](../../README.md); fert lookups in `PEcAn.data.land`; statewide fert/NCC builders in PEcAn PR [#4003](https://github.com/PecanProject/pecan/pull/4003); irrigation under `workflows/irrigation-statewide/` (especially `preprocessing/README.md`).
+**Where to go deeper:** [tree README](../../README.md); fert lookups in `PEcAn.data.land`; statewide fert/NCC builders under `workflows/fertilization-statewide/` and `workflows/ncc-statewide/` (on PEcAn `develop`); irrigation under `workflows/irrigation-statewide/` (especially `preprocessing/README.md`).
 
 ```mermaid
 flowchart LR
@@ -35,12 +35,12 @@ flowchart LR
 | Step | Where |
 |------|--------|
 | N rate / fertilizer component lookups | `PEcAn.data.land` (`look_up_ca_n_rate`, `look_up_fertilizer_components`); data-raw under `modules/data.land/data-raw/` |
-| Packaged rate tables | PEcAn PR [#4002](https://github.com/PecanProject/pecan/pull/4002) (merged) |
-| Statewide N fertilization events | PR [#4003](https://github.com/PecanProject/pecan/pull/4003) `workflows/fertilization-statewide` |
-| Organic amendment (NCC) events | Same PR #4003 `workflows/ncc-statewide` |
+| Packaged rate tables | `PEcAn.data.land` packaged data |
+| Statewide N fertilization events | [fertilization-statewide](../../../../../../workflows/fertilization-statewide/README.md) |
+| Organic amendment (NCC) events | [ncc-statewide](../../../../../../workflows/ncc-statewide/README.md) |
 | Climate / soils staging | `$CHIRPS_DIR`, `$CIMIS_DIR`, `$SSURGO_DIR`; [Session 3](03-fertilizer-irrigation.md) secs. 3.4-3.5 |
-| Parcel climate / soil extracts | `workflows/irrigation-statewide/preprocessing/` |
-| Irrigation water-balance | `workflows/irrigation-statewide/` (`README.md`, `config_paths.yml`) |
+| Parcel climate / soil extracts | [irrigation-statewide/preprocessing](../../../../../../workflows/irrigation-statewide/preprocessing/README.md) |
+| Irrigation water-balance | [irrigation-statewide](../../../../../../workflows/irrigation-statewide/README.md) (`config_paths.yml`) |
 
 Combining Session 2 and Session 3 event files (optional handoff): [events/README.md](../../events/README.md).
 
@@ -48,19 +48,22 @@ Shared contract with Sessions 1-2: LandIQ `parcel_id` (and demo filter when used
 
 ## Paths for this session
 
-Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy, point YAML `mslsp_path` at `$MATCHED_DIR` (or the matched hive from [Session 2](02-phenology.md)). Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](00-setup.md#data-layout).
+Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy, point YAML `mslsp_path` at `$MATCHED_DIR` (or the matched hive from [Session 2](02-phenology.md)). Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Workspace](00-setup.md#04-workspace-once).
 
 | Role | Path | Notes |
 |------|------|-------|
 | In | `$LANDIQ_GAPFILLED` | Crops table for fert / irrigation |
 | In | `$MATCHED_DIR` | Prefer for irrig `mslsp_path` |
 | Lookups | `$FERTILIZATION_LOOKUPS` | Optional TSV rate tables (`$LOOKUPS_ROOT/fertilization`) |
-| Out | `$PRODUCTS_INVENTORY/fertilization/` | Fert / NCC **event** outputs when PR #4003 builders are available |
+| Out | `$PRODUCTS_INVENTORY/fertilization/` | Fert / NCC **event** outputs from the statewide builders |
 | Staging | `$CHIRPS_DIR`, `$CIMIS_DIR`, `$SSURGO_DIR` | Raw downloads / gdb |
 | Work | irrig preprocess dirs (YAML) | Parcel extracts; may live under staging or another path |
 | Out | Prefer `$PRODUCTS_INVENTORY/irrigation/` | Set as irrig `event_output_dir` |
 
 ---
+
+> [!IMPORTANT]
+> New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
 
 ## 3.1 N rate and fertilizer lookups
 
@@ -72,7 +75,7 @@ On this monitoring tree you can **inspect** rates via `PEcAn.data.land`:
 |-------|------|
 | `PEcAn.data.land::look_up_ca_n_rate()` | Per-crop min/max N from CA rate tables |
 | `PEcAn.data.land::look_up_fertilizer_components()` | Fertilizer component helpers |
-| Packaged rate tables (PR [#4002](https://github.com/PecanProject/pecan/pull/4002)) | Bundled reference data behind the lookups |
+| Packaged rate tables | Bundled reference data behind the lookups (`PEcAn.data.land`) |
 
 ```r
 library(PEcAn.data.land)
@@ -99,15 +102,13 @@ There is **no** `harmonize_fertilization_data.R` on this tree. Packaged tables a
 
 ## 3.2 Statewide N fertilization events
 
-Parcel-level **N fertilization event** builders are in PEcAn PR
-[#4003](https://github.com/PecanProject/pecan/pull/4003):
-`workflows/fertilization-statewide`. Those directories are **not** under
-`workflows/` on this monitoring branch -- use the PR for statewide event runs.
+Parcel-level **N fertilization event** builders live on PEcAn `develop` under
+`workflows/fertilization-statewide/`.
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
 | Input | `$LANDIQ_GAPFILLED` + packaged N lookups | Same `parcel_id` contract as Sessions 1-2 |
-| Workflow | PR #4003 `workflows/fertilization-statewide` | Not shipped under `workflows/` here |
+| Workflow | `workflows/fertilization-statewide/` | At the PEcAn repo root (not under `inst/ccmmf`) |
 | Output | `$PRODUCTS_INVENTORY/fertilization/` | Prefer this inventory path for event products |
 
 ---
@@ -115,13 +116,13 @@ Parcel-level **N fertilization event** builders are in PEcAn PR
 ## 3.3 Organic amendment (NCC) events
 
 Non-crop carbon amendments (manure, compost, biochar, and similar) use the same
-guideline approach as N fert, with a separate statewide builder in the same PR:
-`workflows/ncc-statewide`.
+guideline approach as N fert, with a separate statewide builder on `develop`:
+`workflows/ncc-statewide/`.
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
 | Input | `$LANDIQ_GAPFILLED` + organic amendment tables | Packaged via data-raw / `$FERTILIZATION_LOOKUPS` |
-| Workflow | PR #4003 `workflows/ncc-statewide` | Not shipped under `workflows/` here |
+| Workflow | `workflows/ncc-statewide/` | At the PEcAn repo root (not under `inst/ccmmf`) |
 | Output | `$PRODUCTS_INVENTORY/fertilization/` | Same inventory folder as N fert events unless you split by convention |
 
 ---

@@ -6,10 +6,10 @@
 
 ## 0.1 Environment (once)
 
-Activate `pecan-all-1.14` and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
+Use conda env `pecan-all-1.14` for all sessions. Activate it and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
 
 ```bash
-conda activate <ENV_PATH_OR_NAME>
+conda activate <ENV_PATH_OR_NAME>   # pecan-all-1.14
 
 Rscript -e 'stopifnot(
   requireNamespace("arrow"),
@@ -38,13 +38,13 @@ PY
 
 ---
 
-
-
 ## 0.2 Clone (once)
 
 Set `$CCMMF_BASE` to the directory that will hold your clones (`$CCMMF_BASE/src`) and data (`$CCMMF_BASE/ccmmf`).
 
-You also need `pecan-all-1.14` already installed, plus two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). If a repo is already on disk, skip it.
+You also need two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). Later sessions assume those repos live at `$CCMMF_BASE/src/pecan` and `$CCMMF_BASE/src/cadwr-landuse`.
+
+**New clones**
 
 ```bash
 export CCMMF_BASE=/path/to/workdir
@@ -52,10 +52,10 @@ export CCMMF_BASE=/path/to/workdir
 mkdir -p "$CCMMF_BASE/src"
 cd "$CCMMF_BASE/src"
 
-# pecan -- monitoring branch
-git clone https://github.com/sarahkanee/pecan.git
+# pecan -- develop
+git clone https://github.com/PecanProject/pecan.git
 cd pecan
-git checkout feature/ccmmf-statewide-monitoring-inst
+git checkout develop
 
 # cadwr-landuse -- main
 cd "$CCMMF_BASE/src"
@@ -64,21 +64,32 @@ cd cadwr-landuse
 git checkout main
 ```
 
+**Already cloned elsewhere.**
+
+```bash
+export CCMMF_BASE=/path/to/workdir
+mkdir -p "$CCMMF_BASE/src"
+
+# ln -s <existing clone> <tutorial path>
+ln -s /actual/path/to/pecan          "$CCMMF_BASE/src/pecan"
+ln -s /actual/path/to/cadwr-landuse  "$CCMMF_BASE/src/cadwr-landuse"
+
+ls -ld "$CCMMF_BASE/src/pecan" "$CCMMF_BASE/src/cadwr-landuse"
+```
+
 ---
-
-
 
 ## 0.3 Every new shell
 
-Activate `pecan-all-1.14`, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
+Activate the conda env from 0.1, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
 
 ```bash
-conda activate <ENV_PATH_OR_NAME>
+conda activate <ENV_PATH_OR_NAME>   # same env as 0.1
 
-export CCMMF_BASE=/path/to/workdir   # same value as 0.2
+export CCMMF_BASE=/path/to/workdir   # same as 0.2
 
 # Pull only the repo you are using this session:
-git -C "$CCMMF_BASE/src/pecan" pull origin feature/ccmmf-statewide-monitoring-inst
+git -C "$CCMMF_BASE/src/pecan" pull origin develop
 git -C "$CCMMF_BASE/src/cadwr-landuse" pull origin main
 
 # Optional overrides (only if you do not want the BASE defaults):
@@ -90,11 +101,7 @@ source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup
 
 ---
 
-
-
 ## 0.4 Workspace (once)
-
-<a id="data-layout"></a>
 
 `setup_env` only stored the path strings. Create these folders once. Later sessions use the vars and assume the tree exists.
 
@@ -116,10 +123,10 @@ $CCMMF_ROOT/
     SSURGO/                           # SSURGO_DIR
   lookups/
     plant_traits/                     # PLANT_TRAITS_DIR
-    fertilization/                    # FERTILIZATION_LOOKUPS (rate tables)
+    fertilization/                    # FERTILIZATION_LOOKUPS
   products/
     inventory/                        # PRODUCTS_INVENTORY
-      phenology/                      # MATCHED_DIR default under here
+      phenology/                      
       tillage/
       fertilization/
       irrigation/
@@ -130,7 +137,7 @@ Create the dirs:
 
 ```bash
 mkdir -p "$LANDIQ_ROOT"/{raw,gapfilled}
-mkdir -p "$CADWR_WORK_DIR"   # LANDIQ_HARMONIZED -> $CADWR_WORK_DIR/03-final after cadwr
+mkdir -p "$CADWR_WORK_DIR" "$LANDIQ_HARMONIZED"   # 03-final; S3 skip or cadwr both land here
 mkdir -p "$HLS_ROOT"/{imagery,MSLSP}
 mkdir -p "$CDL_DIR"
 mkdir -p "$CLIMATE_ROOT"/{CHIRPS,CIMIS}
@@ -140,8 +147,6 @@ mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event
 ```
 
 ---
-
-
 
 ## 0.5 Confirm setup
 
@@ -158,8 +163,6 @@ ls "$CCMMF_ROOT"   # data workspace
 If you do not see the directories you made, go back and fix the section above before Session 1.
 
 ---
-
-
 
 ## 0.6 NASA Earthdata
 
