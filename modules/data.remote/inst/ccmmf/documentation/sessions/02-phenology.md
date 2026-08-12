@@ -52,7 +52,7 @@ flowchart LR
 
 ## Paths for this session
 
-Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.6. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](00-setup.md#data-layout).
+Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.6. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Workspace](00-setup.md#04-workspace-once).
 
 To **produce** MSLSP NetCDF / HLS imagery (not only consume existing files), clone [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) and follow that repo's download steps into `$MSLSP_NETCDF_ROOT` / `$HLS_IMAGERY_ROOT`.
 
@@ -67,6 +67,9 @@ To **produce** MSLSP NetCDF / HLS imagery (not only consume existing files), clo
 | Lookups | `$LOOKUPS_ROOT/plant_traits` (`$PLANT_TRAITS_DIR`) | Trait CSVs for planting/harvest |
 
 ---
+
+> [!IMPORTANT]
+> New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
 
 ## 2.1 Env and demo parcel list
 

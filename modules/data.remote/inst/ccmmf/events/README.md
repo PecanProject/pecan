@@ -11,7 +11,7 @@ Related management layers live in parallel workflows (**Session 3**):
   `PEcAn.data.land` helpers (`look_up_ca_n_rate`, etc.); statewide builders
   `workflows/fertilization-statewide` / `workflows/ncc-statewide` (open PEcAn
   PR [#4003](https://github.com/PecanProject/pecan/pull/4003); not shipped on
-  this monitoring branch)
+  develop)
 - **Irrigation:** [Session 3](../documentation/sessions/03-fertilizer-irrigation.md)
 
 Full product set: [tree README](../README.md).

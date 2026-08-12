@@ -52,10 +52,10 @@ export CCMMF_BASE=/path/to/workdir
 mkdir -p "$CCMMF_BASE/src"
 cd "$CCMMF_BASE/src"
 
-# pecan -- monitoring branch
-git clone https://github.com/sarahkanee/pecan.git
+# pecan -- develop
+git clone https://github.com/PecanProject/pecan.git
 cd pecan
-git checkout feature/ccmmf-statewide-monitoring-inst
+git checkout develop
 
 # cadwr-landuse -- main
 cd "$CCMMF_BASE/src"
@@ -75,10 +75,10 @@ Activate `pecan-all-1.14`, set the same `$CCMMF_BASE` as in 0.2, pull the repo y
 ```bash
 conda activate <ENV_PATH_OR_NAME>
 
-export CCMMF_BASE=/path/to/workdir   # same value as 0.2
+export CCMMF_BASE=/path/to/workdir   # same as 0.2
 
 # Pull only the repo you are using this session:
-git -C "$CCMMF_BASE/src/pecan" pull origin feature/ccmmf-statewide-monitoring-inst
+git -C "$CCMMF_BASE/src/pecan" pull origin develop
 git -C "$CCMMF_BASE/src/cadwr-landuse" pull origin main
 
 # Optional overrides (only if you do not want the BASE defaults):
@@ -93,8 +93,6 @@ source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup
 
 
 ## 0.4 Workspace (once)
-
-<a id="data-layout"></a>
 
 `setup_env` only stored the path strings. Create these folders once. Later sessions use the vars and assume the tree exists.
 
@@ -116,10 +114,10 @@ $CCMMF_ROOT/
     SSURGO/                           # SSURGO_DIR
   lookups/
     plant_traits/                     # PLANT_TRAITS_DIR
-    fertilization/                    # FERTILIZATION_LOOKUPS (rate tables)
+    fertilization/                    # FERTILIZATION_LOOKUPS
   products/
     inventory/                        # PRODUCTS_INVENTORY
-      phenology/                      # MATCHED_DIR default under here
+      phenology/                      
       tillage/
       fertilization/
       irrigation/

@@ -14,6 +14,9 @@ outputs for MAGIC inventory runs.
 
 ---
 
+> [!IMPORTANT]
+> New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
+
 ## Why this step exists
 
 MAGIC annual inventory and scenario runs need agronomic events in the formats
@@ -56,7 +59,7 @@ Column dictionaries: [metadata.md](../metadata.md), [events/README.md](../../eve
 | SIPNET `events.in` | `PEcAn.SIPNET::write.events.SIPNET` | also used from restart drivers |
 | Restart / run drivers | `workflows/sipnet-restart-workflow/` (prepare settings, run) | fuller checkout may include preprocess beside restart |
 
-Stages 1-2 below are **not** under `workflows/` on this monitoring branch. Use a
+Stages 1-2 below are **not** under `workflows/` on develop. Use a
 SIPNET restart workflow checkout that includes
 `workflows/preprocess-event-parquet/` (lab reference: ashiklom
 `sipnet-restart-workflow` tree). This appendix keeps the column map and the

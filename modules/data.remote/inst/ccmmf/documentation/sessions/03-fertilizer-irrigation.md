@@ -48,7 +48,7 @@ Shared contract with Sessions 1-2: LandIQ `parcel_id` (and demo filter when used
 
 ## Paths for this session
 
-Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy, point YAML `mslsp_path` at `$MATCHED_DIR` (or the matched hive from [Session 2](02-phenology.md)). Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Data layout](00-setup.md#data-layout).
+Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy, point YAML `mslsp_path` at `$MATCHED_DIR` (or the matched hive from [Session 2](02-phenology.md)). Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Workspace](00-setup.md#04-workspace-once).
 
 | Role | Path | Notes |
 |------|------|-------|
@@ -61,6 +61,9 @@ Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md). For irrigation canopy
 | Out | Prefer `$PRODUCTS_INVENTORY/irrigation/` | Set as irrig `event_output_dir` |
 
 ---
+
+> [!IMPORTANT]
+> New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
 
 ## 3.1 N rate and fertilizer lookups
 
@@ -102,7 +105,7 @@ There is **no** `harmonize_fertilization_data.R` on this tree. Packaged tables a
 Parcel-level **N fertilization event** builders are in PEcAn PR
 [#4003](https://github.com/PecanProject/pecan/pull/4003):
 `workflows/fertilization-statewide`. Those directories are **not** under
-`workflows/` on this monitoring branch -- use the PR for statewide event runs.
+`workflows/` on develop -- use the PR for statewide event runs.
 
 | Item | Path / format | Notes |
 |------|---------------|--------|
