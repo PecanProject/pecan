@@ -249,7 +249,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     # at a time. The design says which run is which, so the parameter sets and
     # the run names are built from it here and the same writer writes them.
     sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
-    sa.naming <- PEcAn.uncertainty::sa_run_ids(
+    sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
       design_matrix = input_design,
       site_id       = settings$run$site$id,
       pft_names     = pft.names
@@ -263,10 +263,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       model            = model,
       input_design     = input_design,
       write.to.db      = write,
-      run_ids          = sa.naming$ids,
-      paramlists       = sa.naming$paramlists,
-      ensemble.id      = settings$sensitivity.analysis$ensemble.id,
-      runtype          = "sensitivity analysis"
+      run_descriptions = sa.descriptions,
+      ensemble.id      = settings$sensitivity.analysis$ensemble.id
     )
 
     # collect manifest data

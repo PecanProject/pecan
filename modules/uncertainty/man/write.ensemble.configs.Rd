@@ -15,10 +15,8 @@ write.ensemble.configs(
   write.to.db = TRUE,
   restart = NULL,
   rename = FALSE,
-  run_ids = NULL,
-  paramlists = NULL,
-  ensemble.id = NULL,
-  runtype = "ensemble"
+  run_descriptions = NULL,
+  ensemble.id = NULL
 )
 }
 \arguments{
@@ -49,18 +47,14 @@ See Details.}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
 
-\item{run_ids}{optional character vector of run ids, one per design row, used
-instead of generating ENS ids. Lets a caller that already knows what each
-run is keep its own naming.}
-
-\item{paramlists}{optional character vector, one per design row, describing
-each run when writing to the database. Defaults to "ensemble=<i>".}
+\item{run_descriptions}{optional data.frame, one row per design row, with
+\code{id}, \code{paramlist} and the \code{pft_name}, \code{trait},
+\code{quantile} and \code{type} the run manifest carries. Lets a caller that
+already knows what each run is describe them, instead of these being
+generated as ensemble members.}
 
 \item{ensemble.id}{optional id for this set of runs, used instead of the one
 in \code{settings$ensemble$id}.}
-
-\item{runtype}{what these runs are, recorded in the database and in each run's
-README. Defaults to "ensemble"; a sensitivity analysis passes its own.}
 }
 \value{
 list, containing

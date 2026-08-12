@@ -23,6 +23,7 @@ make_rwc_settings <- function(outdir,
     rundir   = outdir,
     database = NULL,
     host     = list(name = "localhost"),
+    run      = list(site = list(id = "772")),
     model    = list(type = "FAKE"),
     pfts     = list(list(name = "temperate.deciduous", posteriorid = NULL))
   )
@@ -256,7 +257,7 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
   expect_identical(e$sa.samples, sa.samples)
   expect_equal(e$pft.names, "temperate.deciduous")
   expect_equal(e$trait.names, list(temperate.deciduous = "Vcmax"))
-  
+
   # sa.run.ids is built from the design now rather than produced by the writer,
   # but it still indexes runs by quantile and trait
   expect_equal(e$sa.run.ids$temperate.deciduous["50", "Vcmax"], "r1")

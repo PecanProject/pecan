@@ -224,16 +224,13 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #'  new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.
 #'  See Details.
 #' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
-#'
-#' @param run_ids optional character vector of run ids, one per design row, used
-#'   instead of generating ENS ids. Lets a caller that already knows what each
-#'   run is keep its own naming.
-#' @param paramlists optional character vector, one per design row, describing
-#'   each run when writing to the database. Defaults to "ensemble=<i>".
+#' @param run_descriptions optional data.frame, one row per design row, with
+#'   \code{id}, \code{paramlist} and the \code{pft_name}, \code{trait},
+#'   \code{quantile} and \code{type} the run manifest carries. Lets a caller that
+#'   already knows what each run is describe them, instead of these being
+#'   generated as ensemble members.
 #' @param ensemble.id optional id for this set of runs, used instead of the one
 #'   in \code{settings$ensemble$id}.
-#' @param runtype what these runs are, recorded in the database and in each run's
-#'   README. Defaults to "ensemble"; a sensitivity analysis passes its own.
 #' @return list, containing
 #'  $runs = data frame of runids,
 #'  $ensemble.id = the ensemble ID for these runs,
@@ -247,8 +244,7 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 
 write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model,
                                    clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE,
-                                   run_ids = NULL, paramlists = NULL, ensemble.id = NULL,
-                                   runtype = "ensemble") {
+                                   run_descriptions = NULL, ensemble.id = NULL) {
 
   # Check for required paths
   for (input_tag in names(settings$run$inputs)) {
@@ -318,7 +314,8 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO ensembles (runtype, workflow_id) ",
-        "VALUES ('", runtype, "', ", format(workflow.id, scientific = FALSE), ")",
+        "VALUES ('", if (!is.null(run_descriptions)) tolower(run_descriptions$type[1]) else "ensemble",
+        "', ", format(workflow.id, scientific = FALSE), ")",
         "RETURNING id"), con = con)[['id']]
 
       for (pft in defaults) {
@@ -419,7 +416,11 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       if (!is.null(con) && write.to.db) {
         # a caller that knows what each run is, such as a sensitivity analysis,
         # supplies its own descriptions; otherwise the run is just ensemble i
-        paramlist <- if (!is.null(paramlists)) paramlists[[i]] else paste("ensemble=", i, sep = "")
+        paramlist <- if (!is.null(run_descriptions)) {
+          run_descriptions$paramlist[i]
+        } else {
+          paste("ensemble=", i, sep = "")
+        }
         # inserting this into the table and getting an id back
         run.id <- PEcAn.DB::db.query(paste0(
           "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
@@ -443,8 +444,8 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
       } else {
 
-        run.id <- if (!is.null(run_ids)) {
-          run_ids[[i]]
+        run.id <- if (!is.null(run_descriptions)) {
+          run_descriptions$id[i]
         } else {
           PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id = settings$run$site$id)
         }
@@ -455,10 +456,10 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id,
         site_id = settings$run$site$id,
-        pft_name = "NA",
-        trait = "NA",
-        quantile = "NA",
-        type = "Ensemble",
+        pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
+        trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
+        quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
+        type     = if (!is.null(run_descriptions)) run_descriptions$type[i] else "Ensemble",
         stringsAsFactors = FALSE
       ))
 
@@ -484,7 +485,9 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       }
 
       # write run information to disk
-      cat(paste0("runtype     : ", runtype, "\n"),
+      cat(paste0("runtype     : ",
+                 if (!is.null(run_descriptions)) tolower(run_descriptions$type[1]) else "ensemble",
+                 "\n"),,
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
           "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
           "run         : ", i, "/", ensemble.size, "\n",
@@ -600,10 +603,10 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id[[i]],
         site_id = settings$run$site$id,
-        pft_name = "NA",
-        trait = "NA",
-        quantile = "NA",
-        type = "Ensemble",
+        pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
+        trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
+        quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
+        type     = if (!is.null(run_descriptions)) run_descriptions$type[i] else "Ensemble",
         stringsAsFactors = FALSE
       ))
     }

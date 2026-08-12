@@ -62,28 +62,35 @@ sa_run_samples <- function(sa_samples, design_matrix) {
   run_samples
 }
 
-#' Build run ids and descriptions for a sensitivity analysis design
+#' Describe each run of a sensitivity analysis design
 #'
-#' Sensitivity analysis runs are named after what they are, so a run directory
-#' says which trait sits at which quantile. The design carries that, so the
-#' names can be built before anything is written.
+#' The writers need three things about each run: what to call it, how to record
+#' it in the database, and what to put in the run manifest that the sensitivity
+#' analysis post-processing reads back. All three follow from the design labels,
+#' so they are built here rather than as a side effect of writing configs.
 #'
 #' @param design_matrix The design from \code{\link{generate_OAT_SA_design}}.
 #' @param site_id Site id, used as the last part of each run id.
 #' @param pft_names Names of the PFTs in the run, used to describe the median
 #'   run, which moves nothing.
 #'
-#' @return A list with \code{ids}, one run id per design row, and
-#'   \code{paramlists}, one description per design row for the runs table.
+#' @return A data.frame with one row per design row: \code{id}, \code{paramlist},
+#'   and the \code{pft_name}, \code{trait}, \code{quantile} and \code{type} the
+#'   manifest carries. This is what \code{\link{write.ensemble.configs}} takes as
+#'   \code{run_descriptions}.
 #'
 #' @export
-sa_run_ids <- function(design_matrix, site_id, pft_names) {
+sa_run_descriptions <- function(design_matrix, site_id, pft_names) {
+  MEDIAN <- "50"
+
   n_runs <- nrow(design_matrix)
+  is_median <- is.na(design_matrix$sa_pft)
+
   ids <- character(n_runs)
   paramlists <- character(n_runs)
 
   for (row in seq_len(n_runs)) {
-    if (is.na(design_matrix$sa_pft[row])) {
+    if (is_median[row]) {
       ids[row] <- PEcAn.utils::get.run.id("SA", "median", site.id = site_id)
       paramlists[row] <- paste0(
         "quantile=MEDIAN,trait=all,pft=",
@@ -106,7 +113,16 @@ sa_run_ids <- function(design_matrix, site_id, pft_names) {
     }
   }
 
-  list(ids = ids, paramlists = paramlists)
+  # the median run covers every trait, so it is recorded without one
+  data.frame(
+    id        = ids,
+    paramlist = paramlists,
+    pft_name  = ifelse(is_median, "NA", design_matrix$sa_pft),
+    trait     = ifelse(is_median, "NA", design_matrix$sa_trait),
+    quantile  = ifelse(is_median, MEDIAN, design_matrix$sa_quantile),
+    type      = "Sensitivity",
+    stringsAsFactors = FALSE
+  )
 }
 
 
