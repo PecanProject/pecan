@@ -1,0 +1,52 @@
+# HLS shared helpers
+
+Shared tilewise framework and one-time **parcel-tile map** used by product
+extracts. This folder is an index and shared library, not a second pipeline.
+
+**Harmonized Landsat Sentinel-2 (HLS)** tiles are the spatial grid. Two extracts
+reuse the same map and `R/tilewise_core.R`:
+
+| Product | Cadence | Operator doc |
+|---------|---------|--------------|
+| **MSLSP** (Multi-Source Land Surface Phenology) | annual | [phenology/extract/README.md](../phenology/extract/README.md) |
+| **NDTI** (Normalized Difference Tillage Index) | monthly | [tillage/extract/README.md](../tillage/extract/README.md) |
+
+End-to-end order: [../README.md](../README.md).
+Session 2 (MSLSP + NDTI): [documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md).
+
+## What lives here
+
+```
+hls/
++-- build_hls_parcel_tile_map.R   # parcel -> MGRS tiles (geometry only; once)
++-- build_hls_tile_extent.R       # tile extent grid (if missing)
++-- R/                            # tilewise_core.R and shared extract helpers
+```
+
+Product-specific extract logic stays in `phenology/extract/` and `tillage/extract/`.
+
+## Parcel-tile map (one-time)
+
+Why: each LandIQ parcel may overlap one or more HLS Military Grid Reference
+System (MGRS) tiles. Extracts need that lookup before they can pull NetCDF or
+imagery. Build once from harmonized (or gap-filled) geometry; reuse every year.
+Re-run only when `parcels-consolidated.gpkg` changes. Which parcels are
+agricultural in a given year is decided later inside each extract's prep step
+from `crops_all_years.parq`.
+
+```bash
+Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R" overwrite
+```
+
+Outputs under `$PRODUCTS_INVENTORY`:
+
+| File | Contents |
+|------|----------|
+| `hls_parcel_tile_map_v4.1.csv` | `parcel_id`, `tileIDs`, `n_tiles` |
+| `hls_tile_parcel_counts_v4.1.csv` | `tile_id`, `n_parcels` |
+
+Tile -> parcels is derived in R via `read_tile_to_parcels()` (no separate file).
+
+Upstream HLS imagery and MSLSP NetCDF come from
+[HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)
+(`$HLS_ROOT/imagery`, `$HLS_ROOT/MSLSP`).
