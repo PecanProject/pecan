@@ -143,11 +143,12 @@ python scripts/03b-finalize-crops.py \
 
 `01-split.py` logs the discovered year list (expect 2016, 2018-2024). If a year you staged is missing from that log, fix `$LANDIQ_RAW` and re-run.
 
-If this section was not run in advance, a current version is already on S3 -- pull that into `$LANDIQ_HARMONIZED` and continue on:
+If this section was not run in advance, a current version is already on S3. Put those two files in `$LANDIQ_HARMONIZED` (same directory cadwr would have written -- `$CADWR_WORK_DIR/03-final` after Session 0). CDL extract and gap-fill look for `parcels-consolidated.gpkg` there.
 
 ```bash
 aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
 aws s3 --profile magic cp s3://carb/management/crops/v4.2/crops_all_years.parq "$LANDIQ_HARMONIZED/"
+ls "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg" "$LANDIQ_HARMONIZED/crops_all_years.parq"
 ```
 
 ---
@@ -176,7 +177,10 @@ Even after harmonization, LandIQ is incomplete on some parcels: the main-season 
 
 ### CDL rasters and fractions
 
-Download both years of CDL (NASS national 30 m GeoTIFF, clipped to California). 
+Two steps:
+
+1. **Download** the statewide CDL GeoTIFF for each inventory year (NASS national 30 m, clipped to California) into `$CDL_DIR`.
+2. **Extract parcel fractions.** Using `$LANDIQ_HARMONIZED/parcels-consolidated.gpkg`, overlay each parcel on that year's CDL raster and record the **area fraction** of every CDL crop code inside the polygon (not just the majority class). Write one parquet per year: `CDL_DIR/cdl_fractions_year=YYYY.parquet`.
 
 ```bash
 CDL=$LANDIQ_GAPFILL_ROOT/scripts/cdl
@@ -203,17 +207,17 @@ Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), 
 
 Lookup tables are in `$LANDIQ_GAPFILL_ROOT/outputs/`. On a routine update, leave them alone.
 
-**Probability tables** start from fields where both maps exist. For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present: look up which LandIQ crop usually goes with the CDL mix on that field.
+For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present to look up which LandIQ crop usually goes with the CDL mix on that field.
 
 
-| Table       | File              | What it answers                       |
-| ----------- | ----------------- | ------------------------------------- |
-| `P(CDL      | CLASS)`           | `cdl_prob_by_class_*.parquet`         |
-| `P(CDL      | CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet`      |
-| `P(SUBCLASS | CLASS)`           | `landiq_subclass_frequency_*.parquet` |
+| Table | File | What it answers |
+| ----- | ---- | --------------- |
+| `P(CDL \| CLASS)` | `cdl_prob_by_class_*.parquet` | Given LandIQ CLASS, which CDL codes usually appear |
+| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet` | Given LandIQ CLASS::SUBCLASS, which CDL codes usually appear |
+| `P(SUBCLASS \| CLASS)` | `landiq_subclass_frequency_*.parquet` | Given LandIQ CLASS, which subclasses are most common |
 
 
-**ADOY reference tables** are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero: copy a typical day for that crop (and county, when there are enough observations).
+ADOY reference tables are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero.
 
 
 | File                                           | What it is                            |
@@ -265,13 +269,23 @@ Rscript $LANDIQ_GAPFILL_ROOT/scripts/R/cover_crop_landiq.R
 
 ## 1.6 Inspect / QC
 
-After gap-fill and COVER, skim the product, then summarize provenance for the year pair.
+After gap-fill and COVER, run QC, glimpse the inventory-year product, then read the report.
 
 ```bash
-Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")))'
-
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 Rscript $LANDIQ_GAPFILL_ROOT/scripts/gapfill.R qc $YEARS
+
+# Glimpse inventory years only (PRIOR_YEAR / TARGET_YEAR)
+Rscript -e '
+p <- file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")
+yrs <- as.integer(c(Sys.getenv("PRIOR_YEAR"), Sys.getenv("TARGET_YEAR")))
+ds <- arrow::open_dataset(p) |> dplyr::filter(year %in% yrs)
+print(as.data.frame(ds |> dplyr::count(year) |> dplyr::collect() |> dplyr::arrange(year)))
+dplyr::bind_rows(lapply(yrs, function(y) {
+  ds |> dplyr::filter(year == y) |> dplyr::slice_head(n = 20) |> dplyr::collect()
+})) |> dplyr::glimpse()
+'
+
 cat $LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md
 ```
 

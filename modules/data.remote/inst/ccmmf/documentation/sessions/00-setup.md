@@ -128,7 +128,7 @@ Create the dirs:
 
 ```bash
 mkdir -p "$LANDIQ_ROOT"/{raw,gapfilled}
-mkdir -p "$CADWR_WORK_DIR"   # LANDIQ_HARMONIZED -> $CADWR_WORK_DIR/03-final after cadwr
+mkdir -p "$CADWR_WORK_DIR" "$LANDIQ_HARMONIZED"   # 03-final; S3 skip or cadwr both land here
 mkdir -p "$HLS_ROOT"/{imagery,MSLSP}
 mkdir -p "$CDL_DIR"
 mkdir -p "$CLIMATE_ROOT"/{CHIRPS,CIMIS}
