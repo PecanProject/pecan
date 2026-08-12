@@ -1,0 +1,179 @@
+# Session 0 - Setup
+
+**What this session is for.** Later sessions assume a working software stack, the pipeline code on disk, and a data workspace with known path names. This session gets that ready, including what to run every time you open a new shell.
+
+---
+
+## 0.1 Environment (once)
+
+Activate `pecan-all-1.14` and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
+
+```bash
+conda activate <ENV_PATH_OR_NAME>
+
+Rscript -e 'stopifnot(
+  requireNamespace("arrow"),
+  requireNamespace("dplyr"),
+  requireNamespace("data.table"),
+  requireNamespace("sf"),
+  requireNamespace("terra"),
+  requireNamespace("exactextractr"),
+  requireNamespace("readr"),
+  requireNamespace("stringr"),
+  requireNamespace("lubridate"),
+  requireNamespace("jsonlite")
+)'
+
+python - <<'PY'
+import dask
+import fiona
+import geopandas
+import numpy
+import pandas
+import pyarrow
+import shapely
+import tqdm
+PY
+```
+
+---
+
+
+
+## 0.2 Clone (once)
+
+Set `$CCMMF_BASE` to the directory that will hold your clones (`$CCMMF_BASE/src`) and data (`$CCMMF_BASE/ccmmf`).
+
+You also need `pecan-all-1.14` already installed, plus two git repos: PEcAn and [cadwr-landuse](https://github.com/ccmmf/cadwr-landuse). If a repo is already on disk, skip it.
+
+```bash
+export CCMMF_BASE=/path/to/workdir
+
+mkdir -p "$CCMMF_BASE/src"
+cd "$CCMMF_BASE/src"
+
+# pecan -- monitoring branch
+git clone https://github.com/sarahkanee/pecan.git
+cd pecan
+git checkout feature/ccmmf-statewide-monitoring-inst
+
+# cadwr-landuse -- main
+cd "$CCMMF_BASE/src"
+git clone https://github.com/ccmmf/cadwr-landuse.git
+cd cadwr-landuse
+git checkout main
+```
+
+---
+
+
+
+## 0.3 Every new shell
+
+Activate `pecan-all-1.14`, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
+
+```bash
+conda activate <ENV_PATH_OR_NAME>
+
+export CCMMF_BASE=/path/to/workdir   # same value as 0.2
+
+# Pull only the repo you are using this session:
+git -C "$CCMMF_BASE/src/pecan" pull origin feature/ccmmf-statewide-monitoring-inst
+git -C "$CCMMF_BASE/src/cadwr-landuse" pull origin main
+
+# Optional overrides (only if you do not want the BASE defaults):
+# export CCMMF_ROOT=/path/to/data
+# export PRIOR_YEAR=2023 TARGET_YEAR=2024
+
+source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup_env.sh"
+```
+
+---
+
+
+
+## 0.4 Workspace (once)
+
+<a id="data-layout"></a>
+
+`setup_env` only stored the path strings. Create these folders once. Later sessions use the vars and assume the tree exists.
+
+```text
+$CCMMF_ROOT/
+  LandIQ/
+    raw/                              # LANDIQ_RAW
+    work/                             # CADWR_WORK_DIR
+      03-final/                       # LANDIQ_HARMONIZED
+    gapfilled/                        # LANDIQ_GAPFILLED
+  HLS/
+    imagery/                          # HLS_IMAGERY_ROOT
+    MSLSP/                            # MSLSP_NETCDF_ROOT
+  CDL/                                # CDL_DIR
+  climate/
+    CHIRPS/                           # CHIRPS_DIR
+    CIMIS/                            # CIMIS_DIR
+  soils/
+    SSURGO/                           # SSURGO_DIR
+  lookups/
+    plant_traits/                     # PLANT_TRAITS_DIR
+    fertilization/                    # FERTILIZATION_LOOKUPS (rate tables)
+  products/
+    inventory/                        # PRODUCTS_INVENTORY
+      phenology/                      # MATCHED_DIR default under here
+      tillage/
+      fertilization/
+      irrigation/
+      event_files/
+```
+
+Create the dirs:
+
+```bash
+mkdir -p "$LANDIQ_ROOT"/{raw,gapfilled}
+mkdir -p "$CADWR_WORK_DIR"   # LANDIQ_HARMONIZED -> $CADWR_WORK_DIR/03-final after cadwr
+mkdir -p "$HLS_ROOT"/{imagery,MSLSP}
+mkdir -p "$CDL_DIR"
+mkdir -p "$CLIMATE_ROOT"/{CHIRPS,CIMIS}
+mkdir -p "$SOILS_ROOT"/SSURGO
+mkdir -p "$LOOKUPS_ROOT"/{plant_traits,fertilization}
+mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event_files}
+```
+
+---
+
+
+
+## 0.5 Confirm setup
+
+Confirm the code and data roots are real on disk.
+
+```bash
+ls "$CCMMF_CODE"   # pipeline scripts and documentation
+# documentation  events  hls  landiq-gapfill  phenology  tillage  ...
+
+ls "$CCMMF_ROOT"   # data workspace
+# CDL  HLS  LandIQ  climate  lookups  products  soils
+```
+
+If you do not see the directories you made, go back and fix the section above before Session 1.
+
+---
+
+
+
+## 0.6 NASA Earthdata
+
+Create an Earthdata Login account and store credentials in `~/.netrc` for HLS downloads (Session 2).
+
+1. Create a free account at [https://urs.earthdata.nasa.gov/](https://urs.earthdata.nasa.gov/)
+2. Store credentials in `~/.netrc`:
+
+```bash
+# Replace USERNAME and PASSWORD with your Earthdata Login values
+echo "machine urs.earthdata.nasa.gov login USERNAME password PASSWORD" > ~/.netrc
+chmod 0600 ~/.netrc
+```
+
+**Next:** [Session 1 - LandIQ crop identity](01-landiq.md).
+
+**Spine:** [tree README](../../README.md).
