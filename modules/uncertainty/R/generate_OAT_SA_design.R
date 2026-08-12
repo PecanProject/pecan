@@ -40,10 +40,13 @@
 #'   When supplied these are used directly; when \code{NULL} (default) they are
 #'   sampled in memory.
 #'
-#' @return A list with \code{design_matrix}, a data.frame with one row per SA run
-#'   and one column per input type (the \code{param} column holds sequential run
-#'   indices, every other column is held at 1), \code{X}, the same matrix under
-#'   its older name, and \code{samples}, the parameter bundle used.
+#' @return A list with \code{design_matrix}, a data.frame with one row per SA run:
+#'   the \code{param} column holds sequential run indices, every input column is
+#'   held at 1, and \code{sa_pft}, \code{sa_trait} and \code{sa_quantile} say what
+#'   each run is. The first row is the median run, with those three \code{NA},
+#'   \code{NA} and \code{"50"}; every row after moves one trait of one PFT to one
+#'   of its quantiles. Also \code{X}, the same matrix under its older name, and
+#'   \code{samples}, the parameter bundle used.
 #'
 #' @examples
 #' \dontrun{
@@ -96,22 +99,34 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
     )
   }
 
-  # calculate total number of SA runs
-  # 1 median + (traits * non-median quantiles) per PFT
+  # Describe each run: the first holds every parameter at its median, and each
+  # one after moves a single trait of a single PFT to one of its quantiles.
+  # Built in the order write.sa.configs walks the design, so row i here is
+  # run i there, and the run count falls out of the labels rather than being
+  # counted separately.
   MEDIAN <- "50"
-  num_sa_runs <- 1 # start with median run
+
+  sa_pft      <- NA_character_
+  sa_trait    <- NA_character_
+  sa_quantile <- MEDIAN
 
   for (pft_name in names(sa_samples)) {
     if (pft_name == "env") next
 
     pft_samples <- sa_samples[[pft_name]]
-    n_traits <- ncol(pft_samples)
-    quantile_names <- rownames(pft_samples)
-    n_non_median <- sum(quantile_names != MEDIAN)
 
-    # add runs for this pft: (traits) * (non-median quantiles)
-    num_sa_runs <- num_sa_runs + (n_traits * n_non_median)
+    for (trait in colnames(pft_samples)) {
+      for (quantile_str in rownames(pft_samples)) {
+        if (quantile_str == MEDIAN) next
+
+        sa_pft      <- c(sa_pft, pft_name)
+        sa_trait    <- c(sa_trait, trait)
+        sa_quantile <- c(sa_quantile, quantile_str)
+      }
+    }
   }
+
+  num_sa_runs <- length(sa_pft)
 
   # get input types from samplingspace
   samp <- settings$ensemble$samplingspace
@@ -147,6 +162,11 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
   }
 
   design_matrix <- data.frame(design_list)
+  # The labels travel with the design so nothing downstream has to rediscover
+  # which run is which trait at which quantile.
+  design_matrix$sa_pft      <- sa_pft
+  design_matrix$sa_trait    <- sa_trait
+  design_matrix$sa_quantile <- sa_quantile
 
   return(list(design_matrix = design_matrix, X = design_matrix, samples = samples))
 }

@@ -15,10 +15,13 @@ When supplied these are used directly; when \code{NULL} (default) they are
 sampled in memory.}
 }
 \value{
-A list with \code{design_matrix}, a data.frame with one row per SA run
-  and one column per input type (the \code{param} column holds sequential run
-  indices, every other column is held at 1), \code{X}, the same matrix under
-  its older name, and \code{samples}, the parameter bundle used.
+A list with \code{design_matrix}, a data.frame with one row per SA run:
+  the \code{param} column holds sequential run indices, every input column is
+  held at 1, and \code{sa_pft}, \code{sa_trait} and \code{sa_quantile} say what
+  each run is. The first row is the median run, with those three \code{NA},
+  \code{NA} and \code{"50"}; every row after moves one trait of one PFT to one
+  of its quantiles. Also \code{X}, the same matrix under its older name, and
+  \code{samples}, the parameter bundle used.
 }
 \description{
 Creates an input design matrix for sensitivity analysis where non-parameter
