@@ -487,7 +487,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # write run information to disk
       cat(paste0("runtype     : ",
                  if (!is.null(run_descriptions)) tolower(run_descriptions$type[1]) else "ensemble",
-                 "\n"),,
+                 "\n"),
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
           "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
           "run         : ", i, "/", ensemble.size, "\n",
