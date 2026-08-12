@@ -61,14 +61,14 @@ test_that("run.write.configs writes manifest with expected structure", {
   env <- make_test_env()
   settings <- make_settings(env, "1001")
   # the design says what each run is: the median run, then Vcmax at its 95th
-  input_design <- list(sensitivity = data.frame(
+  input_design <- data.frame(
     param       = c(1, 2),
     met         = c(1, 1),
     sa_pft      = c(NA, "pftA"),
     sa_trait    = c(NA, "Vcmax"),
     sa_quantile = c("50", "95"),
     stringsAsFactors = FALSE
-  ))
+  )
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg", function(...) invisible(NULL))
@@ -103,14 +103,14 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
 
   env <- make_test_env()
   # the design says what each run is: the median run, then Vcmax at its 95th
-  input_design <- list(sensitivity = data.frame(
+  input_design <- data.frame(
     param       = c(1, 2),
     met         = c(1, 1),
     sa_pft      = c(NA, "pftA"),
     sa_trait    = c(NA, "Vcmax"),
     sa_quantile = c("50", "95"),
     stringsAsFactors = FALSE
-  ))
+  )
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg", function(...) invisible(NULL))

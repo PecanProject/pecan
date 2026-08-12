@@ -398,7 +398,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     }
 
     # if no ensemble piece was in the xml I replicate n times the first element in params
-    if ( is.null(samp$parameters) ) {
+    if ( is.null(samp$parameters) && nrow(ensemble.samples[[1]]) != ensemble.size ) {
       samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, ensemble.size) , ])
     }
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg -
