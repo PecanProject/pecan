@@ -23,9 +23,11 @@
 #' ## OAT design logic
 #' For sensitivity analysis, we must isolate the effect of each
 #' parameter by holding all other inputs constant. The param column contains
-#' sequential indices (1, 2, 3, ...) matching the SA run order in
-#' \code{write.sa.configs}. All other columns (met, ic, soil, etc.) are set to 1,
-#' meaning the first input file is always used.
+#' sequential indices (1, 2, 3, ...), and \code{sa_pft}, \code{sa_trait} and
+#' \code{sa_quantile} say what each run is: the first holds every parameter at
+#' its median, and each one after moves a single trait to one of its quantiles.
+#' All other columns (met, ic, soil, etc.) are set to 1, meaning the first input
+#' file is always used.
 #'
 #' ## Where the samples come from
 #' Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}

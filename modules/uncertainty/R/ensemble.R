@@ -230,6 +230,10 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #'   run is keep its own naming.
 #' @param paramlists optional character vector, one per design row, describing
 #'   each run when writing to the database. Defaults to "ensemble=<i>".
+#' @param ensemble.id optional id for this set of runs, used instead of the one
+#'   in \code{settings$ensemble$id}.
+#' @param runtype what these runs are, recorded in the database and in each run's
+#'   README. Defaults to "ensemble"; a sensitivity analysis passes its own.
 #' @return list, containing
 #'  $runs = data frame of runids,
 #'  $ensemble.id = the ensemble ID for these runs,
@@ -243,7 +247,8 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 
 write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model,
                                    clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE,
-                                   run_ids = NULL, paramlists = NULL) {
+                                   run_ids = NULL, paramlists = NULL, ensemble.id = NULL,
+                                   runtype = "ensemble") {
 
   # Check for required paths
   for (input_tag in names(settings$run$inputs)) {
@@ -313,7 +318,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO ensembles (runtype, workflow_id) ",
-        "VALUES ('ensemble', ", format(workflow.id, scientific = FALSE), ")",
+        "VALUES ('", runtype, "', ", format(workflow.id, scientific = FALSE), ")",
         "RETURNING id"), con = con)[['id']]
 
       for (pft in defaults) {
@@ -325,7 +330,9 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # Use existing id if provided, or an arbitrary unique value if not
       # Note: Since write.ensemble.configs is called separately for each site,
       # a multisite run with no ID provided gives each site its own ensemble id!
-      ensemble.id <- settings$ensemble$id %||% rlang::hash(settings)
+      # a caller writing something other than an ensemble, such as a sensitivity
+      # analysis, supplies the id its own settings carry
+      ensemble.id <- ensemble.id %||% settings$ensemble$id %||% rlang::hash(settings)
     }
     #-------------------------generating met/param/soil/veg/... for all ensembles----
     if (!is.null(con)){
@@ -477,7 +484,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       }
 
       # write run information to disk
-      cat("runtype     : ensemble\n",
+      cat(paste0("runtype     : ", runtype, "\n"),
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
           "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
           "run         : ", i, "/", ensemble.size, "\n",

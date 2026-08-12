@@ -244,13 +244,29 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   if ("sensitivity.analysis" %in% names(settings)) {
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
-    sa.runs <- PEcAn.uncertainty::write.sa.configs(
-      defaults = settings$pfts,
-      quantile.samples = sa.samples,
-      settings = settings,
-      model = model,
-      input_design = input_design,
-      write.to.db = write
+
+    # A sensitivity analysis is an ensemble whose parameter sets move one trait
+    # at a time. The design says which run is which, so the parameter sets and
+    # the run names are built from it here and the same writer writes them.
+    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    sa.naming <- PEcAn.uncertainty::sa_run_ids(
+      design_matrix = input_design,
+      site_id       = settings$run$site$id,
+      pft_names     = pft.names
+    )
+
+    sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
+      defaults         = settings$pfts,
+      ensemble.size    = nrow(input_design),
+      ensemble.samples = sa.run.samples,
+      settings         = settings,
+      model            = model,
+      input_design     = input_design,
+      write.to.db      = write,
+      run_ids          = sa.naming$ids,
+      paramlists       = sa.naming$paramlists,
+      ensemble.id      = settings$sensitivity.analysis$ensemble.id,
+      runtype          = "sensitivity analysis"
     )
 
     # collect manifest data
@@ -258,8 +274,9 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
     }
 
-    # Store output in settings and output variables
-    sa.run.ids <- sa.runs$runs
+    # Store output in settings and output variables. The post-processing looks
+    # runs up by trait and quantile, which the design and the returned ids give.
+    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(input_design, sa.runs$runs$id)
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
     # Save sensitivity analysis info

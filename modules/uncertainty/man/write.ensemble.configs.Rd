@@ -16,7 +16,9 @@ write.ensemble.configs(
   restart = NULL,
   rename = FALSE,
   run_ids = NULL,
-  paramlists = NULL
+  paramlists = NULL,
+  ensemble.id = NULL,
+  runtype = "ensemble"
 )
 }
 \arguments{
@@ -53,6 +55,12 @@ run is keep its own naming.}
 
 \item{paramlists}{optional character vector, one per design row, describing
 each run when writing to the database. Defaults to "ensemble=<i>".}
+
+\item{ensemble.id}{optional id for this set of runs, used instead of the one
+in \code{settings$ensemble$id}.}
+
+\item{runtype}{what these runs are, recorded in the database and in each run's
+README. Defaults to "ensemble"; a sensitivity analysis passes its own.}
 }
 \value{
 list, containing
