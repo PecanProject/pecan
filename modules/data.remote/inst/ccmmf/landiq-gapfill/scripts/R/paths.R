@@ -42,7 +42,7 @@ path_landiq_root <- function() {
     if (!nzchar(ccmmf)) {
       stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
     }
-    root <- file.path(ccmmf, "LandIQ", "harmonized")
+    root <- file.path(ccmmf, "LandIQ", "work", "03-final")
   }
   root
 }

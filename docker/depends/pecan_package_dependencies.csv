@@ -635,7 +635,6 @@
 "testthat","*","base/logger","Suggests",FALSE
 "testthat","*","base/remote","Suggests",FALSE
 "testthat","*","base/workflow","Suggests",FALSE
-"testthat","*","modules/assim.sequential","Suggests",FALSE
 "testthat","*","modules/priors","Suggests",FALSE
 "testthat",">= 1.0.2","base/visualization","Suggests",FALSE
 "testthat",">= 1.0.2","models/basgra","Suggests",FALSE
@@ -671,6 +670,7 @@
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "testthat",">= 3.1.0","modules/data.land","Suggests",FALSE
 "testthat",">= 3.1.7","modules/data.atmosphere","Suggests",FALSE
+"testthat",">= 3.1.9","modules/assim.sequential","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
 "tibble","*","models/ed","Imports",FALSE
 "tibble","*","models/fates","Imports",FALSE

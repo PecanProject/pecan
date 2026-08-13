@@ -9,9 +9,8 @@ Related management layers live in parallel workflows (**Session 3**):
 - **N fertilization / organic amendments:**
   [Session 3](../documentation/sessions/03-fertilizer-irrigation.md);
   `PEcAn.data.land` helpers (`look_up_ca_n_rate`, etc.); statewide builders
-  `workflows/fertilization-statewide` / `workflows/ncc-statewide` (open PEcAn
-  PR [#4003](https://github.com/PecanProject/pecan/pull/4003); not shipped on
-  this monitoring branch)
+  `workflows/fertilization-statewide` / `workflows/ncc-statewide` (on PEcAn
+  `develop`)
 - **Irrigation:** [Session 3](../documentation/sessions/03-fertilizer-irrigation.md)
 
 Full product set: [tree README](../README.md).
@@ -182,8 +181,9 @@ Rscript $CCMMF_CODE/events/combine_management_events_pecan.R \
 ```
 
 Fertilization / NCC and irrigation statewide builders:
-[Session 3](../documentation/sessions/03-fertilizer-irrigation.md) and
-[#4003](https://github.com/PecanProject/pecan/pull/4003).
+[Session 3](../documentation/sessions/03-fertilizer-irrigation.md);
+`workflows/fertilization-statewide/`, `workflows/ncc-statewide/`, and
+`workflows/irrigation-statewide/` on PEcAn `develop`.
 
 ## Reference
 

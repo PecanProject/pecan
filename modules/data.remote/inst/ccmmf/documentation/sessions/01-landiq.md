@@ -52,15 +52,18 @@ $CCMMF_ROOT/
   CDL/                                # CDL_DIR -- CDL .tif + parcel fraction .parq
 ```
 
-Walk Secs. 1.1–1.6 in order the first time. A one-shot shortcut for 1.4-1.6 is noted at the end -- use it only after you know what those steps do.
+Walk Secs. 1.1-1.6 in order the first time. A one-shot shortcut for 1.4-1.6 is noted at the end -- use it only after you know what those steps do.
 
 ---
+
+> [!IMPORTANT]
+> New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
 
 
 
 ## 1.1 Download LandIQ
 
-Get the statewide shapefiles from the [CNRA Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping) portal (**GIS Shapefile** ZIP). `$LANDIQ_RAW` needs the full series (2016 on), not just the inventory pair. For this training run, pull last year's stack from the S3 bucket, then update the pair from the portal.
+Get the statewide shapefiles from the [CNRA Statewide Crop Mapping](https://data.cnra.ca.gov/dataset/statewide-crop-mapping) portal (**GIS Shapefile** ZIP). `$LANDIQ_RAW` needs the full series (2016 on), not just the inventory pair. For this training run, pull the stack from the S3 bucket, then update the pair from the portal.
 
 From the same portal, also download two PDFs:
 
@@ -68,16 +71,16 @@ From the same portal, also download two PDFs:
 - **Metadata** -- in-depth description of the dataset itself, including what each column in the shapefile attribute table means (`UniqueID`, `CLASS`, `ADOY`, etc).
 
 ```bash
-aws s3 --profile magic sync s3://carb/data/landiq_shapefiles/2016-2023/ "$LANDIQ_RAW/"
+aws s3 --profile magic sync s3://carb/data/landiq_shapefiles/ "$LANDIQ_RAW/"
 ```
 
 Then from the portal, put two years under `$LANDIQ_RAW`:
 
 
-| Year                 | Typical portal status         | Action                                                                                                    |
-| -------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `PRIOR_YEAR` (2023)  | Final (was provisional on S3) | Replace `i15_Crop_Mapping_2023_Provisional_SHP/` with the final folder; drop `_Provisional` from the name |
-| `TARGET_YEAR` (2024) | Provisional                   | Add `i15_Crop_Mapping_2024_Provisional_SHP/`                                                              |
+| Year                 | Typical portal status | Action                                                                                                              |
+| -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `PRIOR_YEAR` (2023)  | Final                 | Replace `i15_Crop_Mapping_2023_Provisional_SHP/` with the final folder if needed; drop `_Provisional` from the name |
+| `TARGET_YEAR` (2024) | Provisional           | Add `i15_Crop_Mapping_2024_Provisional_SHP/`                                                                        |
 
 
 After that the tree should look like:
@@ -102,18 +105,16 @@ ls "$LANDIQ_RAW"/i15_Crop_Mapping_*/*.shp
 
 ## 1.2 Harmonize geometry
 
-Overlay every year in `$LANDIQ_RAW` into one parcel map and a multi-year crop table. From the cadwr-landuse clone, Session 0 conda env active. Submit the tile overlays as a batch job (~3 hours).
+Overlay every year in `$LANDIQ_RAW` into one parcel map and a multi-year crop table: split the state into tiles, track which polygons persist or change across years under a stable `parcel_id`, then join each year's crop attributes.
 
 The two files that land in `$LANDIQ_HARMONIZED`:
 
 
-| File                        | Role                                                                                |
-| --------------------------- | ----------------------------------------------------------------------------------- |
-| `parcels-consolidated.gpkg` | One geometry per `parcel_id`, with each year's native LandIQ UniqueID               |
-| `crops_all_years.parq`      | Tidy crop attributes: rows for `parcel_id` x `year` x `season` (up to four seasons) |
+| File                        | Role                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| `parcels-consolidated.gpkg` | One geometry per `parcel_id`, with each year's native LandIQ UniqueID                      |
+| `crops_all_years.parq`      | Long-format crop attributes: rows for `parcel_id` x `year` x `season` (up to four seasons) |
 
-
-From the cadwr-landuse clone, with the Session 0 conda env active. Submit the tile overlays as a batch job (~3 hours).
 
 ```bash
 cd "$CCMMF_BASE/src/cadwr-landuse"
@@ -122,11 +123,15 @@ python scripts/01-split.py \
   --landiq-root-dir "$LANDIQ_RAW" \
   --outdir-root "$CADWR_WORK_DIR"
 
-python scripts/process-tiles-local.py \    # batch job
+python scripts/process-tiles-local.py \    # ~3 hours
   --outdir-root "$CADWR_WORK_DIR" \
   --ntasks 8 \
   --crs EPSG:3310 \
   --precision 10.0
+
+# Or, if you want to submit this step as a batch job:
+# export OUTDIR_ROOT="$CADWR_WORK_DIR"
+# sbatch scripts/process-tiles-local.sh
 
 python scripts/03a-combine-parcels.py \
   --outdir-root "$CADWR_WORK_DIR"
@@ -136,11 +141,14 @@ python scripts/03b-finalize-crops.py \
   --outdir-root "$CADWR_WORK_DIR"
 ```
 
-If it was not run in advance, a current version is already on S3 -- pull that into `$LANDIQ_HARMONIZED` and continue on:
+`01-split.py` logs the discovered year list (expect 2016, 2018-2024). If a year you staged is missing from that log, fix `$LANDIQ_RAW` and re-run.
+
+If this section was not run in advance, a current version is already on S3. Put those two files in `$LANDIQ_HARMONIZED` (same directory cadwr would have written -- `$CADWR_WORK_DIR/03-final` after Session 0). CDL extract and gap-fill look for `parcels-consolidated.gpkg` there.
 
 ```bash
 aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
 aws s3 --profile magic cp s3://carb/management/crops/v4.2/crops_all_years.parq "$LANDIQ_HARMONIZED/"
+ls "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg" "$LANDIQ_HARMONIZED/crops_all_years.parq"
 ```
 
 ---
@@ -169,18 +177,27 @@ Even after harmonization, LandIQ is incomplete on some parcels: the main-season 
 
 ### CDL rasters and fractions
 
-Download both years of CDL (NASS national 30 m GeoTIFF, clipped to California). Submit each extract as a batch job (~40 min/year, one year per job).
+Two steps:
+
+1. **Download** the statewide CDL GeoTIFF for each inventory year (NASS national 30 m, clipped to California) into `$CDL_DIR`.
+2. **Extract parcel fractions.** Using `$LANDIQ_HARMONIZED/parcels-consolidated.gpkg`, overlay each parcel on that year's CDL raster and record the **area fraction** of every CDL crop code inside the polygon (not just the majority class). Write one parquet per year: `CDL_DIR/cdl_fractions_year=YYYY.parquet`.
 
 ```bash
-YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 CDL=$LANDIQ_GAPFILL_ROOT/scripts/cdl
 GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
 
-Rscript $CDL/download_cdl_nass.R $YEARS                        
-Rscript $CDL/extract_cdl_fractions_by_parcel.R $PRIOR_YEAR     # batch job
-Rscript $CDL/extract_cdl_fractions_by_parcel.R $TARGET_YEAR    # batch job
+Rscript $CDL/download_cdl_nass.R ${PRIOR_YEAR},${TARGET_YEAR}
 
-# after both jobs finish:
+# each year takes ~1 hour
+Rscript $CDL/extract_cdl_fractions_by_parcel.R $PRIOR_YEAR    
+Rscript $CDL/extract_cdl_fractions_by_parcel.R $TARGET_YEAR 
+
+# Or, if you want to submit this step as a batch job:
+# export CDL_YEAR=$PRIOR_YEAR
+# sbatch $CDL/extract_cdl_fractions_by_parcel.sh
+# export CDL_YEAR=$TARGET_YEAR
+# sbatch $CDL/extract_cdl_fractions_by_parcel.sh
+
 Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), paste0("cdl_fractions_year=", Sys.getenv("TARGET_YEAR"), ".parquet"))))'
 ```
 
@@ -190,17 +207,17 @@ Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), 
 
 Lookup tables are in `$LANDIQ_GAPFILL_ROOT/outputs/`. On a routine update, leave them alone.
 
-**Probability tables** start from fields where both maps exist. For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present: look up which LandIQ crop usually goes with the CDL mix on that field.
+For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present to look up which LandIQ crop usually goes with the CDL mix on that field.
 
 
-| Table                      | File                                  | What it answers                                                   |
-| -------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
-| `P(CDL \| CLASS)`           | `cdl_prob_by_class_*.parquet`         | Given LandIQ CLASS, which CDL codes usually appear on that parcel |
-| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet`      | Same question at subclass                                         |
-| `P(SUBCLASS \| CLASS)`      | `landiq_subclass_frequency_*.parquet` | How often each subclass occurs inside a CLASS                     |
+| Table | File | What it answers |
+| ----- | ---- | --------------- |
+| `P(CDL \| CLASS)` | `cdl_prob_by_class_*.parquet` | Given LandIQ CLASS, which CDL codes usually appear |
+| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet` | Given LandIQ CLASS::SUBCLASS, which CDL codes usually appear |
+| `P(SUBCLASS \| CLASS)` | `landiq_subclass_frequency_*.parquet` | Given LandIQ CLASS, which subclasses are most common |
 
 
-**ADOY reference tables** are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero: copy a typical day for that crop (and county, when there are enough observations).
+ADOY reference tables are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero.
 
 
 | File                                           | What it is                            |
@@ -226,6 +243,7 @@ The current tables were built from 2016-2023 for the CDL x LandIQ map (except 20
 With those tables on disk, the next three commands do the actual fill: crop identity where LandIQ is missing, then peak-greenness day where `ADOY` is missing or zero, then merge both into the product. Run the pair together -- the prior year is now final (updated in Sec. 1.1) and can use the new LandIQ year as neighbor context.
 
 ```bash
+YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 Rscript $GF crop $YEARS    # missing season-2 crop
 Rscript $GF adoy $YEARS    # missing or zero ADOY
 Rscript $GF merge $YEARS   # write $LANDIQ_GAPFILLED product
@@ -251,16 +269,27 @@ Rscript $LANDIQ_GAPFILL_ROOT/scripts/R/cover_crop_landiq.R
 
 ## 1.6 Inspect / QC
 
-After gap-fill and COVER, skim the product, then summarize provenance for the year pair.
+After gap-fill and COVER, run QC, glimpse the inventory-year product, then read the report.
 
 ```bash
-Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")))'
-
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 Rscript $LANDIQ_GAPFILL_ROOT/scripts/gapfill.R qc $YEARS
+
+# Glimpse inventory years only (PRIOR_YEAR / TARGET_YEAR)
+Rscript -e '
+p <- file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")
+yrs <- as.integer(c(Sys.getenv("PRIOR_YEAR"), Sys.getenv("TARGET_YEAR")))
+ds <- arrow::open_dataset(p) |> dplyr::filter(year %in% yrs)
+print(as.data.frame(ds |> dplyr::count(year) |> dplyr::collect() |> dplyr::arrange(year)))
+dplyr::bind_rows(lapply(yrs, function(y) {
+  ds |> dplyr::filter(year == y) |> dplyr::slice_head(n = 20) |> dplyr::collect()
+})) |> dplyr::glimpse()
+'
+
+cat $LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md
 ```
 
-Open `$LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md`. For **season 2** in both `PRIOR_YEAR` and `TARGET_YEAR`, note the share of rows with `subclass_source` / `adoy_source` = `observed` vs modelled fill labels. There is no single pass/fail threshold, but you should be able to state those fractions. 
+For **season 2** in both `PRIOR_YEAR` and `TARGET_YEAR`, note the share of rows with `subclass_source` / `adoy_source` = `observed` vs modelled fill labels. There is no single pass/fail threshold, but you should be able to state those fractions.
 
 ---
 
@@ -270,7 +299,7 @@ Open `$LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md`. For **season 2** in bo
 
 ---
 
-**Note (shortcut after you know the steps):** Secs. 1.4-1.6 can be run in one shot with `run_gapfill.sh` (CDL fraction ensure + crop + adoy + merge + `cover_crop_landiq.R` + qc). Walk 1.4-1.6 by hand the first time. The shell does **not** rebuild the probability / ADOY-ref tables unless you pass the flags.
+**Note (shortcut after you know the steps):** Secs. 1.4-1.6 can be run in one shot with `run_gapfill.sh` (CDL fraction ensure + crop + adoy + merge + cover + qc). Walk 1.4-1.6 by hand the first time. The shell does **not** rebuild the probability / ADOY-ref tables unless you pass the flags.
 
 ```bash
 $LANDIQ_GAPFILL_ROOT/run_gapfill.sh ${PRIOR_YEAR},${TARGET_YEAR}
