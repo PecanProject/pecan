@@ -64,7 +64,7 @@ Suggests:
     sp,
     stats,
     terra,
-    testthat,
+    testthat (>= 3.1.9),
     tictoc,
     tidyr,
     utils,
