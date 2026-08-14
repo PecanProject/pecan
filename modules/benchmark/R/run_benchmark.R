@@ -27,7 +27,7 @@ run_benchmark <- function(model_df, obs_df,
   results <- compute_metrics(aligned, metrics)
 
   # Stage 4: Plot
-  plot <- plot_time_series(aligned)
+  plot <- metric_timeseries_plot(aligned, var = "Model vs Observations", draw.plot = FALSE)
 
   list(metrics = results, aligned = aligned, plot = plot)
 }
@@ -123,7 +123,7 @@ register_metric <- function(name, func) {
 register_metric("RMSE", function(dat) sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE)))
 register_metric("MAE",  function(dat) mean(abs(dat$model - dat$obvs), na.rm = TRUE))
 register_metric("R2",   function(dat) {
-  if (exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_R2(dat))
   }
   numer <- sum((dat$obvs - mean(dat$obvs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
@@ -136,13 +136,13 @@ register_metric("NSE",  function(dat) {
 })
 register_metric("MEF", get("NSE", envir = pecan_metric_registry))
 register_metric("PMU", function(dat) {
-  if (exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_PMU(dat))
   }
   metric_PMU(dat)
 })
 register_metric("COVERAGE", function(dat) {
-  if (exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_Coverage(dat))
   }
   metric_Coverage(dat)
@@ -152,27 +152,52 @@ register_metric("COVERAGE", function(dat) {
 #'
 #' @param aligned data.frame with columns: model, obvs, time
 #' @param metrics character vector of metric names
-#' @return data.frame with columns: metric, value
+#' @return data.frame in wide format with columns `Site` and each requested metric column per site.
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
-  results <- lapply(toupper(metrics), function(m) {
-    if (!exists(m, envir = pecan_metric_registry)) {
-      PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
-    }
-    func <- get(m, envir = pecan_metric_registry)
-    func(aligned)
+  # Treat data as one group if no site column
+  if (!"site" %in% colnames(aligned)) {
+    aligned$site <- "All"
+  }
+  
+  # Split by site and compute metrics
+  site_list <- split(aligned, aligned$site)
+  site_results <- lapply(names(site_list), function(s) {
+    sub_df <- site_list[[s]]
+    res <- sapply(toupper(metrics), function(m) {
+      if (!exists(m, envir = pecan_metric_registry)) {
+        PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
+      }
+      func <- get(m, envir = pecan_metric_registry)
+      func(sub_df)
+    })
+    
+    # Create a wide 1-row data frame for this site
+    df <- as.data.frame(t(res))
+    df$Site <- s
+    # Move Site to the first column
+    df <- df[, c("Site", toupper(metrics))]
+    df
   })
   
-  data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
+  out_df <- do.call(rbind, site_results)
+  rownames(out_df) <- NULL
+  
+  # If there's more than one site (i.e. real multi-site data), add rollups
+  if (nrow(out_df) > 1 && !("All" %in% out_df$Site)) {
+    # Compute mean rollup for numeric columns
+    numeric_cols <- sapply(out_df, is.numeric)
+    rollup_mean <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) mean(x, na.rm=TRUE)))
+    rollup_mean$Site <- "Rollup (Mean)"
+    
+    rollup_median <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) stats::median(x, na.rm=TRUE)))
+    rollup_median$Site <- "Rollup (Median)"
+    
+    # Bind rollups
+    out_df <- rbind(out_df, 
+                    rollup_mean[, colnames(out_df)], 
+                    rollup_median[, colnames(out_df)])
+  }
+  
+  return(out_df)
 }
 
-#' Plot model vs observations time series
-#'
-#' @param aligned data.frame with columns: model, obvs, time
-#' @return ggplot object
-plot_time_series <- function(aligned) {
-  ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
-    ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +
-    ggplot2::geom_point(ggplot2::aes(y = .data$obvs, color = "Obs")) +
-    ggplot2::labs(color = "", y = "value", title = "Model vs Observations") +
-    ggplot2::theme_bw()
-}
