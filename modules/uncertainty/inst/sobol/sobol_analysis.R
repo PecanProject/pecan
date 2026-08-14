@@ -10,7 +10,7 @@ if (PEcAn.settings::is.MultiSettings(settings)){
 }else{
       sobol_obj <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings, ensemble_size = ensemble_size, sobol = TRUE) }
   
-PEcAn.workflow::runModule.run.write.configs(settings,input_design = sobol_obj$X )
+PEcAn.workflow::runModule.run.write.configs(settings, input_design = sobol_obj)
  
   
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)

@@ -1,0 +1,31 @@
+default:
+  n_parcels: 1000
+  n_ensemble: 20
+  seed: 42
+  years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
+  # large inputs are not distributed with the repo. the defaults resolve on SCC;
+  # set the matching environment variable to run anywhere else. final home for
+  # these is pending ccmmf/organization#257
+  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
+  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
+  cadwr_pfts_path: !expr path.expand(Sys.getenv("CCMMF_CADWR_PFTS", "/projectnb/dietzelab/abv1/ccmmf/cadwr-landuse/data/cadwr_pfts.csv"))
+
+  # probability of compost amendment per crop cycle per ensemble member, so a
+  # parcel year with two cycles gets two draws. scenario parameter, useful range
+  # 0.05 to 0.25. see Sampling design in the README; whether this belongs at the
+  # cycle or the parcel year level is still open
+  p_apply_default: 0.10
+
+  output_dir: !expr path.expand(Sys.getenv("CCMMF_NCC_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc"))
+  batch_size: 100
+  workers: 1
+
+medium:
+  n_parcels: 10000
+  batch_size: 1000
+  workers: 4
+
+all:
+  n_parcels: null
+  batch_size: 5000
+  workers: 8

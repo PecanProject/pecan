@@ -14,12 +14,12 @@
 #' @param overwrite logical: Replace config files if they already exist?
 #' @param input_design Optional. The parameter/input design for the runs,
 #'   normally the full result of \code{generate_joint_ensemble_design()}: a list
-#'   with \code{X} (a data.frame whose \code{param} column selects rows of
+#'   with \code{design_matrix} (a data.frame whose \code{param} column selects rows of
 #'   \code{trait.samples}/\code{ensemble.samples}, plus optional columns named
 #'   for \code{settings$run$inputs} tags such as \code{met} or \code{soil}) and
 #'   \code{samples} (the parameter bundle those indices point into). Can be:
 #'   \itemize{
-#'     \item The \code{list(X, samples)} returned by
+#'     \item The \code{list(design_matrix, samples)} returned by
 #'           \code{generate_joint_ensemble_design()}
 #'     \item \code{NULL} to generate the design and samples internally from
 #'           \code{settings}
@@ -161,9 +161,10 @@ runModule.run.write.configs <- function(settings,
 #'   \item If \code{input_design} is already a list with
 #'         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
 #'         MultiSettings parent), return as-is.
-#'   \item If \code{input_design} is the \code{list(X, samples)} from
-#'         \code{generate_joint_ensemble_design()}, use \code{X} as the ensemble
-#'         design and \code{samples} as the bundle (no resampling).
+#'   \item If \code{input_design} is the \code{list(design_matrix, samples)}
+#'         from \code{generate_joint_ensemble_design()}, use the design matrix
+#'         as the ensemble design and \code{samples} as the bundle (no
+#'         resampling). \code{X} is accepted as the older name for it.
 #'   \item If \code{input_design} is a bare data.frame (a design without its
 #'         samples), raise an error: the design's \code{param} indices only match
 #'         the samples they were drawn with.
@@ -191,24 +192,32 @@ runModule.run.write.configs <- function(settings,
   # into the samples it was drawn with, so a design must arrive together with
   # those samples; otherwise it would be silently paired with a fresh, mismatched
   # resample. We therefore accept the full generate_joint_ensemble_design()
-  # result (a list with X and samples) and reject a bare design.
+  # result (a list with design_matrix and samples) and reject a bare design.
   if (!is.null(input_design)) {
-    if (is.list(input_design) && !is.data.frame(input_design) &&
-        all(c("X", "samples") %in% names(input_design)) &&
-        !is.null(input_design$samples)) {
-      designs$ensemble <- input_design$X
+    # Generators return the design as `design_matrix`. `X` is the older name for
+    # the same matrix, kept so existing callers keep working, and is what
+    # sensitivity sets on a sobol object.
+    supplied_design <- if (is.list(input_design) && !is.data.frame(input_design)) {
+      input_design[["design_matrix"]] %||% input_design[["X"]]
+    } else {
+      NULL
+    }
+
+    if (!is.null(supplied_design) && !is.null(input_design$samples)) {
+      designs$ensemble <- supplied_design
       supplied_samples <- input_design$samples
     } else if (is.data.frame(input_design)) {
       PEcAn.logger::logger.severe(
         "input_design was supplied without its parameter samples.",
         "Pass the full generate_joint_ensemble_design() result",
-        "(a list with `X` and `samples`) so the design's `param` indices match",
-        "the samples, or leave input_design = NULL to generate both together."
+        "(a list with `design_matrix` and `samples`) so the design's `param`",
+        "indices match the samples, or leave input_design = NULL to generate",
+        "both together."
       )
     } else {
       PEcAn.logger::logger.severe(
-        "Unrecognized input_design format. Expected NULL or the list(X, samples)",
-        "returned by generate_joint_ensemble_design()."
+        "Unrecognized input_design format. Expected NULL or the",
+        "list(design_matrix, samples) returned by generate_joint_ensemble_design()."
       )
     }
   }
@@ -252,6 +261,19 @@ runModule.run.write.configs <- function(settings,
     designs$samples <- samples
   }
 
+  # Deprecation: internal design generation is going away. Passing input_design
+  # explicitly will become the required path. Warn only about the design we are
+  # actually about to generate, so a caller who supplied one is not told to
+  # supply it again.
+  if (is.null(designs$ensemble) && need_ensemble) {
+    PEcAn.logger::logger.warn(
+      "Generating the ensemble design internally is deprecated and will be",
+      "removed. Pass input_design explicitly as the list(design_matrix,",
+      "samples) returned by generate_joint_ensemble_design(); this will",
+      "become required."
+    )
+  }
+
   # Generate the ensemble design only when the caller did not supply one,
   # handing over the resolved samples so the generator does not resample.
   if (is.null(designs$ensemble) && need_ensemble) {
@@ -260,7 +282,7 @@ runModule.run.write.configs <- function(settings,
       ensemble_size = ensemble_size,
       samples       = designs$samples
     )
-    designs$ensemble <- design_result$X
+    designs$ensemble <- design_result$design_matrix %||% design_result$X
   }
 
   # Generate the SA design if needed, threading the SA samples so the generator
@@ -268,9 +290,9 @@ runModule.run.write.configs <- function(settings,
   if (is.null(designs$sensitivity) && need_sa) {
     design_result <- PEcAn.uncertainty::generate_OAT_SA_design(
       settings,
-      sa_samples = designs$samples$sa.samples
+      samples = designs$samples
     )
-    designs$sensitivity <- design_result$X
+    designs$sensitivity <- design_result$design_matrix %||% design_result$X
   }
 
   return(designs)
