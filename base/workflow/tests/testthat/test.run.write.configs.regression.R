@@ -181,8 +181,15 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
                 function(...) list(
                   runs        = c("r1", "r2", "r3"),
                   ensemble.id = "ENS9",
-                  manifest    = data.frame(run_id = c("r1", "r2", "r3"),
-                                           stringsAsFactors = FALSE)
+                  manifest    = data.frame(
+                    run_id   = c("r1", "r2", "r3"),
+                    site_id  = "772",
+                    pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
+                    trait    = c("NA", "Vcmax", "Vcmax"),
+                    quantile = c("50", "2.5", "97.5"),
+                    type     = "Sensitivity",
+                    stringsAsFactors = FALSE
+                  )
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::ensemble.filename",
                 function(...) ens_file)
@@ -238,6 +245,11 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
                                            stringsAsFactors = FALSE),
                   ensemble.id = "SA7",
                   manifest    = data.frame(run_id = c("r1", "r2", "r3"),
+                                           site_id = "772",
+                                           pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
+                                           trait = c("NA", "Vcmax", "Vcmax"),
+                                           quantile = c("50", "2.5", "97.5"),
+                                           type = "Sensitivity",
                                            stringsAsFactors = FALSE)
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::sensitivity.filename",

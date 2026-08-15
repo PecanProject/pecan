@@ -270,7 +270,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     # collect manifest data. The median run is the median of every trait, and
     # the analysis looks runs up by trait, so it needs a row per trait rather
     # than the single untagged row the writer produced for it.
-    if ("manifest" %in% names(sa.runs)) {
+    if ("manifest" %in% names(sa.runs) &&
+        all(c("pft_name", "trait") %in% names(sa.runs$manifest))) {
       sa_manifest <- sa.runs$manifest
       is_median <- is.na(input_design$sa_pft)
 
@@ -288,6 +289,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
         moved_rows,
         median_rows[, names(sa_manifest), drop = FALSE]
       )
+    } else if ("manifest" %in% names(sa.runs)) {
+      run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
     }
 
     # Store output in settings and output variables. The post-processing looks
