@@ -54,7 +54,11 @@ runModule.run.write.configs <- function(settings,
                                   input_design = designs))
 
   } else if (PEcAn.settings::is.Settings(settings)) {
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+    # only default the sampling method for a run that actually has an ensemble,
+    # so an SA-only settings object does not gain an empty ensemble here and
+    # send the analysis steps looking for ensemble runs
+    if ("ensemble" %in% names(settings) &&
+        is.null(settings$ensemble$samplingspace$parameters$method)) {
       settings$ensemble$samplingspace$parameters$method <- "uniform"
     }
 
