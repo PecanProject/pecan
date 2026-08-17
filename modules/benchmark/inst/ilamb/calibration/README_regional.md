@@ -26,8 +26,6 @@ calibration diagnostics are computed per group:
 - **`regional_figures.py`** renders choropleth maps of the ecoregions shaded by
   calibration, bar charts by land cover and by ecoregion, and a map of the sites
   coloured by land cover class.
-- **`regional_diagnostics.ipynb`** ties these together into a narrative with the
-  tables, figures, and interpretation.
 
 ## Interpretation
 
