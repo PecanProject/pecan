@@ -87,12 +87,14 @@ Dominant CDL for the year is the code with the largest parcel fraction in that y
 
 First hit wins (`assign_subclass`):
 
-| # | `subclass_source` | Rule |
-|---|-------------------|------|
-| 1 | `plurality` | Same parcel + same CLASS in other season-2 years; vote. Default pool = entire panel except the fill year |
-| 2 | `emission_cdl` | Argmax of (subclass frequency inside CLASS) x P(dominant CDL given CLASS::SUBCLASS) if score > 0 |
-| 3 | `prior_only` | Argmax of how often each subclass occurs inside that CLASS |
-| 4 | `unfilled` | Stays `**` |
+
+| #   | `subclass_source` | Rule                                                                                                     |
+| --- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | `plurality`       | Same parcel + same CLASS in other season-2 years; vote. Default pool = entire panel except the fill year |
+| 2   | `emission_cdl`    | Argmax of (subclass frequency inside CLASS) x P(dominant CDL given CLASS::SUBCLASS) if score > 0         |
+| 3   | `prior_only`      | Argmax of how often each subclass occurs inside that CLASS                                               |
+| 4   | `unfilled`        | Stays `**`                                                                                               |
+
 
 Plurality weight is `1 / (1 + abs(year_dist))` so nearer years count more, unless `LANDIQ_SUBCLASS_PLURALITY_WEIGHT=count` (every vote equal). Set `LANDIQ_SUBCLASS_PLURALITY_POOL=neighbors` to vote only from the nearest LandIQ years instead of the whole panel.
 
@@ -138,7 +140,7 @@ First hit wins:
 4. Vineyard `**` -> wine grapes; normalize `subclass_source` (`OBSERVED` / `vineyard_fallback` -> `observed`).
 5. Keep consolidated `parcel_id`s only.
 
-**Inactive seasons:** within-year rows without a crop stay as LandIQ wrote them (ADOY may have been filled if they had a CLASS). Full-gap padded seasons (1/3/4) have crop fields and provenance **NA** -- not a fill outcome.
+**Inactive seasons:** no CLASS means no crop on that season row. After merge, `ADOY`, `SUBCLASS`, `subclass_source`, and `adoy_source` are NA (LandIQ often stores `ADOY = 0` on those shells). Full-gap padded seasons (1/3/4) are the same.
 
 Polygons stay under harmonized. Join `parcels-consolidated.gpkg` when you need geometry.
 
@@ -152,9 +154,9 @@ If DWR adds or changes codes, update the lookup CSV before gap-fill and before r
 
 Not a fill. `scripts/R/cover_crop_landiq.R` flags cover-crop candidates on the product table after merge. Default-on in `run_gapfill.sh`. There is no `gapfill.R cover`.
 
-**Candidates:** F/{2,11,12,16}, G/{2,6}, P/{1,3,4,6}.
+**Candidates:** G6 (miscellaneous grain and hay), P3 (mixed pasture), P6 (miscellaneous grasses). Dominant season is **2**.
 
-On a season with a CLASS: `COVER = TRUE` when the pair is a candidate **and** CLASS or SUBCLASS differs from the previous cropped season on the same parcel; else `FALSE`. The first cropped observation on a parcel cannot alternate, so it is `FALSE`. No CLASS: `COVER = NA`.
+On a season with a CLASS: `COVER = TRUE` when that season is **not** season 2, the code is a candidate, the same parcel-year's season-2 CLASS exists and is **not** `G` or `P` (grain/hay or pasture), and the crop **differs from the previous cropped season** on the parcel (or this is the first cropped season). Season 2 is always `FALSE` when it has a CLASS. Consecutive identical candidate codes are not cover. No CLASS: `COVER = NA`.
 
 ---
 
@@ -165,10 +167,10 @@ On a season with a CLASS: `COVER = TRUE` when the pair is a candidate **and** CL
 Same command order as within-year. Within-year never uses transition matrices. Differences only:
 
 
-| Step | What changes                                                                 |
-| ---- | ---------------------------------------------------------------------------- |
-| Crop | Fill season-2 **CLASS**, then SUBCLASS on that CLASS. Other seasons NA.      |
-| ADOY | Season `LANDIQ_ADOY_DEFAULT_SEASON` only (default 2).                        |
+| Step | What changes                                                            |
+| ---- | ----------------------------------------------------------------------- |
+| Crop | Fill season-2 **CLASS**, then SUBCLASS on that CLASS. Other seasons NA. |
+| ADOY | Season `LANDIQ_ADOY_DEFAULT_SEASON` only (default 2).                   |
 
 
 CLASS is missing, so it is predicted from three equally weighted messages, then MAP:
@@ -291,27 +293,6 @@ If years are omitted on year-aware `gapfill.R` commands, they fall back to `LAND
 | COVER                | **on**                         | `scripts/R/cover_crop_landiq.R` / `--no-cover`      |
 | qc                   | **on**                         | `gapfill.R qc YEARS` / `--no-qc`                    |
 
-
-
-
-### CDL scripts
-
-
-| Script                                          | Role                                                                                                     |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `scripts/cdl/download_cdl_nass.R`               | NASS national 30 m zip, clipped to California -> `$CDL_DIR/cdl_YYYY.tif` (skip if exists; years >= 2008) |
-| `scripts/cdl/extract_cdl_fractions_by_parcel.R` | Zonal fractions vs `parcels-consolidated.gpkg` -> `cdl_fractions_year=YYYY.parquet`                      |
-
-
-`run_gapfill.sh` ensures fractions for requested years before crop.
-
-### Rebuild lookups
-
-Crop and ADOY read whatever matching tables are under `outputs/` (newest if more than one set). Rebuild writes a new set named from the training-year window.
-
-```bash
-$LANDIQ_GAPFILL_ROOT/run_gapfill.sh --cdl-landiq-probs --adoy-ref 2016-2023
-```
 
 ### Developer map
 

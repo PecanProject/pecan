@@ -2,9 +2,12 @@
 # Flag cover crops on an existing LandIQ-style crop table.
 #
 # Definition (Violet / cover_crop.R):
-#   COVER = TRUE when CLASS/SUBCLASS is a cover candidate AND the row
-#   alternates from the previous season on the same parcel (class or subclass).
-# First observation per parcel cannot alternate -> COVER = FALSE.
+#   COVER = TRUE when CLASS/SUBCLASS is a cover candidate in a non-dominant
+#   season (not season 2), that parcel-year's season-2 CLASS is not G or P
+#   (hay, grass, or pasture), and the crop differs from the previous cropped
+#   season on the parcel (or this is the first cropped season). LandIQ lists
+#   cover crops under G6 among other uses; P3 and P6 are also candidates.
+#   Season 2 is never COVER = TRUE.
 # Inactive seasons (no CLASS) are skipped by default.
 #
 # Product attachment: attach_cover_column() flags on seasons with a CLASS, then
@@ -21,8 +24,8 @@ suppressPackageStartupMessages(library(data.table))
 #' Default CLASS/SUBCLASS pairs treated as cover-crop candidates.
 default_cover_codes <- function() {
   data.table(
-    CLASS = c("F", "F", "F", "F", "G", "G", "P", "P", "P", "P"),
-    SUBCLASS = as.character(c(2, 11, 12, 16, 2, 6, 1, 3, 4, 6))
+    CLASS = c("G", "P", "P"),
+    SUBCLASS = as.character(c(6, 3, 6))
   )
 }
 
@@ -34,18 +37,13 @@ default_cover_codes <- function() {
 #'
 #' @param crops data.frame / data.table of crop observations
 #' @param cover_codes data.table with CLASS, SUBCLASS character columns
-#' @param drop_inactive if TRUE, drop seasons with no CLASS
-#' @param drop_absent deprecated alias for drop_inactive
+#' @param drop_inactive if TRUE, drop seasons with no CLASS before flagging
 #' @return data.table with COVER added
 flag_cover_crops <- function(
     crops,
     cover_codes = default_cover_codes(),
-    drop_inactive = TRUE,
-    drop_absent = NULL
+    drop_inactive = TRUE
 ) {
-  if (!is.null(drop_absent)) {
-    drop_inactive <- isTRUE(drop_absent)
-  }
   dt <- as.data.table(copy(crops))
 
   required <- c("parcel_id", "year", "season", "CLASS", "SUBCLASS")
@@ -59,26 +57,47 @@ flag_cover_crops <- function(
     SUBCLASS = as.character(SUBCLASS)
   )]
 
+  dt[, `:=`(
+    parcel_id = as.character(parcel_id),
+    year = as.integer(year),
+    season = as.integer(season)
+  )]
+  class_all <- trimws(as.character(dt$CLASS))
+  is_dom <- dt$season == 2L
+  dom <- unique(data.table(
+    parcel_id = dt$parcel_id[is_dom],
+    year = dt$year[is_dom],
+    dom_class = class_all[is_dom]
+  ), by = c("parcel_id", "year"))
+
   if (isTRUE(drop_inactive)) {
-    class_chr0 <- trimws(as.character(dt$CLASS))
-    dt <- dt[!is.na(class_chr0) & nzchar(class_chr0)]
+    dt <- dt[!is.na(class_all) & nzchar(class_all)]
   }
 
-  setorderv(dt, c("parcel_id", "year", "season"))
-  class_chr <- as.character(dt$CLASS)
-  subclass_chr <- as.character(dt$SUBCLASS)
-  parcel_chr <- as.character(dt$parcel_id)
+  dt <- merge(dt, dom, by = c("parcel_id", "year"), all.x = TRUE)
+  setorder(dt, parcel_id, year, season)
 
   cover_key <- paste(cover_codes$CLASS, cover_codes$SUBCLASS, sep = "\r")
-  cover_subclass <- paste(class_chr, subclass_chr, sep = "\r") %in% cover_key
+  cover_subclass <- paste(as.character(dt$CLASS), as.character(dt$SUBCLASS),
+                          sep = "\r") %in% cover_key
+  dom_chr <- trimws(as.character(dt$dom_class))
+  dom_ok <- !is.na(dom_chr) & nzchar(dom_chr) & !(dom_chr %in% c("G", "P"))
 
-  prev_parcel <- shift(parcel_chr, 1L)
-  prev_class <- shift(class_chr, 1L)
-  prev_subclass <- shift(subclass_chr, 1L)
-  same_parcel <- !is.na(prev_parcel) & parcel_chr == prev_parcel
-  alternates <- same_parcel & (class_chr != prev_class | subclass_chr != prev_subclass)
+  dt[, `:=`(
+    prev_class = shift(CLASS),
+    prev_sub = shift(SUBCLASS)
+  ), by = parcel_id]
+  prev_chr <- trimws(as.character(dt$prev_class))
+  has_prev <- !is.na(prev_chr) & nzchar(prev_chr)
+  alternates <- !has_prev |
+    as.character(dt$CLASS) != as.character(dt$prev_class) |
+    as.character(dt$SUBCLASS) != as.character(dt$prev_sub)
 
-  dt[, COVER := fifelse(cover_subclass & alternates %in% TRUE, TRUE, FALSE)]
+  dt[, COVER := fifelse(
+    cover_subclass & season != 2L & dom_ok & alternates,
+    TRUE, FALSE
+  )]
+  dt[, c("dom_class", "prev_class", "prev_sub") := NULL]
   dt
 }
 
@@ -157,4 +176,3 @@ local({
   load_landiq_gapfill()
   attach_cover_to_gapfill_product()
 })
-

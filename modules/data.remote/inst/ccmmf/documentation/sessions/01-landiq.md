@@ -210,11 +210,11 @@ Lookup tables are in `$LANDIQ_GAPFILL_ROOT/outputs/`. On a routine update, leave
 For a given field, LandIQ reports a crop in CLASS / SUBCLASS codes and CDL reports a crop in its own integer codes. The tables count those pairs (row-normalized co-occurrence) and become the map between the two legends. Gap-fill uses that map when LandIQ is missing but CDL is present to look up which LandIQ crop usually goes with the CDL mix on that field.
 
 
-| Table | File | What it answers |
-| ----- | ---- | --------------- |
-| `P(CDL \| CLASS)` | `cdl_prob_by_class_*.parquet` | Given LandIQ CLASS, which CDL codes usually appear |
-| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet` | Given LandIQ CLASS::SUBCLASS, which CDL codes usually appear |
-| `P(SUBCLASS \| CLASS)` | `landiq_subclass_frequency_*.parquet` | Given LandIQ CLASS, which subclasses are most common |
+| Table                      | File                                  | What it answers                                              |
+| -------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `P(CDL \| CLASS)`           | `cdl_prob_by_class_*.parquet`         | Given LandIQ CLASS, which CDL codes usually appear           |
+| `P(CDL \| CLASS::SUBCLASS)` | `cdl_prob_by_subclass_*.parquet`      | Given LandIQ CLASS::SUBCLASS, which CDL codes usually appear |
+| `P(SUBCLASS \| CLASS)`      | `landiq_subclass_frequency_*.parquet` | Given LandIQ CLASS, which subclasses are most common         |
 
 
 ADOY reference tables are county and statewide mean observed peak-greenness day by crop, plus a parcel-level history of observed `ADOY`. Gap-fill uses them when `ADOY` is missing or zero.
@@ -257,7 +257,7 @@ Output after merge: `$LANDIQ_GAPFILLED/crops_all_years.parq`.
 
 ## 1.5 Cover flag
 
-`COVER` marks seasons that look like **cover crops** (candidate CLASS/SUBCLASS and alternating from the previous cropped season on the same parcel). It is a derived flag for inventory/modeling, not a fill for missing LandIQ. Downstream steps expect this column. Run after merge (Sec. 1.4).
+`COVER` marks **cover-crop seasons**. LandIQ has no dedicated cover-crop class (it names cover crops under **G6** among other grain/hay uses; we also include mixed pasture and miscellaneous grasses, **P3** and **P6**). A season is flagged when that code is in a **non-dominant season** (not season 2), that year's **dominant** crop is not hay, grass, or pasture (CLASS not `G` or `P`), and the crop **differs from the previous cropped season** on the parcel (or this is the first cropped season). Derived for inventory/modeling, not a fill. Downstream steps expect this column. Run after merge (Sec. 1.4).
 
 ```bash
 Rscript $LANDIQ_GAPFILL_ROOT/scripts/R/cover_crop_landiq.R
@@ -275,15 +275,15 @@ After gap-fill and COVER, run QC, glimpse the inventory-year product, then read 
 YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 Rscript $LANDIQ_GAPFILL_ROOT/scripts/gapfill.R qc $YEARS
 
-# Glimpse inventory years only (PRIOR_YEAR / TARGET_YEAR)
 Rscript -e '
-p <- file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")
-yrs <- as.integer(c(Sys.getenv("PRIOR_YEAR"), Sys.getenv("TARGET_YEAR")))
-ds <- arrow::open_dataset(p) |> dplyr::filter(year %in% yrs)
-print(as.data.frame(ds |> dplyr::count(year) |> dplyr::collect() |> dplyr::arrange(year)))
-dplyr::bind_rows(lapply(yrs, function(y) {
-  ds |> dplyr::filter(year == y) |> dplyr::slice_head(n = 20) |> dplyr::collect()
-})) |> dplyr::glimpse()
+gapfilled <- arrow::open_dataset(
+    file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")
+) |>
+    dplyr::filter(year %in% as.integer(c(
+        Sys.getenv("PRIOR_YEAR"), Sys.getenv("TARGET_YEAR")
+    ))) |>
+    dplyr::collect()
+dplyr::glimpse(gapfilled)
 '
 
 cat $LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md
