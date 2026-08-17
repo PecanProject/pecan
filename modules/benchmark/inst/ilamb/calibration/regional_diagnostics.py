@@ -22,10 +22,10 @@ variable) reflect one particular benchmarking setup and are illustrative. Adapt
 them to your own data before running. The stratification engine itself is
 independent of any of this layout.
 
-NOTE ON LABELS: LANDCOVER_LABELS are inferred from the geography and the biomass
-and LAI signature of each class, pending confirmation from the dataset owner.
-Only these display strings need to change once the scheme is confirmed; the
-numbers do not depend on them.
+NOTE ON LABELS: LANDCOVER_LABELS are the MODIS MCD12Q1 PFT classes from the
+North American carbon reanalysis (Zhang et al.), with the class integers 1-8
+following the standard MODIS PFT coding, confirmed against site geography. The
+labels are display strings only and do not affect the computed numbers.
 """
 
 import os
