@@ -155,14 +155,11 @@ local({
   }
   ca <- commandArgs(trailingOnly = FALSE)
   file_arg <- sub("^--file=", "", grep("^--file=", ca, value = TRUE)[1L])
-  ofile <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
-  if (!length(file_arg) || !nzchar(file_arg) || is.null(ofile)) {
+  if (!length(file_arg) || is.na(file_arg) || !nzchar(file_arg)) {
     return(invisible(NULL))
   }
-  if (!identical(
-    normalizePath(file_arg, mustWork = FALSE),
-    normalizePath(ofile, mustWork = FALSE)
-  )) {
+  script <- normalizePath(file_arg, mustWork = FALSE)
+  if (!identical(basename(script), "cover_crop_landiq.R")) {
     return(invisible(NULL))
   }
 
@@ -172,7 +169,7 @@ local({
     library(tidyverse)
     library(arrow)
   })
-  source(file.path(dirname(normalizePath(ofile, mustWork = FALSE)), "pkg_root.R"))
+  source(file.path(dirname(script), "pkg_root.R"))
   load_landiq_gapfill()
   attach_cover_to_gapfill_product()
 })
