@@ -20,9 +20,10 @@
 # other more tightly than the downscaling is actually accurate, so the
 # downscaled maps carry error that the ensemble spread does not represent.
 #
-# The saved model objects may have been written under the PEcAnAssimSequential
-# namespace; loading still works without it (with a warning), since the script
-# only reads the standard randomForest fields.
+# If the saved model objects were written under a namespace that is not
+# installed (e.g. PEcAnAssimSequential, which wrote the reanalysis forests),
+# loading prints a harmless namespace warning; the script reads only the
+# standard randomForest fields, so it works either way.
 
 suppressWarnings(suppressMessages(
   try(library(PEcAnAssimSequential), silent = TRUE)
