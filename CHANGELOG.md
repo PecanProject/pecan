@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+- Added a downscaling-error diagnostic to `inst/ilamb/` in PEcAn.benchmark: compares the downscaling random forest's out-of-bag RMSE against the between-member ensemble spread at the SDA sites, quantifying downscaling error the ensemble spread does not represent.
 - Added ensemble calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark (rank histogram, spread-skill ratio, coverage, reliability) for assessing whether an ensemble's spread is well calibrated against observations, complementing the ensemble-mean benchmarking.
 - Added `make_scorecard.sh` and documentation to `inst/ilamb/` in PEcAn.benchmark for generating and serving the ILAMB HTML scorecard.
 - New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
