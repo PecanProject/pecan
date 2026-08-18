@@ -4,7 +4,7 @@
 \alias{print.spectra}
 \title{Print method for spectra S3 class}
 \usage{
-print.spectra(x, n = 10, ...)
+\method{print}{spectra}(x, n = 10, ...)
 }
 \arguments{
 \item{x}{A spectra object}

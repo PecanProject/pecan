@@ -6,6 +6,19 @@
 \usage{
 read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
 }
+\arguments{
+\item{outdir}{Output directory}
+
+\item{runid}{Run ID}
+
+\item{stop.time}{Year that is being read}
+
+\item{settings}{PEcAn settings object}
+
+\item{var.names}{Variable names to be extracted}
+
+\item{params}{Any parameters required for state calculations}
+}
 \value{
 X.vec      vector of forecasts
 }
