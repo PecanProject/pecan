@@ -1,5 +1,5 @@
 # =============================================================================
-# tilewise_ndti_implementation.R — NDTI product for the tilewise framework
+# tilewise_ndti_implementation.R - NDTI product for the tilewise framework
 # =============================================================================
 #
 # Paths, helpers, prep, and scene extraction. SE: n_eff = w_valid^2/sum_w2;
@@ -29,12 +29,6 @@ if (!nzchar(trimws(ndti_inventory))) {
   if (!nzchar(.root)) stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
   ndti_inventory <- file.path(.root, "products", "inventory")
 }
-ndti_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
-if (!nzchar(trimws(ndti_landiq_v4))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
-  ndti_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
-}
 ndti_landiq_harmonized <- Sys.getenv("LANDIQ_HARMONIZED", "")
 if (!nzchar(trimws(ndti_landiq_harmonized))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
@@ -42,8 +36,6 @@ if (!nzchar(trimws(ndti_landiq_harmonized))) {
   ndti_landiq_harmonized <- file.path(.root, "LandIQ", "harmonized")
 }
 ndti_parcels_gpkg <- file.path(ndti_landiq_harmonized, "parcels-consolidated.gpkg")
-ndti_crops_parq   <- file.path(ndti_landiq_v4, "crops_all_years.parq")
-ndti_cropcode_csv <- file.path(ndti_inventory, "LandIQ_cropCode_lookup_table.csv")
 ndti_ccmmf_root   <- Sys.getenv("CCMMF_ROOT", "")
 if (!nzchar(trimws(ndti_ccmmf_root))) {
   stop("Set CCMMF_ROOT (source documentation/setup_env.sh).")
@@ -56,11 +48,7 @@ ndti_imagery_root <- {
 if (!nzchar(trimws(ndti_imagery_root))) {
   stop("Set HLS_IMAGERY_ROOT (source documentation/setup_env.sh).")
 }
-ndti_out_root     <- file.path(ndti_inventory, "tillage/ndti_v4.1")
-ndti_parcel_tilemap <- {
-  r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(r)) r else file.path(ndti_inventory, "hls_parcel_tile_map_v4.1.csv")
-}
+ndti_out_root     <- file.path(ndti_inventory, "tillage/ndti_v4.1.2")
 
 # --- Path helpers ---
 
@@ -92,11 +80,13 @@ sanitize_tile_id_for_filename <- function(tile_id) gsub("[^0-9A-Za-z]+", "_", ti
 # HLS filenames carry a trailing dot on the tile ID ("10SFF."); strip for matching
 normalize_tile_id <- function(x) sub("\\.+$", "", trimws(as.character(x)))
 
-# Fmask bit flags: cloud=bit1, cloud shadow=bit3, snow=bit4
-is_fmask_bad_pixel <- function(fmask_values) {
-  (bitwAnd(fmask_values, 2L)  != 0) |
-  (bitwAnd(fmask_values, 8L)  != 0) |
-  (bitwAnd(fmask_values, 16L) != 0)
+# Fmask bits: cloud=1 (2), shadow=3 (8), snow=4 (16).
+# SpatRaster in/out so the bit test stays in terra (no values() dump to R).
+is_fmask_bad_layer <- function(fmask) {
+  bit_set <- function(r, bit_value) {
+    (trunc(r / bit_value) %% 2) == 1
+  }
+  bit_set(fmask, 2) | bit_set(fmask, 8) | bit_set(fmask, 16)
 }
 
 # Append rows to a CSV, writing header only on the first write
@@ -186,80 +176,88 @@ load_parcel_geometries <- function(parcel_ids) {
   parcels[!st_is_empty(st_geometry(parcels)), ]
 }
 
-load_parcel_tilemap <- function(year = NULL) {
-  if (is.null(year)) {
-    return(read_parcel_tilemap(ndti_parcel_tilemap))
-  }
-  load_parcel_tilemap_for_year(year, ndti_parcel_tilemap)
+load_parcel_tiles <- function(year, tile = NULL) {
+  load_ndti_parcel_tiles(year, tile = tile)
 }
 
-# --- Static prep (cached per year) ---
-ndti_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE) {
-  yr         <- as.integer(year)
-  output_dir <- file.path(ndti_out_root, paste0("year=", yr))
-  cache_path <- file.path(output_dir, sprintf("ndti_prep_static_year=%d.rds", yr))
-
-  if (file.exists(cache_path) && !overwrite) {
-    if (verbose) message("[prep] using cache: ", cache_path)
-    prep <- readRDS(cache_path)
-    if (!is.null(prep$polys)) return(prep)
+# LandIQ years whose ag parcels to extract. Default: the scene year.
+# Session 2 sets NDTI_PARCEL_YEARS=$PRIOR_YEAR,$TARGET_YEAR so Y+1 shoulder
+# months still extract PRIOR-year parcels. Year-level extract sets this to
+# the job year if unset.
+ndti_parcel_years <- function(scene_year) {
+  raw <- trimws(Sys.getenv("NDTI_PARCEL_YEARS", ""))
+  if (!nzchar(raw)) {
+    return(as.integer(scene_year))
+  }
+  ys <- unique(suppressWarnings(as.integer(unlist(strsplit(raw, "[, ]+")))))
+  ys <- ys[!is.na(ys)]
+  if (length(ys) == 0L) {
+    as.integer(scene_year)
   } else {
-    lookup   <- fread(ndti_cropcode_csv)
-    ag_pairs <- unique(lookup[is_agricultural == TRUE,
-                              .(CLASS = trimws(CLASS), SUBCLASS = as.character(SUBCLASS))])
-    ag_classes_filter <- unique(ag_pairs$CLASS)
+    ys
+  }
+}
 
-    pq_result <- arrow::open_dataset(ndti_crops_parq) |>
-      dplyr::filter(year == !!yr, CLASS %in% !!ag_classes_filter) |>
-      dplyr::select(parcel_id, CLASS, SUBCLASS) |>
-      dplyr::collect()
-    ca_crop <- as.data.table(pq_result)
-    ca_crop[, CLASS    := trimws(as.character(CLASS))]
-    ca_crop[, SUBCLASS := as.character(SUBCLASS)]
-    ca_crop    <- merge(ca_crop, ag_pairs, by = c("CLASS", "SUBCLASS"))
-    parcel_ids <- unique(as.character(ca_crop$parcel_id))
-    if (length(parcel_ids) == 0) stop("No agricultural parcel_ids found for year ", yr)
-    if (verbose) message("[prep] agricultural parcels: ", length(parcel_ids))
-
-    tilemap <- load_parcel_tilemap(yr)
-    if (is.null(tilemap)) stop(
-      "Parcel-tile map not found: ", ndti_parcel_tilemap, "\n",
-      "Build it: Rscript scripts/hls/build_hls_parcel_tile_map.R overwrite"
-    )
-
-    # tile_to_parcel_ids: kept for reference; polys drives tilewise_core
-    tile_to_parcel_ids <- local({
-      pid     <- unique(as.character(parcel_ids))
-      map_sub <- tilemap[pid, on = "parcel_id", nomatch = 0]
-      map_sub <- unique(map_sub, by = "parcel_id")
-      out <- list()
-      for (i in seq_len(nrow(map_sub))) {
-        for (tile in strsplit(map_sub$tileIDs[i], ",", fixed = TRUE)[[1]]) {
-          if (nzchar(tile)) out[[tile]] <- c(out[[tile]], map_sub$parcel_id[i])
-        }
+load_ndti_parcel_tiles <- function(year, tile = NULL) {
+  yrs <- ndti_parcel_years(year)
+  parts <- lapply(yrs, function(y) {
+    tryCatch(
+      load_parcel_tiles_for_year(y, tile = tile),
+      error = function(e) {
+        message("[prep] skip parcel year=", y, ": ", conditionMessage(e))
+        NULL
       }
-      out
-    })
-
-    covered   <- unique(unlist(tile_to_parcel_ids, use.names = FALSE))
-    n_missing <- length(setdiff(parcel_ids, covered))
-    if (n_missing > 0)
-      message("[prep] ", n_missing, " parcels missing from tile map (dropped) — rebuild map if large")
-
-    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-    prep <- list(
-      year               = yr,
-      out_dir            = output_dir,
-      tile_to_parcel_ids = tile_to_parcel_ids,
-      imagery_root       = ndti_imagery_root,
-      band_other         = list(HLSL = c("B06", "B07"), HLSS = c("B11", "B12"))
     )
-    saveRDS(prep, cache_path)
-    if (verbose) message("[prep] saved: ", cache_path)
+  })
+  parts <- parts[!vapply(parts, is.null, logical(1))]
+  if (length(parts) == 0L) {
+    stop(
+      "No agricultural parcels for NDTI (scene year=", as.integer(year),
+      " parcel years=", paste(yrs, collapse = ","), ")"
+    )
+  }
+  out <- unique(rbindlist(parts, use.names = TRUE, fill = TRUE),
+                by = c("parcel_id", "tile_id"))
+  out
+}
+
+# --- Prep: geometry parcel_tiles.csv filtered to year ag parcels ---
+ndti_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE, tile = NULL) {
+  yr <- as.integer(year)
+  output_dir <- file.path(ndti_out_root, paste0("year=", yr))
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  if (is.null(tile) || !nzchar(trimws(as.character(tile)[1L]))) {
+    env_tile <- trimws(Sys.getenv("TILEWISE_ONE_TILE", ""))
+    if (nzchar(env_tile) && !tolower(env_tile) %in% c("1", "true", "yes", "y", "first")) {
+      tile <- env_tile
+    }
+  }
+  ag <- load_ndti_parcel_tiles(yr, tile = tile)
+  tile_to_parcel_ids <- ag_tiles_to_tile_parcel_list(ag)
+
+  if (isTRUE(verbose)) {
+    keep_tile <- if (is.null(tile) || length(tile) == 0L) "" else trimws(as.character(tile)[1L])
+    if (is.na(keep_tile)) keep_tile <- ""
+    py <- ndti_parcel_years(yr)
+    message(
+      "[prep] parcel_tiles x ag scene_year=", yr,
+      " parcel_years=", paste(py, collapse = ","),
+      if (nzchar(keep_tile)) paste0(" tile=", keep_tile) else "",
+      " parcels=", uniqueN(ag$parcel_id),
+      " tiles=", length(tile_to_parcel_ids)
+    )
   }
 
-  # Build polys data.table (parcel_id + tile_ids list-column) for tilewise_core.
-  # Geometry is NOT loaded here; it is loaded lazily per-tile in prepare_tile().
+  prep <- list(
+    year               = yr,
+    out_dir            = output_dir,
+    tile_to_parcel_ids = tile_to_parcel_ids,
+    imagery_root       = ndti_imagery_root,
+    band_other         = list(HLSL = c("B06", "B07"), HLSS = c("B11", "B12"))
+  )
+
+  # polys for tilewise_core; geometry loaded lazily per tile in prepare_tile()
   tile_ids <- names(prep$tile_to_parcel_ids)
   parcel_tile <- rbindlist(lapply(tile_ids, function(tid) {
     ids <- as.character(prep$tile_to_parcel_ids[[tid]])
@@ -279,6 +277,10 @@ ndti_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE) {
 # parcels_sf must be reprojected to raster CRS.
 extract_ndti_scene <- function(band1_path, band2_path, fmask_path,
                                parcels_sf, parcel_ids, scene_date) {
+  on.exit({
+    terra::tmpFiles(orphan = TRUE, remove = TRUE)
+    invisible(gc(verbose = FALSE))
+  }, add = TRUE)
   bbox_vect <- terra::vect(sf::st_as_sfc(sf::st_bbox(parcels_sf)))
   band1 <- try(terra::crop(terra::rast(band1_path), bbox_vect), silent = TRUE)
   band2 <- try(terra::crop(terra::rast(band2_path), bbox_vect), silent = TRUE)
@@ -288,8 +290,11 @@ extract_ndti_scene <- function(band1_path, band2_path, fmask_path,
   }
 
   ndti <- (band1 - band2) / (band1 + band2)
-  ndti[is_fmask_bad_pixel(terra::values(fmask))] <- NA
+  ndti <- terra::ifel(is_fmask_bad_layer(fmask), NA, ndti)
   names(ndti) <- "NDTI"
+  # Drop intermediates before exact_extract so the scene does not keep 5 rasters.
+  rm(band1, band2, fmask)
+  terra::tmpFiles(orphan = TRUE, remove = TRUE)
 
   summarize_poly <- function(values, cov_fracs) {
     pos     <- cov_fracs > 0
@@ -320,8 +325,12 @@ extract_ndti_scene <- function(band1_path, band2_path, fmask_path,
   )
   if (inherits(result, "try-error") || is.null(result)) return(NULL)
 
+  rm(ndti)
+  terra::tmpFiles(orphan = TRUE, remove = TRUE)
+  invisible(gc(verbose = FALSE))
+
   dt <- as.data.table(result)
-  # Assign parcel_id manually — exactextractr preserves row order matching parcels_sf.
+  # Assign parcel_id manually - exactextractr preserves row order matching parcels_sf.
   dt[, parcel_id := parcels_sf$parcel_id]
   dt[, date := scene_date]
   dt

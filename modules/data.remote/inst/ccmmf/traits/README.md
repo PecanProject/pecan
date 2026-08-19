@@ -1,244 +1,192 @@
-# Planting and harvest lookup builders
+# Planting and harvest lookups
 
-Trait-based lookup tables initialize **carbon/nitrogen pools at planting** and
-**harvest removal fractions**. They feed [`make_events_statewide.R`](../events/make_events_statewide.R)
-via `pool_calculations_from_lookup.R` - planting uses matched MSLSP EVI for LAI;
-harvest uses PFT-specific removal rules. Young woody (`YP` / `SPECOND=Y`) is excluded
-from planting and harvest events (phenology only); see [`../events/README.md`](../events/README.md).
+SIPNET needs parcel-level initial C and N pool sizes at planting and, at harvest/termination, the partitioning of biomass into removed yield versus residues. Hierarchically structured lookup tables supply crop-specific SLA, allometric traits, and C:N, plus harvest fractions. `apply_planting.R` writes LAI then C/N onto the overlay. `apply_harvest.R` writes removal vs residue fractions. `make_events_statewide.R` copies SIPNET columns into event files. Harvest lookups are fractions, not EVI. Commands: [Session 2](../documentation/sessions/02-phenology.md). Event copy and skip overlap: [events/README.md](../events/README.md). Apply table columns: [data/planting_apply_metadata.csv](data/planting_apply_metadata.csv), [data/harvest_apply_metadata.csv](data/harvest_apply_metadata.csv).
 
-```mermaid
-flowchart LR
-  TRY["TRY allocation .txt"] --> PL["build_planting_lookup.R"]
-  LIQ["LandIQ lookup table"] --> PL
-  PL --> LK["plant_traits/*.csv"]
-  HV["harvest_lookup.csv"] --> LK
-  ASS["assigned MSLSP\nmatched rows"] --> EV["make_events_statewide.R"]
-  LK --> EV
-  EV --> OUT["planting / harvest events"]
+## Assumptions
+
+Both lookups use the 2021 LandIQ legend only. Agricultural parcels: `is_agricultural == TRUE`. TRY species matching uses only `AccSpeciesName` values listed in LandIQ `latin_names` (no genus fallback). Pool fallback for planting, per TraitKey: TRY subclass -> TRY class -> lit subclass -> lit class -> TRY PFT -> default PFT. Harvest: subclass -> class -> pft, keyed by PFT + `destructive`. Defaults are programmatic `source=default` rows (the pool does not fill missing numbers beyond those rows). Missing SLA stops the C/N chain (all C/N `NA`); missing stem or root traits leave those organs `NA`.
+
+The 15% onset of greenness increase (OGI) is the effective planting date. SIPNET has no seed stage, so pools are initialized at seedling size (leaf biomass from 15% of peak greenness, stem and roots allometrically from leaf). This is not a growing-season integrator and not a harvest biomass model. SIPNET plant here is leaf + stem + root (no fruit pool). Pools are kg/m2 ground area. Carbon mass fractions are hardcoded: 0.47 of dry mass for leaf, stem, and fine root; 0.50 for coarse root. There is a lag between actual planting and the first detection of foliage.
+
+Planting apply skips hay, woody, and PFT `other`. Harvest apply skips PFT `other` and young woody (`SPECOND=Y` or `CLASS=YP`). Hay and woody harvest is dated at OGD. Orchard clearing is not a separate PFT: `PFT=woody` and `destructive=TRUE`, dated at OGMn. CLASS-level look-ahead (LandIQ season 2, year -> year+1): when a mature woody CLASS is replaced by a different CLASS, young woody, or non-woody, emit one destructive harvest using the prior stand crop code and drop the routine woody harvest for that parcel.
+
+`initialize_planting()` uses Mourad LAI unless the caller already passed a finite `LAI` (then EVImax is ignored). `k` is 0.15 for every mapped PFT (`row`, `rice`, `hay`, `woody`). Other / missing PFT -> LAI = `NA`. CLASS is not used in the LAI function. Negative EVI is floored at 0. No additional LAI clamp (`lai_min = 0`, `lai_max = Inf`).
+
+## Lookups on disk
+
+
+| File under `$PLANT_TRAITS_DIR` | Contents                                                                                                                                      |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `planting_lookup.csv`          | Planting traits at subclass/class/pft (`try` / `literature` / `default`)                                                                      |
+| `harvest_lookup.csv`           | Removal vs residue fractions, including woody clearing (`destructive=TRUE`); `source` = ludemann / holos / swat / ipcc / literature / default |
+
+
+Builders (not the training path): `build_planting_lookup.R` (TRY allocation `.txt` + LandIQ lookup + literature rows); `build_harvest_lookup.R` (`harvest_fractions_long.csv` + in-script PFT defaults). Optional rebuild of the long file: `write_harvest_fractions_long.R`. LandIQ lookup columns required: `PFT`, `CLASS`, `SUBCLASS`, `CLASS_desc`, `SUBCLASS_desc`, `is_agricultural`, plus `latin_names` for TRY.
+
+## Planting math: EVImax to C/N
+
+Code: `[lai_from_mslsp.R](lai_from_mslsp.R)` then `[pool_calculations_from_lookup.R](pool_calculations_from_lookup.R)`, applied by `[apply_planting.R](apply_planting.R)`. Seasonal peak EVI2 is multiplied by 0.15 to represent EVI2 at planting (OGI is the date of 15% greenness). LAI is then estimated from that EVI2 (Mourad et al. 2020). LAI is converted to leaf biomass using SLA, and leaf biomass is the reference for the other C and N pools (leaf, stem, fine root, coarse root) through trait-based mass fractions and C:N. That keeps pool estimates linked to observed canopy conditions rather than fixed defaults.
+
+### Trait keys and units
+
+
+| TraitKey | Name                                              | Role                                               | Unit as used                                             |
+| -------- | ------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `SLA`    | specific leaf area (TRY 3115/3116/3117 collapsed) | `M_leaf = LAI / SLA`                               | m2/kg (same as mm2/mg); reject `<= 0` or `> 200`         |
+| 110      | leaf weight ratio (LWR)                           | leaf / plant; with SMF gives stem:leaf             | g/g in (0, 1]; values in (1, 100] treated as percent     |
+| 136      | stem mass fraction (SMF)                          | stem / plant                                       | g/g, same percent rule                                   |
+| 9        | root:shoot (RS)                                   | `M_root = RS * M_shoot`; also implies RMF          | g/g; keep if in [0.01, 10]                               |
+| 470      | root mass fraction (RMF)                          | root / plant; used when RS is missing              | g/g, same percent rule                                   |
+| 2005     | fine-root mass fraction                           | relative fine share of **root**, not `f * M_plant` | g/g of whole plant in TRY/lit; normalized over 2005+1534 |
+| 1534     | coarse-root mass fraction                         | relative coarse share of **root**                  | same                                                     |
+| 1019     | coarse:fine root mass ratio                       | fills 2005/1534 when those are missing             | g/g; keep if in [0.01, 10]                               |
+| 14       | leaf N                                            | `N_LEAF = M_leaf * (value * 1e-3)`                 | mg N / g DM -> kg N / kg DM                              |
+| 146      | leaf C:N                                          | fallback `N_LEAF = C_LEAF / CN`                    | g/g                                                      |
+| 165      | stem C:N                                          | `N_STEM = C_STEM / CN`                             | g/g                                                      |
+| 1055     | root C:N                                          | stem/fine/coarse N fallback; coarse CN mix         | g/g                                                      |
+| 2057     | fine-root C:N                                     | `N_FINEROOT = C_FINEROOT / CN`                     | g/g                                                      |
+
+
+RS and RMF are two views of the same split. If only one is present: `RMF = RS / (1 + RS)` and `RS = RMF / (1 - RMF)` (requires RMF < 1).
+
+### 1. EVImax -> LAI
+
+`compute_lai_from_mslsp(mslsp_EVImax, pft)`. Mourad et al. (2020) map EVI to LAI (`a` and `b` only):
+
+```text
+a = 2.92
+b = 0.43
+LAI = (max(0, a * sqrt(EVI) - b))^2
 ```
 
-**Pipeline position:** Session 2 one-time trait build
-([documentation/sessions/02-phenology.md](../documentation/sessions/02-phenology.md);
-[tree README](../README.md)), after LandIQ-MSLSP
-match, before statewide planting/harvest events.
+Planting is not peak canopy, so this pipeline scales `mslsp_EVImax` first, then runs Mourad on that scaled value:
 
-**TRY species matching:** only `AccSpeciesName` values listed in LandIQ
-`latin_names` (no genus fallback). Pool fallback for planting:
-**TRY subclass -> TRY class -> lit subclass -> lit class -> TRY PFT -> default PFT**.
-Harvest: **subclass -> class -> pft**, keyed by **PFT + `destructive`**. Defaults
-are programmatic `source=default` rows (pool does not invent numbers). Both use
-the **2021** LandIQ legend only. Agricultural parcels:
-`is_agricultural == TRUE` in the LandIQ lookup table.
-
-Orchard clearing is **not** a separate PFT: use `PFT=woody` and
-`destructive=TRUE` on the harvest lookup / event.
-
----
-
-## Prerequisites
-
-Source the training env once (Session 0):
-
-```bash
-source "$CCMMF_CODE/documentation/setup_env.sh"
+```text
+k = 0.15
+EVI' = max(0, mslsp_EVImax)
+EVI_planting = k * EVI'
+LAI = (max(0, a * sqrt(EVI_planting) - b))^2
 ```
 
-Required R packages: `dplyr`, `readr`, `tibble`, `tidyr`, `data.table` (conda
-`pecan-all` provides these).
+`k` is the 15% greenness scale at OGI, not a Mourad coefficient. Planting dates still come from MSLSP OGI (or gap-fill). `k` only sizes LAI for pool init. To change `a`, `b`, or `k`, edit `lai_from_mslsp.R`.
 
-### Input data (under `$PRODUCTS_INVENTORY`)
+LAI fallback when EVImax is missing (gap-filled dates, empty cycles): from other same-year rows that do have EVImax, take mean EVImax by CLASS x PFT, run the same LAI function, then look up LAI as CLASS+PFT -> PFT -> global mean (`lai_source = lai_fallback`). If even that is missing, the planting row is skipped. See `planting_lai_fallbacks()` in `[planting_apply.R](planting_apply.R)`.
 
-| What | Path |
-|------|------|
-| LandIQ crop code lookup | `LandIQ_cropCode_lookup_table.csv` |
-| TRY allocation releases (planting) | `plant_traits/TRY_allocation_traits/*.txt` |
-| Planting literature rows | `plant_traits/planting_sources/literature_allocation_traits.csv` |
-| Harvest fractions long | `plant_traits/harvest_sources/harvest_fractions_long.csv` |
+Numeric check: one 10TEK 2023 planting row (parcel `221093`, LandIQ `G6` miscellaneous grain and hay, season 2, `lai_source = mslsp_evi`). Overlay `mslsp_EVImax = 0.564`.
 
-The LandIQ lookup must have columns: `PFT`, `CLASS`, `SUBCLASS`, `CLASS_desc`,
-`SUBCLASS_desc`, `is_agricultural`, plus `latin_names` for TRY species matching.
-
----
-
-## Step 1 - Build the planting lookup (run once)
-
-```bash
-Rscript "$CCMMF_CODE/traits/build_planting_lookup.R"
-Rscript "$CCMMF_CODE/traits/build_harvest_lookup.R"
+```text
+EVI' = 0.564
+k * EVI' = 0.15 * 0.564 = 0.0846
+sqrt(0.0846) ~ 0.291
+a * sqrt = 2.92 * 0.291 ~ 0.850
+term = 0.850 - 0.43 = 0.420
+LAI = 0.420^2 ~ 0.176 m2/m2
 ```
 
-Harvest rem/lit: `plant_traits/harvest_lookup.csv` (2021 only; levels
-subclass/class/pft; `source` = ludemann|holos|swat|ipcc|literature|default;
-column `destructive` FALSE/TRUE).
+That matches `assigned_year=2023_planting.parquet` for this parcel (`LAI = 0.176`). The LAI is small because planting is 15% of peak greenness, not peak canopy. The rest of the pools for this row are in the worked example after the nitrogen step.
 
-Inputs: `plant_traits/harvest_sources/harvest_fractions_long.csv` (+ in-script
-PFT defaults). Optional rebuild of the long file:
-`write_harvest_fractions_long.R`.
+### 2. LAI -> leaf dry mass
 
-**Outputs** (in `$PRODUCTS_INVENTORY/plant_traits/`):
+`M_leaf = LAI / SLA` after `as_sla_m2_kg()`. If SLA is missing, `initialize_planting()` still returns the row (with the LAI it computed) but every C and N pool is `NA`.
 
-| File | Description |
-|------|-------------|
-| `planting_lookup.csv` | Planting traits at subclass/class/pft (`try`\|`literature`\|`default`) |
-| `harvest_lookup.csv` | Rem/lit lookup including woody clearing rows (`destructive=TRUE`) |
+### 3. Stem and shoot
 
----
+Stem:leaf ratio `alpha` (kg stem / kg leaf), first match that works:
 
-## Step 2 - Use pool calculations
+1. Both SMF (136) and LWR (110) present and LWR > 0: `alpha = SMF / LWR`
+2. Else SMF and RMF present and `1 - SMF - RMF > 0`: implied LWR = `1 - SMF - RMF`, `alpha = SMF / LWR`
+3. Else LWR and RMF present and `1 - LWR - RMF > 0`: implied SMF = `1 - LWR - RMF`, `alpha = SMF / LWR`
 
-Used by [`make_events_statewide.R`](../events/make_events_statewide.R) for statewide
-runs. For ad-hoc single-parcel tests, source the pool script directly:
+Then `M_stem = alpha * M_leaf` (NA if alpha cannot be formed) and `M_shoot = M_leaf + M_stem` (NA if stem is NA).
 
-```r
-source(file.path(Sys.getenv("CCMMF_CODE"), "traits/pool_calculations_from_lookup.R"))
-lk <- load_trait_lookup()
+### 4. Root mass
+
+First match that works:
+
+1. If shoot and RS are both known: `M_root = RS * M_shoot`
+2. Else if LWR > 0 and RMF known: `M_plant = M_leaf / LWR`, then `M_root = RMF * M_plant`
+
+When both RS and LWR/SMF exist, the two fraction sets are not forced onto one closed mass balance. The code prefers (1) for roots, so `M_leaf / (M_shoot + M_root)` may differ slightly from LWR. If stem is NA, path (1) cannot run; path (2) can still fill `M_root` from leaf + LWR + RMF, while `C_STEM` stays NA. `M_plant = M_shoot + M_root` (NA unless both pieces exist).
+
+### 5. Fine vs coarse (split of M_root only)
+
+TRY 2005 and 1534 are stored as whole-plant fractions. Applying them as `f * M_plant` would resize the root pool and break RS. After `M_root` is fixed, they are used only as a relative split: `fine_share = f_fine / (f_fine + f_coarse)`, `M_fine = fine_share * M_root`, `M_coarse = coarse_share * M_root`.
+
+Filling missing 2005/1534, in order:
+
+1. Both missing, 1019 and RMF known: `fine_of_root = 1 / (1 + 1019)`, then `f_fine = RMF * fine_of_root`, `f_coarse = RMF * (1 - fine_of_root)`
+2. Else RMF known and only one of 2005/1534 known and less than RMF: the missing plant fraction is `RMF - the known one`
+3. Else still missing but 1019 known (no RMF needed): use `f_fine = 1`, `f_coarse = 1019` as a ratio to normalize (`fine_share = 1/(1+1019)`)
+
+If the split still cannot be formed, `C_FINEROOT` and `C_COARSEROOT` stay `NA` even when `M_root` is known. Rice and row have PFT `source=default` rows 2005=0.99, 1534=0.01 (nearly all fine). Woody and hay have no such default.
+
+### 6. Carbon pools
+
+`C_LEAF = M_leaf * 0.47`, `C_STEM = M_stem * 0.47`, `C_FINEROOT = M_fine * 0.47`, `C_COARSEROOT = M_coarse * 0.50`. Any mass that is NA stays NA in C.
+
+### 7. Nitrogen pools
+
+Leaf (prefer tissue N, then C:N): `Nleaf_frac = leaf_N_mg_g * 1e-3` (Trait 14; reject <= 0 or > 100 mg/g). `N_LEAF = M_leaf * Nleaf_frac` if that exists, else `C_LEAF / CN_leaf` (Trait 146, CN > 0).
+
+Stem (C:N cascade): Trait 165, else 1055, else 146: `N_STEM = C_STEM / CN_used`.
+
+Fine root: Trait 2057, else 1055, else 165, else 146: `N_FINEROOT = C_FINEROOT / CN_fine_use`.
+
+Coarse root CN (`derive_CN_coarse()`), treating 2005/1534 as the mix of the root pool and requiring all of CN_root (1055), CN_fine (2057), f_fine, f_coarse:
+
+```text
+f_root        = f_fine + f_coarse
+f_fine_root   = f_fine / f_root
+f_coarse_root = f_coarse / f_root
+# 1/CN_root = f_fine_root/CN_fine + f_coarse_root/CN_coarse
+CN_coarse = f_coarse_root / (1/CN_root - f_fine_root/CN_fine)
 ```
 
-### Initialize planting (C/N pools at planting)
+If that mix is not finite and positive, fall back CN_root -> CN_fine -> CN_stem (165) -> CN_leaf (146). Then `N_COARSEROOT = C_COARSEROOT / CN_coarse`.
 
-Use **`initialize_planting()`** only: pass either a finite **`LAI`** or both **`mslsp_EVImax`** and **`mslsp_EVIamp`**, plus LandIQ **`code`** or both **`class`** and **`subclass`**.
+### Worked example (G6 parcel)
 
-Fixed LAI:
+Same row as the EVI check: parcel `221093`, `G6`, `LAI = 0.176`. Lookup values actually used (TRY subclass unless noted): SLA = 26.64 m2/kg, LWR (110) = 0.430, SMF (136) = 0.230, leaf N (14) = 31.63 mg/g, stem C:N (165) = 72.7 (literature subclass), fine-root C:N (2057) = 49.2 (literature subclass). Root:shoot (9) = 0.145 from TRY class `G` (no subclass TRY 9). Fine/coarse (2005/1534) = 0.99 / 0.01 from PFT `source=default`.
 
-```r
-planting <- initialize_planting(
-  ID = 100001, DATE = "2018-05-15", PFT = "row", lk = lk,
-  code = "T19", LAI = 2.5,
-  diagnostics = TRUE
-)
+```text
+M_leaf  = 0.176 / 26.64 ~ 0.00661 kg/m2
+alpha   = 0.230 / 0.430 ~ 0.534
+M_stem  = 0.534 * 0.00661 ~ 0.00353
+M_shoot = 0.00661 + 0.00353 ~ 0.01013
+M_root  = 0.145 * 0.01013 ~ 0.00147
+M_fine  = 0.99 * 0.00147 ~ 0.00146
+M_coarse= 0.01 * 0.00147 ~ 0.0000147
+
+C_LEAF       = 0.00661 * 0.47 ~ 0.00310
+C_STEM       = 0.00353 * 0.47 ~ 0.00166
+C_FINEROOT   = 0.00146 * 0.47 ~ 0.000686
+C_COARSEROOT = 0.0000147 * 0.50 ~ 0.0000074
+
+N_LEAF     = 0.00661 * 0.0316 ~ 0.000209
+N_STEM     = 0.00166 / 72.7 ~ 0.0000228
+N_FINEROOT = 0.000686 / 49.2 ~ 0.0000139
 ```
 
-LAI from matched MSLSP (recommended for statewide event generation):
+Those C and N values match the planting parquet row. This is typical OGI-scale biomass, not a mid-season canopy.
 
-```r
-planting <- initialize_planting(
-  ID = 100001, DATE = "2018-05-15", PFT = "row", lk = lk,
-  code = "T19",
-  mslsp_EVImax = 0.44, mslsp_EVIamp = 0.30,
-  diagnostics = TRUE
-)
-```
+`diagnostics = TRUE` adds `sla_src` / `src_*` (`subclass` | `class` | `pft`) and `source_*` (`try` | `literature` | `default`), plus `lai_k`, `alpha_stem_leaf`, `lwr_used`, `smf_used`, `rs_used`, `root_split_src`.
 
-`mslsp_EVImax` / `mslsp_EVIamp` come from the phenology product; **LandIQ CLASS** (e.g. YP vs V) is not an MSLSP field. If you omit `class`/`subclass`, **CLASS** is taken from `code` via `lk$mapping` before calling `compute_lai_from_mslsp()`. Only **CLASS** (not SUBCLASS) affects LAI rules today; see the header in `lai_from_mslsp.R`.
+## Harvest fractions
 
-### LAI model defaults and swapping coefficients
+`initialize_harvest_from_lookup()` does not use LAI or EVI. It copies `AGB_REMOVED`, `AGB_LITTER`, `BGB_REMOVED`, `BGB_LITTER` from `harvest_lookup.csv` (subclass -> class -> pft, keyed by PFT + `destructive`). Those values are the crop-specific percent of biomass removed (harvest index) vs percent entering litter, applied to standing biomass at the harvest/termination date. For example, when an annual crop is harvested essentially all of the leaf and stem is either removed or becomes litter, while roots generally become litter (except root crops). For a perennial orchard, a much smaller fraction of each pool is removed or returned, and harvest plus litter is far less than 100%.
 
-LAI logic lives in `scripts/traits/lai_from_mslsp.R` (loaded by the pool script). To call it alone:
+## Apply scripts
 
-```r
-source(file.path(Sys.getenv("CCMMF_CODE"), "traits/lai_from_mslsp.R"))
-lai <- compute_lai_from_mslsp(mslsp_EVImax, mslsp_EVIamp, pft = "row", class = "T")
-```
 
-Default formula (Mourad et al. 2020):
+| Script                            | Writes                                                               |
+| --------------------------------- | -------------------------------------------------------------------- |
+| `apply_planting.R YEAR`           | `$MATCHED_DIR/assigned_year=Y_planting.parquet` (LAI in memory only) |
+| `apply_harvest.R YEAR`            | `$MATCHED_DIR/assigned_year=Y_harvest.parquet`                       |
+| `build_planting_lookup.R`         | `planting_lookup.csv`                                                |
+| `build_harvest_lookup.R`          | `harvest_lookup.csv`                                                 |
+| `lai_from_mslsp.R`                | `compute_lai_from_mslsp()`                                           |
+| `pool_calculations_from_lookup.R` | `initialize_planting()` / `initialize_harvest_from_lookup()`         |
+| `planting_apply.R`                | LAI and pool table builders                                          |
 
-`LAI = (max(0, a * sqrt(k * EVI) - b))^2`
 
-Default rule behavior:
-
-- `row` / `rice`: use `EVIamp`, `k = 0.15` (planting-stage LAI ~15% of peak EVI
-  amplitude -- pool initialization only; **not** a separate date detector;
-  planting **dates** come from MSLSP **OGI**, which is itself ~15% of peak)
-- `woody` with `CLASS == "YP"`: use `EVIamp`, `k = 0.50` (leaf-on / 50PCGI scale)
-- other `woody`: use `EVImax`, `k = 0.50`
-- `hay`: use `EVImax`, `k = 0.50`
-
-Row and rice have a strong bare season, so seasonal amplitude tracks the crop cycle well. Hay and mature woody are often green most of the year; amplitude can be small or noisy while peak EVI still reflects canopy density, so those use `EVImax`. Young perennial woody (`YP`) is still building canopy, so it uses `EVIamp` like the anchor-site workflow.
-
-LAI matching is strict by PFT (with the `YP` CLASS branch for woody). If PFT is missing or unmapped, LAI is `NA`.
-
-To change coefficients or PFT branches, edit `case_when` and constants in `lai_from_mslsp.R`.
-
-### Initialize harvest (removal fractions)
-
-```r
-harvest <- initialize_harvest_from_lookup(
-  ID       = 100001,
-  DATE     = "2018-05-15",
-  code     = "T19",
-  PFT      = "row",
-  lk       = lk,
-  destructive = FALSE      # TRUE = orchard clearing (PFT woody only)
-)
-```
-
----
-
-## Output columns
-
-### Planting (`initialize_planting` / `planting_pools_from_lookup`)
-
-| Column | Description |
-|--------|-------------|
-| `LOC`, `DATE` | Parcel ID and planting date |
-| `CLASS_SUBCLASS`, `class`, `subclass` | LandIQ crop code and parsed components |
-| `crop_desc`, `CLASS_DESC` | Crop descriptions from LandIQ |
-| `PFT`, `LAI` | Plant functional type and leaf area index |
-| `C_LEAF`, `C_STEM`, `C_FINEROOT`, `C_COARSEROOT` | Carbon pools (kg C m2) |
-| `N_LEAF`, `N_STEM`, `N_FINEROOT`, `N_COARSEROOT` | Nitrogen pools (kg N m2) |
-| `ENSEMBLE_SIZE` | Set to 1 for deterministic lookups |
-
-Planting C pools use **LAI/SLA** leaf mass, stem from **LWR (110)** and/or **stem fraction (136)** with **RS (9)** / **RMF (470)**, and fine/coarse from **2005/1534** (fractions of whole plant). Units: SLA m2/kg; fractions g/g; leaf N mg/g -> kg/kg via x1e-3; pools kg/m2.
-
-With `diagnostics = TRUE`: `sla_src`, `src_110`, `src_136`, `src_9`, etc. (`src_*` = `subclass`/`class`/`pft`; `source_*` = `try`/`literature`/`default`).
-
-### Harvest (`initialize_harvest_from_lookup`)
-
-| Column | Description |
-|--------|-------------|
-| `LOC`, `DATE`, `CLASS_SUBCLASS`, `class`, `subclass`, `crop_desc`, `CLASS_DESC`, `PFT` | Same as planting |
-| `AGB_REMOVED` | Fraction of aboveground biomass removed at harvest |
-| `AGB_LITTER` | Fraction left as litter |
-| `BGB_REMOVED` | Fraction of belowground biomass removed |
-| `BGB_LITTER` | Fraction of belowground left as litter |
-| `destructive` | Logical; clearing uses woody + `TRUE` |
-| `ENSEMBLE_SIZE` | Set to 1 |
-
----
-
-## Quick test
-
-```r
-source("scripts/traits/pool_calculations_from_lookup.R")
-lk <- load_trait_lookup()
-p <- initialize_planting(100001, "2018-05-15", "row", lk, code = "T19", LAI = 2.5)
-h <- initialize_harvest_from_lookup(100001, "2018-05-15", "T19", "row", lk)
-print(p[, c("C_LEAF", "C_STEM", "N_LEAF")])
-print(h[, c("AGB_REMOVED", "BGB_REMOVED")])
-```
-
----
-
-## Script reference
-
-| Script | Purpose |
-|--------|---------|
-| `build_planting_lookup.R` | TRY + literature + defaults -> `planting_lookup.csv` |
-| `write_harvest_fractions_long.R` | Woody lit + HI sources -> `harvest_fractions_long.csv` |
-| `build_harvest_lookup.R` | Fractions long + defaults -> `harvest_lookup.csv` |
-| `pool_calculations_from_lookup.R` | Load lookups; `initialize_planting()` / `initialize_harvest_from_lookup()` |
-| `lai_from_mslsp.R` | LAI from MSLSP EVImax/EVIamp; sourced by pool script |
-
-Active products: `planting_lookup.csv`, `harvest_lookup.csv`. Source tables live
-under `planting_sources/` and `harvest_sources/`.
-
-- Event generation: [`../events/README.md`](../events/README.md)
-- Matched MSLSP input: [`../phenology/match/README.md`](../phenology/match/README.md)
-
-Planting: **`initialize_planting()`** (public). Internal: **`planting_pools_from_lookup()`** (LandIQ code + numeric LAI -> pools).
-
----
-
-## Troubleshooting
-
-**"TRY allocation dir not found" / no .txt files**  
-Put TRY public dumps under `plant_traits/TRY_allocation_traits/` (or set `TRY_ALLOCATION_DIR`). Expected releases include root/shoot (9), allocation fractions (110/136/...), and organ N / SLA traits.
-
-**"planting_lookup.csv not found"**  
-Run `build_planting_lookup.R` (and `build_harvest_lookup.R`) first; products live in `plant_traits/*.csv`.
-
-**"get_group_class_from_code returns NA"**  
-The LandIQ code (e.g. `"T19"`) is not in the mapping. Check that `LandIQ_cropCode_lookup_table.csv` includes that CLASS+SUBCLASS and has `is_agricultural == TRUE`.
-
-**Traits fall through to lit, PFT, or default**  
-Use `diagnostics = TRUE` and inspect `src_*` (canonical `subclass` / `class` / `pft`) plus `source_*` (`try` / `literature` / `default`). No global fallback; fine/coarse last-resort values are `source=default` rows in the planting lookup.
+Public: `initialize_planting()` (finite `LAI` or `mslsp_EVImax`, plus LandIQ `code` or both `class` and `subclass`). Internal: `planting_pools_from_lookup()`.

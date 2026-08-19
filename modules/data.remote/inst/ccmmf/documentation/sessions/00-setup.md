@@ -6,10 +6,10 @@
 
 ## 0.1 Environment (once)
 
-Use conda env `pecan-all-1.14` for all sessions. Activate it and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
+Use conda env `pecan-all-1.15` for all sessions. Activate it and confirm the packages later sessions need. If either check fails, stop and fix the environment before continuing.
 
 ```bash
-conda activate <ENV_PATH_OR_NAME>   # pecan-all-1.14
+conda activate <ENV_PATH_OR_NAME>   # pecan-all-1.15
 
 Rscript -e 'stopifnot(
   requireNamespace("arrow"),
@@ -22,7 +22,11 @@ Rscript -e 'stopifnot(
   requireNamespace("stringr"),
   requireNamespace("lubridate"),
   requireNamespace("jsonlite")
-)'
+)
+d <- terra::gdal(drivers = TRUE)$name
+if (!any(d %in% c("netCDF", "HDF5"))) {
+  stop("terra GDAL is missing netCDF/HDF5. conda install -c conda-forge libgdal-hdf5 libgdal-netcdf")
+}'
 
 python - <<'PY'
 import dask
@@ -37,6 +41,8 @@ PY
 ```
 
 ---
+
+
 
 ## 0.2 Clone (once)
 
@@ -79,6 +85,8 @@ ls -ld "$CCMMF_BASE/src/pecan" "$CCMMF_BASE/src/cadwr-landuse"
 
 ---
 
+
+
 ## 0.3 Every new shell
 
 Activate the conda env from 0.1, set the same `$CCMMF_BASE` as in 0.2, pull the repo you need, and source `setup_env`.
@@ -99,7 +107,20 @@ git -C "$CCMMF_BASE/src/cadwr-landuse" pull origin main
 source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup_env.sh"
 ```
 
+Heavy steps (Earthdata download, MSLSP, NDTI extract) belong on a compute node. Product scripts have no scheduler headers. Submit with `$CCMMF_SUBMIT` (set by `setup_env.sh`): Slurm (`sbatch`) if present, else Grid Engine (`qsub` when `$SGE_ROOT` is set).
+
+`$CCMMF_SUBMIT` defaults are **4 CPUs, 16G, 12h**. Those are starting guesses -- we are still testing what each step needs. Raise `-c` / `-m` / `-t` if a job is killed; do not start from 16 cores / 64G.
+
+```bash
+"$CCMMF_SUBMIT" -n hls-earthdata -c 4 -m 16G -t 48:00:00 -- \
+  "$CCMMF_CODE/hls/download_hls_earthdata.sh"
+```
+
+Site flags (account, queue, partition, buyin) go in `CCMMF_SUBMIT_EXTRA`. Detail: [submit_job.sh](../submit_job.sh).
+
 ---
+
+
 
 ## 0.4 Workspace (once)
 
@@ -112,9 +133,9 @@ $CCMMF_ROOT/
     work/                             # CADWR_WORK_DIR
       03-final/                       # LANDIQ_HARMONIZED
     gapfilled/                        # LANDIQ_GAPFILLED
-  HLS/
+  HLS/                                # HLS_ROOT -- imagery + MSLSP + flat prep files
     imagery/                          # HLS_IMAGERY_ROOT
-    MSLSP/                            # MSLSP_NETCDF_ROOT
+    MSLSP/                            # MSLSP_NETCDF_ROOT -- tile NetCDF; MSLSP_EXTRACT_ROOT under here
   CDL/                                # CDL_DIR
   climate/
     CHIRPS/                           # CHIRPS_DIR
@@ -148,6 +169,8 @@ mkdir -p "$PRODUCTS_INVENTORY"/{phenology,tillage,fertilization,irrigation,event
 
 ---
 
+
+
 ## 0.5 Confirm setup
 
 Confirm the code and data roots are real on disk.
@@ -164,9 +187,12 @@ If you do not see the directories you made, go back and fix the section above be
 
 ---
 
+
+
 ## 0.6 NASA Earthdata
 
-Create an Earthdata Login account and store credentials in `~/.netrc` for HLS downloads (Session 2).
+Create an Earthdata Login account and store credentials in `~/.netrc` for HLS
+downloads in [Session 2](02-phenology.md) (Sec. 2.1).
 
 1. Create a free account at [https://urs.earthdata.nasa.gov/](https://urs.earthdata.nasa.gov/)
 2. Store credentials in `~/.netrc`:
