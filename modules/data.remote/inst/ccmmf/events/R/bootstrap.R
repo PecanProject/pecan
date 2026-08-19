@@ -14,7 +14,6 @@ load_events_lib <- function() {
   source(file.path(lib, "paths.R"))
   source(file.path(lib, "io.R"))
   source(file.path(lib, "matched_input.R"))
-  source(file.path(lib, "trait_pool.R"))
   source(file.path(lib, "phenology_events.R"))
   source(file.path(lib, "planting_events.R"))
   source(file.path(lib, "harvest_events.R"))

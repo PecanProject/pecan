@@ -1,26 +1,32 @@
+#!/usr/bin/env Rscript
 # -----------------------------------------------------------------------------
-# Build geometry-only parcel -> HLS tile map (one-time)
+# One-time prep: harmonized LandIQ parcels x HLS tiles (CSV).
 # -----------------------------------------------------------------------------
 #
-# Harmonized LandIQ parcel polygons are stable; tile overlap depends on geometry
-# only. Which parcels are agricultural varies by year and is applied later in
-# phenology/extract / tillage/extract prep (filter crops_all_years.parq).
+# Parcel polygons are stable after Session 1 harmonize. Tile overlap is
+# geometry only. Which parcels are agricultural varies by year and is applied
+# later in MSLSP / NDTI extract (filter $LANDIQ_GAPFILLED crops_all_years.parq).
 #
-# Run build_hls_tile_extent.R first.
+# 1) Static MGRS grid ($HLS_S2_MGRS_GRID) x tileids.txt ($MSLSP_TILE_LIST)
+#    -> reproject to LandIQ CRS
+# 2) All parcels in parcels-consolidated.gpkg -> intersect tiles -> CSV
 #
-# Outputs (in PRODUCTS_INVENTORY):
-#   hls_parcel_tile_map_v4.1.csv         parcel_id, tileIDs, n_tiles
-#   hls_tile_parcel_counts_v4.1.csv      tile_id, n_parcels (static geometry counts)
-#   hls_parcel_tile_map_removed_v4.1.csv dropped invalid geometries (if any)
+# Prerequisites (flat under $HLS_ROOT unless overridden):
+#   - $HLS_ROOT/s2_mgrs_grid_ca.gpkg (or $HLS_S2_MGRS_GRID)
+#   - HLS_Phenology tileids.txt (or $MSLSP_TILE_LIST)
+#   - $LANDIQ_HARMONIZED/parcels-consolidated.gpkg
 #
-# Tile -> parcels is derived from the CSV via read_tile_to_parcels().
+# Output: $HLS_ROOT/parcel_tiles.csv  (parcel_id, tile_id)
+#   (override path with HLS_PARCEL_TILEMAP, or dir with HLS_PARCEL_TILES_DIR)
 #
-# Usage: Rscript build_hls_parcel_tile_map.R [overwrite]
+# Usage:
+#   Rscript build_hls_parcel_tile_map.R
+#   Rscript build_hls_parcel_tile_map.R overwrite
 # -----------------------------------------------------------------------------
 
 suppressPackageStartupMessages({
-  library(sf)
   library(data.table)
+  library(sf)
 })
 sf::sf_use_s2(FALSE)
 
@@ -29,164 +35,164 @@ script_dir <- if (length(fa <- grep("^--file=", commandArgs(trailingOnly = FALSE
 } else "."
 source(file.path(script_dir, "R", "parcel_tilemap.R"))
 
-path_landiq_v4  <- Sys.getenv("LANDIQ_HARMONIZED", "")
-if (!nzchar(trimws(path_landiq_v4))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) {
-    stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
+path_s2_mgrs_grid <- function() {
+  env <- trimws(Sys.getenv("HLS_S2_MGRS_GRID", ""))
+  if (nzchar(env)) return(env)
+  p <- file.path(hls_root_dir(), "s2_mgrs_grid_ca.gpkg")
+  if (file.exists(p)) return(p)
+  stop("Missing $HLS_ROOT/s2_mgrs_grid_ca.gpkg (set HLS_S2_MGRS_GRID).")
+}
+
+path_hls_tile_list <- function() {
+  for (env_name in c("MSLSP_TILE_LIST", "HLS_TILE_LIST")) {
+    env <- trimws(Sys.getenv(env_name, ""))
+    if (nzchar(env)) return(normalizePath(env, mustWork = FALSE))
   }
-  path_landiq_v4 <- file.path(.root, "LandIQ", "harmonized")
-}
-path_inventory <- Sys.getenv("PRODUCTS_INVENTORY", "")
-if (!nzchar(trimws(path_inventory))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) {
-    stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
+  phen <- trimws(Sys.getenv("HLS_PHENOLOGY_ROOT", ""))
+  if (nzchar(phen)) {
+    p <- file.path(phen, "tileids.txt")
+    if (file.exists(p)) return(normalizePath(p, mustWork = FALSE))
   }
-  path_inventory <- file.path(.root, "products", "inventory")
-}
-path_parcels    <- file.path(path_landiq_v4, "parcels-consolidated.gpkg")
-path_tiles      <- file.path(path_inventory, "hls_tile_extent.rds")
-path_out        <- path_inventory
-
-args <- commandArgs(trailingOnly = TRUE)
-overwrite <- length(args) >= 1L && tolower(args[1L]) %in% c("overwrite", "true", "t", "1", "yes", "y")
-
-out_parcel_file <- file.path(path_out, "hls_parcel_tile_map_v4.1.csv")
-out_counts_file <- file.path(path_out, "hls_tile_parcel_counts_v4.1.csv")
-out_removed_file <- file.path(path_out, "hls_parcel_tile_map_removed_v4.1.csv")
-
-if (file.exists(out_parcel_file) && !overwrite) {
-  message("Parcel-tile map exists (use overwrite to rebuild): ", out_parcel_file)
-  quit(save = "no", status = 0)
-}
-if (!file.exists(path_tiles)) {
-  stop("Tile extent not found. Run: Rscript scripts/hls/build_hls_tile_extent.R")
-}
-if (!file.exists(path_parcels)) {
-  stop("Parcels GPKG not found: ", path_parcels)
+  p <- file.path(hls_root_dir(), "tileids.txt")
+  if (file.exists(p)) return(normalizePath(p, mustWork = FALSE))
+  stop("tileids.txt not found (set MSLSP_TILE_LIST or clone HLS_Phenology).")
 }
 
-tile_prep   <- readRDS(path_tiles)
-tile_extent <- tile_prep$tile_extent_sf
-used_crs    <- tile_prep$used_crs
+read_hls_tile_list <- function(path = path_hls_tile_list()) {
+  tiles <- trimws(readLines(path, warn = FALSE))
+  tiles[nzchar(tiles)]
+}
 
-layer <- sf::st_layers(path_parcels)$name[1L]
-id_tbl <- sf::st_read(
-  path_parcels,
-  query = sprintf('SELECT parcel_id FROM "%s"', layer),
-  quiet = TRUE
-)
-ids <- unique(as.character(id_tbl$parcel_id))
-message("Parcels in harmonized GPKG: ", length(ids))
+path_landiq_parcels_gpkg <- function() {
+  env <- trimws(Sys.getenv("LANDIQ_GPKG", ""))
+  if (nzchar(env)) return(env)
+  harm <- trimws(Sys.getenv("LANDIQ_HARMONIZED", ""))
+  if (!nzchar(harm)) {
+    root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(root)) stop("Set LANDIQ_GPKG, LANDIQ_HARMONIZED, or CCMMF_ROOT.")
+    harm <- file.path(root, "LandIQ", "work", "03-final")
+  }
+  file.path(harm, "parcels-consolidated.gpkg")
+}
 
-chunks <- split(ids, ceiling(seq_along(ids) / 5000L))
-geom_chunks <- lapply(chunks, function(x) {
-  esc <- gsub("'", "''", x, fixed = TRUE)
-  q   <- sprintf(
-    'SELECT * FROM "%s" WHERE parcel_id IN (%s)',
-    layer, paste0("'", esc, "'", collapse = ",")
+load_tile_extents_landiq <- function() {
+  canonical <- read_hls_tile_list()
+  g <- st_read(path_s2_mgrs_grid(), quiet = TRUE)
+  if (!"tile_id" %in% names(g) && "Name" %in% names(g)) {
+    g$tile_id <- as.character(g$Name)
+  }
+  g$tile_id <- as.character(g$tile_id)
+  g <- g[g$tile_id %in% canonical, "tile_id", drop = FALSE]
+  missing <- setdiff(canonical, g$tile_id)
+  if (length(missing) > 0L) {
+    stop("MGRS grid missing tiles: ", paste(utils::head(missing, 10L), collapse = ", "))
+  }
+  g <- g[match(canonical, g$tile_id), , drop = FALSE]
+  g <- st_zm(g, drop = TRUE)
+
+  gpkg <- path_landiq_parcels_gpkg()
+  if (!file.exists(gpkg)) stop("Parcels GPKG not found: ", gpkg)
+  layer <- st_layers(gpkg)$name[1L]
+  sample <- st_read(
+    gpkg,
+    query = sprintf('SELECT * FROM "%s" LIMIT 1', layer),
+    quiet = TRUE
   )
-  sf::st_read(path_parcels, query = q, quiet = TRUE)
-})
-parcels <- do.call(rbind, geom_chunks)
-parcels$parcel_id <- as.character(parcels$parcel_id)
-
-removed_log <- data.table(parcel_id = character())
-
-valid <- tryCatch(
-  !sf::st_is_empty(sf::st_geometry(parcels)),
-  error = function(e) {
-    message("Bulk geometry check failed; checking row-by-row for corrupt geometries.")
-    vapply(seq_len(nrow(parcels)), function(i) {
-      tryCatch(!sf::st_is_empty(sf::st_geometry(parcels)[i]), error = function(e) FALSE)
-    }, logical(1))
-  }
-)
-if (any(!valid)) {
-  removed_log <- rbind(removed_log, data.table(parcel_id = parcels$parcel_id[!valid]))
-  parcels <- parcels[valid, ]
+  used_crs <- st_crs(sample)
+  list(tile_extent_sf = st_transform(g, used_crs), used_crs = used_crs)
 }
 
-parcels_tr <- tryCatch(sf::st_transform(parcels, used_crs), error = function(e) NULL)
-if (is.null(parcels_tr)) {
-  message("Bulk st_transform failed; checking row-by-row.")
-  chunk_size <- 5000L
-  n <- nrow(parcels)
-  good <- logical(n)
-  for (start in seq(1L, n, by = chunk_size)) {
-    end <- min(start + chunk_size - 1L, n)
-    chk <- tryCatch(sf::st_transform(parcels[start:end, ], used_crs), error = function(e) NULL)
-    if (!is.null(chk)) {
-      good[start:end] <- TRUE
-    } else {
-      for (i in start:end) {
-        good[i] <- tryCatch({
-          sf::st_transform(parcels[i, ], used_crs)
-          TRUE
-        }, error = function(e) FALSE)
-      }
+build_parcel_tiles <- function(chunk_size = 5000L) {
+  extent <- load_tile_extents_landiq()
+  tile_extent <- extent$tile_extent_sf
+  used_crs <- extent$used_crs
+  message("[hls prep] ", nrow(tile_extent), " tiles in LandIQ CRS")
+
+  gpkg <- path_landiq_parcels_gpkg()
+  layer <- st_layers(gpkg)$name[1L]
+  id_tbl <- st_read(
+    gpkg,
+    query = sprintf('SELECT parcel_id FROM "%s"', layer),
+    quiet = TRUE
+  )
+  ids <- unique(as.character(id_tbl$parcel_id))
+  if (length(ids) == 0L) stop("No parcel_ids in ", gpkg)
+  message("[hls prep] parcels in harmonized gpkg: ", length(ids))
+
+  chunks <- split(ids, ceiling(seq_along(ids) / as.integer(chunk_size)))
+  rows <- list()
+  for (i in seq_along(chunks)) {
+    chunk_ids <- chunks[[i]]
+    esc <- gsub("'", "''", chunk_ids, fixed = TRUE)
+    q <- sprintf(
+      'SELECT * FROM "%s" WHERE parcel_id IN (%s)',
+      layer, paste0("'", esc, "'", collapse = ",")
+    )
+    parcels <- st_read(gpkg, query = q, quiet = TRUE)
+    if (nrow(parcels) == 0L) next
+    parcels$parcel_id <- as.character(parcels$parcel_id)
+    keep <- tryCatch(
+      !st_is_empty(st_geometry(parcels)),
+      error = function(e) rep(TRUE, nrow(parcels))
+    )
+    parcels <- parcels[keep, , drop = FALSE]
+    if (nrow(parcels) == 0L) next
+    parcels <- st_zm(parcels, drop = TRUE)
+    parcels <- st_transform(parcels, used_crs)
+    hits <- st_intersects(parcels, tile_extent)
+    for (j in seq_len(nrow(parcels))) {
+      ix <- hits[[j]]
+      if (length(ix) == 0L) next
+      rows[[length(rows) + 1L]] <- data.table(
+        parcel_id = parcels$parcel_id[j],
+        tile_id = as.character(tile_extent$tile_id[ix])
+      )
+    }
+    if (i %% 10L == 0L || i == length(chunks)) {
+      message("[hls prep] geometry chunk ", i, "/", length(chunks))
     }
   }
-  if (any(!good)) {
-    removed_log <- rbind(removed_log, data.table(parcel_id = parcels$parcel_id[!good]))
+  if (length(rows) == 0L) stop("No parcel x tile rows from ", gpkg)
+  unique(rbindlist(rows), by = c("parcel_id", "tile_id"))
+}
+
+# --- CLI ---
+
+args <- commandArgs(trailingOnly = TRUE)
+overwrite <- FALSE
+other <- character()
+for (a in args) {
+  al <- tolower(a)
+  if (al %in% c("overwrite", "true", "t", "1", "yes", "y")) {
+    overwrite <- TRUE
+  } else {
+    other <- c(other, a)
   }
-  parcels <- parcels[good, ]
-  parcels <- sf::st_transform(parcels, used_crs)
-} else {
-  parcels <- parcels_tr
+}
+if (length(other) > 0L) {
+  stop(
+    "Years are not used. This map is geometry-only (harmonized parcels x HLS tiles).\n",
+    "Usage: Rscript build_hls_parcel_tile_map.R [overwrite]\n",
+    "Agricultural fields are selected later in extract for each year."
+  )
 }
 
-hits <- tryCatch(sf::st_intersects(parcels, tile_extent), error = function(e) NULL)
-if (is.null(hits)) {
-  message("Bulk st_intersects failed; checking row-by-row.")
-  n <- nrow(parcels)
-  good <- logical(n)
-  for (i in seq_len(n)) {
-    good[i] <- tryCatch({
-      hi <- sf::st_intersects(parcels[i, ], tile_extent)
-      length(hi[[1L]]) >= 0L
-      TRUE
-    }, error = function(e) FALSE)
-  }
-  if (any(!good)) {
-    removed_log <- rbind(removed_log, data.table(parcel_id = parcels$parcel_id[!good]))
-  }
-  parcels <- parcels[good, ]
-  hits <- sf::st_intersects(parcels, tile_extent)
+out_csv <- path_parcel_tiles_csv()
+out_dir <- dirname(out_csv)
+message("[hls prep] overwrite=", overwrite, " out=", out_csv)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+if (file.exists(out_csv) && !overwrite) {
+  message("[hls prep] exists (use overwrite to rebuild): ", out_csv)
+  quit(save = "no", status = 0)
 }
 
-keep <- lengths(hits) > 0L
-if (any(!keep)) {
-  removed_log <- rbind(removed_log, data.table(parcel_id = parcels$parcel_id[!keep]))
-}
-parcels <- parcels[keep, ]
-hits <- hits[keep]
-
-if (nrow(removed_log) > 0L) {
-  removed_log <- unique(removed_log)
-  dir.create(path_out, recursive = TRUE, showWarnings = FALSE)
-  fwrite(removed_log, out_removed_file)
-  message("Dropped ", nrow(removed_log), " parcels with invalid/no-tile geometry; log: ", out_removed_file)
-}
-
-parcel_tilemap <- data.table(
-  parcel_id = parcels$parcel_id,
-  tileIDs   = vapply(hits, function(i) paste(tile_extent$tile_id[i], collapse = ","), character(1)),
-  n_tiles   = lengths(hits)
+message("[hls prep] building parcel x tile table from harmonized gpkg")
+out <- build_parcel_tiles()
+fwrite(out, out_csv)
+message(
+  "[hls prep] wrote ", out_csv,
+  " (", uniqueN(out$parcel_id), " parcels, ",
+  uniqueN(out$tile_id), " tiles)"
 )
-setorder(parcel_tilemap, parcel_id)
-
-tile_to_parcels <- parcel_tilemap_to_tile_list(parcel_tilemap)
-tile_counts <- data.table(
-  tile_id = names(tile_to_parcels),
-  n_parcels = vapply(tile_to_parcels, length, integer(1))
-)
-setorder(tile_counts, tile_id)
-
-dir.create(path_out, recursive = TRUE, showWarnings = FALSE)
-fwrite(parcel_tilemap, out_parcel_file)
-fwrite(tile_counts, out_counts_file)
-
-message("Wrote parcel->tiles: ", out_parcel_file, " (", nrow(parcel_tilemap), " parcels)")
-message("Wrote tile counts:   ", out_counts_file, " (", nrow(tile_counts), " tiles)")
+message("[hls prep] done")
