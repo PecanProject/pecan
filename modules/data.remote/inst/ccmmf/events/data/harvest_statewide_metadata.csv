@@ -1,15 +1,8 @@
 column_number,column_name,contents,notes
-1,event_type,always harvest,
-2,site_id,parcel_id,
-3,year,event year,
-4,season,LandIQ season,
-5,date,harvest date,from MSLSP harvest metric / harvest_date_str
-6,CLASS_SUBCLASS,crop code string,
-7,PFT,plant functional type,
-8,assigned_by,match assignment,matched|no_mslsp|no_match (from assigned overlay)
-9,gapfill_date_source,date provenance,mslsp|lm_adoy|mean_crop|none (from gap-fill overlay; NA if no overlay)
-10,destructive,woody destructive harvest flag,
-11,frac_above_removed_0to1,fraction aboveground removed,
-12,frac_above_to_litter_0to1,fraction aboveground to litter,
-13,frac_below_removed_0to1,fraction belowground removed,
-14,frac_below_to_litter_0to1,fraction belowground to litter,
+1,event_type,always harvest,SIPNET event type
+2,site_id,parcel_id,PEcAn site key
+3,date,harvest date,from apply table (MSLSP harvest metric / gap-filled)
+4,frac_above_removed_0to1,fraction aboveground removed,SIPNET harv line
+5,frac_below_removed_0to1,fraction belowground removed,SIPNET harv line
+6,frac_above_to_litter_0to1,fraction aboveground to litter,SIPNET harv line
+7,frac_below_to_litter_0to1,fraction belowground to litter,SIPNET harv line

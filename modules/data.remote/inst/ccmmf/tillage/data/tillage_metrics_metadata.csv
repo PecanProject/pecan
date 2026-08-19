@@ -1,0 +1,23 @@
+column_number,column_name,contents,notes
+1,event_type,always tillage,present on the apply table before event copy
+2,parcel_id,LandIQ parcel id,
+3,site_id,parcel_id,same value as parcel_id
+4,year,harvest / OGMn year,not the next OGI year
+5,PFT,plant functional type from overlay,other is skipped before metrics
+6,OGMn_date,fallow start date,harvest/termination OGMn
+7,max_date,date of pre-minimum peak smoothed NDTI,on or before min_date in the fallow window
+8,max_ndti,smoothed NDTI at max_date,
+9,min_date,date of minimum smoothed NDTI,event date; most negative Delta-NDTI
+10,min_ndti,smoothed NDTI at min_date,
+11,min_n_valid,valid NDTI pixels on min_date,0 if that day was interpolated
+12,min_sd,NDTI sd on min_date,pooled from neighbor scenes if min_n_valid is 0
+13,ndti_pct_change,percent NDTI drop from max_pre to min,(max - min) / max * 100
+14,min_val_date_before,nearest prior scene with n_valid > 0,
+15,min_val_n_before,n_valid on that prior scene,
+16,min_val_date_after,nearest later scene with n_valid > 0,
+17,min_val_n_after,n_valid on that later scene,
+18,ogmn_assigned_by,match provenance of the OGMn overlay row,"matched | no_mslsp | no_match"
+19,ogmn_source,gapfill_date_source of the OGMn overlay row,"mslsp | lm_adoy | mean_crop | none"
+20,ogi_assigned_by,match provenance of the next OGI overlay row,lead(assigned_by)
+21,ogi_source,gapfill_date_source of the next OGI overlay row,lead(gapfill_date_source)
+22,tillage_eff_0to1,tillage effectiveness 0 to 1,PEcAn.data.land::ndti_to_sipnet_tillage on ndti_pct_change / 100

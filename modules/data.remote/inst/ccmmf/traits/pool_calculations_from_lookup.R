@@ -26,17 +26,60 @@ if (!nzchar(trimws(path_inventory))) {
   }
   path_inventory <- file.path(.root, "products", "inventory")
 }
-plant_traits_dir    <- file.path(path_inventory, "plant_traits")
+plant_traits_dir <- trimws(Sys.getenv("PLANT_TRAITS_DIR", ""))
+if (!nzchar(plant_traits_dir)) {
+  plant_traits_dir <- file.path(path_inventory, "plant_traits")
+}
 planting_lookup_csv <- file.path(plant_traits_dir, "planting_lookup.csv")
 harvest_lookup_csv <- file.path(plant_traits_dir, "harvest_lookup.csv")
-landiq_lookup_csv <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
+landiq_lookup_csv <- {
+  e <- trimws(Sys.getenv("LANDIQ_CROPCODE_CSV", ""))
+  if (nzchar(e) && file.exists(e)) {
+    e
+  } else {
+    inv <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
+    if (file.exists(inv)) {
+      inv
+    } else {
+      gf <- trimws(Sys.getenv("LANDIQ_GAPFILL_ROOT", ""))
+      code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+      if (!nzchar(gf) && nzchar(code)) {
+        gf <- file.path(code, "landiq-gapfill")
+      }
+      file.path(gf, "data", "LandIQ_cropCode_lookup_table.csv")
+    }
+  }
+}
 
 # local=TRUE so compute_lai_from_mslsp lands in the same env as this script
 # (events load this via source(..., local = pool_env)).
-source(
-  file.path(path_inventory, "scripts/traits/lai_from_mslsp.R"),
-  local = TRUE
-)
+.resolve_lai_script <- function() {
+  cand <- character()
+  code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+  if (nzchar(code)) {
+    cand <- c(cand, file.path(code, "traits", "lai_from_mslsp.R"))
+  }
+  ofile <- NULL
+  if (sys.nframe() >= 1L) {
+    for (i in sys.nframe():1L) {
+      of <- tryCatch(sys.frame(i)$ofile, error = function(e) NULL)
+      if (!is.null(of) && nzchar(of)) {
+        ofile <- of
+        break
+      }
+    }
+  }
+  if (!is.null(ofile)) {
+    cand <- c(cand, file.path(dirname(normalizePath(ofile, mustWork = FALSE)), "lai_from_mslsp.R"))
+  }
+  cand <- c(cand, file.path(path_inventory, "scripts", "traits", "lai_from_mslsp.R"))
+  hit <- cand[file.exists(cand)]
+  if (!length(hit)) {
+    stop("lai_from_mslsp.R not found. Set CCMMF_CODE. Tried: ", paste(cand, collapse = " | "))
+  }
+  hit[[1]]
+}
+source(.resolve_lai_script(), local = TRUE)
 
 sla_key <- "SLA"
 
@@ -669,13 +712,12 @@ planting_pools_from_lookup <- function(ID, DATE, code, LAI, PFT, lk,
   out
 }
 
-#### Planting: initialize_planting (fixed LAI or MSLSP EVI)
+#### Planting: initialize_planting (fixed LAI or MSLSP EVImax)
 
-# If LAI is a finite number, use it and ignore mslsp_EVImax and mslsp_EVIamp.
-# Else require both EVI fields and compute LAI with compute_lai_from_mslsp().
+# If LAI is a finite number, use it and ignore mslsp_EVImax.
+# Else require mslsp_EVImax and compute LAI with compute_lai_from_mslsp().
 # LandIQ key: if class and subclass are both non-empty, code is paste0(class, subclass).
-# Otherwise code must be set. Non-empty class overrides the class used in
-# compute_lai_from_mslsp when the caller passed only a code string (optional CLASS column).
+# Otherwise code must be set.
 
 initialize_planting <- function(
     ID, DATE, PFT, lk,
@@ -684,7 +726,6 @@ initialize_planting <- function(
     subclass = NA_character_,
     LAI = NA_real_,
     mslsp_EVImax = NULL,
-    mslsp_EVIamp = NULL,
     diagnostics = FALSE) {
 
   cls <- trimws(as.character(class)[1])
@@ -708,25 +749,17 @@ initialize_planting <- function(
     ))
   }
 
-  if (is.null(mslsp_EVImax) || is.null(mslsp_EVIamp)) {
-    stop("initialize_planting: provide finite LAI, or both mslsp_EVImax and mslsp_EVIamp.")
+  if (is.null(mslsp_EVImax)) {
+    stop("initialize_planting: provide finite LAI or mslsp_EVImax.")
   }
   mx <- suppressWarnings(as.numeric(mslsp_EVImax)[1])
-  ma <- suppressWarnings(as.numeric(mslsp_EVIamp)[1])
-  if (is.na(mx) || is.na(ma)) {
-    stop("initialize_planting: mslsp_EVImax and mslsp_EVIamp must be non-NA when LAI is not given.")
-  }
-
-  class_for_lai <- cls
-  if (is.na(class_for_lai) || !nzchar(class_for_lai)) {
-    class_for_lai <- get_group_class_from_code(code_chr, lk$mapping)$class
+  if (is.na(mx)) {
+    stop("initialize_planting: mslsp_EVImax must be non-NA when LAI is not given.")
   }
 
   lai_diag <- compute_lai_from_mslsp(
     mslsp_EVImax = mx,
-    mslsp_EVIamp = ma,
     pft = PFT,
-    class = class_for_lai,
     diagnostics = TRUE
   )
 
@@ -734,8 +767,6 @@ initialize_planting <- function(
     ID = ID, DATE = DATE, code = code_chr, LAI = lai_diag$LAI, PFT = PFT, lk = lk, diagnostics = diagnostics
   )
   if (diagnostics) {
-    out$lai_rule_id <- lai_diag$lai_rule_id
-    out$lai_evi_field_used <- lai_diag$lai_evi_field_used
     out$lai_evi_value_used <- lai_diag$lai_evi_value_used
     out$lai_k <- lai_diag$lai_k
     out$lai_a <- lai_diag$lai_a
