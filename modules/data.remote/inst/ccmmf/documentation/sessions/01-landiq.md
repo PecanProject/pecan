@@ -129,9 +129,9 @@ python scripts/process-tiles-local.py \    # ~3 hours
   --crs EPSG:3310 \
   --precision 10.0
 
-# Or, if you want to submit this step as a batch job:
+# Or submit this step (`$CCMMF_SUBMIT` from Session 0; cadwr's own script still works with sbatch):
 # export OUTDIR_ROOT="$CADWR_WORK_DIR"
-# sbatch scripts/process-tiles-local.sh
+# "$CCMMF_SUBMIT" -n cadwr-tiles -c 4 -m 16G -t 04:00:00 -- bash scripts/process-tiles-local.sh
 
 python scripts/03a-combine-parcels.py \
   --outdir-root "$CADWR_WORK_DIR"
@@ -146,8 +146,8 @@ python scripts/03b-finalize-crops.py \
 If this section was not run in advance, a current version is already on S3. Put those two files in `$LANDIQ_HARMONIZED` (same directory cadwr would have written -- `$CADWR_WORK_DIR/03-final` after Session 0). CDL extract and gap-fill look for `parcels-consolidated.gpkg` there.
 
 ```bash
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/crops_all_years.parq "$LANDIQ_HARMONIZED/"
+aws s3 --profile magic cp s3://carb/management/session1/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
+aws s3 --profile magic cp s3://carb/management/session1/crops_all_years.parq "$LANDIQ_HARMONIZED/"
 ls "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg" "$LANDIQ_HARMONIZED/crops_all_years.parq"
 ```
 
@@ -188,15 +188,15 @@ GF=$LANDIQ_GAPFILL_ROOT/scripts/gapfill.R
 
 Rscript $CDL/download_cdl_nass.R ${PRIOR_YEAR},${TARGET_YEAR}
 
-# each year takes ~1 hour
+# each year takes ~1 hour; submit if you do not want it on the login node
 Rscript $CDL/extract_cdl_fractions_by_parcel.R $PRIOR_YEAR    
 Rscript $CDL/extract_cdl_fractions_by_parcel.R $TARGET_YEAR 
 
-# Or, if you want to submit this step as a batch job:
+# Or:
 # export CDL_YEAR=$PRIOR_YEAR
-# sbatch $CDL/extract_cdl_fractions_by_parcel.sh
+# "$CCMMF_SUBMIT" -n cdl-fractions -c 4 -m 16G -t 01:30:00 -- $CDL/extract_cdl_fractions_by_parcel.sh
 # export CDL_YEAR=$TARGET_YEAR
-# sbatch $CDL/extract_cdl_fractions_by_parcel.sh
+# "$CCMMF_SUBMIT" -n cdl-fractions -c 4 -m 16G -t 01:30:00 -- $CDL/extract_cdl_fractions_by_parcel.sh
 
 Rscript -e 'dplyr::glimpse(arrow::read_parquet(file.path(Sys.getenv("CDL_DIR"), paste0("cdl_fractions_year=", Sys.getenv("TARGET_YEAR"), ".parquet"))))'
 ```
@@ -276,7 +276,7 @@ YEARS=${PRIOR_YEAR},${TARGET_YEAR}
 Rscript $LANDIQ_GAPFILL_ROOT/scripts/gapfill.R qc $YEARS
 
 # Glimpse inventory years only (PRIOR_YEAR / TARGET_YEAR)
-Rscript -e '
+Rscript - <<'RS'
 p <- file.path(Sys.getenv("LANDIQ_GAPFILLED"), "crops_all_years.parq")
 yrs <- as.integer(c(Sys.getenv("PRIOR_YEAR"), Sys.getenv("TARGET_YEAR")))
 ds <- arrow::open_dataset(p) |> dplyr::filter(year %in% yrs)
@@ -284,7 +284,7 @@ print(as.data.frame(ds |> dplyr::count(year) |> dplyr::collect() |> dplyr::arran
 dplyr::bind_rows(lapply(yrs, function(y) {
   ds |> dplyr::filter(year == y) |> dplyr::slice_head(n = 20) |> dplyr::collect()
 })) |> dplyr::glimpse()
-'
+RS
 
 cat $LANDIQ_GAPFILL_ROOT/outputs/qc_gapfill_report.md
 ```

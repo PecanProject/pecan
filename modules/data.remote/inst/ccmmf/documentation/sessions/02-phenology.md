@@ -109,9 +109,9 @@ Rscript "$CCMMF_CODE/hls/convert_hls_scenes.R"
 ls -d "$HLS_IMAGERY_ROOT/$DEMO_TILE/images"/HLS.S30.* | wc -l
 ls -d "$HLS_IMAGERY_ROOT/$DEMO_TILE/images"/HLS.L30.* | wc -l
 ls "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/water_${DEMO_TILE}.tif" \
-   "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/dem_${DEMO_TILE}.tif" \
-   "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/slope_${DEMO_TILE}.tif" \
-   "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/aspect_${DEMO_TILE}.tif"
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/dem_${DEMO_TILE}.tif" \
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/slope_${DEMO_TILE}.tif" \
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/aspect_${DEMO_TILE}.tif"
 ```
 
 ### Run the phenology algorithm
@@ -134,7 +134,7 @@ aws s3 --profile magic cp "s3://carb/management/session2/$DEMO_TILE/MSLSP_${DEMO
 
 ```bash
 ls "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_${PRIOR_YEAR}.nc" \
-"$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_${TARGET_YEAR}.nc"
+  "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_${TARGET_YEAR}.nc"
 ```
 
 Output: `$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_Y.nc` for `$PRIOR_YEAR` and `$TARGET_YEAR`.
@@ -149,7 +149,7 @@ Extracts are tilewise, so every parcel needs a `tile_id`. Intersect Session 1 `p
 # skip if already on $HLS_ROOT from Sec. 2.1
 aws s3 --profile magic cp s3://carb/management/session2/s2_mgrs_grid_ca.gpkg "$HLS_ROOT/"
 # skip if you already ran Session 1
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
+aws s3 --profile magic cp s3://carb/management/session1/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
 
 Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R"
 ```
@@ -181,7 +181,7 @@ You extract MSLSP phenology metrics from the tile NetCDF onto agricultural parce
 
 ```bash
 # skip if you already ran Session 1
-aws s3 --profile magic cp s3://carb/management/crops/v4.2/gapfilled/crops_all_years.parq "$LANDIQ_GAPFILLED/"
+aws s3 --profile magic cp s3://carb/management/session1/gapfilled/crops_all_years.parq "$LANDIQ_GAPFILLED/"
 
 MS=$PHENOLOGY_ROOT/extract/scripts
 Rscript "$MS/extract_tiles.R" "$PRIOR_YEAR" "$DEMO_TILE"
@@ -191,8 +191,7 @@ Rscript "$MS/combine_year.R" "$TARGET_YEAR" "$DEMO_TILE"
 ```
 
 ```bash
-Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' \
-"$MSLSP_EXTRACT_ROOT/year=${PRIOR_YEAR}/mslsp_year=${PRIOR_YEAR}.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MSLSP_EXTRACT_ROOT/year=${PRIOR_YEAR}/mslsp_year=${PRIOR_YEAR}.parquet"
 ```
 
 Output: `$MSLSP_EXTRACT_ROOT/year=Y/mslsp_year=Y.parquet`.
@@ -253,10 +252,8 @@ Rscript "$CCMMF_CODE/traits/apply_harvest.R" "$TARGET_YEAR"
 ```
 
 ```bash
-Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' \
-  "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_planting.parquet"
-Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' \
-  "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_harvest.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_planting.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_harvest.parquet"
 ```
 
 Output: `$MATCHED_DIR/assigned_year=Y_planting.parquet` and `assigned_year=Y_harvest.parquet`.
@@ -281,8 +278,7 @@ Rscript "$NT/combine_year.R" "$TARGET_YEAR" "$DEMO_TILE"
 ```
 
 ```bash
-Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' \
-"$PRODUCTS_INVENTORY/tillage/ndti_v4.1.2/year=${PRIOR_YEAR}/ndti_year=${PRIOR_YEAR}_month=03.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$PRODUCTS_INVENTORY/tillage/ndti_v4.1.2/year=${PRIOR_YEAR}/ndti_year=${PRIOR_YEAR}_month=03.parquet"
 ```
 
 Output: `$PRODUCTS_INVENTORY/tillage/ndti_v4.1.2/year=Y/ndti_year=Y_month=MM.parquet`.
@@ -302,8 +298,7 @@ Rscript "$TILLAGE_ROOT/apply_tillage.R" "$TARGET_YEAR"
 One call on `$TARGET_YEAR` also refreshes `$PRIOR_YEAR` (a harvest in the prior year can close on a planting in the target year). Fallows in the target year that still need next year's OGI stay partial.
 
 ```bash
-Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' \
-"$PRODUCTS_INVENTORY/tillage/tillage_metrics/assigned_year=${PRIOR_YEAR}_tillage.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$PRODUCTS_INVENTORY/tillage/tillage_metrics/assigned_year=${PRIOR_YEAR}_tillage.parquet"
 ```
 
 Output: `$PRODUCTS_INVENTORY/tillage/tillage_metrics/assigned_year=Y_tillage.parquet`.
@@ -328,7 +323,7 @@ ls -lh "$EVENT_OUTPUT_DIR"/assigned_year=${PRIOR_YEAR}_*.parquet
 ```bash
 export DEMO_PARCEL=124019 # annual
 # export DEMO_PARCEL=100829 # perennial
-Rscript -e '
+Rscript - <<'RS'
 pid <- Sys.getenv("DEMO_PARCEL")
 y <- Sys.getenv("PRIOR_YEAR")
 root <- Sys.getenv("EVENT_OUTPUT_DIR")
@@ -338,7 +333,7 @@ for (t in c("phenology", "planting", "harvest", "tillage")) {
   cat("\n===", t, "===\n")
   print(d[as.character(d$site_id) == pid, , drop = FALSE])
 }
-'
+RS
 ```
 
 Parquet is the table; the `.json` next to it is the nested PEcAn copy.
