@@ -46,3 +46,17 @@ woody	walnuts	Walnuts	Walnuts
 row	wheat	Wheat	Wheat
 rice	wild rice		
 woody	wine grapes	Grapevines	
+row	Corn (field & sweet)	Corn	Corn / Corn, sweet
+hay	Barley	Barley	Barley
+hay	Oats		Oats
+rice	Rice, subclass not specified	Rice	Rice
+woody	Plums	Prunes/Plums	Plums, dried / fresh
+row	Celery	Celery	Celery
+row	Lettuce (all types)	Lettuce	Lettuce
+row	Melons, squash, and cucumbers (all types)	Melons	Melon, cantaloupe / Melon, watermelon / Melons (mixed)
+row	Broccoli	Broccoli, Cauliflower	Broccoli
+row	Cauliflower	Broccoli, Cauliflower	Cauliflower
+row	Tomato all for remote sensing	Tomatoes	Tomatoes, fresh market / processing
+woody	Table grapes	Grapevines	Grapevines
+woody	Raisin grapes	Grapevines	Grape, raisin
+woody	Vineyards, subclass not specified	Grapevines	Grapevines
