@@ -8,6 +8,8 @@ default:
   # these is pending ccmmf/organization#257
   crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
   phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
+  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "phenology_statewide_*.parquet")
+  phen_anchor_col: !expr Sys.getenv("CCMMF_PHEN_ANCHOR_COL", "leafonday")
   cadwr_pfts_path: !expr path.expand(Sys.getenv("CCMMF_CADWR_PFTS", "/projectnb/dietzelab/abv1/ccmmf/cadwr-landuse/data/cadwr_pfts.csv"))
 
   # probability of compost amendment per crop cycle per ensemble member, so a

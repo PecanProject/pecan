@@ -13,6 +13,8 @@ default:
   # these is pending ccmmf/organization#257
   crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
   phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
+  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "phenology_statewide_*.parquet")
+  phen_anchor_col: !expr Sys.getenv("CCMMF_PHEN_ANCHOR_COL", "leafonday")
   crosswalk_path: workflows/fertilization-statewide/crop_name_crosswalk.tsv
   output_dir: !expr path.expand(Sys.getenv("CCMMF_FERT_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization"))
   batch_size: 100
