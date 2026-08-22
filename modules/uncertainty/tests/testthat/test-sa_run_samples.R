@@ -152,3 +152,16 @@ test_that("each PFT gets its own lookup", {
   expect_named(table, c("pft1", "pft2"))
   expect_equal(table$pft2["15.9", "Amax"], ids$id[6])
 })
+
+
+
+test_that("the run table rows follow the quantile axis", {
+  design <- sa_design_fixture()
+  ids <- sa_run_descriptions(design, site_id = "772", pft_names = "pft1")
+
+  table <- sa_run_id_table(design, ids$id)
+
+  # sensitivity.analysis pairs samples against output by position, so these
+  # rownames have to stay in the same order as sa.samples
+  expect_equal(rownames(table$pft1), c("15.9", "50", "84.1"))
+})

@@ -254,8 +254,12 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
     }
     # Check for unsampled multi-path inputs
-    if (length(input_paths) > 1 &&
-          !(input_tag %in% names(settings$ensemble$samplingspace))) {
+    # a design pins which path each run uses, so an input it covers is sampled
+    # even when settings$ensemble is absent, as it is on the sensitivity path
+    input_sampled <- input_tag %in% names(settings$ensemble$samplingspace) ||
+      (!missing(input_design) && !is.null(input_design) &&
+         input_tag %in% colnames(input_design))
+    if (length(input_paths) > 1 && !input_sampled) {
       PEcAn.logger::logger.error(
         "Input", sQuote(input_tag), "has", length(input_paths),
         "paths but no sampling method.",

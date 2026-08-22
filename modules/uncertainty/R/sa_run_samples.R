@@ -145,7 +145,9 @@ sa_run_descriptions <- function(design_matrix, site_id, pft_names) {
 sa_run_id_table <- function(design_matrix, run_ids) {
   MEDIAN <- "50"
 
-  median_id <- run_ids[[1]]
+  # read the median run by its label, like everything else here, rather than
+  # assuming it is the first row
+  median_id <- run_ids[[which(is.na(design_matrix$sa_pft))[1]]]
   moved <- !is.na(design_matrix$sa_pft)
   runs <- list()
 
@@ -161,6 +163,11 @@ sa_run_id_table <- function(design_matrix, run_ids) {
     for (row in rows) {
       run_table[design_matrix$sa_quantile[row], design_matrix$sa_trait[row]] <- run_ids[[row]]
     }
+
+    # the median row is filled first, so sort back onto the quantile axis:
+    # sensitivity.analysis pairs samples against output positionally, and the
+    # old writer built this in sa.samples order
+    run_table <- run_table[order(as.numeric(rownames(run_table))), , drop = FALSE]
 
     runs[[pft_name]] <- run_table
   }
