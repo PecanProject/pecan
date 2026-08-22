@@ -47,7 +47,8 @@ yr_list <- paste(years, collapse = ",")
 # season structure is mostly NA-padded, keep rows carrying a crop class
 crops <- DBI::dbGetQuery(con, sprintf(
   "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
-          CAST(season AS INTEGER) AS season, CLASS, CAST(SUBCLASS AS INTEGER) AS SUBCLASS
+          CAST(season AS INTEGER) AS season, CLASS,
+          TRY_CAST(NULLIF(NULLIF(TRIM(CAST(SUBCLASS AS VARCHAR)), '**'), '') AS INTEGER) AS SUBCLASS
    FROM read_parquet('%s') WHERE \"year\" IN (%s) AND CLASS IS NOT NULL",
   config[["crops_path"]], yr_list)) |>
   dplyr::rename(year = "yr") |>
@@ -57,13 +58,32 @@ crops <- DBI::dbGetQuery(con, sprintf(
 # green-up for most double-crop parcels, so rank green-ups within a parcel-year
 # and match the nth crop cycle to the nth green-up rather than collapsing to the
 # earliest. phenology_source is carried through for audit.
-phen <- DBI::dbGetQuery(con, sprintf(
-  "SELECT CAST(site_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS yr,
-          CAST(leafonday AS DATE) AS anchor, phenology_source,
-          row_number() OVER (PARTITION BY site_id, \"year\" ORDER BY leafonday) AS phen_rank
-   FROM read_parquet('%s/phenology_statewide_*.parquet') WHERE \"year\" IN (%s)",
-  config[["phen_dir"]], yr_list)) |>
-  dplyr::rename(year = "yr")
+phen_anchor_col <- config[["phen_anchor_col"]]
+phen_raw <- DBI::dbGetQuery(con, sprintf(
+  "SELECT * FROM read_parquet('%s') WHERE \"year\" IN (%s)",
+  file.path(config[["phen_dir"]], config[["phen_glob"]]), yr_list))
+phen_id_col <- if ("parcel_id" %in% names(phen_raw)) "parcel_id" else "site_id"
+phen_source_col <- if ("phenology_source" %in% names(phen_raw)) {
+  "phenology_source"
+} else if ("gapfill_date_source" %in% names(phen_raw)) {
+  "gapfill_date_source"
+} else {
+  NA_character_
+}
+phen <- phen_raw |>
+  dplyr::transmute(
+    parcel_id = as.integer(.data[[phen_id_col]]),
+    year = as.integer(.data$year),
+    anchor = as.Date(.data[[phen_anchor_col]]),
+    phenology_source = if (is.na(phen_source_col)) {
+      NA_character_
+    } else {
+      as.character(.data[[phen_source_col]])
+    }
+  ) |>
+  dplyr::filter(!is.na(.data$anchor)) |>
+  dplyr::arrange(.data$parcel_id, .data$year, .data$anchor) |>
+  dplyr::mutate(phen_rank = dplyr::row_number(), .by = c("parcel_id", "year"))
 
 # where a parcel-year has fewer green-ups than crop cycles, the later cycles
 # reuse the last available one
