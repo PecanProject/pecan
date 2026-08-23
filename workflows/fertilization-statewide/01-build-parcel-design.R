@@ -88,13 +88,11 @@ code_lookup <- code_map |>
 
 PEcAn.logger::logger.info(sprintf("Resolved %d CADWR codes via crosswalk", nrow(code_lookup)))
 
-# the event date is anchored to green-up (leafonday) from the gap-filled
-# phenology product, observed where the satellite retrieval succeeded and
-# crop-calendar filled otherwise, so this covers the full ~600k ag universe
-# instead of the ~377k strict-matched subset. crop class per season comes
-# from the CADWR Land Use crops product. the crops product's own emergence
-# date is empty statewide, so the gap-filled green-up is the only populated
-# anchor available.
+# the event date is the anchor itself; this workflow applies no offset. the
+# anchor comes from the gap-filled LandIQ to MSLSP match, which keys every
+# transition by (parcel_id, year, season), so cycles join on a real season key.
+# same product the ncc workflow reads, so both sides agree on when a season
+# starts.
 
 years <- config[["years"]]
 PEcAn.logger::logger.info("Reading crops and gap-filled phenology for years: ",
@@ -117,50 +115,21 @@ crops <- DBI::dbGetQuery(con, sprintf(
   dplyr::rename(year = "yr") |>
   dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
 
-# the phenology product has no season key, but from 2018 on it carries a second
-# green-up for most double-crop parcels, so rank green-ups within a parcel-year
-# and match the nth crop cycle to the nth green-up rather than collapsing to the
-# earliest. phenology_source is carried through for audit.
 phen_anchor_col <- config[["phen_anchor_col"]]
-phen_raw <- DBI::dbGetQuery(con, sprintf(
-  "SELECT * FROM read_parquet('%s') WHERE \"year\" IN (%s)",
-  file.path(config[["phen_dir"]], config[["phen_glob"]]), yr_list))
-phen_id_col <- if ("parcel_id" %in% names(phen_raw)) "parcel_id" else "site_id"
-phen_source_col <- if ("phenology_source" %in% names(phen_raw)) {
-  "phenology_source"
-} else if ("gapfill_date_source" %in% names(phen_raw)) {
-  "gapfill_date_source"
-} else {
-  NA_character_
-}
-phen <- phen_raw |>
-  dplyr::transmute(
-    parcel_id = as.integer(.data[[phen_id_col]]),
-    year = as.integer(.data$year),
-    date = as.Date(.data[[phen_anchor_col]]),
-    phenology_source = if (is.na(phen_source_col)) {
-      NA_character_
-    } else {
-      as.character(.data[[phen_source_col]])
-    }
-  ) |>
-  dplyr::filter(!is.na(.data$date)) |>
-  dplyr::arrange(.data$parcel_id, .data$year, .data$date) |>
-  dplyr::mutate(phen_rank = dplyr::row_number(), .by = c("parcel_id", "year"))
+phen <- DBI::dbGetQuery(con, sprintf(
+  "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS year,
+          CAST(season AS INTEGER) AS season, gapfill_date_source, %s AS date
+   FROM read_parquet('%s') WHERE \"year\" IN (%s)",
+  phen_anchor_col, file.path(config[["phen_dir"]], config[["phen_glob"]]), yr_list))
 
-# where a parcel-year has fewer green-ups than crop cycles, the later cycles
-# reuse the last available one
-phen_max <- phen |>
-  dplyr::summarize(max_rank = max(.data$phen_rank), .by = c("parcel_id", "year"))
-
+# a cycle with no matched phenology row has no anchor, and is dropped rather
+# than given a substitute date
 plant <- crops |>
-  dplyr::mutate(season_rank = dplyr::dense_rank(.data$season),
-                .by = c("parcel_id", "year")) |>
-  dplyr::inner_join(phen_max, by = c("parcel_id", "year")) |>
-  dplyr::mutate(phen_rank = pmin(.data$season_rank, .data$max_rank)) |>
-  dplyr::inner_join(phen, by = c("parcel_id", "year", "phen_rank"))
-PEcAn.logger::logger.info(sprintf("Loaded %d cycles across %d parcels (phenology anchored)",
-                                  nrow(plant), dplyr::n_distinct(plant$parcel_id)))
+  dplyr::inner_join(phen, by = c("parcel_id", "year", "season"))
+PEcAn.logger::logger.info(sprintf(
+  "Anchored %d of %d crop cycles (%.1f%%) across %d parcels",
+  nrow(plant), nrow(crops), 100 * nrow(plant) / nrow(crops),
+  dplyr::n_distinct(plant$parcel_id)))
 
 ## subsample
 # parcel set is sampled once and applied to all years so the same parcels
@@ -226,11 +195,11 @@ if (nrow(zero_env) > 0) {
 }
 
 kept <- design |> dplyr::filter(.data$rate_source == "crosswalk")
-src <- kept |> dplyr::count(.data$phenology_source, sort = TRUE)
-PEcAn.logger::logger.info("Anchor provenance (phenology_source):")
+src <- kept |> dplyr::count(.data$gapfill_date_source, sort = TRUE)
+PEcAn.logger::logger.info("Anchor provenance (gapfill_date_source):")
 for (i in seq_len(nrow(src))) {
   PEcAn.logger::logger.info(sprintf("  %s: %d cycles (%.1f%%)",
-                                    src$phenology_source[i], src$n[i],
+                                    src$gapfill_date_source[i], src$n[i],
                                     100 * src$n[i] / nrow(kept)))
 }
 
