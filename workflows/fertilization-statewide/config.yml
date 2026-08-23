@@ -12,11 +12,16 @@ default:
   # set the matching environment variable to run anywhere else. final home for
   # these is pending ccmmf/organization#257
   crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
-  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
-  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "phenology_statewide_*.parquet")
-  phen_anchor_col: !expr Sys.getenv("CCMMF_PHEN_ANCHOR_COL", "leafonday")
+  # gap-filled LandIQ to MSLSP match, the same product the ncc workflow reads.
+  # mslsp_50PCGI is the transition the previous leafonday column was derived from,
+  # so the anchor is unchanged; only its source and the season key are new
+  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates"))
+  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "assigned_year=*_gapfilled.parquet")
+  phen_anchor_col: !expr Sys.getenv("CCMMF_PHEN_ANCHOR_COL", "mslsp_50PCGI")
   crosswalk_path: workflows/fertilization-statewide/crop_name_crosswalk.tsv
-  output_dir: !expr path.expand(Sys.getenv("CCMMF_FERT_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization"))
+  # versioned alongside ncc: v2.0 is the pass built on the v4.1.2 monitoring
+  # products. bump rather than writing over
+  output_dir: !expr path.expand(Sys.getenv("CCMMF_FERT_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/v2.0"))
   batch_size: 100
   workers: 1
 
