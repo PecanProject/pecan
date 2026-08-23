@@ -129,14 +129,47 @@ if (dplyr::n_distinct(dat$ens_id) != n_ens) {
                dplyr::n_distinct(dat$ens_id), n_ens))
 }
 
-# events are anchored up to 210 days before green-up, so a cycle in year Y can place its
-# application in Y-1. that includes 2017, which carries no crop cycles of its own
+# offsets are signed, so an event can fall outside its anchor's calendar year in
+# either direction: row reaches 120 days before a planting date that may already sit
+# in the prior year, and hay reaches 14 days after a senescence date that may already
+# sit in the following one. one year of slack on each side covers both
 expected_years <- as.integer(config[["years"]])
-allowed_years <- seq(min(expected_years) - 1L, max(expected_years))
+allowed_years <- seq(min(expected_years) - 1L, max(expected_years) + 1L)
 extra_years <- setdiff(unique(lubridate::year(dat$date)), allowed_years)
 if (length(extra_years) > 0) {
   fail("event dates outside the configured years: ",
        paste(sort(extra_years), collapse = ", "))
+}
+
+# the parquet carries the delivered date but not the anchor it was measured from,
+# so the per PFT timing rule is asserted against the staged events, where both are
+# present. this is the check that a rule was applied as configured rather than
+# defaulting to another PFT's window
+events_file <- file.path(out_path, "_staging", "_staging_02_events.rds")
+if (!file.exists(events_file)) {
+  fail("Stage 02 output not found: ", events_file,
+       ". Timing rules cannot be verified without it.")
+}
+staged <- readRDS(events_file)
+delta <- as.integer(staged$date - staged$anchor)
+out_of_window <- delta < staged$offset_min | delta > staged$offset_max
+if (any(out_of_window)) {
+  worst <- staged[which(out_of_window)[1], ]
+  fail(sprintf("%d events fall outside their PFT's offset window, e.g. %s at %d days against %d to %d",
+               sum(out_of_window), worst$pft_group,
+               as.integer(worst$date - worst$anchor),
+               worst$offset_min, worst$offset_max))
+}
+
+realized <- staged |>
+  dplyr::summarize(min_off = min(as.integer(.data$date - .data$anchor)),
+                   max_off = max(as.integer(.data$date - .data$anchor)),
+                   .by = c("pft_group", "anchor_col"))
+PEcAn.logger::logger.info("Timing rule per PFT (days from anchor):")
+for (i in seq_len(nrow(realized))) {
+  PEcAn.logger::logger.info(sprintf("  %s anchored on %s: %d to %d",
+                                    realized$pft_group[i], realized$anchor_col[i],
+                                    realized$min_off[i], realized$max_off[i]))
 }
 
 PEcAn.logger::logger.info("All checks passed")
