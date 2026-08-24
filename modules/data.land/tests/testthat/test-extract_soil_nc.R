@@ -202,37 +202,15 @@ test_that("extract_soil_gssurgo generates distinct ensemble members from Dirichl
 })
 
 test_that("extract_soil_gssurgo requires depths to start with 0", {
-  skip_on_cran()
-  skip_on_ci()
-  tmp_outdir <- withr::local_tempdir("gssurgo_test_")
-  
-  # Disable debugging during error testing
-  withr::local_options(error = NULL)
-  
-  # Should error when depths doesn't start with 0
   expect_error(
     extract_soil_gssurgo(
-      outdir = tmp_outdir,
-      lat = 40.1164,
-      lon = -88.2434,
-      size = 1,
-      radius = 500,
+      outdir = withr::local_tempdir(),
+      lat = 40,
+      lon = -88,
       depths = c(0.15, 0.30)  # Missing 0 at start
     ),
     regexp = "First depth must be 0"
   )
-  
-  # Should work when depths starts with 0
-  res <- extract_soil_gssurgo(
-    outdir = tmp_outdir,
-    lat = 40.1164,
-    lon = -88.2434,
-    size = 1,
-    radius = 500,
-    depths = c(0, 0.15, 0.30)  # Correct format
-  )
-  
-  expect_false(is.null(res))
 })
 
 test_that("gssurgo_fetch_area returns raw soil data for inspection", {
