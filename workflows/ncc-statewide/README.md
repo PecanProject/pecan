@@ -12,6 +12,8 @@ Configuration parameters in `config.yml`:
 
 - `crops_path`: the harmonized CADWR Land Use crops parquet. Override with `CCMMF_CROPS_PATH`
 - `phen_dir`: the gap-filled phenology (green-up) directory. Override with `CCMMF_PHEN_DIR`
+- `phen_glob`: file glob under `phen_dir` (default `phenology_statewide_*.parquet`). Override with `CCMMF_PHEN_GLOB`
+- `phen_anchor_col`: phenology date column (default `leafonday`). Override with `CCMMF_PHEN_ANCHOR_COL`
 - `cadwr_pfts_path`: the CADWR class/subclass to PFT map. Override with `CCMMF_CADWR_PFTS`
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
