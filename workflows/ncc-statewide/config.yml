@@ -3,10 +3,13 @@ default:
   n_ensemble: 20
   seed: 42
   years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
+  # crops is the gap-filled LandIQ table (v4.1.2), the same inventory the
+  # phenology match is built against. v4.1 is the ungapfilled table and covers
+  # parcels the match does not.
   # large inputs are not distributed with the repo. the defaults resolve on SCC;
   # set the matching environment variable to run anywhere else. final home for
   # these is pending ccmmf/organization#257
-  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
+  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/crops_all_years.parq"))
 
   # gap-filled LandIQ to MSLSP match. carries every phenology transition as a
   # DATE keyed (parcel_id, year, season), so crop cycles join on a real season
