@@ -1,12 +1,16 @@
 #!/usr/bin/env Rscript
-# Build/load the per-year MSLSP static prep cache (ag parcels, tile map, tiles_to_run.txt).
+# Load MSLSP prep from parcel_tiles.csv filtered to year ag parcels; optionally
+# write tiles_to_run.txt for array extract (TASK_ID). Does not rebuild the map.
 #
 # USAGE
 #   Rscript prep_static.R <year> [overwrite]
 #
+# Prerequisite:
+#   Rscript $CCMMF_CODE/hls/build_hls_parcel_tile_map.R
+#
 # ENV
-#   PHENOLOGY_ROOT, LANDIQ_GAPFILLED, PRODUCTS_INVENTORY, HLS_PARCEL_TILEMAP,
-#   MSLSP_NETCDF_ROOT -- see ../README.md (phenology component)
+#   PHENOLOGY_ROOT, PRODUCTS_INVENTORY, MSLSP_NETCDF_ROOT, HLS_PARCEL_TILES_DIR
+#   -- see ../README.md
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 .lib <- dirname(normalizePath(.fa, mustWork = FALSE))

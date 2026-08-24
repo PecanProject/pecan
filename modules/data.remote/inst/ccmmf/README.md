@@ -67,13 +67,13 @@ Commands: [Session 1](documentation/sessions/01-landiq.md).
 Why: we also need to know when each field was planted, when leaves came on and off, when it was harvested, and when the soil was disturbed. This session extracts those dates from HLS phenology, sets planting C/N pools and harvest fractions from crop-specific literature, and detects tillage in the fallow period between crop seasons.
 
 
-| Output                                 | Source                                       |
-| -------------------------------------- | -------------------------------------------- |
-| Parcel-tile map                        | [hls](hls/README.md)                         |
-| LandIQ seasons matched to MSLSP cycles | [phenology/match](phenology/match/README.md) |
-| Planting / harvest / phenology events  | [events](events/README.md)                   |
-| Tillage events                         | [events](events/README.md)                   |
-| Plant trait lookups                    | [traits](traits/README.md)                   |
+| Output                                                  | Source                                                                                               |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| HLS imagery, MSLSP NetCDF                               | [hls](hls/README.md); [MSLSP30NA](https://www.earthdata.nasa.gov/data/catalog/lpcloud-mslsp30na-011) |
+| MSLSP extract, match, date gap-fill                     | [phenology](phenology/README.md)                                                                     |
+| Plant trait lookups and planting / harvest apply tables | [traits](traits/README.md)                                                                           |
+| NDTI extract and tillage metrics                        | [tillage](tillage/README.md)                                                                         |
+| Planting / harvest / phenology / tillage events         | [events](events/README.md)                                                                           |
 
 
 Commands: [Session 2](documentation/sessions/02-phenology.md).
@@ -83,11 +83,11 @@ Commands: [Session 2](documentation/sessions/02-phenology.md).
 Why: finally, we need nitrogen fertilization, organic amendments, and irrigation on each field. Timing for these depends on the phenology from Session 2. This session sets N rates from California crop guidelines, sets organic amendment rates from literature-derived values, and computes irrigation with a simple water-bucket balance from precip, reference ET, and soil water holding capacity.
 
 
-| Output                   | Source                                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------------------- |
-| N fertilization events   | [fertilization-statewide](../../../../workflows/fertilization-statewide/README.md)           |
-| Organic amendment events | [ncc-statewide](../../../../workflows/ncc-statewide/README.md)                               |
-| Irrigation events        | [irrigation-statewide](../../../../workflows/irrigation-statewide/README.md)                 |
+| Output                   | Source                                                                             |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| N fertilization events   | [fertilization-statewide](../../../../workflows/fertilization-statewide/README.md) |
+| Organic amendment events | [ncc-statewide](../../../../workflows/ncc-statewide/README.md)                     |
+| Irrigation events        | [irrigation-statewide](../../../../workflows/irrigation-statewide/README.md)       |
 
 
 Commands: [Session 3](documentation/sessions/03-fertilizer-irrigation.md).
