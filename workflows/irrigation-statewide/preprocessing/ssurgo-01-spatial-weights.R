@@ -1,9 +1,11 @@
 #!/usr/bin/env Rscript
 
-options(
-  clustermq.scheduler = "sge",
-  clustermq.template  = ".clustermq_sge.tmpl"
-)
+cmq_scheduler <- Sys.getenv("CLUSTERMQ_SCHEDULER", "sge")
+if (cmq_scheduler == "sge") {
+  options(clustermq.scheduler = "sge", clustermq.template = ".clustermq_sge.tmpl")
+} else {
+  options(clustermq.scheduler = cmq_scheduler)
+}
 
 library(sf)
 library(dplyr)
@@ -19,7 +21,10 @@ dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 parcel_chunk_size <- 2000
 
 # Transform ssurgo mupolygon column to parquet for faster reading
-gdb_path   <- "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"
+gdb_path <- Sys.getenv(
+  "SSURGO_GDB_PATH",
+  "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"
+)
 mupoly_path <- "./ssurgo_mupolygons.parquet"
 if (!file.exists(mupoly_path)) {
   message("Creating parquet version of mupolygons for faster reads")
@@ -39,7 +44,10 @@ if (!file.exists(mupoly_path)) {
   rm(mupoly_raw, mupoly)
 }
 
-parcels_path <- "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg" #nolint
+parcels_path <- Sys.getenv(
+  "LANDIQ_PARCELS_GPKG",
+  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+) #nolint
 
 parcel_ids <- st_read(
   parcels_path,
@@ -125,6 +133,6 @@ Q(
     mupoly_path = mupoly_path,
     outdir = outdir
   ),
-  n_jobs = 30,
+  n_jobs = as.integer(Sys.getenv("CLUSTERMQ_N_JOBS", "30")),
   template = list(cores = 1, walltime = "05:00:00")
 )
