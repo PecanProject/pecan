@@ -6,7 +6,6 @@ the salinas organic cropping systems model ensemble, in EFI long format, for tes
 - **`ensemble_output.csv`** -- the model side. 67,200 rows: 50 ensemble members x 8 systems x 84 months (2005-2011) x {TotSoilCarb, AGB}.
 - **`observations_soc.csv`** -- the obs side. per-system SOC stock, aggregated from the white_salinas block-level data (4 reps -> mean + sd + se), converted to kg C m-2. 72 rows (8 systems x 9 study years); 56 fall in the 2005-2011 model window (`in_model_window == True`).
 - `extract_salinas_ensemble_output.R` / `build_salinas_soc_obs.py` -- how each csv was produced.
-- `RUN_RECORD_salinas_ensemble_extract_20260719.md` -- provenance.
 
 ## the csv schema (EFI long)
 `scenario, datetime, site_id, lat, lon, pft, parameter, variable, variable_type, prediction`
