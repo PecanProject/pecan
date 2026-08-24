@@ -11,7 +11,8 @@ Use conda env `pecan-all-1.15` for all sessions. Activate it and confirm the pac
 ```bash
 conda activate <ENV_PATH_OR_NAME>   # pecan-all-1.15
 
-Rscript -e 'stopifnot(
+Rscript - <<'RS'
+stopifnot(
   requireNamespace("arrow"),
   requireNamespace("dplyr"),
   requireNamespace("data.table"),
@@ -26,7 +27,8 @@ Rscript -e 'stopifnot(
 d <- terra::gdal(drivers = TRUE)$name
 if (!any(d %in% c("netCDF", "HDF5"))) {
   stop("terra GDAL is missing netCDF/HDF5. conda install -c conda-forge libgdal-hdf5 libgdal-netcdf")
-}'
+}
+RS
 
 python - <<'PY'
 import dask
