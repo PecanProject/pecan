@@ -89,10 +89,10 @@ code_lookup <- code_map |>
 PEcAn.logger::logger.info(sprintf("Resolved %d CADWR codes via crosswalk", nrow(code_lookup)))
 
 # the event date is the anchor itself; this workflow applies no offset. the
-# anchor comes from the gap-filled LandIQ to MSLSP match, which keys every
+# anchor transition is chosen per PFT so annuals are timed to planting and
+# perennials to leaf-on, matching the split the monitoring event products use.
+# both come from the gap-filled LandIQ to MSLSP match, which keys every
 # transition by (parcel_id, year, season), so cycles join on a real season key.
-# same product the ncc workflow reads, so both sides agree on when a season
-# starts.
 
 years <- config[["years"]]
 PEcAn.logger::logger.info("Reading crops and gap-filled phenology for years: ",
@@ -115,21 +115,78 @@ crops <- DBI::dbGetQuery(con, sprintf(
   dplyr::rename(year = "yr") |>
   dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
 
-phen_anchor_col <- config[["phen_anchor_col"]]
+pft_anchor <- unlist(config[["pft_anchor"]])
+anchor_cols <- sort(unique(pft_anchor))
+
+# "**" is the LandIQ sentinel for subclass not specified. it becomes NA on both
+# sides of the join, so those rows land on the class-level fallback
+pft_lookup <- readr::read_csv(config[["pft_lookup_path"]],
+                              show_col_types = FALSE) |>
+  dplyr::filter(!is.na(.data$PFT))
+pft_by_code <- pft_lookup |>
+  dplyr::transmute(CLASS = .data$CLASS,
+                   SUBCLASS = as.integer(dplyr::na_if(as.character(.data$SUBCLASS), "**")),
+                   pft_group = .data$PFT) |>
+  dplyr::distinct()
+pft_by_class <- pft_lookup |>
+  dplyr::count(.data$CLASS, .data$PFT) |>
+  dplyr::slice_max(.data$n, n = 1, by = "CLASS", with_ties = FALSE) |>
+  dplyr::transmute(CLASS = .data$CLASS, pft_group_class = .data$PFT)
+
 phen <- DBI::dbGetQuery(con, sprintf(
   "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS year,
-          CAST(season AS INTEGER) AS season, gapfill_date_source, %s AS date
+          CAST(season AS INTEGER) AS season, gapfill_date_source, %s
    FROM read_parquet('%s') WHERE \"year\" IN (%s)",
-  phen_anchor_col, file.path(config[["phen_dir"]], config[["phen_glob"]]), yr_list))
+  paste(anchor_cols, collapse = ", "),
+  file.path(config[["phen_dir"]], config[["phen_glob"]]), yr_list))
+
+missing_cols <- setdiff(anchor_cols, names(phen))
+if (length(missing_cols) > 0) {
+  PEcAn.logger::logger.severe(
+    "phenology product has no column(s) named in pft_anchor: ",
+    paste(missing_cols, collapse = ", "))
+}
 
 # a cycle with no matched phenology row has no anchor, and is dropped rather
 # than given a substitute date
 plant <- crops |>
-  dplyr::inner_join(phen, by = c("parcel_id", "year", "season"))
+  dplyr::inner_join(phen, by = c("parcel_id", "year", "season")) |>
+  dplyr::left_join(pft_by_code, by = c("CLASS", "SUBCLASS")) |>
+  dplyr::left_join(pft_by_class, by = "CLASS") |>
+  dplyr::mutate(pft_group = dplyr::coalesce(.data$pft_group, .data$pft_group_class))
 PEcAn.logger::logger.info(sprintf(
   "Anchored %d of %d crop cycles (%.1f%%) across %d parcels",
   nrow(plant), nrow(crops), 100 * nrow(plant) / nrow(crops),
   dplyr::n_distinct(plant$parcel_id)))
+
+# non-crop pfts have no anchor rule. report them so a crop type missing a rule
+# is visible rather than silently absent
+dropped <- plant |>
+  dplyr::filter(!.data$pft_group %in% names(pft_anchor)) |>
+  dplyr::count(.data$pft_group, sort = TRUE)
+if (nrow(dropped) > 0) {
+  PEcAn.logger::logger.info(sprintf(
+    "Dropping %d cycles whose pft has no anchor rule:", sum(dropped$n)))
+  for (i in seq_len(nrow(dropped))) {
+    PEcAn.logger::logger.info(sprintf("  %s: %d cycles",
+                                      dropped$pft_group[i], dropped$n[i]))
+  }
+}
+plant <- plant |> dplyr::filter(.data$pft_group %in% names(pft_anchor))
+
+# index a numeric matrix so the anchor stays config driven, not a branch per pft
+anchor_idx <- cbind(seq_len(nrow(plant)),
+                    match(pft_anchor[plant$pft_group], anchor_cols))
+anchor_num <- do.call(cbind, lapply(plant[anchor_cols], as.numeric))
+plant$date <- as.Date(anchor_num[anchor_idx], origin = "1970-01-01")
+
+# a matched row is expected to carry every transition, so a NULL anchor means the
+# product changed rather than a cycle being legitimately undated
+no_anchor <- sum(is.na(plant$date))
+if (no_anchor > 0) {
+  PEcAn.logger::logger.severe(sprintf(
+    "%d cycles have a NULL anchor in the gap-filled product", no_anchor))
+}
 
 ## subsample
 # parcel set is sampled once and applied to all years so the same parcels
@@ -204,7 +261,7 @@ for (i in seq_len(nrow(src))) {
 }
 
 design <- kept |>
-  dplyr::select("parcel_id", "year", "season", "date", "code",
+  dplyr::select("parcel_id", "year", "season", "date", "code", "pft_group",
                 "min_n_lbs_acre", "max_n_lbs_acre") |>
   # fixed row order so the per row draws in 02 are reproducible under the seed
   dplyr::arrange(.data$parcel_id, .data$year, .data$season)
