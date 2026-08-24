@@ -1,7 +1,6 @@
 # Benchmarking pipeline for Salinas SOCs ensemble data using decoupled PEcAn.benchmark toolkit
 
 library(dplyr)
-library(lubridate)
 library(ggplot2)
 
 # Paths
