@@ -11,9 +11,9 @@
 # so a different output_dir in either workflow config does not require
 # editing this file
 fert_path <- Sys.getenv("FERT_RAW_DIR",
-                        unset = "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization")
+                        unset = "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/v2.0")
 ncc_path  <- Sys.getenv("NCC_RAW_DIR",
-                        unset = "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc")
+                        unset = "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc/v2.0")
 
 outdir <- "_output"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)

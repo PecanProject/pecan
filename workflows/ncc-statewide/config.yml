@@ -3,14 +3,49 @@ default:
   n_ensemble: 20
   seed: 42
   years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
+  # crops is the gap-filled LandIQ table (v4.1.2), the same inventory the
+  # phenology match is built against. v4.1 is the ungapfilled table and covers
+  # parcels the match does not.
   # large inputs are not distributed with the repo. the defaults resolve on SCC;
   # set the matching environment variable to run anywhere else. final home for
   # these is pending ccmmf/organization#257
-  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"))
-  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/phen_v2"))
-  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "phenology_statewide_*.parquet")
-  phen_anchor_col: !expr Sys.getenv("CCMMF_PHEN_ANCHOR_COL", "leafonday")
-  cadwr_pfts_path: !expr path.expand(Sys.getenv("CCMMF_CADWR_PFTS", "/projectnb/dietzelab/abv1/ccmmf/cadwr-landuse/data/cadwr_pfts.csv"))
+  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/crops_all_years.parq"))
+
+  # gap-filled LandIQ to MSLSP match. carries every phenology transition as a
+  # DATE keyed (parcel_id, year, season), so crop cycles join on a real season
+  # key rather than by rank
+  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates"))
+  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "assigned_year=*_gapfilled.parquet")
+
+  # crop code to PFT. same table the monitoring products use, so timing rules
+  # keyed on PFT mean the same thing on both sides
+  pft_lookup_path: !expr path.expand(Sys.getenv("CCMMF_PFT_LOOKUP", "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv"))
+
+  # per PFT: which transition anchors the event, and the signed offset window
+  # around it in days. negative is before the anchor. windows are working
+  # assumptions, see Sampling design in the README. crop_structure selects the
+  # application rate column in ca_organic_amendment_app_rate
+  pft_timing:
+    row:
+      anchor_col: mslsp_OGI
+      offset_min: -120
+      offset_max: -90
+      crop_structure: rows
+    rice:
+      anchor_col: mslsp_OGI
+      offset_min: -90
+      offset_max: -60
+      crop_structure: rows
+    woody:
+      anchor_col: mslsp_50PCGI
+      offset_min: -30
+      offset_max: 14
+      crop_structure: trees
+    hay:
+      anchor_col: mslsp_OGD
+      offset_min: 0
+      offset_max: 14
+      crop_structure: rows
 
   # probability of compost amendment per crop cycle per ensemble member, so a
   # parcel year with two cycles gets two draws. scenario parameter, useful range
@@ -18,7 +53,9 @@ default:
   # cycle or the parcel year level is still open
   p_apply_default: 0.10
 
-  output_dir: !expr path.expand(Sys.getenv("CCMMF_NCC_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc"))
+  # versioned: v1.0 is the binary annual/perennial timing, v2.0 the per PFT rules.
+  # bumping this rather than writing over
+  output_dir: !expr path.expand(Sys.getenv("CCMMF_NCC_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc/v2.0"))
   batch_size: 100
   workers: 1
 
