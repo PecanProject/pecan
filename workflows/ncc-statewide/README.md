@@ -86,7 +86,7 @@ carbon to flooded, anaerobic soil raises different concerns than a dry seedbed.
   seasons receives two independent draws and an effective annual probability of
   `1-(1-p)^2`. Compost is more naturally a per parcel-year decision; this is open.
 - A crop cycle with no matched phenology row gets no anchor and is dropped with a count
-  reported at run time. About 70% of crop cycles carry a matched row.
+  reported at run time. Against the gap-filled LandIQ table this is about 99% of cycles.
 - `mslsp_50PCGI` resolves leaf-on well for deciduous orchards but not for vineyards or
   citrus. Measured 2020 interquartile ranges are 11 days for almond against 89 for
   vineyard and 77 for citrus, and the vineyard figure is from observed rather than filled
