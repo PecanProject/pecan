@@ -97,8 +97,19 @@ if (workers > 1) {
 
 # mclapply does not raise when a worker fails: it returns a try-error for an R
 # level error and NULL for a killed worker, which is the realistic out of memory
-# case. write_batch returns the shard path, so anything that is not a path failed
-failed <- !vapply(written, is.character, logical(1))
+# case. write_batch returns the shard path, so anything that is not a path failed.
+# a try-error is itself a character vector, so is.character alone lets it through
+failed <- vapply(
+  written,
+  function(x) {
+    is.null(x) ||
+      inherits(x, "try-error") ||
+      !is.character(x) ||
+      length(x) != 1L ||
+      !file.exists(x)
+  },
+  logical(1)
+)
 if (any(failed)) {
   PEcAn.logger::logger.severe(sprintf(
     "%d of %d shard writes failed", sum(failed), length(written)))
