@@ -52,7 +52,6 @@ extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
     tidyr::pivot_longer(
       -c("parcel_id"),
       names_to = "yday",
-      # names_pattern = ".*\\.days_p05_(\\d+)$",  # did not match precip_N layer names
       names_pattern = ".*_(\\d+)$",
       names_transform = as.integer,
       values_to = "precip_mm_day"
