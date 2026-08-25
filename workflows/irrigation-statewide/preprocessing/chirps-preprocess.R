@@ -1,16 +1,18 @@
 #!/usr/bin/env Rscript
 
-chirps_dir <- Sys.getenv("CHIRPS_DIR", "/projectnb/dietzelab/ccmmf/management/irrigation/")
-chirps_outdir <- Sys.getenv("CHIRPS_EXTRACT_DIR", "_results_chirps")
+root_dir <- here::here("workflows/irrigation-statewide")
+cfg <- config::get(
+  file = file.path(root_dir, "config_paths.yml"),
+  config = "default"
+)
+
+chirps_dir <- cfg[["chirps_dir"]]
+chirps_outdir <- cfg[["chirps_preprocess_dir"]]
+parcel_file <- cfg[["landiq_parcels_gpkg"]]
 chirpsfiles <- list.files(
   chirps_dir,
   "chirps-v2.0.*.nc",
   full.names = TRUE
-)
-
-parcel_file <- Sys.getenv(
-  "LANDIQ_PARCELS_GPKG",
-  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
 )
 
 extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
@@ -52,12 +54,12 @@ extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
     tidyr::pivot_longer(
       -c("parcel_id"),
       names_to = "yday",
-      names_pattern = ".*\\.days_p05_(\\d+)$",
+      names_pattern = ".*_(\\d+)$",
       names_transform = as.integer,
       values_to = "precip_mm_day"
     ) |>
     dplyr::mutate(
-      date = date0 + .data$yday,
+      date = date0 + .data$yday - 1L,  # precip_1: Jan 1 + 1 = Jan 2 without -1
       .keep = "unused"
     ) |>
     dplyr::relocate("date", .after = "parcel_id") |>

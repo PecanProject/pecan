@@ -11,8 +11,6 @@
 #   products/inventory                         -- Management Tracking outputs
 # Finished tree: documentation/sessions/00-setup.md (Data layout).
 # Product overview: ../README.md. Paths created in Session 0.
-# Irrigation: workflows/irrigation-statewide/config_paths.yml keys should point into this tree;
-#   CHIRPS_DIR/CIMIS_DIR are raw staging; parcel extracts from preprocessing/ may differ.
 
 # Workspace roots. Set CCMMF_BASE once; CODE and ROOT follow unless you override them.
 export CCMMF_BASE="${CCMMF_BASE:-$HOME}"
@@ -55,11 +53,11 @@ export HLS_CREDENTIAL_FOLDER="${HLS_CREDENTIAL_FOLDER:-$HOME}"            # dir 
 export CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL}"                              # CDL GeoTIFF
 
 export CLIMATE_ROOT="${CLIMATE_ROOT:-$CCMMF_ROOT/climate}"
-export CHIRPS_DIR="${CHIRPS_DIR:-$CLIMATE_ROOT/CHIRPS}"   # raw CHIRPS staging; irrig YAML chirps_precip_path = preprocess extract dir
-export CIMIS_DIR="${CIMIS_DIR:-$CLIMATE_ROOT/CIMIS}"       # raw CIMIS staging; irrig YAML cimis_etref_path = preprocess extract dir
+export CHIRPS_DIR="${CHIRPS_DIR:-$CLIMATE_ROOT/CHIRPS}"   # raw CHIRPS staging
+export CIMIS_DIR="${CIMIS_DIR:-$CLIMATE_ROOT/CIMIS}"       # raw CIMIS staging
 
 export SOILS_ROOT="${SOILS_ROOT:-$CCMMF_ROOT/soils}"
-export SSURGO_DIR="${SSURGO_DIR:-$SOILS_ROOT/SSURGO}"      # gdb + weights; also set irrig ssurgo_* YAML keys
+export SSURGO_DIR="${SSURGO_DIR:-$SOILS_ROOT/SSURGO}"      # gdb + weights
 
 # --- Lookups ---
 export LOOKUPS_ROOT="${LOOKUPS_ROOT:-$CCMMF_ROOT/lookups}"
@@ -84,6 +82,31 @@ export HLS_SHARED_LIB="${HLS_SHARED_LIB:-$CCMMF_CODE/hls/R}"
 export COUNTY_TRANSITION_MATRICES_DIR="${COUNTY_TRANSITION_MATRICES_DIR:-$LANDIQ_GAPFILL_ROOT/data/county_transition_matrices}"
 # Scheduler-agnostic submit (sbatch, qsub, or local). See documentation/submit_job.sh
 export CCMMF_SUBMIT="${CCMMF_SUBMIT:-$CCMMF_CODE/documentation/submit_job.sh}"
+
+export CHIRPS_PRECIP_PATH="${CHIRPS_PRECIP_PATH:-$PRODUCTS_INVENTORY/irrigation/chirps-extracted}"
+export CIMIS_ETREF_PATH="${CIMIS_ETREF_PATH:-$PRODUCTS_INVENTORY/irrigation/cimis-extracted}"
+export CHIRPS_PREPROCESS_DIR="${CHIRPS_PREPROCESS_DIR:-_results_chirps}"
+export CIMIS_PREPROCESS_DIR="${CIMIS_PREPROCESS_DIR:-_results_v2}"
+export SSURGO_PREPROCESS_DIR="${SSURGO_PREPROCESS_DIR:-_results}"
+
+cat > "$(dirname "$IRRIG_PREPROCESS")/config_paths.yml" <<EOF
+default:
+  landiq_parcels_gpkg: "$LANDIQ_HARMONIZED/parcels-consolidated.gpkg"
+  year1: $PRIOR_YEAR
+  year2: $TARGET_YEAR
+  chirps_dir: "$CHIRPS_DIR"
+  chirps_preprocess_dir: "$CHIRPS_PREPROCESS_DIR"
+  chirps_precip_path: "$CHIRPS_PRECIP_PATH"
+  cimis_dir: "$CIMIS_DIR"
+  cimis_preprocess_dir: "$CIMIS_PREPROCESS_DIR"
+  cimis_etref_path: "$CIMIS_ETREF_PATH"
+  ssurgo_gdb_path: "$SSURGO_DIR/gSSURGO_CA.gdb"
+  ssurgo_preprocess_dir: "$SSURGO_PREPROCESS_DIR"
+  ssurgo_weights_path: "$SSURGO_DIR/ssurgo-weights.parquet"
+  event_output_dir: "$EVENT_OUTPUT_DIR"
+  crops_path: "$LANDIQ_GAPFILLED/crops_all_years.parq"
+  mslsp_path: "$MATCHED_DIR"
+EOF
 
 echo "[setup_env] BASE=$CCMMF_BASE ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"
 echo "[setup_env] LANDIQ_GAPFILLED=$LANDIQ_GAPFILLED"

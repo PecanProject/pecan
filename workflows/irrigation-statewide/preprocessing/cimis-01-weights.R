@@ -7,23 +7,27 @@ library(Matrix)
 library(exactextractr)
 library(arrow)
 
-parcel_file <- Sys.getenv(
-  "LANDIQ_PARCELS_GPKG",
-  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+root_dir <- here::here("workflows/irrigation-statewide")
+cfg <- config::get(
+  file = file.path(root_dir, "config_paths.yml"),
+  config = "default"
 )
-cimis_dir <- Sys.getenv("CIMIS_DIR", "/projectnb/dietzelab/ccmmf/data_raw/cimis/cimis")
 
-outdir <- "_results_v2"
+parcel_file <- cfg[["landiq_parcels_gpkg"]]
+cimis_dir <- cfg[["cimis_dir"]]
+year1 <- as.character(cfg[["year1"]])
+year2 <- as.character(cfg[["year2"]])
+outdir <- cfg[["cimis_preprocess_dir"]]
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 parcels_sf <- read_sf(parcel_file, use_stream = TRUE)
 
-cimis_f0 <- file.path(cimis_dir, "2019", "01", "01", "ETo.asc.gz")
+cimis_f0 <- file.path(cimis_dir, year1, "01", "01", "ETo.asc.gz")
 stopifnot(file.exists(cimis_f0))
 
 # A subset of CIMIS files, like this one, have slightly smaller dimensions for
 # some reason. Compute their weights separately.
-cimis_falt <- file.path(cimis_dir, "2015", "03", "01", "ETo.asc.gz")
+cimis_falt <- file.path(cimis_dir, year2, "01", "01", "ETo.asc.gz")
 stopifnot(file.exists(cimis_falt))
 
 n_parcels <- nrow(parcels_sf)
