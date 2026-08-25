@@ -1,17 +1,22 @@
 #!/usr/bin/env Rscript
 
-options(
-  clustermq.scheduler = "sge",
-  clustermq.template  = ".clustermq_sge.tmpl"
-)
+cmq_scheduler <- Sys.getenv("CLUSTERMQ_SCHEDULER", "sge")
+if (cmq_scheduler == "sge") {
+  options(clustermq.scheduler = "sge", clustermq.template = ".clustermq_sge.tmpl")
+} else {
+  options(clustermq.scheduler = cmq_scheduler)
+}
 
 library(terra)
 library(progress)
+library(purrr)
 library(arrow)
 library(clustermq)
 
-n_workers <- 20
+n_workers <- as.integer(Sys.getenv("CLUSTERMQ_N_JOBS", "20"))
 walltime <- "02:00:00"
+
+cimis_root <- Sys.getenv("CIMIS_DIR", "/projectnb/dietzelab/ccmmf/data_raw/cimis/cimis")
 
 outdir <- "_results_v2/daily-raw"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
@@ -19,7 +24,10 @@ dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 W <- readRDS("_results_v2/spatial_weights.rds")
 
 cimis_manifest <- "cimis_files.txt"
-years <- seq(2015, 2024)
+years <- seq(
+  as.integer(Sys.getenv("START_YEAR", "2015")),
+  as.integer(Sys.getenv("END_YEAR", "2024"))
+)
 if (!file.exists(cimis_manifest)) {
   get_cimis_files <- function(year) {
     ydir <- file.path(cimis_root, year)
@@ -92,7 +100,7 @@ cimis_long <- Q(
   fun     = process_file,
   fname = cimis_files,
   const   = list(W = W, outdir = outdir),
-  n_jobs  = n_workers,         # SGE array size — persistent worker processes
+  n_jobs  = n_workers,         # SGE array size -- persistent worker processes
   template = list(cores = 1, walltime = walltime),
   fail_on_error = FALSE
 )

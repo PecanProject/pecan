@@ -9,13 +9,14 @@ Source: California Department of Water Resources. (2016-2023). Statewide Crop Ma
 Configuration parameters live in `config.yml`. Most setups only need:
 
 - `crops_path`: the harmonized CADWR Land Use crops parquet. Override with `CCMMF_CROPS_PATH`
-- `phen_dir`: the gap-filled phenology (green-up) directory. Override with `CCMMF_PHEN_DIR`
-- `phen_glob`: file glob under `phen_dir` (default `phenology_statewide_*.parquet`). Override with `CCMMF_PHEN_GLOB`
-- `phen_anchor_col`: phenology date column (default `leafonday`). Override with `CCMMF_PHEN_ANCHOR_COL`
+- `phen_dir`: the gap-filled LandIQ to MSLSP match directory, the same product the ncc workflow reads. Override with `CCMMF_PHEN_DIR`
+- `phen_glob`: file glob under `phen_dir` (default `assigned_year=*_gapfilled.parquet`). Override with `CCMMF_PHEN_GLOB`
+- `pft_lookup_path`: crop code to PFT table, the same one the monitoring products use. Override with `CCMMF_PFT_LOOKUP`
+- `pft_anchor`: phenology transition used as the anchor, per PFT. See Application timing
 - `crosswalk_path`: the CADWR to FREP to UC ANR crop name crosswalk TSV, versioned in this folder
 - `output_dir`: output directory for parquet shards
 - `n_parcels`, `n_ensemble`, `batch_size`, `workers`: settings per profile
-- `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 0.5 for a 50/50 split)
+- `nh4_fraction`: share of total synthetic N going to ammonium; the rest goes to nitrate (default 1, all ammonium)
 
 # Run
 
@@ -38,15 +39,32 @@ Events carry no organic C or N: these are synthetic mineral fertilizer applicati
 
 # Known limitations
 
-- The phenology product has no season key, so crop cycles are matched to green-ups by
-  rank: the nth cycle of a parcel-year takes the nth green-up. From 2018 on the product
-  carries a second green-up for most double-crop parcels, so this resolves the majority
-  of them. Where a parcel-year has fewer green-ups than cycles, the later cycles reuse
-  the last available green-up. 2016 is the exception, carrying one green-up per parcel
-  year, so its multi-season cycles all share an anchor.
-- The event date is the green-up date itself; this workflow applies no offset. Dates
-  outside the configured crop years occur because the phenology product itself assigns
-  some green-ups to the previous calendar year.
+- A crop cycle with no matched phenology row gets no anchor and is dropped. Against the
+  gap-filled LandIQ table this is about 99% of cycles.
+- The event date is the anchor itself; this workflow applies no offset. Dates outside
+  the configured crop years occur because the phenology product itself assigns some
+  transitions to an adjacent calendar year.
+
+# Application timing
+
+The anchor transition is chosen per PFT, so annuals are timed to planting and perennials
+to leaf-on. This matches the split the monitoring event products use: they report planting
+for annuals and leaf-on for perennials, not both for both.
+
+| PFT | anchor | transition means |
+|---|---|---|
+| row | `mslsp_OGI` | onset of greenness increase, 15%, used as planting |
+| rice | `mslsp_OGI` | as above |
+| hay | `mslsp_50PCGI` | 50% greenness increase, leaf-on |
+| woody | `mslsp_50PCGI` | as above |
+
+The event date is the anchor itself. Unlike the compost workflow there is no offset window,
+because `ca_n_application_rate` is an annual total per crop rather than an application
+schedule.
+- `ca_n_application_rate` is an annual total per crop, so the whole season's N budget
+  is applied as one event rather than split across pre-plant, side-dress and
+  fertigation. The date is therefore a single anchored placeholder for a schedule, not
+  a measured application date.
 - Only crop codes present in the crosswalk resolve to an N rate envelope. Cycles whose
   code does not resolve are dropped and reported at run time.
 

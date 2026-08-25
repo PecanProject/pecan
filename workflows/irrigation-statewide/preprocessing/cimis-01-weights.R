@@ -7,8 +7,11 @@ library(Matrix)
 library(exactextractr)
 library(arrow)
 
-parcel_file <- "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
-cimis_dir <- "/projectnb/dietzelab/ccmmf/data_raw/cimis/cimis"
+parcel_file <- Sys.getenv(
+  "LANDIQ_PARCELS_GPKG",
+  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+)
+cimis_dir <- Sys.getenv("CIMIS_DIR", "/projectnb/dietzelab/ccmmf/data_raw/cimis/cimis")
 
 outdir <- "_results_v2"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
@@ -76,4 +79,4 @@ calc_weights(cimis_f0, rdsfile_0, parqfile_0)
 
 rdsfile_alt <- file.path(outdir, "spatial_weights_alt.rds")
 parqfile_alt <- file.path(outdir, "weights_df_alt.parquet")
-calc_weights(cimis_falt, rdsfile_alt, parqfle_alt)
+calc_weights(cimis_falt, rdsfile_alt, parqfile_alt)

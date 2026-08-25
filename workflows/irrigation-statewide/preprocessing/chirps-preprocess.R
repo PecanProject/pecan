@@ -1,13 +1,17 @@
 #!/usr/bin/env Rscript
 
-chirps_dir <- "/projectnb/dietzelab/ccmmf/management/irrigation/"
+chirps_dir <- Sys.getenv("CHIRPS_DIR", "/projectnb/dietzelab/ccmmf/management/irrigation/")
+chirps_outdir <- Sys.getenv("CHIRPS_EXTRACT_DIR", "_results_chirps")
 chirpsfiles <- list.files(
   chirps_dir,
   "chirps-v2.0.*.nc",
   full.names = TRUE
 )
 
-parcel_file <- "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+parcel_file <- Sys.getenv(
+  "LANDIQ_PARCELS_GPKG",
+  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+)
 
 extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
   # fname <- chirpsfiles[[1]]
@@ -63,15 +67,17 @@ extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
   invisible(outfile)
 }
 
-options(
-  clustermq.scheduler = "sge",
-  clustermq.template  = ".clustermq_sge.tmpl"
-)
+cmq_scheduler <- Sys.getenv("CLUSTERMQ_SCHEDULER", "sge")
+if (cmq_scheduler == "sge") {
+  options(clustermq.scheduler = "sge", clustermq.template = ".clustermq_sge.tmpl")
+} else {
+  options(clustermq.scheduler = cmq_scheduler)
+}
 
 clustermq::Q(
   fun = extract_chirps,
   fname = chirpsfiles,
-  const = list(parcel_file = parcel_file),
+  const = list(parcel_file = parcel_file, outdir = chirps_outdir),
   n_jobs = length(chirpsfiles),
   template = list(cores = 1, walltime = "06:00:00")
 )

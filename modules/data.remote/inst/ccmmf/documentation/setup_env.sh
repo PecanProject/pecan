@@ -18,6 +18,9 @@
 export CCMMF_BASE="${CCMMF_BASE:-$HOME}"
 export CCMMF_ROOT="${CCMMF_ROOT:-$CCMMF_BASE/ccmmf}"          # data
 export CCMMF_CODE="${CCMMF_CODE:-$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf}"  # pipeline code
+export IRRIG_PREPROCESS="${IRRIG_PREPROCESS:-$CCMMF_BASE/src/pecan/workflows/irrigation-statewide/preprocessing}"
+export CLUSTERMQ_SCHEDULER="${CLUSTERMQ_SCHEDULER:-multiprocess}"
+export IRRIGATION_EXEC_TYPE="${IRRIGATION_EXEC_TYPE:-local}"
 
 # Inventory year pair
 export PRIOR_YEAR="${PRIOR_YEAR:-2023}"
