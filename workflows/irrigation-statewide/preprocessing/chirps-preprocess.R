@@ -1,16 +1,18 @@
 #!/usr/bin/env Rscript
 
-chirps_dir <- Sys.getenv("CHIRPS_DIR", "/projectnb/dietzelab/ccmmf/management/irrigation/")
-chirps_outdir <- Sys.getenv("CHIRPS_EXTRACT_DIR", "_results_chirps")
+root_dir <- here::here("workflows/irrigation-statewide")
+cfg <- config::get(
+  file = file.path(root_dir, "config_paths.yml"),
+  config = "default"
+)
+
+chirps_dir <- cfg[["chirps_dir"]]
+chirps_outdir <- cfg[["chirps_preprocess_dir"]]
+parcel_file <- cfg[["landiq_parcels_gpkg"]]
 chirpsfiles <- list.files(
   chirps_dir,
   "chirps-v2.0.*.nc",
   full.names = TRUE
-)
-
-parcel_file <- Sys.getenv(
-  "LANDIQ_PARCELS_GPKG",
-  "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
 )
 
 extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
