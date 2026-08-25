@@ -8,8 +8,9 @@ Source: California Department of Water Resources. (2016-2023). Statewide Crop Ma
 
 Configuration parameters live in `config.yml`. Most setups only need:
 
-- `crops_path`: the harmonized CADWR Land Use crops parquet. Override with `CCMMF_CROPS_PATH`
-- `phen_dir`: the gap-filled LandIQ to MSLSP match directory, the same product the ncc workflow reads. Override with `CCMMF_PHEN_DIR`
+- `ccmmf_dir`: data root the input paths are relative to. Override with `CCMMF_DIR`
+- `crops_path`: gap-filled LandIQ crops table. Override with `CCMMF_CROPS_PATH`
+- `phen_dir`: gap-filled LandIQ to MSLSP match. Override with `CCMMF_PHEN_DIR`
 - `phen_glob`: file glob under `phen_dir` (default `assigned_year=*_gapfilled.parquet`). Override with `CCMMF_PHEN_GLOB`
 - `pft_lookup_path`: crop code to PFT table, the same one the monitoring products use. Override with `CCMMF_PFT_LOOKUP`
 - `pft_anchor`: phenology transition used as the anchor, per PFT. See Application timing
@@ -67,6 +68,42 @@ schedule.
   a measured application date.
 - Only crop codes present in the crosswalk resolve to an N rate envelope. Cycles whose
   code does not resolve are dropped and reported at run time.
+
+# Running outside the BU cluster
+
+`config.yml` is plain YAML with no R expressions, so any parser can read it. Input paths
+are relative to `ccmmf_dir` and are resolved at run time; `01` logs every resolved path,
+so a run's log records the configuration it actually used.
+
+Three inputs are needed. They are monitoring products, not distributed with this repo:
+
+| config key | what it is |
+|---|---|
+| `crops_path` | gap-filled LandIQ crops table, one row per parcel, year and season |
+| `phen_dir` | gap-filled LandIQ to MSLSP phenology match, keyed the same way |
+| `pft_lookup_path` | crop code to PFT table |
+
+If they sit under one directory in the layout `config.yml` describes, point `CCMMF_DIR` at
+it and nothing else changes:
+
+```
+CCMMF_DIR=/my/ccmmf FERT_PROJECT=all bash workflows/fertilization-statewide/run-statewide.sh
+```
+
+If the layout differs, override paths individually. These take precedence over
+`ccmmf_dir`:
+
+```
+CCMMF_CROPS_PATH=/data/crops_all_years.parq \
+CCMMF_PHEN_DIR=/data/phenology \
+CCMMF_PFT_LOOKUP=/data/LandIQ_cropCode_lookup_table.csv \
+CCMMF_FERT_OUT=/data/events \
+FERT_PROJECT=all bash workflows/fertilization-statewide/run-statewide.sh
+```
+
+`phen_glob` can be overridden with `CCMMF_PHEN_GLOB` if the phenology files are named
+differently. Inputs are required rather than optional: if one does not resolve, the run
+stops and names the variable to set.
 
 # Output
 
