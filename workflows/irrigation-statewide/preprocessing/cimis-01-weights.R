@@ -18,12 +18,22 @@ dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 parcels_sf <- read_sf(parcel_file, use_stream = TRUE)
 
-cimis_f0 <- file.path(cimis_dir, "2019", "01", "01", "ETo.asc.gz")
+date0 <- as.Date(Sys.getenv("CIMIS_WEIGHTS_DATE", "2019-01-01"))
+date_alt <- as.Date(Sys.getenv("CIMIS_WEIGHTS_DATE_ALT", "2015-03-01"))
+cimis_f0 <- file.path(
+  cimis_dir,
+  format(date0, "%Y"), format(date0, "%m"), format(date0, "%d"),
+  "ETo.asc.gz"
+)
 stopifnot(file.exists(cimis_f0))
 
 # A subset of CIMIS files, like this one, have slightly smaller dimensions for
 # some reason. Compute their weights separately.
-cimis_falt <- file.path(cimis_dir, "2015", "03", "01", "ETo.asc.gz")
+cimis_falt <- file.path(
+  cimis_dir,
+  format(date_alt, "%Y"), format(date_alt, "%m"), format(date_alt, "%d"),
+  "ETo.asc.gz"
+)
 stopifnot(file.exists(cimis_falt))
 
 n_parcels <- nrow(parcels_sf)
