@@ -3,9 +3,20 @@
 config <- config::get(file = "workflows/fertilization-statewide/config.yml",
                       config = Sys.getenv("FERT_PROJECT", "default"))
 
+# an override set to an empty string is treated as unset
+ccmmf_dir <- Sys.getenv("CCMMF_DIR")
+if (!nzchar(ccmmf_dir)) {
+  ccmmf_dir <- config[["ccmmf_dir"]]
+}
+output_dir <- Sys.getenv("CCMMF_FERT_OUT")
+if (!nzchar(output_dir)) {
+  output_dir <- file.path(ccmmf_dir, config[["output_dir"]])
+}
+output_dir <- path.expand(output_dir)
+
 set.seed(config[["seed"]])
 
-staging_dir <- file.path(config[["output_dir"]], "_staging")
+staging_dir <- file.path(output_dir, "_staging")
 design_file <- file.path(staging_dir, "_staging_01_design.rds")
 if (!file.exists(design_file)) {
   PEcAn.logger::logger.severe(
