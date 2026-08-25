@@ -1,230 +1,344 @@
-# Session 2 - HLS events (phenology and tillage)
+# Session 2 - Phenology, planting, harvest, tillage
 
-**What this session is for.** Session 1 gave you stable parcels and gap-filled crop identity. This session adds *when* management happened on those parcels for the same year pair: planting, harvest, and phenology from satellite land-surface phenology, and tillage in fallow windows. Each event type is opt-in; run only what you need for the update.
+**What this session is for.** Session 1 gave you stable parcels and gap-filled crop identity. This session uses Harmonized Landsat Sentinel-2 (**HLS**) to time each season and to detect tillage in the fallow between seasons. It writes four event products:
 
-The satellite stack is Harmonized Landsat Sentinel-2 (**HLS**). Multi-Source Land Surface Phenology (**MSLSP**) NetCDF products drive planting, harvest, and phenology events (with crop trait CSVs for date windows). Normalized Difference Tillage Index (**NDTI**) drives tillage. You will extract HLS metrics to LandIQ parcels, match seasons to phenology cycles, then write statewide (or demo-tile) event files that MAGiC / SIPNET consume.
+1. **Planting** -- green-up date and initial C/N pools
+2. **Harvest** -- senescence date and biomass removal fractions
+3. **Phenology** -- leaf-on / leaf-off (hay and woody)
+4. **Tillage** -- residue/soil disturbance between harvest and the next planting
 
-Live training path uses one HLS tile (`10SDH`). Statewide uses the same steps without the tile / parcel-list filters.
+Same year pair as Session 1: refresh `$PRIOR_YEAR` (now complete) and write `$TARGET_YEAR` as provisional. Method, flags, and assumptions live in the component READMEs: [hls/](../../hls/README.md), [phenology/](../../phenology/README.md), [tillage/](../../tillage/README.md), [traits/](../../traits/README.md), [events/](../../events/README.md). Event columns: [metadata.md](../metadata.md).
 
-**Prerequisite:** [Session 0](00-setup.md) (incl. Earthdata `.netrc`); [Session 1](01-landiq.md) gap-filled product at `$LANDIQ_GAPFILLED`.
-
-**Where to go deeper:** [tree README](../../README.md); step READMEs in the table below; [metadata.md](../metadata.md) for event columns.
+**Prerequisite:** [Session 0](00-setup.md) (including Earthdata `.netrc`); [Session 1](01-landiq.md) gap-filled crops at `$LANDIQ_GAPFILLED` (or pull that table in Sec. 2.3).
 
 ```mermaid
 flowchart LR
-  S0["Session 0\nSetup"] --> S1["Session 1\nLandIQ crop identity"]
+  S0["Session 0\nSetup"] --> S1["Session 1\nCrop identity"]
   S1 --> S2["Session 2\nPhenology + tillage"]
   S2 --> S3["Session 3\nFert + irrigation"]
   S3 --> OUT["Inventory products"]
 ```
 
-Session 2 steps:
+
 
 ```mermaid
 flowchart LR
-  LANDIQ["$LANDIQ_GAPFILLED"] --> MAP["Parcel-tile map"]
-  LANDIQ --> MSLSP["MSLSP extract"]
-  LANDIQ --> MATCH["Match seasons to cycles"]
-  HLS["HLS_Phenology\nNetCDF + imagery"] --> MSLSP
-  MAP --> MSLSP
-  MSLSP --> MATCH
-  MATCH --> EV1["Planting + harvest\n+ phenology events"]
-  HLS --> NDTI["NDTI extract"]
-  MAP --> NDTI
-  LANDIQ --> NDTI
-  MATCH --> EV2["Tillage events"]
-  NDTI --> EV2
+  subgraph S2["Session 2"]
+    direction LR
+    HLS["in: HLS imagery"] --> NC["MSLSP NetCDF"]
+    NC --> EXT["MSLSP extract"]
+    LIQ["in: gap-filled LandIQ"] --> EXT
+    EXT --> MATCH["match"]
+    LIQ --> MATCH
+    MATCH --> GF["apply phenology"]
+    GF --> PLANT["apply planting / harvest"]
+    LOOK["in: trait lookups"] --> PLANT
+    HLS --> NDTI["NDTI extract"]
+    GF --> TILL["apply tillage"]
+    NDTI --> TILL
+    PLANT --> EV["out: event files"]
+    TILL --> EV
+  end
 ```
 
-**Demo vs statewide:** omit `TILEWISE_ONE_TILE` / `ASSIGN_PARCEL_IDS_FILE` for full statewide runs.
 
-**Operator docs** (algorithms and flags -- read when a step fails or you need parameters):
-
-| Step | README |
-|------|--------|
-| Parcel-tile map + shared HLS helpers | [hls/README.md](../../hls/README.md) |
-| MSLSP parcel extraction | [phenology/extract/README.md](../../phenology/extract/README.md) |
-| LandIQ <-> MSLSP matching | [phenology/match/README.md](../../phenology/match/README.md) |
-| Date gap-fill (required statewide) | [phenology/gapfill/README.md](../../phenology/gapfill/README.md) |
-| Trait lookups | [traits/README.md](../../traits/README.md) |
-| NDTI parcel extraction | [tillage/extract/README.md](../../tillage/extract/README.md) |
-| Statewide events | [events/README.md](../../events/README.md) |
 
 ## Paths for this session
 
-Expect `$LANDIQ_GAPFILLED/crops_all_years.parq` from [Session 1](01-landiq.md) and Earthdata from [Session 0](00-setup.md) section 0.6. Paths come from [setup_env.sh](../setup_env.sh). Finished tree: [Workspace](00-setup.md#04-workspace-once).
+Expect Session 0 done. Paths come from [setup_env.sh](../setup_env.sh). Full tree: [Data layout](00-setup.md#data-layout).
 
-To **produce** MSLSP NetCDF / HLS imagery (not only consume existing files), clone [HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology) and follow that repo's download steps into `$MSLSP_NETCDF_ROOT` / `$HLS_IMAGERY_ROOT`.
-
-| Role | Path | Notes |
-|------|------|-------|
-| In | `$LANDIQ_GAPFILLED` | Gap-filled crops from Session 1 |
-| In | `$HLS_IMAGERY_ROOT`, `$MSLSP_NETCDF_ROOT` | HLS imagery / MSLSP NetCDF (Earthdata) |
-| Out | `$HLS_PARCEL_TILEMAP` | Parcel-tile map |
-| Out | `$MATCHED_DIR` | Matched LandIQ-MSLSP (under phenology/) |
-| Out | `$PRODUCTS_INVENTORY/tillage/` | NDTI extracts |
-| Out | `$PRODUCTS_INVENTORY/event_files/` | Planting / harvest / phenology / tillage |
-| Lookups | `$LOOKUPS_ROOT/plant_traits` (`$PLANT_TRAITS_DIR`) | Trait CSVs for planting/harvest |
+```text
+$CCMMF_ROOT/
+  LandIQ/gapfilled/                   # LANDIQ_GAPFILLED
+  HLS/                                # HLS_ROOT -- imagery, MSLSP NetCDF, parcel_tiles.csv
+  lookups/plant_traits/               # PLANT_TRAITS_DIR
+  products/inventory/                 # PRODUCTS_INVENTORY
+    phenology/                        # matched overlay + planting/harvest tables
+    tillage/                          # NDTI hive + tillage_metrics
+    event_files/                      # EVENT_OUTPUT_DIR
+```
 
 ---
 
 > [!IMPORTANT]
 > New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first.
+>
+> Training: `export DEMO_TILE=10TEK` and keep it set through 2.10.
 
-## 2.1 Env and demo parcel list
+## 2.1 HLS imagery and MSLSP NetCDF
 
-```bash
-source "$CCMMF_CODE/documentation/setup_env.sh"
-export DEMO_TILE=10SDH
-export ASSIGN_PARCEL_IDS_FILE=$PRODUCTS_INVENTORY/demo/parcels_${DEMO_TILE}.csv
-```
+NASA **Harmonized Landsat Sentinel-2 (HLS)** is 30 m Landsat and Sentinel-2 surface-reflectance imagery. This session uses it for phenology and tillage. A phenology algorithm ([MSLSP](https://www.earthdata.nasa.gov/data/catalog/lpcloud-mslsp30na-011)) takes those scenes and extracts annual phenology metrics (one NetCDF per tile). 
 
-| Item | Path / format | Notes |
-|------|---------------|--------|
-| Input | `$LANDIQ_GAPFILLED/crops_all_years.parq` | Gap-filled LandIQ (Session 1) |
-| Input | `$MSLSP_NETCDF_ROOT/<tile>/phenoMetrics/MSLSP_<tile>_<year>.nc` | Tile MSLSP NetCDF ([HLS_Phenology](https://github.com/mrinareddy/HLS_Phenology)) |
-| Output (once) | `$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv` | Parcel -> tiles; see [hls/README.md](../../hls/README.md) |
-| Demo list | `$PRODUCTS_INVENTORY/demo/parcels_10SDH.csv` | CSV header `parcel_id` |
+### Clones and CA grid (once)
 
-Build the demo CSV after the tile map exists (or run `scripts/demo/write_demo_parcel_list.R`):
-
-```r
-tp <- read_tile_to_parcels()  # from hls/R/parcel_tilemap.R
-tile <- "10SDH"
-ids <- sort(unique(as.character(tp[[tile]])))
-out <- file.path(Sys.getenv("PRODUCTS_INVENTORY"), "demo", paste0("parcels_", tile, ".csv"))
-dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
-write.csv(data.frame(parcel_id = ids), out, row.names = FALSE)
-```
-
-Parcel-tile map (once, when geometry changes):
+HLS is tiled by MGRS. Clone the HLS download repo and the MSLSP algorithm repo, and put the California MGRS grid (`s2_mgrs_grid_ca.gpkg`) on `$HLS_ROOT`. This walk uses tile `10TEK` (`$DEMO_TILE`).
 
 ```bash
-Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R" overwrite
+export DEMO_TILE=10TEK
+
+cd "$CCMMF_BASE/src"
+git clone https://github.com/mrinareddy/HLS_Phenology.git
+git clone https://github.com/aliceni7/MSLSP.git
+
+aws s3 --profile magic cp s3://carb/management/session2/s2_mgrs_grid_ca.gpkg "$HLS_ROOT/"
+```
+
+### Download and convert scenes
+
+You download HLS for `$PRIOR_YEAR` and `$TARGET_YEAR`, plus 185 days on either side so the phenology algorithm has a buffer. Convert puts the scenes into the layout the algorithm expects. Water, DEM, slope, and aspect rasters for topographic correction are on S3.
+
+```bash
+export HLS_DOWNLOAD_TILE=$DEMO_TILE
+Rscript "$CCMMF_CODE/hls/download_hls_earthdata.R" # ~15 mins
+
+S2=s3://carb/management/session2
+export HLS_WATER_DIR=$HLS_IMAGERY_ROOT/water
+export HLS_DEM_DIR=$HLS_IMAGERY_ROOT/dem
+export HLS_SLOPE_DIR=$HLS_IMAGERY_ROOT/slope
+export HLS_ASPECT_DIR=$HLS_IMAGERY_ROOT/aspect
+aws s3 --profile magic sync "$S2/water/"  "$HLS_WATER_DIR/"
+aws s3 --profile magic sync "$S2/dem/"    "$HLS_DEM_DIR/"
+aws s3 --profile magic sync "$S2/slope/"  "$HLS_SLOPE_DIR/"
+aws s3 --profile magic sync "$S2/aspect/" "$HLS_ASPECT_DIR/"
+
+export HLS_CONVERSION_TILE=$DEMO_TILE
+Rscript "$CCMMF_CODE/hls/convert_hls_scenes.R"
+```
+
+```bash
+ls -d "$HLS_IMAGERY_ROOT/$DEMO_TILE/images"/HLS.S30.* | wc -l
+ls -d "$HLS_IMAGERY_ROOT/$DEMO_TILE/images"/HLS.L30.* | wc -l
+ls "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/water_${DEMO_TILE}.tif" \
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/dem_${DEMO_TILE}.tif" \
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/slope_${DEMO_TILE}.tif" \
+  "$HLS_IMAGERY_ROOT/$DEMO_TILE/images/aspect_${DEMO_TILE}.tif"
+```
+
+### Run the phenology algorithm
+
+MSLSP builds an EVI2 time series from the HLS on this tile for up to two cycles per year. Output is one NetCDF per year. Use a compute node; this takes hours.
+
+```bash
+bash "$CCMMF_CODE/hls/run_mslsp_tile.sh" "$DEMO_TILE"
+# or: "$CCMMF_SUBMIT" -n mslsp-tile -c 4 -m 16G -t 5:00:00 -- \
+#        "$CCMMF_CODE/hls/run_mslsp_tile.sh" "$DEMO_TILE"
+```
+
+If you skip the run, pull the training NetCDFs:
+
+```bash
+mkdir -p "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics"
+aws s3 --profile magic cp "s3://carb/management/session2/$DEMO_TILE/MSLSP_${DEMO_TILE}_${PRIOR_YEAR}.nc" "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/"
+aws s3 --profile magic cp "s3://carb/management/session2/$DEMO_TILE/MSLSP_${DEMO_TILE}_${TARGET_YEAR}.nc" "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/"
+```
+
+```bash
+ls "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_${PRIOR_YEAR}.nc" \
+  "$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_${TARGET_YEAR}.nc"
+```
+
+Output: `$MSLSP_NETCDF_ROOT/$DEMO_TILE/phenoMetrics/MSLSP_${DEMO_TILE}_Y.nc` for `$PRIOR_YEAR` and `$TARGET_YEAR`.
+
+---
+
+## 2.2 Map parcels to MGRS tiles
+
+Extracts are tilewise, so every parcel needs a `tile_id`. Intersect Session 1 `parcels-consolidated.gpkg` with the CA grid. Rebuild when that gpkg is rebuilt.
+
+```bash
+# skip if already on $HLS_ROOT from Sec. 2.1
+aws s3 --profile magic cp s3://carb/management/session2/s2_mgrs_grid_ca.gpkg "$HLS_ROOT/"
+# skip if you already ran Session 1
+aws s3 --profile magic cp s3://carb/management/session1/parcels-consolidated.gpkg "$LANDIQ_HARMONIZED/"
+
+Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R"
+```
+
+If you skip the build, pull the training copy:
+
+```bash
+aws s3 --profile magic cp s3://carb/management/session2/parcel_tiles.csv "$HLS_ROOT/"
+```
+
+Output: `$HLS_ROOT/parcel_tiles.csv` (`parcel_id`, `tile_id`) for every parcel. Extract (2.3, 2.8) then keeps year-Y agricultural parcels on `$DEMO_TILE`.
+
+---
+
+## 2.3 Extract MSLSP onto parcels
+
+You extract MSLSP phenology metrics from the tile NetCDF onto agricultural parcels for the year, weighting pixels by how much of the parcel they cover, then write one parquet. Metrics in that extract:
+
+
+| Metric | Meaning                                           | Represents                      |
+| ------ | ------------------------------------------------- | ------------------------------- |
+| OGI    | Onset Greenness Increase (15% greenness increase) | Planting                        |
+| 50PCGI | 50 Percent Greenness Increase                     | Phenology leaf-on (hay, woody)  |
+| Peak   | Date of cycle peak                                |                                 |
+| OGD    | Onset Greenness Decrease (10% greenness decrease) | Harvest (hay, woody)            |
+| 50PCGD | 50 Percent Greenness Decrease                     | Phenology leaf-off (hay, woody) |
+| OGMn   | Onset Greenness Minimum (85% greenness decrease)  | Harvest (row, rice)             |
+
+
+```bash
+# skip if you already ran Session 1
+aws s3 --profile magic cp s3://carb/management/session1/gapfilled/crops_all_years.parq "$LANDIQ_GAPFILLED/"
+
+MS=$PHENOLOGY_ROOT/extract/scripts
+Rscript "$MS/extract_tiles.R" "$PRIOR_YEAR" "$DEMO_TILE"
+Rscript "$MS/combine_year.R" "$PRIOR_YEAR" "$DEMO_TILE"
+Rscript "$MS/extract_tiles.R" "$TARGET_YEAR" "$DEMO_TILE"
+Rscript "$MS/combine_year.R" "$TARGET_YEAR" "$DEMO_TILE"
+```
+
+```bash
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MSLSP_EXTRACT_ROOT/year=${PRIOR_YEAR}/mslsp_year=${PRIOR_YEAR}.parquet"
+```
+
+Output: `$MSLSP_EXTRACT_ROOT/year=Y/mslsp_year=Y.parquet`.
+
+---
+
+## 2.4 Match LandIQ seasons to MSLSP cycles
+
+Assign each LandIQ parcel x year x season to one of the two MSLSP cycles, or mark it unmatched. Season 2 is the main crop. `$DEMO_TILE` writes under `tile=$DEMO_TILE/`.
+
+```bash
+Rscript "$PHENOLOGY_ROOT/match/match_landiq_mslsp.R" "$PRIOR_YEAR"
+Rscript "$PHENOLOGY_ROOT/match/match_landiq_mslsp.R" "$TARGET_YEAR"
+```
+
+Output: `$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/tile=$DEMO_TILE/assigned_year=Y.parquet`.
+
+---
+
+## 2.5 Gap-fill missing phenology dates
+
+Match keeps observed MSLSP dates. Rows that have a LandIQ CLASS but no satellite dates still need planting and harvest timing. This step fills those dates (and EVI) from LandIQ ADOY and crop CLASS, using relationships already estimated from earlier matched years. 
+
+You do not need to re-run the estimation. It is already trained statewide on 2018-2023 and lives in the clone at `$CCMMF_CODE/phenology/gapfill/outputs`. To re-estimate: [phenology/README.md](../../phenology/README.md).
+
+This walk only runs apply on the demo-tile from Sec. 2.4. Keep `MATCHED_DIR` set through 2.10 (planting/harvest tables and phenology events read it).
+
+```bash
+export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/tile=$DEMO_TILE
+Rscript "$PHENOLOGY_ROOT/gapfill/apply_phenology_gapfill.R" "$PRIOR_YEAR" "$TARGET_YEAR"
+```
+
+Output: `$MATCHED_DIR/gapfill_dates/assigned_year=Y_gapfilled.parquet`.
+
+---
+
+## 2.6 Sync plant-trait lookups
+
+Two CSVs. `planting_lookup.csv` has crop traits used to estimate leaf, stem, and root C and N at planting. `harvest_lookup.csv` has the fraction of aboveground and belowground biomass that is removed vs left as litter. Sync the directory; do not rebuild for training. Detail: [traits/README.md](../../traits/README.md).
+
+```bash
+aws s3 --profile magic sync s3://carb/management/plant_traits/ "$PLANT_TRAITS_DIR/"
 ```
 
 ---
 
-## 2.2 MSLSP extract and match
+## 2.7 Apply planting pools and harvest fractions
 
-LandIQ says *what* grows and peak greenness (**ADOY**). MSLSP gives satellite
-green-up, peak, and senescence for up to two cycles per parcel-year.
+The gap-filled match file from Sec. 2.5 has dates. SIPNET still needs starting carbon and nitrogen in leaf, stem, and roots, and at harvest it needs how much of the standing biomass is removed vs left as residue.
 
-### MSLSP timing (aligned with proposal 15% / 50% greenness)
-
-MSLSP defines thresholds on the cycle EVI2 curve. We use those product metrics
-directly; they implement the same greenness fractions the proposal named, under
-MSLSP names:
-
-| Metric | MSLSP meaning | Inventory use |
-|--------|---------------|---------------|
-| **OGI** | ~15% of peak greenness (onset of greenness) | Planting date |
-| **50PCGI** | 50% of peak on green-up | Phenology leaf-on |
-| **Peak** | Cycle peak | Match tie-break / year of phenology event |
-| **50PCGD** | 50% of peak on green-down | Phenology leaf-off |
-| **OGD / OGMn** | Senescence / onset of minimum (PFT rules) | Harvest date |
-
-**Planting** is therefore an **RS effective plant**: canopy becoming visible
-(~seedling / early greenness), not calendar seed-in-ground. That matches OGI
-and is what satellite phenology can support statewide.
-
-The extract keeps the **top two** MSLSP amplitude cycles per parcel-year. LandIQ
-has up to four seasons, but seasons 1/3/4 are uncommon (see
-[landiq-gapfill README](../../landiq-gapfill/README.md#data-model)); matching
-extra cycles for those seasons is future work, not blocked by the product
-format.
-
-| Event type | Typical date source | What SIPNET gets |
-|------------|---------------------|------------------|
-| Phenology | MSLSP 50PCGI / 50PCGD | Leaf-on / leaf-off |
-| Planting | MSLSP OGI (~15% of peak) | C/N pools (LAI from MSLSP EVI) |
-| Harvest | MSLSP senescence (PFT-specific) | Biomass removal fractions |
-
-**A. Extract + combine (demo tile)**
+Planting sizes those pools from canopy greenness: take peak EVI, scale it to 15% (OGI is not peak canopy), convert that to leaf area, then use the crop trait lookups (SLA, allocation, C:N) to get leaf, stem, and root C and N. Planting is for annuals (row, rice) only; hay and woody are not planted each year. Harvest does not use EVI; it applies crop-specific removal and residue fractions from the harvest lookup. Perennial harvest is dated at `OGD`; stand clearing (`destructive`) uses `OGMn`. 
 
 ```bash
-TILEWISE_ONE_TILE=$DEMO_TILE $PHENOLOGY_ROOT/run_mslsp.sh 2024
-TILEWISE_ONE_TILE=$DEMO_TILE $PHENOLOGY_ROOT/run_mslsp.sh 2023
+Rscript "$CCMMF_CODE/traits/apply_planting.R" "$PRIOR_YEAR"
+Rscript "$CCMMF_CODE/traits/apply_planting.R" "$TARGET_YEAR"
+Rscript "$CCMMF_CODE/traits/apply_harvest.R" "$PRIOR_YEAR"
+Rscript "$CCMMF_CODE/traits/apply_harvest.R" "$TARGET_YEAR"
 ```
-
-| Item | Path / format | Key columns / metadata |
-|------|---------------|------------------------|
-| Input | MSLSP NetCDF under `HLS/MSLSP/` | Per-tile annual NetCDF |
-| Output | `$PRODUCTS_INVENTORY/phenology/raw_mslsp_v4.1.2/year=Y/` | Hive parquet; [mslsp_year_metadata.csv](../../phenology/extract/data/mslsp_year_metadata.csv) |
-
-Prefer `TILEWISE_ONE_TILE` (includes combine). Details:
-[phenology/extract/README.md](../../phenology/extract/README.md).
-
-**B. Match (demo parcels)**
 
 ```bash
-ASSIGN_PARCEL_IDS_FILE=$ASSIGN_PARCEL_IDS_FILE \
-  $PHENOLOGY_ROOT/match_landiq_mslsp.sh 2024
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_planting.parquet"
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$MATCHED_DIR/assigned_year=${PRIOR_YEAR}_harvest.parquet"
 ```
 
-| Item | Path / format | Key columns / metadata |
-|------|---------------|------------------------|
-| Output | `phenology/matched_landiq_mslsp_v4.1.2/.../assigned_year=2024.parquet` | `assigned_by`, `match_outcome`; [assigned_year_metadata.csv](../../phenology/match/data/assigned_year_metadata.csv) |
-
-**C. Trait lookups (once)** and **events**
-
-```bash
-# If missing under $PRODUCTS_INVENTORY/plant_traits/:
-Rscript "$CCMMF_CODE/traits/build_planting_lookup.R"
-Rscript "$CCMMF_CODE/traits/build_harvest_lookup.R"
-
-export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
-$EVENTS_ROOT/make_events_statewide.sh 2024
-```
-
-| Item | Path / format | Notes |
-|------|---------------|--------|
-| Lookups | `$PRODUCTS_INVENTORY/plant_traits/planting_lookup.csv`, `harvest_lookup.csv` | CSV; harvest has `destructive` (see [traits/README.md](../../traits/README.md)) |
-| Events | `$PRODUCTS_INVENTORY/event_files/{planting,harvest,phenology}_statewide_Y.parquet` (+ `.json`) | [events metadata](../metadata.md) |
-
-For the demo, skip statewide date gap-fill or gap-fill only the subsample. Statewide:
-
-```bash
-$PHENOLOGY_ROOT/run_mslsp.sh $YEAR
-$PHENOLOGY_ROOT/match_landiq_mslsp.sh $YEAR
-$PHENOLOGY_ROOT/run_phenology_date_gapfill.sh $PRIOR_YEAR $TARGET_YEAR
-$EVENTS_ROOT/make_events_statewide.sh $YEAR
-```
-
-Date gap-fill is required before statewide planting/harvest events.
+Output: `$MATCHED_DIR/assigned_year=Y_planting.parquet` and `assigned_year=Y_harvest.parquet`.
 
 ---
 
-## 2.3 NDTI and tillage events
+## 2.8 Extract NDTI onto parcels
 
-Like planting, harvest, and phenology, tillage is opt-in via
-`make_events_statewide.sh` (pass `tillage` as the event type). Timing comes from
-NDTI in each fallow window between one season's senescence (`OGMn`) and the next
-green-up (`OGI`), using matched phenology from Sec. 2.2.
+You extract a monthly tillage index (NDTI) from the same HLS imagery as Sec. 2.1. NDTI uses shortwave infrared: lower values mean less residue / more bare soil. Clouds, shadow, and snow are masked with Fmask. Extract `$PRIOR_YEAR` and `$TARGET_YEAR` so the time series covers January of the prior year through the target year (fallows can start in the prior year). 
 
-**A. NDTI extract (demo)**
+Fallow windows can cross January 1, so target-year scenes still include prior-year agricultural parcels (`NDTI_PARCEL_YEARS` in the commands). 
 
 ```bash
-TILEWISE_ONE_TILE=$DEMO_TILE $TILLAGE_ROOT/run_ndti.sh 2024
+NT=$TILLAGE_ROOT/extract/scripts
+export NDTI_MONTH_JOBS=12
+export NDTI_PARCEL_YEARS=$PRIOR_YEAR,$TARGET_YEAR
+
+Rscript "$NT/extract_tiles.R" "$PRIOR_YEAR" "$DEMO_TILE"
+Rscript "$NT/combine_year.R" "$PRIOR_YEAR" "$DEMO_TILE"
+Rscript "$NT/extract_tiles.R" "$TARGET_YEAR" "$DEMO_TILE"
+Rscript "$NT/combine_year.R" "$TARGET_YEAR" "$DEMO_TILE"
 ```
-
-| Item | Path / format | Key columns / metadata |
-|------|---------------|------------------------|
-| Input | HLS reflectance under `HLS/imagery/$DEMO_TILE/` | Same imagery tree as phenology |
-| Output | `$PRODUCTS_INVENTORY/tillage/ndti_v4.1/year=Y/` | Monthly hive parquet; [ndti_year_metadata.csv](../../tillage/extract/data/ndti_year_metadata.csv) |
-
-**B. Tillage events**
 
 ```bash
-export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/subsample_n400
-$EVENTS_ROOT/make_events_statewide.sh 2024 tillage
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$PRODUCTS_INVENTORY/tillage/ndti_v4.1.2/year=${PRIOR_YEAR}/ndti_year=${PRIOR_YEAR}_month=03.parquet"
 ```
 
-| Item | Path / format | Metadata |
-|------|---------------|----------|
-| Output | `$PRODUCTS_INVENTORY/event_files/tillage_statewide_Y.parquet` (+ `.json`) | [tillage_statewide_metadata.csv](../../events/data/tillage_statewide_metadata.csv) |
+Output: `$PRODUCTS_INVENTORY/tillage/ndti_v4.1.2/year=Y/ndti_year=Y_month=MM.parquet`.
 
-Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
+---
+
+## 2.9 Compute tillage metrics
+
+After harvest (`OGMn`) and before the next planting (`OGI`), tillage mixes residue into the soil. NDTI is high when residue covers the field and low when soil is bare, so a drop during that fallow is the tillage signal.
+
+How large the drop is (peak NDTI down to the minimum) is the intensity. Row-crop studies often treat a ~70% drop as intensive tillage. This step maps that drop to `tillage_eff_0to1`: 0 below ~30% (no-till), 1 at ~70% (intensive), and a fraction of that range in between.
+
+```bash
+Rscript "$TILLAGE_ROOT/apply_tillage.R" "$TARGET_YEAR"
+```
+
+One call on `$TARGET_YEAR` also refreshes `$PRIOR_YEAR` (a harvest in the prior year can close on a planting in the target year). Fallows in the target year that still need next year's OGI stay partial.
+
+```bash
+Rscript -e 'print(names(arrow::read_parquet(commandArgs(TRUE)[1])))' "$PRODUCTS_INVENTORY/tillage/tillage_metrics/assigned_year=${PRIOR_YEAR}_tillage.parquet"
+```
+
+Output: `$PRODUCTS_INVENTORY/tillage/tillage_metrics/assigned_year=Y_tillage.parquet`.
+
+---
+
+## 2.10 Write event files
+
+SIPNET takes management as events, not as the parquet tables we've produced in this session. This step puts phenology, planting, harvest, and tillage into the format SIPNET expects.
+
+```bash
+Rscript "$EVENTS_ROOT/make_events_statewide.R" "$PRIOR_YEAR" "$TARGET_YEAR" phenology
+Rscript "$EVENTS_ROOT/make_events_statewide.R" "$PRIOR_YEAR" "$TARGET_YEAR" planting
+Rscript "$EVENTS_ROOT/make_events_statewide.R" "$PRIOR_YEAR" "$TARGET_YEAR" harvest
+Rscript "$EVENTS_ROOT/make_events_statewide.R" "$PRIOR_YEAR" "$TARGET_YEAR" tillage
+```
+
+```bash
+ls -lh "$EVENT_OUTPUT_DIR"/assigned_year=${PRIOR_YEAR}_*.parquet
+```
+
+```bash
+export DEMO_PARCEL=124019 # annual
+# export DEMO_PARCEL=100829 # perennial
+Rscript - <<'RS'
+pid <- Sys.getenv("DEMO_PARCEL")
+y <- Sys.getenv("PRIOR_YEAR")
+root <- Sys.getenv("EVENT_OUTPUT_DIR")
+for (t in c("phenology", "planting", "harvest", "tillage")) {
+  f <- file.path(root, sprintf("assigned_year=%s_%s.parquet", y, t))
+  d <- as.data.frame(arrow::read_parquet(f))
+  cat("\n===", t, "===\n")
+  print(d[as.character(d$site_id) == pid, , drop = FALSE])
+}
+RS
+```
+
+Parquet is the table; the `.json` next to it is the nested PEcAn copy.
+
+Output: `$EVENT_OUTPUT_DIR/assigned_year=Y_{phenology,planting,harvest,tillage}.parquet` (+ `.json`).
 
 ---
 
@@ -232,4 +346,71 @@ Algorithm detail: [events/README.md](../../events/README.md) (tillage section).
 
 **Spine:** [tree README](../../README.md).
 
-**Downstream (unofficial):** [SIPNET handoff](sipnet-handoff.md).
+---
+
+## Statewide
+
+Same steps, no tile filter. `unset` `DEMO_TILE`, `HLS_DOWNLOAD_TILE`, `HLS_CONVERSION_TILE`, and `TILEWISE_ONE_TILE`. Wait for each job before the next step that reads its output. 
+
+`-c` / `-m` / `-t` are starting guesses (still testing). Wrapper default is 4 CPUs / 16G / 12h. Raise them if a job is killed. Site flags (project, buyin, partition): `CCMMF_SUBMIT_EXTRA`.
+
+```bash
+unset DEMO_TILE HLS_DOWNLOAD_TILE HLS_CONVERSION_TILE TILEWISE_ONE_TILE
+export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2
+export NDTI_PARCEL_YEARS=$PRIOR_YEAR,$TARGET_YEAR
+
+"$CCMMF_SUBMIT" -n hls-earthdata -c 4 -m 16G -t 48:00:00 -- \
+  "$CCMMF_CODE/hls/download_hls_earthdata.sh"
+# wait, then:
+"$CCMMF_SUBMIT" -n hls-convert -c 4 -m 16G -t 12:00:00 -- \
+  Rscript "$CCMMF_CODE/hls/convert_hls_scenes.R"
+while read -r t; do
+  [ -n "$t" ] || continue
+  "$CCMMF_SUBMIT" -n "mslsp-$t" -c 4 -m 16G -t 24:00:00 -- \
+    "$CCMMF_CODE/hls/run_mslsp_tile.sh" "$t"
+done < "$MSLSP_TILE_LIST"
+
+"$CCMMF_SUBMIT" -n parcel-tiles -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$CCMMF_CODE/hls/build_hls_parcel_tile_map.R"
+
+"$CCMMF_SUBMIT" -n mslsp-extract -c 4 -m 16G -t 24:00:00 -- \
+  "$PHENOLOGY_ROOT/run_mslsp.sh" "$PRIOR_YEAR" "$TARGET_YEAR"
+
+"$CCMMF_SUBMIT" -n match -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$PHENOLOGY_ROOT/match/match_landiq_mslsp.R" "$PRIOR_YEAR"
+"$CCMMF_SUBMIT" -n match -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$PHENOLOGY_ROOT/match/match_landiq_mslsp.R" "$TARGET_YEAR"
+
+"$CCMMF_SUBMIT" -n gapfill -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$PHENOLOGY_ROOT/gapfill/apply_phenology_gapfill.R" "$PRIOR_YEAR" "$TARGET_YEAR"
+
+aws s3 --profile magic sync s3://carb/management/plant_traits/ "$PLANT_TRAITS_DIR/"
+
+"$CCMMF_SUBMIT" -n planting -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$CCMMF_CODE/traits/apply_planting.R" "$PRIOR_YEAR"
+"$CCMMF_SUBMIT" -n planting -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$CCMMF_CODE/traits/apply_planting.R" "$TARGET_YEAR"
+"$CCMMF_SUBMIT" -n harvest -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$CCMMF_CODE/traits/apply_harvest.R" "$PRIOR_YEAR"
+"$CCMMF_SUBMIT" -n harvest -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$CCMMF_CODE/traits/apply_harvest.R" "$TARGET_YEAR"
+
+"$CCMMF_SUBMIT" -n ndti -c 12 -m 64G -t 02:00:00 -- \
+  "$TILLAGE_ROOT/run_ndti.sh" --jobs 12 "$PRIOR_YEAR" "$TARGET_YEAR"
+# wait, then:
+"$CCMMF_SUBMIT" -n tillage -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$TILLAGE_ROOT/apply_tillage.R" "$PRIOR_YEAR"
+# wait, then (partial TARGET table):
+"$CCMMF_SUBMIT" -n tillage -c 4 -m 16G -t 08:00:00 -- \
+  Rscript "$TILLAGE_ROOT/apply_tillage.R" "$TARGET_YEAR"
+
+"$CCMMF_SUBMIT" -n events-phenology -c 4 -m 16G -t 08:00:00 -- \
+  "$EVENTS_ROOT/make_events_statewide.sh" "$PRIOR_YEAR" "$TARGET_YEAR" phenology
+"$CCMMF_SUBMIT" -n events-planting -c 4 -m 16G -t 08:00:00 -- \
+  "$EVENTS_ROOT/make_events_statewide.sh" "$PRIOR_YEAR" "$TARGET_YEAR" planting
+"$CCMMF_SUBMIT" -n events-harvest -c 4 -m 16G -t 08:00:00 -- \
+  "$EVENTS_ROOT/make_events_statewide.sh" "$PRIOR_YEAR" "$TARGET_YEAR" harvest
+"$CCMMF_SUBMIT" -n events-tillage -c 4 -m 16G -t 08:00:00 -- \
+  "$EVENTS_ROOT/make_events_statewide.sh" "$PRIOR_YEAR" "$TARGET_YEAR" tillage
+```
+

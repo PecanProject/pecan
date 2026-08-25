@@ -18,8 +18,12 @@
 #   --tile TILE      extract a single tile locally (implies --no-combine)
 #   --overwrite      overwrite existing tilepieces / output Parquet
 #
-# Smoke test: TILEWISE_ONE_TILE=10SDH ./run_mslsp.sh 2024
-# Single tile:  ./run_mslsp.sh --tile 10SDH --no-combine 2024
+# Tile vs statewide: --tile TILE, or DEMO_TILE / TILEWISE_ONE_TILE; unset for CA.
+# Submit with $CCMMF_SUBMIT (no scheduler headers in this file):
+#   "$CCMMF_SUBMIT" -n mslsp-extract -- "$PHENOLOGY_ROOT/run_mslsp.sh" "$PRIOR_YEAR" "$TARGET_YEAR"
+#
+# Smoke test: TILEWISE_ONE_TILE=10TEK ./run_mslsp.sh 2024
+# Single tile:  ./run_mslsp.sh --tile 10TEK --no-combine 2024
 #
 # Examples:
 #   ./run_mslsp.sh 2024
@@ -29,7 +33,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
@@ -82,7 +86,7 @@ while [[ $# -gt 0 ]]; do
     --no-combine) DO_COMBINE=0 ;;
     --task-tile) DO_TASK_TILE=1; DO_COMBINE=0 ;;
     --tile)
-      [[ $# -lt 2 ]] && die "--tile requires a tile id (e.g. 10SDH)"
+      [[ $# -lt 2 ]] && die "--tile requires a tile id (e.g. 10TEK)"
       TILE_ARG="$2"
       DO_COMBINE=0
       shift

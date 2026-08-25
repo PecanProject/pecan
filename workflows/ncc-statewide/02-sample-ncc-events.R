@@ -56,26 +56,31 @@ if (nrow(unmatched) > 0L) {
   )
 }
 
-# annuals draw the row crop rate, perennials the orchard rate. every material is
-# eligible for both families: SIPNET already slows decomposition of high C:N
-# material through the litter C:N term in calcCNEffect, so screening materials
+# which rate applies is a property of the pft, not of a binary annual/perennial
+# split. every material is eligible for every structure: SIPNET already slows
+# decomposition of high C:N material through calcCNEffect, so screening materials
 # out here would double count what the model does
-family_structure <- c(annual = "rows", perennial = "trees")
+structures <- sort(unique(design$crop_structure))
+unknown_structure <- setdiff(structures, amendments$crop_structure)
+if (length(unknown_structure) > 0) {
+  PEcAn.logger::logger.severe(
+    "crop_structure in pft_timing has no rows in ca_organic_amendment_app_rate: ",
+    paste(unknown_structure, collapse = ", "))
+}
 
-# group each family's rows by material. drawing the joined rows directly would
+# group each structure's rows by material. drawing the joined rows directly would
 # weight a material by how many sources report it, so the three two-source
 # materials would come up twice as often as any other
-pool_by_material <- function(family) {
-  rows <- which(amendments$crop_structure == family_structure[[family]])
+pool_by_material <- function(structure) {
+  rows <- which(amendments$crop_structure == structure)
   split(rows, amendments$material[rows])
 }
-families <- stats::setNames(names(family_structure), names(family_structure))
-pools <- lapply(families, pool_by_material)
+pools <- lapply(stats::setNames(structures, structures), pool_by_material)
 
 # uniform over materials, then uniform over that material's sources, so source
 # disagreement stays in the ensemble without biasing which material is picked.
-# drawn per family in one pass: a closure per event row costs millions of calls
-# at statewide scale
+# drawn per structure in one pass: a closure per event row costs millions of
+# calls at statewide scale
 draw_material_rows <- function(pool, n) {
   n_source <- lengths(pool)
   flat <- unlist(pool, use.names = FALSE)
@@ -86,9 +91,9 @@ draw_material_rows <- function(pool, n) {
 }
 
 events$mat_idx <- NA_integer_
-for (fam in names(pools)) {
-  sel <- which(events$pft_family == fam)
-  events$mat_idx[sel] <- draw_material_rows(pools[[fam]], length(sel))
+for (structure in structures) {
+  sel <- which(events$crop_structure == structure)
+  events$mat_idx[sel] <- draw_material_rows(pools[[structure]], length(sel))
 }
 
 mat_cols <- amendments[events$mat_idx,
@@ -98,26 +103,17 @@ mat_cols <- amendments[events$mat_idx,
                          "cn_min", "cn_max")]
 events <- dplyr::bind_cols(events, mat_cols)
 
-# date offset windows are working assumptions: perennials get fall/winter
-# application (Niederholzer 2019, UCCE), annuals get a wider pre planting
-# window (Fulford et al 2023, CA processing tomatoes)
-ANNUAL_OFFSET_MIN <- 14L
-ANNUAL_OFFSET_MAX <- 180L
-PERENNIAL_OFFSET_MIN <- 30L
-PERENNIAL_OFFSET_MAX <- 210L
-
+# signed offsets let a rule place the event before the anchor or after it.
+# discrete uniform, inclusive of both bounds
 events <- events |>
   dplyr::mutate(
     u_rate = stats::runif(dplyr::n()),
     u_cn = stats::runif(dplyr::n()),
     app_rate_lb_acre = .data$app_rate_min + .data$u_rate * (.data$app_rate_max - .data$app_rate_min),
     cn_ratio = .data$cn_min + .data$u_cn * (.data$cn_max - .data$cn_min),
-    date_offset_days = ifelse(
-      .data$pft_family == "annual",
-      sample(ANNUAL_OFFSET_MIN:ANNUAL_OFFSET_MAX, dplyr::n(), replace = TRUE),
-      sample(PERENNIAL_OFFSET_MIN:PERENNIAL_OFFSET_MAX, dplyr::n(), replace = TRUE)
-    ),
-    date = .data$anchor - .data$date_offset_days,
+    date_offset_days = .data$offset_min +
+      floor(stats::runif(dplyr::n()) * (.data$offset_max - .data$offset_min + 1)),
+    date = .data$anchor + .data$date_offset_days,
     ens_id = sprintf("ens_%03d", .data$ensemble_member)
   )
 
@@ -127,6 +123,19 @@ PEcAn.logger::logger.info(sprintf(
   min(events[["app_rate_lb_acre"]]), max(events[["app_rate_lb_acre"]]),
   min(events[["n_pct"]]), max(events[["n_pct"]]),
   min(events[["cn_ratio"]]), max(events[["cn_ratio"]])))
+
+# realized windows show each rule was applied as configured
+win <- events |>
+  dplyr::summarize(n = dplyr::n(),
+                   min_off = min(.data$date_offset_days),
+                   max_off = max(.data$date_offset_days),
+                   .by = "pft_group")
+PEcAn.logger::logger.info("Realized offset window per PFT (days from anchor):")
+for (i in seq_len(nrow(win))) {
+  PEcAn.logger::logger.info(sprintf("  %s: %d to %d over %d events",
+                                    win$pft_group[i], win$min_off[i],
+                                    win$max_off[i], win$n[i]))
+}
 
 staging_file <- file.path(staging_dir, "_staging_02_events.rds")
 saveRDS(events, staging_file)

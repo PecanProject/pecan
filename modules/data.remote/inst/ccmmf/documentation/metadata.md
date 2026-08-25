@@ -5,6 +5,8 @@ This page indexes the dictionaries saved in `inst/ccmmf`.
 Session I/O tables in [tree README](../README.md) and
 [sessions/](sessions/) link here instead of duplicating full schemas.
 
+Event files keep SIPNET columns only. Match, gap-fill, planting/harvest apply, and tillage metrics keep the diagnostic columns that `make_events` drops.
+
 Fertilization and irrigation column docs live with those separate workflows
 ([Session 3](sessions/03-fertilizer-irrigation.md); not listed below yet).
 
@@ -16,6 +18,10 @@ Fertilization and irrigation column docs live with those separate workflows
 | MSLSP parcel extract | [phenology/extract/data/mslsp_year_metadata.csv](../phenology/extract/data/mslsp_year_metadata.csv) | phenology/extract |
 | NDTI parcel extract | [tillage/extract/data/ndti_year_metadata.csv](../tillage/extract/data/ndti_year_metadata.csv) | tillage/extract |
 | LandIQ<->MSLSP match | [phenology/match/data/assigned_year_metadata.csv](../phenology/match/data/assigned_year_metadata.csv) | phenology/match |
+| Phenology date gap-fill overlay | [phenology/gapfill/data/assigned_year_gapfilled_metadata.csv](../phenology/gapfill/data/assigned_year_gapfilled_metadata.csv) | phenology/gapfill |
+| Planting apply table | [traits/data/planting_apply_metadata.csv](../traits/data/planting_apply_metadata.csv) | traits |
+| Harvest apply table | [traits/data/harvest_apply_metadata.csv](../traits/data/harvest_apply_metadata.csv) | traits |
+| Tillage metrics apply table | [tillage/data/tillage_metrics_metadata.csv](../tillage/data/tillage_metrics_metadata.csv) | tillage |
 | Planting events | [events/data/planting_statewide_metadata.csv](../events/data/planting_statewide_metadata.csv) | events |
 | Harvest events | [events/data/harvest_statewide_metadata.csv](../events/data/harvest_statewide_metadata.csv) | events |
 | Phenology events | [events/data/phenology_statewide_metadata.csv](../events/data/phenology_statewide_metadata.csv) | events |

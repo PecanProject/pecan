@@ -18,6 +18,9 @@
 export CCMMF_BASE="${CCMMF_BASE:-$HOME}"
 export CCMMF_ROOT="${CCMMF_ROOT:-$CCMMF_BASE/ccmmf}"          # data
 export CCMMF_CODE="${CCMMF_CODE:-$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf}"  # pipeline code
+export IRRIG_PREPROCESS="${IRRIG_PREPROCESS:-$CCMMF_BASE/src/pecan/workflows/irrigation-statewide/preprocessing}"
+export CLUSTERMQ_SCHEDULER="${CLUSTERMQ_SCHEDULER:-multiprocess}"
+export IRRIGATION_EXEC_TYPE="${IRRIGATION_EXEC_TYPE:-local}"
 
 # Inventory year pair
 export PRIOR_YEAR="${PRIOR_YEAR:-2023}"
@@ -35,6 +38,20 @@ export LANDIQ_HARMONIZED="${LANDIQ_HARMONIZED:-$CADWR_WORK_DIR/03-final}"
 export HLS_ROOT="${HLS_ROOT:-$CCMMF_ROOT/HLS}"
 export HLS_IMAGERY_ROOT="${HLS_IMAGERY_ROOT:-$HLS_ROOT/imagery}"          # HLS GeoTIFF
 export MSLSP_NETCDF_ROOT="${MSLSP_NETCDF_ROOT:-$HLS_ROOT/MSLSP}"          # MSLSP NetCDF
+# Parcel extract parquet (intermediate; not an inventory product)
+export MSLSP_EXTRACT_ROOT="${MSLSP_EXTRACT_ROOT:-$MSLSP_NETCDF_ROOT/raw_mslsp_v4.1.2}"
+export HLS_PHENOLOGY_ROOT="${HLS_PHENOLOGY_ROOT:-$CCMMF_BASE/src/HLS_Phenology}"
+export MSLSP_ALGO_ROOT="${MSLSP_ALGO_ROOT:-$CCMMF_BASE/src/MSLSP}"          # aliceni7/MSLSP or BU-LCSC/MSLSP
+# HLS prep files: parcel_tiles.csv and MGRS gpkg under $HLS_ROOT; CA tile list from the
+# HLS_Phenology clone (override MSLSP_TILE_LIST to point elsewhere)
+export HLS_S2_MGRS_GRID="${HLS_S2_MGRS_GRID:-$HLS_ROOT/s2_mgrs_grid_ca.gpkg}"
+export MSLSP_TILE_LIST="${MSLSP_TILE_LIST:-$HLS_PHENOLOGY_ROOT/tileids.txt}"
+export HLS_PARCEL_TILES_DIR="${HLS_PARCEL_TILES_DIR:-$HLS_ROOT}"          # parcel_tiles.csv
+# Optional: HLS_PARCEL_TILEMAP=/path/to/parcel_tiles.csv
+export HLS_DOWNLOAD_OUTDIR="${HLS_DOWNLOAD_OUTDIR:-$HLS_IMAGERY_ROOT/download_scratch}"
+export HLS_CREDENTIAL_FOLDER="${HLS_CREDENTIAL_FOLDER:-$HOME}"            # dir containing .netrc
+# Optional: HLS_DOWNLOAD_TILE=10TEK (one-tile Earthdata; needs s2_mgrs_grid_ca.gpkg)
+# Optional conversion wrapper: HLS_WATER_DIR, HLS_DEM_DIR, HLS_SLOPE_DIR, HLS_ASPECT_DIR, HLS_CONVERSION_TILE
 export CDL_DIR="${CDL_DIR:-$CCMMF_ROOT/CDL}"                              # CDL GeoTIFF
 
 export CLIMATE_ROOT="${CLIMATE_ROOT:-$CCMMF_ROOT/climate}"
@@ -53,15 +70,23 @@ export FERTILIZATION_LOOKUPS="${FERTILIZATION_LOOKUPS:-$LOOKUPS_ROOT/fertilizati
 export PRODUCTS_ROOT="${PRODUCTS_ROOT:-$CCMMF_ROOT/products}"
 export PRODUCTS_INVENTORY="${PRODUCTS_INVENTORY:-$PRODUCTS_ROOT/inventory}"
 
-export HLS_PARCEL_TILEMAP="${HLS_PARCEL_TILEMAP:-$PRODUCTS_INVENTORY/hls_parcel_tile_map_v4.1.csv}"
 export MATCHED_DIR="${MATCHED_DIR:-$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2}"
+export EVENT_OUTPUT_DIR="${EVENT_OUTPUT_DIR:-$PRODUCTS_INVENTORY/event_files}"
 
 # --- Code components ($CCMMF_CODE) ---
 export LANDIQ_GAPFILL_ROOT="${LANDIQ_GAPFILL_ROOT:-$CCMMF_CODE/landiq-gapfill}"
+export LANDIQ_CROPCODE_CSV="${LANDIQ_CROPCODE_CSV:-$LANDIQ_GAPFILL_ROOT/data/LandIQ_cropCode_lookup_table.csv}"
 export PHENOLOGY_ROOT="${PHENOLOGY_ROOT:-$CCMMF_CODE/phenology}"
 export TILLAGE_ROOT="${TILLAGE_ROOT:-$CCMMF_CODE/tillage}"
 export EVENTS_ROOT="${EVENTS_ROOT:-$CCMMF_CODE/events}"
+export TRAITS_ROOT="${TRAITS_ROOT:-$CCMMF_CODE/traits}"
 export HLS_SHARED_LIB="${HLS_SHARED_LIB:-$CCMMF_CODE/hls/R}"
 export COUNTY_TRANSITION_MATRICES_DIR="${COUNTY_TRANSITION_MATRICES_DIR:-$LANDIQ_GAPFILL_ROOT/data/county_transition_matrices}"
+# Scheduler-agnostic submit (sbatch, qsub, or local). See documentation/submit_job.sh
+export CCMMF_SUBMIT="${CCMMF_SUBMIT:-$CCMMF_CODE/documentation/submit_job.sh}"
 
 echo "[setup_env] BASE=$CCMMF_BASE ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"
+echo "[setup_env] LANDIQ_GAPFILLED=$LANDIQ_GAPFILLED"
+echo "[setup_env] HLS_ROOT=$HLS_ROOT HLS_PARCEL_TILES_DIR=$HLS_PARCEL_TILES_DIR"
+echo "[setup_env] PRODUCTS_INVENTORY=$PRODUCTS_INVENTORY MATCHED_DIR=$MATCHED_DIR"
+echo "[setup_env] EVENT_OUTPUT_DIR=$EVENT_OUTPUT_DIR"

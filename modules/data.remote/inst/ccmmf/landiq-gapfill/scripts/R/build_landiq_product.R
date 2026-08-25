@@ -29,7 +29,6 @@ resolve_landiq_product_source_parquet <- function() {
   is.na(x) | !nzchar(x)
 }
 
-
 .product_adoy_source <- function(adoy) {
   adoy <- suppressWarnings(as.numeric(adoy))
   dplyr::if_else(is_valid_adoy(adoy), "observed", "unfilled")
@@ -331,7 +330,15 @@ LANDIQ_SEASONS <- 1:4
       ),
       subclass_source = normalize_subclass_source(CLASS, SUBCLASS, subclass_source)
     ) %>%
-    filter_consolidated_parcels()
+    filter_consolidated_parcels() %>%
+    dplyr::mutate(
+      inactive = .empty_lab(CLASS),
+      ADOY = dplyr::if_else(inactive, NA_real_, suppressWarnings(as.numeric(ADOY))),
+      SUBCLASS = dplyr::if_else(inactive, NA_character_, SUBCLASS),
+      subclass_source = dplyr::if_else(inactive, NA_character_, subclass_source),
+      adoy_source = dplyr::if_else(inactive, NA_character_, adoy_source)
+    ) %>%
+    dplyr::select(-inactive)
 }
 
 #' Combine year parquet slices into one file without collecting as R data.frames.
