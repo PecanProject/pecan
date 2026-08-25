@@ -44,21 +44,13 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
   annotations <- do.call(rbind, lapply(names(facet_groups), function(g) {
     sub_dat <- facet_groups[[g]]
     
-    valid_cov <- !is.na(sub_dat$obvs) & !is.na(sub_dat$model_q05) & !is.na(sub_dat$model_q95)
-    
-    if ("obvs_sd" %in% colnames(sub_dat)) {
-      valid_cov <- valid_cov & !is.na(sub_dat$obvs_sd)
-      covered <- (sub_dat$obvs[valid_cov] - sub_dat$obvs_sd[valid_cov]) <= sub_dat$model_q95[valid_cov] & 
-                 (sub_dat$obvs[valid_cov] + sub_dat$obvs_sd[valid_cov]) >= sub_dat$model_q05[valid_cov]
-    } else {
-      covered <- sub_dat$obvs[valid_cov] >= sub_dat$model_q05[valid_cov] & sub_dat$obvs[valid_cov] <= sub_dat$model_q95[valid_cov]
-    }
-    
-    coverage_pct <- mean(covered) * 100
+    coverage_val <- try(metric_Coverage(sub_dat), silent = TRUE)
+    coverage_pct <- if (inherits(coverage_val, "try-error") || is.na(coverage_val)) NA_real_ else coverage_val * 100
     
     sharpness <- mean(sub_dat$model_q95 - sub_dat$model_q05, na.rm = TRUE)
     bias <- mean(sub_dat$model - sub_dat$obvs, na.rm = TRUE)
     
+    pmu_val_str <- "N/A"
     pass_str <- "N/A"
     if ("obs_se" %in% colnames(sub_dat) && "obs_n" %in% colnames(sub_dat)) {
       valid_pmu <- !is.na(sub_dat$obs_se) & !is.na(sub_dat$obs_n)
@@ -66,8 +58,9 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
         se2_n <- (sub_dat$obs_se[valid_pmu]^2) * sub_dat$obs_n[valid_pmu]
         pooled_var <- sum(se2_n) / sum(sub_dat$obs_n[valid_pmu])
         pmu <- sqrt(pooled_var)
+        pmu_val_str <- sprintf("%.2f", pmu)
         
-        passes_validation <- (coverage_pct >= 90) && (abs(bias) < pmu)
+        passes_validation <- (!is.na(coverage_pct) && coverage_pct >= 90) && (!is.na(bias) && abs(bias) < pmu)
         pass_str <- ifelse(passes_validation, "PASS", "FAIL")
       }
     }
@@ -75,17 +68,12 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     data.frame(
       site = sub_dat$site[1],
       variable = sub_dat$variable[1],
-      label = sprintf("Coverage: %.1f%%\nSharpness: %.2f\nBias: %.2f\nPMU: %s", coverage_pct, sharpness, bias, pass_str)
+      label = sprintf("Coverage: %.1f%%\nSharpness: %.2f\nBias: %.2f\nPMU: %s\nStatus: %s", coverage_pct, sharpness, bias, pmu_val_str, pass_str)
     )
   }))
 
   # Determine if model "passes" at each point based on available intervals
-  if ("obvs_sd" %in% colnames(metric_dat)) {
-    metric_dat$Pass <- (metric_dat$obvs - metric_dat$obvs_sd) <= metric_dat$model_q95 &
-                       (metric_dat$obvs + metric_dat$obvs_sd) >= metric_dat$model_q05
-  } else {
-    metric_dat$Pass <- metric_dat$obvs >= metric_dat$model_q05 & metric_dat$obvs <= metric_dat$model_q95
-  }
+  metric_dat$Pass <- metric_dat$obvs >= metric_dat$model_q05 & metric_dat$obvs <= metric_dat$model_q95
 
   if (any(!is.na(metric_dat$Pass))) {
     metric_dat$Observation_Status <- ifelse(metric_dat$Pass, "Observed (Pass)", "Observed (Fail)")
@@ -100,6 +88,27 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     ggplot2::geom_ribbon(ggplot2::aes(ymin = .data$model_q05, ymax = .data$model_q95, fill = "Model 90% CI"), alpha = 0.3) +
     ggplot2::scale_fill_manual(values = c("Model 90% CI" = "#619CFF"), name = "Intervals")
   
+  # 1b. Ensemble Member Spaghetti Lines (if ensemble matrix attribute is attached)
+  ens_mat <- attr(metric_dat, "ensemble_matrix")
+  if (!is.null(ens_mat) && is.matrix(ens_mat) && nrow(ens_mat) == nrow(metric_dat)) {
+    spag_df <- data.frame(
+      time = rep(metric_dat$time, times = ncol(ens_mat)),
+      member = rep(seq_len(ncol(ens_mat)), each = nrow(metric_dat)),
+      val = as.vector(ens_mat)
+    )
+    if ("site" %in% colnames(metric_dat)) {
+      spag_df$site <- rep(metric_dat$site, times = ncol(ens_mat))
+    }
+    if ("variable" %in% colnames(metric_dat)) {
+      spag_df$variable <- rep(metric_dat$variable, times = ncol(ens_mat))
+    }
+    p <- p + ggplot2::geom_line(
+      data = spag_df,
+      ggplot2::aes(x = .data$time, y = .data$val, group = .data$member),
+      colour = "#A6CEE3", alpha = 0.25, linewidth = 0.3
+    )
+  }
+
   # 2. Model Mean Line
   p <- p + ggplot2::geom_line(ggplot2::aes(y = .data$model, colour = "Model"), linewidth = 1)
 
@@ -130,7 +139,7 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
   # Add per-panel annotations
   p <- p + ggplot2::geom_label(
     data = annotations,
-    ggplot2::aes(x = -Inf, y = Inf, label = label),
+    ggplot2::aes(x = -Inf, y = Inf, label = .data$label),
     hjust = -0.05, vjust = 1.1,
     inherit.aes = FALSE,
     alpha = 0.8

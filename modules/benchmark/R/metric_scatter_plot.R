@@ -2,6 +2,7 @@
 ##'
 ##' @param metric_dat dataframe to plot, with at least columns `model` and `obvs`
 ##' @param var title for the plot
+##' @param unit measurement unit for the variable, added to the axis labels; NULL to omit
 ##' @param filename path to save plot, or NA to not save
 ##' @param draw.plot logical: Return the plot object?
 ##' 

@@ -57,52 +57,66 @@ bm_validate <- function(model_df, obs_df) {
 #' @param model_df data.frame with columns: time (POSIXct), value
 #' @param obs_df   data.frame with columns: time (POSIXct), value
 #' @param tolerance_secs max allowed time difference in seconds
+#' Align model predictions and observations by time
 #'
-#' @return data.frame with columns: model, obvs, time
+#' For each observation in `obs_df`, finds the nearest model prediction in `model_df`
+#' within `tolerance_secs`. Guarantees that each observation is paired with at most
+#' one model prediction.
+#'
+#' @param model_df data.frame containing model predictions with a `time` column (POSIXct) and `value` or `model` column.
+#' @param obs_df data.frame containing observations with a `time` column (POSIXct) and `value` or `obvs` column.
+#' @param tolerance_secs maximum allowable time difference in seconds between paired observation and model prediction.
+#'
+#' @return data.frame with aligned rows containing model and observation columns, where each observation corresponds to exactly one model prediction.
+#' @export
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
+  if (nrow(model_df) == 0 || nrow(obs_df) == 0) {
+    return(data.frame())
+  }
+
   # Sort both dataframes by time to ensure findInterval works correctly
   model_df <- model_df[order(model_df$time), ]
   obs_df <- obs_df[order(obs_df$time), ]
-  
-  # For each model time, find the interval in obs_time it falls into
-  idx <- findInterval(model_df$time, obs_df$time, all.inside = TRUE)
-  
-  # findInterval returns index i where obs[i] <= model_time < obs[i+1]
-  # We check both i and i+1 to see which one is the absolute nearest
-  idx_next <- pmin(idx + 1, nrow(obs_df))
-  
-  diff_current <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx], units = "secs")))
-  diff_next <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx_next], units = "secs")))
-  
-  # Select the index of the closest observation
-  nearest_idx <- ifelse(diff_current <= diff_next, idx, idx_next)
+
+  # For each observation time, find the interval in model_df$time it falls into
+  idx <- findInterval(obs_df$time, model_df$time, all.inside = TRUE)
+  idx_next <- pmin(idx + 1, nrow(model_df))
+
+  diff_current <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx], units = "secs")))
+  diff_next <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_next], units = "secs")))
+
+  nearest_model_idx <- ifelse(diff_current <= diff_next, idx, idx_next)
   time_diffs <- pmin(diff_current, diff_next)
-  
-  # Filter by our time tolerance
+
+  # Filter by time tolerance
   valid <- time_diffs <= tolerance_secs
-  
+
   n_kept <- sum(valid)
   n_dropped <- length(valid) - n_kept
-  PEcAn.logger::logger.info(sprintf("Time alignment kept %d points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
-  
-  # Construct the aligned base data.frame without dropping metadata
-  # Rename value columns to prevent collision and fit convention
+  PEcAn.logger::logger.info(sprintf("Time alignment kept %d observation points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
+
+  if (n_kept == 0) {
+    return(data.frame())
+  }
+
+  # Standardize value column names
   names(model_df)[names(model_df) == "value"] <- "model"
   names(obs_df)[names(obs_df) == "value"] <- "obvs"
-  
+
+  model_sub <- model_df[nearest_model_idx[valid], , drop = FALSE]
+  obs_sub <- obs_df[valid, , drop = FALSE]
+
   # Prevent time collision if obs_df carries it forward
-  if ("time" %in% names(obs_df)) {
-    names(obs_df)[names(obs_df) == "time"] <- "obs_time"
+  if ("time" %in% names(obs_sub)) {
+    names(obs_sub)[names(obs_sub) == "time"] <- "obs_time"
   }
-  
-  model_sub <- model_df[valid, , drop = FALSE]
-  obs_sub <- obs_df[nearest_idx[valid], , drop = FALSE]
-  
+
   # Drop overlapping columns from obs to cleanly cbind
   obs_sub <- obs_sub[, !(names(obs_sub) %in% names(model_sub)), drop = FALSE]
-  
+
   aligned <- cbind(model_sub, obs_sub)
-  
+  rownames(aligned) <- NULL
+
   return(aligned)
 }
 
@@ -153,6 +167,12 @@ register_metric("CRPS", function(dat) {
   }
   metric_CRPS(dat)
 })
+register_metric("BIAS", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Bias", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_Bias(dat))
+  }
+  metric_Bias(dat)
+})
 
 
 #' Compute benchmark metrics
@@ -160,16 +180,27 @@ register_metric("CRPS", function(dat) {
 #' @param aligned data.frame with columns: model, obvs, time
 #' @param metrics character vector of metric names
 #' @return data.frame in wide format with columns `Site` and each requested metric column per site.
+#' @export
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
   # Treat data as one group if no site column
   if (!"site" %in% colnames(aligned)) {
     aligned$site <- "All"
   }
   
+  full_ens_mat <- attr(aligned, "ensemble_matrix")
+  aligned$..row_id.. <- seq_len(nrow(aligned))
+
   # Split by site and compute metrics
   site_list <- split(aligned, aligned$site)
   site_results <- lapply(names(site_list), function(s) {
     sub_df <- site_list[[s]]
+    row_ids <- sub_df$..row_id..
+    sub_df$..row_id.. <- NULL
+
+    if (!is.null(full_ens_mat) && is.matrix(full_ens_mat) && nrow(full_ens_mat) == nrow(aligned)) {
+      attr(sub_df, "ensemble_matrix") <- full_ens_mat[row_ids, , drop = FALSE]
+    }
+
     res <- sapply(toupper(metrics), function(m) {
       if (!exists(m, envir = pecan_metric_registry)) {
         PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))

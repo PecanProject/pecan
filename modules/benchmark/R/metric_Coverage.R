@@ -25,14 +25,7 @@ metric_Coverage <- function(dat, ...) {
   PEcAn.logger::logger.info("Metric: Prediction Interval Coverage")
 
   valid <- !is.na(dat$obvs) & !is.na(q_low) & !is.na(q_high)
-
-  if ("obvs_sd" %in% names(dat)) {
-    valid <- valid & !is.na(dat$obvs_sd)
-    covered <- (dat$obvs[valid] - dat$obvs_sd[valid]) <= q_high[valid] &
-               (dat$obvs[valid] + dat$obvs_sd[valid]) >= q_low[valid]
-  } else {
-    covered <- dat$obvs[valid] >= q_low[valid] & dat$obvs[valid] <= q_high[valid]
-  }
+  covered <- dat$obvs[valid] >= q_low[valid] & dat$obvs[valid] <= q_high[valid]
 
   return(mean(covered))
 }

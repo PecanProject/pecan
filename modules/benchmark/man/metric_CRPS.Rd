@@ -7,8 +7,8 @@
 metric_CRPS(dat, ...)
 }
 \arguments{
-\item{dat}{dataframe with column \code{obvs} and either an \code{ensemble_matrix} attribute,
-wide ensemble member columns (\code{member_1}, \code{member_2}, ...), or matrix column \code{model_ensemble}.}
+\item{dat}{dataframe with column `obvs` and either an `ensemble_matrix` attribute,
+wide ensemble member columns (`member_1`, `member_2`, ...), or matrix column `model_ensemble`.}
 
 \item{...}{ignored}
 }
@@ -20,6 +20,6 @@ Continuous Ranked Probability Score (CRPS)
 }
 \details{
 Computes the Continuous Ranked Probability Score (CRPS) to evaluate model uncertainty
-and ensemble skill against observation data. Uses \code{scoringRules::crps_sample()} when available,
-with a pure R analytical sample score fallback when \code{scoringRules} is not present.
+and ensemble skill against observation data. Uses `scoringRules::crps_sample()` when available,
+with a pure R analytical sample score fallback when `scoringRules` is not present.
 }

@@ -60,6 +60,47 @@ test_that("align_by_time matches exact timestamps", {
   expect_equal(aligned$obvs, c(1.1, 1.9, 3.2, 3.9))
 })
 
+test_that("align_by_time pairs each observation with exactly one model prediction", {
+  monthly_model <- data.frame(
+    time = as.POSIXct(seq(as.Date("2020-01-01"), as.Date("2020-12-01"), by = "month")),
+    value = 1:12
+  )
+  annual_obs <- data.frame(
+    time = as.POSIXct(c("2020-06-01", "2020-11-01")),
+    value = c(6.1, 11.2)
+  )
+
+  aligned <- align_by_time(monthly_model, annual_obs, tolerance_secs = 365 * 86400)
+
+  expect_equal(nrow(aligned), nrow(annual_obs))
+  expect_equal(length(unique(aligned$obs_time)), nrow(annual_obs))
+})
+
+test_that("compute_metrics correctly subsets ensemble_matrix by site for CRPS", {
+  aligned <- data.frame(
+    time = as.POSIXct(c("2020-01-01", "2020-02-01", "2020-01-01", "2020-02-01"), tz = "UTC"),
+    model = c(10, 20, 100, 200),
+    obvs  = c(10, 20, 100, 200),
+    site  = c("SiteA", "SiteA", "SiteB", "SiteB")
+  )
+
+  ens_mat <- matrix(c(
+    9, 11,
+    19, 21,
+    98, 102,
+    198, 202
+  ), nrow = 4, byrow = TRUE)
+
+  attr(aligned, "ensemble_matrix") <- ens_mat
+
+  res <- compute_metrics(aligned, metrics = c("CRPS"))
+
+  expect_equal(nrow(res), 4) # SiteA, SiteB, Rollup (Mean), Rollup (Median)
+  expect_true(all(c("SiteA", "SiteB") %in% res$Site))
+  expect_true(is.numeric(res$CRPS))
+  expect_false(any(is.na(res$CRPS)))
+})
+
 test_that("align_by_time drops points outside tolerance", {
   model_df_tol <- data.frame(
     time = as.POSIXct(c(0, 3600), origin = "1970-01-01", tz = "UTC"),

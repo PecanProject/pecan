@@ -25,6 +25,23 @@ generate_validation_report <- function(benchmark_results, output_file = "Validat
     PEcAn.logger::logger.severe("The 'quarto' package is required to generate the report.")
   }
   
+  # Set QUARTO_PATH if quarto binary is not in standard PATH
+  if (is.null(quarto::quarto_path())) {
+    possible_paths <- c(
+      file.path(getwd(), "quarto-1.3.450", "bin", "quarto"),
+      "/usr/local/bin/quarto",
+      "/usr/bin/quarto",
+      "/usr/lib/rstudio/bin/quarto/bin/quarto",
+      "/usr/lib/rstudio/resources/app/bin/quarto/bin/quarto"
+    )
+    for (p in possible_paths) {
+      if (file.exists(p)) {
+        Sys.setenv(QUARTO_PATH = p)
+        break
+      }
+    }
+  }
+  
   # Ensure absolute paths
   output_file <- normalizePath(output_file, mustWork = FALSE)
   output_dir <- dirname(output_file)
