@@ -3,9 +3,54 @@
 config <- config::get(file = "workflows/ncc-statewide/config.yml",
                       config = Sys.getenv("NCC_PROJECT", "default"))
 
+# paths in config.yml are relative to ccmmf_dir so the yaml stays plain data any
+# parser can read. a value from the environment wins and is used as given, so a
+# run can point anywhere without editing the file
+ccmmf_dir <- Sys.getenv("CCMMF_DIR")
+if (!nzchar(ccmmf_dir)) {
+  ccmmf_dir <- config[["ccmmf_dir"]]
+}
+# an override set to an empty string is treated as unset, otherwise file.path
+# would build a path rooted at /
+resolve_path <- function(key, env_var) {
+  p <- Sys.getenv(env_var)
+  if (!nzchar(p)) {
+    p <- file.path(ccmmf_dir, config[[key]])
+  }
+  path.expand(p)
+}
+crops_path      <- resolve_path("crops_path", "CCMMF_CROPS_PATH")
+phen_dir        <- resolve_path("phen_dir", "CCMMF_PHEN_DIR")
+pft_lookup_path <- resolve_path("pft_lookup_path", "CCMMF_PFT_LOOKUP")
+output_dir      <- resolve_path("output_dir", "CCMMF_NCC_OUT")
+phen_glob <- Sys.getenv("CCMMF_PHEN_GLOB")
+if (!nzchar(phen_glob)) {
+  phen_glob <- config[["phen_glob"]]
+}
+
+# inputs are required, not optional. away from SCC the defaults will not
+# resolve, so name the variable to set rather than failing deeper in a read
+inputs <- c(CCMMF_CROPS_PATH = crops_path, CCMMF_PHEN_DIR = phen_dir,
+            CCMMF_PFT_LOOKUP = pft_lookup_path)
+if (!all(file.exists(inputs))) {
+  absent <- inputs[!file.exists(inputs)]
+  PEcAn.logger::logger.severe(
+    "input not found: ", paste(absent, collapse = ", "),
+    ". Set ", paste(names(absent), collapse = ", "), " or CCMMF_DIR.")
+}
+
+# log what resolved so a run can be reconstructed from its output alone
+PEcAn.logger::logger.info(paste0(
+  "\nResolved paths\n",
+  "  crops_path      : ", crops_path, "\n",
+  "  phen_dir        : ", phen_dir, "\n",
+  "  phen_glob       : ", phen_glob, "\n",
+  "  pft_lookup_path : ", pft_lookup_path, "\n",
+  "  output_dir      : ", output_dir, "\n"), wrap = FALSE)
+
 set.seed(config[["seed"]])
 
-staging_dir <- file.path(config[["output_dir"]], "_staging")
+staging_dir <- file.path(output_dir, "_staging")
 dir.create(staging_dir, showWarnings = FALSE, recursive = TRUE)
 
 options(arrow.unsafe_metadata = TRUE)
@@ -31,7 +76,7 @@ if (any(timing$offset_min > timing$offset_max)) {
 
 # "**" is the LandIQ sentinel for subclass not specified. it becomes NA on both
 # sides of the join, so those rows land on the class-level fallback
-pft_lookup <- readr::read_csv(config[["pft_lookup_path"]],
+pft_lookup <- readr::read_csv(pft_lookup_path,
                               show_col_types = FALSE) |>
   dplyr::filter(!is.na(.data$PFT))
 pft_by_code <- pft_lookup |>
@@ -61,17 +106,17 @@ crops <- DBI::dbGetQuery(con, sprintf(
           CAST(season AS INTEGER) AS season, CLASS,
           TRY_CAST(NULLIF(NULLIF(TRIM(CAST(SUBCLASS AS VARCHAR)), '**'), '') AS INTEGER) AS SUBCLASS
    FROM read_parquet('%s') WHERE \"year\" IN (%s) AND CLASS IS NOT NULL",
-  config[["crops_path"]], yr_list)) |>
+  crops_path, yr_list)) |>
   dplyr::rename(year = "yr") |>
   dplyr::mutate(code = paste0(.data$CLASS, .data$SUBCLASS))
 
 anchor_cols <- sort(unique(timing$anchor_col))
-phen_glob <- file.path(config[["phen_dir"]], config[["phen_glob"]])
+phen_files <- file.path(phen_dir, phen_glob)
 phen <- DBI::dbGetQuery(con, sprintf(
   "SELECT CAST(parcel_id AS INTEGER) AS parcel_id, CAST(\"year\" AS INTEGER) AS year,
           CAST(season AS INTEGER) AS season, gapfill_date_source, %s
    FROM read_parquet('%s') WHERE \"year\" IN (%s)",
-  paste(anchor_cols, collapse = ", "), phen_glob, yr_list))
+  paste(anchor_cols, collapse = ", "), phen_files, yr_list))
 
 missing_cols <- setdiff(anchor_cols, names(phen))
 if (length(missing_cols) > 0) {

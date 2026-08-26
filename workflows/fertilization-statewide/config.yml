@@ -8,19 +8,22 @@ default:
   nh4_fraction: 1
   seed: 42
   years: [2016, 2018, 2019, 2020, 2021, 2022, 2023]
-  # crops is the gap-filled LandIQ table (v4.1.2), the same inventory the
-  # phenology match is built against. v4.1 is the ungapfilled table and covers
-  # parcels the match does not.
-  # large inputs are not distributed with the repo. the defaults resolve on SCC;
-  # set the matching environment variable to run anywhere else. final home for
-  # these is pending ccmmf/organization#257
-  crops_path: !expr path.expand(Sys.getenv("CCMMF_CROPS_PATH", "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/crops_all_years.parq"))
-  # gap-filled LandIQ to MSLSP match, the same product the ncc workflow reads
-  phen_dir: !expr path.expand(Sys.getenv("CCMMF_PHEN_DIR", "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates"))
-  phen_glob: !expr Sys.getenv("CCMMF_PHEN_GLOB", "assigned_year=*_gapfilled.parquet")
+  # paths below are relative to ccmmf_dir. so any yaml parser can read this file;
+  # the scripts resolve them. the defaults resolve on SCC. off it, set CCMMF_DIR 
+  # to the data root, or override any one path with its own variable. final home 
+  # for these is pending ccmmf/organization#257
+  ccmmf_dir: /projectnb/dietzelab/ccmmf
 
-  # crop code to PFT. same table the monitoring products use
-  pft_lookup_path: !expr path.expand(Sys.getenv("CCMMF_PFT_LOOKUP", "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv"))
+  # gap-filled LandIQ table, the same inventory the phenology match is built
+  # against. the ungapfilled table covers parcels the match does not
+  crops_path: LandIQ-harmonized-v4.1.2/crops_all_years.parq
+
+  # gap-filled LandIQ to MSLSP match, the same product the ncc workflow reads
+  phen_dir: management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates
+  phen_glob: "assigned_year=*_gapfilled.parquet"
+
+  # crop code to PFT
+  pft_lookup_path: management/LandIQ_cropCode_lookup_table.csv
 
   # anchor transition per PFT. annuals are timed to planting and perennials to
   # leaf-on, matching the annual/perennial split the monitoring event products
@@ -34,7 +37,7 @@ default:
   crosswalk_path: workflows/fertilization-statewide/crop_name_crosswalk.tsv
   # versioned alongside ncc: v2.0 is the pass built on the v4.1.2 monitoring
   # products. bump rather than writing over
-  output_dir: !expr path.expand(Sys.getenv("CCMMF_FERT_OUT", "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/v2.0"))
+  output_dir: usr/akash/event_files/fertilization/v2.0
   batch_size: 100
   workers: 1
 
