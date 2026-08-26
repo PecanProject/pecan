@@ -1,32 +1,47 @@
-setwd("/projectnb/dietzelab/ananyak")
+## Optimizes county crop transition matrices toward 2045 scenario acreage
+## targets and writes scenario-specific crop/tillage target tables.
 
-library(data.table)
-library(readxl)
-library(nloptr)
-library(expm)
+pacman::p_load(PEcAn.data.remote, data.table, nloptr, expm)
 
-##-------setup-------
-scenario_name = "NBS_Targets" #bau or nbs targets 
-start_year = 2023L
-end_year = 2045L
+# ---- set up ----
+#Sys.setenv(CCMMF_WORK_ROOT = "/path/to/yourusername")
+work_root = Sys.getenv("CCMMF_WORK_ROOT")
+
+if (!nzchar(work_root)) {
+  stop("CCMMF_WORK_ROOT is not set. Set it to the workspace containing ", "crop_year_states_cleaned.csv, scenario inputs, and transition-matrix outputs.")
+}
+
+config = list(
+  scenario_names_for_tillage = c("BAU_Targets", "NBS_Targets"), matrix_target_scenario_name = "BAU_Targets",
+  start_year = 2023L, end_year = 2045L, lambda_target = 1e6,
+  maxeval_optimizer = 50000, maxtime_optimizer = 300,
+  scale_crop_targets_to_x0 = TRUE, nominal_zero_acres = 0.01,
+  run_all_counties = TRUE, counties_manual = character(),
+  crop_data_path = file.path(work_root, "crop_year_states_cleaned.csv"),  
+  scenario_folder = file.path(work_root, "MAGiC_scenarios_FINAL"),
+  crop_matrix_dir = file.path(work_root, "county_crop_matrices"),
+  matrix_out_dir = file.path(work_root, "county_optimized_matrices"),
+  tillage_out_root = file.path(work_root, "county_tillage_targets")
+)
+
+scenario_names_for_tillage = config[["scenario_names_for_tillage"]]
+matrix_target_scenario_name = config[["matrix_target_scenario_name"]]
+start_year = config[["start_year"]]
+end_year = config[["end_year"]]
 steps = end_year - start_year
+lambda_target = config[["lambda_target"]]
+maxeval_optimizer = config[["maxeval_optimizer"]]
+maxtime_optimizer = config[["maxtime_optimizer"]]
+scale_crop_targets_to_x0 = config[["scale_crop_targets_to_x0"]]
+nominal_zero_acres = config[["nominal_zero_acres"]]
+run_all_counties = config[["run_all_counties"]]
+counties_manual = config[["counties_manual"]]
+matrix_out_dir = config[["matrix_out_dir"]]
+tillage_out_root = config[["tillage_out_root"]]
 
-lambda_target = 1e6
-maxeval_optimizer = 50000
-maxtime_optimizer = 300
-scale_crop_targets_to_x0 = TRUE
-nominal_zero_acres = 0.01
+dir.create(matrix_out_dir, recursive = TRUE, showWarnings = FALSE)
 
-run_all_counties = TRUE #change to false if focusing on specific county/counties
-
-##to test specific counties if needed
-#counties_manual = c("Fresno")
-
-scenario_out_dir = file.path("county_optimized_matrices", scenario_name)
-target_out_dir = file.path("county_optimized_targets", scenario_name)
-
-dir.create(scenario_out_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(target_out_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create( tillage_out_root, recursive = TRUE, showWarnings = FALSE)
 
 ##-------helper functions-------
 safe_county_name = function(x) {gsub("[^A-Za-z0-9_]+", "_", x)}
@@ -77,8 +92,8 @@ repair_transition_matrix = function(A, matrix_name = "matrix") {
 write_tmat = function(A, path) {out = as.data.table(A, keep.rownames = "state")
 fwrite(out, path)}
 
-build_x0_last_observed = function(all_data, county_name, start_year, states, state_col = "crop_class") {
-  dt = copy(all_data[county_safe == county_name & year <= start_year])
+build_x0_last_observed = function(crop_data, county_name, start_year, states, state_col = "crop_class") {
+  dt = copy(crop_data[county_safe == county_name & year <= start_year])
   if (nrow(dt) == 0) stop("No data found for county up to start_year: ", county_name, " / ", start_year)
   
   dt[, state_value := trimws(as.character(get(state_col)))]
@@ -173,7 +188,7 @@ optimize_county_matrix = function(cty, A_orig, X0, target_vec, steps,
   }  
   #inequality constraint: sum(first n-1 row probs) <= 1, guarantees the last probability is >= 0.
   constr_fun = function(x) {A_part = matrix(x, nrow = n, ncol = n - 1, byrow = TRUE)
-    rowSums(A_part) - 1}
+  rowSums(A_part) - 1}
   
   res = nloptr(x0 = init_x, eval_f = obj_fun, eval_g_ineq = constr_fun, 
                lb = rep(0, n * (n - 1)), ub = rep(1, n * (n - 1)),
@@ -205,7 +220,7 @@ optimize_county_matrix = function(cty, A_orig, X0, target_vec, steps,
             paste(zero_rows, collapse = ", "))
     
     for (s in zero_rows) {A_final[s, ] = 0
-      A_final[s, s] = 1}}
+    A_final[s, s] = 1}}
   
   A_final = sweep(A_final, 1, rowSums(A_final), "/")
   
@@ -252,8 +267,8 @@ get_split_states = function(split_group, crop_states) {
   if (split_group == "annual_cropland") return(intersect(c("F", "G", "T", "R"), crop_states))
   return(character(0))}
 
-get_x0_split_weights = function(all_data, cty, start_year, split_states) {
-  dt = copy(all_data[county_safe == cty & year <= start_year])
+get_x0_split_weights = function(crop_data, cty, start_year, split_states) {
+  dt = copy(crop_data[county_safe == cty & year <= start_year])
   if (nrow(dt) == 0) {
     weight = rep(1 / length(split_states), length(split_states))
     return(data.table(crop_state = split_states, split_weight = weight))}
@@ -272,7 +287,7 @@ get_x0_split_weights = function(all_data, cty, start_year, split_states) {
   if (sum(out$x0_acres) == 0) out[, split_weight := 1 / .N] else out[, split_weight := x0_acres / sum(x0_acres)]
   return(out[, .(crop_state, split_weight)])}
 
-expand_scenario_rows_to_crop_states = function(scenarios, all_data, cty, end_year, start_year, crop_states) {
+expand_scenario_rows_to_crop_states = function(scenarios, crop_data, cty, end_year, start_year, crop_states) {
   scen_cty = copy(scenarios[county_safe == cty & Year == end_year])
   if (nrow(scen_cty) == 0) return(list(expanded = data.table(), unmatched = data.table()))
   
@@ -296,7 +311,7 @@ expand_scenario_rows_to_crop_states = function(scenarios, all_data, cty, end_yea
         next
       }
       
-      weights = get_x0_split_weights(all_data = all_data, cty = cty, start_year = start_year, split_states = split_states)
+      weights = get_x0_split_weights(crop_data = crop_data, cty = cty, start_year = start_year, split_states = split_states)
       expanded = CJ(scenario_row_id = rows_sg$scenario_row_id, crop_state = weights$crop_state)
       expanded = merge(expanded, rows_sg, by = "scenario_row_id", all.x = TRUE, allow.cartesian = TRUE)
       expanded = merge(expanded, weights, by = "crop_state", all.x = TRUE)
@@ -323,8 +338,8 @@ expand_scenario_rows_to_crop_states = function(scenarios, all_data, cty, end_yea
   
   return(list(expanded = expanded, unmatched = unmatched))}
 
-build_scenario_crop_targets = function(scenarios, all_data, cty, end_year, start_year, crop_states) {
-  expanded_info = expand_scenario_rows_to_crop_states(scenarios = scenarios, all_data = all_data, cty = cty,
+build_scenario_crop_targets = function(scenarios, crop_data, cty, end_year, start_year, crop_states) {
+  expanded_info = expand_scenario_rows_to_crop_states(scenarios = scenarios, crop_data = crop_data, cty = cty,
                                                       end_year = end_year, start_year = start_year,
                                                       crop_states = crop_states)
   expanded = expanded_info$expanded
@@ -384,141 +399,273 @@ check_mapping_totals = function(raw_rows, expanded_rows) {
   if (abs(out$crop_total_diff) > 1e-4) warning("Mapped crop acres do not equal raw scenario crop acres.")
   return(out)}
 
-##-------load & clean all_data-------
-all_data = fread("all_data.csv")
-if ("V1" %in% names(all_data)) all_data[, V1 := NULL]
-setDT(all_data)
+# ---- load & clean crop data ----
 
-required_all_data_cols = c("parcel_id", "year", "county", "crop_class", "ACRES")
-check_required_cols(all_data, required_all_data_cols, "all_data")
+if (!file.exists(config[["crop_data_path"]])) {
+  stop("crop_year_states_cleaned.csv not found: ", config[["crop_data_path"]])
+}
 
-all_data[, `:=`(parcel_id = as.character(parcel_id),
-                year = as.integer(year), county = as.character(county),
-                crop_class = trimws(as.character(crop_class)), ACRES = as.numeric(ACRES))]
-all_data[, county_safe := safe_county_name(county)]
+crop_data = fread(config[["crop_data_path"]])
 
-##-------load & clean scenario sheet-------
-scenarios = as.data.table(read_excel("MAGiC scenarios_FINAL.xlsx", sheet = scenario_name))
-setnames(scenarios, names(scenarios), trimws(names(scenarios)))
+if ("V1" %in% names(crop_data)) {
+  crop_data[, V1 := NULL]
+}
 
-required_scenario_cols = c("Crop", "County", "Year", "Acres_Total",
-                           "Tilled acres", "Reduced till acres (CPS 345)", "No till acres (CPS 329)")
-check_required_cols(scenarios, required_scenario_cols, "scenario sheet")
+setDT(crop_data)
 
-scenarios[, `:=`(Crop = trimws(as.character(Crop)), County = trimws(as.character(County)),
-                 Year = as.integer(Year), Acres_Total = as.numeric(Acres_Total),
-                 `Tilled acres` = as.numeric(`Tilled acres`),
-                 `Reduced till acres (CPS 345)` = as.numeric(`Reduced till acres (CPS 345)`),
-                 `No till acres (CPS 329)` = as.numeric(`No till acres (CPS 329)`))]
+required_crop_data_cols = c("parcel_id", "year", "county", "state", "ACRES")
 
-scenarios[, county_safe := safe_county_name(County)]
+check_required_cols(crop_data, required_crop_data_cols, "crop_data")
 
-##-------run one county-------
-run_county = function(focus_county) {
-  focus_county_safe = safe_county_name(focus_county)
-  message("\n==============================")
-  message("Running county: ", focus_county_safe)
-  message("==============================")
+crop_data[, `:=`(
+  parcel_id = as.character(parcel_id), year = as.integer(year),
+  county = as.character(county), crop_class = trimws(as.character(state)), ACRES = as.numeric(ACRES)
+)]
+
+crop_data[
+  ,
+  county_safe := safe_county_name(county)
+]
+
+##-------load scenario CSV files-------
+## Scenario inputs are separate CSV files under config[["scenario_folder"]].
+scenario_folder = config[["scenario_folder"]]
+
+scenario_csv_files = c("BAU_Targets" = file.path(scenario_folder, "BAU_Targets.csv"),
+  "NBS_Targets" = file.path(scenario_folder, "NBS_Targets.csv"))
+
+load_scenario_sheet = function(scenario_name) {
+  if (!(scenario_name %in% names(scenario_csv_files))) {
+    stop("No CSV file defined for scenario_name: ", scenario_name,
+      "\nAvailable scenario names: ", paste(names(scenario_csv_files), collapse = ", "))
+  }
   
-  if (!(focus_county_safe %in% scenarios$county_safe)) stop("County not found in scenario sheet: ", focus_county_safe)
-  if (!(focus_county_safe %in% all_data$county_safe)) stop("County not found in all_data: ", focus_county_safe)
+  scenario_path = scenario_csv_files[[scenario_name]]
   
-  county_year_acres = all_data[county_safe == focus_county_safe,
-                               .(n_rows = .N, n_parcels = uniqueN(parcel_id),
-                                 total_acres = sum(ACRES, na.rm = TRUE)), by = year][order(year)]
-  print(county_year_acres)
+  if (!file.exists(scenario_path)) {
+    stop("Scenario CSV file not found: ", scenario_path)
+  }
   
-  county_scenario_rows = scenarios[county_safe == focus_county_safe & Year == end_year]
-  if (nrow(county_scenario_rows) == 0) stop("No scenario rows found for county/year: ", focus_county_safe, " / ", end_year)
+  scen = fread(scenario_path)
+  setDT(scen)
+  setnames(scen, names(scen), trimws(names(scen)))
   
-  raw_target_path = file.path(target_out_dir, paste0("raw_scenario_rows_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
+  required_scenario_cols = c("Crop", "County", "Year", "Acres_Total", "Tilled acres", 
+                             "Reduced till acres (CPS 345)", "No till acres (CPS 329)")
+  check_required_cols(scen, required_scenario_cols, paste0("scenario CSV: ", scenario_path))
+  
+  scen[, `:=`(
+    Crop = trimws(as.character(Crop)), County = trimws(as.character(County)),
+    Year = as.integer(Year), Acres_Total = as.numeric(Acres_Total),
+    `Tilled acres` = as.numeric(`Tilled acres`),
+    `Reduced till acres (CPS 345)` = as.numeric(`Reduced till acres (CPS 345)`),
+    `No till acres (CPS 329)` = as.numeric(`No till acres (CPS 329)`))]
+  
+  scen[, county_safe := safe_county_name(County)]
+  return(scen)}
+
+all_scenario_names = unique(c(matrix_target_scenario_name, scenario_names_for_tillage))
+scenarios_by_name = setNames(lapply(all_scenario_names, load_scenario_sheet), all_scenario_names)
+
+matrix_scenarios = scenarios_by_name[[matrix_target_scenario_name]]
+
+##-------write tillage targets for one county/scenario-------
+write_county_tillage_targets = function(focus_county_safe, scenario_name, scenarios_dt, crop_states, X0_crop) {
+  scenario_safe = safe_county_name(scenario_name)
+  tillage_out_dir = file.path(tillage_out_root, scenario_safe)
+  dir.create(tillage_out_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  county_scenario_rows = scenarios_dt[county_safe == focus_county_safe & Year == end_year]
+  if (nrow(county_scenario_rows) == 0) {
+    stop("No scenario rows found for county/year: ", focus_county_safe, " / ", scenario_name, " / ", end_year)
+  }
+  
+  raw_target_path = file.path(tillage_out_dir,
+    paste0("raw_scenario_rows_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv"))
+  
   fwrite(county_scenario_rows, raw_target_path)
   
-  crop_matrix_file = file.path("county_crop_matrices", paste0(focus_county_safe, "_crop_matrix.csv"))
-  if (!file.exists(crop_matrix_file)) stop("Crop matrix file not found: ", crop_matrix_file)
+  crop_target = build_scenario_crop_targets(
+    scenarios = scenarios_dt, crop_data = crop_data, cty = focus_county_safe,
+    end_year = end_year, start_year = start_year, crop_states = crop_states)
   
-  A_crop_orig = repair_transition_matrix(read_tmat(crop_matrix_file), paste0("crop matrix ", focus_county_safe))
-  crop_states = rownames(A_crop_orig)
-  
-  crop_target = build_scenario_crop_targets(scenarios = scenarios, all_data = all_data, cty = focus_county_safe,
-                                            end_year = end_year, start_year = start_year, crop_states = crop_states)
-  if (is.null(crop_target)) stop("No crop target vector could be built for county: ", focus_county_safe)
+  if (is.null(crop_target)) {
+    stop("No crop/tillage target vector could be built for county: ", focus_county_safe, " / ", scenario_name)
+  }
   
   crop_target_vec_raw = make_full_target_vec(crop_target$target_vec, crop_states)
-  X0_crop = build_x0_last_observed(all_data = all_data, county_name = focus_county_safe,
-                                   start_year = start_year, states = crop_states, state_col = "crop_class")
-  if (sum(X0_crop, na.rm = TRUE) <= 0) stop("X0 crop total is zero for county: ", focus_county_safe)
-  
-  crop_target_vec_opt = prep_target_for_opt(target_vec = crop_target_vec_raw, X0 = X0_crop,
-                                            scale_to_x0_total = scale_crop_targets_to_x0,
-                                            nominal_zero_acres = nominal_zero_acres)
+  crop_target_vec_opt = prep_target_for_opt(
+    target_vec = crop_target_vec_raw, X0 = X0_crop,
+    scale_to_x0_total = scale_crop_targets_to_x0, nominal_zero_acres = nominal_zero_acres)
   
   crop_targets_out = copy(crop_target$target_dt)
-  crop_targets_out[, `:=`(scenario_name = scenario_name, county_safe = focus_county_safe,
-                          start_year = start_year, end_year = end_year,
-                          target_state_col = "manual_scenario_crop_to_landiq_class_map",
-                          target_acres_used_for_opt = as.numeric(crop_target_vec_opt[crop_state]))]
+  crop_targets_out[, `:=`(
+    scenario_name = scenario_name, scenario_safe = scenario_safe, county_safe = focus_county_safe,
+    start_year = start_year, end_year = end_year,
+    target_state_col = "manual_scenario_crop_to_landiq_class_map",
+    target_acres_used_for_opt = as.numeric(crop_target_vec_opt[crop_state])
+  )]
   
-  crop_targets_path = file.path(target_out_dir, paste0("crop_targets_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
-  expanded_rows_path = file.path(target_out_dir, paste0("expanded_scenario_rows_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
+  crop_targets_path = file.path(tillage_out_dir,
+    paste0("crop_targets_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv"))
+  
+  expanded_rows_path = file.path(tillage_out_dir,
+    paste0("expanded_scenario_rows_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv"))
+  
   fwrite(crop_targets_out, crop_targets_path)
   fwrite(crop_target$expanded_rows, expanded_rows_path)
   
   crop_by_till_targets = make_crop_by_till_targets(crop_target$expanded_rows)
-  crop_by_till_targets_path = file.path(target_out_dir, paste0("crop_by_till_targets_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
+  
+  crop_by_till_targets_path = file.path(tillage_out_dir,
+    paste0("crop_by_till_targets_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv"))
+  
   fwrite(crop_by_till_targets, crop_by_till_targets_path)
   
-  crop_by_till_check = crop_by_till_targets[, .(till_target_total = sum(target_acres_raw, na.rm = TRUE)), by = crop_state]
-  crop_by_till_check = merge(crop_by_till_check, crop_targets_out[, .(crop_state, crop_target_total = target_acres_raw)],
-                             by = "crop_state", all = TRUE)
+  crop_by_till_check = crop_by_till_targets[, .(
+    till_target_total = sum(target_acres_raw, na.rm = TRUE)
+  ), by = crop_state]
+  
+  crop_by_till_check = merge(crop_by_till_check,
+    crop_targets_out[, .(crop_state, crop_target_total = target_acres_raw)],
+    by = "crop_state", all = TRUE)
+  
   crop_by_till_check[, diff := till_target_total - crop_target_total]
   
-  crop_by_till_check_path = file.path(target_out_dir, paste0("crop_by_till_check_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
+  crop_by_till_check_path = file.path(tillage_out_dir,
+    paste0("crop_by_till_check_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv"))
+  
   fwrite(crop_by_till_check, crop_by_till_check_path)
   
+  unmatched_path = NA_character_
   if (nrow(crop_target$unmatched) > 0) {
-    unmatched_path = file.path(target_out_dir, paste0("unmatched_scenario_crops_", focus_county_safe, "_", scenario_name, "_", end_year, ".csv"))
+    unmatched_path = file.path(tillage_out_dir,
+      paste0("unmatched_scenario_crops_", focus_county_safe, "_", scenario_safe, "_", end_year, ".csv")
+    )
+    
     fwrite(crop_target$unmatched, unmatched_path)
     warning("Wrote unmatched scenario crops to: ", unmatched_path)
   }
   
-  scenario_total = scenarios[county_safe == focus_county_safe & Year == end_year, sum(Acres_Total, na.rm = TRUE)]
-  acreage_basis_check = data.table(county_safe = focus_county_safe, start_year = start_year, end_year = end_year,
+  scenario_total = county_scenario_rows[, sum(Acres_Total, na.rm = TRUE)]
+  mapping_total_check = check_mapping_totals(raw_rows = county_scenario_rows, expanded_rows = crop_target$expanded_rows)
+  
+  split_weight_check = crop_target$expanded_rows[, .(
+    weight_sum = sum(split_weight, na.rm = TRUE)
+  ), by = scenario_row_id]
+  
+  bad_weights = split_weight_check[abs(weight_sum - 1) > 1e-6]
+  if (nrow(bad_weights) > 0) {
+    warning("Some scenario split weights do not sum to 1 for county: ", focus_county_safe, " / ", scenario_name)
+  }
+  
+  manifest = data.table(output_type = "tillage_targets", run_status = "success",
+    error_message = NA_character_, scenario_name = scenario_name, scenario_safe = scenario_safe,
+    focus_county_safe = focus_county_safe, start_year = start_year, end_year = end_year,
+    x0_total_acres = sum(X0_crop), scenario_target_acres = scenario_total, raw_scenario_rows_path = raw_target_path,
+    expanded_scenario_rows_path = expanded_rows_path, crop_targets_path = crop_targets_path,
+    crop_by_till_targets_path = crop_by_till_targets_path, crop_by_till_check_path = crop_by_till_check_path,
+    unmatched_scenario_crops_path = unmatched_path, crop_total_diff_after_mapping = mapping_total_check$crop_total_diff)
+  
+  manifest_path = file.path(tillage_out_dir,
+    paste0("tillage_manifest_", focus_county_safe, "_", scenario_safe, ".csv"))
+  
+  fwrite(manifest, manifest_path)
+  
+  return(manifest)
+}
+
+##-------run one county-------
+run_county = function(focus_county) {
+  focus_county_safe = safe_county_name(focus_county)
+  
+  message("Running county: ", focus_county_safe)
+  
+  if (!(focus_county_safe %in% matrix_scenarios$county_safe)) {
+    stop("County not found in matrix target scenario sheet: ", focus_county_safe)
+  }
+  
+  if (!(focus_county_safe %in% crop_data$county_safe)) {
+    stop("County not found in crop_data: ", focus_county_safe)
+  }
+  
+  county_year_acres = crop_data[county_safe == focus_county_safe, .(
+    n_rows = .N, n_parcels = uniqueN(parcel_id), total_acres = sum(ACRES, na.rm = TRUE)
+  ), by = year][order(year)]
+  
+  print(county_year_acres)
+  
+  crop_matrix_file = file.path(config[["crop_matrix_dir"]], paste0(focus_county_safe, "_crop_matrix.csv"))
+  if (!file.exists(crop_matrix_file)) stop("Crop matrix file not found: ", crop_matrix_file)
+  
+  A_crop_orig = repair_transition_matrix(read_tmat(crop_matrix_file), 
+                                         paste0("crop matrix ", focus_county_safe))
+  
+  crop_states = rownames(A_crop_orig)
+  
+  X0_crop = build_x0_last_observed(crop_data = crop_data, county_name = focus_county_safe,
+                                   start_year = start_year, states = crop_states, 
+                                   state_col = "crop_class")
+  
+  if (sum(X0_crop, na.rm = TRUE) <= 0) {stop("X0 crop total is zero for county: ", focus_county_safe)}
+  
+  #Build the crop-acre target once, using matrix_target_scenario_name.
+  crop_target = build_scenario_crop_targets(
+    scenarios = matrix_scenarios, crop_data = crop_data, cty = focus_county_safe,
+    end_year = end_year, start_year = start_year, crop_states = crop_states)
+  
+  if (is.null(crop_target)) {stop("No crop target vector could be built for county: ", focus_county_safe)}
+  
+  crop_target_vec_raw = make_full_target_vec(crop_target$target_vec, crop_states)
+  
+  crop_target_vec_opt = prep_target_for_opt(
+    target_vec = crop_target_vec_raw, X0 = X0_crop, 
+    scale_to_x0_total = scale_crop_targets_to_x0, nominal_zero_acres = nominal_zero_acres)
+  
+  scenario_total = matrix_scenarios[
+    county_safe == focus_county_safe & Year == end_year,
+    sum(Acres_Total, na.rm = TRUE)]
+  
+  acreage_basis_check = data.table(county_safe = focus_county_safe,
+                                   matrix_target_scenario_name = matrix_target_scenario_name,
+                                   start_year = start_year,end_year = end_year,
                                    x0_latest_observed_acres = sum(X0_crop),
                                    scenario_target_acres = scenario_total,
                                    scenario_minus_x0 = scenario_total - sum(X0_crop),
                                    scenario_divided_by_x0 = scenario_total / sum(X0_crop),
                                    target_acres_used_for_opt_total = sum(crop_target_vec_opt))
-  print(acreage_basis_check)
   
-  mapping_total_check = check_mapping_totals(raw_rows = county_scenario_rows, expanded_rows = crop_target$expanded_rows)
-  split_weight_check = crop_target$expanded_rows[, .(weight_sum = sum(split_weight, na.rm = TRUE)), by = scenario_row_id]
-  bad_weights = split_weight_check[abs(weight_sum - 1) > 1e-6]
-  if (nrow(bad_weights) > 0) warning("Some scenario split weights do not sum to 1 for county: ", focus_county_safe)
+  print(acreage_basis_check)
   
   orig_matrix_check = check_matrix(A_crop_orig, paste0("original crop matrix ", focus_county_safe))
   
   message("Starting optimizer for: ", focus_county_safe)
   opt_start_time = Sys.time()
   
-  opt_crop = optimize_county_matrix(cty = focus_county_safe, A_orig = A_crop_orig, X0 = X0_crop,
-                                    target_vec = crop_target_vec_opt, steps = steps,
-                                    lambda_target = lambda_target, target_vec_report = crop_target_vec_raw,
+  opt_crop = optimize_county_matrix(cty = focus_county_safe, A_orig = A_crop_orig,
+                                    X0 = X0_crop, target_vec = crop_target_vec_opt, steps = steps, 
+                                    lambda_target = lambda_target, target_vec_report = crop_target_vec_raw, 
                                     maxeval = maxeval_optimizer, maxtime = maxtime_optimizer)
   
   message("Finished optimizer for: ", focus_county_safe,
-          " in ", round(as.numeric(difftime(Sys.time(), opt_start_time, units = "mins")), 2), " minutes")
+          " in ", round(as.numeric(difftime(Sys.time(), opt_start_time, units = "mins")), 2),
+          " minutes")
   
-  crop_out_path = file.path(scenario_out_dir, paste0(focus_county_safe, "_crop_matrix_", scenario_name, ".csv"))
+  crop_out_path = file.path(matrix_out_dir, paste0(focus_county_safe, "_crop_matrix.csv"))
   write_tmat(opt_crop$A_final, crop_out_path)
   
   optimization_summary = opt_crop$summary
-  optimization_summary[, `:=`(scenario_name = scenario_name, matrix_type = "crop", focus_group = "crop_class",
-                              focus_county = focus_county, start_year = start_year, end_year = end_year,
-                              x0_rule = "latest_observed_crop_state_per_parcel_up_to_start_year",
-                              target_note = ifelse(scale_crop_targets_to_x0,
-                                                   "Crop targets scaled to X0 total for feasible row-stochastic optimization",
-                                                   "Raw crop targets used directly"))]
+  
+  optimization_summary[, `:=`(
+    matrix_target_scenario_name = matrix_target_scenario_name,
+    matrix_type = "crop", focus_group = "crop_class",
+    focus_county = focus_county, start_year = start_year,
+    end_year = end_year, x0_rule = "latest_observed_crop_state_per_parcel_up_to_start_year",
+    target_note = ifelse(scale_crop_targets_to_x0,
+      "Crop targets scaled to X0 total for feasible row-stochastic optimization",
+      "Raw crop targets used directly"
+    )
+  )]
   
   optimization_summary[, abs_error_opt := optimized_projected_acres - target_acres_used_for_opt]
   optimization_summary[, pct_error_opt := abs_error_opt / pmax(abs(target_acres_used_for_opt), 1)]
@@ -531,66 +678,86 @@ run_county = function(focus_county) {
   ), na.rm = TRUE)
   
   true_run_status = ifelse(opt_crop$res$status < 0,
-    "optimizer_failed", 
-    ifelse(total_opt_error_share > 0.05, "poor_fit", "success"))
+    "optimizer_failed", ifelse(total_opt_error_share > 0.05, "poor_fit", "success"))
   
-  summary_path = file.path(scenario_out_dir, paste0("optimization_summary_", focus_county_safe, "_", scenario_name, ".csv"))
-  fit_check_path = file.path(scenario_out_dir, paste0("optimization_fit_check_", focus_county_safe, "_", scenario_name, ".csv"))
+  summary_path = file.path(matrix_out_dir, paste0("optimization_summary_", focus_county_safe, ".csv"))
+  fit_check_path = file.path(matrix_out_dir, paste0("optimization_fit_check_", focus_county_safe, ".csv"))
+  
   fwrite(optimization_summary, summary_path)
   fwrite(optimization_summary, fit_check_path)
   
   opt_matrix_check = check_matrix(opt_crop$A_final, paste0("optimized crop matrix ", focus_county_safe))
   
-  manifest = data.table(run_status = true_run_status, error_message = ifelse(true_run_status == "success", NA_character_, opt_crop$res$message),
-                        scenario_name = scenario_name, focus_county = focus_county,
-                        focus_county_safe = focus_county_safe, start_year = start_year,
-                        end_year = end_year, steps = steps,
-                        x0_total_acres = sum(X0_crop), scenario_target_acres = scenario_total,
-                        target_acres_used_for_opt_total = sum(crop_target_vec_opt),
-                        raw_scenario_rows_path = raw_target_path,
-                        expanded_scenario_rows_path = expanded_rows_path,
-                        crop_targets_path = crop_targets_path,
-                        crop_by_till_targets_path = crop_by_till_targets_path,
-                        crop_by_till_check_path = crop_by_till_check_path,
-                        optimized_crop_matrix_path = crop_out_path,
-                        optimization_summary_path = summary_path,
-                        optimization_fit_check_path = fit_check_path,
-                        x0_rule = "latest_observed_crop_state_per_parcel_up_to_start_year",
-                        max_matrix_change = max(abs(opt_crop$A_final - A_crop_orig)),
-                        row_sum_error = max(abs(rowSums(opt_crop$A_final) - 1)),
-                        total_opt_error_share = total_opt_error_share)
+  matrix_manifest = data.table(
+    output_type = "optimized_crop_matrix",
+    run_status = true_run_status,
+    error_message = ifelse(true_run_status == "success", NA_character_, opt_crop$res$message),
+    matrix_target_scenario_name = matrix_target_scenario_name,
+    focus_county = focus_county,
+    focus_county_safe = focus_county_safe,
+    start_year = start_year, end_year = end_year, steps = steps,
+    x0_total_acres = sum(X0_crop),
+    scenario_target_acres = scenario_total,
+    target_acres_used_for_opt_total = sum(crop_target_vec_opt),
+    optimized_crop_matrix_path = crop_out_path,
+    optimization_summary_path = summary_path,
+    optimization_fit_check_path = fit_check_path,
+    x0_rule = "latest_observed_crop_state_per_parcel_up_to_start_year",
+    max_matrix_change = max(abs(opt_crop$A_final - A_crop_orig)),
+    row_sum_error = max(abs(rowSums(opt_crop$A_final) - 1)),
+    total_opt_error_share = total_opt_error_share
+  )
   
-  manifest_path = file.path(scenario_out_dir, paste0("run_manifest_", focus_county_safe, "_", scenario_name, ".csv"))
-  fwrite(manifest, manifest_path)
+  matrix_manifest_path = file.path(matrix_out_dir, paste0("run_manifest_", focus_county_safe, ".csv"))
+  fwrite(matrix_manifest, matrix_manifest_path)
+  
+  ## Now build BAU/NBS tillage targets, without re-optimizing the crop matrix.
+  tillage_manifests = rbindlist(lapply(scenario_names_for_tillage, function(scen_name) {
+    tryCatch(write_county_tillage_targets(focus_county_safe = focus_county_safe, scenario_name = scen_name,
+        scenarios_dt = scenarios_by_name[[scen_name]], crop_states = crop_states, X0_crop = X0_crop
+      ),
+      error = function(e) {
+        data.table(output_type = "tillage_targets",
+          run_status = "error", error_message = conditionMessage(e), scenario_name = scen_name,
+          scenario_safe = safe_county_name(scen_name), focus_county_safe = focus_county_safe,
+          start_year = start_year, end_year = end_year)
+      }
+    )
+  }), fill = TRUE)
+  
+  county_manifest = rbindlist(list(matrix_manifest, tillage_manifests), fill = TRUE)
+  
+  county_manifest_path = file.path(matrix_out_dir, paste0("combined_manifest_", focus_county_safe, ".csv"))
+  fwrite(county_manifest, county_manifest_path)
   
   message("Finished county: ", focus_county_safe)
-  return(manifest)}
+  return(county_manifest)
+}
 
 ##-----all county loop-----
 if (run_all_counties) {
-  counties_to_run = sort(intersect(unique(scenarios$county_safe), unique(all_data$county_safe)))
+  counties_in_all_tillage_sheets = Reduce(intersect,
+    lapply(scenarios_by_name[scenario_names_for_tillage], function(x) unique(x$county_safe)
+           ))
+  
+  counties_to_run = sort(intersect(unique(crop_data$county_safe),
+    intersect(unique(matrix_scenarios$county_safe), counties_in_all_tillage_sheets)))
+  
 } else {
   counties_to_run = safe_county_name(counties_manual)
 }
 
 all_manifests = rbindlist(lapply(counties_to_run, function(cty) {
-  tryCatch(
-    run_county(cty),
+  tryCatch(run_county(cty),
     error = function(e) {
       data.table(
-        run_status = "error",
-        error_message = conditionMessage(e),
-        scenario_name = scenario_name,
-        focus_county = cty,
-        focus_county_safe = safe_county_name(cty),
-        start_year = start_year,
-        end_year = end_year
-      )
+        output_type = "county_run", run_status = "error", error_message = conditionMessage(e),
+        focus_county = cty, focus_county_safe = safe_county_name(cty), start_year = start_year, end_year = end_year)
     }
   )
 }), fill = TRUE)
 
-all_manifest_path = file.path(scenario_out_dir, paste0("all_county_run_manifest_", scenario_name, ".csv"))
-
+all_manifest_path = file.path(matrix_out_dir, "all_county_run_manifest.csv")
 fwrite(all_manifests, all_manifest_path)
+
 print(all_manifests)
