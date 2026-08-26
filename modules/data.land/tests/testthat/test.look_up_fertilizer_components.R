@@ -2,16 +2,34 @@ test_that("N application rate from pre-defined fertilizer types works as expecte
   # Test for urea - check actual values from fertilizer_composition_data
   result <- look_up_fertilizer_components("urea", 100)
   expect_equal(result,
-              list(type = "urea", 
-                   NO3_N = 0, NH4_N = 46, 
-                   N_org = 0, C_org = 0)
+               list(type = "urea", 
+                    NO3_N = 0, NH4_N = 0, 
+                    N_org = 0, UREA_N = 46, C_org = 0)
   )
   # Test for anhydrous ammonia instead of ammonium nitrate for a clearer test
   result <- look_up_fertilizer_components("anhydrous_ammonia", 100)
   expect_equal(result,
                list(type = "anhydrous_ammonia",
                     NO3_N = 0, NH4_N = 82,
-                    N_org = 0, C_org = 0)
+                    N_org = 0, UREA_N = 0, C_org = 0)
+  )
+})
+
+test_that("UAN-32 splits N across NH4, NO3, and urea forms", {
+  result <- look_up_fertilizer_components("uan_32", 200)
+  expect_equal(result,
+               list(type = "uan_32",
+                    NO3_N = 16, NH4_N = 16,
+                    N_org = 0, UREA_N = 33, C_org = 0)
+  )
+})
+
+test_that("46_00_00 is correctly identified as urea-N", {
+  result <- look_up_fertilizer_components("46_00_00", 200)
+  expect_equal(result,
+               list(type = "46_00_00",
+                    NO3_N = 0, NH4_N = 0,
+                    N_org = 0, UREA_N = 92, C_org = 0)
   )
 })
 
@@ -26,6 +44,7 @@ test_that("N fertilizer calculation from NN-PP-KK format works as expected", {
       NO3_N = 90,
       NH4_N = 0,
       N_org = 0,
+      UREA_N = 0,
       C_org = 0
     )
   )
@@ -41,6 +60,7 @@ test_that("N fertilizer calculation from NN-PP-KK format works as expected", {
       NO3_N = 1,
       NH4_N = 0,
       N_org = 0,
+      UREA_N = 0,
       C_org = 0
     )
   )
@@ -57,6 +77,7 @@ test_that("Create fertilizer based on specified components", {
                     NO3_N = 0, 
                     NH4_N = 0, 
                     N_org = 20, 
+                    UREA_N = 0,
                     C_org = 80)
   )
 })
@@ -66,7 +87,7 @@ test_that("Look up dairy fresh manure from database", {
   expect_equal(result,
                list(type = "dairy_fr",
                     NO3_N = 0, NH4_N = 7,
-                    N_org = 31, C_org = 391)
+                    N_org = 31, UREA_N = 0, C_org = 391)
   )
 })
 
