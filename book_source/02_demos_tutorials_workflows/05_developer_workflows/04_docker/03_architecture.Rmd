@@ -240,7 +240,7 @@ yaml::write_yaml(dc_yaml$services["pecan"], stdout())
 
 Its Dockerfile ships with the PEcAn source code, in [`docker/web/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/web/Dockerfile).
 
-In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the web interface (i.e. PHP, HTML, and JavaScript code located in the PEcAn `web` directory).
+In terms of [actively developing PEcAn using Docker](#docker-local-devel), this is the service to modify when making changes to the web interface (i.e. PHP, HTML, and JavaScript code located in the PEcAn `web` directory).
 
 ### `executor` {#pecan-dc-executor}
 
@@ -257,7 +257,7 @@ Its Dockerfile ships with the PEcAn source code, in [`docker/executor/Dockerfile
 Its image is built on top of the `pecan/base` image ([`docker/base/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/base/Dockerfile)), which contains the actual PEcAn source.
 To facilitate caching, the `pecan/base` image is itself built on top of the `pecan/depends` image ([`docker/depends/Dockerfile`](https://github.com/PecanProject/pecan/blob/develop/docker/depends/Dockerfile)), a large image that contains an R installation and PEcAn's many system and R package dependencies (which usually take ~30 minutes or longer to install from scratch).
 
-In terms of [actively developing PEcAn using Docker](#pecan-docker-develop), this is the service to modify when making changes to the PEcAn R source code.
+In terms of [actively developing PEcAn using Docker](#docker-local-devel), this is the service to modify when making changes to the PEcAn R source code.
 Note that, unlike changes to the `web` image's PHP code, changes to the R source code do not immediately propagate to the PEcAn container; instead, you have to re-compile the code by running `make` inside the container.
 
 ### `monitor` {#pecan-dc-monitor}
