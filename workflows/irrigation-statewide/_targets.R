@@ -19,7 +19,7 @@ config_base <- config::get(
 )
 config_paths <- config::get(
   file = file.path(root_dir, "config_paths.yml"),
-  config = Sys.getenv("IRRIGATION_PATHS_CONFIG", "default")
+  config = "default"
 )
 config <- config::merge(config_base, config_paths)
 
