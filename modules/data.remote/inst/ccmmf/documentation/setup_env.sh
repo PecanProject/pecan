@@ -83,11 +83,21 @@ export COUNTY_TRANSITION_MATRICES_DIR="${COUNTY_TRANSITION_MATRICES_DIR:-$LANDIQ
 # Scheduler-agnostic submit (sbatch, qsub, or local). See documentation/submit_job.sh
 export CCMMF_SUBMIT="${CCMMF_SUBMIT:-$CCMMF_CODE/documentation/submit_job.sh}"
 
-export CHIRPS_PRECIP_PATH="${CHIRPS_PRECIP_PATH:-$PRODUCTS_INVENTORY/irrigation/chirps-extracted}"
-export CIMIS_ETREF_PATH="${CIMIS_ETREF_PATH:-$PRODUCTS_INVENTORY/irrigation/cimis-extracted}"
+# Fert / NCC statewide builders (workflows/*-statewide/config.yml) read these
+# CCMMF_* names. Point them at Session 1-2 inventory products by default.
+export CCMMF_CROPS_PATH="${CCMMF_CROPS_PATH:-$LANDIQ_GAPFILLED/crops_all_years.parq}"
+export CCMMF_PHEN_DIR="${CCMMF_PHEN_DIR:-$MATCHED_DIR/gapfill_dates}"
+export CCMMF_PHEN_GLOB="${CCMMF_PHEN_GLOB:-assigned_year=*_gapfilled.parquet}"
+export CCMMF_PFT_LOOKUP="${CCMMF_PFT_LOOKUP:-$LANDIQ_CROPCODE_CSV}"
+export CCMMF_FERT_OUT="${CCMMF_FERT_OUT:-$PRODUCTS_INVENTORY/fertilization/n_fert}"
+export CCMMF_NCC_OUT="${CCMMF_NCC_OUT:-$PRODUCTS_INVENTORY/fertilization/ncc}"
+export CCMMF_EVENT_YEARS="${CCMMF_EVENT_YEARS:-$PRIOR_YEAR,$TARGET_YEAR}"
+
 export CHIRPS_PREPROCESS_DIR="${CHIRPS_PREPROCESS_DIR:-_results_chirps}"
 export CIMIS_PREPROCESS_DIR="${CIMIS_PREPROCESS_DIR:-_results_v2}"
 export SSURGO_PREPROCESS_DIR="${SSURGO_PREPROCESS_DIR:-_results}"
+export CHIRPS_PRECIP_PATH="$IRRIG_PREPROCESS/$CHIRPS_PREPROCESS_DIR"
+export CIMIS_ETREF_PATH="$IRRIG_PREPROCESS/$CIMIS_PREPROCESS_DIR/cimis-extracted"
 
 cat > "$(dirname "$IRRIG_PREPROCESS")/config_paths.yml" <<EOF
 default:
@@ -105,7 +115,7 @@ default:
   ssurgo_weights_path: "$SSURGO_DIR/ssurgo-weights.parquet"
   event_output_dir: "$EVENT_OUTPUT_DIR"
   crops_path: "$LANDIQ_GAPFILLED/crops_all_years.parq"
-  mslsp_path: "$MATCHED_DIR"
+  mslsp_path: "$MATCHED_DIR/gapfill_dates"
 EOF
 
 echo "[setup_env] BASE=$CCMMF_BASE ROOT=$CCMMF_ROOT CODE=$CCMMF_CODE YEARS=$PRIOR_YEAR/$TARGET_YEAR"
@@ -113,3 +123,4 @@ echo "[setup_env] LANDIQ_GAPFILLED=$LANDIQ_GAPFILLED"
 echo "[setup_env] HLS_ROOT=$HLS_ROOT HLS_PARCEL_TILES_DIR=$HLS_PARCEL_TILES_DIR"
 echo "[setup_env] PRODUCTS_INVENTORY=$PRODUCTS_INVENTORY MATCHED_DIR=$MATCHED_DIR"
 echo "[setup_env] EVENT_OUTPUT_DIR=$EVENT_OUTPUT_DIR"
+echo "[setup_env] FERT_OUT=$CCMMF_FERT_OUT NCC_OUT=$CCMMF_NCC_OUT EVENT_YEARS=$CCMMF_EVENT_YEARS"

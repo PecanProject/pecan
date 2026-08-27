@@ -107,6 +107,7 @@ git -C "$CCMMF_BASE/src/cadwr-landuse" pull origin main
 # export PRIOR_YEAR=2023 TARGET_YEAR=2024
 
 source "$CCMMF_BASE/src/pecan/modules/data.remote/inst/ccmmf/documentation/setup_env.sh"
+# Also writes workflows/irrigation-statewide/config_paths.yml (irrigation preprocess + tar_make).
 ```
 
 Heavy steps (Earthdata download, MSLSP, NDTI extract) belong on a compute node. Product scripts have no scheduler headers. Submit with `$CCMMF_SUBMIT` (set by `setup_env.sh`): Slurm (`sbatch`) if present, else Grid Engine (`qsub` when `$SGE_ROOT` is set).
