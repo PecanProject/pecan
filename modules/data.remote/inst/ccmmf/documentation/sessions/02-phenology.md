@@ -217,7 +217,7 @@ Match keeps observed MSLSP dates. Rows that have a LandIQ CLASS but no satellite
 
 You do not need to re-run the estimation. It is already trained statewide on 2018-2023 and lives in the clone at `$CCMMF_CODE/phenology/gapfill/outputs`. To re-estimate: [phenology/README.md](../../phenology/README.md).
 
-This walk only runs apply on the demo-tile from Sec. 2.4. Keep `MATCHED_DIR` set through Session 3 irrigation (Sec. 3.8 `tar_make` reads `$MATCHED_DIR/gapfill_dates` via `config_paths.yml`).
+This walk only runs apply on the demo-tile from Sec. 2.4. Keep `MATCHED_DIR` set through 2.10 (planting/harvest tables and phenology events read it).
 
 ```bash
 export MATCHED_DIR=$PRODUCTS_INVENTORY/phenology/matched_landiq_mslsp_v4.1.2/tile=$DEMO_TILE
