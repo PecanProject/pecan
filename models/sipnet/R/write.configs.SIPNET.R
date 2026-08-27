@@ -150,7 +150,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   config.text <- update_flag_lines(config.text, user_flags)
 
-  writeLines(config.text, con = file.path(rundir, run.id, "sipnet.in"))
+  writeLines(config.text, con = file.path(rundir, "sipnet.in"))
   
   ### WRITE *.clim
   template.clim <- settings$run$inputs$met$path  ## read from settings
@@ -253,8 +253,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
-  writeLines(jobsh, con = file.path(rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(rundir, run.id, "job.sh"))
+  writeLines(jobsh, con = file.path(rundir, "job.sh"))
+  Sys.chmod(file.path(rundir, "job.sh"))
   
 
   ### Copy event file
@@ -270,7 +270,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   ### WRITE *.param-spatial
   if (caps$has_param_spatial) {
     template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
-    file.copy(template.paramSpatial, file.path(rundir, run.id, "sipnet.param-spatial"))
+    file.copy(template.paramSpatial, file.path(rundir, "sipnet.param-spatial"))
   }
   
   ### WRITE *.param
@@ -1030,12 +1030,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
   }
-  if (file.exists(file.path(rundir, run.id, "sipnet.param"))) {
+  if (file.exists(file.path(rundir, "sipnet.param"))) {
     file.rename(
-      file.path(rundir, run.id, "sipnet.param"),
+      file.path(rundir, "sipnet.param"),
       file.path(
         rundir,
-        run.id,
         paste0("sipnet_", lubridate::year(settings$run$start.date), "_", lubridate::year(settings$run$end.date), ".param")
       )
     )
@@ -1044,7 +1043,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
   utils::write.table(
     param,
-    file.path(rundir, run.id, "sipnet.param"),
+    file.path(rundir, "sipnet.param"),
     row.names = FALSE,
     col.names = FALSE,
     quote = FALSE
