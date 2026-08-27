@@ -7,7 +7,7 @@ default:
   # knowing the typical material mix. 0 makes it all nitrate.
   nh4_fraction: 1
   seed: 42
-  years: !expr as.integer(strsplit(Sys.getenv("CCMMF_EVENT_YEARS", paste(Sys.getenv("PRIOR_YEAR", "2023"), Sys.getenv("TARGET_YEAR", "2024"), sep = ",")), ",", fixed = TRUE)[[1]])
+  years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
   # crops is the gap-filled LandIQ table (v4.1.2), the same inventory the
   # phenology match is built against. v4.1 is the ungapfilled table and covers
   # parcels the match does not.
