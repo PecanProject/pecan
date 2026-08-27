@@ -121,6 +121,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     has_microbeInit = rev_str == "v1"
   )
 
+
+  # find out where to write run/ouput
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
+  }
+
+
   ### WRITE sipnet.in
   template.in <- system.file(
     paste0("sipnet.in_", rev_str),
@@ -140,7 +150,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   config.text <- update_flag_lines(config.text, user_flags)
 
-  writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
+  writeLines(config.text, con = file.path(rundir, run.id, "sipnet.in"))
   
   ### WRITE *.clim
   template.clim <- settings$run$inputs$met$path  ## read from settings
@@ -151,14 +161,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
-
-  # find out where to write run/ouput
-  rundir <- file.path(settings$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$host$outdir, as.character(run.id))
-  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
-    rundir <- file.path(settings$rundir, as.character(run.id))
-    outdir <- file.path(settings$modeloutdir, as.character(run.id))
-  }
 
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
@@ -251,8 +253,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
   
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  writeLines(jobsh, con = file.path(rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(rundir, run.id, "job.sh"))
   
 
   ### Copy event file
@@ -268,7 +270,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   ### WRITE *.param-spatial
   if (caps$has_param_spatial) {
     template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
-    file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
+    file.copy(template.paramSpatial, file.path(rundir, run.id, "sipnet.param-spatial"))
   }
   
   ### WRITE *.param
@@ -1028,11 +1030,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
   }
-  if (file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) {
+  if (file.exists(file.path(rundir, run.id, "sipnet.param"))) {
     file.rename(
-      file.path(settings$rundir, run.id, "sipnet.param"),
+      file.path(rundir, run.id, "sipnet.param"),
       file.path(
-        settings$rundir,
+        rundir,
         run.id,
         paste0("sipnet_", lubridate::year(settings$run$start.date), "_", lubridate::year(settings$run$end.date), ".param")
       )
@@ -1042,7 +1044,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
   utils::write.table(
     param,
-    file.path(settings$rundir, run.id, "sipnet.param"),
+    file.path(rundir, run.id, "sipnet.param"),
     row.names = FALSE,
     col.names = FALSE,
     quote = FALSE
