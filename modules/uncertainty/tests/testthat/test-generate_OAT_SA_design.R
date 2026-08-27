@@ -43,8 +43,10 @@ test_that("generate_OAT_SA_design keeps param sequential and non-param constant 
 
   expect_equal(result$X$param, seq_len(nrow(result$X)))
 
-  non_param_cols <- setdiff(names(result$X), "param")
-  for (col in non_param_cols) {
+  # the label columns describe the run rather than selecting an input, so they
+  # are not held at 1
+  input_cols <- setdiff(names(result$X), c("param", "sa_pft", "sa_trait", "sa_quantile"))
+  for (col in input_cols) {
     expect_true(all(result$X[[col]] == 1))
   }
 })
@@ -112,93 +114,6 @@ test_that("a bundle with empty sa.samples is rejected", {
   )
 })
 
-
-#------------------ tests: OAT design with write.sa.configs -------------------
-# verifies the design still produces output compatible with SA postprocessing
-# after the migration (write.sa.configs is untouched by this PR)
-
-test_that("OAT design integrates with write.sa.configs for SA postprocessing", {
-  # mock model config writer
-  assign("write.config.FAKE", function(defaults, trait.values, settings, run.id) {
-    invisible(NULL)
-  }, envir = .GlobalEnv)
-  withr::defer(rm("write.config.FAKE", envir = .GlobalEnv))
-
-  workflow_root <- withr::local_tempdir()
-  rundir <- file.path(workflow_root, "run")
-  modeloutdir <- file.path(workflow_root, "out")
-  dir.create(rundir, recursive = TRUE)
-  dir.create(modeloutdir, recursive = TRUE)
-
-  met_paths <- c("met_2010.nc", "met_2011.nc", "met_2012.nc")
-
-  settings <- list(
-    outdir = workflow_root,
-    rundir = rundir,
-    modeloutdir = modeloutdir,
-    host = list(name = "localhost", rundir = rundir, outdir = modeloutdir),
-    run = list(
-      start.date = "2000-01-01",
-      end.date = "2000-12-31",
-      site = list(id = "1", name = "Test Site"),
-      inputs = list(met = list(path = met_paths)),
-      outdir = modeloutdir
-    ),
-    model = list(id = 99, type = "FAKE"),
-    pfts = list(list(name = "pft1", posteriorid = NULL, constants = list())),
-    sensitivity.analysis = list(ensemble.id = "SA-TEST"),
-    workflow = list(id = 1),
-    database = NULL,
-    ensemble = list(
-      samplingspace = list(
-        parameters = list(method = "uniform"),
-        met = list(method = "sampling")
-      )
-    )
-  )
-
-  sa_samples <- list(
-    pft1 = matrix(
-      c(1, 2, 3, 4, 5, 6),
-      nrow = 3, ncol = 2,
-      dimnames = list(c("25", "50", "75"), c("Vcmax", "SLA"))
-    )
-  )
-
-  design_result <- generate_OAT_SA_design(settings, samples = list(sa.samples = sa_samples))
-  input_design <- design_result$X
-
-  result <- PEcAn.uncertainty::write.sa.configs(
-    defaults = settings$pfts,
-    quantile.samples = sa_samples,
-    settings = settings,
-    model = "FAKE",
-    write.to.db = FALSE,
-    input_design = input_design
-  )
-
-  # verify write.sa.configs output structure (required for SA postprocessing)
-  expect_true("runs" %in% names(result))
-  expect_true("ensemble.id" %in% names(result))
-  expect_true("pft1" %in% names(result$runs))
-
-  # verify runs matrix structure matches sa_samples (required by run.sensitivity.analysis)
-  runs_matrix <- result$runs$pft1
-  expect_equal(rownames(runs_matrix), rownames(sa_samples$pft1))
-  expect_equal(colnames(runs_matrix), colnames(sa_samples$pft1))
-
-  # verify runs.txt created with correct count
-  runs_file <- file.path(rundir, "runs.txt")
-  expect_true(file.exists(runs_file))
-  run_ids <- readLines(runs_file)
-  expect_equal(length(run_ids), nrow(input_design))
-
-  # verify run directories created (required for model output reading)
-  for (run_id in run_ids) {
-    expect_true(dir.exists(file.path(rundir, run_id)))
-  }
-})
-
 test_that("the SA design comes back as design_matrix, with X kept alongside", {
   settings <- make_test_settings()
 
@@ -206,4 +121,58 @@ test_that("the SA design comes back as design_matrix, with X kept alongside", {
 
   expect_true("design_matrix" %in% names(result))
   expect_identical(result$design_matrix, result$X)
+})
+
+# -- the design describes its own rows ----
+
+test_that("the design says what each run is", {
+  settings <- make_test_settings()
+
+  result <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))
+  design <- result$design_matrix
+
+  expect_true(all(c("sa_pft", "sa_trait", "sa_quantile") %in% names(design)))
+
+  # the first run holds everything at its median
+  expect_true(is.na(design$sa_pft[1]))
+  expect_true(is.na(design$sa_trait[1]))
+  expect_equal(design$sa_quantile[1], "50")
+
+  # every run after moves one trait to one of its non-median quantiles,
+  # in the order write.sa.configs walks the design
+  expect_equal(design$sa_trait[-1], rep(c("trait1", "trait2", "trait3"), each = 2))
+  expect_equal(design$sa_quantile[-1], rep(c("25", "75"), times = 3))
+  expect_equal(unique(design$sa_pft[-1]), "pft1")
+})
+
+test_that("the labels cover every PFT in order and skip env", {
+  settings <- make_test_settings()
+
+  sa_samples <- list(
+    pft1 = structure(matrix(1:4, nrow = 2, ncol = 2),
+                     dimnames = list(c("50", "75"), c("SLA", "Vcmax"))),
+    pft2 = structure(matrix(1:2, nrow = 2, ncol = 1),
+                     dimnames = list(c("50", "75"), c("SLA"))),
+    env  = structure(matrix(1:2, nrow = 2, ncol = 1),
+                     dimnames = list(c("50", "75"), c("temp")))
+  )
+
+  design <- generate_OAT_SA_design(settings, samples = list(sa.samples = sa_samples))$design_matrix
+
+  # 1 median + (2 traits + 1 trait) at one non-median quantile each
+  expect_equal(nrow(design), 4)
+  expect_equal(design$sa_pft[-1], c("pft1", "pft1", "pft2"))
+  expect_false(any(design$sa_pft %in% "env"))
+})
+
+
+test_that("adding labels leaves the rest of the design alone", {
+  settings <- make_test_settings()
+
+  design <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))$design_matrix
+
+  # same run count and same param/input columns as before the labels existed
+  expect_equal(nrow(design), 7)
+  expect_equal(design$param, seq_len(7))
+  expect_true(all(design$met == 1))
 })

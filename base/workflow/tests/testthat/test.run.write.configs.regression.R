@@ -23,6 +23,7 @@ make_rwc_settings <- function(outdir,
     rundir   = outdir,
     database = NULL,
     host     = list(name = "localhost"),
+    run      = list(site = list(id = "772")),
     model    = list(type = "FAKE"),
     pfts     = list(list(name = "temperate.deciduous", posteriorid = NULL))
   )
@@ -180,8 +181,15 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
                 function(...) list(
                   runs        = c("r1", "r2", "r3"),
                   ensemble.id = "ENS9",
-                  manifest    = data.frame(run_id = c("r1", "r2", "r3"),
-                                           stringsAsFactors = FALSE)
+                  manifest    = data.frame(
+                    run_id   = c("r1", "r2", "r3"),
+                    site_id  = "772",
+                    pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
+                    trait    = c("NA", "Vcmax", "Vcmax"),
+                    quantile = c("50", "2.5", "97.5"),
+                    type     = "Sensitivity",
+                    stringsAsFactors = FALSE
+                  )
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::ensemble.filename",
                 function(...) ens_file)
@@ -217,17 +225,31 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
   )
   write_samples_file(tmp, trait.samples, sa.samples = sa.samples)
 
-  input_design <- data.frame(param = c(1, 2, 3))
+  # the design now says what each run is, which is what the parameter sets and
+  # the run names get built from
+  input_design <- data.frame(
+    param       = c(1, 2, 3),
+    sa_pft      = c(NA, "temperate.deciduous", "temperate.deciduous"),
+    sa_trait    = c(NA, "Vcmax", "Vcmax"),
+    sa_quantile = c("50", "2.5", "97.5"),
+    stringsAsFactors = FALSE
+  )
   sa_file <- file.path(tmp, "sensitivity.samples.SA7.Rdata")
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg",
                 function(...) invisible(NULL))
-  mockery::stub(run_write_configs, "PEcAn.uncertainty::write.sa.configs",
+  mockery::stub(run_write_configs, "PEcAn.uncertainty::write.ensemble.configs",
                 function(...) list(
-                  runs        = list(temperate.deciduous = matrix(c("r1", "r2", "r3"), nrow = 3)),
+                  runs        = data.frame(id = c("r1", "r2", "r3"),
+                                           stringsAsFactors = FALSE),
                   ensemble.id = "SA7",
                   manifest    = data.frame(run_id = c("r1", "r2", "r3"),
+                                           site_id = "772",
+                                           pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
+                                           trait = c("NA", "Vcmax", "Vcmax"),
+                                           quantile = c("50", "2.5", "97.5"),
+                                           type = "Sensitivity",
                                            stringsAsFactors = FALSE)
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::sensitivity.filename",
@@ -247,4 +269,10 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
   expect_identical(e$sa.samples, sa.samples)
   expect_equal(e$pft.names, "temperate.deciduous")
   expect_equal(e$trait.names, list(temperate.deciduous = "Vcmax"))
+
+  # sa.run.ids is built from the design now rather than produced by the writer,
+  # but it still indexes runs by quantile and trait
+  expect_equal(e$sa.run.ids$temperate.deciduous["50", "Vcmax"], "r1")
+  expect_equal(e$sa.run.ids$temperate.deciduous["2.5", "Vcmax"], "r2")
+  expect_equal(e$sa.run.ids$temperate.deciduous["97.5", "Vcmax"], "r3")
 })
