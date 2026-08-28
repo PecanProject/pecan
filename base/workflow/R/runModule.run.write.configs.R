@@ -54,7 +54,11 @@ runModule.run.write.configs <- function(settings,
                                   input_design = designs))
 
   } else if (PEcAn.settings::is.Settings(settings)) {
-    if (is.null(settings$ensemble$samplingspace$parameters$method)) {
+    # only default the sampling method for a run that actually has an ensemble,
+    # so an SA-only settings object does not gain an empty ensemble here and
+    # send the analysis steps looking for ensemble runs
+    if ("ensemble" %in% names(settings) &&
+        is.null(settings$ensemble$samplingspace$parameters$method)) {
       settings$ensemble$samplingspace$parameters$method <- "uniform"
     }
 
@@ -162,9 +166,11 @@ runModule.run.write.configs <- function(settings,
 #'         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
 #'         MultiSettings parent), return as-is.
 #'   \item If \code{input_design} is the \code{list(design_matrix, samples)}
-#'         from \code{generate_joint_ensemble_design()}, use the design matrix
-#'         as the ensemble design and \code{samples} as the bundle (no
-#'         resampling). \code{X} is accepted as the older name for it.
+#'         returned by a design generator, use that design and \code{samples}
+#'         as the bundle (no resampling). \code{X} is accepted as the older
+#'         name for the design. A design carrying \code{sa_pft},
+#'         \code{sa_trait} and \code{sa_quantile} describes sensitivity
+#'         analysis runs; anything else is an ensemble design.
 #'   \item If \code{input_design} is a bare data.frame (a design without its
 #'         samples), raise an error: the design's \code{param} indices only match
 #'         the samples they were drawn with.
@@ -204,7 +210,14 @@ runModule.run.write.configs <- function(settings,
     }
 
     if (!is.null(supplied_design) && !is.null(input_design$samples)) {
-      designs$ensemble <- supplied_design
+      # The design says what it is. One that carries sensitivity analysis
+      # labels describes SA runs; anything else is an ensemble. Nothing here
+      # reads the settings to work that out.
+      if (all(c("sa_pft", "sa_trait", "sa_quantile") %in% names(supplied_design))) {
+        designs$sensitivity <- supplied_design
+      } else {
+        designs$ensemble <- supplied_design
+      }
       supplied_samples <- input_design$samples
     } else if (is.data.frame(input_design)) {
       PEcAn.logger::logger.severe(
@@ -271,6 +284,12 @@ runModule.run.write.configs <- function(settings,
       "removed. Pass input_design explicitly as the list(design_matrix,",
       "samples) returned by generate_joint_ensemble_design(); this will",
       "become required."
+    )
+  }
+  if (is.null(designs$sensitivity) && need_sa) {
+    PEcAn.logger::logger.warn(
+      "Generating the sensitivity analysis design internally is deprecated and",
+      "will be removed. Pass it as input_design, from generate_OAT_SA_design()."
     )
   }
 

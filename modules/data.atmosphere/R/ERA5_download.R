@@ -9,6 +9,12 @@
 #' To get a Copernicus CDS API key, register at \url{https://cds.climate.copernicus.eu/profile}.
 #' You must provide both \code{user} (UID) and \code{key} parameters from your CDS profile.
 #'
+#' Credentials are stored by \code{ecmwfr::wf_set_key}, which uses the \code{keyring} package.
+#' On a headless machine (cluster node, server, container) there is no OS keyring available and
+#' the default backend will prompt for a keyring password. To avoid this, set
+#' \code{Sys.setenv(R_KEYRING_BACKEND = "env")} before calling this function, which keeps the
+#' key in an environment variable for the session instead.
+#'
 #' You can check the "CC-BY" license under the \href{https://cds.climate.copernicus.eu/profile?tab=licences}{'licences' tab of your profile page}.
 #' @param outfolder Character. Directory where downloaded NetCDF files will be saved.
 #' @param start_date character: the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)

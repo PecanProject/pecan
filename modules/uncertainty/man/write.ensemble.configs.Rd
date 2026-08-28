@@ -14,7 +14,9 @@ write.ensemble.configs(
   clean = FALSE,
   write.to.db = TRUE,
   restart = NULL,
-  rename = FALSE
+  rename = FALSE,
+  run_descriptions = NULL,
+  ensemble.id = NULL
 )
 }
 \arguments{
@@ -44,6 +46,15 @@ new.state (initial condition), ensemble.id (ensemble id), start.time and stop.ti
 See Details.}
 
 \item{rename}{Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.}
+
+\item{run_descriptions}{optional data.frame, one row per design row, with
+\code{id}, \code{paramlist} and the \code{pft_name}, \code{trait},
+\code{quantile} and \code{type} the run manifest carries. Lets a caller that
+already knows what each run is describe them, instead of these being
+generated as ensemble members.}
+
+\item{ensemble.id}{optional id for this set of runs, used instead of the one
+in \code{settings$ensemble$id}.}
 }
 \value{
 list, containing
