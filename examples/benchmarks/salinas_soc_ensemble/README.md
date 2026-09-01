@@ -5,9 +5,18 @@ This example demonstrates how to evaluate the Salinas Organic Cropping Systems (
 ## Files
 
 - **`ensemble_output.csv`**: Model ensemble predictions in standard EFI long format (67,200 rows: 50 members $\times$ 8 management systems $\times$ 84 monthly timesteps from 2005 to 2011 for `TotSoilCarb` and `AGB`). This is an external/generated data file produced by `extract_salinas_ensemble_output.R` (or retrieved from CCMMF data repositories) and is not tracked in git to keep the repository lightweight.
-- **`observations_soc.csv`**: Observational SOC stock data aggregated per system from the Salinas block-level observations (0–30 cm depth integral). Converted to $\text{kg C m}^{-2}$ with mean, standard deviation, and standard error across replicate blocks.
+- **`observations_soc.csv`**: Observational SOC stock data aggregated per system from the Salinas block-level observations (0–30 cm depth integral). Converted to $\text{kg C m}^{-2}$ with mean, standard deviation, and standard error across replicate blocks. Source dataset: `white_salinas_2020` (White et al., 2020).
 - **`run_benchmarks.R`**: Benchmark execution script that ingests model ensemble output, aligns temporal resolutions, computes statistical metrics, and renders a Quarto HTML scorecard report.
 - **`extract_salinas_ensemble_output.R`**: Utility script used to extract model ensemble outputs from PEcAn model outputs into the standardized EFI long format.
+
+---
+
+## Data Source & Citation
+
+The observational Soil Organic Carbon (SOC) data in `observations_soc.csv` (`dataset_id: white_salinas_2020`) is derived from the USDA-ARS Salinas Organic Cropping Systems (SOCS) long-term trial in Salinas, California.
+
+**Primary Citation:**
+> White, K. E., Brennan, E. B., Cavigelli, M. A., & Smith, R. F. (2020). Winter cover crops increase readily decomposable soil carbon, but compost drives total soil carbon during eight years of intensive, organic vegetable production in California. *PLoS ONE*, 15(2), e0228141. [https://doi.org/10.1371/journal.pone.0228141](https://doi.org/10.1371/journal.pone.0228141)
 
 ---
 
