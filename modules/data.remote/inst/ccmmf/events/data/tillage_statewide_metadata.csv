@@ -1,0 +1,5 @@
+column_number,column_name,contents,notes
+1,event_type,always tillage,SIPNET event type
+2,site_id,parcel_id,PEcAn site key
+3,date,tillage date,NDTI minimum (min_date); OGMn_date if min_date missing
+4,tillage_eff_0to1,tillage effectiveness 0 to 1,PEcAn.data.land::ndti_to_sipnet_tillage on fractional NDTI drop

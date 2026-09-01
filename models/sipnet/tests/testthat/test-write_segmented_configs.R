@@ -98,3 +98,102 @@ test_that("write_segmented_configs", {
   expect_match(jobsh, "bash .*segment_002/run/1/job.sh", all = FALSE)
   expect_match(jobsh, "bash .*segment_003/run/1/job.sh", all = FALSE)
 })
+
+test_that("segment_dataframe returns empty when run start is after all crop cycles", {
+  pth <- withr::local_tempdir()
+  crp_chg_path <- file.path(pth, "cycles-a.csv")
+  c("date,crop_code", "2025-01-02,D12", "2025-01-05,G6") |>
+    writeLines(crp_chg_path)
+
+  run_settings <- PEcAn.settings::as.Settings(list(
+    run = list(
+      site = list(id = "a", site.pft = list(veg = "pft1")),
+      inputs = list(crop_changes = list(path = crp_chg_path)),
+      start.date = "2025-01-10",
+      end.date = "2025-01-20"
+    )
+  ))
+
+  result <- PEcAn.SIPNET:::segment_dataframe(run_settings)
+
+  expect_equal(nrow(result), 0)
+  expect_named(
+    result, 
+    c("start_date", "crop_code", "end_date")
+  )
+})
+
+test_that("write_segment_configs returns unaltered job.sh when no segments remain", {
+  pth <- withr::local_tempdir()
+
+  event_lines <- "2025 1 irrig 0 1"
+  event_src_path <- file.path(pth, "events-a.in")
+  met_path <- file.path(pth, "a.clim")
+  crp_chg_path <- file.path(pth, "cycles-a.csv")
+  run_path <- file.path(pth, "run", "ENS-00001-a")
+  dir.create(run_path, recursive = TRUE)
+
+  event_lines |>
+    writeLines(con = event_src_path)
+  c("date,crop_code", "2025-01-02,D12", "2025-01-05,G6") |>
+    writeLines(crp_chg_path)
+  c("run_id,site_id", "ENS-00001-a,a") |>
+    writeLines(file.path(pth, "runs_manifest.csv"))
+  data.frame(
+    year = 2025,
+    day = rep(1:31, each = 4),
+    hour = rep(c(0, 6, 12, 18), 31),
+    c4 = NA, c5 = NA, c6 = NA, c7 = NA, c8 = NA, c9 = NA, c10 = NA, c11 = NA,
+    c12 = NA
+  ) |>
+    write.table(
+      file = met_path, quote = FALSE,
+      row.names = FALSE, col.names = FALSE
+    )
+  ens.samples <- list(
+    pft1 = data.frame(Amax = 1, SLA = 2),
+    soil = data.frame(Rd = 0)
+  )
+  save(ens.samples, file = file.path(pth, "ensemble.samples.testid.Rdata"))
+
+  s <- PEcAn.settings::as.Settings(
+    list(
+      outdir = file.path(pth),
+      rundir = file.path(pth, "run"),
+      modeloutdir = file.path(pth, "out"),
+      pfts = list(pft1 = list(), soil = list()),
+      ensemble = list(ensemble.id = "testid"),
+      model = list(binary = "", revision = "2.1.0"),
+      run = list(
+        site = list(id = "a", name = "site1", lat = 40, lon = -88,
+                    site.pft = list(veg = "pft1", soil = "soil")),
+        inputs = list(
+          met = list(path = met_path),
+          events = list(path = event_src_path),
+          crop_changes = list(path = crp_chg_path)
+        ),
+        start.date = "2025-01-10",
+        end.date = "2025-01-20"
+      ),
+      host = list(
+        name = "localhost",
+        outdir = file.path(pth),
+        rundir = file.path(pth, "run")
+      )
+    )
+  )
+
+  write.config.SIPNET(
+    defaults = s$pfts,
+    trait.values = ens.samples["pft1"],
+    IC = list(soil = 3.14),
+    settings = s,
+    run.id = "ENS-00001-a"
+  )
+
+  seg_res <- write_segmented_configs.SIPNET(settings = s)
+
+  expect_equal(seg_res, file.path(run_path, "job.sh"))
+  expect_false(file.exists(file.path(run_path, "job_segmented.sh")))
+  expect_false(dir.exists(file.path(run_path, "segments")))
+})

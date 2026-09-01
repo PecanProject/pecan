@@ -25,8 +25,9 @@
   litterWFracInit, microbeInit, m_ballBerry) from being set when using v2 templates.
 * Removed workarounds for column naming bugs in output from long-outdated legacy
   Sipnet version `sipnet.unk`.
-* Added trait to parameter mappings for 13 nitrogen cycle parameters in `write.config.SIPNET`,
-  including tissue C:N ratios, N volatilization/leaching, fixation, and methane rates.
+* Added trait to parameter mappings for nitrogen cycle parameters in `write.config.SIPNET`,
+  including tissue C:N ratios, N volatilization/leaching/resorption, fixation, and methane rates.
+* `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
   
 
 # PEcAn.SIPNET 1.10.0

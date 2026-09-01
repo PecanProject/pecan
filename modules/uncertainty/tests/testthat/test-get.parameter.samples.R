@@ -59,7 +59,16 @@ test_that("samples.Rdata is written to settings$outdir by default", {
   tmp <- withr::local_tempdir()
   settings <- make_test_settings(tmp)
 
-  mockery::stub(get.parameter.samples, "load.posteriors", fake_posterior())
+  mockery::stub(
+    get.parameter.samples,
+    "load_pft_posteriors",
+    list(
+      pft_names         = list("temperate.deciduous"),
+      prior_distns_list = list(fake_posterior()$prior.distns),
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
+    )
+  )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
 
   suppressWarnings(get.parameter.samples(settings))
@@ -73,7 +82,16 @@ test_that("explicit outdir overrides settings$outdir for the save", {
   tmp_explicit <- withr::local_tempdir()
   settings <- make_test_settings(tmp_settings)
 
-  mockery::stub(get.parameter.samples, "load.posteriors", fake_posterior())
+  mockery::stub(
+    get.parameter.samples,
+    "load_pft_posteriors",
+    list(
+      pft_names         = list("temperate.deciduous"),
+      prior_distns_list = list(fake_posterior()$prior.distns),
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
+    )
+  )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
 
   suppressWarnings(get.parameter.samples(settings, outdir = tmp_explicit))
@@ -87,7 +105,16 @@ test_that("outdir = NULL skips the save entirely", {
   tmp <- withr::local_tempdir()
   settings <- make_test_settings(tmp)
 
-  mockery::stub(get.parameter.samples, "load.posteriors", fake_posterior())
+  mockery::stub(
+    get.parameter.samples,
+    "load_pft_posteriors",
+    list(
+      pft_names         = list("temperate.deciduous"),
+      prior_distns_list = list(fake_posterior()$prior.distns),
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
+    )
+  )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
 
   suppressWarnings(get.parameter.samples(settings, outdir = NULL))
@@ -105,7 +132,16 @@ test_that("samples.Rdata bundles the 5 expected objects", {
   tmp <- withr::local_tempdir()
   settings <- make_test_settings(tmp)
 
-  mockery::stub(get.parameter.samples, "load.posteriors", fake_posterior())
+  mockery::stub(
+    get.parameter.samples,
+    "load_pft_posteriors",
+    list(
+      pft_names         = list("temperate.deciduous"),
+      prior_distns_list = list(fake_posterior()$prior.distns),
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
+    )
+  )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
 
   suppressWarnings(get.parameter.samples(settings))
@@ -126,8 +162,16 @@ test_that("returns the get_parameter_samples result invisibly", {
   tmp <- withr::local_tempdir()
   settings <- make_test_settings(tmp)
   fake <- fake_samples_result()
-
-  mockery::stub(get.parameter.samples, "load.posteriors", fake_posterior())
+  mockery::stub(
+    get.parameter.samples,
+    "load_pft_posteriors",
+    list(
+      pft_names         = list("temperate.deciduous"),
+      prior_distns_list = list(fake_posterior()$prior.distns),
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
+    )
+  )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake)
 
   # withVisible must sit INSIDE suppressWarnings, so it captures the
@@ -146,8 +190,13 @@ test_that("loaded posteriors are delegated to get_parameter_samples", {
   tmp <- withr::local_tempdir()
   settings <- make_test_settings(tmp)
   post <- fake_posterior()
-
-  mockery::stub(get.parameter.samples, "load.posteriors", post)
+  loaded <- list(
+    pft_names         = list("temperate.deciduous"),
+    prior_distns_list = list(post$prior.distns),
+    trait_mcmc_list   = list(post$trait.mcmc),
+    independent       = TRUE
+  )
+  mockery::stub(get.parameter.samples, "load_pft_posteriors", loaded)
   mock_gps <- mockery::mock(fake_samples_result())
   mockery::stub(get.parameter.samples, "get_parameter_samples", mock_gps)
 

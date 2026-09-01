@@ -481,6 +481,7 @@
 "purrr",">= 0.2.3","base/workflow","Imports",FALSE
 "purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
 "pwr","*","modules/rtm","Suggests",FALSE
+"quarto","*","modules/benchmark","Suggests",FALSE
 "R.utils","*","base/db","Imports",FALSE
 "randomForest","*","modules/assim.sequential","Suggests",FALSE
 "randtoolbox","*","base/utils","Suggests",FALSE
@@ -495,6 +496,7 @@
 "rcrossref","*","base/db","Suggests",FALSE
 "readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
+"readr","*","modules/data.land","Suggests",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -634,7 +636,6 @@
 "testthat","*","base/logger","Suggests",FALSE
 "testthat","*","base/remote","Suggests",FALSE
 "testthat","*","base/workflow","Suggests",FALSE
-"testthat","*","modules/assim.sequential","Suggests",FALSE
 "testthat","*","modules/priors","Suggests",FALSE
 "testthat",">= 1.0.2","base/visualization","Suggests",FALSE
 "testthat",">= 1.0.2","models/basgra","Suggests",FALSE
@@ -670,6 +671,7 @@
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "testthat",">= 3.1.0","modules/data.land","Suggests",FALSE
 "testthat",">= 3.1.7","modules/data.atmosphere","Suggests",FALSE
+"testthat",">= 3.1.9","modules/assim.sequential","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
 "tibble","*","models/ed","Imports",FALSE
 "tibble","*","models/fates","Imports",FALSE
@@ -700,6 +702,7 @@
 "units","*","modules/data.atmosphere","Imports",FALSE
 "units",">= 0.8.7","base/utils","Imports",FALSE
 "urltools","*","base/remote","Imports",FALSE
+"usethis","*","modules/data.land","Suggests",FALSE
 "utils","*","base/all","Imports",FALSE
 "utils","*","base/logger","Imports",FALSE
 "utils","*","models/ed","Imports",FALSE

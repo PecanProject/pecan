@@ -10,7 +10,8 @@ run.write.configs(
   input_design,
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
-  overwrite = TRUE
+  overwrite = TRUE,
+  samples = NULL
 )
 }
 \arguments{
@@ -29,6 +30,12 @@ ensemble and sensitivity analysis (e.g. \code{post.distns.Rdata}, or
 \code{prior.distns.Rdata}).}
 
 \item{overwrite}{logical: Replace output files that already exist?}
+
+\item{samples}{Optional pre-computed parameter samples (a list with
+\code{trait.samples}, \code{sa.samples}, \code{ensemble.samples}). When supplied, these
+are used directly and \code{samples.Rdata} is not read from disk. When \code{NULL}
+(default), the function falls back to loading \code{samples.Rdata} from
+\code{settings$outdir}.}
 }
 \value{
 The \code{settings} list (invisibly), updated with ensemble IDs for SA
@@ -36,7 +43,10 @@ and ensemble analysis (e.g. \code{settings$sensitivity.analysis$ensemble.id},
 \code{settings$ensemble$ensemble.id}).
 }
 \description{
-Write model-specific run scripts and configuration files
+Generates run scripts and configuration files for all analyses (ensemble
+and/or sensitivity analysis) specified in the provided settings. Delegates
+the model-specific config writing to the appropriate \verb{write.config.*}
+function (e.g. \code{write.config.ED2}, \code{write.config.SIPNET}).
 }
 \details{
 \strong{Upstream contract (reads from \code{settings$outdir}):}

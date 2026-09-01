@@ -4,7 +4,13 @@
 \alias{get_trait_data_pft}
 \title{Retrieve trait data and priors for one PFT from BETYdb}
 \usage{
-get_trait_data_pft(pft_name, modeltype, dbcon, trait_names, constants = list())
+get_trait_data_pft(
+  pft_name,
+  modeltype,
+  dbcon,
+  trait_names = NULL,
+  constants = list()
+)
 }
 \arguments{
 \item{pft_name}{character. PFT name as stored in BETYdb.}
@@ -14,7 +20,10 @@ across model types (e.g. \code{"SIPNET"}, \code{"ED2"}).}
 
 \item{dbcon}{database connection from \code{\link[PEcAn.DB]{db.open}}.}
 
-\item{trait_names}{character vector of trait names to retrieve.}
+\item{trait_names}{character vector of trait names to retrieve. If
+\code{NULL} (default), priors for every trait associated with the PFT
+are returned and the trait list is derived from those priors. Supply a
+vector to restrict the query to specific traits.}
 
 \item{constants}{named list from \code{pft$constants} in the settings.
 Traits named here are excluded from the returned priors because their

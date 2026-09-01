@@ -1,0 +1,23 @@
+column_number,column_name,contents,notes
+1,parcel_id,LandIQ parcel id,
+2,year,calendar year of MSLSP product,
+3,cycle,MSLSP cycle within year,1 = dominant amplitude cycle after filtering
+4,n_valid,count of unmasked pixels contributing,
+5,w_valid,sum of pixel coverage fractions,
+6,sum_w2,sum of squared coverage fractions,n_eff = w_valid^2 / sum_w2
+7,na_frac,fraction of parcel area masked,quality flag used by match
+8,OGI_mean,area-weighted mean greenup onset DOY,also OGI_sd; same pattern for other phenology metrics
+9,OGI_sd,sd of OGI across contributing pixels,
+10,50PCGI_mean,50% greenup DOY mean,+ _sd
+11,OGMx_mean,mid greenup DOY mean,+ _sd
+12,Peak_mean,peak greenness DOY mean,+ _sd
+13,50PCGD_mean,50% greendown DOY mean,+ _sd
+14,OGMn_mean,greendown / maturity DOY mean,+ _sd; harvest metric for many PFTs
+15,OGD_mean,other greendown metric mean,+ _sd; used for some woody PFTs
+16,EVImax_mean,peak EVI mean,+ _sd; used for planting LAI
+17,EVIamp_mean,EVI amplitude mean,+ _sd
+18,EVIarea_mean,EVI area under curve mean,+ _sd
+19,gupQA_mode,modal greenup QA,+ gupQA_mode_frac
+20,gdownQA_mode,modal greendown QA,+ gdownQA_mode_frac
+21,NumCycles_mode,modal number of cycles,+ NumCycles_mode_frac
+22,numObs_mean,mean observation count,+ numObs_sd

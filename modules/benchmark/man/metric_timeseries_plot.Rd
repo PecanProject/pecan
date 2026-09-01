@@ -7,6 +7,7 @@
 metric_timeseries_plot(
   metric_dat,
   var,
+  unit = NULL,
   filename = NA,
   draw.plot = is.na(filename)
 )
@@ -15,6 +16,8 @@ metric_timeseries_plot(
 \item{metric_dat}{dataframe to plot, with at least columns `time`, `model`, `obvs`}
 
 \item{var}{variable name, used as plot title}
+
+\item{unit}{measurement unit for the variable, added to the y-axis label; NULL to omit}
 
 \item{filename}{path to save plot, or NA to not save}
 
