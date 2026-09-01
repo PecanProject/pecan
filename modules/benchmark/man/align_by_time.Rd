@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_benchmark.R
 \name{align_by_time}
 \alias{align_by_time}
-\title{Align model and observation data frames by nearest time}
+\title{Align model predictions and observations by time}
 \usage{
 align_by_time(model_df, obs_df, tolerance_secs = 3600)
 }
@@ -17,5 +17,7 @@ align_by_time(model_df, obs_df, tolerance_secs = 3600)
 data.frame with aligned rows containing model and observation columns, where each observation corresponds to exactly one model prediction.
 }
 \description{
-Align model and observation data frames by nearest time
+For each observation in `obs_df`, finds the nearest model prediction in `model_df`
+within `tolerance_secs`. Guarantees that each observation is paired with at most
+one model prediction.
 }

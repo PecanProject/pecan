@@ -26,14 +26,14 @@ Model ensemble predictions use the standard EFI long schema:
 
 ## Execution Instructions
 
-Execute the benchmarking pipeline using `run_benchmarks.R`. By default, the script looks for `ensemble_output.csv` in `examples/salinas_soc_ensemble/`, or accepts an explicit file path as a command-line argument:
+Execute the benchmarking pipeline using `run_benchmarks.R`. By default, the script looks for `ensemble_output.csv` in `examples/benchmarks/salinas_soc_ensemble/`, or accepts an explicit file path as a command-line argument:
 
 ```bash
-# Default execution (uses examples/salinas_soc_ensemble/ensemble_output.csv if present)
-Rscript examples/salinas_soc_ensemble/run_benchmarks.R
+# Default execution (uses examples/benchmarks/salinas_soc_ensemble/ensemble_output.csv if present)
+Rscript examples/benchmarks/salinas_soc_ensemble/run_benchmarks.R
 
 # Explicit model CSV path argument
-Rscript examples/salinas_soc_ensemble/run_benchmarks.R /path/to/ensemble_output.csv
+Rscript examples/benchmarks/salinas_soc_ensemble/run_benchmarks.R /path/to/ensemble_output.csv
 ```
 
 ---

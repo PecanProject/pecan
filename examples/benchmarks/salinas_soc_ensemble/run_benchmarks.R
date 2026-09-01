@@ -1,13 +1,10 @@
 # Benchmarking pipeline for Salinas SOCs ensemble data using decoupled PEcAn.benchmark toolkit
 
-library(dplyr)
-library(ggplot2)
-
 # Parse command line arguments (e.g., Rscript run_benchmarks.R <path_to_model_csv>)
 args <- commandArgs(trailingOnly = TRUE)
 
 # Determine base directory portably
-base_dir <- file.path(getwd(), "examples/salinas_soc_ensemble")
+base_dir <- file.path(getwd(), "examples/benchmarks/salinas_soc_ensemble")
 if (!dir.exists(base_dir)) {
   base_dir <- getwd()
 }
@@ -20,22 +17,22 @@ if (!file.exists(model_csv_path)) {
 }
 
 if (!requireNamespace("PEcAn.benchmark", quietly = TRUE)) {
-  devtools::load_all(file.path(base_dir, "../../modules/benchmark"))
+  devtools::load_all(file.path(base_dir, "../../../modules/benchmark"))
 } else {
   library(PEcAn.benchmark)
 }
 
 # 1. Read and filter model data (EFI long format)
 PEcAn.logger::logger.info("Reading model ensemble data...")
-model_data <- read.csv(model_csv_path) %>%
-  filter(variable == "TotSoilCarb") %>%
-  mutate(time = as.POSIXct(datetime, tz = "UTC"))
+model_data <- read.csv(model_csv_path) |>
+  dplyr::filter(variable == "TotSoilCarb") |>
+  dplyr::mutate(time = as.POSIXct(datetime, tz = "UTC"))
 
 # 2. Read observations
 PEcAn.logger::logger.info("Reading observations...")
-obvs_data <- read.csv(obvs_csv_path) %>%
-  filter(variable == "TotSoilCarb", tolower(as.character(in_model_window)) == "true") %>%
-  mutate(time = as.POSIXct(date, tz = "UTC"))
+obvs_data <- read.csv(obvs_csv_path) |>
+  dplyr::filter(variable == "TotSoilCarb", tolower(as.character(in_model_window)) == "true") |>
+  dplyr::mutate(time = as.POSIXct(date, tz = "UTC"))
 
 if (nrow(obvs_data) == 0) {
   PEcAn.logger::logger.severe("No observations found after filtering in_model_window.")
@@ -51,20 +48,17 @@ for (site in sites) {
   PEcAn.logger::logger.info("Processing Site:", site)
 
   # Subset site model data
-  m_site <- model_data %>% filter(site_id == site)
-  o_site <- obvs_data %>% filter(site_id == site)
+  m_site <- model_data |> dplyr::filter(site_id == site)
+  o_site <- obvs_data |> dplyr::filter(site_id == site)
 
   if (nrow(m_site) == 0 || nrow(o_site) == 0) {
     PEcAn.logger::logger.warn("Skipping site", site, "due to missing data.")
     next
   }
 
-  # Construct ensemble matrix via base R reshape
-  ens_df <- reshape(m_site[, c("time", "parameter", "prediction")], 
-                    idvar = "time", timevar = "parameter", direction = "wide")
-  
-  unique_times <- ens_df$time
-  ens_mat <- as.matrix(ens_df[, -1, drop = FALSE])
+  # Construct ensemble matrix via PEcAn.benchmark utility
+  ens_mat <- efi_long_to_array(m_site)
+  unique_times <- attr(ens_mat, "time")
 
   # Summary model dataframe (mean and 90% quantiles)
   m_summary <- data.frame(
@@ -97,7 +91,7 @@ for (site in sites) {
   attr(aligned, "ensemble_matrix") <- aligned_ens_mat
 
   # Compute statistical metrics via PEcAn metric registry
-  site_metrics <- compute_metrics(aligned, metrics = c("RMSE", "MAE", "R2", "COVERAGE", "CRPS"))
+  site_metrics <- compute_metrics(aligned, metrics = c("BIAS", "RMSE", "MAE", "R2", "COVERAGE", "CRPS"))
   PEcAn.logger::logger.info("Computed Metric Scorecard for site:", site)
   print(site_metrics)
   results_list[[site]] <- site_metrics
@@ -108,7 +102,7 @@ for (site in sites) {
   plots_list[[paste("Site", site)]] <- p
   
   plot_filename <- file.path(base_dir, paste0("plot_", site, ".pdf"))
-  ggsave(plot_filename, plot = p, width = 8, height = 5)
+  ggplot2::ggsave(plot_filename, plot = p, width = 8, height = 5)
   PEcAn.logger::logger.info("Saved plot:", plot_filename)
 }
 
@@ -124,7 +118,7 @@ if (length(results_list) > 0) {
   )
   
   html_output <- file.path(base_dir, "Salinas_SOC_Validation_Report.html")
-  template_path <- file.path(base_dir, "../../modules/benchmark/inst/reports/Validation_report.qmd")
+  template_path <- file.path(base_dir, "../../../modules/benchmark/inst/reports/Validation_report.qmd")
   
   generate_validation_report(
     benchmark_results = benchmark_results,

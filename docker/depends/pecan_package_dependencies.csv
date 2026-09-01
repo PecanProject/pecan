@@ -686,6 +686,7 @@
 "tidyr","*","base/db","Imports",FALSE
 "tidyr","*","models/ed","Imports",FALSE
 "tidyr","*","modules/assim.sequential","Suggests",FALSE
+"tidyr","*","modules/benchmark","Imports",FALSE
 "tidyr","*","modules/data.atmosphere","Imports",FALSE
 "tidyr","*","modules/data.land","Imports",FALSE
 "tidyr","*","modules/uncertainty","Imports",FALSE

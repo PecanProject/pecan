@@ -38,6 +38,7 @@ Imports:
     rlang,
     SimilarityMeasures,
     stringr,
+    tidyr,
     tidyselect,
     units,
     utils,

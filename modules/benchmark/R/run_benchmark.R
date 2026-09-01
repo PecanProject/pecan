@@ -52,11 +52,6 @@ bm_validate <- function(model_df, obs_df) {
   invisible(TRUE)
 }
 
-#' Align model and observation data frames by nearest time
-#'
-#' @param model_df data.frame with columns: time (POSIXct), value
-#' @param obs_df   data.frame with columns: time (POSIXct), value
-#' @param tolerance_secs max allowed time difference in seconds
 #' Align model predictions and observations by time
 #'
 #' For each observation in `obs_df`, finds the nearest model prediction in `model_df`
@@ -78,15 +73,17 @@ align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
   model_df <- model_df[order(model_df$time), ]
   obs_df <- obs_df[order(obs_df$time), ]
 
-  # For each observation time, find the interval in model_df$time it falls into
-  idx <- findInterval(obs_df$time, model_df$time, all.inside = TRUE)
-  idx_next <- pmin(idx + 1, nrow(model_df))
+  # For each observation time, find the nearest model prediction index in model_df$time
+  n_model <- nrow(model_df)
+  find_idx <- findInterval(obs_df$time, model_df$time)
+  idx_left <- pmax(1, pmin(n_model, find_idx))
+  idx_right <- pmin(n_model, idx_left + 1)
 
-  diff_current <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx], units = "secs")))
-  diff_next <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_next], units = "secs")))
+  diff_left <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_left], units = "secs")))
+  diff_right <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_right], units = "secs")))
 
-  nearest_model_idx <- ifelse(diff_current <= diff_next, idx, idx_next)
-  time_diffs <- pmin(diff_current, diff_next)
+  nearest_model_idx <- ifelse(diff_left <= diff_right, idx_left, idx_right)
+  time_diffs <- pmin(diff_left, diff_right)
 
   # Filter by time tolerance
   valid <- time_diffs <= tolerance_secs
@@ -188,6 +185,14 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
   }
   
   full_ens_mat <- attr(aligned, "ensemble_matrix")
+  if (!is.null(full_ens_mat)) {
+    if (!is.matrix(full_ens_mat) || nrow(full_ens_mat) != nrow(aligned)) {
+      PEcAn.logger::logger.severe(sprintf("ensemble_matrix attribute must be a matrix with nrow equal to nrow(aligned) (%d). Got: %s",
+                                          nrow(aligned),
+                                          if (is.matrix(full_ens_mat)) paste(nrow(full_ens_mat), "rows") else class(full_ens_mat)[1]))
+    }
+  }
+
   aligned$..row_id.. <- seq_len(nrow(aligned))
 
   # Split by site and compute metrics
@@ -197,7 +202,7 @@ compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
     row_ids <- sub_df$..row_id..
     sub_df$..row_id.. <- NULL
 
-    if (!is.null(full_ens_mat) && is.matrix(full_ens_mat) && nrow(full_ens_mat) == nrow(aligned)) {
+    if (!is.null(full_ens_mat)) {
       attr(sub_df, "ensemble_matrix") <- full_ens_mat[row_ids, , drop = FALSE]
     }
 

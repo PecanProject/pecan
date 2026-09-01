@@ -6,17 +6,23 @@
 # at the calibration run's itr/out/ENS-<ens>-<site> layout instead.
 #
 # usage:
-#   Rscript extract_salinas_ensemble_output.R           # full: all members, 2005-2011
-#   Rscript extract_salinas_ensemble_output.R --dry      # 2 members, year 2008 only
+#   Rscript extract_salinas_ensemble_output.R [salinas_dir]           # full: all members, 2005-2011
+#   Rscript extract_salinas_ensemble_output.R [salinas_dir] --dry     # 2 members, year 2008 only
 
 args <- commandArgs(trailingOnly = TRUE)
 DRY <- "--dry" %in% args
 
-salinas_dir <- "/projectnb/dietzelab/ccmmf/usr/akash/salinas_socs"
+pos_args <- args[!grepl("^--", args)]
+salinas_dir <- if (length(pos_args) >= 1) {
+  pos_args[1]
+} else {
+  Sys.getenv("SALINAS_DIR", "/projectnb/dietzelab/ccmmf/usr/akash/salinas_socs")
+}
+
 itr <- "itr2"
 scenario <- "salinas_socs"                       # single scenario label
 variables <- c("TotSoilCarb", "AGB")             # SOC pairs with white_salinas obs; AGB for context
-out_csv <- file.path(salinas_dir, "ayushman_handoff",
+out_csv <- file.path(salinas_dir,
                      if (DRY) "ensemble_output_DRY.csv" else "ensemble_output.csv")
 
 no_cores <- max(future::availableCores() - 1, 1)

@@ -8,6 +8,7 @@
 #' @param var character string specifying the target variable to filter (optional).
 #' @param site character string specifying the target site_id to filter (optional).
 #'
+#' @importFrom tidyr pivot_wider
 #' @return A matrix with timesteps as rows and ensemble members as columns, with a `time` attribute (POSIXct vector).
 #' @export
 efi_long_to_array <- function(df, var = NULL, site = NULL) {
@@ -17,14 +18,24 @@ efi_long_to_array <- function(df, var = NULL, site = NULL) {
 
   # Standardize variable column name
   var_col <- intersect(c("variable", "var"), names(df))[1]
-  if (!is.na(var_col) && !is.null(var)) {
-    df <- df[df[[var_col]] == var, , drop = FALSE]
+  if (!is.na(var_col)) {
+    if (!is.null(var)) {
+      df <- df[df[[var_col]] == var, , drop = FALSE]
+    }
+    if (length(unique(df[[var_col]])) > 1) {
+      PEcAn.logger::logger.severe("Input dataframe contains multiple variables. Please specify target 'var' or filter to a single variable.")
+    }
   }
 
   # Standardize site column name
   site_col <- intersect(c("site_id", "site"), names(df))[1]
-  if (!is.na(site_col) && !is.null(site)) {
-    df <- df[df[[site_col]] == site, , drop = FALSE]
+  if (!is.na(site_col)) {
+    if (!is.null(site)) {
+      df <- df[df[[site_col]] == site, , drop = FALSE]
+    }
+    if (length(unique(df[[site_col]])) > 1) {
+      PEcAn.logger::logger.severe("Input dataframe contains multiple sites. Please specify target 'site' or filter to a single site.")
+    }
   }
 
   if (nrow(df) == 0) {
