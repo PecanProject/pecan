@@ -1,7 +1,65 @@
 # Shared EVI -> LAI and LAI -> C/N tables for planting.
 # CLI: apply_planting.R
 # make_events_statewide planting reads assigned_year=Y_planting.parquet
-# (does not recompute). Hay and woody are not planted here.
+# (does not recompute). Hay and mature woody are not planted here; YP is.
+
+# Young perennial (CLASS=YP) has no crop subclass, so planting traits must come
+# from an orchard/vineyard code (D, C, or V).
+resolve_yp_planting_codes <- function(matched, year, paths) {
+  idx <- which(toupper(trimws(as.character(matched$landiq_CLASS))) == "YP")
+  if (!length(idx)) return(matched)
+
+  # Load existing transition CSVs (does not rebuild them).
+  gf <- trimws(Sys.getenv(
+    "LANDIQ_GAPFILL_ROOT", file.path(Sys.getenv("CCMMF_CODE"), "landiq-gapfill")
+  ))
+  source(file.path(gf, "scripts", "R", "county_transition.R"), local = TRUE)
+  state_csv <- file.path(dirname(paths$cropcode_csv), "state_transition_matrix.csv")
+  ag <- rownames(read.csv(state_csv, row.names = 1, check.names = FALSE))
+  mats <- load_county_transition_matrices(path_county_transition_dir(), ag)
+  fb <- load_transition_matrix_csv(state_csv, ag)
+
+  ov <- c("D", "C", "V")
+  # Argmax of YP -> D/C/V from the county matrix (or statewide fallback).
+  prior_one <- function(county) {
+    st <- county_matrix_stem(county)
+    A <- if (!is.na(st) && nzchar(st) && st %in% names(mats)) mats[[st]] else fb
+    p <- as.numeric(A["YP", ov])
+    names(p) <- ov
+    p[!is.finite(p)] <- 0
+    if (!any(p > 0)) "D" else names(p)[which.max(p)]
+  }
+
+  cls <- character(length(idx))
+  sub <- rep("**", length(idx))
+  county <- rep(NA_character_, length(idx))
+
+  # 1) Look-ahead: season-2 identity year -> year+1 (same helper as harvest clearing).
+  tr <- load_landiq_season2_lookahead(year, paths)
+  if (!is.null(tr)) {
+    j <- match(as.character(matched$parcel_id[idx]), as.character(tr$parcel_id))
+    hit <- !is.na(j)
+    county[hit] <- as.character(tr$prior_COUNTY[j[hit]])
+    cc <- toupper(trimws(as.character(tr$curr_CLASS[j])))
+    # Only accept a mature orchard/vineyard destination.
+    ok <- hit & cc %in% ov
+    cls[ok] <- cc[ok]
+    s <- as.character(tr$curr_SUBCLASS[j[ok]])
+    s[is.na(s) | trimws(s) %in% c("", "**")] <- "**"
+    sub[ok] <- s
+  }
+
+  # 2) Still YP / no usable next class -> county (or state) transition prior.
+  need <- !nzchar(cls)
+  cls[need] <- vapply(county[need], prior_one, character(1))
+  message(
+    "[planting] YP trait codes: ", length(idx),
+    " (look-ahead=", sum(!need), ", county prior=", sum(need), ")"
+  )
+  # Overwrite YP with the resolved D/C/V code used by the planting lookup.
+  matched[idx, `:=`(landiq_CLASS = cls, landiq_SUBCLASS = sub)]
+  matched
+}
 
 planting_keep_dated_crop_rows <- function(matched) {
   if (!"planting_date_str" %in% names(matched)) {
@@ -11,9 +69,19 @@ planting_keep_dated_crop_rows <- function(matched) {
   keep <- !is.na(d) & nzchar(d) & d != "NA"
   matched <- matched[keep]
   pft_l <- tolower(trimws(as.character(matched$landiq_PFT)))
-  # Annual planting only (row, rice). Hay and woody are not planted each year;
-  # they get phenology + harvest instead. YP OGI stays on the overlay.
-  matched <- matched[!pft_l %in% c("other", "woody", "hay")]
+  specond <- if ("landiq_SPECOND" %in% names(matched)) {
+    as.character(matched$landiq_SPECOND)
+  } else {
+    rep(NA_character_, nrow(matched))
+  }
+  # Plant annuals plus young woody. CLASS=YP needs trait resolve below;
+  # SPECOND=Y already carries a D/C/V class and uses those traits as-is.
+  # Mature woody and hay stay phenology + harvest only.
+  young <- pft_l == "woody" & (
+    toupper(trimws(as.character(matched$landiq_CLASS))) == "YP" |
+      toupper(trimws(specond)) == "Y"
+  )
+  matched <- matched[pft_l %in% c("row", "rice") | young]
   matched
 }
 
@@ -92,8 +160,12 @@ lookup_planting_lai_fallback <- function(class, pft, fb) {
 }
 
 # Overlay rows -> LAI via compute_lai_from_mslsp (or CLASS/PFT fallback).
-build_planting_lai_table <- function(matched, pool_env) {
+# Keep filter first (while CLASS is still YP), then rewrite YP to D/C/V.
+build_planting_lai_table <- function(matched, pool_env, year = NULL, paths = NULL) {
   matched <- planting_keep_dated_crop_rows(matched)
+  if (!is.null(year) && !is.null(paths)) {
+    matched <- resolve_yp_planting_codes(matched, year, paths)
+  }
   message("[lai] Crop rows with planting date: ", nrow(matched))
   lai_fb <- planting_lai_fallbacks(matched, pool_env)
   message(
