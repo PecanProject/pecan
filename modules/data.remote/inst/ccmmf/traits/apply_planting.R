@@ -48,7 +48,7 @@ matched <- load_matched_for_events(
   year_arg, paths$matched_dir, run_planting = TRUE
 )
 
-lai_dt <- build_planting_lai_table(matched, pool$pool_env)
+lai_dt <- build_planting_lai_table(matched, pool$pool_env, year_arg, paths)
 message("[lai] ", nrow(lai_dt), " rows in memory (not written)")
 if (nrow(lai_dt)) {
   print(lai_dt[, .N, by = .(PFT, lai_source)])

@@ -167,9 +167,8 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
     yr, " -> ", next_yr, " (CLASS-level)"
   )
 
-  prior <- load_landiq_season2_identity(yr, paths$landiq_crops, paths$cropcode_csv)
-  curr <- load_landiq_season2_identity(next_yr, paths$landiq_crops, paths$cropcode_csv)
-  if (is.null(prior) || is.null(curr)) {
+  trans <- load_landiq_season2_lookahead(yr, paths)
+  if (is.null(trans)) {
     message(
       "  Skip woody destructive: need season-2 LandIQ for both ",
       yr, " and ", next_yr, " (re-run prior year after new LandIQ year exists)."
@@ -177,18 +176,6 @@ build_woody_destructive_from_transition <- function(year, matched, pool_env, lk,
     return(NULL)
   }
 
-  data.table::setnames(
-    prior,
-    c("CLASS", "SUBCLASS", "PFT", "SPECOND"),
-    c("prior_CLASS", "prior_SUBCLASS", "prior_PFT", "prior_SPECOND")
-  )
-  data.table::setnames(
-    curr,
-    c("CLASS", "SUBCLASS", "PFT", "SPECOND"),
-    c("curr_CLASS", "curr_SUBCLASS", "curr_PFT", "curr_SPECOND")
-  )
-
-  trans <- merge(prior, curr, by = "parcel_id", all.x = TRUE)
   prior_mature <- tolower(trimws(as.character(trans$prior_PFT))) == "woody" &
     !(toupper(trimws(as.character(trans$prior_CLASS))) == "YP" |
       toupper(trimws(as.character(trans$prior_SPECOND))) == "Y")
