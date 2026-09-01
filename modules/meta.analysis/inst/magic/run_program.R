@@ -6,30 +6,20 @@ library(readxl)
 library(dplyr)
 library(taxize)
 
-source("get_stats.R")
+source("initialize_planting.R")
 
 run_program <- function(time, species) {
   #time is harvest/planting
   #pool is part of plant
   #species is species
-  
-  temp_plant_df <- get_stats(master_data, value_column = "OrigValueStr", trait_column = "TraitID", species_column = "SpeciesName", species_name = species)
-  
-  #need to implement if NA, return species with like traits
-  
-  if (time == "planting") {
-    temp_plant_df <- temp_plant_df[temp_plant_df$TraitID %in% c("3441", "128", "2005", "1534"),]
+
+  if(is.character(time) && time == "planting") {
+    temp_response <- (initialize_planting(species_name = species))
+  } else if (is.character(time) && time == "harvest"){
+    temp_response <- (initialize_harvest(species_name = species))
+  } else {
+    return("Invalid time input. Use either planting or harvest.")
   }
-  else if (time == "harvest") {
-    temp_plant_df <- temp_plant_df[temp_plant_df$TraitID %in% c("3962", "470"),]
-    
-  }
-  
-  if (nrow(temp_plant_df) == 0) {
-    return(paste(species, "has nothing"))
-  }
-  
-  return (temp_plant_df)
   
 }
 
