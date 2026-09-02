@@ -269,6 +269,18 @@ write_segment_configs <- function(
     segment_settings[["outdir"]] <- segment_outdir
     segment_settings[["modeloutdir"]] <- segment_outdir
     segment_settings[["rundir"]] <- segment_rundir
+    segment_settings[[c("host", "rundir")]] <-  sub(
+      pattern = settings$rundir,
+      replacement = settings$host$rundir,
+      x = segment_rundir,
+      fixed = TRUE
+    )
+    segment_settings[[c("host", "outdir")]] <-  sub(
+      pattern = settings$modeloutdir,
+      replacement = settings$host$outdir,
+      x = segment_outdir,
+      fixed = TRUE
+    )
     segment_settings[[c("run", "start.date")]] <- dstart
     segment_settings[[c("run", "end.date")]] <- dend
     segment_settings[[c("run", "inputs")]] <- segment_inputs
