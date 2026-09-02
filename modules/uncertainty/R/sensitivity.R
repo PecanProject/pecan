@@ -38,11 +38,15 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
   for (trait in traits) {
     for (quantile in quantiles) {
       # We look for the row that matches the current pft, trait, and quantile.
+      # Use which() to handle NA values in manifest columns (read.csv converts
+      # the string "NA" to actual R NA, and comparison with NA yields NA, not FALSE).
       subset_df <- manifest[
-        manifest$type == "Sensitivity" & 
-        manifest$pft_name == pft.name &
-        manifest$trait == trait &
-        as.character(manifest$quantile) == as.character(quantile), 
+        which(
+          manifest$type == "Sensitivity" & 
+          manifest$pft_name == pft.name &
+          manifest$trait == trait &
+          as.character(manifest$quantile) == as.character(quantile)
+        ), 
       ]
 
       if (nrow(subset_df) == 1) {
@@ -50,6 +54,26 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
       } else if (nrow(subset_df) > 1) {
          PEcAn.logger::logger.warn("Multiple runs found for", trait, quantile, "- using the last one.")
          run.id <- utils::tail(subset_df$run_id, 1)
+      } else if (as.character(quantile) == "50") {
+        # The median run is written as a single shared entry with pft_name = "NA"
+        # and trait = "NA". Fall back to that shared row when no exact match exists.
+        # Note: read.csv() converts the string "NA" to actual R NA values,
+        # so we must use is.na() rather than == "NA" for the comparison.
+        median_df <- manifest[
+          manifest$type == "Sensitivity" &
+          is.na(manifest$pft_name) &
+          is.na(manifest$trait) &
+          as.character(manifest$quantile) == "50",
+        ]
+        if (nrow(median_df) >= 1) {
+          PEcAn.logger::logger.debug(
+            "Using shared median run for", trait, "quantile 50"
+          )
+          run.id <- utils::tail(median_df$run_id, 1)
+        } else {
+          PEcAn.logger::logger.warn("No run found in manifest for", trait, quantile)
+          next # Skip this quantile
+        }
       } else {
          PEcAn.logger::logger.warn("No run found in manifest for", trait, quantile)
          next # Skip this quantile
