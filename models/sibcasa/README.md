@@ -1,53 +1,63 @@
-A generic template for adding a new model to PEcAn
-==========================================================================
+# PEcAn.SIBCASA
 
-Adding a new model to PEcAn in a few easy steps:
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![PEcAn.SIBCASA status badge](https://pecanproject.r-universe.dev/badges/PEcAn.SIBCASA)](https://pecanproject.r-universe.dev/PEcAn.SIBCASA)
+<!-- badges: end -->
 
-1. add modeltype to BETY
-2. add a model and PFT to BETY for use with modeltype
-3. implement 3 functions as described below
-4. Add tests to `tests/testthat`
-5. Update README, documentation
-6. execute pecan with new model
+## Description
 
+PEcAn Package for Integration of the SiBCASA Model
 
-### Three Functions
+SiBCASA (Simple Biosphere/Carnegie-Ames-Stanford Approach) is a coupled biogeochemistry model that integrates vegetation photosynthesis and soil carbon dynamics. The PEcAn package `PEcAn.SIBCASA` provides integration with the PEcAn workflow system.
 
-There are 3 functions that will need to be implemented, each of these
-functions will need to have MODEL be replaced with the actual modeltype as
-it is defined in the BETY database.
+**Note**: This module is a work in progress and is not yet fully functional.
 
-* `write.config.MODEL.R`
+## Installation
 
- This will write the configuratin file as well as the job launcher used by
- PEcAn. There is an example of the job execution script in the template
- folder. The configuration file can also be a template that is found based
- on the revision number of the model. This should use the computed results
- specified in defaults and trait.values to write a configuration file
- based on the PFT and traits found.
+You can install the development version of `PEcAn.SIBCASA` from r-universe like so:
 
-* `met2model.MODEL.R`
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.SIBCASA in R
+install.packages('PEcAn.SIBCASA')
+```
 
- This will convert the standard Met CF file to the model specific file
- format. This will allow PEcAn to create metereological files for the
- specific site and model. This will only be called if no meterological
- data is found for that specific site and model combination.
+Or you can install directly from GitHub with the remotes package like so:
 
-* `model2netcdf.MODEL.R`
+``` r
+library(remotes)
+install_github('pecanproject/pecan', subdir = "models/sibcasa")
+```
 
- This will convert the model specific output to NACP Intercomparison
- format. After this function is finished PEcAn will use the generated
- output and not use the model specific outputs. The outputs should be
- named YYYY.nc
+## Status
 
-### Additional Changes
- 
-* `README.md` 
- 
-This file should contain basic background information about the model. 
-At a minimum, this should include the scientific motivation and scope, 
-name(s) of maintainer(s), links to project homepage, and a list of a few
-key publications. 
+**This module is a work in progress and is not yet fully functional.**
+
+Current capabilities:
+- Basic model structure in place
+- Configuration file generation (partial)
+- Meteorological preprocessing support
+
+Contributing developers should refer to the main SIBCASA documentation and collaborate with the maintainers.
+
+## Documentation
+
+- [R Package Documentation](https://pecanproject.r-universe.dev/PEcAn.SIBCASA)
+- [PEcAn Book - Models Reference](https://pecanproject.github.io/pecan-documentation/pecan-models.html#pecan-models)
+- [GitHub Repository](https://github.com/PecanProject/pecan/tree/develop/models/sibcasa)
+- [External Model Documentation](https://daac.ornl.gov/MODELS/guides/SiBCASA.html)
+
+## Contributing
+
+Issues and pull requests are welcome. Please contact the maintainers for development guidance.
+
+## References
+
+Potter, C. S., et al. (1993). Estimates of carbon sequestration by the forests of the United States based on forest inventory and geographic data. Journal of Geophysical Research. 
 relevant publications.
 
 * `/tests/testthat/`

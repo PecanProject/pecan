@@ -7,11 +7,31 @@
 
 <!-- badges: end -->
 
+## What is BioCro?
+
 BioCro is a model that estimates photosynthesis at the leaf, canopy, and ecosystem levels and determines plant biomass allocation and crop yields, using underlying physiological and ecological processes to do so.
+
+### PEcAn Integration
+
+The BioCro model is integrated into the PEcAn workflow, allowing for large-scale simulations and data assimilation.
+
+
+### Model configuration files
+
+BioCro uses a `config.xml` file for its core settings, similar to the ED2 model. 
+
+Genus-specific parameter files are required and stored within the PEcAn.BIOCRO package. `write.configs.BIOCRO` handles these automatically. The lookup order for defaults is:
+1.  Any file specified by `settings$pft$constants$file`.
+2.  Matching the genus name in datasets exported by the `BioCro` package.
+3.  Matching the genus name in PEcAn.BIOCRO [`inst/extdata/defaults`](https://github.com/PecanProject/pecan/tree/develop/models/biocro/inst/extdata/defaults).
+
+**Note:** When adding a new genus for BioCro versions prior to v1.0, it is also necessary to update the `call_biocro()` function in the package source.
 
 ## Installation
 
-You can install the development version of `PEcAn.BIOCRO` from r-universe like so:
+### Install PEcAn.BIOCRO Package
+
+You can install the development version of `PEcAn.BIOCRO` from r-universe:
 
 ``` r
 # Enable repository from pecanproject
@@ -22,16 +42,22 @@ options(repos = c(
 install.packages('PEcAn.BIOCRO')
 ```
 
-Or you can install directly from GitHub with the `remotes` package like so:
+Or install directly from GitHub:
 
 ``` r
 library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/biocro")
 ```
 
-## Example
+### Install BioCro Model
 
-This is a basic example which shows you how to solve a common problem:
+BioCro can be run standalone using the model's R package. To install version 0.951 (most robustly supported by PEcAn):
+
+```r
+remotes::install_github('ebimodeling/biocro@0.951')
+```
+
+## Example
 
 ``` r
 library(PEcAn.BIOCRO)
