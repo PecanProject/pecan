@@ -590,6 +590,7 @@
 "RPostgreSQL","*","models/biocro","Suggests",FALSE
 "RSQLite","*","base/db","Suggests",FALSE
 "rstac","*","models/peprmt","Suggests",FALSE
+"scoringRules","*","modules/benchmark","Suggests",FALSE
 "sensitivity","*","modules/uncertainty","Imports",FALSE
 "sessioninfo","*","base/all","Suggests",FALSE
 "sf","*","modules/assim.sequential","Suggests",FALSE
@@ -685,6 +686,7 @@
 "tidyr","*","base/db","Imports",FALSE
 "tidyr","*","models/ed","Imports",FALSE
 "tidyr","*","modules/assim.sequential","Suggests",FALSE
+"tidyr","*","modules/benchmark","Imports",FALSE
 "tidyr","*","modules/data.atmosphere","Imports",FALSE
 "tidyr","*","modules/data.land","Imports",FALSE
 "tidyr","*","modules/uncertainty","Imports",FALSE

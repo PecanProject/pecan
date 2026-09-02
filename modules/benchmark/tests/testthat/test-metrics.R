@@ -41,3 +41,12 @@ test_that("metric_R2 returns NA for constant model output", {
   )
   expect_equal(result, NA_real_)
 })
+
+test_that("metric_Coverage returns NA_real_ when no valid observations exist", {
+  dat_all_na <- data.frame(
+    obvs = c(NA, NA),
+    model_q05 = c(1, 2),
+    model_q95 = c(3, 4)
+  )
+  expect_equal(metric_Coverage(dat_all_na), NA_real_)
+})

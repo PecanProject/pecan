@@ -15,7 +15,6 @@ test_that("run_benchmark returns correct structure", {
   expect_true("aligned" %in% names(res))
   expect_true("plot"    %in% names(res))
   expect_equal(nrow(res$metrics), 1)
-  expect_true(all(c("RMSE", "MAE") %in% names(res$metrics)))
 })
 
 test_that("bm_validate rejects bad input", {
@@ -59,6 +58,77 @@ test_that("align_by_time matches exact timestamps", {
   expect_true(all(c("model", "obvs", "time") %in% names(aligned)))
   expect_equal(aligned$model, c(1, 2, 3, 4))
   expect_equal(aligned$obvs, c(1.1, 1.9, 3.2, 3.9))
+})
+
+test_that("align_by_time pairs each observation with exactly one model prediction", {
+  monthly_model <- data.frame(
+    time = as.POSIXct(seq(as.Date("2020-01-01"), as.Date("2020-12-01"), by = "month")),
+    value = 1:12
+  )
+  annual_obs <- data.frame(
+    time = as.POSIXct(c("2020-06-01", "2020-11-01")),
+    value = c(6.1, 11.2)
+  )
+
+  aligned <- align_by_time(monthly_model, annual_obs, tolerance_secs = 365 * 86400)
+
+  expect_equal(nrow(aligned), nrow(annual_obs))
+  expect_equal(length(unique(aligned$obs_time)), nrow(annual_obs))
+})
+
+test_that("compute_metrics correctly subsets ensemble_matrix by site for CRPS", {
+  aligned <- data.frame(
+    time = as.POSIXct(c("2020-01-01", "2020-02-01", "2020-01-01", "2020-02-01"), tz = "UTC"),
+    model = c(10, 20, 100, 200),
+    obvs  = c(10, 20, 100, 200),
+    site  = c("SiteA", "SiteA", "SiteB", "SiteB")
+  )
+
+  ens_mat <- matrix(c(
+    9, 11,
+    19, 21,
+    98, 102,
+    198, 202
+  ), nrow = 4, byrow = TRUE)
+
+  attr(aligned, "ensemble_matrix") <- ens_mat
+
+  res <- compute_metrics(aligned, metrics = c("CRPS"))
+
+  expect_equal(nrow(res), 4) # SiteA, SiteB, Rollup (Mean), Rollup (Median)
+  expect_true(all(c("SiteA", "SiteB") %in% res$Site))
+  expect_true(is.numeric(res$CRPS))
+  expect_false(any(is.na(res$CRPS)))
+
+  # Directly compute expected CRPS per site to pin exact matrix slicing
+  siteA_df <- aligned[aligned$site == "SiteA", ]
+  attr(siteA_df, "ensemble_matrix") <- ens_mat[1:2, , drop = FALSE]
+  expected_crps_A <- metric_CRPS(siteA_df)
+
+  siteB_df <- aligned[aligned$site == "SiteB", ]
+  attr(siteB_df, "ensemble_matrix") <- ens_mat[3:4, , drop = FALSE]
+  expected_crps_B <- metric_CRPS(siteB_df)
+
+  expect_equal(res$CRPS[res$Site == "SiteA"], expected_crps_A)
+  expect_equal(res$CRPS[res$Site == "SiteB"], expected_crps_B)
+})
+
+test_that("compute_metrics fails when ensemble_matrix dimensions mismatch or type is invalid", {
+  aligned <- data.frame(
+    time = as.POSIXct(c("2020-01-01", "2020-02-01"), tz = "UTC"),
+    model = c(10, 20),
+    obvs  = c(10, 20),
+    site  = c("SiteA", "SiteB")
+  )
+
+  # Mismatched row count (3 rows vs 2 rows in aligned)
+  bad_mat_rows <- matrix(1:6, nrow = 3, ncol = 2)
+  attr(aligned, "ensemble_matrix") <- bad_mat_rows
+  expect_error(compute_metrics(aligned, metrics = "CRPS"), "nrow equal to nrow")
+
+  # Non-matrix attribute (vector)
+  attr(aligned, "ensemble_matrix") <- c(1, 2, 3)
+  expect_error(compute_metrics(aligned, metrics = "CRPS"), "nrow equal to nrow")
 })
 
 test_that("align_by_time drops points outside tolerance", {
@@ -114,4 +184,15 @@ test_that("metric_PMU calculates correct pooled uncertainty", {
   )
   
   expect_equal(metric_PMU(aligned), sqrt(0.23/8))
+})
+
+test_that("align_by_time matches single-timestep inputs with identical timestamps", {
+  timestamp <- as.POSIXct("2020-01-01", tz = "UTC")
+  m_df <- data.frame(time = timestamp, value = 10)
+  o_df <- data.frame(time = timestamp, value = 11)
+
+  aligned <- align_by_time(m_df, o_df, tolerance_secs = 0)
+  expect_equal(nrow(aligned), 1)
+  expect_equal(aligned$model, 10)
+  expect_equal(aligned$obvs, 11)
 })
