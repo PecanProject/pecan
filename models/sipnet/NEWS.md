@@ -8,6 +8,9 @@
   - No longer calls model2netcdf.SIPNET() inside each segment dir (it was
     redundant with the whole-job netcdf output).
   - Fixed incorrect run paths in the settings$host block passed to single segments
+* `model2netcdf.SIPNET` takes `LAI` from sipnet.out if present (which requires
+    Sipnet > v2.2). If it is not present, LAI is calculated as
+    `plantLeafC / leafCSpWt` as previously.
 * `split_inputs.SIPNET` now avoids internal time format conversions, giving a
   substantial speedup and reduced memory use when processing multi-year files.
 * `model2netcdf.SIPNET` now detects the number of timesteps per day by taking the maximum count across all days in the first simulation year, rather than reading only from day 1. This prevents a factor-of-N error in flux unit conversions when the first day of output is partial (fewer timesteps than a complete day) (#3624, #3989).
