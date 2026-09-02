@@ -357,14 +357,13 @@ write_segment_configs <- function(
     paste("echo \"\n--> contents of", job_logfiles, ":\" && cat", job_logfiles),
     "",
     if (isTRUE(as.logical(settings$model$delete.raw))) {
+      # Removing all outputs that have been safely copied to the outdir
       c(
         "# Remove per-segment outputs & logs after concatenating to job outdir",
-        paste(
-          "find", segment_rootdir,
-          "-name sipnet.out -or -name logfile.txt",
-          "-or -name README.txt -or -name segments.csv",
-          "-delete"
-        )
+        sprintf("find %s -name sipnet.out -delete", segment_rootdir),
+        sprintf("find %s -name logfile.txt -delete", segment_rootdir),
+        sprintf("rm %s/README.txt", run_dir),
+        sprintf("rm %s/segments.csv", run_dir)
       )
     },
     "",
