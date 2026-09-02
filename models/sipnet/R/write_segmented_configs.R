@@ -97,6 +97,15 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
         by = "ens_num",
         relationship = "many-to-one")
   }
+  # Use a custom job.sh template with no model2netcdf step;
+  # we convert all segments together at the end of the timeseries instead.
+  # ...unless user provided their own template, in which case use it as-is
+  if (is.null(settings$model$jobtemplate) || !file.exists(settings$model$jobtemplate)) {
+    settings$model$jobtemplate <- system.file(
+      "template_singlesegment.job",
+      package = "PEcAn.SIPNET"
+    )
+  }
 
   new_jobfiles <- character()
 
@@ -218,6 +227,7 @@ write_segment_configs <- function(
   )
 
   jobsh_files <- character()
+  job_logfiles <- character()
 
   for (isegment in seq_len(nrow(segments))) {
     segment <- segments[isegment, ]
@@ -291,12 +301,19 @@ write_segment_configs <- function(
       run.id = runid_dummy
     )
 
+    segment_log <- file.path(segment_settings$modeloutdir,
+                             runid_dummy,
+                             "logfile.txt")
     segment_jobsh <- file.path(segment_settings$rundir, runid_dummy, "job.sh")
     stopifnot(file.exists(segment_jobsh))
+    job_logfiles <- c(job_logfiles, segment_log)
     jobsh_files <- c(jobsh_files, segment_jobsh)
   }
 
   # Now, get the run's jobsh file
+  # NB this doesn't do any path expansion or @TEMPLATE@ string replacement --
+  # those are done in the per-segment job.sh.
+  # Note especially that means no @HOST_SETUP@ / @HOST_TEARDOWN@ in this script
   run_jobsh <- file.path(run_dir, "job.sh")
   target_sipnet_out <- file.path(run_modeloutdir, "sipnet.out")
   segmented_jobsh_file <- file.path(run_dir, "job_segmented.sh")
@@ -326,10 +343,32 @@ write_segment_configs <- function(
         sprintf("sitelon = %s", as.character(settings$run$site$lon)),
         sprintf("start_date = %s", shQuote(settings$run$start.date)),
         sprintf("end_date = %s", shQuote(settings$run$end.date)),
+        sprintf("delete.raw = %s", shQuote(settings$model$delete.raw)),
         sprintf("revision = %s", shQuote(settings$model$revision)),
         sep = ", "
       )
-    )
+    ),
+    "",
+    "# copy readme with specs to output"
+    paste("cp", file.path(run_dir, "README.txt"), file.path(run_modeloutdir, "README.txt")),
+    paste("cp", file.path(run_dir, "segments.csv"), file.path(run_modeloutdir, "segments.csv")),
+    "",
+    "# Concatenate segment log files",
+    paste("echo \"\n--> contents of", job_logfiles, ":\" && cat", job_logfiles),
+    "",
+    if (isTRUE(as.logical(settings$model$delete.raw))) {
+      c(
+        "# Remove per-segment outputs & logs after concatenating to job outdir",
+        paste(
+          "find", segment_rootdir,
+          "-name sipnet.out -or -name logfile.txt",
+          "-or -name README.txt -or -name segments.csv",
+          "-delete"
+        )
+      )
+    },
+    "",
+    "echo -e \"MODEL FINISHED\nLogfile is located at '${OUTDIR}/logfile.txt'\" >&3"
   )
   writeLines(segmented_jobsh_lines, segmented_jobsh_file)
   if (replace_and_link) {
