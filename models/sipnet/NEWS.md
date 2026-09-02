@@ -1,5 +1,12 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Improvements to the job.sh written by `write_segmented_configs`:
+  - Now places README.txt, segments.csv, and the full log files from each
+    segment, into the outdir (as was already done for one-segment runs).
+  - Now respects `settings$model$delete.raw` by deleting sipnet.out from segment
+    dirs as well as the from the job outdir
+  - No longer calls model2netcdf.SIPNET() inside each segment dir (it was
+    redundant with the whole-job netcdf output).
 * `split_inputs.SIPNET` now avoids internal time format conversions, giving a
   substantial speedup and reduced memory use when processing multi-year files.
 * `model2netcdf.SIPNET` now detects the number of timesteps per day by taking the maximum count across all days in the first simulation year, rather than reading only from day 1. This prevents a factor-of-N error in flux unit conversions when the first day of output is partial (fewer timesteps than a complete day) (#3624, #3989).

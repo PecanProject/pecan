@@ -349,7 +349,7 @@ write_segment_configs <- function(
       )
     ),
     "",
-    "# copy readme with specs to output"
+    "# copy readme with specs to output",
     paste("cp", file.path(run_dir, "README.txt"), file.path(run_modeloutdir, "README.txt")),
     paste("cp", file.path(run_dir, "segments.csv"), file.path(run_modeloutdir, "segments.csv")),
     "",
