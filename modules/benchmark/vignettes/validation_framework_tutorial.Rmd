@@ -1,0 +1,222 @@
+---
+title: "PEcAn Benchmarking and Validation Framework Tutorial"
+author: "PEcAn Development Team"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PEcAn Benchmarking and Validation Framework Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+The `PEcAn.benchmark` toolkit provides a modular framework for aligning, evaluating, and visualizing ecosystem model predictions against observational benchmark datasets.
+
+This tutorial walks through the complete workflow of the validation framework:
+1. Understanding data intake schemas and ensemble representation.
+2. Generating simulated observations from a statistical error model with known parameters.
+3. Reshaping EFI long model predictions and temporally aligning model and observation data.
+4. Computing statistical metrics on both the ensemble mean (point metrics) and the full ensemble spread (probabilistic metrics).
+5. Generating diagnostic plots (ribbon/spaghetti, scatter, residual plots) and rendering an automated Quarto validation scorecard.
+6. Substituting custom model predictions and observational data.
+
+---
+
+## 1. Input Data Schemas and Ensemble Representation
+
+The validation toolkit expects model outputs and observations in standardized formats.
+
+### Model Ensemble Output (EFI Long Format)
+Model ensemble outputs follow the EFI (Ecological Forecasting Initiative) standard long format:
+
+* `datetime`: Timestamp string (e.g. `"2020-01-01 00:00:00"`).
+* `site_id`: Site identifier (e.g. `"socs_sys1"` or `"US-Ha1"`).
+* `parameter`: Integer index or member ID for each ensemble member (e.g. `1, 2, ..., N`).
+* `variable`: CF/PEcAn standard variable name (e.g. `"TotSoilCarb"`, `"NEE"`, `"GPP"`).
+* `prediction`: Model output numeric prediction value.
+
+### Observation Dataset
+Observational data require at minimum:
+* `date` / `time`: Timestamp (POSIXct or parseable string).
+* `obs_mean` / `obvs`: Observational numeric mean value.
+* `obs_sd` / `obvs_sd` (optional): Observational standard deviation / measurement error.
+* `site_id` / `site` (optional): Site identifier matching the model dataset.
+
+---
+
+## 2. Statistical Error Model and Fixture Generation
+
+To evaluate model metrics against known true error parameterizations, simulated observations can be generated using an explicit statistical error model:
+
+$$o_{v,t} = m_{v,t} + S_v(\beta_v + \epsilon_{v,t}), \qquad \epsilon_{v,t} \sim N(0, \tau_v^2)$$
+
+Where:
+* $o_{v,t}$ is the simulated observation for variable $v$ at time $t$;
+* $m_{v,t}$ is the ensemble mean prediction;
+* $S_v$ is the scale factor (standard deviation of the ensemble mean);
+* $\beta_v$ is the relative bias parameter (e.g. $0.30$, representing relative bias of $30\%$);
+* $\tau_v$ is the relative random error standard deviation (e.g. $0.50$, representing random noise equal to $50\%$ of variability).
+
+### R Simulation Code (Reference)
+
+```r
+# Side-note: R snippet used to generate observation fixtures from an error model
+set.seed(42)
+output_scale <- stats::sd(ensemble_mean)
+
+relative_bias  <- 0.3 # 30% relative bias
+relative_error <- 0.5 # 50% relative error noise
+
+simulated_observation <- ensemble_mean +
+  output_scale * (
+    relative_bias +
+      stats::rnorm(length(ensemble_mean), mean = 0, sd = relative_error)
+  )
+```
+
+In `PEcAn.benchmark`, precomputed text fixtures (`small_salinas_ensemble.csv` and `small_salinas_obs.csv`) are provided in package `extdata` for fast, reproducible offline testing.
+
+---
+
+## 3. Data Intake, Reshaping, and Alignment
+
+We load the package and read the precomputed fixtures:
+
+```{r load_data}
+library(PEcAn.benchmark)
+
+# Path to built-in simulation fixtures
+extdata_dir <- system.file("extdata", package = "PEcAn.benchmark")
+if (extdata_dir == "" || !file.exists(file.path(extdata_dir, "small_salinas_ensemble.csv"))) {
+  extdata_dir <- file.path(getwd(), "../inst/extdata")
+}
+
+model_csv <- file.path(extdata_dir, "small_salinas_ensemble.csv")
+obs_csv   <- file.path(extdata_dir, "small_salinas_obs.csv")
+
+raw_model <- read.csv(model_csv)
+raw_obs   <- read.csv(obs_csv)
+
+head(raw_model[, c("datetime", "site_id", "parameter", "variable", "prediction")])
+head(raw_obs[, c("date", "site_id", "variable", "obs_mean", "obs_sd")])
+```
+
+### Reshaping EFI Long Data to Ensemble Matrix (`efi_long_to_array`)
+
+To retain individual member trajectory information for spaghetti plots and probabilistic metrics (like CRPS), we reshape the long model dataset into an ensemble matrix:
+
+```{r reshape}
+# Reshape EFI long format dataframe to a (time x member) matrix
+ens_mat <- efi_long_to_array(raw_model, var = "TotSoilCarb", site = "socs_sys1")
+
+# Summary data frame with ensemble mean and 90% prediction intervals
+model_summary <- data.frame(
+  time = attr(ens_mat, "time"),
+  value = rowMeans(ens_mat, na.rm = TRUE),
+  model_q05 = apply(ens_mat, 1, quantile, probs = 0.05, na.rm = TRUE),
+  model_q95 = apply(ens_mat, 1, quantile, probs = 0.95, na.rm = TRUE),
+  site = "socs_sys1"
+)
+
+# Observation data frame
+obs_filtered <- raw_obs[raw_obs$site_id == "socs_sys1" & raw_obs$variable == "TotSoilCarb", ]
+obs_summary <- data.frame(
+  time = as.POSIXct(obs_filtered$date, tz = "UTC"),
+  value = obs_filtered$obs_mean,
+  obvs_sd = obs_filtered$obs_sd,
+  site = "socs_sys1"
+)
+```
+
+### Temporal Alignment (`align_by_time`)
+
+We align model predictions and observations in time within a half-year tolerance window (for annual observation alignment):
+
+```{r align}
+# Align model summary and observations by timestamp
+aligned_df <- align_by_time(model_summary, obs_summary, tolerance_secs = 365 * 86400 / 2)
+
+# Match ensemble matrix indices to aligned time points
+aligned_indices <- match(aligned_df$time, model_summary$time)
+aligned_ens_mat <- ens_mat[aligned_indices, , drop = FALSE]
+attr(aligned_df, "ensemble_matrix") <- aligned_ens_mat
+
+head(aligned_df)
+```
+
+---
+
+## 4. Metric Calculations and Interpretation
+
+The framework categorizes evaluation metrics into two groups:
+
+1. **Point Metrics on Ensemble Mean**: Evaluates deterministic skill of the ensemble mean vector $\bar{m}$.
+   * **BIAS / Mean Bias Error**: $\frac{1}{N}\sum (\bar{m}_i - o_i)$. Quantifies systematic over- or under-prediction.
+   * **RMSE (Root Mean Squared Error)**: $\sqrt{\frac{1}{N}\sum (\bar{m}_i - o_i)^2}$. Overall magnitude of error.
+   * **MAE (Mean Absolute Error)**: $\frac{1}{N}\sum |\bar{m}_i - o_i|$. L1 norm error distance.
+   * **R2 (Squared Pearson Correlation)**: Coefficient of determination indicating proportion of variance explained.
+
+2. **Spread / Probabilistic Metrics on Full Ensemble**: Evaluates prediction uncertainty and ensemble dispersion.
+   * **COVERAGE (Prediction Interval Coverage)**: Fraction of observations falling within the 90% ensemble prediction interval $[q_{05}, q_{95}]$.
+   * **CRPS (Continuous Ranked Probability Score)**: Evaluates full predictive probability distribution against observations using `scoringRules::crps_sample()` (or an analytical sample score fallback).
+
+```{r metrics}
+# Compute complete metric suite
+metrics_results <- compute_metrics(
+  aligned_df,
+  metrics = c("BIAS", "RMSE", "MAE", "R2", "COVERAGE", "CRPS")
+)
+
+print(metrics_results)
+```
+
+---
+
+## 5. Visualizations and Automated Reporting
+
+### Spaghetti + Ribbon Timeseries Plot (`metric_timeseries_plot`)
+
+Renders individual member trajectories (spaghetti) under the $q_{05}/q_{95}$ prediction ribbon alongside observations and error bars:
+
+```{r plot_timeseries}
+p_ts <- metric_timeseries_plot(aligned_df, var = "TotSoilCarb (gC/m2)")
+print(p_ts)
+```
+
+### Diagnostic Scatter Plot (`metric_scatter_plot`)
+
+Plots observed values against predicted ensemble mean values:
+
+```{r plot_scatter}
+p_sc <- metric_scatter_plot(aligned_df, var = "TotSoilCarb")
+print(p_sc)
+```
+
+### Residual Plot (`metric_residual_plot`)
+
+Plots residuals $(o_i - \bar{m}_i)$ against time or predicted values:
+
+```{r plot_residual}
+p_res <- metric_residual_plot(aligned_df, var = "TotSoilCarb")
+print(p_res)
+```
+
+---
+
+## 6. Substituting Custom Processed Data
+
+To evaluate your own model predictions and observations:
+1. Format model predictions in EFI long format CSV (`datetime`, `site_id`, `parameter`, `variable`, `prediction`).
+2. Format observations with `date`/`time` and `obs_mean`/`obvs`.
+3. Use `efi_long_to_array()` to extract the ensemble matrix.
+4. Pass your aligned data into `align_by_time()` and `compute_metrics()`.
