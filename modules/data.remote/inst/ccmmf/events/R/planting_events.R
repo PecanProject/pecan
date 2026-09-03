@@ -57,7 +57,7 @@ build_planting_events <- function(year, out_dir, matched_dir) {
       dt[, coarse_root_n_kg_m2 := as.numeric(N_COARSEROOT)]
       if ("PFT" %in% names(dt)) {
         pft_l <- tolower(trimws(as.character(dt$PFT)))
-        dt <- dt[!pft_l %in% c("hay", "woody", "other")]
+        dt <- dt[!pft_l %in% c("hay", "other")]
       }
       dt <- keep_event_columns(dt, .planting_event_cols)
       if (nrow(dt)) {
