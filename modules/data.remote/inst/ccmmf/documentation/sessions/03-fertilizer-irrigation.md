@@ -61,8 +61,6 @@ flowchart LR
 
 
 
-
-
 ## Paths for this session
 
 Expect `$LANDIQ_GAPFILLED` from [Session 1](01-landiq.md) and `$MATCHED_DIR` from [Session 2](02-phenology.md). Paths come from [setup_env.sh](../setup_env.sh). Full tree: [Data layout](00-setup.md#data-layout).
@@ -85,8 +83,6 @@ $CCMMF_ROOT/
 > New terminal? Run [Session 0 Sec. 0.3](00-setup.md) first (`setup_env` also writes irrigation `config_paths.yml`).
 >
 > Training: keep `$DEMO_TILE` from Session 2 (default `10TEK`).
-
-
 
 ## 3.1 Packaged tables
 
@@ -205,8 +201,6 @@ Rice uses the same daily climate and ET drivers but tracks pond depth instead of
 | MAD               | irrigation trigger (fraction of WHC) | `crop_whc` (3.8)                   |
 
 
-
-
 ## 3.5 CHIRPS download and extract
 
 CHIRPS is daily precipitation (`P_t`). Each inventory year is one **global** daily NetCDF (~0.05 deg); California is subsetted during parcel extract, not at download.
@@ -232,8 +226,6 @@ Columns: `parcel_id`, `date`, `precip_mm_day`.
 ```bash
 Rscript -e "arrow::read_parquet('_results_chirps/chirps-${TARGET_YEAR}.parquet') |> dplyr::glimpse()"
 ```
-
-
 
 ## 3.6 CIMIS download and extract
 
@@ -263,18 +255,16 @@ Columns: `parcel_id`, `date`, `etref_mm_day`.
 Rscript -e "arrow::open_dataset('_results_v2/cimis-extracted') |> dplyr::glimpse()"
 ```
 
-
-
 ## 3.7 BISm crop coefficients (`Kc`)
 
 The water balance uses **Basic Irrigation Scheduling** (BIS / BISm) crop coefficients from packaged `PEcAn.data.land::bism_kc_by_crop`: `ET[t] = ETref[t] * Kc[t]`, with `Kc` driven by canopy cover `fc` from Session 2 (Sec. 3.6).
 
 
-| Piece                     | Role                                                                 |
-| ------------------------- | -------------------------------------------------------------------- |
-| `bism_kc_by_crop`         | Maps LandIQ `CLASS` / `SUBCLASS` to a BIS crop and `Kc(fc)` schedule |
+| Piece                     | Role                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `bism_kc_by_crop`         | Maps LandIQ `CLASS` / `SUBCLASS` to a BIS crop and `Kc(fc)` schedule                  |
 | Session 2 `fc[t]`         | Canopy cover interpolated daily from MSLSP phenology dates (`mslsp_to_canopycover()`) |
-| `PEcAn.data.land` helpers | `eto_to_etc` / BISm `Kc` curves used inside `tar_make`               |
+| `PEcAn.data.land` helpers | `eto_to_etc` / BISm `Kc` curves used inside `tar_make`                                |
 
 
 Inspect the table:
@@ -285,29 +275,26 @@ Rscript -e 'library(PEcAn.data.land); data(bism_kc_by_crop); dplyr::glimpse(bism
 
 Rebuild path: `modules/data.land/data-raw/bism_kc_by_crop.R` from `bism_crop_coefficients.csv`.
 
-## 3.8 MAD, rooting depth, and irrigation type (`crop_whc`)
+## 3.8 MAD and rooting depth (`crop_whc`)
 
 Per-crop rooting depth and MAD in `PEcAn.data.land::crop_whc` (FAO), joined on BIS `crop_name`:
 
 
-| Column / concept  | Role                                                                                                       |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| `rooting_depth_m` | Maximum effective rooting depth (m) (FAO)                                                                  |
-| `whc_min_frac`    | MAD threshold (FAO): minimum soil water as a fraction of WHC                                               |
-| Irrigation type   | From LandIQ / crop mapping: `none` / `canopy` / `soil` / `flood` (selects event method and rice pond path) |
+| Column / concept  | Role                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| `rooting_depth_m` | Maximum effective rooting depth (m) (FAO)                    |
+| `whc_min_frac`    | MAD threshold (FAO): minimum soil water as a fraction of WHC |
 
 
 ```bash
 Rscript -e 'library(PEcAn.data.land); data(crop_whc); dplyr::glimpse(crop_whc)'
 ```
 
-`whc_min_frac` is the MAD threshold: irrigation triggers when soil storage falls below this fraction of WHC. `rooting_depth_m` sets the rooting zone depth. Irrigation type routes each crop to the generic bucket balance or the flooded rice path.
+`whc_min_frac` is the MAD threshold: irrigation triggers when soil storage falls below this fraction of WHC. `rooting_depth_m` sets the rooting zone depth.
 
 Rebuild path: `modules/data.land/data-raw/crop_whc.R` from `crop_whc.csv`.
 
 ---
-
-
 
 ## 3.9 SSURGO weights (WHC)
 
@@ -352,9 +339,9 @@ This step joins every input above. For each parcel and crop season, the water ba
 ```mermaid
 flowchart TD
   LIQ["LandIQ CLASS / SUBCLASS"] --> BISM["bism_kc_by_crop"]
-  LIQ --> ITYPE["irrigation type"]
   BISM --> WHCT["crop_whc\nMAD, rooting depth"]
-  CAN["Session 2 MSLSP\nfc canopy cover"] --> KC["Kc(fc) via BIS"]
+  BISM --> ROUTE["crop_name == Rice?\nflood pond : soil bucket"]
+  CAN["Session 2 canopy"] --> KC["Kc(fc) via BIS"]
   BISM --> KC
   CIMIS["CIMIS ETref"] --> ETC["ET = ETref x Kc"]
   KC --> ETC
@@ -363,7 +350,8 @@ flowchart TD
   ETC --> WB["water balance"]
   WHC --> WB
   WHCT --> WB
-  ITYPE --> WB
+  ROUTE --> WB
+  WB --> EVT["events: method flood or canopy"]
 ```
 
 
@@ -387,8 +375,6 @@ Rscript -e 'arrow::open_dataset(file.path(Sys.getenv("EVENT_OUTPUT_DIR"), "irrig
 Columns `parcel_id`, `ens_id`, `date`, `amount_mm`, and `method`. Rows with `amount_mm > 0` are irrigation events.
 
 ---
-
-
 
 ## Statewide
 
