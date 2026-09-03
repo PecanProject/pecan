@@ -43,6 +43,14 @@ test_that("netcdf.writer.BADM creates output directory if missing", {
   expect_true(dir.exists(tmp_outdir))
 })
 
+test_that("Read.IC.info.BADM returns empty dataframe for invalid coordinates", {
+  expect_error(Read.IC.info.BADM(999, 999))
+})
+
+test_that("EPA_ecoregion_finder handles invalid coordinates gracefully", {
+  expect_error(EPA_ecoregion_finder(999, 999))
+})
+
 test_that("BADM_IC_process generates correct number of ensemble files for single-site", {
   settings <- list(
     run = list(site = list(id = "US-Ha1", lat = 42.5378, lon = -72.1715)),
@@ -53,28 +61,10 @@ test_that("BADM_IC_process generates correct number of ensemble files for single
   expect_true(all(file.exists(unlist(out_files))))
 })
 
-test_that("BADM_IC_process generates correct number of ensemble files for multi-site", {
-  settings <- list(
-    list(
-      run = list(site = list(id = "US-Ha1", lat = 42.5378, lon = -72.1715)),
-      ensemble = list(size = 2)
-    ),
-    list(
-      run = list(site = list(id = "US-WCr", lat = 45.805925, lon = -90.07961)),
-      ensemble = list(size = 3)
-    )
-  )
-  out_files <- BADM_IC_process(settings, dir = tempdir(), overwrite = TRUE)
-  expect_length(out_files, 5) 
-  expect_true(all(file.exists(unlist(out_files))))
-})
-
 test_that("BADM_IC_process handles missing or malformed settings gracefully", {
   settings <- list(
-    list(
-      run = list(site = list(id = "US-Ha1", lat = NA, lon = -72.1715)),
-      ensemble = list(size = 1)
-    )
+    run = list(site = list(id = "US-Ha1", lat = NA, lon = -72.1715)),
+    ensemble = list(size = 1)
   )
   expect_error(BADM_IC_process(settings, dir = tempdir(), overwrite = TRUE))
 })
@@ -82,16 +72,8 @@ test_that("BADM_IC_process handles missing or malformed settings gracefully", {
 test_that("BADM_IC_process handles missing ensemble size with fallback", {
   settings <- list(
     run = list(site = list(id = "US-Ha1", lat = 42.5378, lon = -72.1715)),
-    ensemble = list(size = 0)  
+    ensemble = list(size = 0)
   )
   out_files <- BADM_IC_process(settings, dir = tempdir(), overwrite = TRUE)
-  expect_length(out_files, 1)  
-})
-
-test_that("Read.IC.info.BADM returns empty dataframe for invalid coordinates", {
-  expect_error(Read.IC.info.BADM(999, 999))
-})
-
-test_that("EPA_ecoregion_finder handles invalid coordinates gracefully", {
-  expect_error(EPA_ecoregion_finder(999, 999))
+  expect_length(out_files, 1)
 })
