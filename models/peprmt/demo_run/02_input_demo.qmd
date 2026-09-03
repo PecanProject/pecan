@@ -116,6 +116,12 @@ settings <- settings_raw |>
     path = file.path("data", "PEPRMT_specific_inputs"),
     path_template = "{path}/{id}_formatted.csv"
   ) |>
+  setEnsemblePaths(
+    n_reps = 1,
+    input_type = "evi",
+    path = file.path("data", "evi"),
+    path_template = "{path}/{id}_evi.csv"
+  ) |>
   # helper functions from peprmt/R/helpers.R to address having multiple grid 
   # cells and date ranges in the same site_info file
   papply(id2grid) |>
@@ -178,9 +184,58 @@ for(i in 1:nrow(site_info)){
 }
 ```
 
+## EVI
+
+To provide EVI input data for each run, we can either manually load remote sensing data and interpolate to a daily timestep, or just use provided inputs. Here is code to do this manually, which requires wetland boundaries in `raw-data/boundaries` and login information for NASA earth data. This is not run by default because it takes a long time to run
+
+#```{r load-EVI}
+library(PEcAn.remote)
+
+# Set up folder for formatted EVI data
+dir.create(here::here("models","peprmt","demo_run","data","evi"))
+
+# Fill in processed files
+for(i in 1:nrow(site_info)){
+  for(ens in 1:ensemble_size){
+    in.path <- here::here("models","peprmt","demo_run","raw-data","boundaries",
+                          paste0(site_info$id[i], ".geojson"))
+    in.prefix <- paste0(site_info$id[i], "_evi")
+    start_date <- site_info$met.start[i]
+    end_date <- site_info$met.end[i]
+    outfolder <- paste0("data/evi")
+    
+    # Format and save files
+    result <- hls2model.PEPRMT(in.path, in.prefix, outfolder, 
+                               start_date, end_date,
+                               edl_username = Sys.getenv("edl_username"), 
+                               edl_password = Sys.getenv("edl_password"))
+  }
+}
+#```
+
+Alternatively, we can load pre-processed files from raw-data/site-data-formatted.
+
+```{r}
+dir.create(here::here("models","peprmt","demo_run","data","evi"))
+
+for(i in 1:nrow(site_info)){
+  in.path <- here::here("models","peprmt","demo_run","raw-data","site-data-formatted",
+                        paste0(site_info$id[i], "_formatted.csv"))
+  
+  data <- read_csv(in.path) %>%
+    dplyr::select(Year, DOY_disc, EVI)
+  
+  outfolder <- here::here("models","peprmt","demo_run","data", "evi",
+                        paste0(site_info$id[i], "_evi.csv"))
+  
+  readr::write_csv(data, outfolder)
+}
+```
+
+
 ## Other inputs
 
-PEPRMT requires a variety of inputs that we are currently supplying manually. These input data are stored in `raw-data/site-data-formatted`, so all we need to do is copy then over to the `data` folder, which is used in our demo run.
+PEPRMT requires a variety of inputs that we are currently supplying manually (specifically, depth, salinity, nitrate, wetland age, soil organic matter, and light use efficiency). These input data are stored in `raw-data/site-data-formatted`, so all we need to do is copy then over to the `data` folder, which is used in our demo run.
 
 ```{r load-other-inputs}
 # Set up folder

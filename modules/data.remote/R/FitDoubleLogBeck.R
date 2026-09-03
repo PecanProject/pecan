@@ -1,55 +1,35 @@
-# Function to run across all grid cells/years
-calc_curve <- function(df, method = "Beck") {
-  # Add explicit NAs
-  x <- df |>
-    tidyr::complete(img_doy = 1:365)
-  
-  # Run double log function
-  if (method == "Beck") {
-    fit <- FitDoubleLogBeck(x$evi, hessian = T, ninit = 100)
-  } else if (method == "Elmore") {
-    fit <- FitDoubleLogElmore(x$evi, hessian = T, ninit = 100)
-  } else {
-    stop("Method not recognized. Options are Beck and Elmore")
-  }
-  
-  # Format output
-  out <- data.frame(
-    param_name = names(fit$params),
-    param_value = fit$params,
-    stdError = fit$stdError
-  )
-  rownames(out) <- NULL
-  
-  return(out)
-}
-
-# Code adapted by ASL from greenbrown, which is not available for this version of R
-
-library(zoo)
-
-FitDoubleLogBeck <- structure(
-  function(
-    ## title<<
-    ## Fit a double logisitic function to a vector according to Beck et al. (2006)
-    ## description<<
-    ## This function fits a double logistic curve to observed values using the function as described in Beck et al. (2006) (equation 3).
-    x, ### vector or time series to fit
-    t = 1:length(x), ### time steps
-    tout = t, ### time steps of output (can be used for interpolation)
-    weighting = TRUE, ### apply the weighting scheme to the observed values as described in Beck et al. 2006? This is useful for NDVI observations because higher values will get an higher weight in the estimation of the double logisitic function than lower values.
-    hessian = FALSE, ### compute standard errors of parameters based on the Hessian?
-    plot = FALSE, ### plot iterations for logistic fit?
-    ninit = 30, ### number of inital parameter sets from which to start optimization
+#' Fit a double logistic function to a vector according to Beck et al. (2006)
+#' 
+#' @description
+#' This function fits a double logistic curve to observed values using the 
+#' function as described in Beck et al. (2006) (equation 3). Code slightly 
+#' adapted from greenbrown, which is not currently maintained
+#' https://greenbrown.r-forge.r-project.org/index.php
+#'
+#' @param x vector or time series to fit
+#' @param t time steps
+#' @param tout time steps of output (can be used for interpolation)
+#' @param weighting apply the weighting scheme to the observed values as described in Beck et al. 2006? This is useful for NDVI observations because higher values will get an higher weight in the estimation of the double logisitic function than lower values.
+#' @param hessian compute standard errors of parameters based on the Hessian?
+#' @param plot plot iterations for logistic fit?
+#' @param ninit number of inital parameter sets from which to start optimization
+#' @param ... further arguments (currently not used)
+#'
+#' @references Beck, P.S.A., C. Atzberger, K.A. Hodga, B. Johansen, A. Skidmore (2006): Improved monitoring of vegetation dynamics at very high latitudes: A new method using MODIS NDVI. - Remote Sensing of Environment 100:321-334.
+#'
+#' @returns The function returns a list with fitted values, parameters, fitting formula and standard errors if hessian is TRUE
+#' @export
+FitDoubleLogBeck <- function(
+    x,
+    t = 1:length(x), 
+    tout = t, 
+    weighting = TRUE,
+    hessian = FALSE, 
+    plot = FALSE, 
+    ninit = 30, 
     ...
-    ### further arguments (currently not used)
-    ## references<<
-    ## Beck, P.S.A., C. Atzberger, K.A. Hodga, B. Johansen, A. Skidmore (2006): Improved monitoring of vegetation dynamics at very high latitudes: A new method using MODIS NDVI. - Remote Sensing of Environment 100:321-334.
-    ## seealso<<
-    ## \code{\link{TSGFdoublelog}}, \code{\link{Phenology}}
   ) {
     n <- length(x)
-    avg <- mean(x, na.rm = TRUE)
     mx <- max(x, na.rm = TRUE)
     mn <- min(x, na.rm = TRUE)
     ampl <- mx - mn
@@ -109,11 +89,11 @@ FitDoubleLogBeck <- structure(
                      x = x, weights = weights,
                      method = "BFGS", control = list(maxit = 1000), hessian = FALSE
       )
-      opt.df <- cbind(
-        cost = unlist(plyr::llply(opt.l, function(opt) opt$value)),
-        convergence = unlist(plyr::llply(opt.l, function(opt) opt$convergence)),
-        plyr::ldply(opt.l, function(opt) opt$par)
-      )
+      opt.df <- as.data.frame(cbind(
+        cost = vapply(opt.l, `[[`, numeric(1), "value"),
+        convergence = vapply(opt.l, `[[`, integer(1), "convergence"),
+        do.call(rbind, lapply(opt.l, `[[`, "par"))
+      ))
       best <- which.min(opt.df$cost)
       if (opt.df$convergence[best] == 1) {
         opt <- opt.l[[best]]
@@ -129,7 +109,6 @@ FitDoubleLogBeck <- structure(
         prior <- rbind(prior, opt$par)
         xpred <- .doubleLog(opt$par, t)
       }
-      parinit <- opt$par
       mn <- opt$par[1]
       mx <- opt$par[2]
       sos <- opt$par[3]
@@ -193,9 +172,12 @@ FitDoubleLogBeck <- structure(
     #    } else {
     xpred <- .doubleLog(opt$par, tout)
     #    }
-    xpred.out <- zoo(xpred, order.by = tout)
+    xpred.out <- data.frame(
+      time = tout,
+      predicted = xpred
+    )
     if (plot) {
-      plyr::llply(opt.l, function(opt) {
+      lapply(opt.l, function(opt) {
         xpred <- .doubleLog(opt$par, t)
         lines(t, xpred, col = "cyan")
       })
@@ -213,22 +195,4 @@ FitDoubleLogBeck <- structure(
     }
     
     return(output)
-    ### The function returns a list with fitted values, parameters, fitting formula and standard errors if hessian is TRUE
-  }, ex = function() {
-    # select one year of data
-    x <- as.vector(window(ndvi, start = c(1994, 1), end = c(1994, 12)))
-    plot(x)
-    
-    # fit double-logistic function to one year of data
-    fit <- FitDoubleLogBeck(x)
-    lines(fit$predicted, col = "blue")
-    
-    # # do more inital trials, plot iterations and compute parameter uncertainties
-    # FitDoubleLogBeck(x, hessian=TRUE, plot=TRUE, ninit=100)
-    #
-    # # fit double-logistic function to one year of data,
-    # # interpolate to daily time steps and calculate phenology metrics
-    # tout <- seq(1, 12, length=365)	# time steps for output (daily)
-    # fit <- FitDoubleLogBeck(x, tout=tout)
-    # PhenoDeriv(fit$predicted, plot=TRUE)
-  })
+  }

@@ -117,12 +117,19 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
   met_path <- settings$run$inputs$met$path
   met <- utils::read.table(met_path, header = T)
   met_vars <- colnames(met)[!colnames(met) %in% c("Year", "DOY_disc")]
+  
+  # EVI
+  evi_path <- settings$run$inputs$evi$path
+  evi <- utils::read.table(evi_path, header = T)
+  evi_vars <- colnames(evi)[!colnames(evi) %in% c("Year", "DOY_disc")]
 
   peprmt_specific_input_path <- settings$run$inputs$PEPRMT$path
 
   run_data <- utils::read.csv(peprmt_specific_input_path) |>
     dplyr::select(-dplyr::any_of(met_vars)) |>
     dplyr::right_join(met) |>
+    dplyr::select(-dplyr::any_of(evi_vars)) |>
+    dplyr::right_join(evi) |>
     dplyr::mutate(site = settings$run$site$id)
 
   # Event handling

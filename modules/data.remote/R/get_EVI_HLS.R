@@ -12,7 +12,7 @@
 #' @param end_date imagery end date
 #' @param roi region of interest (spatial vector created using terra::vect)
 #'
-#' @returns data.frame of mean EVI for each date with available HLS data
+#' @returns data.frame of mean EVI for each date that has available HLS data
 #' @export
 #' 
 #' @author Abigail Lewis
@@ -41,8 +41,14 @@ get_HLS_EVI <- function(edl_username,
   items <- s |>
     rstac::stac_search(collections = HLS_col,
                        bbox = bbox,
-                       datetime = roi_datetime) |>
+                       datetime = roi_datetime,
+                       limit = 1000) |>
     rstac::post_request()
+  
+  if (length(items$features) == 0) {
+    stop("No HLS scenes found for the specified ROI and date range.")
+  }
+  
   assets <- rstac::items_assets(items)
   sf_items <- rstac::items_as_sf(items)
   # Add Granule ID for each feature
@@ -52,6 +58,13 @@ get_HLS_EVI <- function(edl_username,
   asset_urls <- t(sapply(items$features, extract_asset_urls))
   colnames(asset_urls) <- c('blue', 'nir', 'red', 'fmask')
   sf_items <- cbind(sf_items, asset_urls)
+  sf_items <- sf_items |>
+    dplyr::filter(
+      !red == "NULL", #NULL is stored as character
+      !nir == "NULL",
+      !blue == "NULL",
+      !fmask == "NULL"
+    )
   
   # Filter based on cloud cover
   sf_items <- sf_items[sf_items$eo.cloud_cover < 100,]
@@ -64,11 +77,17 @@ get_HLS_EVI <- function(edl_username,
   terra::setGDALconfig("GDAL_DISABLE_READDIR_ON_OPEN", value = "EMPTY_DIR")
   terra::setGDALconfig("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", value = "TIF")
   
-  # Test opening and crop
+  # Open and crop
   red_stack <- lapply(sf_items$red, open_hls, roi = roi)
   nir_stack <- lapply(sf_items$nir, open_hls, roi = roi)
   blue_stack <- lapply(sf_items$blue, open_hls, roi = roi)
-  fmask_stack <- lapply(sf_items$fmask, open_hls, roi = roi)
+  
+  fmask_stack <- lapply(
+    sf_items$fmask,
+    open_hls,
+    roi = roi,
+    is_fmask = TRUE
+  )
   
   # Calculate EVI For all of our scenes
   evi_stack <- mapply(calculate_EVI, nir_stack, red_stack, blue_stack, SIMPLIFY = FALSE)
@@ -138,32 +157,39 @@ extract_asset_urls <- function(feature) {
 #'
 #' @param url URL of scene
 #' @param roi region of interest
+#' @param is_fmask Whether the raster is an fmask quality layer
 #'
 #' @returns raster of the specified scene
 #' 
-open_hls <- function(url, roi = NULL) {
-  if(is.null(url)){return(NA)}
-  # Add VSICURL prefix
-  url <- paste0('/vsicurl/', url)
-  # Retrieve metadata
-  meta <- terra::describe(url)
-  # Check if dataset is Quality Layer (Fmask) - no scaling this asset (int8 datatype)
-  is_fmask <- any(grep("Fmask", meta))
-  # Check if Scale is present in band metadata
-  will_autoscale <- any(grep("Scale:", meta))
-  # Read the raster
+open_hls <- function(url, roi = NULL, is_fmask = FALSE) {
+  
+  # Return NULL if no URL is available
+  if (is.null(url) || is.na(url)) {
+    return(NULL)
+  }
+  
+  # Add VSICURL prefix for remote access
+  url <- paste0("/vsicurl/", url)
+  
+  # Open raster
   r <- terra::rast(url)
-  # Apply Scale Factor if necessary
-  if (!will_autoscale && !is_fmask){
-    print(paste("No scale factor found in band metadata. Applying scale factor of 0.0001 to", basename(url)))
+  
+  # Apply scale factor to HLS reflectance bands
+  # Fmask is an integer quality layer and should not be scaled
+  meta <- terra::describe(url)
+  will_autoscale <- any(grepl("Scale:", meta))
+  
+  if (!will_autoscale && !is_fmask) {
     r <- r * 0.0001
   }
-  # Crop if roi specified
-  if (!is.null(roi)){
-    # Reproject roi to match crs of r
+  
+  # Crop and mask to ROI
+  if (!is.null(roi)) {
     roi_reproj <- terra::project(roi, terra::crs(r))
-    r <- terra::mask(terra::crop(r, roi_reproj), roi_reproj)
+    r <- terra::crop(r, roi_reproj)
+    r <- terra::mask(r, roi_reproj)
   }
+  
   return(r)
 }
 
@@ -180,7 +206,13 @@ calculate_EVI <- function(nir, red, blue){
   return(evi)
 }
 
-# Filter based on quality
+#' FMASK filter
+#'
+#' @param fmask fmask values
+#' @param selected_bit_nums selected bit numbers
+#'
+#' @returns mask
+
 build_mask <- function(fmask, selected_bit_nums){
   # Create a mask of all zeros
   mask <- terra::rast(fmask, vals=0)
@@ -193,54 +225,51 @@ build_mask <- function(fmask, selected_bit_nums){
   return(mask)
 }
 
-start_date <- as.Date("2026-01-01")
-end_date <- as.Date("2026-12-31")
-spat_vect <- data.frame(Longitude = c(-76.54977013137942,
-                                      -76.54990270236144,
-                                      -76.5498590234411,
-                                      -76.54971736079783,
-                                      -76.54977013137942),
-                        Latitude = c(38.87398361209654,
-                                     38.87392850962871,
-                                     38.873852498024824,
-                                     38.87390242573706,
-                                     38.87398361209654))
-spat_vect <- as.matrix(spat_vect)
 
-roi <- terra::vect(spat_vect, type = "polygons", crs = "EPSG:4326")
-source("FitDoubleLogBeck.R")
+#' Wrapper function for double log calculation
+#'
+#' @param df data frame
+#'
+#' @returns modeled evi on each date
 
-
-fits_beck <- calc_curve(df = df, method = "Beck") |>
-  dplyr::bind_rows()
-
-pred_df_beck <- data.frame(doy = rep(1:365)) |>
-  dplyr::cross_join(fits_beck |>
-              tidyr::pivot_wider(names_from = param_name,
-                          values_from = c(param_value, stdError))) |>
-  dplyr::mutate(pred = param_value_mn + (param_value_mx - param_value_mn) *
-           (1/(1 + exp(-param_value_rsp * (doy - param_value_sos))) +
-              1/(1 + exp(param_value_rau * (doy - param_value_eos))))) |>
-  dplyr::left_join(df |> dplyr::rename(doy = img_doy)) |>
-  dplyr::mutate(method = "Beck")
-
-
-pred_df_beck |>
-  ggplot2::ggplot(ggplot2::aes(x = doy, y = evi, color = as.factor(lubridate::year(Date)))) +
-  ggplot2::geom_point() +
-  ggplot2::geom_line(ggplot2::aes(y = pred), color = "blue") +
-  ggplot2::theme_minimal() +
-  ggplot2::labs(title = "EVI and Double Log Fit (Beck Method)",
-       x = "Day of Year",
-       y = "EVI")
-
-formatted <- pred_df_beck |>
-  select(id, doy, evi, pred, method, Date) |>
-  rename(evi_observed = evi,
-         evi_predicted = pred) |>
-  mutate(Date_mod = as.Date(doy - 1, origin = paste0(year, "-01-01")))
-
-final <- formatted |>
-  mutate(evi_observed = ifelse(year(Date) == year(Date_mod), evi_observed, NA)) |>
-  select(-Date) |>
-  rename(Date = Date_mod)
+calc_curve_beck <- function(df) {
+  year_to_run <- unique(lubridate::year(df$Date))
+  if(length(year_to_run) >1){
+    stop("EVI has to be calculated one year at a time")
+  }
+  # Add explicit NAs
+  x <- df |>
+    dplyr::mutate(Date = as.Date(Date),
+                  img_doy = lubridate::yday(Date)) |>
+    dplyr::group_by(img_doy) |>
+    dplyr::summarise(
+      Date = min(Date),
+      evi = mean(evi, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    tidyr::complete(img_doy = 1:365)
+  
+  # Run double log function
+  fit <- FitDoubleLogBeck(x$evi, t = x$img_doy, hessian = T, ninit = 100)
+  
+  # Format output
+  out <- data.frame(
+    param_name = names(fit$params),
+    param_value = fit$params,
+    stdError = fit$stdError
+  )
+  rownames(out) <- NULL
+  
+  pred_df_beck <- data.frame(doy = rep(1:365)) |>
+    dplyr::cross_join(out |>
+                        tidyr::pivot_wider(names_from = param_name,
+                                           values_from = c(param_value, stdError))) |>
+    dplyr::mutate(pred = param_value_mn + (param_value_mx - param_value_mn) *
+                    (1/(1 + exp(-param_value_rsp * (doy - param_value_sos))) +
+                       1/(1 + exp(param_value_rau * (doy - param_value_eos))))) |>
+    dplyr::left_join(df |> dplyr::rename(doy = img_doy)) |>
+    dplyr::mutate(method = "Beck",
+                  Date = as.Date(paste0(year_to_run,"-01-01"))+ lubridate::days(doy-1))
+  
+  return(pred_df_beck)
+}
