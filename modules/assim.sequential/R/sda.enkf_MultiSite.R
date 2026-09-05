@@ -258,29 +258,41 @@ sda.enkf.multisite <- function(settings,
         PEcAn.logger::logger.info("The input_design is not found for write configuration function call.")
         return(0)
       }
-      out.configs <- conf.settings %>%
-        `class<-`(c("list")) %>%
-        furrr::future_map2(restart.list, function(settings, restart.arg) {
-          # Loading the model package - this is required bc of the furrr
-          library(paste0("PEcAn.",settings$model$type), character.only = TRUE)
-          # wrtting configs for each settings - this does not make a difference with the old code
-          # if we don't specify the input_design.
-          if (!exists("input_design")) {
-            input_design <- NULL
-          }
-          # wrtting configs for each settings - this does not make a difference with the old code
-          PEcAn.uncertainty::write.ensemble.configs(
-            input_design = input_design,
-            ensemble.size = nens,
-            defaults = defaults,
-            ensemble.samples = ensemble.samples,
-            settings = settings,
-            model = settings$model$type,
-            write.to.db = settings$database$bety$write,
-            restart = restart.arg
-          )
-        }) %>%
-        stats::setNames(site.ids)
+      conf.settings <- conf.settings %>%
+        `class<-`(c("list"))
+      cl <- parallel::makeCluster(parallel::detectCores() - 1)
+      doSNOW::registerDoSNOW(cl)
+      temp.settings <- NULL
+      restart.arg <- NULL
+      out.configs <- foreach::foreach(
+        temp.settings = as.list(conf.settings),
+        restart.arg = restart.list,
+        .packages = c(
+          "Kendall",
+          "purrr",
+          "PEcAn.uncertainty",
+          paste0("PEcAn.", model),
+          "PEcAnAssimSequential"
+        )
+      ) %dopar% {
+        # writing configs for each settings - this does not make a difference with the old code
+        # if we don't specify the input_design.
+        if (!exists("input_design")) {
+          input_design <- NULL
+        }
+        PEcAn.uncertainty::write.ensemble.configs(
+          input_design = input_design,
+          ensemble.size = nens,
+          defaults = defaults,
+          ensemble.samples = ensemble.samples,
+          settings = temp.settings,
+          model = temp.settings$model$type,
+          write.to.db = temp.settings$database$bety$write,
+          restart = restart.arg
+        )
+      } %>% stats::setNames(site.ids)
+      parallel::stopCluster(cl)
+      foreach::registerDoSEQ()
       #now all build_X args are properly formatted for the function to return X
       reads <- build_X(out.configs = out.configs, 
                        settings = settings, 
