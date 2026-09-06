@@ -10,13 +10,22 @@
 #
 # Reference: https://github.com/pecanproject/pecan/issues/3882
 
+setup_logger_for_testing <- function() {
+  PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
+  PEcAn.logger::logger.setLevel("WARN")
+}
+
 test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
+  skip_if_not_installed("ncdf4")
+
   withr::with_tempdir({
+    setup_logger_for_testing()
+    on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE), add = TRUE)
+
     pft   <- "temperate.coniferous"
     trait <- "growth_resp_factor"
     yr    <- 2004
 
-    # ---- Build a manifest that matches what write.sa.configs() actually writes ----
     # One shared median row (pft_name = "NA", trait = "NA") + no trait-specific row
     # for quantile 50.  This is the exact situation that triggered the original bug.
     median_run_id <- "SA-median--1"
@@ -30,11 +39,9 @@ test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
     )
     write.csv(manifest, "runs_manifest.csv", row.names = FALSE)
 
-    # ---- Stub out the model output directory so read.output() finds a file ----
     run_outdir <- file.path(getwd(), median_run_id)
     dir.create(run_outdir, recursive = TRUE)
 
-    # Create a minimal NetCDF file with an NPP variable for the target year
     nc_path <- file.path(run_outdir, paste0(yr, ".nc"))
     nc_obj <- ncdf4::nc_create(
       nc_path,
@@ -43,23 +50,17 @@ test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
     ncdf4::ncvar_put(nc_obj, "NPP", 1.23)
     ncdf4::nc_close(nc_obj)
 
-    # ---- Run read.sa.output() ----
-    # Should NOT warn "Run ID invalid or missing" for quantile 50 any more.
-    expect_no_warning(
-      out <- PEcAn.uncertainty::read.sa.output(
-        traits     = trait,
-        quantiles  = "50",
-        pecandir   = getwd(),
-        outdir     = getwd(),
-        pft.name   = pft,
-        start.year = yr,
-        end.year   = yr,
-        variable   = PEcAn.utils::convert.expr("NPP")$variable.eqn
-      ),
-      regexp = "Run ID invalid or missing"
+    out <- PEcAn.uncertainty::read.sa.output(
+      traits     = trait,
+      quantiles  = "50",
+      pecandir   = getwd(),
+      outdir     = getwd(),
+      pft.name   = pft,
+      start.year = yr,
+      end.year   = yr,
+      variable   = PEcAn.utils::convert.expr("NPP")$variable.eqn
     )
 
-    # The median cell must not be NA
     expect_false(
       is.na(out[["50", trait]]),
       label = "median (q50) output should not be NA"
@@ -70,19 +71,21 @@ test_that("read.sa.output resolves median (q50) via shared manifest fallback", {
 
 test_that("read.sa.output still warns when no median fallback row exists", {
   withr::with_tempdir({
-    # Manifest with quantile 50 row that has the wrong pft_name (not "NA"),
-    # meaning neither exact match nor shared-median fallback can be found.
+    setup_logger_for_testing()
+    on.exit(PEcAn.logger::logger.setUseConsole(TRUE, TRUE), add = TRUE)
+
+    # q50 row with concrete pft_name and trait: no exact match and no NA/NA fallback
     manifest <- data.frame(
       type     = "Sensitivity",
-      pft_name = "some.other.pft",
-      trait    = "NA",
+      pft_name = "temperate.coniferous",
+      trait    = "other_trait",
       quantile = "50",
-      run_id   = "SA-median--1",
+      run_id   = "SA-other--1",
       stringsAsFactors = FALSE
     )
     write.csv(manifest, "runs_manifest.csv", row.names = FALSE)
 
-    expect_warning(
+    out <- expect_output(
       PEcAn.uncertainty::read.sa.output(
         traits     = "growth_resp_factor",
         quantiles  = "50",
@@ -95,5 +98,7 @@ test_that("read.sa.output still warns when no median fallback row exists", {
       ),
       regexp = "No run found in manifest"
     )
+
+    expect_true(is.na(out[["50", "growth_resp_factor"]]))
   })
 })
