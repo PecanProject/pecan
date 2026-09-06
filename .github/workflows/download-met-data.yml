@@ -16,6 +16,7 @@ env:
         
 jobs:
   met-data-download:
+    if: github.repository == 'PecanProject/pecan' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
