@@ -43,7 +43,10 @@ and ensemble analysis (e.g. \code{settings$sensitivity.analysis$ensemble.id},
 \code{settings$ensemble$ensemble.id}).
 }
 \description{
-Write model-specific run scripts and configuration files
+Generates run scripts and configuration files for all analyses (ensemble
+and/or sensitivity analysis) specified in the provided settings. Delegates
+the model-specific config writing to the appropriate \verb{write.config.*}
+function (e.g. \code{write.config.ED2}, \code{write.config.SIPNET}).
 }
 \details{
 \strong{Upstream contract (reads from \code{settings$outdir}):}

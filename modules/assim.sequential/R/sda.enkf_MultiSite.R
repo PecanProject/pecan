@@ -493,7 +493,7 @@ sda.enkf.multisite <- function(settings,
       X <- reads %>% purrr::map(~.x %>% purrr::map_df(~.x[["X"]] %>% t %>% as.data.frame))
       #replacing crazy outliers before it's too late
       if (control$OutlierDetection){
-        X <- outlier.detector.boxplot(X)
+        X <- outlier_detector_boxplot(X)
         PEcAn.logger::logger.info("Outlier Detection.")
       } 
       # convert from forecast list to data frame.

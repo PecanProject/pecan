@@ -1,0 +1,4 @@
+column_number,column_name,contents,notes
+1,event_type,leafon or leafoff,SIPNET event type (one row per date)
+2,site_id,parcel_id,PEcAn site key
+3,date,leaf-on or leaf-off date,leafon from mslsp_50PCGI; leafoff from mslsp_50PCGD

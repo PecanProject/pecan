@@ -4,6 +4,7 @@ litterInit		280
 soilInit		10000
 soilWFracInit	0.5
 snowInit		1.0
+plantStorageNInit 0.0
 fineRootFrac	0.200000
 coarseRootFrac	0.200000
 aMax			112.0
@@ -30,6 +31,7 @@ soilRespMoistEffect	1.000000
 leafOnDay		144
 gddLeafOn		500
 soilTempLeafOn	12.0
+leafOnReallocFrac	0.2
 leafOffDay		285
 leafGrowth		126
 fracLeafFall	1
@@ -60,6 +62,7 @@ soilOrgNInit	135.0
 litterOrgNInit	14.0
 nVolatilizationFrac	0.1
 nLeachingFrac	0.25
+leafNResorptionFrac 0.5
 leafCN			20.0
 woodCN			100.0
 fineRootCN		40.0

@@ -150,16 +150,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     )
 
 
-  # calculate LAI for standard output
-  # LAI = plantLeafC / leafCSpWt
-  # both operands are in carbon units (gC/m2 and gC/m2_leaf),
-  # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
-  param <- utils::read.table(file.path(gsub(pattern = "/out/",
-                                            replacement = "/run/", x = outdir),
-                                       "sipnet.param"), stringsAsFactors = FALSE)
-  leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
-  SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-
+  if (!("LAI" %in% colnames(sipnet_output))) {
+    # When LAI not reported, calculate it from leaf C and leaf specific weight,
+    # with the latter read from the parameter file.
+    # Note the hardcoded + undocumented assumption that ../run/sipnet.param
+    # exists and contains the values that were used to generate this output.
+    # LAI = plantLeafC [gC/m2] / leafCSpWt [gC/m2 leaf] = m2 leaf / m2
+    # both operands are in carbon units (gC/m2 and gC/m2_leaf),
+    # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
+    param <- utils::read.table(file.path(gsub(pattern = "/out/",
+                                              replacement = "/run/", x = outdir),
+                                         "sipnet.param"), stringsAsFactors = FALSE)
+    leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
+    SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
+    sipnet_output$LAI = sipnet_output$plantLeafC * SLA
+  }
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
@@ -208,7 +213,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "litter_carbon_content" = sub.sipnet.output$litter,
       "fine_root_carbon_content" = sub.sipnet.output$fineRootC,
       "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
-      "LAI" = sub.sipnet.output$plantLeafC * SLA,
+      "LAI" = sub.sipnet.output$LAI,
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
