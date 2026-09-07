@@ -1,6 +1,6 @@
 # PEcAn.settings 1.9.1.9000
 
-* `setEnsemblePaths()` now looks up variables in settings$run$site when interpolating path templates, allowing site-specific path components via e.g.
+* `setEnsemblePaths()` now looks up variables in settings$run$site when interpolating path templates (#4100). This allows site-specific path components via e.g.
     ```
     createMultiSiteSettings(s, data.frame(id = ..., grid_cell = ...)) |>
       setEnsemblePaths(..., path_template = "met/{grid_cell}/ERA5.{n}.clim")`
