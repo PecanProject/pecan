@@ -39,9 +39,16 @@ it's common to have different path conventions for met vs IC.
 
 The path template should be a string recognized by \code{glue::glue()},
 with curly braces wrapping any expressions to be interpolated.
-\code{{n}} will be replaced with each value of 1:\code{n_reps}, \code{{id}} will be
-replaced with the siteid of each site, and any other variables need to be
-passed as named arguments in \code{...}.
+Variables in these expressions are resolved in this order:
+\enumerate{
+\item Variables defined in each site's \code{run$site} settings block
+\item Variables passed as named arguments in \code{...} (same value at every site)
+\item \code{{n}} is replaced with the value of \code{1:n_reps}
+\item \code{{id}} is replaced with the siteid of each site.
+}
+
+If the same name is defined in both run$site and \code{...}, uses the latter.
+All variables must have length either 1 or \code{n_reps}.
 
 If \verb{inputs$<input_type>} does not exist, it will be created with a \code{path}
 element that matches the requested pattern. If it does exist, any existing
@@ -67,4 +74,20 @@ m2 <- setEnsemblePaths(
   path_template = "{icdir}/{id}/{n}.nc"
 )
 m2$run$site.a1$inputs
+
+# using site-specific values in the path template:
+m_bysite <- createMultiSiteSettings(
+  templateSettings = s,
+  siteIds = data.frame(id = c("a1", "b2"), grid_cell = c("35N81W", "42N80W"))
+)
+m2_bysite <- setEnsemblePaths(
+  settings = m_bysite,
+  n_reps = 2,
+  input_type = "met",
+  icdir = "some/long/path",
+  GCM = c("CESM2", "MIROC6"),
+  path_template = "{icdir}/{grid_cell}/{GCM}.nc"
+)
+m2_bysite$run$site.a1$inputs
+
 }

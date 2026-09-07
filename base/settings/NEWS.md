@@ -1,5 +1,10 @@
 # PEcAn.settings 1.9.1.9000
 
+* `setEnsemblePaths()` now looks up variables in settings$run$site when interpolating path templates, allowing site-specific path components via e.g.
+    ```
+    createMultiSiteSettings(s, data.frame(id = ..., grid_cell = ...)) |>
+      setEnsemblePaths(..., path_template = "met/{grid_cell}/ERA5.{n}.clim")`
+    ```
 * Breaking: `loadPath.SitePFT(path)` now takes only one argument, removing the previously required but ignored `settings` (@Thomas-Sedhom, #3834).
 * `check.model.settings()` now skips lookup of the model binary path if no DB connection is provided (#3863).
 * When no DB connection is provided to `check.database.settings`, it now skips with an INFO instead of a WARN. Rationale: now that the database is optional, a settings with no DB block is a valid settings.
