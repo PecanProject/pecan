@@ -16,7 +16,7 @@ This example demonstrates how to evaluate the Salinas Organic Cropping Systems (
 The observational Soil Organic Carbon (SOC) data in `observations_soc.csv` (`dataset_id: white_salinas_2020`) is derived from the USDA-ARS Salinas Organic Cropping Systems (SOCS) long-term trial in Salinas, California.
 
 **Primary Citation:**
-> White, K. E., Brennan, E. B., Cavigelli, M. A., & Smith, R. F. (2020). Winter cover crops increase readily decomposable soil carbon, but compost drives total soil carbon during eight years of intensive, organic vegetable production in California. *PLoS ONE*, 15(2), e0228141. [https://doi.org/10.1371/journal.pone.0228141](https://doi.org/10.1371/journal.pone.0228141)
+> White, K. E., Brennan, E. B., & Cavigelli, M. A. (2020). Soil carbon and nitrogen data during eight years of cover crop and compost treatments in organic vegetable production. *Data in Brief*, 33, 106481. [https://doi.org/10.1016/j.dib.2020.106481](https://doi.org/10.1016/j.dib.2020.106481)
 
 ---
 
