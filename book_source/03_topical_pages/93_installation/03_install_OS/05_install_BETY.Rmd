@@ -9,7 +9,3 @@ and initializes BETYdb as part of the PEcAn stack.
 
 For a standalone or bare-metal BETYdb installation, see the
 [BETYdb Technical Guide](https://pecanproject.github.io/bety-documentation/technical/).
-
-The legacy PHP and Ruby/Rails installation instructions previously included
-on this page have been removed because they are outdated and are maintained
-in the BETYdb documentation.
