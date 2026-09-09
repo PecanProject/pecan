@@ -9,7 +9,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+
 - Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
+- Added `metric_Bias()` standalone function and registered `"BIAS"` in `PEcAn.benchmark` metric registry (#4062, #4059).
+- Added `metric_CRPS()` function and registry entry to `PEcAn.benchmark` for Continuous Ranked Probability Score (CRPS) ensemble skill evaluation against observations (#4062).
+- Added `efi_long_to_array()` helper function to `PEcAn.benchmark` for reshaping EFI long format model outputs into wide ensemble member matrices (#4062).
+- Added ensemble member spaghetti line rendering under confidence ribbons in `metric_timeseries_plot()` (#4062).
+- Added `examples/benchmarks/salinas_soc_ensemble/` demonstrating multi-site SOC ensemble validation against Salinas observations out-of-the-box (#4062)
 - Added ensemble calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark (rank histogram, spread-skill ratio, coverage, reliability) for assessing whether an ensemble's spread is well calibrated against observations, complementing the ensemble-mean benchmarking.
 - Added regional calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark: break the ensemble calibration assessment down by land cover class and by EPA/CEC ecoregion, reusing the ensemble calibration diagnostics, with figures.
 - Added an ESA CCI biomass benchmark extension to `inst/ilamb/` in PEcAn.benchmark: a converter for the ESACCI Biomass v7.0 product (2015-2024, with per-pixel uncertainty) to ILAMB-compatible netCDF, plus an observation-error test showing the ensemble overconfidence persists against a modern benchmark and after accounting for observation uncertainty.
@@ -37,6 +43,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
 - The median run's manifest row went in with the literal strings `"NA"` for pft and trait, which `read.csv` turns into real `NA`, so `read.sa.output` never matched the median quantile and `splinefun` silently dropped that knot. Sensitivity analysis output changes as a result: partial variances shift slightly, though rankings are unaffected in the cases checked.
 - Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
