@@ -1,0 +1,23 @@
+column_number,column_name,contents,notes
+1,parcel_id,stable cross-year parcel id from cadwr-landuse harmonization,replaces DWR UniqueID as the CCMMF key; see cadwr-landuse data/crops_all_years_metadata.csv for upstream Unique_ID notes
+2,year,LandIQ data year,
+3,centx,centroid lon,may differ year to year if polygon boundaries change
+4,centy,centroid lat,
+5,MULTIUSE,sequences of planting,"S = single D = double T = triple Q = quadruple I = intercropped M = mixed use"
+6,SENCROP,senescing crop at beginning of water year,reached peak NDVI in previous water year
+7,ADOYSEN,adjusted day of year for senescing crop,peak of prior-year crop not senescence date
+8,ADOYEMRG,adjusted DOY for peak NDVI for emerging crop,peak of next-year crop not emergence date
+9,YRPLANTED,year parcel was planted,
+10,HYDRORGN,DWR hydrological region of parcel centroid,
+11,REGION,DWR regional office associated with polygon,
+12,COUNTY,county of centroid,
+13,season,planting season aligned with CLASS/SUBCLASS/PCNT/ADOY,"2016 has seasons 1-3; 2018+ has 1-4; season 2 = main summer crop for gap-fill"
+14,CLASS,LandIQ crop class (letter codes),
+15,SUBCLASS,LandIQ subclass,product stores harmonized_SUBCLASS on 2021 RS legend via landiq_rs_harmonize
+16,SPECOND,LandIQ special condition,e.g. Y = young perennial
+17,IRRTYPPA,status of irrigation system,
+18,IRRTYPPB,type of irrigation system,
+19,PCNT,percent of cropped area for this season row,
+20,ADOY,adjusted day of year for peak NDVI this season,"1 = Jan 1 of year; negative = prior calendar year (-92 = Oct 1); NA if no peak"
+21,subclass_source,provenance for SUBCLASS after gap-fill,"OBSERVED | gap-fill method labels from landiq-gapfill (within-year or full-year)"
+22,adoy_source,provenance for ADOY after gap-fill,"OBSERVED | unfilled | gap-fill method labels from run_gapfill_adoy_year.R"

@@ -1,19 +1,18 @@
 
 
-#' outlier.detector.boxplot
+#' Replace outliers using boxplot statistics
 #'
 #' @param X A list of dataframes
 #' @description This function performs a simple outlier replacement on all the columns of dataframes inside a list
 #' @return A list the same dimension as X, with each column of each dataframe
 #'   modified by replacing outlier points with the column median
 #' @export
-#' @importFrom dplyr %>%
 #'
-outlier.detector.boxplot<-function(X) {
-  X <- X  %>% 
+outlier_detector_boxplot <- function(X) {
+  X <- X |>
     purrr::map(function(X.tmp){
       #X.tmp is all the state variables for each element of the list (site)
-      X.tmp %>%
+      X.tmp |>
         purrr::map_dfc(function(col.tmp){
           #naive way of finding the outlier - 3 * IQR
           OutVals <- graphics::boxplot(col.tmp, plot = FALSE)$out
@@ -26,6 +25,36 @@ outlier.detector.boxplot<-function(X) {
     })
   
   return(X)
+}
+
+## Convert coordinates into an sf object.
+.convert_coords_to_sf <- function(coords) {
+  if (inherits(coords, "sf")) {
+    return(coords)
+  } else if (is.data.frame(coords)) {
+    if (!all(c("lon", "lat") %in% names(coords))) {
+      PEcAn.logger::logger.error("Coordinates data frame must contain 'lon' and 'lat'.")
+    }
+    return(sf::st_as_sf(coords, coords = c("lon", "lat"), crs = 4326))
+  } else {
+    PEcAn.logger::logger.error("Unsupported coordinates format. Must be an sf object or a data.frame.")
+  }
+}
+
+## Create folds for cross-validation.
+.create_folds <- function(y, k, list = TRUE, returnTrain = FALSE) {
+  indices <- seq_along(y)
+  folds <- split(indices, cut(indices, breaks = k, labels = FALSE))
+
+  if (returnTrain) {
+    folds <- lapply(folds, function(x) indices[-x])
+  }
+
+  if (!list) {
+    folds <- unlist(folds)
+  }
+
+  return(folds)
 }
 
 

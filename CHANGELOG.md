@@ -9,6 +9,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+
+- Added `metric_Bias()` standalone function and registered `"BIAS"` in `PEcAn.benchmark` metric registry (#4062, #4059).
+- Added `metric_CRPS()` function and registry entry to `PEcAn.benchmark` for Continuous Ranked Probability Score (CRPS) ensemble skill evaluation against observations (#4062).
+- Added `efi_long_to_array()` helper function to `PEcAn.benchmark` for reshaping EFI long format model outputs into wide ensemble member matrices (#4062).
+- Added ensemble member spaghetti line rendering under confidence ribbons in `metric_timeseries_plot()` (#4062).
+- Added `examples/benchmarks/salinas_soc_ensemble/` demonstrating multi-site SOC ensemble validation against Salinas observations out-of-the-box (#4062).
+- Added ensemble calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark (rank histogram, spread-skill ratio, coverage, reliability) for assessing whether an ensemble's spread is well calibrated against observations, complementing the ensemble-mean benchmarking.
+- Added regional calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark: break the ensemble calibration assessment down by land cover class and by EPA/CEC ecoregion, reusing the ensemble calibration diagnostics, with figures.
+- Added an ESA CCI biomass benchmark extension to `inst/ilamb/` in PEcAn.benchmark: a converter for the ESACCI Biomass v7.0 product (2015-2024, with per-pixel uncertainty) to ILAMB-compatible netCDF, plus an observation-error test showing the ensemble overconfidence persists against a modern benchmark and after accounting for observation uncertainty.
+- Added `make_scorecard.sh` and documentation to `inst/ilamb/` in PEcAn.benchmark for generating and serving the ILAMB HTML scorecard.
 - New function `PEcAn.utils::netcdf2df()` flattens all dims and vars of a netCDF into a dataframe,
     with units attached as an attribute.
 - New package `PEcAn.RothC` runs the RothC soil carbon model.
@@ -29,8 +39,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PEcAn.SIPNET gains support for SIPNET v2, whose features includes management events, nitrogen cycle tracking, explicit N2O and methane fluxes, runtime setting of feature flags, and changes to the parameter set (now 73 parameters). SIPNET v1 is still fully supported, but workarounds for bugs in the legacy `sipnet.unk` version have been removed.
 - Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+- Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
+- The median run's manifest row went in with the literal strings `"NA"` for pft and trait, which `read.csv` turns into real `NA`, so `read.sa.output` never matched the median quantile and `splinefun` silently dropped that knot. Sensitivity analysis output changes as a result: partial variances shift slightly, though rankings are unaffected in the cases checked.
+- Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
 - Fixed broken pecanproject.github.io, pecan.gitbooks.io, and other outdated documentation links across book_source, tutorials, models, modules, web, and shiny files (#3710).
 - Added note to DEV-INTRO.md documenting Traefik workaround for Apple Silicon (ARM64) Macs: use `traefik:v2.11` with `platform: linux/arm64` to fix 404 errors (#3910)
@@ -39,6 +53,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 
 ### Changed
+
+- Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
+- Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
 - Updated Docker architecture documentation to match current docker-compose.yml: removed portainer/minio/thredds, added rstudio/api sections, updated service lists and volumes (#3268).
 - Improved PEcAn.SIPNET documentation including README, model description, and current installation instructions (@Eshaan-byte; #3703, #3705).

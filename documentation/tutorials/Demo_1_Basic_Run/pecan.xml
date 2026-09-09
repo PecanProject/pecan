@@ -15,6 +15,7 @@
   </pft>
  </pfts> 
  <ensemble>
+   <size>10</size>
    <variable>NPP</variable>
   </ensemble>
  <model>
