@@ -103,7 +103,9 @@ doc_R_pkg = \
 			Rscript -e "devtools::document('"$(strip $(1))"')", \
 		$(error Roxygen2 version is ${INSTALLED_ROXYGEN_VERSION}, \
 			but PEcAn package documentation must be built with exactly \
-			version ${EXPECTED_ROXYGEN_VERSION}))
+			version ${EXPECTED_ROXYGEN_VERSION} \
+			Restart R and run: \
+			remotes::install_version("roxygen2", version = "${EXPECTED_ROXYGEN_VERSION}", upgrade = "never")))
 
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
