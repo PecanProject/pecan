@@ -104,7 +104,7 @@ doc_R_pkg = \
 		$(error Roxygen2 version is ${INSTALLED_ROXYGEN_VERSION}, \
 			but PEcAn package documentation must be built with exactly \
 			version ${EXPECTED_ROXYGEN_VERSION} \
-			Restart R and run: \
+			In R, run: \
 			remotes::install_version("roxygen2", version = "${EXPECTED_ROXYGEN_VERSION}", upgrade = "never")))
 
 
