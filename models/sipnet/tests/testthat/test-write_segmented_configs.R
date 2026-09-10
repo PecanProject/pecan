@@ -92,11 +92,82 @@ test_that("write_segmented_configs", {
     )
   }
 
+  # Each segment writes its own restart and later segments read the previous one.
+  segment_rundirs <- file.path(
+    run_path, "segments", sprintf("segment_%03d", 1:3), "run"
+  )
+  for (seg in 1:3) {
+    config <- readLines(file.path(segment_rundirs[seg], "1", "sipnet.in"))
+    restart_in <- grep("^[[:space:]]*RESTART_IN[[:space:]]*=", config, value = TRUE)
+    restart_out <- grep("^[[:space:]]*RESTART_OUT[[:space:]]*=", config, value = TRUE)
+
+    expect_identical(
+      restart_out,
+      paste("RESTART_OUT =", file.path(segment_rundirs[seg], "restart.out"))
+    )
+    if (seg == 1) {
+      expect_length(restart_in, 0)
+    } else {
+      expect_identical(
+        restart_in,
+        paste("RESTART_IN =", file.path(segment_rundirs[seg - 1], "restart.out"))
+      )
+    }
+  }
+
   # job.sh includes calls to segment scripts
   jobsh <- readLines(file.path(run_path, "job.sh"))
   expect_match(jobsh, "bash .*segment_001/run/1/job.sh", all = FALSE)
   expect_match(jobsh, "bash .*segment_002/run/1/job.sh", all = FALSE)
   expect_match(jobsh, "bash .*segment_003/run/1/job.sh", all = FALSE)
+})
+
+test_that("segment_dataframe falls back to event_json for the configured site", {
+  pth <- withr::local_tempdir()
+  events_path <- file.path(pth, "events.json")
+  jsonlite::write_json(
+    list(
+      list(
+        site_id = "a",
+        events = list(
+          list(event_type = "planting", date = "2025-01-02", crop_code = "D12"),
+          list(event_type = "planting", date = "2025-01-05", crop_code = "G6")
+        )
+      ),
+      list(
+        site_id = "b",
+        events = list(
+          list(event_type = "planting", date = "2025-01-03", crop_code = "P1")
+        )
+      )
+    ),
+    path = events_path,
+    auto_unbox = TRUE
+  )
+  run_settings <- PEcAn.settings::as.Settings(list(
+    run = list(
+      site = list(id = "a", site.pft = list(veg = "pft1")),
+      inputs = list(event_json = list(path = events_path)),
+      start.date = "2025-01-01",
+      end.date = "2025-01-10"
+    )
+  ))
+
+  result <- PEcAn.SIPNET:::segment_dataframe(run_settings)
+
+  expect_equal(nrow(result), 3)
+  expect_identical(result$site_id, rep("a", 3))
+  expect_identical(result$segment_id, c("001", "002", "003"))
+  expect_identical(
+    result$start_date,
+    as.Date(c("2025-01-01", "2025-01-02", "2025-01-05"))
+  )
+  expect_identical(
+    result$end_date,
+    as.Date(c("2025-01-01", "2025-01-04", "2025-01-10"))
+  )
+  expect_identical(result$crop_code, c(NA_character_, "D12", "G6"))
+  expect_identical(result$pft[1], "pft1")
 })
 
 test_that("segment_dataframe returns empty when run start is after all crop cycles", {

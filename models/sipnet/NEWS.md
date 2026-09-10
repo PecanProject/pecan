@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 * Improvements to the job.sh written by `write_segmented_configs`:
   - Now places README.txt, segments.csv, and the full log files from each
     segment, into the outdir (as was already done for one-segment runs).
