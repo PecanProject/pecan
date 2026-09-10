@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* In `run.sensitivity.analysis()`, load `samples` once before the variables loop and clone per iteration, avoiding repeated disk reads and preventing loop variable shadowing (#3859).
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.

@@ -43,6 +43,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
+- In `run.sensitivity.analysis()`, load `samples` once before the variables loop and clone per iteration, avoiding repeated disk reads and preventing loop variable shadowing (#3859).
 - The median run's manifest row went in with the literal strings `"NA"` for pft and trait, which `read.csv` turns into real `NA`, so `read.sa.output` never matched the median quantile and `splinefun` silently dropped that knot. Sensitivity analysis output changes as a result: partial variances shift slightly, though rankings are unaffected in the cases checked.
 - Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
