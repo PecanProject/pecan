@@ -291,3 +291,22 @@ test_that("out_day is correct when the first day of output is partial", {
   ts_correct <- 86400 / 2
   expect_equal(gpp, rep(base_row$gpp * 1e-3 / ts_correct, 5), tolerance = 1e-10)
 })
+
+test_that("LAI taken from leafCSpWt if not present in output", {
+  dat <- make_v2_sipnet(2)
+  # setup_sipnet_test sets leafCSpWt = 32 => expect LAI of 1 and 10
+  dat$plantLeafC = c(32, 320)
+
+  # First without LAI in dat => looks for sipnet.param in run dir
+  paths <- setup_sipnet_test(dat, notes_line = NULL)
+  nc1 <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc1), add = TRUE)
+  expect_equal(as.vector(ncdf4::ncvar_get(nc1, "LAI")), c(1, 10))
+
+  # Now with LAI specified => uses it as-is
+  dat$LAI = c(2, 3)
+  paths <- setup_sipnet_test(dat, notes_line = NULL)
+  nc2 <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc2), add = TRUE)
+  expect_equal(as.vector(ncdf4::ncvar_get(nc2, "LAI")), c(2, 3))
+})

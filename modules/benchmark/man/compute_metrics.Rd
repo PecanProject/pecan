@@ -12,7 +12,7 @@ compute_metrics(aligned, metrics = c("RMSE", "MAE", "R2"))
 \item{metrics}{character vector of metric names}
 }
 \value{
-data.frame with columns: metric, value
+data.frame in wide format with columns `Site` and each requested metric column per site.
 }
 \description{
 Compute benchmark metrics

@@ -27,7 +27,7 @@ run_benchmark <- function(model_df, obs_df,
   results <- compute_metrics(aligned, metrics)
 
   # Stage 4: Plot
-  plot <- plot_time_series(aligned)
+  plot <- metric_timeseries_plot(aligned, var = "Model vs Observations", draw.plot = FALSE)
 
   list(metrics = results, aligned = aligned, plot = plot)
 }
@@ -52,57 +52,68 @@ bm_validate <- function(model_df, obs_df) {
   invisible(TRUE)
 }
 
-#' Align model and observation data frames by nearest time
+#' Align model predictions and observations by time
 #'
-#' @param model_df data.frame with columns: time (POSIXct), value
-#' @param obs_df   data.frame with columns: time (POSIXct), value
-#' @param tolerance_secs max allowed time difference in seconds
+#' For each observation in `obs_df`, finds the nearest model prediction in `model_df`
+#' within `tolerance_secs`. Guarantees that each observation is paired with at most
+#' one model prediction.
 #'
-#' @return data.frame with columns: model, obvs, time
+#' @param model_df data.frame containing model predictions with a `time` column (POSIXct) and `value` or `model` column.
+#' @param obs_df data.frame containing observations with a `time` column (POSIXct) and `value` or `obvs` column.
+#' @param tolerance_secs maximum allowable time difference in seconds between paired observation and model prediction.
+#'
+#' @return data.frame with aligned rows containing model and observation columns, where each observation corresponds to exactly one model prediction.
+#' @export
 align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
+  if (nrow(model_df) == 0 || nrow(obs_df) == 0) {
+    return(data.frame())
+  }
+
   # Sort both dataframes by time to ensure findInterval works correctly
   model_df <- model_df[order(model_df$time), ]
   obs_df <- obs_df[order(obs_df$time), ]
-  
-  # For each model time, find the interval in obs_time it falls into
-  idx <- findInterval(model_df$time, obs_df$time, all.inside = TRUE)
-  
-  # findInterval returns index i where obs[i] <= model_time < obs[i+1]
-  # We check both i and i+1 to see which one is the absolute nearest
-  idx_next <- pmin(idx + 1, nrow(obs_df))
-  
-  diff_current <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx], units = "secs")))
-  diff_next <- abs(as.numeric(difftime(model_df$time, obs_df$time[idx_next], units = "secs")))
-  
-  # Select the index of the closest observation
-  nearest_idx <- ifelse(diff_current <= diff_next, idx, idx_next)
-  time_diffs <- pmin(diff_current, diff_next)
-  
-  # Filter by our time tolerance
+
+  # For each observation time, find the nearest model prediction index in model_df$time
+  n_model <- nrow(model_df)
+  find_idx <- findInterval(obs_df$time, model_df$time)
+  idx_left <- pmax(1, pmin(n_model, find_idx))
+  idx_right <- pmin(n_model, idx_left + 1)
+
+  diff_left <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_left], units = "secs")))
+  diff_right <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_right], units = "secs")))
+
+  nearest_model_idx <- ifelse(diff_left <= diff_right, idx_left, idx_right)
+  time_diffs <- pmin(diff_left, diff_right)
+
+  # Filter by time tolerance
   valid <- time_diffs <= tolerance_secs
-  
+
   n_kept <- sum(valid)
   n_dropped <- length(valid) - n_kept
-  PEcAn.logger::logger.info(sprintf("Time alignment kept %d points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
-  
-  # Construct the aligned base data.frame without dropping metadata
-  # Rename value columns to prevent collision and fit convention
+  PEcAn.logger::logger.info(sprintf("Time alignment kept %d observation points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
+
+  if (n_kept == 0) {
+    return(data.frame())
+  }
+
+  # Standardize value column names
   names(model_df)[names(model_df) == "value"] <- "model"
   names(obs_df)[names(obs_df) == "value"] <- "obvs"
-  
+
+  model_sub <- model_df[nearest_model_idx[valid], , drop = FALSE]
+  obs_sub <- obs_df[valid, , drop = FALSE]
+
   # Prevent time collision if obs_df carries it forward
-  if ("time" %in% names(obs_df)) {
-    names(obs_df)[names(obs_df) == "time"] <- "obs_time"
+  if ("time" %in% names(obs_sub)) {
+    names(obs_sub)[names(obs_sub) == "time"] <- "obs_time"
   }
-  
-  model_sub <- model_df[valid, , drop = FALSE]
-  obs_sub <- obs_df[nearest_idx[valid], , drop = FALSE]
-  
+
   # Drop overlapping columns from obs to cleanly cbind
   obs_sub <- obs_sub[, !(names(obs_sub) %in% names(model_sub)), drop = FALSE]
-  
+
   aligned <- cbind(model_sub, obs_sub)
-  
+  rownames(aligned) <- NULL
+
   return(aligned)
 }
 
@@ -123,7 +134,7 @@ register_metric <- function(name, func) {
 register_metric("RMSE", function(dat) sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE)))
 register_metric("MAE",  function(dat) mean(abs(dat$model - dat$obvs), na.rm = TRUE))
 register_metric("R2",   function(dat) {
-  if (exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_R2(dat))
   }
   numer <- sum((dat$obvs - mean(dat$obvs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
@@ -136,43 +147,100 @@ register_metric("NSE",  function(dat) {
 })
 register_metric("MEF", get("NSE", envir = pecan_metric_registry))
 register_metric("PMU", function(dat) {
-  if (exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_PMU(dat))
   }
   metric_PMU(dat)
 })
 register_metric("COVERAGE", function(dat) {
-  if (exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
     return(PEcAn.benchmark::metric_Coverage(dat))
   }
   metric_Coverage(dat)
 })
+register_metric("CRPS", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_CRPS", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_CRPS(dat))
+  }
+  metric_CRPS(dat)
+})
+register_metric("BIAS", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Bias", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_Bias(dat))
+  }
+  metric_Bias(dat)
+})
+
 
 #' Compute benchmark metrics
 #'
 #' @param aligned data.frame with columns: model, obvs, time
 #' @param metrics character vector of metric names
-#' @return data.frame with columns: metric, value
+#' @return data.frame in wide format with columns `Site` and each requested metric column per site.
+#' @export
 compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
-  results <- lapply(toupper(metrics), function(m) {
-    if (!exists(m, envir = pecan_metric_registry)) {
-      PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
+  # Treat data as one group if no site column
+  if (!"site" %in% colnames(aligned)) {
+    aligned$site <- "All"
+  }
+  
+  full_ens_mat <- attr(aligned, "ensemble_matrix")
+  if (!is.null(full_ens_mat)) {
+    if (!is.matrix(full_ens_mat) || nrow(full_ens_mat) != nrow(aligned)) {
+      PEcAn.logger::logger.severe(sprintf("ensemble_matrix attribute must be a matrix with nrow equal to nrow(aligned) (%d). Got: %s",
+                                          nrow(aligned),
+                                          if (is.matrix(full_ens_mat)) paste(nrow(full_ens_mat), "rows") else class(full_ens_mat)[1]))
     }
-    func <- get(m, envir = pecan_metric_registry)
-    func(aligned)
+  }
+
+  aligned$..row_id.. <- seq_len(nrow(aligned))
+
+  # Split by site and compute metrics
+  site_list <- split(aligned, aligned$site)
+  site_results <- lapply(names(site_list), function(s) {
+    sub_df <- site_list[[s]]
+    row_ids <- sub_df$..row_id..
+    sub_df$..row_id.. <- NULL
+
+    if (!is.null(full_ens_mat)) {
+      attr(sub_df, "ensemble_matrix") <- full_ens_mat[row_ids, , drop = FALSE]
+    }
+
+    res <- sapply(toupper(metrics), function(m) {
+      if (!exists(m, envir = pecan_metric_registry)) {
+        PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
+      }
+      func <- get(m, envir = pecan_metric_registry)
+      func(sub_df)
+    })
+    
+    # Create a wide 1-row data frame for this site
+    df <- as.data.frame(t(res))
+    df$Site <- s
+    # Move Site to the first column
+    df <- df[, c("Site", toupper(metrics))]
+    df
   })
   
-  data.frame(metric = toupper(metrics), value = unlist(results, use.names = FALSE))
+  out_df <- do.call(rbind, site_results)
+  rownames(out_df) <- NULL
+  
+  # If there's more than one site (i.e. real multi-site data), add rollups
+  if (nrow(out_df) > 1 && !("All" %in% out_df$Site)) {
+    # Compute mean rollup for numeric columns
+    numeric_cols <- sapply(out_df, is.numeric)
+    rollup_mean <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) mean(x, na.rm=TRUE)))
+    rollup_mean$Site <- "Rollup (Mean)"
+    
+    rollup_median <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) stats::median(x, na.rm=TRUE)))
+    rollup_median$Site <- "Rollup (Median)"
+    
+    # Bind rollups
+    out_df <- rbind(out_df, 
+                    rollup_mean[, colnames(out_df)], 
+                    rollup_median[, colnames(out_df)])
+  }
+  
+  return(out_df)
 }
 
-#' Plot model vs observations time series
-#'
-#' @param aligned data.frame with columns: model, obvs, time
-#' @return ggplot object
-plot_time_series <- function(aligned) {
-  ggplot2::ggplot(aligned, ggplot2::aes(x = .data$time)) +
-    ggplot2::geom_line(ggplot2::aes(y = .data$model, color = "Model")) +
-    ggplot2::geom_point(ggplot2::aes(y = .data$obvs, color = "Obs")) +
-    ggplot2::labs(color = "", y = "value", title = "Model vs Observations") +
-    ggplot2::theme_bw()
-}

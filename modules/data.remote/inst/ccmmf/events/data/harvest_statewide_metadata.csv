@@ -1,0 +1,8 @@
+column_number,column_name,contents,notes
+1,event_type,always harvest,SIPNET event type
+2,site_id,parcel_id,PEcAn site key
+3,date,harvest date,from apply table (MSLSP harvest metric / gap-filled)
+4,frac_above_removed_0to1,fraction aboveground removed,SIPNET harv line
+5,frac_below_removed_0to1,fraction belowground removed,SIPNET harv line
+6,frac_above_to_litter_0to1,fraction aboveground to litter,SIPNET harv line
+7,frac_below_to_litter_0to1,fraction belowground to litter,SIPNET harv line
