@@ -6,8 +6,8 @@
 #' file, determine the fertilizer's nutrient content based on NN-PP-KK format, or use user-specified
 #' fractions of organic nitrogen and carbon.
 #'
-#' Consistent with assumptions in DayCent, DSSAT, and other models, urea is treated as NH3 because the
-#' transformation typically occurs within a day.
+#' Urea-N is tracked separately in the \code{fraction_urea_n} column. Downstream consumers
+#' that compute total N should sum \code{NH4_N + NO3_N + N_org + UREA_N}.
 #'
 #' @param type Character string specifying the type of fertilizer. Valid values include NN-PP-KK format (e.g., "45-5-10") as well
 #' as enumerated types including: "urea", "ammonium_nitrate", "compost", "manure", "dairy_fr", "beef_fr".
@@ -30,6 +30,7 @@
 #'   - `NO3_N`: The amount of nitrate nitrogen (NO3-N) in kg/ha.
 #'   - `NH4_N`: The amount of ammonium nitrogen (NH4-N) in kg/ha.
 #'   - `N_org`: The amount of organic nitrogen in kg/ha.
+#'   - `UREA_N`: The amount of urea nitrogen (urea-N) in kg/ha.
 #'   - `C_org`: The amount of organic carbon in kg/ha.
 #'
 #' @examples
@@ -64,6 +65,7 @@ look_up_fertilizer_components <- function(
       NO3_N = 0,
       NH4_N = 0,
       N_org = round(amount * fraction_organic_n),
+      UREA_N = 0,
       C_org = round(amount * fraction_organic_c)
     ))
   }
@@ -85,6 +87,7 @@ look_up_fertilizer_components <- function(
       NO3_N = round(amount * fraction_no3_n),
       NH4_N = 0,
       N_org = 0,
+      UREA_N = 0,
       C_org = 0
     ))
   }
@@ -98,11 +101,12 @@ look_up_fertilizer_components <- function(
         NO3_N = round(amount * .data$fraction_no3_n),
         NH4_N = round(amount * .data$fraction_nh3_n),
         N_org = round(amount * .data$fraction_organic_n),
+        UREA_N = round(amount * .data$fraction_urea_n),
         C_org = round(amount * .data$fraction_c)
       )
 
     res <- fertilizer_info |>
-      dplyr::select("name", "NO3_N", "NH4_N", "N_org", "C_org") |>
+      dplyr::select("name", "NO3_N", "NH4_N", "N_org", "UREA_N", "C_org") |>
       dplyr::rename(type = "name") |>
       as.list()
     return(res)

@@ -87,5 +87,5 @@ License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 X-schema.org-keywords: soil-data, vegetation-data, land-cover
+Config/roxygen2/version: 8.0.0

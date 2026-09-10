@@ -31,6 +31,7 @@ A list containing:
 \item \code{NO3_N}: The amount of nitrate nitrogen (NO3-N) in kg/ha.
 \item \code{NH4_N}: The amount of ammonium nitrogen (NH4-N) in kg/ha.
 \item \code{N_org}: The amount of organic nitrogen in kg/ha.
+\item \code{UREA_N}: The amount of urea nitrogen (urea-N) in kg/ha.
 \item \code{C_org}: The amount of organic carbon in kg/ha.
 }
 }
@@ -42,8 +43,8 @@ file, determine the fertilizer's nutrient content based on NN-PP-KK format, or u
 fractions of organic nitrogen and carbon.
 }
 \details{
-Consistent with assumptions in DayCent, DSSAT, and other models, urea is treated as NH3 because the
-transformation typically occurs within a day.
+Urea-N is tracked separately in the \code{fraction_urea_n} column. Downstream consumers
+that compute total N should sum \code{NH4_N + NO3_N + N_org + UREA_N}.
 }
 \note{
 The following is a list of valid fertilizer names:
