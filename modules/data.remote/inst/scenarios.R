@@ -1,592 +1,458 @@
-#start from original transition matrix (tmat_final) and build initial state vector for all classes to find the new optimized 
-#transition matrix based on a user specified goal and given constraints. 
+## Optimize county crop-class transition matrices toward shared 2045 crop acreage targets.
+## BAU and NBS use the same crop acreage targets, so crop matrices are optimized once.
 
-library(data.table)
-library(nloptr)
-library(expm) 
-library(dplyr) 
-library(ggplot2) 
-library(reshape2)
-library(networkD3) 
+pacman::p_load(PEcAn.data.remote, data.table, nloptr, expm, parallel, parallelly)
 
-setwd("/projectnb/dietzelab/ananyak")
+# ---- setup ----
+#REQUIRED: Choose a folder to define work_root, where you want this framework to save intermediate and output files
+#Uncomment the line below and replace the example path.
+#work_root = "/path/to/your/folder"
 
-##------------setup-----------------
-#load transition matrix and reformat 
-  #keep row labels/states before dropping first column
-  #drop V1/class column to keep numeric matrix
-  #check matrix is square and rows sum to 1
-tmat_df = fread("transition_matrix.csv")
+##BAU and NBS target scenarios share the same acreage targets - can set crop target variables to just one and optimize matrices once
 
-row_id_col = colnames(tmat_df)[1]
-states = colnames(tmat_df)[-1]
+config = list(crop_target_source = "BAU_Targets", start_year = 2023L, end_year = 2045L, workers = 6L,
+  lambda_target = 1e6, maxeval_optimizer = 50000, maxtime_optimizer = 360,
+  scale_crop_targets_to_x0 = TRUE, nominal_zero_acres = 0.01,
+  run_all_counties = TRUE, counties_manual = character(),
+  
+  crop_data_path = file.path(work_root, "crop_year_states_cleaned.csv"),
+  crop_target_path = file.path(work_root, "MAGiC_scenarios_FINAL", "BAU_Targets.csv"),
+  crop_matrix_dir = file.path(work_root, "county_crop_matrices"),
+  
+  ##output folder the optimized matrices are going to be stored in 
+  matrix_out_dir = file.path(work_root, "county_optimized_matrices"))
 
-A_orig = as.matrix(tmat_df[, ..states])
-rownames(A_orig) = tmat_df[[row_id_col]]
-colnames(A_orig) = states
-storage.mode(A_orig) = "double"
+start_year = config$start_year
+end_year = config$end_year
+steps = end_year - start_year
+dir.create(config$matrix_out_dir, recursive = TRUE, showWarnings = FALSE)
 
-n = nrow(A_orig)
+# ---- helpers ----
+safe_county_name = function(x) gsub("[^A-Za-z0-9_]+", "_", x)
 
-stopifnot(nrow(A_orig) == ncol(A_orig))
-stopifnot(all(rownames(A_orig) == colnames(A_orig)))
-stopifnot(all(abs(rowSums(A_orig) - 1) < 1e-8))
-
-#have to reread original data and add back acres column for initial state vector
-path_management = "/projectnb/dietzelab/ccmmf/management"
-path_landiq_v4  = "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1"
-
-lookup = fread(file.path(path_management, "LandIQ_cropCode_lookup_table.csv"))
-ag_classes = unique(lookup[is_agricultural == TRUE, as.character(CLASS)])
-
-year_min = 2018L
-year_max = 2023L
-
-crops_full = as.data.table(
-  arrow::open_dataset(file.path(path_landiq_v4, "crops_all_years.parq")) |>
-    filter(year >= year_min, year <= year_max, CLASS %in% ag_classes) |>
-    select(parcel_id, year, season, CLASS, SUBCLASS, ACRES) |>
-    collect()
-)
-
-crops_full[, `:=`(
-  parcel_id = as.character(parcel_id),
-  year = as.integer(year),
-  season = as.integer(season),
-  CLASS = as.character(CLASS),
-  SUBCLASS = as.character(SUBCLASS),
-  ACRES = as.integer(ACRES)
-)]
-
-setDT(crops_full)
-
-##filter to 2023 only (last observed year = prediction starting year)
-crops_full_2023 = crops_full[year == 2023]
-
-#sum total acres by class, then convert to %
-total_land = sum(crops_full_2023$ACRES, na.rm = TRUE)
-land_by_class = aggregate(ACRES ~ CLASS, data = crops_full_2023, FUN = sum, na.rm = TRUE)
-land_by_class$class_land_percs = land_by_class$ACRES / total_land
-
-#X0 has to be in the same order as the transition matrix states
-X0_named = setNames(land_by_class$class_land_percs, land_by_class$CLASS)
-
-#reorder to exactly match transition matrix states
-X0 = X0_named[states]
-
-#classes in tmat but missing in 2023 get 0
-X0[is.na(X0)] = 0
-
-stopifnot(all(names(X0) == states))
-stopifnot(abs(sum(X0) - 1) < 1e-8)
-
-##drop v1 column from tmat for exact ordering
-tmat_df = tmat_df %>% select(-V1)
-
-##-----------scenario goal inputs-----------
-
-#example: x% increase in crop class __ after n years/steps
-target_crop = "V"
-
-target_val = X0[target_crop] * 1.30
-steps = 15 
-
-##---------objective and constraints-------------
-  #1.Minimize the "distance" from the original matrix
-  #2.x is a vector of the matrix elements, length n^2
-
-obj_fun = function(x) {
-  A_new = matrix(x, nrow = n, byrow = TRUE)
-  sum((A_new - A_orig)^2)
+normalize_crop_key = function(x) {
+  x = tolower(trimws(as.character(x)))
+  x = gsub("&", "and", x)
+  x = gsub("[[:punct:]]+", " ", x)
+  trimws(gsub("\\s+", " ", x))
 }
 
-constr_fun = function(x) {
-  A_new = matrix(x, nrow = n, byrow = TRUE)
-  
-  X_end = X0 %*% (A_new %^% steps)
-  colnames(X_end) = states
-  
-  target_const = X_end[1, target_crop] - target_val
-  row_sums_const = rowSums(A_new) - 1
-  
-  c(target_const, row_sums_const)
+check_required_cols = function(dt, required_cols, dt_name) {
+  missing_cols = setdiff(required_cols, names(dt))
+  if (length(missing_cols)) stop(dt_name, " is missing required columns: ", paste(missing_cols, collapse = ", "))
 }
 
-##-----------run optimizer------------------
-#starting point = original matrix flattened into a vector
-init_x = as.vector(t(A_orig))
-
-#COBYLA for non-linear constraints without needing derivatives
-res = nloptr(x0 = init_x,
-              eval_f = obj_fun,
-              eval_g_eq = constr_fun,
-              lb = rep(0, n^2), # Probabilities can't be negative
-              ub = rep(1, n^2), # Probabilities can't exceed 1
-             opts = list(
-               algorithm = "NLOPT_LN_COBYLA",
-               xtol_rel = 1e-5,
-               ##how many max iterations 
-               maxeval = 25000,
-               print_level = 1
-             ))
-
-##-------outputs--------
-
-A_final = matrix(res$solution, nrow = n, byrow = TRUE)
-rownames(A_final) = states
-colnames(A_final) = states
-
-X_end_orig = X0 %*% (A_orig %^% steps)
-X_end_final = X0 %*% (A_final %^% steps)
-
-colnames(X_end_orig) = states
-colnames(X_end_final) = states
-
-print("Optimizer status:")
-print(res$status)
-print(res$message)
-
-print("Optimized Matrix A:")
-print(round(A_final, 4))
-
-target_crop
-X0[target_crop]
-target_val
-X_end_orig[1, target_crop]
-X_end_final[1, target_crop]
-
-round(rowSums(A_final), 8)
-max(abs(A_final - A_orig))
-
-constr_fun(res$solution)
-
-##--------------visualizations------------------
-
-## time series distributions
-get_dist_over_time = function(X0, A, steps, states, scenario_name) {
-  out = lapply(0:steps, function(t) {
-    if (t == 0) {
-      Xt = X0
-    } else {
-      Xt = as.numeric(X0 %*% (A %^% t))
-    }
-    
-    data.table(
-      step = t,
-      year = 2023 + t,
-      CLASS = states,
-      prop_land = as.numeric(Xt),
-      scenario = scenario_name
-    )
-  })
-  
-  rbindlist(out)
+read_tmat = function(path) {
+  x = fread(path)
+  states = names(x)[-1]
+  A = as.matrix(x[, -1, with = FALSE])
+  rownames(A) = as.character(x[[1]])
+  colnames(A) = states
+  storage.mode(A) = "double"
+  stopifnot(all(rownames(A) == colnames(A)))
+  A
 }
 
-dist_orig = get_dist_over_time(X0, A_orig, steps, states, "Original transition matrix")
-dist_final = get_dist_over_time(X0, A_final, steps, states, "Optimized transition matrix")
+repair_transition_matrix = function(A, matrix_name = "matrix") {
+  A[is.na(A)] = 0
+  A[A < 0] = 0
+  A[A > 1] = 1
+  rs = rowSums(A)
+  zero_rows = names(rs)[is.na(rs) | rs == 0]
+  if (length(zero_rows)) {
+    warning(matrix_name, " has zero-sum rows; converting to self-loops: ", paste(zero_rows, collapse = ", "))
+    for (s in zero_rows) { A[s, ] = 0; A[s, s] = 1 }
+  }
+  sweep(A, 1, rowSums(A), "/")
+}
 
-dist_all = rbind(dist_orig, dist_final)
+write_tmat = function(A, path) {
+  fwrite(as.data.table(A, keep.rownames = "state"), path)}
 
-#1.stacked area chart of projected land distribution by crop class (from optimized matrix)
-##*changes are pretty small, so this graph is better for showing the final overall distribution, not comparisons 
-ggplot(dist_final,
-       aes(x = year, y = prop_land, fill = CLASS)) +
-  geom_area() +
-  labs(
-    title = "Optimized projected land distribution by crop class",
-    x = "Year",
-    y = "Fraction of total land",
-    fill = "Class"
-  ) +
-  theme_minimal()
-
-#2.differences in original vs optimized land share 
-final_compare = merge(
-  dist_orig[step == steps, .(CLASS, orig_prop = prop_land)],
-  dist_final[step == steps, .(CLASS, opt_prop = prop_land)],
-  by = "CLASS"
-)
-
-final_compare[, change := opt_prop - orig_prop]
-
-ggplot(final_compare,
-       aes(x = reorder(CLASS, change), y = change)) +
-  geom_col() +
-  coord_flip() +
-  labs(
-    title = paste("Change in projected land share after", steps, "steps"),
-    x = "Class",
-    y = "Optimized - Original"
-  ) +
-  theme_minimal()
-
-#3.change in target class (isolated graph) 
-focus = dist_all[CLASS == target_crop]
-
-ggplot(focus, aes(x = year, y = prop_land, color = scenario)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2) +
-  labs(
-    title = sprintf("Projected land share for class %s", target_crop),
-    x = "Year",
-    y = "Fraction of total land",
-    color = "Scenario"
-  ) +
-  theme_minimal()
-
-#-------------------sankey diagram-------------------------#
-#where the 2023 land distribution ends up after the target number of steps 
-#under the optimized transition matrix
-
-A_use = A_final
-scenario_name = "Optimized"
-
-#n-step transition matrix
-A_steps = A_use %^% steps
-
-#flow table from 2023 class to final class
-flows = as.data.table(as.table(A_steps))
-setnames(flows, c("source_class", "target_class", "transition_prob"))
-flows[, source_land := as.numeric(X0[source_class])]
-flows[, value := source_land * transition_prob]
-
-#**remove tiny flows so sankey is readable
-flows = flows[value > 0.001]
-
-#*make separate node labels for start and end
-flows[, source := paste0(source_class, " 2023")]
-flows[, target := paste0(target_class, " ", 2023 + steps)]
-
-nodes = data.table(name = unique(c(flows$source, flows$target)))
-
-flows[, source_id := match(source, nodes$name) - 1]
-flows[, target_id := match(target, nodes$name) - 1]
-
-links = flows[, .(
-  source = source_id,
-  target = target_id,
-  value = value
-)]
-
-sankeyNetwork(
-  Links = links,
-  Nodes = nodes,
-  Source = "source",
-  Target = "target",
-  Value = "value",
-  NodeID = "name",
-  fontSize = 13,
-  nodeWidth = 25,
-  sinksRight = TRUE
-)
-
-#####isolated sankey with only the target crop after time steps  
-
-A_steps = A_final %^% steps
-
-flows = as.data.table(as.table(A_steps))
-setnames(flows, c("source_class", "target_class", "transition_prob"))
-
-flows[, source_land := as.numeric(X0[source_class])]
-flows[, value := source_land * transition_prob]
-
-# only show land ending in target class
-flows = flows[target_class == target_crop]
-
-flows[, source := paste0(source_class, " 2023")]
-flows[, target := paste0(target_class, " ", 2023 + steps)]
-
-nodes = data.table(name = unique(c(flows$source, flows$target)))
-
-flows[, source_id := match(source, nodes$name) - 1]
-flows[, target_id := match(target, nodes$name) - 1]
-
-links = flows[, .(
-  source = source_id,
-  target = target_id,
-  value = value
-)]
-
-sankeyNetwork(
-  Links = links,
-  Nodes = nodes,
-  Source = "source",
-  Target = "target",
-  Value = "value",
-  NodeID = "name",
-  fontSize = 13,
-  nodeWidth = 25,
-  sinksRight = TRUE
-)
-
-##-----predictions with the new optimized matrix-----
-
-tmat_year = A_final
-states = rownames(tmat_year)
-
-year_states = fread("year_states.csv")
-setDT(year_states)
-
-year_states[, parcel_id := as.character(parcel_id)]
-year_states[, dominant_crop := trimws(as.character(dominant_crop))]
-
-start_info = year_states[, .SD[which.max(year)], by = parcel_id]
-
-design_points = fread('/projectnb/dietzelab/ccmmf/management/design_points_landiq_2018-2023.csv')
-design_points[, parcel_id := as.character(parcel_id)]
-
-start_info = start_info[parcel_id %in% design_points$parcel_id]
-year_states_design = year_states[parcel_id %in% design_points$parcel_id]
-
-end_year = 2050
-
-all_preds_optimized = start_info[, {
+build_x0_last_observed = function(crop_data, county_name, start_year, states, state_col = "crop_class") {
   
-  current_state = dominant_crop
-  years = seq(year + 1, end_year)
+  dt = copy(crop_data[county_safe == county_name & year <= start_year])
   
-  preds = character(length(years))
-  probs = numeric(length(years))
+  if (!nrow(dt)) stop("No crop data for county up to start year: ", county_name)
   
-  for (i in seq_along(years)) {
-    
-    p = tmat_year[current_state, ]
-    
-    if (sum(p) == 0 || all(is.na(p))) {
-      preds[i] = NA_character_
-      probs[i] = NA_real_
-      next
-    }
-    
-    idx = which.max(p)
-    next_state = states[idx]
-    
-    preds[i] = next_state
-    probs[i] = p[idx]
-    
-    current_state = next_state
+  dt[, state_value := trimws(as.character(get(state_col)))]
+  latest_dt = dt[!is.na(state_value), .SD[which.max(year)], by = parcel_id][state_value %in% states]
+  
+  x0_dt = latest_dt[, .(acres = sum(ACRES, na.rm = TRUE)), by = state_value]
+  X0_vec = setNames(rep(0, length(states)), states)
+  
+  matched = intersect(x0_dt$state_value, states)
+  
+  X0_vec[matched] = x0_dt[match(matched, state_value), acres]
+  X0 = matrix(X0_vec, nrow = 1)
+  colnames(X0) = states
+  
+  X0
+}
+
+scale_target_to_x0_total = function(target_vec, X0) {
+  if (sum(target_vec, na.rm = TRUE) <= 0 || sum(X0, na.rm = TRUE) <= 0) return(target_vec)
+  target_vec / sum(target_vec, na.rm = TRUE) * sum(X0, na.rm = TRUE)
+}
+
+prep_target_for_opt = function(target_vec, X0, scale_to_x0_total = TRUE, nominal_zero_acres = 0.01) {
+  out = if (scale_to_x0_total) scale_target_to_x0_total(target_vec, X0) else target_vec
+  out[!is.na(out) & out == 0] = nominal_zero_acres
+  if (scale_to_x0_total && sum(out, na.rm = TRUE) > 0) out = out / sum(out, na.rm = TRUE) * sum(X0, na.rm = TRUE)
+  out
+}
+
+make_full_target_vec = function(raw_target_vec, states) {
+  out = setNames(rep(0, length(states)), states)
+  matched = intersect(names(raw_target_vec), states)
+  out[matched] = as.numeric(raw_target_vec[matched])
+  out
+}
+
+check_matrix = function(A, matrix_name = "matrix") {
+  out = data.table(
+    matrix_name = matrix_name, min_value = min(A, na.rm = TRUE), max_value = max(A, na.rm = TRUE),
+    min_row_sum = min(rowSums(A), na.rm = TRUE), max_row_sum = max(rowSums(A), na.rm = TRUE),
+    max_row_sum_error = max(abs(rowSums(A) - 1), na.rm = TRUE)
+  )
+  print(out)
+  if (out$max_row_sum_error > 1e-6) warning(matrix_name, " rows do not sum to 1.")
+  out
+}
+
+# ---- optimizer function ----
+optimize_county_matrix = function(cty, A_orig, X0, target_vec, steps, lambda_target = config$lambda_target,
+                                  target_vec_report = NULL, maxeval = config$maxeval_optimizer, maxtime = config$maxtime_optimizer) {
+  states = rownames(A_orig)
+  n = length(states)
+  target_vec = make_full_target_vec(target_vec, states)
+  target_vec_report = if (is.null(target_vec_report)) target_vec else make_full_target_vec(target_vec_report, states)
+  
+  pack_A = function(A) as.vector(t(A[, 1:(n - 1), drop = FALSE]))
+  unpack_x = function(x) {
+    A_part = matrix(x, nrow = n, ncol = n - 1, byrow = TRUE)
+    A_new = cbind(A_part, 1 - rowSums(A_part))
+    rownames(A_new) = colnames(A_new) = states
+    A_new
   }
   
-  .(
-    year = years,
-    pred_class = preds,
-    pred_prob = probs
-  )
-  
-}, by = parcel_id]
-
-preds_future = all_preds_optimized[, .(
-  parcel_id,
-  year,
-  pred_class,
-  actual_class = NA_character_
-)]
-
-##-----make similar graphs using optimized scenarios-----
-#(same script format as initial prediction code)
-
-actual_hist = year_states_design[, .(
-  parcel_id,
-  year,
-  pred_class = NA_character_,
-  actual_class = dominant_crop
-)]
-
-plot_data_optimized = rbind(actual_hist, preds_future, fill = TRUE)
-
-sample_pids = sample(unique(plot_data_optimized$parcel_id), 1)
-
-plot_subset_optimized = plot_data_optimized[parcel_id %in% sample_pids]
-
-plot_subset_optimized[, pred_class := factor(pred_class, levels = states)]
-plot_subset_optimized[, actual_class := factor(actual_class, levels = states)]
-
-ggplot(plot_subset_optimized, aes(x = year)) +
-  
-  geom_point(
-    data = plot_subset_optimized[!is.na(pred_class)],
-    aes(y = pred_class, color = pred_class),
-    size = 3
-  ) +
-  
-  geom_point(
-    data = plot_subset_optimized[!is.na(actual_class)],
-    aes(y = actual_class),
-    shape = 1,
-    size = 3,
-    color = "black"
-  ) +
-  
-  facet_wrap(~parcel_id, ncol = 2) +
-  
-  scale_x_continuous(
-    limits = c(2018, end_year),
-    breaks = seq(2018, end_year, by = 2)
-  ) +
-  
-  labs(
-    title = sprintf(
-      "Optimized scenario predictions after actual crop classes for parcel %s",
-      sample_pids
-    ),
-    x = "Year",
-    y = "Crop class",
-    color = "Predicted class"
-  ) +
-  
-  theme_minimal()
-
-##-------store optimized predictions in landIQ style-------
-#(still same script format as initial prediction code)
-
-design_points[, CLASS := as.character(CLASS)]
-design_points[, SUBCLASS := as.character(SUBCLASS)]
-preds_future[, parcel_id := as.character(parcel_id)]
-preds_future[, pred_class := as.character(pred_class)]
-
-last_obs = design_points[
-  order(year, season),
-  .SD[.N],
-  by = parcel_id
-][
-  , .(
-    parcel_id,
-    last_CLASS = CLASS,
-    last_SUBCLASS = SUBCLASS
-  )
-]
-
-subclass_probs = design_points[
-  !is.na(CLASS) & !is.na(SUBCLASS),
-  .N,
-  by = .(CLASS, SUBCLASS)
-]
-
-subclass_probs[, prob := N / sum(N), by = CLASS]
-
-draw_subclass = function(class_name) {
-  
-  choices = subclass_probs[CLASS == class_name]
-  
-  if (nrow(choices) == 0) {
-    return(NA_character_)
+  obj_fun = function(x) {
+    A_new = unpack_x(x)
+    if (any(!is.finite(A_new)) || any(A_new < -1e-8) || any(A_new > 1 + 1e-8)) return(1e20)
+    
+    X_end = X0 %*% (A_new %^% steps)
+    matrix_change_penalty = sum((A_new - A_orig)^2)
+    X_end_share = as.numeric(X_end[1, states]) / sum(X_end[1, states])
+    target_share = as.numeric(target_vec[states]) / sum(target_vec[states])
+    target_error_penalty = sum((X_end_share - target_share)^2)
+    
+    matrix_change_penalty + lambda_target * target_error_penalty
   }
   
-  sample(
-    choices$SUBCLASS,
-    size = 1,
-    prob = choices$prob
+  constr_fun = function(x) {
+    A_part = matrix(x, nrow = n, ncol = n - 1, byrow = TRUE)
+    rowSums(A_part) - 1
+  }
+  
+  res = nloptr(x0 = pack_A(A_orig), eval_f = obj_fun, eval_g_ineq = constr_fun, lb = rep(0, n * (n - 1)), ub = rep(1, n * (n - 1)),
+    opts = list(algorithm = "NLOPT_LN_COBYLA", xtol_rel = 1e-5, maxeval = maxeval, maxtime = maxtime, print_level = 0)
   )
+  
+  A_final = unpack_x(res$solution)
+  A_final[is.na(A_final) | !is.finite(A_final)] = 0
+  A_final[A_final < 0] = 0
+  A_final[A_final > 1] = 1
+  
+  rs = rowSums(A_final)
+  zero_rows = names(rs)[is.na(rs) | rs == 0]
+  if (length(zero_rows)) for (s in zero_rows) { A_final[s, ] = 0; A_final[s, s] = 1 }
+  
+  A_final = sweep(A_final, 1, rowSums(A_final), "/")
+  rownames(A_final) = colnames(A_final) = states
+  
+  X_end_orig = X0 %*% (A_orig %^% steps)
+  X_end_final = X0 %*% (A_final %^% steps)
+  
+  summary = data.table(county_safe = cty, target_state = states, start_acres = as.numeric(X0[1, states]),
+    target_acres_raw = as.numeric(target_vec_report[states]), target_acres_used_for_opt = as.numeric(target_vec[states]),
+    original_projected_acres = as.numeric(X_end_orig[1, states]), optimized_projected_acres = as.numeric(X_end_final[1, states]),
+    raw_difference_after_optimization = as.numeric(X_end_final[1, states]) - as.numeric(target_vec_report[states]),
+    opt_difference_after_optimization = as.numeric(X_end_final[1, states]) - as.numeric(target_vec[states]),
+    optimizer_status = res$status, optimizer_message = res$message, max_matrix_change = max(abs(A_final - A_orig)), 
+    row_sum_error = max(abs(rowSums(A_final) - 1)))
+  
+  list(A_final = A_final, summary = summary, res = res)
 }
 
-preds_subclass_optimized = merge(
-  preds_future[, .(parcel_id, year, CLASS = pred_class)],
-  last_obs,
-  by = "parcel_id",
-  all.x = TRUE
-)
-
-setorder(preds_subclass_optimized, parcel_id, year)
-
-preds_subclass_optimized[, SUBCLASS := NA_character_]
-
-for (p in unique(preds_subclass_optimized$parcel_id)) {
+# ---- map scenario crop names to LandIQ classes ----
+scenario_crop_map_single = data.table(
+  Crop = c("All Other Berries", "Strawberries (Fresh Market)", "All Other Fruit Crops",
+           "All Other Nut Crops", "Almonds", "Pome Fruit", "Stone Fruit", "Citrus",
+           "Grapes Dried, Raisins", "Grapes, Table", "Grapes, Wine", "Fallow"),
   
-  idxs = which(preds_subclass_optimized$parcel_id == p)
+  crop_state = c("T", "T", "D", "D", "D", "D", "D", "C", "V", "V", "V", "X"))
+
+scenario_crop_map_single[, crop_key := normalize_crop_key(Crop)]
+
+scenario_crop_map_split = data.table(Crop = c("All Other Field Crops (Incl. Pasture /Rangeland)", "Annual Cropland"),
+  split_group = c("field_pasture", "annual_cropland"))
+
+scenario_crop_map_split[, crop_key := normalize_crop_key(Crop)]
+
+get_split_states = function(split_group, crop_states) {
+  if (split_group == "field_pasture") return(intersect(c("F", "P"), crop_states))
+  if (split_group == "annual_cropland") return(intersect(c("F", "G", "T", "R"), crop_states))
+  character()
+}
+
+get_x0_split_weights = function(crop_data, cty, start_year, split_states) {
+  dt = copy(crop_data[county_safe == cty & year <= start_year])
+  if (!nrow(dt)) return(data.table(crop_state = split_states, split_weight = rep(1 / length(split_states), length(split_states))))
   
-  prev_class = preds_subclass_optimized$last_CLASS[idxs[1]]
-  prev_subclass = preds_subclass_optimized$last_SUBCLASS[idxs[1]]
+  latest_dt = dt[!is.na(crop_class), .SD[which.max(year)], by = parcel_id][crop_class %in% split_states]
+  if (!nrow(latest_dt)) return(data.table(crop_state = split_states, split_weight = rep(1 / length(split_states), length(split_states))))
   
-  for (i in idxs) {
-    
-    current_class = preds_subclass_optimized$CLASS[i]
-    
-    if (is.na(current_class)) {
-      preds_subclass_optimized$SUBCLASS[i] = NA_character_
+  out = latest_dt[, .(x0_acres = sum(ACRES, na.rm = TRUE)), by = crop_class]
+  out = merge(data.table(crop_state = split_states), out, by.x = "crop_state", by.y = "crop_class", all.x = TRUE)
+  out[is.na(x0_acres), x0_acres := 0]
+  if (sum(out$x0_acres) == 0) out[, split_weight := 1 / .N] else out[, split_weight := x0_acres / sum(x0_acres)]
+  out[, .(crop_state, split_weight)]
+}
+
+expand_scenario_rows_to_crop_states = function(scenarios, crop_data, cty, end_year, start_year, crop_states) {
+  scen_cty = copy(scenarios[county_safe == cty & Year == end_year])
+  if (!nrow(scen_cty)) return(list(expanded = data.table(), unmatched = data.table()))
+  
+  scen_cty[, `:=`(scenario_row_id = .I, crop_key = normalize_crop_key(Crop))]
+  
+  single = merge(scen_cty, scenario_crop_map_single[, .(crop_key, crop_state)], by = "crop_key", all.x = FALSE)
+  if (nrow(single)) single[, `:=`(split_group = "single", split_weight = 1)]
+  
+  split_rows = merge(scen_cty, scenario_crop_map_split[, .(crop_key, split_group)], by = "crop_key", all.x = FALSE)
+  split_list = list()
+  
+  if (nrow(split_rows)) {
+    for (sg in unique(split_rows$split_group)) {
+      rows_sg = split_rows[split_group == sg]
+      split_states = get_split_states(sg, crop_states)
+      if (!length(split_states)) next
       
-    } else if (!is.na(prev_class) && current_class == prev_class) {
-      
-      # if class does not change, keep previous subclass
-      preds_subclass_optimized$SUBCLASS[i] = prev_subclass
-      
-    } else {
-      
-      # if class changes, draw subclass from observed subclass distribution
-      preds_subclass_optimized$SUBCLASS[i] = draw_subclass(current_class)
+      weights = get_x0_split_weights(crop_data, cty, start_year, split_states)
+      expanded = CJ(scenario_row_id = rows_sg$scenario_row_id, crop_state = weights$crop_state)
+      expanded = merge(expanded, rows_sg, by = "scenario_row_id", all.x = TRUE, allow.cartesian = TRUE)
+      expanded = merge(expanded, weights, by = "crop_state", all.x = TRUE)
+      split_list[[sg]] = expanded
     }
-    
-    prev_class = current_class
-    prev_subclass = preds_subclass_optimized$SUBCLASS[i]
   }
+  
+  split_expanded = if (length(split_list)) rbindlist(split_list, fill = TRUE) else data.table()
+  expanded = rbindlist(list(single, split_expanded), fill = TRUE)
+  
+  if (nrow(expanded)) {
+    expanded = expanded[crop_state %in% crop_states]
+    expanded[, Acres_Total_mapped := Acres_Total * split_weight]
+  }
+  
+  unmatched = scen_cty[
+    !(crop_key %in% scenario_crop_map_single$crop_key) &
+      !(crop_key %in% scenario_crop_map_split$crop_key),
+    .(scenario_row_id, Crop, crop_key, Acres_Total)
+  ]
+  
+  list(expanded = expanded, unmatched = unmatched)
 }
 
-#add class/subclass descriptions
-lookup = fread('/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv')
+build_scenario_crop_targets = function(scenarios, crop_data, cty, end_year, start_year, crop_states) {
+  info = expand_scenario_rows_to_crop_states(scenarios, crop_data, cty, end_year, start_year, crop_states)
+  if (!nrow(info$expanded)) return(NULL)
+  
+  target_dt = info$expanded[
+    , .(target_acres_raw = sum(Acres_Total_mapped, na.rm = TRUE),
+        scenario_crops = paste(sort(unique(Crop)), collapse = "; "),
+        n_scenario_rows = uniqueN(scenario_row_id)),
+    by = crop_state
+  ][crop_state %in% crop_states]
+  
+  if (!nrow(target_dt)) return(NULL)
+  list(target_vec = setNames(target_dt$target_acres_raw, target_dt$crop_state),
+    target_dt = target_dt, unmatched = info$unmatched)
+}
 
-lookup[, CLASS := as.character(CLASS)]
-lookup[, SUBCLASS := as.character(SUBCLASS)]
+# ---- load crop data ----
+if (!file.exists(config$crop_data_path)) stop("Missing crop data: ", config$crop_data_path)
+crop_data = fread(config$crop_data_path)
+if ("V1" %in% names(crop_data)) crop_data[, V1 := NULL]
 
-lookup_subclass = unique(lookup[, .(
-  CLASS,
-  SUBCLASS,
-  CLASS_desc,
-  SUBCLASS_desc,
-  PFT
-)])
-
-preds_subclass_optimized = merge(
-  preds_subclass_optimized,
-  lookup_subclass,
-  by = c("CLASS", "SUBCLASS"),
-  all.x = TRUE
-)
-
-parcel_meta = design_points[
-  order(year, season),
-  .SD[.N],
-  by = parcel_id
-][
-  , .(parcel_id, site_id, lon, lat)
-]
-
-preds_landiq_optimized = merge(
-  preds_subclass_optimized,
-  parcel_meta,
-  by = "parcel_id",
-  all.x = TRUE
-)
-
-preds_landiq_optimized[, season := NA_integer_]
-
-# keep LandIQ-style columns
-preds_landiq_optimized = preds_landiq_optimized[, .(
-  site_id,
-  parcel_id,
-  lon,
-  lat,
-  year,
-  season,
-  CLASS,
-  SUBCLASS,
-  CLASS_desc,
-  SUBCLASS_desc,
-  PFT
+check_required_cols(crop_data, c("parcel_id", "year", "county", "state", "ACRES"), "crop_data")
+crop_data[, `:=`(
+  parcel_id = as.character(parcel_id), year = as.integer(year), county = as.character(county),
+  crop_class = trimws(as.character(state)), ACRES = as.numeric(ACRES), county_safe = safe_county_name(county)
 )]
 
-design_points_predicted_optimized = copy(
-  preds_landiq_optimized[year >= 2024 & year <= end_year]
+# ---- load shared crop targets ----
+if (!file.exists(config$crop_target_path)) stop("Missing crop target CSV: ", config$crop_target_path)
+matrix_scenarios = fread(config$crop_target_path)
+setnames(matrix_scenarios, names(matrix_scenarios), trimws(names(matrix_scenarios)))
+
+check_required_cols(matrix_scenarios, c("Crop", "County", "Year", "Acres_Total"), "crop target CSV")
+matrix_scenarios[, `:=`(
+  Crop = trimws(as.character(Crop)), County = trimws(as.character(County)), Year = as.integer(Year),
+  Acres_Total = as.numeric(Acres_Total),
+  county_safe = safe_county_name(County)
+)]
+
+message("Using shared crop target source: ", config$crop_target_source)
+
+# ---- optimize one county ----
+run_county = function(focus_county) {
+  cty = safe_county_name(focus_county)
+  message("Running county: ", cty)
+  
+  if (!(cty %in% matrix_scenarios$county_safe)) stop("County not found in crop targets: ", cty)
+  if (!(cty %in% crop_data$county_safe)) stop("County not found in crop data: ", cty)
+  
+  matrix_file = file.path(config$crop_matrix_dir, paste0(cty, "_crop_matrix.csv"))
+  if (!file.exists(matrix_file)) stop("Crop matrix file not found: ", matrix_file)
+  
+  A_orig = repair_transition_matrix(read_tmat(matrix_file), paste0("crop matrix ", cty))
+  crop_states = rownames(A_orig)
+  X0 = build_x0_last_observed(crop_data, cty, start_year, crop_states)
+  
+  if (sum(X0, na.rm = TRUE) <= 0) stop("X0 crop total is zero for county: ", cty)
+  
+  crop_target = build_scenario_crop_targets(matrix_scenarios, crop_data, cty, end_year, start_year, crop_states)
+  if (is.null(crop_target)) stop("No crop target vector could be built for county: ", cty)
+  
+  target_raw = make_full_target_vec(crop_target$target_vec, crop_states)
+  target_opt = prep_target_for_opt(target_raw, X0, scale_to_x0_total = config$scale_crop_targets_to_x0,
+    nominal_zero_acres = config$nominal_zero_acres)
+  
+  check_matrix(A_orig, paste0("original crop matrix ", cty))
+  message("Starting optimizer for: ", cty)
+  t0 = Sys.time()
+  
+  opt = optimize_county_matrix(cty = cty, A_orig = A_orig, X0 = X0, target_vec = target_opt, steps = steps,
+    lambda_target = config$lambda_target, target_vec_report = target_raw,
+    maxeval = config$maxeval_optimizer, maxtime = config$maxtime_optimizer)
+  
+  message("Finished optimizer for ", cty, " in ",
+          round(as.numeric(difftime(Sys.time(), t0, units = "mins")), 2), " minutes")
+  
+  matrix_out = file.path(config$matrix_out_dir, paste0(cty, "_crop_matrix.csv"))
+  write_tmat(opt$A_final, matrix_out)
+  
+  summary = copy(opt$summary)
+  summary[, `:=`(
+    crop_target_source = config$crop_target_source, matrix_type = "crop", focus_group = "crop_class", focus_county = focus_county,
+    start_year = start_year, end_year = end_year, x0_rule = "latest_observed_crop_state_per_parcel_up_to_start_year"
+  )]
+  summary[, `:=`(
+    abs_error_opt = optimized_projected_acres - target_acres_used_for_opt,
+    pct_error_opt = (optimized_projected_acres - target_acres_used_for_opt) / pmax(abs(target_acres_used_for_opt), 1),
+    abs_error_raw = optimized_projected_acres - target_acres_raw,
+    pct_error_raw = (optimized_projected_acres - target_acres_raw) / pmax(abs(target_acres_raw), 1)
+  )]
+  
+  total_opt_error_share = sum(abs(
+    summary$optimized_projected_acres / sum(summary$optimized_projected_acres) -
+      summary$target_acres_used_for_opt / sum(summary$target_acres_used_for_opt)
+  ), na.rm = TRUE)
+  
+  run_status = ifelse(opt$res$status < 0, "optimizer_failed",
+                      ifelse(total_opt_error_share > 0.05, "poor_fit", "success"))
+  
+  summary_path = file.path(config$matrix_out_dir, paste0("optimization_summary_", cty, ".csv"))
+  fwrite(summary, summary_path)
+  
+  manifest = data.table(output_type = "optimized_crop_matrix", run_status = run_status,
+    error_message = ifelse(run_status == "success", NA_character_, opt$res$message),
+    crop_target_source = config$crop_target_source, focus_county = focus_county, focus_county_safe = cty,
+    start_year = start_year, end_year = end_year, steps = steps, x0_total_acres = sum(X0),
+    scenario_target_acres = matrix_scenarios[county_safe == cty & Year == end_year, sum(Acres_Total, na.rm = TRUE)],
+    target_acres_used_for_opt_total = sum(target_opt), optimized_crop_matrix_path = matrix_out, optimization_summary_path = summary_path,
+    max_matrix_change = max(abs(opt$A_final - A_orig)), row_sum_error = max(abs(rowSums(opt$A_final) - 1)), total_opt_error_share = total_opt_error_share)
+  
+  fwrite(manifest, file.path(config$matrix_out_dir, paste0("run_manifest_", cty, ".csv")))
+  if (nrow(crop_target$unmatched)) fwrite(crop_target$unmatched,
+                                          file.path(config$matrix_out_dir, paste0("unmatched_scenario_crops_", cty, ".csv")))
+  
+  check_matrix(opt$A_final, paste0("optimized crop matrix ", cty))
+  message("Finished county: ", cty)
+  manifest
+}
+
+# ---- run all counties ----
+counties_to_run = if (config$run_all_counties) {
+  sort(intersect(
+    unique(crop_data$county_safe),
+    unique(matrix_scenarios$county_safe)
+  ))
+} else {
+  safe_county_name(config$counties_manual)
+}
+
+message("Counties to optimize: ", length(counties_to_run))
+
+#Number of workers cannot exceed available cores or number of counties
+n_workers = min(config$workers, as.integer(parallelly::availableCores()), length(counties_to_run))
+
+message("Starting ", n_workers, " workers.")
+
+cl = parallel::makePSOCKcluster(n_workers, outfile = "")
+
+#Load required packages on every worker
+parallel::clusterEvalQ(cl, {
+  library(data.table)
+  library(nloptr)
+  library(expm)
+  NULL
+})
+
+#Send required objects/functions to workers
+parallel::clusterExport(cl,
+  c("config", "start_year", "end_year", "steps", "crop_data", "matrix_scenarios",
+    
+    "safe_county_name", "normalize_crop_key", "check_required_cols", "read_tmat",
+    "repair_transition_matrix", "write_tmat", "build_x0_last_observed", "scale_target_to_x0_total",
+    "prep_target_for_opt", "make_full_target_vec", "check_matrix",
+    
+    "optimize_county_matrix",
+    
+    "scenario_crop_map_single", "scenario_crop_map_split", "get_split_states",
+    "get_x0_split_weights", "expand_scenario_rows_to_crop_states","build_scenario_crop_targets",
+    
+    "run_county"),
+  envir = .GlobalEnv
 )
 
-design_points_predicted_optimized[, source := "predicted_optimized"]
-
-setorder(design_points_predicted_optimized, parcel_id, year, season)
-
-fwrite(
-  design_points_predicted_optimized,
-  sprintf(
-    "predicted_optimized_%s_2024_%s.csv",
-    target_crop,
-    end_year
-  )
+all_manifests = tryCatch(
+  parallel::parLapplyLB(
+    cl,
+    counties_to_run,
+    function(cty) {
+      tryCatch(
+        run_county(cty),
+        error = function(e) {
+          data.table(
+            output_type = "optimized_crop_matrix",
+            run_status = "error",
+            error_message = conditionMessage(e),
+            focus_county = cty,
+            focus_county_safe = safe_county_name(cty),
+            start_year = start_year,
+            end_year = end_year
+          )
+        }
+      )
+    }
+  ),
+  finally = parallel::stopCluster(cl)
 )
+
+all_manifests = rbindlist(all_manifests, fill = TRUE)
+
+fwrite(all_manifests, file.path(config$matrix_out_dir, "all_county_run_manifest.csv"))
+
+print(all_manifests)
+
+message("Crop matrix optimization complete: ", config$matrix_out_dir)
