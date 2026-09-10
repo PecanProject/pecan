@@ -49,8 +49,6 @@ Imports:
 Suggests:
     quarto,
     scoringRules,
-    knitr,
-    rmarkdown,
     PEcAn.data.land,
     testthat (>= 2.0.0)
 VignetteBuilder: knitr
