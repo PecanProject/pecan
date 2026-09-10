@@ -1,5 +1,7 @@
 ### Installing BETY {#install-bety}
 
+**NOTE** BETYdb is optional for PEcAn workflows.
+
 BETYdb is the PostgreSQL database used by PEcAn to store traits, inputs,
 and other information required by PEcAn workflows.
 
