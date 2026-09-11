@@ -304,7 +304,8 @@ test_that("LAI taken from leafCSpWt if not present in output", {
   expect_equal(as.vector(ncdf4::ncvar_get(nc1, "LAI")), c(1, 10))
 
   # Now with LAI specified => uses it as-is
-  dat$LAI = c(2, 3)
+  # (note the colname is lowercase in Sipnet output)
+  dat$lai = c(2, 3)
   paths <- setup_sipnet_test(dat, notes_line = NULL)
   nc2 <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
   on.exit(ncdf4::nc_close(nc2), add = TRUE)
