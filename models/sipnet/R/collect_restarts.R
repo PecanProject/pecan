@@ -18,7 +18,7 @@
 #' On copying, files are renamed by site ID and ensemble member. Segment number
 #' is not retained. Thus the examples shown above would respectively become
 #' `<dest_dir>/restart-131976-00001.out` and
-#' `<dest_dir>.restart-131975-00004.out`.
+#' `<dest_dir>/restart-131975-00004.out`.
 #'
 #' @param run_dir path to the run directory of a PEcAn workflow.
 #'  This should be the directory listed in the workflow's `settings$rundir`;
