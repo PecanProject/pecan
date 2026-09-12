@@ -1,5 +1,7 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* New function `collect_restarts` copies `restart.out` files from an entire
+  workflow run to a single directory, for e.g. initializing follow-up workflows.
 * Improvements to the job.sh written by `write_segmented_configs`:
   - Now places README.txt, segments.csv, and the full log files from each
     segment, into the outdir (as was already done for one-segment runs).

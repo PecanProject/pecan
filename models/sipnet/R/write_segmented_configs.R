@@ -288,6 +288,18 @@ write_segment_configs <- function(
       segment_settings[[c("model", "options")]] <- list()
     }
 
+    if (isegment == 1) {
+      # iff RESTART_IN is defined for the whole run, use it for seg 1,
+      # assuming the path is local to the unsegmented run_dir
+      # If path exists but not local, use it unchanged
+      orig_restart <- segment_settings[[c("model", "options", "RESTART_IN")]]
+      if (!is.null(orig_restart) && basename(orig_restart) == orig_restart) {
+        segment_settings[[c("model", "options", "RESTART_IN")]] <- file.path(
+          run_dir,
+          orig_restart
+        )
+      }
+    }
     if (isegment > 1) {
       # For isegment > 1, we restart from the *previous* segment's restart.out
       segment_settings[[c("model", "options", "RESTART_IN")]] <- restart_out
