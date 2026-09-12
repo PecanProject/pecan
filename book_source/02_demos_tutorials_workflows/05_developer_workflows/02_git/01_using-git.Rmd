@@ -16,12 +16,12 @@ history and full revision tracking capabilities, not dependent on
 network access or a central server. Branching and merging are fast and
 easy to do.
 
-A good place to start is the [GitHub 5 minute illustrated tutorial](https://guides.github.com/introduction/flow/). 
-In addition, there are three fun tutorials for learning git:
+A good place to start is the [GitHub Flow tutorial](https://docs.github.com/en/get-started/quickstart/github-flow). 
+In addition, there are several helpful tutorials for learning git:
   
-* [Learn Git](https:k//www.codecademy.com/learn/learn-git) is a great web-based interactive tutorial.
+* [Learn Git](https://www.codecademy.com/learn/learn-git) is a web-based interactive tutorial.
 * [LearnGitBranching](https://learngitbranching.js.org/)
-* [TryGit](http://tryk.github.com).
+* [Git Tutorial](https://git-scm.com/docs/gittutorial) is the official introduction to Git.
 
 
 **URLs** In the rest of the document will use specific URL’s to clone the code.
@@ -242,10 +242,10 @@ the https or git url to check out the code.
 
 Rstudio is nicely integrated with many development tools, including git and GitHub. 
 It is quite easy to check out source code from within the Rstudio program or browser.
-The Rstudio documentation includes useful overviews of [version control](http://www.rstudio.com/ide/docs/version_control/overview) 
-and [R package development](http://www.rstudio.com/ide/docs/packages/overview). 
+The Rstudio documentation includes useful overviews of [version control](https://docs.posit.co/ide/user/ide/guide/tools/version-control.html) 
+and [R package development](https://docs.posit.co/ide/user/ide/guide/pkg-devel/writing-packages.html). 
 
-Once you have git installed on your computer (see the [Rstudio version control](http://www.rstudio.com/ide/docs/version_control/overview) documentation for instructions), you can use the following steps to install the PEcAn source code in Rstudio.
+Once you have git installed on your computer (see the [Rstudio version control](https://docs.posit.co/ide/user/ide/guide/tools/version-control.html) documentation for instructions), you can use the following steps to install the PEcAn source code in Rstudio.
 
 ### Advanced
 
@@ -308,14 +308,14 @@ To tag an earlier commit, just append the commit SHA to the command, e.g.
 #### Git Documentation
   
 * Scott Chacon, ‘Pro Git book’,
-[http://git-scm.com/book](http://git-scm.com/book)
+[https://git-scm.com/book](https://git-scm.com/book)
 * GitHub help pages,
-[https://help.github.com](https://help.github.com)/
+[https://docs.github.com](https://docs.github.com)/
 * Main GIT page
 [https://git-scm.com/doc](https://git-scm.com/doc)
 * Another set of pages about branching,
-[http://sandofsky.com/blog/git-workflow.html](http://sandofsky.com/blog/git-workflow.html)
-* [Stackoverflow highest voted questions tagged "git"](http://stackoverflow.com/questions/tagged/git?sort=votes&pagesize=50)
+[https://www.sandofsky.com/git-workflow/](https://www.sandofsky.com/git-workflow/)
+* [Stack Overflow highest voted questions tagged "git"](https://stackoverflow.com/questions/tagged/git?tab=Votes)
 
 
 #### GitHub Documentation
@@ -323,6 +323,6 @@ To tag an earlier commit, just append the commit SHA to the command, e.g.
 When in doubt, the first step is to click the "Help" button at the top of the page.
 
 * [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow)
-* [GitHub FAQ](https://help.github.com/)
-* [Using Pull Requests](https://help.github.com/articles/using-pull-requests)
-* [SSH Keys](https://help.github.com/articles/generating-ssh-keys)
+* [GitHub Documentation](https://docs.github.com/)
+* [Using Pull Requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
+* [SSH Keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
