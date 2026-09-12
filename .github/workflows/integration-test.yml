@@ -8,6 +8,7 @@ on :
   - cron: '30 4 * * 4'
 jobs:
   test:
+    if: github.repository == 'PecanProject/pecan' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     env:
