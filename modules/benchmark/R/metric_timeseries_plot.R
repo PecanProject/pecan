@@ -26,8 +26,11 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     }
   }
   
-  if (!"model_q05" %in% colnames(metric_dat)) metric_dat$model_q05 <- metric_dat$model
-  if (!"model_q95" %in% colnames(metric_dat)) metric_dat$model_q95 <- metric_dat$model
+  if (!all(c("model_q05", "model_q95") %in% colnames(metric_dat))) {
+    PEcAn.logger::logger.warn("Missing columns 'model_q05' and 'model_q95'; using 'model' values for ribbon bounds.")
+    metric_dat$model_q05 <- metric_dat$model
+    metric_dat$model_q95 <- metric_dat$model
+  }
 
   is_multi_site <- "site" %in% colnames(metric_dat) && length(unique(metric_dat$site)) > 1
   is_multi_var <- "variable" %in% colnames(metric_dat) && length(unique(metric_dat$variable)) > 1
@@ -42,11 +45,7 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     sub_dat <- facet_groups[[g]]
     
     coverage_val <- try(metric_Coverage(sub_dat), silent = TRUE)
-    if (inherits(coverage_val, "try-error") || is.na(coverage_val)) {
-      coverage_pct <- NA_real_
-    } else {
-      coverage_pct <- coverage_val * 100
-    }
+    coverage_pct <- if (inherits(coverage_val, "try-error") || is.na(coverage_val)) NA_real_ else coverage_val * 100
     
     sharpness <- mean(sub_dat$model_q95 - sub_dat$model_q05, na.rm = TRUE)
     bias <- mean(sub_dat$model - sub_dat$obvs, na.rm = TRUE)
@@ -61,7 +60,7 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
         pmu <- sqrt(pooled_var)
         pmu_val_str <- sprintf("%.2f", pmu)
         
-        passes_validation <- (!is.na(coverage_pct) && coverage_pct >= 90) && (abs(bias) < pmu)
+        passes_validation <- (!is.na(coverage_pct) && coverage_pct >= 90) && (!is.na(bias) && abs(bias) < pmu)
         pass_str <- ifelse(passes_validation, "PASS", "FAIL")
       }
     }
@@ -89,6 +88,27 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
     ggplot2::geom_ribbon(ggplot2::aes(ymin = .data$model_q05, ymax = .data$model_q95, fill = "Model 90% CI"), alpha = 0.3) +
     ggplot2::scale_fill_manual(values = c("Model 90% CI" = "#619CFF"), name = "Intervals")
   
+  # 1b. Ensemble Member Spaghetti Lines (if ensemble matrix attribute is attached)
+  ens_mat <- attr(metric_dat, "ensemble_matrix")
+  if (!is.null(ens_mat) && is.matrix(ens_mat) && nrow(ens_mat) == nrow(metric_dat)) {
+    spag_df <- data.frame(
+      time = rep(metric_dat$time, times = ncol(ens_mat)),
+      member = rep(seq_len(ncol(ens_mat)), each = nrow(metric_dat)),
+      val = as.vector(ens_mat)
+    )
+    if ("site" %in% colnames(metric_dat)) {
+      spag_df$site <- rep(metric_dat$site, times = ncol(ens_mat))
+    }
+    if ("variable" %in% colnames(metric_dat)) {
+      spag_df$variable <- rep(metric_dat$variable, times = ncol(ens_mat))
+    }
+    p <- p + ggplot2::geom_line(
+      data = spag_df,
+      ggplot2::aes(x = .data$time, y = .data$val, group = .data$member),
+      colour = "#A6CEE3", alpha = 0.25, linewidth = 0.3
+    )
+  }
+
   # 2. Model Mean Line
   p <- p + ggplot2::geom_line(ggplot2::aes(y = .data$model, colour = "Model"), linewidth = 1)
 
