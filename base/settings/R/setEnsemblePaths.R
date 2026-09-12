@@ -11,9 +11,14 @@
 #'
 #' The path template should be a string recognized by `glue::glue()`,
 #' with curly braces wrapping any expressions to be interpolated.
-#' `{n}` will be replaced with each value of 1:`n_reps`, `{id}` will be
-#' replaced with the siteid of each site, and any other variables need to be
-#' passed as named arguments in `...`.
+#' Variables in these expressions are resolved in this order:
+#' 1. Variables defined in each site's `run$site` settings block
+#' 2. Variables passed as named arguments in `...` (same value at every site)
+#' 3. `{n}` is replaced with the value of `1:n_reps`
+#' 4. `{id}` is replaced with the siteid of each site.
+#'
+#' If the same name is defined in both run$site and `...`, uses the latter.
+#' All variables must have length either 1 or `n_reps`.
 #'
 #' If `inputs$<input_type>` does not exist, it will be created with a `path`
 #' element that matches the requested pattern. If it does exist, any existing
@@ -45,6 +50,22 @@
 #'   path_template = "{icdir}/{id}/{n}.nc"
 #' )
 #' m2$run$site.a1$inputs
+#'
+#' # using site-specific values in the path template:
+#' m_bysite <- createMultiSiteSettings(
+#'   templateSettings = s,
+#'   siteIds = data.frame(id = c("a1", "b2"), grid_cell = c("35N81W", "42N80W"))
+#' )
+#' m2_bysite <- setEnsemblePaths(
+#'   settings = m_bysite,
+#'   n_reps = 2,
+#'   input_type = "met",
+#'   icdir = "some/long/path",
+#'   GCM = c("CESM2", "MIROC6"),
+#'   path_template = "{icdir}/{grid_cell}/{GCM}.nc"
+#' )
+#' m2_bysite$run$site.a1$inputs
+#'
 #' @export
 setEnsemblePaths <- function(
     settings,
@@ -70,10 +91,16 @@ setEnsemblePaths <- function(
 
 
 # Set pathset at one site,
-# inserting site id if path template contains `{id}`
+# inserting site-level variables (notably including `id`)
+# Note that `...` must contain at least `n`
 set_site_paths <- function(settings, input_type, ...) {
-  siteid <- settings$run$site$id
-  paths <- build_pathset(id = siteid, ...)
+  dots_vars <- list(...)
+  # ensure locally specified vars mask site-specific ones
+  site_vars <- settings$run$site
+  site_vars <- site_vars[!(names(site_vars) %in% names(dots_vars))]
+  paths <- dots_vars |>
+    append(site_vars) |>
+    do.call(what = build_pathset)
   settings$run$inputs[[input_type]]$path <- paths
 
   settings
