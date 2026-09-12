@@ -38,7 +38,7 @@ this is also chonologically last coming from the segment numbering system).
 On copying, files are renamed by site ID and ensemble member. Segment number
 is not retained. Thus the examples shown above would respectively become
 \verb{<dest_dir>/restart-131976-00001.out} and
-\verb{<dest_dir>.restart-131975-00004.out}.
+\verb{<dest_dir>/restart-131975-00004.out}.
 }
 \author{
 Chris Black
