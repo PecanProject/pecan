@@ -51,6 +51,7 @@ Suggests:
     scoringRules,
     PEcAn.data.land,
     testthat (>= 2.0.0)
+VignetteBuilder: knitr
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyLoad: yes
