@@ -71,7 +71,7 @@ Where:
 
 ```r
 # Side-note: R snippet used to generate observation fixtures from an error model
-set.seed(42)
+set.seed(3)
 output_scale <- stats::sd(ensemble_mean)
 
 relative_bias  <- 0.3 # 30% relative bias
