@@ -204,7 +204,7 @@ print(p_sc)
 
 ### Residual Plot (`metric_residual_plot`)
 
-Plots residuals $(o_i - \bar{m}_i)$ against time or predicted values:
+Plots residuals $(\bar{m}_i - o_i)$ against time or predicted values:
 
 ```{r plot_residual}
 p_res <- metric_residual_plot(aligned_df, var = "TotSoilCarb")
