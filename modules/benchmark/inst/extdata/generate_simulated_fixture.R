@@ -40,7 +40,7 @@ simulated_observation <- ensemble_mean + output_scale * (
 )
 
 # Observation uncertainty (standard error)
-obs_sd <- rep(0.8, n_steps)
+obs_sd <- rep(output_scale * relative_error, n_steps)
 
 # 5. Format DataFrames
 model_df <- data.frame(
