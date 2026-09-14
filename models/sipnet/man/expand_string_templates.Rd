@@ -13,6 +13,10 @@ expand_string_templates(
   CDO_SETUP = paste(settings$host$cdosetup, "", sep = "\\n"),
   HOST_TEARDOWN = paste(paste(settings$model$postrun, sep = "\\n"),
     paste(settings$host$postrun, sep = "\\n"), "", sep = "\\n"),
+  CPRUNCMD = "",
+  CPOUTCMD = "",
+  RMOUTDIRCMD = "",
+  RMRUNDIRCMD = "",
   SITE_LAT = settings$run$site$lat,
   SITE_LON = settings$run$site$lon,
   SITE_MET = settings$run$inputs$met$path,
@@ -22,10 +26,6 @@ expand_string_templates(
   END_DATE = settings$run$end.date,
   BINARY = settings$model$binary,
   REVISION = settings$model$revision,
-  CPRUNCMD = "",
-  CPOUTCMD = "",
-  RMOUTDIRCMD = "",
-  RMRUNDIRCMD = "",
   PREFIX = settings$state.data.assimilation$NC.Prefix,
   OVERWRITE = settings$state.data.assimilation$NC.Overwrite,
   CONFLICT = settings$state.data.assimilation$FullYearNC,
@@ -42,6 +42,10 @@ later-expanded templates within themselves}
 
 \item{HOST_SETUP, CDO_SETUP, HOST_TEARDOWN}{host-specific setup and teardown}
 
+\item{CPRUNCMD, CPOUTCMD, RMOUTDIRCMD, RMRUNDIRCMD}{commands to manipulate and
+clean up the workflow directory after model execution. Not all templates
+use these}
+
 \item{SITE_LAT, SITE_LON, START_DATE, END_DATE}{location and date range being
 modeled}
 
@@ -50,10 +54,6 @@ modeled}
 \item{OUTDIR, RUNDIR}{PEcAn run and out directories for this invocation}
 
 \item{BINARY, REVISION}{Sipnet model information}
-
-\item{CPRUNCMD, CPOUTCMD, RMOUTDIRCMD, RMRUNDIRCMD}{commands to manipulate and
-clean up the workflow directory after model execution. Not all templates
-use these}
 
 \item{PREFIX, OVERWRITE, CONFLICT}{settings specific to SDA workflow}
 
