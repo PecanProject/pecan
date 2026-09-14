@@ -84,67 +84,69 @@ simulated_observation <- ensemble_mean +
   )
 ```
 
-In `PEcAn.benchmark`, precomputed text fixtures (`small_salinas_ensemble.csv` and `small_salinas_obs.csv`) are provided in package `extdata` for fast, reproducible offline testing.
+In `PEcAn.benchmark`, precomputed text fixtures are provided in package `extdata`:
+1. `simulated_observations.csv` and `simulated_model_ensemble.csv`: Synthetic dataset generated from the statistical error model with known parameters ($\beta = 0.3$, $\tau = 0.5$).
+2. `small_salinas_ensemble.csv` and `small_salinas_obs.csv`: Real-world Salinas SOC ensemble benchmark dataset.
 
 ---
 
 ## 3. Data Intake, Reshaping, and Alignment
 
-We load the package and read the precomputed fixtures:
+We load the package and read the synthetic simulation fixtures with known error parameters:
 
 ```{r load_data}
 library(PEcAn.benchmark)
 
 # Path to built-in simulation fixtures
 extdata_dir <- system.file("extdata", package = "PEcAn.benchmark")
-if (extdata_dir == "" || !file.exists(file.path(extdata_dir, "small_salinas_ensemble.csv"))) {
+if (extdata_dir == "" || !file.exists(file.path(extdata_dir, "simulated_model_ensemble.csv"))) {
   extdata_dir <- file.path(getwd(), "../inst/extdata")
 }
 
-model_csv <- file.path(extdata_dir, "small_salinas_ensemble.csv")
-obs_csv   <- file.path(extdata_dir, "small_salinas_obs.csv")
+model_csv <- file.path(extdata_dir, "simulated_model_ensemble.csv")
+obs_csv   <- file.path(extdata_dir, "simulated_observations.csv")
 
 raw_model <- read.csv(model_csv)
 raw_obs   <- read.csv(obs_csv)
 
-head(raw_model[, c("datetime", "site_id", "parameter", "variable", "prediction")])
-head(raw_obs[, c("date", "site_id", "variable", "obs_mean", "obs_sd")])
+head(raw_model[, c("time", "ensemble_mean", "ensemble_sd", "model_1", "model_2")])
+head(raw_obs[, c("time", "obvs", "obvs_sd", "variable", "unit")])
 ```
 
-### Reshaping EFI Long Data to Ensemble Matrix (`efi_long_to_array`)
+### Reshaping Ensemble Data to Matrix (`ens_mat`)
 
-To retain individual member trajectory information for spaghetti plots and probabilistic metrics (like CRPS), we reshape the long model dataset into an ensemble matrix:
+To retain individual member trajectory information for spaghetti plots and probabilistic metrics (like CRPS), we extract the ensemble matrix:
 
 ```{r reshape}
-# Reshape EFI long format dataframe to a (time x member) matrix
-ens_mat <- efi_long_to_array(raw_model, var = "TotSoilCarb", site = "socs_sys1")
+# Extract ensemble member columns (model_1, ..., model_10) into a (time x member) matrix
+ens_cols <- grep("^model_[0-9]+$", colnames(raw_model), value = TRUE)
+ens_mat  <- as.matrix(raw_model[, ens_cols])
 
-# Summary data frame with ensemble mean and 90% prediction intervals
+# Model summary dataframe
 model_summary <- data.frame(
-  time = attr(ens_mat, "time"),
-  value = rowMeans(ens_mat, na.rm = TRUE),
-  model_q05 = apply(ens_mat, 1, quantile, probs = 0.05, na.rm = TRUE),
-  model_q95 = apply(ens_mat, 1, quantile, probs = 0.95, na.rm = TRUE),
-  site = "socs_sys1"
+  time = as.POSIXct(raw_model$time, tz = "UTC"),
+  value = raw_model$ensemble_mean,
+  model_q05 = raw_model$model_q2.5,
+  model_q95 = raw_model$model_q97.5,
+  site = "SiteA"
 )
 
-# Observation data frame
-obs_filtered <- raw_obs[raw_obs$site_id == "socs_sys1" & raw_obs$variable == "TotSoilCarb", ]
+# Observation summary dataframe
 obs_summary <- data.frame(
-  time = as.POSIXct(obs_filtered$date, tz = "UTC"),
-  value = obs_filtered$obs_mean,
-  obvs_sd = obs_filtered$obs_sd,
-  site = "socs_sys1"
+  time = as.POSIXct(raw_obs$time, tz = "UTC"),
+  value = raw_obs$obvs,
+  obvs_sd = raw_obs$obvs_sd,
+  site = "SiteA"
 )
 ```
 
 ### Temporal Alignment (`align_by_time`)
 
-We align model predictions and observations in time within a half-year tolerance window (for annual observation alignment):
+We align model predictions and observations in time:
 
 ```{r align}
 # Align model summary and observations by timestamp
-aligned_df <- align_by_time(model_summary, obs_summary, tolerance_secs = 365 * 86400 / 2)
+aligned_df <- align_by_time(model_summary, obs_summary, tolerance_secs = 1800)
 
 # Match ensemble matrix indices to aligned time points
 aligned_indices <- match(aligned_df$time, model_summary$time)
@@ -180,6 +182,14 @@ metrics_results <- compute_metrics(
 print(metrics_results)
 ```
 
+### Comparing Calculated Metrics against Theoretical Expectations
+
+Since the simulated observation fixture was generated with known parameters $\beta_v = 0.3$ and $\tau_v = 0.5$:
+
+* **Theoretical Expected Bias**: The error model generates observations as $o = \bar{m} + S_v(\beta_v + \epsilon)$, where $S_v = \text{sd}(\bar{m}) \approx 6.35$. Because `BIAS` is defined as $(\bar{m} - o) = \text{model} - \text{obs}$, the expected theoretical bias is $-\beta_v \cdot S_v = -0.3 \times 6.35 \approx -1.905$.
+* **Empirical Calculated Bias**: The computed `BIAS` metric on this fixture yields $\approx -1.8$, closely matching the theoretical expectation within sampling error.
+* **Sign Explanation**: The negative sign occurs because the error model adds $+\beta_v S_v$ to the observation ($o > \bar{m}$), so model minus observation $(\bar{m} - o)$ is negative.
+
 ---
 
 ## 5. Visualizations and Automated Reporting
@@ -189,7 +199,7 @@ print(metrics_results)
 Renders individual member trajectories (spaghetti) under the $q_{05}/q_{95}$ prediction ribbon alongside observations and error bars:
 
 ```{r plot_timeseries}
-p_ts <- metric_timeseries_plot(aligned_df, var = "TotSoilCarb (gC/m2)")
+p_ts <- metric_timeseries_plot(aligned_df, var = "NEE (umol m-2 s-1)")
 print(p_ts)
 ```
 
@@ -198,7 +208,7 @@ print(p_ts)
 Plots observed values against predicted ensemble mean values:
 
 ```{r plot_scatter}
-p_sc <- metric_scatter_plot(aligned_df, var = "TotSoilCarb")
+p_sc <- metric_scatter_plot(aligned_df, var = "NEE")
 print(p_sc)
 ```
 
@@ -207,16 +217,47 @@ print(p_sc)
 Plots residuals $(\bar{m}_i - o_i)$ against time or predicted values:
 
 ```{r plot_residual}
-p_res <- metric_residual_plot(aligned_df, var = "TotSoilCarb")
+p_res <- metric_residual_plot(aligned_df, var = "NEE")
 print(p_res)
 ```
 
 ---
 
-## 6. Substituting Custom Processed Data
+## 6. Real-World EFI Long Dataset Example (`small_salinas`)
 
-To evaluate your own model predictions and observations:
-1. Format model predictions in EFI long format CSV (`datetime`, `site_id`, `parameter`, `variable`, `prediction`).
-2. Format observations with `date`/`time` and `obs_mean`/`obvs`.
-3. Use `efi_long_to_array()` to extract the ensemble matrix.
-4. Pass your aligned data into `align_by_time()` and `compute_metrics()`.
+To evaluate model predictions stored in standard EFI long format (such as the provided `small_salinas_ensemble.csv` and `small_salinas_obs.csv`):
+
+1. Format model predictions in EFI long format (`datetime`, `site_id`, `parameter`, `variable`, `prediction`).
+2. Use `efi_long_to_array()` to extract the ensemble matrix for a given variable and site.
+3. Pass aligned data into `align_by_time()` and `compute_metrics()`.
+
+```{r efi_long_example}
+salinas_model <- read.csv(file.path(extdata_dir, "small_salinas_ensemble.csv"))
+salinas_obs   <- read.csv(file.path(extdata_dir, "small_salinas_obs.csv"))
+
+# Reshape EFI long format to ensemble matrix for site 'socs_sys1'
+sal_mat <- efi_long_to_array(salinas_model, var = "TotSoilCarb", site = "socs_sys1")
+
+sal_model_summary <- data.frame(
+  time = attr(sal_mat, "time"),
+  value = rowMeans(sal_mat, na.rm = TRUE),
+  model_q05 = apply(sal_mat, 1, quantile, probs = 0.05, na.rm = TRUE),
+  model_q95 = apply(sal_mat, 1, quantile, probs = 0.95, na.rm = TRUE),
+  site = "socs_sys1"
+)
+
+sal_obs_filtered <- salinas_obs[salinas_obs$site_id == "socs_sys1" & salinas_obs$variable == "TotSoilCarb", ]
+sal_obs_summary <- data.frame(
+  time = as.POSIXct(sal_obs_filtered$date, tz = "UTC"),
+  value = sal_obs_filtered$obs_mean,
+  obvs_sd = sal_obs_filtered$obs_sd,
+  site = "socs_sys1"
+)
+
+sal_aligned <- align_by_time(sal_model_summary, sal_obs_summary, tolerance_secs = 365 * 86400 / 2)
+sal_aligned_indices <- match(sal_aligned$time, sal_model_summary$time)
+attr(sal_aligned, "ensemble_matrix") <- sal_mat[sal_aligned_indices, , drop = FALSE]
+
+sal_metrics <- compute_metrics(sal_aligned, metrics = c("BIAS", "RMSE", "MAE", "R2", "COVERAGE", "CRPS"))
+print(sal_metrics)
+```
