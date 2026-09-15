@@ -207,52 +207,46 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     rmoutdircmd <- paste("rm", file.path(outdir, "*"))
     rmrundircmd <- paste("rm", file.path(rundir, "*"))
   }
-  
-  # create job.sh
-  jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
-  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
-  jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
-  
-  jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
-  jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
-  jobsh <- gsub("@SITE_MET@", template.clim, jobsh)
-  
-  jobsh <- gsub("@OUTDIR@", outdir, jobsh)
-  jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  
-  jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
-  jobsh <- gsub("@END_DATE@",settings$run$end.date , jobsh)
-  
-  jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
 
-  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
-  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
-  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
-  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
-  
   if(is.null(settings$state.data.assimilation$NC.Prefix)){
     settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
   }
-  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
-  
-  #overwrite argument
   if(is.null(settings$state.data.assimilation$NC.Overwrite)){
     settings$state.data.assimilation$NC.Overwrite <- FALSE
   }
-  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
-  
   #allow conflict? meaning allow full year nc export.
   if(is.null(settings$state.data.assimilation$FullYearNC)){
     settings$state.data.assimilation$FullYearNC <- FALSE
   }
-  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
-  
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
   }
-  jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
-  
+
+  # Treat end-of-simulation state dump as a first-class output
+  if (isTRUE(as.logical(settings$model$copy.restart))) {
+    cpruncmd <- paste(
+      cpruncmd,
+      "cp \"${RUNDIR}/restart.out\" \"${OUTDIR}/restart.out\"",
+      sep = "\n"
+    )
+  }
+
+  # create job.sh
+  jobsh <- expand_string_templates(
+    jobsh,
+    settings,
+    HOST_SETUP = hostsetup,
+    CDO_SETUP = cdosetup,
+    HOST_TEARDOWN = hostteardown,
+    CPRUNCMD = cpruncmd,
+    CPOUTCMD = cpoutcmd,
+    RMOUTDIRCMD = rmoutdircmd,
+    RMRUNDIRCMD = rmrundircmd,
+    SITE_MET = template.clim,
+    OUTDIR = outdir,
+    RUNDIR = rundir
+  )
+
   writeLines(jobsh, con = file.path(rundir, "job.sh"))
   Sys.chmod(file.path(rundir, "job.sh"))
   
