@@ -415,7 +415,7 @@ write_segment_configs <- function(
     SEGMENT_ROOTDIR = segment_rootdir,
     TARGET_SIPNET_OUT = target_sipnet_out,
     LAST_SEG_RESTART = file.path(
-      tail(segments$segment_dir, 1),
+      utils::tail(segments$segment_dir, 1),
       "run",
       "restart.out"
       )
