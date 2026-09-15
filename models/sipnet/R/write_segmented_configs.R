@@ -97,6 +97,15 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
         by = "ens_num",
         relationship = "many-to-one")
   }
+  # Use a custom job.sh template with no model2netcdf step;
+  # we convert all segments together at the end of the timeseries instead.
+  # ...unless user provided their own template, in which case use it as-is
+  if (is.null(settings$model$jobtemplate) || !file.exists(settings$model$jobtemplate)) {
+    settings$model$jobtemplate <- system.file(
+      "template_singlesegment.job",
+      package = "PEcAn.SIPNET"
+    )
+  }
 
   new_jobfiles <- character()
 
@@ -218,6 +227,7 @@ write_segment_configs <- function(
   )
 
   jobsh_files <- character()
+  job_logfiles <- character()
 
   for (isegment in seq_len(nrow(segments))) {
     segment <- segments[isegment, ]
@@ -259,6 +269,18 @@ write_segment_configs <- function(
     segment_settings[["outdir"]] <- segment_outdir
     segment_settings[["modeloutdir"]] <- segment_outdir
     segment_settings[["rundir"]] <- segment_rundir
+    segment_settings[[c("host", "rundir")]] <-  sub(
+      pattern = settings$rundir,
+      replacement = settings$host$rundir,
+      x = segment_rundir,
+      fixed = TRUE
+    )
+    segment_settings[[c("host", "outdir")]] <-  sub(
+      pattern = settings$modeloutdir,
+      replacement = settings$host$outdir,
+      x = segment_outdir,
+      fixed = TRUE
+    )
     segment_settings[[c("run", "start.date")]] <- dstart
     segment_settings[[c("run", "end.date")]] <- dend
     segment_settings[[c("run", "inputs")]] <- segment_inputs
@@ -266,6 +288,18 @@ write_segment_configs <- function(
       segment_settings[[c("model", "options")]] <- list()
     }
 
+    if (isegment == 1) {
+      # iff RESTART_IN is defined for the whole run, use it for seg 1,
+      # assuming the path is local to the unsegmented run_dir
+      # If path exists but not local, use it unchanged
+      orig_restart <- segment_settings[[c("model", "options", "RESTART_IN")]]
+      if (!is.null(orig_restart) && basename(orig_restart) == orig_restart) {
+        segment_settings[[c("model", "options", "RESTART_IN")]] <- file.path(
+          run_dir,
+          orig_restart
+        )
+      }
+    }
     if (isegment > 1) {
       # For isegment > 1, we restart from the *previous* segment's restart.out
       segment_settings[[c("model", "options", "RESTART_IN")]] <- restart_out
@@ -291,12 +325,18 @@ write_segment_configs <- function(
       run.id = runid_dummy
     )
 
+    segment_log <- file.path(segment_settings$modeloutdir,
+                             runid_dummy,
+                             "logfile.txt")
     segment_jobsh <- file.path(segment_settings$rundir, runid_dummy, "job.sh")
     stopifnot(file.exists(segment_jobsh))
+    job_logfiles <- c(job_logfiles, segment_log)
     jobsh_files <- c(jobsh_files, segment_jobsh)
   }
 
   # Now, get the run's jobsh file
+  # NB host setup and host teardown steps are done once here, not repeated
+  # for each segment.
   run_jobsh <- file.path(run_dir, "job.sh")
   target_sipnet_out <- file.path(run_modeloutdir, "sipnet.out")
   segmented_jobsh_file <- file.path(run_dir, "job_segmented.sh")
@@ -305,32 +345,83 @@ write_segment_configs <- function(
     "",
     "# Redirect output",
     "exec 3>&1",
-    paste("exec &>", shQuote(file.path(run_modeloutdir, "logfile.txt"))),
+    "exec &> @RUN_MODELOUTDIR@/logfile.txt",
+    "",
+    "# host specific setup",
+    "@HOST_SETUP@",
+    "",
+    "# cdo setup",
+    "@CDO_SETUP@",
+    "",
     "",
     "# Run model segments",
     paste("bash", jobsh_files),
     "",
     "# Concatenate sipnet out files",
-    sprintf(
-      "Rscript -e \"PEcAn.SIPNET::combine_sipnet_out(directory = %s, outfile = %s)\"",
-      shQuote(segment_rootdir),
-      shQuote(target_sipnet_out)
-    ),
+    "Rscript -e 'PEcAn.SIPNET::combine_sipnet_out(' \\",
+    "  -e 'directory = \"@SEGMENT_ROOTDIR@\",' \\",
+    "  -e 'outfile = \"@TARGET_SIPNET_OUT@\")' \\",
     "",
     "# Convert output to PEcAn standard",
     sprintf(
-      "Rscript -e \"PEcAn.SIPNET::model2netcdf.SIPNET(%s)\"",
+      "Rscript -e 'PEcAn.SIPNET::model2netcdf.SIPNET(%s)'",
       paste(
-        sprintf("outdir = %s", shQuote(run_modeloutdir)),
-        sprintf("sitelat = %s", as.character(settings$run$site$lat)),
-        sprintf("sitelon = %s", as.character(settings$run$site$lon)),
-        sprintf("start_date = %s", shQuote(settings$run$start.date)),
-        sprintf("end_date = %s", shQuote(settings$run$end.date)),
-        sprintf("revision = %s", shQuote(settings$model$revision)),
+        "outdir = \"@RUN_MODELOUTDIR@\"",
+        "sitelat = @SITE_LAT@",
+        "sitelon = @SITE_LON@",
+        "start_date = \"@START_DATE@\"",
+        "end_date = \"@END_DATE@\"",
+        "delete.raw = @DELETE.RAW@",
+        "revision = \"@REVISION@\"",
         sep = ", "
       )
-    )
+    ),
+    "",
+    "# copy readme with specs to output",
+    "cp @RUNDIR@/README.txt @RUN_MODELOUTDIR@/README.txt",
+    "cp @RUNDIR@/segments.csv @RUN_MODELOUTDIR@/segments.csv",
+    "",
+    "# Concatenate segment log files",
+    paste("echo \"\n--> contents of", job_logfiles, ":\" && cat", job_logfiles),
+    "",
+    if (isTRUE(as.logical(settings$model$copy.restart))) {
+      # copy restart.out from last-run segment to the output directory.
+      "cp @LAST_SEG_RESTART@ @RUN_MODELOUTDIR@/restart.out"
+    },
+    if (isTRUE(as.logical(settings$model$delete.raw))) {
+      # Removing all outputs that have been safely copied to the outdir
+      c(
+        "# Remove per-segment outputs & logs after concatenating to job outdir",
+        "find @SEGMENT_ROOTDIR@ -name sipnet.out -delete",
+        "find @SEGMENT_ROOTDIR@ -name logfile.txt -delete",
+        "rm @RUNDIR@/README.txt",
+        "rm @RUNDIR@/segments.csv"
+      )
+    },
+    "",
+    "# host specific teardown",
+    "@HOST_TEARDOWN@",
+    "",
+    "echo -e \"MODEL FINISHED\nLogfile is located at '${OUTDIR}/logfile.txt'\" >&3"
   )
+
+
+
+  segmented_jobsh_lines <- expand_string_templates(
+    text = segmented_jobsh_lines,
+    settings = settings,
+    RUNDIR = run_dir,
+    RUN_MODELOUTDIR = run_modeloutdir,
+    SEGMENT_ROOTDIR = segment_rootdir,
+    TARGET_SIPNET_OUT = target_sipnet_out,
+    LAST_SEG_RESTART = file.path(
+      utils::tail(segments$segment_dir, 1),
+      "run",
+      "restart.out"
+      )
+  )
+
+
   writeLines(segmented_jobsh_lines, segmented_jobsh_file)
   if (replace_and_link) {
     run_jobsh_backup <- file.path(run_dir, "job_original.sh")

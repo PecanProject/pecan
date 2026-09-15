@@ -9,8 +9,9 @@
 #   Rscript scripts/extract_tiles_task.R
 #   # or: ./run_mslsp.sh --task-tile 2024
 #
-# tiles_to_run.txt is written by prep_static.R: tileids.txt intersect tiles with ag parcels.
-# Prep cache must exist for the year (run prep_static.R / --prep-only first).
+# tiles_to_run.txt is written by prep_static.R from parcel_tiles.csv x year ag
+# parcels (tileids.txt order). Build the geometry CSV first:
+#   hls/build_hls_parcel_tile_map.R
 
 .fa <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1L])
 .lib <- dirname(normalizePath(.fa, mustWork = FALSE))

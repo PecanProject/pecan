@@ -244,22 +244,58 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   if ("sensitivity.analysis" %in% names(settings)) {
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
-    sa.runs <- PEcAn.uncertainty::write.sa.configs(
-      defaults = settings$pfts,
-      quantile.samples = sa.samples,
-      settings = settings,
-      model = model,
-      input_design = input_design,
-      write.to.db = write
+
+    # A sensitivity analysis is an ensemble whose parameter sets move one trait
+    # at a time. The design says which run is which, so the parameter sets and
+    # the run names are built from it here and the same writer writes them.
+    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
+      design_matrix = input_design,
+      site_id       = settings$run$site$id,
+      pft_names     = pft.names
     )
 
-    # collect manifest data
-    if ("manifest" %in% names(sa.runs)) {
+    sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
+      defaults         = settings$pfts,
+      ensemble.size    = nrow(input_design),
+      ensemble.samples = sa.run.samples,
+      settings         = settings,
+      model            = model,
+      input_design     = input_design,
+      write.to.db      = write,
+      run_descriptions = sa.descriptions,
+      ensemble.id      = settings$sensitivity.analysis$ensemble.id
+    )
+
+    # collect manifest data. The median run is the median of every trait, and
+    # the analysis looks runs up by trait, so it needs a row per trait rather
+    # than the single untagged row the writer produced for it.
+    if ("manifest" %in% names(sa.runs) &&
+        all(c("pft_name", "trait") %in% names(sa.runs$manifest))) {
+      sa_manifest <- sa.runs$manifest
+      is_median <- is.na(input_design$sa_pft)
+
+      moved_rows <- sa_manifest[!is_median, , drop = FALSE]
+      median_row <- sa_manifest[is_median, , drop = FALSE][1, , drop = FALSE]
+
+      median_rows <- unique(moved_rows[, c("pft_name", "trait"), drop = FALSE])
+      median_rows$run_id   <- median_row$run_id
+      median_rows$site_id  <- median_row$site_id
+      median_rows$quantile <- "50"
+      median_rows$type     <- "Sensitivity"
+
+      run_manifest_df <- rbind(
+        run_manifest_df,
+        moved_rows,
+        median_rows[, names(sa_manifest), drop = FALSE]
+      )
+    } else if ("manifest" %in% names(sa.runs)) {
       run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
     }
 
-    # Store output in settings and output variables
-    sa.run.ids <- sa.runs$runs
+    # Store output in settings and output variables. The post-processing looks
+    # runs up by trait and quantile, which the design and the returned ids give.
+    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(input_design, sa.runs$runs$id)
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
     # Save sensitivity analysis info

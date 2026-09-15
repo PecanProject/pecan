@@ -30,9 +30,11 @@ Input handling rules:
         \code{ensemble}/\code{sensitivity} keys (e.g. threaded from a
         MultiSettings parent), return as-is.
   \item If \code{input_design} is the \code{list(design_matrix, samples)}
-        from \code{generate_joint_ensemble_design()}, use the design matrix
-        as the ensemble design and \code{samples} as the bundle (no
-        resampling). \code{X} is accepted as the older name for it.
+        returned by a design generator, use that design and \code{samples}
+        as the bundle (no resampling). \code{X} is accepted as the older
+        name for the design. A design carrying \code{sa_pft},
+        \code{sa_trait} and \code{sa_quantile} describes sensitivity
+        analysis runs; anything else is an ensemble design.
   \item If \code{input_design} is a bare data.frame (a design without its
         samples), raise an error: the design's \code{param} indices only match
         the samples they were drawn with.

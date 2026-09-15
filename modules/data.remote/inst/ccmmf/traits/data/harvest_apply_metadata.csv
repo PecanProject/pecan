@@ -1,0 +1,19 @@
+column_number,column_name,contents,notes
+1,site_id,parcel_id,same as overlay parcel_id
+2,year,assigned calendar year,
+3,season,LandIQ season,
+4,date,harvest/termination date,row/rice from mslsp_OGMn; hay/woody from mslsp_OGD; woody clearing may use 12-31 if no overlay date
+5,CLASS_SUBCLASS,LandIQ CLASS+SUBCLASS,prior stand code on woody clearing rows
+6,PFT,plant functional type,"row | rice | hay | woody; other is not written"
+7,assigned_by,match provenance from overlay,"matched | no_mslsp | no_match"
+8,gapfill_date_source,date provenance from overlay,"mslsp | lm_adoy | mean_crop | none"
+9,destructive,TRUE if orchard/vineyard clearing,PFT woody only; ignored on annual PFTs
+10,frac_above_removed_0to1,fraction aboveground removed,SIPNET harv line
+11,frac_above_to_litter_0to1,fraction aboveground to litter,SIPNET harv line
+12,frac_below_removed_0to1,fraction belowground removed,SIPNET harv line
+13,frac_below_to_litter_0to1,fraction belowground to litter,SIPNET harv line
+14,lookup_pft,PFT key used in harvest lookup,may differ from row PFT after mapping
+15,src_agb_removed,lookup level for aboveground removed,"subclass | class | pft"
+16,src_agb_litter,lookup level for aboveground litter,"subclass | class | pft"
+17,src_bgb_removed,lookup level for belowground removed,"subclass | class | pft"
+18,src_bgb_litter,lookup level for belowground litter,"subclass | class | pft"

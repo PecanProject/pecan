@@ -1,18 +1,5 @@
 column_number,column_name,contents,notes
-1,event_type,always tillage,
-2,site_id,parcel_id (alias for event APIs),
-3,parcel_id,stable LandIQ parcel id,
-4,year,reference year for the fallow window / event file,
-5,PFT,plant functional type,from matched phenology join
-6,OGMn_date,fallow window start,prior season senescence (MSLSP OGMn)
-7,max_date,date of pre-minimum NDTI peak in fallow window,
-8,max_ndti,NDTI value at that peak,
-9,min_date,date of minimum smoothed NDTI,tillage timing signal
-10,min_ndti,NDTI value at the minimum,
-11,ndti_pct_change,percent drop from pre-min peak to minimum,intensity proxy
-12,min_n_valid,valid observation count at minimum,may pool neighbor scenes
-13,min_sd,NDTI SD at minimum,pooled from neighbors when needed
-14,min_val_date_before,neighbor scene date before the minimum,used for SD pooling
-15,min_val_n_before,valid count on that before neighbor,
-16,min_val_date_after,neighbor scene date after the minimum,used for SD pooling
-17,min_val_n_after,valid count on that after neighbor,
+1,event_type,always tillage,SIPNET event type
+2,site_id,parcel_id,PEcAn site key
+3,date,tillage date,NDTI minimum (min_date); OGMn_date if min_date missing
+4,tillage_eff_0to1,tillage effectiveness 0 to 1,PEcAn.data.land::ndti_to_sipnet_tillage on fractional NDTI drop

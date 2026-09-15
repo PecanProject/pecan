@@ -28,7 +28,7 @@ suppressPackageStartupMessages({
 # -----------------------------------------------------------------------------
 # planting:   site_id, date, CLASS_SUBCLASS, PFT, and either:
 #             (a) LAI
-#             (b) mslsp_EVImax + mslsp_EVIamp  (LAI computed in pools script)
+#             (b) mslsp_EVImax  (LAI computed in pools script)
 # harvest:   site_id, date, CLASS_SUBCLASS, PFT [, destructive]
 # tillage:   site_id, date, tillage_eff_0to1
 # irrigation: site_id, date, amount_mm, method
@@ -88,9 +88,9 @@ combine_management_events_pecan <- function(planting   = NULL,
   if (!is.null(planting) && nrow(planting) > 0 && !is.null(lk)) {
     stopifnot(all(c("site_id", "date", "CLASS_SUBCLASS", "PFT") %in% names(planting)))
     has_lai <- "LAI" %in% names(planting)
-    has_mslsp <- all(c("mslsp_EVImax", "mslsp_EVIamp") %in% names(planting))
+    has_mslsp <- "mslsp_EVImax" %in% names(planting)
     if (!has_lai && !has_mslsp) {
-      stop("Planting data must include either LAI, or both mslsp_EVImax and mslsp_EVIamp.")
+      stop("Planting data must include either LAI or mslsp_EVImax.")
     }
     for (i in seq_len(nrow(planting))) {
       row <- planting[i, ]
@@ -114,11 +114,10 @@ combine_management_events_pecan <- function(planting   = NULL,
           lk = lk,
           code = code,
           class = class_val,
-          mslsp_EVImax = as.numeric(row$mslsp_EVImax)[1],
-          mslsp_EVIamp = as.numeric(row$mslsp_EVIamp)[1]
+          mslsp_EVImax = as.numeric(row$mslsp_EVImax)[1]
         )
       } else {
-        stop("Missing LAI for planting row and no MSLSP EVI columns available.")
+        stop("Missing LAI for planting row and no mslsp_EVImax.")
       }
       if (!is.null(p) && nrow(p) > 0) {
         evt <- list(

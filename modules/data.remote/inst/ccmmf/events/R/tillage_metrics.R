@@ -5,6 +5,7 @@
 #
 # Phenology: parcel_id, year, OGI_date, OGMn_date (Date). Include all cycles /
 # seasons per parcel across years so lead(OGI_date) can span cross-year fallow.
+# Output `year` is the harvest / OGMn year (fallow_start), not next OGI.
 # Optional provenance on phenology rows (carried through when present):
 # assigned_by, gapfill_date_source -> output as ogmn_*/ogi_* from fallow start
 # and lead(OGI).
@@ -83,15 +84,19 @@ tillage_metrics <- function(ndti_table, phenology_table) {
       OGMn_date = as.Date(OGMn_date)
     )
 
+  # Smooth once per parcel-day. Do not join phenology cycles first: two
+  # OGI/OGMn rows in the same year duplicate dates and zoo::na.approx
+  # collapses x. Keep the scene with more valid pixels when L30 and S30
+  # share a day.
+  ndti_work <- ndti_work |>
+    dplyr::filter(parcel_id %in% unique(pheno_date$parcel_id)) |>
+    dplyr::arrange(parcel_id, date, dplyr::desc(n_valid)) |>
+    dplyr::distinct(parcel_id, date, .keep_all = TRUE)
+
   ndti_smooth <- ndti_work |>
-    dplyr::inner_join(
-      dplyr::select(pheno_date, parcel_id, year, OGI_date, OGMn_date),
-      by = c("parcel_id", "year")
-    ) |>
     dplyr::arrange(parcel_id, date) |>
     dplyr::group_by(parcel_id, year, PFT) |>
     tidyr::complete(date = seq.Date(min(date), max(date), by = "day")) |>
-    tidyr::fill(OGMn_date, OGI_date, .direction = "downup") |>
     dplyr::mutate(
       mean_ndti_filled = zoo::na.approx(ndti_mean, x = date, na.rm = FALSE),
       smoothed = as.numeric(stats::filter(mean_ndti_filled, rep(1 / 4, 4), sides = 2))
@@ -99,7 +104,7 @@ tillage_metrics <- function(ndti_table, phenology_table) {
     dplyr::ungroup()
 
   fallow_periods <- pheno_date |>
-    dplyr::arrange(parcel_id, OGI_date) |>
+    dplyr::arrange(parcel_id, dplyr::coalesce(OGI_date, OGMn_date), OGMn_date) |>
     dplyr::group_by(parcel_id) |>
     dplyr::mutate(
       fallow_start = OGMn_date,
@@ -125,17 +130,16 @@ tillage_metrics <- function(ndti_table, phenology_table) {
         NA_character_
       }
     ) |>
-    dplyr::filter(!is.na(fallow_end)) |>
+    dplyr::filter(!is.na(fallow_start), !is.na(fallow_end)) |>
     dplyr::ungroup()
 
   joined_fb <- dplyr::inner_join(
     ndti_smooth,
     fallow_periods,
     by = "parcel_id",
-    suffix = c("_ndti", "_fallow")
+    suffix = c("_ndti", "_fallow"),
+    relationship = "many-to-many"
   )
-  yr_col <- if ("year_fallow" %in% names(joined_fb)) "year_fallow" else "year"
-
   base_metrics <- joined_fb |>
     dplyr::filter(date >= fallow_start, date <= fallow_end) |>
     dplyr::group_by(parcel_id, fallow_start) |>
@@ -147,7 +151,7 @@ tillage_metrics <- function(ndti_table, phenology_table) {
       maxNDTI_pre_date = date[max_pre_idx],
       maxNDTI_pre_min = smoothed[max_pre_idx],
       ndti_pct_change = ((maxNDTI_pre_min - ndti_on_minNDTI) / maxNDTI_pre_min) * 100,
-      year = dplyr::first(.data[[yr_col]]),
+      year = as.integer(format(as.Date(dplyr::first(fallow_start)), "%Y")),
       PFT = dplyr::first(PFT),
       OGMn_date = dplyr::first(fallow_start),
       ogmn_assigned_by = dplyr::first(ogmn_assigned_by),

@@ -1,0 +1,116 @@
+{
+  "version": "4",
+  "format": "tables",
+  "created": "2026-08-18 09:16:11.99694",
+  "train_years": [2018, 2019, 2020, 2021, 2022, 2023],
+  "matched_dir": "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2",
+  "date_doy": "year_relative",
+  "formula": "value ~ landiq_ADOY * landiq_CLASS",
+  "prediction": "intercept[CLASS] + slope_adoy[CLASS] * landiq_ADOY",
+  "hierarchy": ["mslsp: keep observed MSLSP metric", "lm_adoy: intercept + slope * observed ADOY for row/rice/hay when CLASS in lm table", "mean_crop: CLASS x SUBCLASS x PFT (n>=30), else CLASS x PFT, else CLASS, else global"],
+  "crop_pfts": ["row", "rice", "hay", "woody"],
+  "min_n_class": 30,
+  "min_n_subclass": 30,
+  "metrics": [
+    {
+      "name": "OGI",
+      "col": "mslsp_OGI",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.442007723378471,
+      "adj_r_squared": 0.442001899087886,
+      "global_mean": 60.5860408389399
+    },
+    {
+      "name": "50PCGI",
+      "col": "mslsp_50PCGI",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.453617987309867,
+      "adj_r_squared": 0.453612284206534,
+      "global_mean": 89.6906894467344
+    },
+    {
+      "name": "OGMx",
+      "col": "mslsp_OGMx",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.442672472227168,
+      "adj_r_squared": 0.442666654875192,
+      "global_mean": 122.279115250351
+    },
+    {
+      "name": "Peak",
+      "col": "mslsp_Peak",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.42948234287131,
+      "adj_r_squared": 0.42947638784154,
+      "global_mean": 143.086775266134
+    },
+    {
+      "name": "OGD",
+      "col": "mslsp_OGD",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.416509411384393,
+      "adj_r_squared": 0.416503320943926,
+      "global_mean": 164.234668725457
+    },
+    {
+      "name": "50PCGD",
+      "col": "mslsp_50PCGD",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.398342048084217,
+      "adj_r_squared": 0.39833576801388,
+      "global_mean": 205.019826541805
+    },
+    {
+      "name": "OGMn",
+      "col": "mslsp_OGMn",
+      "type": "date",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.371031637842036,
+      "adj_r_squared": 0.371025072707243,
+      "global_mean": 239.815424082543
+    },
+    {
+      "name": "EVImax",
+      "col": "mslsp_EVImax",
+      "type": "evi",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.10703661291691,
+      "adj_r_squared": 0.107027292217564,
+      "global_mean": 0.495433978583041
+    },
+    {
+      "name": "EVIamp",
+      "col": "mslsp_EVIamp",
+      "type": "evi",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.123804388499048,
+      "adj_r_squared": 0.123795242820758,
+      "global_mean": 0.332830835345784
+    },
+    {
+      "name": "EVIarea",
+      "col": "mslsp_EVIarea",
+      "type": "evi",
+      "n_lm": 862249,
+      "n_mean": 2339238,
+      "r_squared": 0.25516196851871,
+      "adj_r_squared": 0.255154193943118,
+      "global_mean": 81.1547708274583
+    }
+  ]
+}

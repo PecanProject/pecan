@@ -14,6 +14,21 @@ mslsp_product <- function() {
   product_mslsp()
 }
 
+# CLI tile, else TILEWISE_ONE_TILE, else DEMO_TILE. Statewide if none of those.
+mslsp_run_tile <- function(tile = NULL) {
+  raw <- c(
+    if (!is.null(tile) && length(tile) > 0L) trimws(as.character(tile)[1L]) else "",
+    trimws(Sys.getenv("TILEWISE_ONE_TILE", "")),
+    trimws(Sys.getenv("DEMO_TILE", ""))
+  )
+  skip <- c("", "1", "true", "yes", "y", "first")
+  for (t in raw) {
+    if (is.na(t) || !nzchar(t) || tolower(t) %in% skip) next
+    if (grepl("^[0-9][0-9A-Z]{4}$", t)) return(t)
+  }
+  NULL
+}
+
 mslsp_log_init <- function(year, command, tile = "") {
   ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
   log_dir <- file.path(mslsp_out_root, sprintf("year=%d", year), "logs")
@@ -23,8 +38,8 @@ mslsp_log_init <- function(year, command, tile = "") {
   }
 }
 
-mslsp_get_prep <- function(year, overwrite = FALSE) {
-  tilewise_prep_static(year, mslsp_product(), overwrite = overwrite)
+mslsp_get_prep <- function(year, overwrite = FALSE, tile = NULL) {
+  tilewise_prep_static(year, mslsp_product(), overwrite = overwrite, tile = tile)
 }
 
 run_mslsp_prep_static <- function(year, overwrite = FALSE) {
@@ -55,7 +70,11 @@ run_mslsp_extract <- function(year, overwrite = FALSE, tile = NULL) {
            " TASK_ID=", Sys.getenv("TASK_ID", ""))
   }
 
-  prep <- mslsp_get_prep(year, overwrite = overwrite)
+  prep <- mslsp_get_prep(
+    year,
+    overwrite = overwrite,
+    tile = if (nzchar(tile)) tile else NULL
+  )
 
   if (nzchar(tile) && !tile %in% names(prep$tile_to_parcel_ids)) {
     if (exists("tw_log", mode = "function")) {
@@ -81,14 +100,18 @@ run_mslsp_extract <- function(year, overwrite = FALSE, tile = NULL) {
   tilewise_run(prep, MSLSP_TIME_KEY, mslsp_product(), overwrite = overwrite)
 }
 
-run_mslsp_combine <- function(year, overwrite = FALSE) {
+run_mslsp_combine <- function(year, overwrite = FALSE, tile = NULL) {
   mslsp_init_arrow()
   year <- as.integer(year)
-  mslsp_log_init(year, "combine")
+  tile <- mslsp_run_tile(tile)
+  tile_s <- if (is.null(tile)) "" else tile
+  mslsp_log_init(year, "combine", tile = tile_s)
   if (exists("tw_log", mode = "function")) {
-    tw_log("INFO", "MSLSP combine year=", year, " overwrite=", overwrite)
+    tw_log("INFO", "MSLSP combine year=", year,
+           if (nzchar(tile_s)) paste0(" tile=", tile_s) else "",
+           " overwrite=", overwrite)
   }
-  prep <- mslsp_get_prep(year, overwrite = FALSE)
+  prep <- mslsp_get_prep(year, overwrite = FALSE, tile = tile)
   tilewise_combine(prep, MSLSP_TIME_KEY, mslsp_product(), overwrite = overwrite)
 }
 
@@ -109,8 +132,7 @@ read_mslsp_tile_list <- function() {
   tiles[nzchar(tiles)]
 }
 
-# Tiles to run: canonical tileids.txt order, restricted to tiles with ag parcels
-# for this year (from prep cache). Not all HLS tiles have ag land.
+# Tiles to run: tileids.txt order, restricted to tiles with year ag parcels.
 mslsp_tiles_to_run_path <- function(year) {
   file.path(mslsp_out_root, sprintf("year=%d", as.integer(year)), "tiles_to_run.txt")
 }
@@ -145,7 +167,7 @@ read_mslsp_tiles_to_run <- function(year) {
     stop(
       "Tile list not found: ", path,
       "\nRun: Rscript prep_static.R ", year,
-      " (intersects tileids.txt with tiles that have ag parcels)"
+      " (after hls/build_hls_parcel_tile_map.R)"
     )
   }
   tiles <- trimws(readLines(path, warn = FALSE))

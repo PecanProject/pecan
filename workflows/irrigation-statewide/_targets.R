@@ -19,7 +19,7 @@ config_base <- config::get(
 )
 config_paths <- config::get(
   file = file.path(root_dir, "config_paths.yml"),
-  config = Sys.getenv("IRRIGATION_PATHS_CONFIG", "default")
+  config = "default"
 )
 config <- config::merge(config_base, config_paths)
 
@@ -27,7 +27,7 @@ n_parcels <- config[["n_parcels"]]
 batch_size <- config[["batch_size"]]
 n_remote_workers <- config[["n_remote_workers"]]
 n_local_workers <- as.integer(Sys.getenv("NSLOTS", 1))
-exec_type <- config[["exec_type"]]
+exec_type <- Sys.getenv("IRRIGATION_EXEC_TYPE", config[["exec_type"]])
 stopifnot(exec_type %in% c("cluster", "local"))
 event_filename <- config[["event_filename"]]
 n_irr_ensemble <- config[["n_irr_ensemble"]]

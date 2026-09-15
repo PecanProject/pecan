@@ -12,7 +12,10 @@ ndti_combine <- function(prep, month, overwrite = FALSE, verbose = TRUE) {
 
   tilepieces_dir <- path_tilepieces(prep$out_dir, year, month)
   tile_files     <- list.files(tilepieces_dir, "^tile=.*\\.csv\\.gz$", full.names = TRUE)
-  if (length(tile_files) == 0) stop("No tilepieces found in: ", tilepieces_dir)
+  if (length(tile_files) == 0) {
+    if (verbose) message("[combine] no tilepieces, skip: ", tilepieces_dir)
+    return(invisible(NULL))
+  }
   if (verbose) message("[combine] ", length(tile_files), " tilepieces -> ", out_path)
 
   col_types <- list(

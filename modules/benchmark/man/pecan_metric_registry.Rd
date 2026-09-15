@@ -5,7 +5,7 @@
 \alias{pecan_metric_registry}
 \title{Metric Registry for PEcAn.benchmark}
 \format{
-An object of class \code{environment} of length 7.
+An object of class \code{environment} of length 9.
 }
 \usage{
 pecan_metric_registry

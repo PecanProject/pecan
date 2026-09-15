@@ -7,27 +7,13 @@
 # =============================================================================
 
 # --- Configuration ---
-mslsp_landiq_v4    <- Sys.getenv("LANDIQ_GAPFILLED", "")
-if (!nzchar(trimws(mslsp_landiq_v4))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set LANDIQ_GAPFILLED or CCMMF_ROOT (source documentation/setup_env.sh).")
-  mslsp_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
-}
 mslsp_landiq_harmonized <- Sys.getenv("LANDIQ_HARMONIZED", "")
 if (!nzchar(trimws(mslsp_landiq_harmonized))) {
   .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
   if (!nzchar(.root)) stop("Set LANDIQ_HARMONIZED or CCMMF_ROOT (source documentation/setup_env.sh).")
   mslsp_landiq_harmonized <- file.path(.root, "LandIQ", "harmonized")
 }
-mslsp_inventory   <- Sys.getenv("PRODUCTS_INVENTORY", "")
-if (!nzchar(trimws(mslsp_inventory))) {
-  .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(.root)) stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
-  mslsp_inventory <- file.path(.root, "products", "inventory")
-}
 mslsp_parcels_gpkg <- file.path(mslsp_landiq_harmonized, "parcels-consolidated.gpkg")
-mslsp_crops_parq   <- file.path(mslsp_landiq_v4, "crops_all_years.parq")
-mslsp_cropcode_lookup <- file.path(mslsp_inventory, "LandIQ_cropCode_lookup_table.csv")
 mslsp_netcdf_root <- {
   r <- trimws(Sys.getenv("MSLSP_NETCDF_ROOT", Sys.getenv("mslsp_new_base", "")))
   if (nzchar(r)) {
@@ -38,11 +24,7 @@ mslsp_netcdf_root <- {
     file.path(.root, "HLS", "MSLSP")
   }
 }
-mslsp_out_root     <- file.path(mslsp_inventory, "phenology/raw_mslsp_v4.1.2")
-mslsp_parcel_tilemap <- {
-  r <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(r)) r else file.path(mslsp_inventory, "hls_parcel_tile_map_v4.1.csv")
-}
+mslsp_out_root <- path_mslsp_out_root()
 
 mslsp_metrics   <- c("OGI", "50PCGI", "OGMx", "Peak", "OGD", "50PCGD", "OGMn",
                      "EVImax", "EVIamp", "EVIarea")
@@ -63,16 +45,8 @@ mslsp_nc_path <- function(tile_id, year) {
   if (file.exists(path)) path else NA_character_
 }
 
-mslsp_load_parcel_tilemap <- function(year) {
-  ag_ids <- ag_parcel_ids_for_year(
-    year,
-    crops_parq = mslsp_crops_parq,
-    cropcode_csv = mslsp_cropcode_lookup
-  )
-  if (length(ag_ids) == 0) {
-    return(data.table::data.table(parcel_id = character(), tileIDs = character()))
-  }
-  subset_parcel_tilemap(read_parcel_tilemap(mslsp_parcel_tilemap), ag_ids)
+mslsp_load_parcel_tiles <- function(year, tile = NULL) {
+  load_parcel_tiles_for_year(year, tile = tile)
 }
 
 mslsp_scene_index <- function(year, time_key, verbose = TRUE) {
@@ -81,10 +55,8 @@ mslsp_scene_index <- function(year, time_key, verbose = TRUE) {
   tiles <- if (exists(key, envir = mslsp_state, inherits = FALSE)) {
     get(key, envir = mslsp_state, inherits = FALSE)
   } else {
-    tilemap <- mslsp_load_parcel_tilemap(yr)
-    if (is.null(tilemap) || nrow(tilemap) == 0) character() else {
-      sort(unique(unlist(strsplit(tilemap$tileIDs, ",", fixed = TRUE), use.names = FALSE)))
-    }
+    ag <- mslsp_load_parcel_tiles(yr)
+    if (nrow(ag) == 0L) character() else sort(unique(as.character(ag$tile_id)))
   }
   if (length(tiles) == 0) return(data.table(tile_id = character(), path = character()))
   paths <- vapply(tiles, mslsp_nc_path, character(1), year = yr)
@@ -152,80 +124,34 @@ mslsp_restore_prep_polys <- function(prep) {
   prep
 }
 
-# --- Static prep (cached per year; geometry loaded lazily per tile) ---
-mslsp_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE) {
-  yr         <- as.integer(year)
+# --- Prep: geometry parcel_tiles.csv filtered to year ag parcels ---
+mslsp_prep_static_tilewise <- function(year, overwrite = FALSE, verbose = TRUE, tile = NULL) {
+  yr <- as.integer(year)
   output_dir <- file.path(mslsp_out_root, sprintf("year=%d", yr))
-  cache_path <- file.path(output_dir, sprintf("mslsp_prep_static_year=%d.rds", yr))
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  if (file.exists(cache_path) && !overwrite) {
-    if (verbose) message("[MSLSP prep] using cache: ", cache_path)
-    prep <- readRDS(cache_path)
-    if (!is.null(prep$tile_to_parcel_ids)) {
-      mslsp_state[[as.character(yr)]] <- prep$active_tiles
-      return(mslsp_restore_prep_polys(prep))
-    }
-  }
-
-  sf::sf_use_s2(FALSE)
-
-  lookup   <- data.table::fread(mslsp_cropcode_lookup)
-  ag_pairs <- lookup[lookup$is_agricultural == TRUE,
-                     .(CLASS = trimws(CLASS), SUBCLASS = as.character(SUBCLASS))]
-
-  pq_result <- data.table::as.data.table(arrow::read_parquet(
-    mslsp_crops_parq,
-    col_select = c("parcel_id", "CLASS", "SUBCLASS", "year")
-  ))
-  ca_crop <- pq_result[as.integer(year) == yr, .(parcel_id, CLASS, SUBCLASS)]
-  ca_crop[, CLASS    := trimws(as.character(CLASS))]
-  ca_crop[, SUBCLASS := as.character(SUBCLASS)]
-  ca_crop <- merge(ca_crop, ag_pairs, by = c("CLASS", "SUBCLASS"))
-  crop_ids <- unique(as.character(ca_crop$parcel_id))
-  if (length(crop_ids) == 0) stop("No agricultural parcel_ids found for year ", yr)
-
-  tilemap <- mslsp_load_parcel_tilemap(yr)
-  if (nrow(tilemap) == 0) {
-    stop(
-      "Parcel-tile map not found for MSLSP.\n",
-      "  Path: ", mslsp_parcel_tilemap, "\n",
-      "  Build it: Rscript scripts/hls/build_hls_parcel_tile_map.R overwrite"
-    )
-  }
-
-  tile_sub <- tilemap[crop_ids, on = "parcel_id", nomatch = 0]
-  missing_map <- setdiff(crop_ids, tile_sub$parcel_id)
-  if (length(missing_map) > 0) {
-    message("[MSLSP prep] parcel_ids missing from tile map (dropped): ", length(missing_map))
-    crop_ids <- intersect(crop_ids, tile_sub$parcel_id)
-    tile_sub <- tilemap[crop_ids, on = "parcel_id", nomatch = 0]
-  }
-
-  tile_to_parcel_ids <- local({
-    map_sub <- unique(tile_sub, by = "parcel_id")
-    out <- list()
-    for (i in seq_len(nrow(map_sub))) {
-      for (tile in strsplit(map_sub$tileIDs[i], ",", fixed = TRUE)[[1]]) {
-        if (!nzchar(tile)) next
-        out[[tile]] <- c(out[[tile]], map_sub$parcel_id[i])
-      }
-    }
-    lapply(out, unique)
-  })
-
+  ag <- load_parcel_tiles_for_year(yr, tile = tile)
+  tile_to_parcel_ids <- ag_tiles_to_tile_parcel_list(ag)
   active_tiles <- sort(names(tile_to_parcel_ids))
   mslsp_state[[as.character(yr)]] <- active_tiles
 
-  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  if (isTRUE(verbose)) {
+    keep_tile <- if (is.null(tile) || length(tile) == 0L) "" else trimws(as.character(tile)[1L])
+    if (is.na(keep_tile)) keep_tile <- ""
+    message(
+      "[MSLSP prep] parcel_tiles x ag year=", yr,
+      if (nzchar(keep_tile)) paste0(" tile=", keep_tile) else "",
+      " parcels=", data.table::uniqueN(ag$parcel_id),
+      " tiles=", length(active_tiles)
+    )
+  }
+
   prep <- list(
     year               = yr,
     out_dir            = output_dir,
     tile_to_parcel_ids = tile_to_parcel_ids,
     active_tiles       = active_tiles
   )
-  saveRDS(prep, cache_path)
-  if (verbose) message("[MSLSP prep] saved: ", cache_path)
-
   mslsp_restore_prep_polys(prep)
 }
 
@@ -247,15 +173,18 @@ mslsp_process_scene_tilewise <- function(prep, scene_row, parcels_this_tile, til
   }
   path <- scene_row$path[1]
   if (!file.exists(path)) {
-    log_skip("WARN", "missing_scene_file", paste0("path=", path))
-    return(NULL)
+    stop("[MSLSP extract] tile=", tile_id, " missing NetCDF: ", path)
   }
   yr <- prep$year
 
-  r_all <- try(terra::rast(path), silent = TRUE)
-  if (inherits(r_all, "try-error")) {
-    log_skip("WARN", "unreadable_scene_raster", paste0("path=", path))
-    return(NULL)
+  r_all <- tryCatch(terra::rast(path), error = identity)
+  if (inherits(r_all, "error")) {
+    stop(
+      "Cannot read MSLSP NetCDF (", path, "): ",
+      conditionMessage(r_all),
+      " pecan-all GDAL 3 needs conda-forge libgdal-hdf5 and libgdal-netcdf ",
+      "(libgdal-core alone has no NetCDF driver)."
+    )
   }
 
   # Identify which layers are present in this NetCDF.
@@ -268,8 +197,7 @@ mslsp_process_scene_tilewise <- function(prep, scene_row, parcels_this_tile, til
   cycle1_layers <- intersect(c(mslsp_metrics, qa1, yr_mode, yr_mean), nms)
   cycle2_layers <- intersect(c(paste0(mslsp_metrics, "_2"), qa2), nms)
   if (length(cycle1_layers) == 0 && length(cycle2_layers) == 0) {
-    log_skip("WARN", "no_expected_layers_in_scene", paste0("path=", path))
-    return(NULL)
+    stop("[MSLSP extract] tile=", tile_id, " no expected layers in ", path)
   }
 
   # Reproject parcels to the raster CRS and crop to their bounding box.
@@ -279,8 +207,12 @@ mslsp_process_scene_tilewise <- function(prep, scene_row, parcels_this_tile, til
   bbox_vect  <- terra::vect(sf::st_as_sfc(sf::st_bbox(parcels_tr)))
   r_crop     <- try(terra::crop(r_all, bbox_vect), silent = TRUE)
   if (inherits(r_crop, "try-error")) {
-    log_skip("WARN", "crop_extent_no_overlap", paste0("path=", path))
-    return(NULL)
+    stop(
+      "[MSLSP extract] tile=", tile_id,
+      " parcel bbox does not overlap the NetCDF. ",
+      "Rebuild parcel_tiles.csv from the current LandIQ gpkg: ",
+      "Rscript $CCMMF_CODE/hls/build_hls_parcel_tile_map.R overwrite"
+    )
   }
 
   pid_vec <- as.character(parcels_tr$parcel_id)
@@ -382,11 +314,30 @@ mslsp_process_scene_tilewise <- function(prep, scene_row, parcels_this_tile, til
   }
 
   if (length(out_all) == 0) {
-    log_skip("WARN", "no_cycle_outputs_written", paste0("path=", path))
-    return(NULL)
+    stop("[MSLSP extract] tile=", tile_id, " no cycle outputs written from ", path)
   }
   out <- rbindlist(out_all, fill = TRUE)
   out[, parcel_id := as.character(parcel_id)]
+
+  # Stale parcel_tiles.csv (wrong parcel_id vintage) yields parcels that miss the
+  # raster entirely. na_frac is NA when the polygon has no pixel coverage, so
+  # use that -- not w_valid==0 -- to distinguish miss vs. cloud/NA phenology.
+  n_parcels <- data.table::uniqueN(out$parcel_id)
+  n_overlap <- data.table::uniqueN(
+    out[is.finite(na_frac) | w_valid > 0 | n_valid > 0, parcel_id]
+  )
+  min_n <- as.integer(Sys.getenv("MSLSP_EXTRACT_MIN_PARCELS", "50"))
+  min_frac <- as.numeric(Sys.getenv("MSLSP_EXTRACT_MIN_HIT_FRAC", "0.20"))
+  if (n_parcels >= min_n && (n_overlap / n_parcels) < min_frac) {
+    stop(
+      "[MSLSP extract] tile=", tile_id, " year=", yr,
+      " only ", n_overlap, "/", n_parcels,
+      " parcels overlap the raster (",
+      sprintf("%.1f", 100 * n_overlap / n_parcels), "%). ",
+      "parcel_tiles.csv is likely stale vs current LandIQ parcel_ids. Rebuild with:\n",
+      "  Rscript $CCMMF_CODE/hls/build_hls_parcel_tile_map.R overwrite"
+    )
+  }
 
   # Harmonize EVI scaling across vintages of MSLSP NetCDF files.
   #
@@ -521,6 +472,8 @@ product_mslsp <- function() {
     scene_index          = mslsp_scene_index,
     scene_index_tile_col = "tile_id",
     process_scene        = mslsp_process_scene_tilewise,
+    fatal_scene_error    = TRUE,
+    fatal_empty_tile     = TRUE,
 
     prepare_tile = mslsp_prepare_tile,
 

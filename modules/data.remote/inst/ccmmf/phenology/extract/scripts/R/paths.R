@@ -22,13 +22,6 @@ hls_shared_lib_dir <- function() {
   if (dir.exists(sib)) {
     return(normalizePath(sib, mustWork = FALSE))
   }
-  ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (nzchar(ccmmf)) {
-    cand <- file.path(ccmmf, "products", "inventory", "scripts", "hls", "R")
-    if (dir.exists(cand)) {
-      return(normalizePath(cand, mustWork = FALSE))
-    }
-  }
   stop(
     "HLS shared library not found. Set HLS_SHARED_LIB to .../hls/R ",
     "(sibling of phenology/ under inst/ccmmf)."
@@ -36,43 +29,38 @@ hls_shared_lib_dir <- function() {
 }
 
 path_mslsp_out_root <- function() {
-  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
-  if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-    if (!nzchar(ccmmf)) {
-      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
-    }
-    mgmt <- file.path(ccmmf, "products", "inventory")
+  env <- trimws(Sys.getenv("MSLSP_EXTRACT_ROOT", ""))
+  if (nzchar(env)) return(normalizePath(env, mustWork = FALSE))
+  nc <- trimws(Sys.getenv("MSLSP_NETCDF_ROOT", ""))
+  if (nzchar(nc)) return(file.path(nc, "raw_mslsp_v4.1.2"))
+  hls <- trimws(Sys.getenv("HLS_ROOT", ""))
+  if (nzchar(hls)) return(file.path(hls, "MSLSP", "raw_mslsp_v4.1.2"))
+  ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+  if (!nzchar(ccmmf)) {
+    stop("Set MSLSP_EXTRACT_ROOT, MSLSP_NETCDF_ROOT, HLS_ROOT, or CCMMF_ROOT (source documentation/setup_env.sh).")
   }
-  file.path(mgmt, "phenology", "raw_mslsp_v4.1.2")
+  file.path(ccmmf, "HLS", "MSLSP", "raw_mslsp_v4.1.2")
 }
 
-path_parcel_tilemap <- function() {
-  env <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(env)) {
-    return(env)
-  }
-  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
-  if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-    if (!nzchar(ccmmf)) {
-      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
-    }
-    mgmt <- file.path(ccmmf, "products", "inventory")
-  }
-  file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
-}
-
-# Canonical MGRS tile list from HLS_Phenology (109 CA tiles).
+# Canonical MGRS tile list from HLS_Phenology (CA tiles).
 # https://github.com/mrinareddy/HLS_Phenology/blob/main/tileids.txt
 path_mslsp_tile_list <- function() {
   env <- trimws(Sys.getenv("MSLSP_TILE_LIST", ""))
   if (nzchar(env)) {
     return(normalizePath(env, mustWork = FALSE))
   }
-  ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (!nzchar(ccmmf)) {
-    stop("Set MSLSP_TILE_LIST or CCMMF_ROOT (source documentation/setup_env.sh).")
+  phen <- trimws(Sys.getenv("HLS_PHENOLOGY_ROOT", ""))
+  if (nzchar(phen)) {
+    p <- file.path(phen, "tileids.txt")
+    if (file.exists(p)) return(normalizePath(p, mustWork = FALSE))
   }
-  file.path(ccmmf, "data_phen", "tileLists", "tileids.txt")
+  hls <- trimws(Sys.getenv("HLS_ROOT", ""))
+  if (!nzchar(hls)) {
+    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(ccmmf)) {
+      stop("Set MSLSP_TILE_LIST, HLS_PHENOLOGY_ROOT, HLS_ROOT, or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    hls <- file.path(ccmmf, "HLS")
+  }
+  file.path(hls, "tileids.txt")
 }

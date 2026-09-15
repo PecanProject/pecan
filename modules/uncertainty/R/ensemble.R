@@ -224,7 +224,13 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #'  new.state (initial condition), ensemble.id (ensemble id), start.time and stop.time.
 #'  See Details.
 #' @param rename Decide if we want to rename previous output files, for example convert from sipnet.out to sipnet.2020-07-16.out.
-#'
+#' @param run_descriptions optional data.frame, one row per design row, with
+#'   \code{id}, \code{paramlist} and the \code{pft_name}, \code{trait},
+#'   \code{quantile} and \code{type} the run manifest carries. Lets a caller that
+#'   already knows what each run is describe them, instead of these being
+#'   generated as ensemble members.
+#' @param ensemble.id optional id for this set of runs, used instead of the one
+#'   in \code{settings$ensemble$id}.
 #' @return list, containing
 #'  $runs = data frame of runids,
 #'  $ensemble.id = the ensemble ID for these runs,
@@ -237,7 +243,8 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #' @author David LeBauer, Carl Davidson, Hamze Dokoohaki
 
 write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensemble.samples, settings, model,
-                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE) {
+                                   clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE,
+                                   run_descriptions = NULL, ensemble.id = NULL) {
 
   # Check for required paths
   for (input_tag in names(settings$run$inputs)) {
@@ -247,8 +254,12 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       PEcAn.logger::logger.error("Input", sQuote(input_tag), "has no paths specified")
     }
     # Check for unsampled multi-path inputs
-    if (length(input_paths) > 1 &&
-          !(input_tag %in% names(settings$ensemble$samplingspace))) {
+    # a design pins which path each run uses, so an input it covers is sampled
+    # even when settings$ensemble is absent, as it is on the sensitivity path
+    input_sampled <- input_tag %in% names(settings$ensemble$samplingspace) ||
+      (!missing(input_design) && !is.null(input_design) &&
+         input_tag %in% colnames(input_design))
+    if (length(input_paths) > 1 && !input_sampled) {
       PEcAn.logger::logger.error(
         "Input", sQuote(input_tag), "has", length(input_paths),
         "paths but no sampling method.",
@@ -307,7 +318,8 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # write ensemble first
       ensemble.id <- PEcAn.DB::db.query(paste0(
         "INSERT INTO ensembles (runtype, workflow_id) ",
-        "VALUES ('ensemble', ", format(workflow.id, scientific = FALSE), ")",
+        "VALUES ('", if (!is.null(run_descriptions)) tolower(run_descriptions$type[1]) else "ensemble",
+        "', ", format(workflow.id, scientific = FALSE), ")",
         "RETURNING id"), con = con)[['id']]
 
       for (pft in defaults) {
@@ -319,7 +331,9 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       # Use existing id if provided, or an arbitrary unique value if not
       # Note: Since write.ensemble.configs is called separately for each site,
       # a multisite run with no ID provided gives each site its own ensemble id!
-      ensemble.id <- settings$ensemble$id %||% rlang::hash(settings)
+      # a caller writing something other than an ensemble, such as a sensitivity
+      # analysis, supplies the id its own settings carry
+      ensemble.id <- ensemble.id %||% settings$ensemble$id %||% rlang::hash(settings)
     }
     #-------------------------generating met/param/soil/veg/... for all ensembles----
     if (!is.null(con)){
@@ -388,7 +402,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     }
 
     # if no ensemble piece was in the xml I replicate n times the first element in params
-    if ( is.null(samp$parameters) ) {
+    if ( is.null(samp$parameters) && nrow(ensemble.samples[[1]]) != ensemble.size ) {
       samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, ensemble.size) , ])
     }
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg -
@@ -404,7 +418,13 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     runs <- data.frame()
     for (i in seq_len(ensemble.size)) {
       if (!is.null(con) && write.to.db) {
-        paramlist <- paste("ensemble=", i, sep = "")
+        # a caller that knows what each run is, such as a sensitivity analysis,
+        # supplies its own descriptions; otherwise the run is just ensemble i
+        paramlist <- if (!is.null(run_descriptions)) {
+          run_descriptions$paramlist[i]
+        } else {
+          paste("ensemble=", i, sep = "")
+        }
         # inserting this into the table and getting an id back
         run.id <- PEcAn.DB::db.query(paste0(
           "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
@@ -428,7 +448,11 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
       } else {
 
-        run.id <- PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id = settings$run$site$id)
+        run.id <- if (!is.null(run_descriptions)) {
+          run_descriptions$id[i]
+        } else {
+          PEcAn.utils::get.run.id("ENS", PEcAn.utils::left.pad.zeros(i, 5), site.id = settings$run$site$id)
+        }
 
       }
       runs[i, "id"] <- run.id
@@ -436,10 +460,10 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id,
         site_id = settings$run$site$id,
-        pft_name = "NA",
-        trait = "NA",
-        quantile = "NA",
-        type = "Ensemble",
+        pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
+        trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
+        quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
+        type     = if (!is.null(run_descriptions)) run_descriptions$type[i] else "Ensemble",
         stringsAsFactors = FALSE
       ))
 
@@ -465,7 +489,9 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       }
 
       # write run information to disk
-      cat("runtype     : ensemble\n",
+      cat(paste0("runtype     : ",
+                 if (!is.null(run_descriptions)) tolower(run_descriptions$type[1]) else "ensemble",
+                 "\n"),
           "workflow id : ", format(workflow.id, scientific = FALSE), "\n",
           "ensemble id : ", format(ensemble.id, scientific = FALSE), "\n",
           "run         : ", i, "/", ensemble.size, "\n",
@@ -581,10 +607,10 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id[[i]],
         site_id = settings$run$site$id,
-        pft_name = "NA",
-        trait = "NA",
-        quantile = "NA",
-        type = "Ensemble",
+        pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
+        trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
+        quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
+        type     = if (!is.null(run_descriptions)) run_descriptions$type[i] else "Ensemble",
         stringsAsFactors = FALSE
       ))
     }

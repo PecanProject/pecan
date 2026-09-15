@@ -145,6 +145,11 @@ load_landiq_season2_identity <- function(year, landiq_crops, cropcode_csv) {
   } else {
     landiq[, SPECOND := NA_character_]
   }
+  if ("COUNTY" %in% names(landiq)) {
+    landiq[, COUNTY := trimws(as.character(COUNTY))]
+  } else {
+    landiq[, COUNTY := NA_character_]
+  }
 
   landiq <- merge(landiq, ag_pairs, by = c("CLASS", "SUBCLASS"))
   data.table::setorder(landiq, parcel_id)
@@ -154,6 +159,28 @@ load_landiq_season2_identity <- function(year, landiq_crops, cropcode_csv) {
     CLASS,
     SUBCLASS,
     PFT,
-    SPECOND
+    SPECOND,
+    COUNTY
   )]
+}
+
+# Season-2 identity year -> year+1 (shared by harvest clearing and YP planting).
+load_landiq_season2_lookahead <- function(year, paths) {
+  yr <- as.integer(year)
+  prior <- load_landiq_season2_identity(yr, paths$landiq_crops, paths$cropcode_csv)
+  curr <- load_landiq_season2_identity(yr + 1L, paths$landiq_crops, paths$cropcode_csv)
+  if (is.null(prior) || is.null(curr)) {
+    return(NULL)
+  }
+  data.table::setnames(
+    prior,
+    c("CLASS", "SUBCLASS", "PFT", "SPECOND", "COUNTY"),
+    c("prior_CLASS", "prior_SUBCLASS", "prior_PFT", "prior_SPECOND", "prior_COUNTY")
+  )
+  data.table::setnames(
+    curr,
+    c("CLASS", "SUBCLASS", "PFT", "SPECOND", "COUNTY"),
+    c("curr_CLASS", "curr_SUBCLASS", "curr_PFT", "curr_SPECOND", "curr_COUNTY")
+  )
+  merge(prior, curr, by = "parcel_id", all.x = TRUE)
 }

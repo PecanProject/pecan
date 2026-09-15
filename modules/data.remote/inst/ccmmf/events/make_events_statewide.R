@@ -2,34 +2,41 @@
 # =============================================================================
 # Generate statewide event files for a single output year (Parquet + PEcAn JSON).
 #
-# Orchestrator only: load matched assignments, dispatch to R/build_* modules,
-# write outputs under event_files/.
+# Orchestrator only: dispatch to R/build_* modules, write parquet + JSON
+# under event_files/. Planting, harvest, and tillage copy SIPNET columns
+# from apply-script tables. Phenology formats MSLSP dates from the overlay
+# as leafon / leafoff rows. Source / diagnostic columns stay on the apply
+# tables (recoverable from those parquets).
 #
-#   Phenology: phenology_statewide_{year}.parquet / .json
-#   Planting:  planting_statewide_{year}.parquet / .json
-#   Harvest:   harvest_statewide_{year}.parquet / .json
-#   Tillage:   tillage_statewide_{year}.parquet / .json
+#   Phenology: assigned_year={year}_phenology.parquet / .json
+#   Planting:  assigned_year={year}_planting.parquet / .json
+#   Harvest:   assigned_year={year}_harvest.parquet / .json
+#   Tillage:   assigned_year={year}_tillage.parquet / .json
 #
 # USAGE
 # -----
+#   Rscript make_events_statewide.R <prior_year> <target_year> <event_type>
 #   Rscript make_events_statewide.R <year> <event_type>
 #   event_type (required): phenology | planting | harvest | tillage
-#   No default: every type is opt-in.
+#   No default: every type is opt-in. Skip a type by omitting that line.
 #
 # Implementation
 # --------------
 #   R/matched_input.R   -- read assigned_year=Y, filter matched rows
-#   R/phenology_events.R -- leaf-on/off from MSLSP (format only)
-#   R/planting_events.R  -- C/N pools via traits/pool_calculations_from_lookup.R
-#   R/harvest_events.R   -- removal fractions, young-woody skip, CLASS-level
-#                             woody destructive (LandIQ year -> year+1 look-ahead)
-#   R/tillage_events.R   -- NDTI + tillage_metrics (separate data path)
+#   R/phenology_events.R -- leafon / leafoff from MSLSP (format only)
+#   R/planting_events.R  -- SIPNET planting C/N columns from assigned_year=Y_planting
+#                             (run traits/apply_planting.R first)
+#   R/harvest_events.R   -- SIPNET harvest columns from assigned_year=Y_harvest
+#                             (run traits/apply_harvest.R first)
+#   R/tillage_events.R   -- SIPNET tillage columns from assigned_year=Y_tillage
+#                             (run tillage/apply_tillage.R first)
 #   R/io.R               -- shared parquet + PEcAn JSON writer
 #
 # ENV
 # ---
-#   LANDIQ_GAPFILLED, HARVEST_LOOKUP_RDS, HARVEST_WOODY_DESTRUCTIVE,
-#   TILLAGE_BUFFER_YEARS, TILLAGE_PARCEL_CHUNK -- see events/README.md
+#   MATCHED_DIR -- input overlay (and planting/harvest apply tables)
+#   EVENT_OUTPUT_DIR -- event files (default $PRODUCTS_INVENTORY/event_files)
+#   Tillage metrics: tillage/apply_tillage.R (HLS_DOWNLOAD_BUFFER_DAYS, TILLAGE_PARCEL_CHUNK)
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -45,65 +52,69 @@ source(file.path(dirname(normalizePath(.fa, mustWork = FALSE)), "R", "bootstrap.
 load_events_lib()
 
 .valid_types <- c("phenology", "planting", "harvest", "tillage")
+.args_usage <- paste0(
+  "Usage: Rscript make_events_statewide.R <prior_year> <target_year> <",
+  paste(.valid_types, collapse = "|"),
+  ">\n",
+  "   or: Rscript make_events_statewide.R <year> <",
+  paste(.valid_types, collapse = "|"),
+  ">\n",
+  "  event_type is required (no default)."
+)
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2L) {
-  stop(
-    "Usage: Rscript make_events_statewide.R <year> <",
-    paste(.valid_types, collapse = "|"),
-    ">\n",
-    "  event_type is required (no default)."
-  )
+if (length(args) < 2L || length(args) > 3L) {
+  stop(.args_usage)
 }
-year_arg <- as.integer(args[1L])
-if (is.na(year_arg)) {
-  stop("Year must be an integer, got: ", args[1L])
+event_type <- tryCatch(
+  match.arg(args[length(args)], .valid_types),
+  error = function(e) stop(.args_usage, call. = FALSE)
+)
+year_args <- args[-length(args)]
+years <- as.integer(year_args)
+if (any(is.na(years))) {
+  stop("Years must be integers, got: ", paste(year_args, collapse = " "))
 }
-event_type <- match.arg(args[2L], .valid_types)
+years <- unique(years)
 
 run_phenology <- event_type == "phenology"
 run_planting <- event_type == "planting"
 run_harvest <- event_type == "harvest"
 run_tillage <- event_type == "tillage"
 
-message("[make_events_statewide] year=", year_arg, " event_type=", event_type)
-
 paths <- events_paths()
 dir.create(paths$out_dir, recursive = TRUE, showWarnings = FALSE)
+message(
+  "[make_events_statewide] MATCHED_DIR (input)=", paths$matched_dir,
+  " EVENT_OUTPUT_DIR=", paths$out_dir
+)
 
-if (run_phenology || run_planting || run_harvest) {
-  matched <- load_matched_for_events(
-    year_arg,
-    paths$matched_dir,
-    run_phenology = run_phenology,
-    run_planting = run_planting,
-    run_harvest = run_harvest
-  )
+for (year_arg in years) {
+  message("[make_events_statewide] year=", year_arg, " event_type=", event_type)
+
+  if (run_phenology) {
+    matched <- load_matched_for_events(
+      year_arg,
+      paths$matched_dir,
+      run_phenology = TRUE
+    )
+    build_phenology_events(matched, year_arg, paths$out_dir)
+  }
+
+  if (run_planting) {
+    build_planting_events(year_arg, paths$out_dir, paths$matched_dir)
+  }
+
+  if (run_harvest) {
+    build_harvest_events(year_arg, paths$out_dir, paths$matched_dir)
+  }
+
+  if (run_tillage) {
+    build_tillage_events(
+      year_arg,
+      paths$out_dir,
+      paths$tillage_metrics_dir
+    )
+  }
+
+  message("[make_events_statewide] Done for year=", year_arg, " event_type=", event_type)
 }
-
-if (run_planting || run_harvest) {
-  pool <- load_events_trait_pool(paths$pool_script)
-}
-
-if (run_phenology) {
-  build_phenology_events(matched, year_arg, paths$out_dir)
-}
-
-if (run_planting) {
-  build_planting_events(matched, year_arg, paths$out_dir, pool$pool_env, pool$lk)
-}
-
-if (run_harvest) {
-  build_harvest_events(matched, year_arg, paths$out_dir, pool$pool_env, pool$lk)
-}
-
-if (run_tillage) {
-  build_tillage_events(
-    year_arg,
-    paths$out_dir,
-    paths$matched_dir,
-    paths$ndti_root,
-    paths$tillage_metrics_script
-  )
-}
-
-message("[make_events_statewide] Done for year=", year_arg, " event_type=", event_type)

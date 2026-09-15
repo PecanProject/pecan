@@ -15,10 +15,13 @@ When supplied these are used directly; when \code{NULL} (default) they are
 sampled in memory.}
 }
 \value{
-A list with \code{design_matrix}, a data.frame with one row per SA run
-  and one column per input type (the \code{param} column holds sequential run
-  indices, every other column is held at 1), \code{X}, the same matrix under
-  its older name, and \code{samples}, the parameter bundle used.
+A list with \code{design_matrix}, a data.frame with one row per SA run:
+  the \code{param} column holds sequential run indices, every input column is
+  held at 1, and \code{sa_pft}, \code{sa_trait} and \code{sa_quantile} say what
+  each run is. The first row is the median run, with those three \code{NA},
+  \code{NA} and \code{"50"}; every row after moves one trait of one PFT to one
+  of its quantiles. Also \code{X}, the same matrix under its older name, and
+  \code{samples}, the parameter bundle used.
 }
 \description{
 Creates an input design matrix for sensitivity analysis where non-parameter
@@ -44,9 +47,11 @@ optional posterior lookup.
 ## OAT design logic
 For sensitivity analysis, we must isolate the effect of each
 parameter by holding all other inputs constant. The param column contains
-sequential indices (1, 2, 3, ...) matching the SA run order in
-\code{write.sa.configs}. All other columns (met, ic, soil, etc.) are set to 1,
-meaning the first input file is always used.
+sequential indices (1, 2, 3, ...), and \code{sa_pft}, \code{sa_trait} and
+\code{sa_quantile} say what each run is: the first holds every parameter at
+its median, and each one after moves a single trait to one of its quantiles.
+All other columns (met, ic, soil, etc.) are set to 1, meaning the first input
+file is always used.
 
 ## Where the samples come from
 Parameter samples are drawn in memory via \code{\link{load_pft_posteriors}}

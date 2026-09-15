@@ -1,23 +1,49 @@
 column_number,column_name,contents,notes
-1,parcel_id,LandIQ parcel id,
-2,year,assigned calendar year,
-3,season,LandIQ season for this crop row,
+1,parcel_id,LandIQ parcel id,stable id from cadwr-landuse
+2,year,assigned calendar year,LandIQ assignment year; phenology dates can fall in an adjacent year
+3,season,LandIQ season for this crop row,1-4; season 2 is the main crop
 4,assigned_by,how the row was produced,"matched | no_mslsp | no_match"
-5,landiq_CLASS,LandIQ CLASS for season,
-6,landiq_SUBCLASS,LandIQ SUBCLASS for season,harmonized legend
-7,landiq_PFT,plant functional type from crop lookup,
-8,landiq_ADOY,LandIQ peak NDVI ADOY for season,
-9,landiq_SPECOND,LandIQ special condition,e.g. Y young perennial
-10,landiq_MULTIUSE,LandIQ multiuse code,if present
-11,mslsp_cycle,assigned MSLSP cycle,1 = dominant amplitude
-12,mslsp_OGI,greenup onset date,cross-year safe date/DOY fields as written by match
-13,mslsp_50PCGI,50% greenup date,
-14,mslsp_Peak,peak greenness date,
-15,mslsp_50PCGD,50% greendown date,
-16,mslsp_OGMn,maturity / greendown date,harvest metric for many PFTs
-17,mslsp_OGD,alternate greendown date,some woody PFTs
-18,mslsp_EVImax,peak EVI from assigned cycle,planting LAI
-19,mslsp_EVIamp,EVI amplitude from assigned cycle,planting LAI
-20,qc_adoy_vs_cycle,ADOY vs cycle window QC,"adoy_inside_cycle | adoy_outside_cycle | ..."
-21,qc_heterogeneity,masking / coverage QC from raw MSLSP,"low_na_frac | ..."
-22,match_outcome,shape of season-cycle match,e.g. mismatch_2cycles_1season
+5,assigned_woody_tiebreak,woody took strongest remaining MSLSP cycle,TRUE only on woody matched rows that did not use ADOY
+6,mslsp_cycle,assigned MSLSP cycle,1 = dominant amplitude; NA if unmatched
+7,landiq_PCNT,percent of cropped area for this season,from gap-filled LandIQ
+8,landiq_ADOY,LandIQ peak NDVI ADOY for season,0 = missing; negative = prior-year / winter peak
+9,landiq_PFT,plant functional type from crop lookup,"row | rice | hay | woody | other"
+10,landiq_CLASS,LandIQ CLASS for season,2021 RS legend
+11,landiq_SUBCLASS,LandIQ SUBCLASS for season,harmonized 2021 legend
+12,landiq_SPECOND,LandIQ special condition,e.g. Y = young perennial
+13,landiq_MULTIUSE,LandIQ multiuse code,"S | D | T | Q | I | M"
+14,landiq_COVER,cover-crop flag from LandIQ gap-fill,derived COVER column
+15,landiq_adoy_source,how landiq_ADOY was produced,observed vs LandIQ gap-fill; used by phenology date gap-fill LM
+16,mslsp_OGI,greenup onset date,15% onset of greenness increase; planting date
+17,mslsp_50PCGI,50% greenup date,phenology leaf-on
+18,mslsp_OGMx,mid greenup date,MSLSP OGMx
+19,mslsp_Peak,peak greenness date,
+20,mslsp_OGD,onset of green decrease date,harvest/termination for hay/woody
+21,mslsp_50PCGD,50% greendown date,phenology leaf-off
+22,mslsp_OGMn,onset of greenness minimum date,harvest/termination for row/rice
+23,mslsp_EVImax,peak EVI from assigned cycle,planting LAI
+24,mslsp_EVIamp,EVI amplitude from assigned cycle,
+25,mslsp_EVIarea,EVI area under curve from assigned cycle,
+26,mslsp_w_valid,sum of pixel coverage fractions on assigned cycle,
+27,mslsp_n_valid,unmasked pixel count on assigned cycle,
+28,mslsp_na_frac,fraction of parcel area masked on assigned cycle,
+29,mslsp_numObs,mean observation count on assigned cycle,
+30,mslsp_NumCycles,modal number of MSLSP cycles on the parcel-year,
+31,peak_dist_days,absolute days between Peak and landiq_ADOY,tie-break distance; NA if no ADOY or unmatched
+32,mslsp_gupQA_mode,modal greenup QA on assigned cycle,
+33,mslsp_gupQA_mode_frac,fraction of pixels with that greenup QA,
+34,mslsp_gdownQA_mode,modal greendown QA on assigned cycle,
+35,mslsp_gdownQA_mode_frac,fraction of pixels with that greendown QA,
+36,qc_landiq_season_data,whether this season row has LandIQ crop data,landiq_season_has_data when PCNT >= 0
+37,qc_adoy_vs_cycle,ADOY vs assigned cycle window,"adoy_inside_cycle | adoy_outside_cycle | woody_strongest_cycle | no_adoy_recorded | no_cycle_assigned"
+38,qc_n_adoy_in_cycle,how many LandIQ ADOYs fall in the assigned cycle window,"no_adoy_recorded | one | multiple_adoy_in_cycle | no_cycle_assigned"
+39,qc_adoy_status,whether the season has a usable ADOY,"has_adoy | no_landiq_adoy"
+40,qc_cycle_status,whether the season has an assigned MSLSP cycle,"has_assigned_cycle | no_assigned_cycle"
+41,qc_adoy_cycle_relation,ADOY/cycle relation when both exist,copy of qc_adoy_vs_cycle when both status flags are set
+42,qc_adoy_multiplicity,ADOY count in cycle when both exist,copy of qc_n_adoy_in_cycle when both status flags are set
+43,qc_mslsp_pixel_availability,pixel coverage on assigned cycle,
+44,qc_heterogeneity,masking / coverage QC from extract na_frac,
+45,qc_cycle_season_counts,MSLSP cycle count vs LandIQ season count,"1cycle_1season | 2cycles_2seasons | 2cycles_1season | ..."
+46,qc_mslsp_qa_pixel_agreement,greenup/greendown QA mode fraction,from gupQA_mode_frac / gdownQA_mode_frac
+47,match_outcome,field-year rollup of match result,"matched_adoy_validated | matched_woody_strongest_cycle | no_mslsp | ..."
+48,qc_mslsp_cycles_available,which MSLSP cycles survived filtering,"both_mslsp_cycles_kept | single_mslsp_cycle_only | no_mslsp_pixels | mslsp_cycles_filtered_out"

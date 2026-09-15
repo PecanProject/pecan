@@ -22,13 +22,6 @@ hls_shared_lib_dir <- function() {
   if (dir.exists(sib)) {
     return(normalizePath(sib, mustWork = FALSE))
   }
-  ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-  if (nzchar(ccmmf)) {
-    cand <- file.path(ccmmf, "products", "inventory", "scripts", "hls", "R")
-    if (dir.exists(cand)) {
-      return(normalizePath(cand, mustWork = FALSE))
-    }
-  }
   stop(
     "HLS shared library not found. Set HLS_SHARED_LIB to .../hls/R ",
     "(sibling of tillage/ under inst/ccmmf)."
@@ -44,21 +37,5 @@ path_ndti_out_root <- function() {
     }
     mgmt <- file.path(ccmmf, "products", "inventory")
   }
-  file.path(mgmt, "tillage", "ndti_v4.1")
-}
-
-path_parcel_tilemap <- function() {
-  env <- trimws(Sys.getenv("HLS_PARCEL_TILEMAP", ""))
-  if (nzchar(env)) {
-    return(env)
-  }
-  mgmt <- trimws(Sys.getenv("PRODUCTS_INVENTORY", ""))
-  if (!nzchar(mgmt)) {
-    ccmmf <- trimws(Sys.getenv("CCMMF_ROOT", ""))
-    if (!nzchar(ccmmf)) {
-      stop("Set PRODUCTS_INVENTORY or CCMMF_ROOT (source documentation/setup_env.sh).")
-    }
-    mgmt <- file.path(ccmmf, "products", "inventory")
-  }
-  file.path(mgmt, "hls_parcel_tile_map_v4.1.csv")
+  file.path(mgmt, "tillage", "ndti_v4.1.2")
 }

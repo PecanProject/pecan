@@ -1,52 +1,52 @@
-# Phenology events: leaf-on / leaf-off dates from MSLSP 50PCGI / 50PCGD
-# (including gap-filled values on the overlay).
-# Includes young woody (YP): planting/harvest are not emitted for those stands.
+# Phenology events: SIPNET leafon / leafoff from MSLSP 50PCGI / 50PCGD
+# (including gap-filled values). Perennials only (hay, woody). Annuals
+# (row, rice) use planting / harvest dates, not leaf-on / leaf-off.
+
+.phenology_event_cols <- c("event_type", "site_id", "date")
 
 build_phenology_events <- function(matched, year, out_dir) {
   message("[phenology] Building events")
-  # Idle/fallow (PFT other) is not a crop phenology management event
   if ("landiq_PFT" %in% names(matched)) {
-    is_other <- tolower(trimws(as.character(matched$landiq_PFT))) == "other"
-    n_skip_other <- sum(is_other, na.rm = TRUE)
-    if (n_skip_other > 0L) {
-      matched <- matched[!is_other]
-      message("  Skipped phenology (PFT other / idle-fallow): ", n_skip_other)
+    pft_l <- tolower(trimws(as.character(matched$landiq_PFT)))
+    keep <- pft_l %in% c("hay", "woody")
+    n_skip <- sum(!keep, na.rm = TRUE)
+    if (n_skip > 0L) {
+      matched <- matched[keep]
+      message(
+        "  Skipped phenology (not hay/woody; annuals and idle): ", n_skip
+      )
     }
   }
-  # Prefer calendar year on the row when Peak is missing / gap-filled oddly
-  # (YP / young woody are included here; planting and harvest skip them.)
-  yr_fallback <- as.integer(year)
-  pheno <- matched[, .(
-    site_id = parcel_id,
-    year = {
-      yp <- suppressWarnings(lubridate::year(as.Date(mslsp_Peak)))
-      data.table::fifelse(is.na(yp), yr_fallback, as.integer(yp))
-    },
-    leafonday = as.character(mslsp_50PCGI),
-    leafoffday = as.character(mslsp_50PCGD),
-    assigned_by = as.character(assigned_by),
-    gapfill_date_source = as.character(gapfill_date_source)
+
+  date_ok <- function(x) {
+    s <- as.character(x)
+    !is.na(s) & nzchar(s) & s != "NA" & s != "NaT"
+  }
+
+  leafon <- matched[date_ok(mslsp_50PCGI), .(
+    event_type = "leafon",
+    site_id = as.character(parcel_id),
+    date = as.character(mslsp_50PCGI)
   )]
-  pheno <- pheno[
-    !is.na(leafonday) & !is.na(leafoffday) &
-      leafonday != "NA" & leafoffday != "NA" &
-      nzchar(leafonday) & nzchar(leafoffday)
-  ]
-  message("  Phenology rows: ", nrow(pheno))
-  data.table::setorder(pheno, site_id, year)
-  pheno[, event_type := "phenology"]
-  data.table::setcolorder(pheno, c("event_type", setdiff(names(pheno), "event_type")))
+  leafoff <- matched[date_ok(mslsp_50PCGD), .(
+    event_type = "leafoff",
+    site_id = as.character(parcel_id),
+    date = as.character(mslsp_50PCGD)
+  )]
+  pheno <- data.table::rbindlist(list(leafon, leafoff), use.names = TRUE)
+  pheno <- keep_event_columns(pheno, .phenology_event_cols)
+  message("  Phenology rows: ", nrow(pheno),
+          " (leafon=", nrow(leafon), ", leafoff=", nrow(leafoff), ")")
+  if (nrow(pheno)) {
+    data.table::setorder(pheno, site_id, date, event_type)
+  }
 
   write_event_outputs(
     pheno, out_dir, "phenology", year,
     json_builder = function(rows, i) {
       list(
         event_type = rows$event_type[i],
-        year = rows$year[i],
-        leafonday = rows$leafonday[i],
-        leafoffday = rows$leafoffday[i],
-        assigned_by = rows$assigned_by[i],
-        gapfill_date_source = rows$gapfill_date_source[i]
+        date = rows$date[i]
       )
     }
   )

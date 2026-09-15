@@ -288,7 +288,7 @@ test_that(".prepare_input_designs still accepts a design supplied as X", {
   expect_identical(designs$ensemble, supplied$X)
 })
 
-test_that(".prepare_input_designs does not warn about a design the caller supplied", {
+test_that(".prepare_input_designs warns only about the design it generates itself", {
   tmp <- withr::local_tempdir()
   settings <- make_prep_settings(tmp)
   settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
@@ -305,5 +305,81 @@ test_that(".prepare_input_designs does not warn about a design the caller suppli
     invisible(.prepare_input_designs(settings, input_design = supplied)),
     type = "message"
   )
-  expect_false(any(grepl("deprecated", msgs)))
+  joined <- paste(msgs, collapse = "\n")
+
+  # the caller supplied the ensemble design, so nothing to warn about there;
+  # the SA design is still generated here, and now that one can be supplied too,
+  # generating it is worth warning about
+  expect_false(grepl("ensemble design internally", joined))
+  expect_match(joined, "sensitivity analysis design", all = FALSE)
+})
+
+# ---- the design decides where it goes, not the settings ------
+
+test_that("a design carrying SA labels is taken as the sensitivity design", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+  settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
+
+  supplied <- list(
+    design_matrix = data.frame(
+      param       = 1:3,
+      sa_pft      = c(NA, "temperate.deciduous", "temperate.deciduous"),
+      sa_trait    = c(NA, "SLA", "SLA"),
+      sa_quantile = c("50", "2.5", "97.5"),
+      stringsAsFactors = FALSE
+    ),
+    samples = fake_bundle()
+  )
+
+  oat <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_OAT_SA_design", oat)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design",
+                function(...) list(design_matrix = data.frame(param = 1:3)))
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  expect_identical(designs$sensitivity, supplied$design_matrix)
+  mockery::expect_called(oat, 0)
+})
+
+
+test_that("a design without SA labels is still the ensemble design", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  supplied <- list(design_matrix = data.frame(param = 1:3, met = c(1, 2, 1)),
+                   samples = fake_bundle())
+
+  gen <- mockery::mock()
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  expect_identical(designs$ensemble, supplied$design_matrix)
+  expect_null(designs$sensitivity)
+  mockery::expect_called(gen, 0)
+})
+
+
+test_that("a partly labelled design is not mistaken for a sensitivity design", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+
+  # sa_pft alone does not describe a run, so this is not an SA design
+  supplied <- list(design_matrix = data.frame(param = 1:3, sa_pft = c(NA, "p", "p"),
+                                              stringsAsFactors = FALSE),
+                   samples = fake_bundle())
+
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design",
+                function(...) list(design_matrix = data.frame(param = 1:3)))
+
+  designs <- .prepare_input_designs(settings, input_design = supplied)
+
+  expect_identical(designs$ensemble, supplied$design_matrix)
+  expect_null(designs$sensitivity)
 })

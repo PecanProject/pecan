@@ -1,0 +1,31 @@
+column_number,column_name,contents,notes
+1,site_id,parcel_id,same as overlay parcel_id
+2,year,assigned calendar year,
+3,season,LandIQ season,
+4,date,planting date,from overlay mslsp_OGI (observed or gap-filled)
+5,code,LandIQ CLASS+SUBCLASS,copied to event crop_code
+6,PFT,plant functional type from overlay,"row | rice; hay and woody are skipped"
+7,assigned_by,match provenance from overlay,"matched | no_mslsp | no_match"
+8,gapfill_date_source,date provenance from overlay,"mslsp | lm_adoy | mean_crop | none"
+9,LAI,leaf area index at planting m2/m2,Mourad on 15% of EVImax or CLASS/PFT fallback
+10,lai_source,how LAI was obtained,"mslsp_evi | lai_fallback"
+11,lai_k,EVI scale used in Mourad,0.15 when lai_source is mslsp_evi; NA on fallback
+12,C_LEAF,leaf C kg/m2,SIPNET leaf_c_kg_m2
+13,C_STEM,stem/wood C kg/m2,SIPNET wood_c_kg_m2
+14,C_FINEROOT,fine root C kg/m2,SIPNET fine_root_c_kg_m2
+15,C_COARSEROOT,coarse root C kg/m2,SIPNET coarse_root_c_kg_m2
+16,N_LEAF,leaf N kg/m2,SIPNET leaf_n_kg_m2
+17,N_STEM,stem/wood N kg/m2,SIPNET wood_n_kg_m2
+18,N_FINEROOT,fine root N kg/m2,SIPNET fine_root_n_kg_m2
+19,N_COARSEROOT,coarse root N kg/m2,SIPNET coarse_root_n_kg_m2
+20,sla_src,lookup level for SLA,"subclass | class | pft"
+21,src_9,lookup level for root:shoot (TRY 9),"subclass | class | pft"
+22,src_470,lookup level for root mass fraction (TRY 470),"subclass | class | pft"
+23,src_2005,lookup level for fine-root mass fraction (TRY 2005),"subclass | class | pft"
+24,src_1534,lookup level for coarse-root mass fraction (TRY 1534),"subclass | class | pft"
+25,src_1019,lookup level for coarse:fine root ratio (TRY 1019),"subclass | class | pft"
+26,root_split_src,how fine vs coarse root split was formed,includes default when PFT default rows were used
+27,used_default_split,TRUE if root split used a default row,
+28,used_lit_any,TRUE if any planting trait came from literature,
+29,used_pft_any,TRUE if any planting trait came from PFT level,
+30,used_class_any,TRUE if any planting trait came from CLASS level,

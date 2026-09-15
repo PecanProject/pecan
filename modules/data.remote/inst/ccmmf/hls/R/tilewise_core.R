@@ -1,12 +1,12 @@
 # =============================================================================
-# tilewise_core.R — shared tilewise workflow orchestration
+# tilewise_core.R -- shared tilewise workflow orchestration
 # =============================================================================
 #
 # Four-step pipeline for HLS-derived products (NDTI, MSLSP):
-#   1. prep-static  — load parcel IDs, parcel-tile map, geometry
-#   2. extract      — per-tile, per-scene extraction -> tilepieces (CSV.gz)
-#   3. combine      — aggregate tilepieces into final Parquet
-#   4. merge        — no-op when product defines its own combine
+#   1. prep-static  -- load parcel IDs, parcel-tile map, geometry
+#   2. extract      -- per-tile, per-scene extraction -> tilepieces (CSV.gz)
+#   3. combine      -- aggregate tilepieces into final Parquet
+#   4. merge        -- no-op when product defines its own combine
 #
 # Product object injects behaviour (see Product Interface at bottom).
 # Optional: prepare_tile() for per-tile geometry; combine() for custom aggregation.
@@ -168,7 +168,8 @@ tilewise_run <- function(prep, time_key, product, overwrite = FALSE, verbose = T
     tile_safe  <- sanitize_tile_id(tile_id)
     output_gz  <- file.path(tilepieces_dir, sprintf("tile=%s.csv.gz", tile_safe))
     output_csv <- file.path(tilepieces_dir, sprintf("tile=%s.csv",    tile_safe))
-    if ((file.exists(output_gz) || file.exists(output_csv)) && !overwrite) next
+    # Only .csv.gz is a finished tilepiece. A bare .csv is a killed/partial run.
+    if (file.exists(output_gz) && !overwrite) next
 
     output_tmp <- output_csv
     if (file.exists(output_tmp)) file.remove(output_tmp)
@@ -177,13 +178,13 @@ tilewise_run <- function(prep, time_key, product, overwrite = FALSE, verbose = T
     start_ts    <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     n_rows      <- 0L
 
-    # Scenes for this tile — fetched before geometry so prepare_tile can use CRS.
+    # Scenes for this tile -- fetched before geometry so prepare_tile can use CRS.
     # Use cur_tile (not tile_id) so data.table doesn't match the column of same name.
     cur_tile <- tile_id
     scenes_this_tile <- scene_index_dt[get(tile_col) == cur_tile]
 
     if (nrow(scenes_this_tile) == 0) {
-      if (verbose) tw_log("INFO", "tile=", tile_id, " 0 scenes — writing empty tilepiece")
+      if (verbose) tw_log("INFO", "tile=", tile_id, " 0 scenes -- writing empty tilepiece")
       write_empty_tilepiece(output_tmp, output_gz)
       timing_rows[[length(timing_rows) + 1]] <- list(
         tile_id = tile_id, n_parcels = length(parcel_indices), n_scenes = 0L,
@@ -207,7 +208,7 @@ tilewise_run <- function(prep, time_key, product, overwrite = FALSE, verbose = T
     }
 
     if (is.null(tile_parcels) || nrow(tile_parcels) == 0) {
-      if (verbose) tw_log("WARN", "tile=", tile_id, " no parcel geometry — writing empty tilepiece")
+      if (verbose) tw_log("WARN", "tile=", tile_id, " no parcel geometry -- writing empty tilepiece")
       write_empty_tilepiece(output_tmp, output_gz)
       timing_rows[[length(timing_rows) + 1]] <- list(
         tile_id = tile_id, n_parcels = length(parcel_indices), n_scenes = nrow(scenes_this_tile),
@@ -230,15 +231,26 @@ tilewise_run <- function(prep, time_key, product, overwrite = FALSE, verbose = T
         product$process_scene(prep, scene_row, tile_parcels, tile_id),
         error = function(e) {
           tw_log("ERROR", "tile=", tile_id, " scene=", scene_idx, " ", conditionMessage(e))
+          if (isTRUE(product$fatal_scene_error)) stop(e)
           tile_status <<- "error"
           NULL
         }
       )
       if (!is.null(result) && nrow(result) > 0) {
-        result[, tile_id := tile_id]
+        result <- data.table::as.data.table(result)
+        data.table::set(result, j = "tile_id", value = tile_id)
         append_to_csv(result, output_tmp)
         n_rows <- n_rows + nrow(result)
       }
+    }
+
+    if (isTRUE(product$fatal_empty_tile) && n_rows == 0L &&
+        nrow(scenes_this_tile) > 0L && nrow(tile_parcels) > 0L) {
+      stop(
+        "tile=", tile_id, " produced 0 extract rows from ",
+        nrow(tile_parcels), " parcels and ", nrow(scenes_this_tile),
+        " scene(s). Check NetCDF readability and parcel_tiles overlap."
+      )
     }
 
     if (file.exists(output_tmp)) {
@@ -361,10 +373,10 @@ tilewise_merge <- function(prep, time_key, product, overwrite = FALSE, verbose =
   if (!is.null(product$combine)) {
     out_path <- product$path_final_output(prep$out_dir, year, time_key)
     if (file.exists(out_path)) {
-      if (verbose) message("[merge] skipped — combine already produced: ", out_path)
+      if (verbose) message("[merge] skipped -- combine already produced: ", out_path)
       return(invisible(out_path))
     }
-    # Final output missing — run combine now.
+    # Final output missing -- run combine now.
     if (verbose) message("[merge] final output missing, running combine")
     return(product$combine(prep, time_key, overwrite = overwrite, verbose = verbose))
   }

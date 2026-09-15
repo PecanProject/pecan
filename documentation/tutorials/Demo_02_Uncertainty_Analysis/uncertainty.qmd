@@ -18,11 +18,11 @@ fig-dpi: 300
 
 In Demo 2 we will be looking at how PEcAn can use information about parameter uncertainty to perform three automated analyses:
 
-- **Ensemble Analysis**: Repeat numerous model runs, each sampling from the parameter uncertainty, to generate a probability distribution of model projections. Allows us to put a confidence interval on the model.
+- **Ensemble Analysis**: Repeat numerous model runs, each sampling from the parameter uncertainty, to generate a probability distribution of model projections. Allows us to put a confidence interval on the model. Demo 1 shows this in action.
 - **Sensitivity Analysis**: Repeats numerous model runs to assess how changes in model parameters will affect model outputs. Allows us to identify which parameters the model is most sensitive to.
 - **Uncertainty Analysis**: Combines information about model sensitivity with information about parameter uncertainty to determine the contribution of each model parameter to the uncertainty in model outputs. Allow us to identify which parameters are driving model uncertainty.
 
-This demo shows how to run an uncertainty analysis workflow in PEcAn using an R-based Quarto notebook. It covers loading settings, configuring models, running simulations, and performing ensemble and sensitivity analyses to assess uncertainty and parameter importance. This programmatic approach complements the web-based PEcAn interface.
+This demo shows how to run an uncertainty analysis workflow in PEcAn using an R-based Quarto notebook. It covers loading settings, configuring models, running simulations, and performing sensitivity analyses to assess uncertainty and parameter importance. This programmatic approach complements the web-based PEcAn interface.
 
 **Context & modeling scenario:**
 
@@ -32,7 +32,7 @@ We simulate plant and ecosystem carbon balance (Net Primary Productivity and Net
 
 1. Configure a PEcAn workflow by loading and validating a `pecan.xml` settings file.
 2. Run a set of ecosystem model simulations by writing model configuration files and then running SIPNET.
-3. Quantify uncertainty using ensemble analysis, sensitivity analyses, and variance decomposition.
+3. Quantify uncertainty using sensitivity analyses, and variance decomposition.
 4. Visualize results to identify important parameters and how they influence model variance.
 5. Change configuration settings and re-run the workflow.
 
@@ -85,21 +85,15 @@ Use the XML settings file (`pecan.xml`) exactly as in the Demo 1 Basic Run tutor
 
 ## Settings
 
-Example settings for this demo live at `pecan/documentation/tutorials/Demo_02_Uncertainty_Analysis/pecan.xml` and you can read more about the settings in the [PEcAn Documentation](https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html#pecanXML), and sections focused on [ensemble](https://pecanproject.github.io/pecan-documentation/develop/xml-advanced.html#xml-ensemble) and [sensitivity analysis](https://pecanproject.github.io/pecan-documentation/develop/xml-advanced.html#xml-sensitivity-analysis) settings in particular.
+Example settings for this demo live at `pecan/documentation/tutorials/Demo_02_Uncertainty_Analysis/pecan.xml` and you can read more about the settings in the [PEcAn Documentation](https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html#pecanXML), and section focused on [sensitivity analysis](https://pecanproject.github.io/pecan-documentation/develop/xml-advanced.html#xml-sensitivity-analysis) settings in particular.
 
-Open that settings file and look at the ensemble and sensitivity analysis sections. You can modify these settings to change the number of ensemble members, the variable to analyze, and the sampling method. Some of the key settings in this demo include:
+There is no `<ensemble>` block in this file. A sensitivity analysis and an ensemble are separate runs, each with its own settings and its own design, so this demo carries only the sensitivity analysis and Demo 1 covers the ensemble.
 
-**Ensemble size**
-
-The number of runs in the ensemble is set to **50** in this demo, but a larger ensemble size (100-5000) is often used in practice to better estimate the posterior distribution of the output.
+Open that settings file and look at the sensitivity analysis section. You can modify these settings to change the variable being analysed and the quantiles each parameter is moved to. Some of the key settings in this demo include:
 
 **Output variable**
 
-The output variable for the ensemble analysis is set to **NPP** (Net Primary Productivity). You can change this to other variables like NEE (Net Ecosystem Exchange), LAI (Leaf Area Index), ET (Evapotranspiration), etc. You can also specify multiple variables by providing a vector of variable names (e.g., `c("NPP", "NEE", "LAI")`) to analyze uncertainty across several ecosystem processes simultaneously.
-
-**Sampling method**
-
-The sampling method for generating parameter sets is set to **halton** in this demo. This tells PEcAn to sample using the [Halton sequence](https://en.wikipedia.org/wiki/Halton_sequence), which is a quasi-random sampling method that more efficiently explores parameter space than random sampling. Other options include Latin Hypercube (lhc), which is another quasi-random sequence, as well as uniform that draws random samples. A random sampler requires a larger ensemble size to adequately explore parameter space.
+The output variable for the sensitivity analysis is set to **NPP** (Net Primary Productivity). You can change this to other variables like NEE (Net Ecosystem Exchange), LAI (Leaf Area Index), ET (Evapotranspiration), etc. You can also specify multiple variables by providing a vector of variable names (e.g., `c("NPP", "NEE", "LAI")`) to analyze uncertainty across several ecosystem processes simultaneously.
 
 **Sensitivity analysis quantiles**
 
@@ -123,13 +117,12 @@ See Demo 1 Section 6 for details on what these functions do. Briefly, they read 
 
 This step decides which model runs to do, then writes the configuration files for them.
 
-`generate_joint_ensemble_design()` builds the ensemble design: one row per run, holding indices that say which parameter draw each run uses. It returns those samples alongside the design, since the indices only mean anything together with the samples they point into. Because this demo also runs a sensitivity analysis, the SA design is generated internally as well; passing one in yourself isn't supported yet.
+`generate_OAT_SA_design()` builds the sensitivity analysis design: one row per run. The first run holds every parameter at its median, and each run after that moves a single trait to one of its quantiles while everything else stays at the median. That is what makes the effect of each parameter separable. It returns the parameter samples alongside the design, since the design's indices only mean anything together with the samples they point into.
+
+`runModule.run.write.configs()` then takes that whole object and writes the SIPNET configuration files.
 
 ```{r write-configs}
-design <- PEcAn.uncertainty::generate_joint_ensemble_design(
-  settings,
-  ensemble_size = settings$ensemble$size
-)
+design <- PEcAn.uncertainty::generate_OAT_SA_design(settings)
 
 settings <- PEcAn.workflow::runModule.run.write.configs(
   settings,
@@ -137,7 +130,9 @@ settings <- PEcAn.workflow::runModule.run.write.configs(
 )
 ```
 
-Generating the design yourself lets you inspect it before any runs happen: `design$design_matrix` is the table of runs, and `design$samples` holds the parameter draws behind it, which is what the sensitivity and variance decomposition steps later report on.
+The design carries labels saying what each run is, so it goes to the sensitivity runs without anything having to inspect the settings. An ensemble is a separate call with its own design, which is what Demo 1 does.
+
+You can call `runModule.run.write.configs()` without a design and it will build one itself, but that path is deprecated and will warn. Building it yourself also lets you look at it first: `design$design_matrix` is the table of runs, and `design$samples` holds the parameter draws behind it.
 
 # Run Model Simulations
 
@@ -159,15 +154,9 @@ Next we convert all of the model output from the previous run to a standard form
 runModule.get.results(settings)
 ```
 
-# Ensemble and Sensitivity Analysis {#sec-run-uncertainty}
+# Sensitivity Analysis {#sec-run-uncertainty}
 
-Next, we use the outputs from the previous step to perform ensemble and sensitivity analyses.
-
-**Ensemble Analysis**: Quantifies uncertainty in model predictions by running multiple simulations with parameters sampled from their uncertainty distributions. This generates probability distributions of model outputs and confidence intervals.
-
-```{r run-ensemble-analysis}
-runModule.run.ensemble.analysis(settings)
-```
+Next, we use the outputs from the previous step to perform sensitivity analyses.
 
 **Sensitivity Analysis**: Systematically varies individual parameters to assess their influence on model outputs. This identifies which parameters most strongly affect model predictions and helps prioritize parameter refinement efforts.
 
@@ -181,21 +170,16 @@ runModule.run.sensitivity.analysis(settings)
 
 These are the key folders and files that will be created under the directory defined by `settings$outdir` (e.g., `demo_outdir` in the example). The file contents are described in the next section.
 
-We discussed the output directory in Demo 1 (Basic Run), but now we have three new folders that contain outputs from the sensitivity, ensemble, and variance decomposition analyses. Here we focus on the additional outputs generated by the ensemble and sensitivity analyses.
+We discussed the output directory in Demo 1 (Basic Run), but now there are additional outputs from the sensitivity and variance decomposition analyses.
 
 ```
 demo_outdir/
 ├── run/                                    # Configuration & execution metadata
-│   ├── runs.txt                           # List of run IDs (SA and ensemble runs)
-│   ├── ENS-*-*/                          # Ensemble run directories (e.g., ENS-00001--1/)
+│   ├── runs.txt                           # List of run IDs
 │   └── SA-*-*/                           # Sensitivity analysis run directories
 ├── out/                                   # Raw model outputs by run ID
 │   └── <runid>/                          # E.g., daily or sub-daily SIPNET output files
-├── ensemble.analysis.*.pdf                # Ensemble analysis plots
-├── ensemble.output.*.Rdata               # Raw ensemble outputs
-├── ensemble.samples.*.Rdata              # Parameter samples used for ensemble
-├── ensemble.ts.*.Rdata                   # Time series data from ensemble
-├── samples.Rdata                         # Parameter samples for both SA and ensemble
+├── samples.Rdata                         # Parameter samples used for the SA runs
 ├── sensitivity.output.*.Rdata            # SA model outputs
 ├── sensitivity.results.*.Rdata           # Processed SA results
 ├── sensitivity.samples.*.Rdata           # SA parameter samples
@@ -214,17 +198,9 @@ demo_outdir/
 
 # Understanding PEcAn Uncertainty Analysis Outputs
 
-After running ensemble and sensitivity analyses, PEcAn generates several important outputs that help you understand model uncertainty and parameter sensitivity.
+After running the sensitivity analysis, PEcAn generates several important outputs that help you understand model uncertainty and parameter sensitivity.
 
-The `samples.Rdata` file contains the parameter values used in the sensitivity and ensemble runs. It stores two objects, `sa.samples` and `ensemble.samples`, which are the parameter values for the sensitivity analysis and ensemble runs, respectively.
-
-## Ensemble Analysis Outputs
-
-The ensemble analysis produces:
-
-- **`ensemble.Rdata`**: Contains `ensemble.output` object with model predictions for all ensemble members
-- **`ensemble.analysis.[RunID].[Variable].[StartYear].[EndYear].pdf`**: Histogram and boxplot of ensemble predictions
-- **`ensemble.ts.[RunID].[Variable].[StartYear].[EndYear].pdf`**: Time-series plot showing ensemble mean, median, and 95% confidence intervals
+The `samples.Rdata` file contains the parameter values used in the sensitivity analysis runs, in an object called `sa.samples`.
 
 ## Sensitivity Analysis Outputs
 
@@ -262,84 +238,22 @@ The variance decomposition produces:
   
 # Visualize Uncertainty Analysis Results {#sec-visualize}
 
-This section loads the results from the uncertainty analyses and generates plots directly in the notebook. This provides an immediate view of the ensemble time series, sensitivity plots, and variance decomposition.
-
-## Ensemble Analysis Visualization
-
-Here we visualize the results of the ensemble analysis. It shows the overall distribution of the model output and how the output and its uncertainty change over time.
-
-This section reproduces the plots saved in the `ensemble.analysis/` folder in order to show the user how to access and visualize the results programmatically so that they can further investigate output and customize plots.
-
-
-```{r visualize-ensemble-results}
-# --- 1. Define Helper Variables ---
-# Extract key variables from the settings object to simplify file path construction
-# and plotting. This makes the code cleaner and easier to read.
-variable <- settings$ensemble$variable
-pft <- settings$pfts[[1]]
-start.year <- lubridate::year(settings$run$start.date)
-end.year <- lubridate::year(settings$run$end.date)
-
-
-# --- 2. Load and Plot Ensemble Output Distribution ---
-# This section visualizes the distribution of the ensemble model runs.
-# It generates a histogram and a boxplot to show the central tendency, spread,
-# and shape of the output variable's distribution.
-
-vars <- settings$ensemble[names(settings$ensemble) == "variable"]
-variables <- unlist(vars)
-# Loop through each requested variable
-for (var in variables) {
-  # Construct the path to the ensemble output file
-  ens_file <- PEcAn.uncertainty::ensemble.filename(
-    settings,
-    prefix = "ensemble.output",
-    all.var.yr = FALSE
-  )
-
-  if (file.exists(ens_file)) {
-    PEcAn.logger::logger.info(paste("Plotting ensemble results for variable:", var, "from", basename(ens_file)))
-
-    ens_env <- new.env()
-    load(ens_file, envir = ens_env)
-
-    if (!is.null(ens_env$ensemble.output)) {
-      ens_data <- as.numeric(unlist(ens_env$ensemble.output))
-
-      # Define units for plot labels
-      units <- paste0(var, " (", PEcAn.utils::mstmipvar(var, silent = TRUE)$units, ")")
-
-      # Create side-by-side histogram and boxplot
-      par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))
-      hist(ens_data, xlab = units, main = paste("Ensemble Dist:", var), cex.lab = 1.4, col = "grey85")
-      box(lwd = 2.2)
-      boxplot(ens_data, ylab = units, main = paste("Ensemble Boxplot:", var), col = "grey85", cex.lab = 1.5)
-      box(lwd = 2.2)
-      par(mfrow = c(1, 1))
-    }
-  } else {
-    PEcAn.logger::logger.warn(paste("Could not find ensemble output file for variable:", var))
-  }
-}
-
-# --- 3. Plot Ensemble Time Series ---
-# This section visualizes the ensemble results over time, showing the mean,
-# median, and 95% confidence interval of the model output.
-# Loop through each variable for time series plots
-for (var in variables) {
-  ens_ts_data <- PEcAn.uncertainty::read.ensemble.ts(settings, variable = var)
-  if (!is.null(ens_ts_data)) {
-    PEcAn.uncertainty::ensemble.ts(ens_ts_data)
-  }
-}
-```
+This section loads the results from the uncertainty analyses and generates plots directly in the notebook. This provides an immediate view of the sensitivity plots and variance decomposition.
 
 ## Sensitivity and Variance Decomposition Visualization
 
 This block visualizes the results of the sensitivity analysis. The plots show how sensitive the model output is to changes in each parameter and which parameters contribute most to the overall uncertainty.
 
 ```{r visualize-sensitivity-results}
-# --- 1. Load Sensitivity Analysis Results ---
+# --- 1. Define Helper Variables ---
+# Extract key variables from the settings object to simplify file path construction
+# and plotting. This makes the code cleaner and easier to read.
+variable <- settings$sensitivity.analysis$variable
+pft <- settings$pfts[[1]]
+start.year <- lubridate::year(settings$run$start.date)
+end.year <- lubridate::year(settings$run$end.date)
+
+# --- 2. Load Sensitivity Analysis Results ---
 vars <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
 variables <- unlist(vars)
 
@@ -358,7 +272,7 @@ for (var in variables) {
     load(sens_file, envir = sens_env)
     sensitivity.results <- sens_env$sensitivity.results
 
-    # --- 2. Generate Sensitivity Plots ---
+    # --- 3. Generate Sensitivity Plots ---
     if (!is.null(sensitivity.results[[pft$name]]$sensitivity.output)) {
       sa_plots <- PEcAn.uncertainty::plot_sensitivities(
         sensitivity.results[[pft$name]]$sensitivity.output
@@ -370,7 +284,7 @@ for (var in variables) {
       )
     }
 
-    # --- 3. Generate Variance Decomposition Plots ---
+    # --- 4. Generate Variance Decomposition Plots ---
     if (!is.null(sensitivity.results[[pft$name]]$variance.decomposition.output)) {
       vd_plots <- PEcAn.uncertainty::plot_variance_decomposition(
         sensitivity.results[[pft$name]]$variance.decomposition.output
@@ -383,26 +297,6 @@ for (var in variables) {
   }
 }
 ```
-
-# Customizing Ensemble Analysis Parameters (Optional)
-
-## (Optional) Use this section only if you want to override the default ensemble analysis parameters. Skip if defaults are sufficient.
-> **Important:** If you modify the ensemble analysis parameters in this section, re-run Section @sec-run-uncertainty and then Section @sec-visualize to regenerate outputs and plots.
-
-```{r customize-ensemble}
-# Set the number of ensemble members (model runs)
-settings$ensemble$size <- 50
-
-# Specify the variable(s) to be analyzed in the ensemble
-# Single variable:
-settings$ensemble$variable <- "NEE"
-# Multiple variables (uncomment to use):
-# settings$ensemble$variable <- c("NEE", "NPP", "LAI")
-
-# Choose the method for sampling the parameter space (options: "uniform", "lhc", "halton", "sobol", "torus")
-settings$ensemble$samplingspace$parameters$method <- "halton"
-```
-
 
 # Customizing Sensitivity Analysis Parameters (Optional)
 
@@ -427,7 +321,7 @@ After the model simulation completes, we need to extract the results and prepare
 4. Loading model output
 
 ```{r get-plot-vars}
-runid <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[1, 1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id
+runid <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[1, 1]) # takes the first run id; change [1, 1] to pick a different row
 # You can change [1,1] to [10,1], [5,1], etc. to select different run IDs from runs.txt
 # For example: [10,1] selects the 10th run ID, [5,1] selects the 5th run ID
 outdir <- paste(settings$outdir, "/out/", runid, sep = "")

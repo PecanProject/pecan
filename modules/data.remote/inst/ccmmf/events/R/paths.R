@@ -59,7 +59,15 @@ events_paths <- function() {
     inventory = path_inventory,
     landiq_dir = path_landiq,
     landiq_crops = file.path(path_landiq, "crops_all_years.parq"),
-    cropcode_csv = file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv"),
+    cropcode_csv = {
+      env <- trimws(Sys.getenv("LANDIQ_CROPCODE_CSV", ""))
+      if (nzchar(env) && file.exists(env)) {
+        env
+      } else {
+        gf <- trimws(Sys.getenv("LANDIQ_GAPFILL_ROOT", file.path(Sys.getenv("CCMMF_CODE"), "landiq-gapfill")))
+        file.path(gf, "data", "LandIQ_cropCode_lookup_table.csv")
+      }
+    },
     matched_dir = {
       md <- trimws(Sys.getenv("MATCHED_DIR", ""))
       if (nzchar(md)) md else file.path(path_inventory, "phenology", "matched_landiq_mslsp_v4.1.2")
@@ -67,25 +75,33 @@ events_paths <- function() {
     pool_script = file.path(traits_root, "pool_calculations_from_lookup.R"),
     tillage_metrics_script = tillage_metrics_script,
     ndti_root = file.path(path_inventory, "tillage", "ndti_v4.1.2"),
+    tillage_metrics_dir = file.path(path_inventory, "tillage", "tillage_metrics"),
     out_dir = {
       od <- trimws(Sys.getenv("EVENT_OUTPUT_DIR", ""))
-      if (nzchar(od)) od else file.path(path_inventory, "event_files_v4.1.2")
+      if (nzchar(od)) od else file.path(path_inventory, "event_files")
     }
   )
 }
 
+# Event files (SIPNET columns only): assigned_year=Y_{kind}.parquet / .json
 event_output_paths <- function(out_dir, kind, year) {
+  y <- as.integer(year)
   list(
-    parquet = file.path(out_dir, sprintf("%s_statewide_%d.parquet", kind, year)),
-    json = file.path(out_dir, sprintf("%s_statewide_%d.json", kind, year))
+    parquet = file.path(out_dir, sprintf("assigned_year=%d_%s.parquet", y, kind)),
+    json = file.path(out_dir, sprintf("assigned_year=%d_%s.json", y, kind))
   )
 }
 
-# Prior-year fallows found while running job_year (lookback). Safe for parallel
-# year jobs; merge_tillage_lookback() folds these into the canonical files.
-tillage_lookback_amend_path <- function(out_dir, prior_year, job_year) {
-  file.path(
-    out_dir,
-    sprintf("tillage_statewide_%d_lookback_from_%d.parquet", prior_year, job_year)
-  )
+# Apply tables (full columns; sources recoverable here, not on event files).
+planting_table_path <- function(matched_dir, year) {
+  file.path(matched_dir, sprintf("assigned_year=%d_planting.parquet", as.integer(year)))
+}
+
+harvest_table_path <- function(matched_dir, year) {
+  file.path(matched_dir, sprintf("assigned_year=%d_harvest.parquet", as.integer(year)))
+}
+
+# Tillage metrics table under $PRODUCTS_INVENTORY/tillage/tillage_metrics/.
+tillage_table_path <- function(metrics_dir, year) {
+  file.path(metrics_dir, sprintf("assigned_year=%d_tillage.parquet", as.integer(year)))
 }

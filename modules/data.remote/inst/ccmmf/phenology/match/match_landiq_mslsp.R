@@ -3,21 +3,27 @@
 # match_landiq_mslsp.R
 # Rule-based matching (no rank-based cost).
 #
+# Usage:
+#   Rscript match_landiq_mslsp.R YEAR
+#   Rscript -e "YEAR <- 2024; source('match_landiq_mslsp.R')"
+#
 # LandIQ inventory: all ag parcel-years from LANDIQ_GAPFILLED (gap-filled v4.1.2
 # product by default) are assigned -- left join to combined MSLSP, not inner join.
 # Parcel-years with LandIQ crop rows but no MSLSP retrieval get assigned_by = "no_mslsp".
-# - Primary: ADOY inside [OGI, OGMn]
-# - Tie-break: nearest Peak to ADOY, then mslsp_cycle (1 before 2)
+# - Non-woody primary: ADOY inside [OGI, OGMn]
+# - Non-woody tie-break: nearest Peak to ADOY, then mslsp_cycle (1 before 2)
+# - Woody: strongest remaining MSLSP cycle (cycle 1 first); do not use ADOY
 # - CLASS-aware season priority:
 #     * season 2 (main season) first when CLASS is present
 #     * season 1 prioritized for MULTIUSE D/M (double/mixed-use; per LandIQ documentation)
 #     * then seasons 3/4
+#     * young woody (CLASS=YP or SPECOND=Y) after mature woody on the same parcel-year
+#     * among the same priority, higher PCNT first
 #
 # MSLSP cycle convention (MSLSP User Guide V1, Table 1; BU-LCSC/MSLSP):
 #   Cycle 1 = First Vegetation Cycle = largest EVI2 amplitude (dominant/strongest).
 #   Cycle 2 = Second Vegetation Cycle = second largest EVI2 amplitude.
-# When ADOY is missing we assign by season priority and tie-break by mslsp_cycle
-# (same for woody and non-woody). Using ADOY_EMRG as fallback is a possible next step.
+# Unused extra MSLSP cycles do not veto an in-window non-woody match in match_outcome.
 # =====================================================================
 
 suppressPackageStartupMessages({
@@ -44,10 +50,94 @@ if (!nzchar(trimws(path_landiq_v4))) {
   }
   path_landiq_v4 <- file.path(.root, "LandIQ", "gapfilled")
 }
-combined_root     <- file.path(path_inventory, "phenology/raw_mslsp_v4.1.2")
+combined_root <- trimws(Sys.getenv("MSLSP_EXTRACT_ROOT", ""))
+if (!nzchar(combined_root)) {
+  nc <- trimws(Sys.getenv("MSLSP_NETCDF_ROOT", ""))
+  if (!nzchar(nc)) {
+    .root <- trimws(Sys.getenv("CCMMF_ROOT", ""))
+    if (!nzchar(.root)) {
+      stop("Set MSLSP_EXTRACT_ROOT, MSLSP_NETCDF_ROOT, or CCMMF_ROOT (source documentation/setup_env.sh).")
+    }
+    nc <- file.path(.root, "HLS", "MSLSP")
+  }
+  combined_root <- file.path(nc, "raw_mslsp_v4.1.2")
+}
 landiq_parq       <- file.path(path_landiq_v4, "crops_all_years.parq")
-cropcode_csv      <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
-source(file.path(path_inventory, "scripts/phenology/matched_paths.R"))
+path_cropcode_csv <- function() {
+  env <- trimws(Sys.getenv("LANDIQ_CROPCODE_CSV", ""))
+  if (nzchar(env) && file.exists(env)) return(env)
+  gf <- trimws(Sys.getenv("LANDIQ_GAPFILL_ROOT", ""))
+  if (nzchar(gf)) {
+    p <- file.path(gf, "data", "LandIQ_cropCode_lookup_table.csv")
+    if (file.exists(p)) return(p)
+  }
+  code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+  if (nzchar(code)) {
+    p <- file.path(code, "landiq-gapfill", "data", "LandIQ_cropCode_lookup_table.csv")
+    if (file.exists(p)) return(p)
+  }
+  p <- file.path(path_inventory, "LandIQ_cropCode_lookup_table.csv")
+  if (file.exists(p)) return(p)
+  stop("LandIQ_cropCode_lookup_table.csv not found. Set LANDIQ_CROPCODE_CSV or LANDIQ_GAPFILL_ROOT.")
+}
+
+# Cores for the parcel assignment loop. MATCH_N_CORES wins; else scheduler
+# slots; else min(8, detectCores()-1). Set MATCH_N_CORES=1 for serial.
+match_n_cores <- function() {
+  for (e in c("MATCH_N_CORES", "SLURM_CPUS_ON_NODE", "NSLOTS", "NCPUS")) {
+    v <- suppressWarnings(as.integer(Sys.getenv(e, "")))
+    if (!is.na(v) && v >= 1L) return(v)
+  }
+  n <- suppressWarnings(parallel::detectCores())
+  if (is.na(n) || n < 2L) return(1L)
+  min(8L, max(1L, n - 1L))
+}
+
+assign_field_years <- function(pids, yr, pheno, landiq, pheno_split, landiq_split) {
+  n_cores <- match_n_cores()
+  n_cores <- min(n_cores, length(pids))
+  message("Assigning ", length(pids), " field-years on ", n_cores, " core(s)")
+  assign_pids <- function(pids_i) {
+    data.table::setDTthreads(1L)
+    lapply(pids_i, function(pid) {
+      cr <- pheno_split[[pid]]
+      if (is.null(cr)) cr <- pheno[0L]
+      lr <- landiq_split[[pid]]
+      if (is.null(lr)) lr <- landiq[0L]
+      assign_one_4rows(pid, yr, cr, lr)
+    })
+  }
+  if (n_cores <= 1L || length(pids) < 64L || .Platform$OS.type != "unix") {
+    return(assign_pids(pids))
+  }
+  chunks <- split(pids, cut(seq_along(pids), n_cores, labels = FALSE))
+  chunk_res <- parallel::mclapply(chunks, assign_pids, mc.cores = n_cores)
+  bad <- vapply(chunk_res, inherits, logical(1), "try-error")
+  if (any(bad)) {
+    stop("Assignment worker failed: ", as.character(chunk_res[[which(bad)[1L]]]))
+  }
+  unlist(chunk_res, recursive = FALSE, use.names = FALSE)
+}
+
+cropcode_csv      <- path_cropcode_csv()
+.match_dir <- {
+  fa <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+  if (length(fa)) {
+    dirname(normalizePath(sub("^--file=", "", fa[[1L]]), mustWork = FALSE))
+  } else if (!is.null(sys.frame(1)$ofile)) {
+    dirname(normalizePath(sys.frame(1)$ofile, mustWork = FALSE))
+  } else {
+    file.path(Sys.getenv("PHENOLOGY_ROOT", file.path(Sys.getenv("CCMMF_CODE"), "phenology")), "match")
+  }
+}
+.mp <- file.path(.match_dir, "matched_paths.R")
+if (!file.exists(.mp)) {
+  .mp <- file.path(path_inventory, "scripts/phenology/matched_paths.R")
+}
+if (!file.exists(.mp)) {
+  stop("matched_paths.R not found (set CCMMF_CODE / PHENOLOGY_ROOT).")
+}
+source(.mp)
 out_dir           <- matched_landiq_dir(path_inventory)
 
 eps_eviamp             <- 0.01
@@ -55,13 +145,65 @@ heterogeneity_na_frac_thr <- 0.5
 assign_active_only     <- TRUE
 
 year <- if (exists("YEAR", envir = .GlobalEnv)) get("YEAR", .GlobalEnv) else NULL
+if (is.null(year) || !length(year) || is.na(suppressWarnings(as.integer(year[[1L]])))) {
+  argv <- commandArgs(trailingOnly = TRUE)
+  if (length(argv) >= 1L) year <- argv[[1L]]
+}
+year <- suppressWarnings(as.integer(year))
+if (is.na(year)) stop("Usage: Rscript match_landiq_mslsp.R YEAR")
 do_subset_test <- if (exists("DO_SUBSET_TEST", envir = .GlobalEnv)) get("DO_SUBSET_TEST", .GlobalEnv) else FALSE
 sample_per_pft <- if (exists("SAMPLE_PER_PFT", envir = .GlobalEnv)) get("SAMPLE_PER_PFT", .GlobalEnv) else 500L
-assign_parcel_ids_file <- if (exists("ASSIGN_PARCEL_IDS_FILE", envir = .GlobalEnv)) get("ASSIGN_PARCEL_IDS_FILE", .GlobalEnv) else Sys.getenv("ASSIGN_PARCEL_IDS_FILE", "")
-assign_subset_ids <- if (nzchar(trimws(assign_parcel_ids_file)) && file.exists(assign_parcel_ids_file)) {
-  ids <- unique(trimws(as.character(fread(assign_parcel_ids_file)$parcel_id)))
-  ids[nzchar(ids)]
-} else character(0)
+# DEMO_TILE: keep ag parcels that intersect that MGRS tile (training). ASSIGN_PARCEL_IDS_FILE:
+# optional extra allowlist when DEMO_TILE is unset. Unset both for statewide.
+demo_tile <- if (exists("DEMO_TILE", envir = .GlobalEnv)) get("DEMO_TILE", .GlobalEnv) else Sys.getenv("DEMO_TILE", "")
+demo_tile <- trimws(as.character(demo_tile))
+assign_parcel_ids_file <- if (exists("ASSIGN_PARCEL_IDS_FILE", envir = .GlobalEnv)) {
+  get("ASSIGN_PARCEL_IDS_FILE", .GlobalEnv)
+} else {
+  Sys.getenv("ASSIGN_PARCEL_IDS_FILE", "")
+}
+
+hls_parcel_tilemap_path <- function() {
+  lib <- trimws(Sys.getenv("HLS_SHARED_LIB", ""))
+  if (!nzchar(lib)) {
+    code <- trimws(Sys.getenv("CCMMF_CODE", ""))
+    if (nzchar(code)) lib <- file.path(code, "hls", "R")
+  }
+  file.path(lib, "parcel_tilemap.R")
+}
+
+# Returns list(ids, out_path). Empty ids means keep every field-year (statewide).
+match_subset_spec <- function(yr, out_path) {
+  if (nzchar(demo_tile)) {
+    p <- hls_parcel_tilemap_path()
+    if (!file.exists(p)) {
+      stop("DEMO_TILE is set but parcel_tilemap.R was not found. Set HLS_SHARED_LIB or CCMMF_CODE.")
+    }
+    source(p)
+    ag <- load_parcel_tiles_for_year(yr, tile = demo_tile)
+    ids <- unique(trimws(as.character(ag$parcel_id)))
+    ids <- ids[nzchar(ids)]
+    if (length(ids) == 0L) {
+      stop(
+        "No year ", yr, " ag parcels with tile_id=", demo_tile,
+        " in ", path_parcel_tiles_csv()
+      )
+    }
+    message("DEMO_TILE=", demo_tile, ": ", length(ids), " ag parcels from parcel_tiles")
+    tile_dir <- paste0("tile=", demo_tile)
+    out_sub <- if (identical(basename(out_path), tile_dir)) out_path else file.path(out_path, tile_dir)
+    return(list(ids = ids, out_path = out_sub))
+  }
+  f <- trimws(assign_parcel_ids_file)
+  if (nzchar(f) && file.exists(f)) {
+    ids <- unique(trimws(as.character(fread(f)$parcel_id)))
+    ids <- ids[nzchar(ids)]
+    message("ASSIGN_PARCEL_IDS_FILE: ", length(ids), " parcel ids")
+    out_sub <- if (identical(basename(out_path), "subsample_n400")) out_path else file.path(out_path, "subsample_n400")
+    return(list(ids = ids, out_path = out_sub))
+  }
+  list(ids = character(0), out_path = out_path)
+}
 
 # --- Helpers ---
 # Normalize DOY for same-year wrap (e.g. OGI=350, OGMn=50). Do NOT use for cross-year DOY.
@@ -218,7 +360,19 @@ is_valid_landiq_class <- function(x) {
   !is.na(x) & nzchar(x) & x != "**"
 }
 
-season_component_priority <- function(season, class_code, multiuse = NA_character_) {
+is_woody_pft <- function(pft) {
+  tolower(trimws(as.character(pft))) == "woody"
+}
+
+is_young_woody <- function(pft, class_code, specond = NA_character_) {
+  is_woody_pft(pft) & (
+    toupper(trimws(as.character(class_code))) == "YP" |
+      toupper(trimws(as.character(specond))) == "Y"
+  )
+}
+
+season_component_priority <- function(season, class_code, multiuse = NA_character_,
+                                      pft = NA_character_, specond = NA_character_) {
   s <- suppressWarnings(as.integer(season))
   class_ok <- is_valid_landiq_class(class_code)
   mu <- trimws(as.character(multiuse))
@@ -231,6 +385,9 @@ season_component_priority <- function(season, class_code, multiuse = NA_characte
   out[class_ok & s == 3L] <- 4L
   out[class_ok & s == 4L] <- 5L
   out[!class_ok] <- 20L + fifelse(is.na(s), 9L, s)
+  young <- is_young_woody(pft, class_code, specond)
+  young[is.na(young)] <- FALSE
+  out[young] <- out[young] + 10L
   out
 }
 
@@ -244,16 +401,31 @@ assignment_class_rollup <- function(DT) {
   if (any(DT$qc_cycle_season_counts == "mslsp_cycles_filtered_out", na.rm = TRUE)) return("mslsp_cycles_filtered_out")
   if (any(DT$qc_cycle_season_counts == "no_landiq_active", na.rm = TRUE)) return("no_landiq_active")
   if (any(DT$qc_cycle_season_counts == "no_mslsp_cycle_for_season", na.rm = TRUE)) return("no_mslsp_cycle_assigned")
-  if (any(DT$qc_adoy_vs_cycle == "adoy_outside_cycle", na.rm = TRUE)) return("adoy_outside_cycle_review")
-  if (any(DT$qc_n_adoy_in_cycle == "multiple_adoy_in_cycle", na.rm = TRUE)) return("multiple_adoy_in_cycle_review")
-  cc <- first_nonempty(DT$qc_cycle_season_counts)
+
+  matched <- DT[assigned_by == "matched"]
+  if (nrow(matched) == 0L) return("no_mslsp_cycle_assigned")
+
+  if (any(is_woody_pft(matched$landiq_PFT) & matched$assigned_woody_tiebreak %in% TRUE, na.rm = TRUE)) {
+    return("matched_woody_strongest_cycle")
+  }
+  if (any(matched$qc_n_adoy_in_cycle == "multiple_adoy_in_cycle", na.rm = TRUE)) {
+    return("multiple_adoy_in_cycle_review")
+  }
+  # In-window assigned season is validated even if MSLSP kept an unused extra cycle.
+  if (any(matched$qc_adoy_vs_cycle == "adoy_inside_cycle", na.rm = TRUE)) {
+    return("adoy_inside_and_single")
+  }
+  if (any(matched$qc_adoy_vs_cycle == "adoy_outside_cycle", na.rm = TRUE)) {
+    return("adoy_outside_cycle_review")
+  }
+
+  cc <- first_nonempty(matched$qc_cycle_season_counts)
   if (!is.na(cc) && !(cc %in% c("1cycle_1season", "2cycles_2seasons"))) {
     if (cc == "2cycles_1season") return("mismatch_2cycles_1season")
     if (cc == "1cycle_2seasons") return("mismatch_1cycle_2seasons")
     return(paste0("mismatch_", cc))
   }
   if (is.na(cc)) return("mismatch_unclassified")
-  if (any(DT$qc_adoy_vs_cycle == "adoy_inside_cycle", na.rm = TRUE)) return("adoy_inside_and_single")
   return("matched_no_adoy")
 }
 
@@ -265,6 +437,7 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
     landiq_PCNT = NA_real_, landiq_ADOY = NA_real_, landiq_PFT = NA_character_,
     landiq_CLASS = NA_character_, landiq_SUBCLASS = NA_character_, landiq_SPECOND = NA_character_,
     landiq_MULTIUSE = NA_character_, landiq_COVER = FALSE,
+    landiq_adoy_source = NA_character_,
     mslsp_Peak = as.Date(NA), mslsp_OGI = as.Date(NA), mslsp_OGMn = as.Date(NA),
     mslsp_50PCGI = as.Date(NA), mslsp_OGMx = as.Date(NA), mslsp_OGD = as.Date(NA), mslsp_50PCGD = as.Date(NA),
     mslsp_EVImax = NA_real_, mslsp_EVIamp = NA_real_, mslsp_EVIarea = NA_real_,
@@ -289,6 +462,11 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
         landiq_SUBCLASS = if ("SUBCLASS" %in% names(r)) r$SUBCLASS[1] else NA_character_,
         landiq_SPECOND = if ("SPECOND" %in% names(r)) trimws(as.character(r$SPECOND[1])) else NA_character_,
         landiq_MULTIUSE = if ("MULTIUSE" %in% names(r)) r$MULTIUSE[1] else NA_character_,
+        landiq_adoy_source = if ("adoy_source" %in% names(r)) {
+          trimws(as.character(r$adoy_source[1]))
+        } else {
+          NA_character_
+        },
         landiq_COVER = if ("COVER" %in% names(r)) {
           isTRUE(as.logical(r$COVER[1]))
         } else {
@@ -342,10 +520,18 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
     landiq_PFT = if ("PFT" %in% names(active)) PFT else NA_character_,
     landiq_CLASS = if ("CLASS" %in% names(active)) CLASS else NA_character_,
     landiq_SUBCLASS = if ("SUBCLASS" %in% names(active)) SUBCLASS else NA_character_,
-    landiq_MULTIUSE = if ("MULTIUSE" %in% names(active)) MULTIUSE else NA_character_
+    landiq_MULTIUSE = if ("MULTIUSE" %in% names(active)) MULTIUSE else NA_character_,
+    landiq_SPECOND = if ("SPECOND" %in% names(active)) {
+      trimws(as.character(SPECOND))
+    } else {
+      NA_character_
+    }
   )]
   landiq_active[, landiq_PCNT := active$PCNT]
-  landiq_active[, component_priority := season_component_priority(landiq_season, landiq_CLASS, landiq_MULTIUSE)]
+  landiq_active[, component_priority := season_component_priority(
+    landiq_season, landiq_CLASS, landiq_MULTIUSE, landiq_PFT, landiq_SPECOND
+  )]
+  landiq_active[, pcnt_ord := fifelse(is.na(landiq_PCNT), 0, as.numeric(landiq_PCNT))]
 
   mslsp_cycles[, keytmp := 1L]
   landiq_active[, keytmp := 1L]
@@ -355,9 +541,9 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
   combos[, adoy_in_window := fifelse(has_adoy, adoy_in_window(landiq_ADOY, mslsp_OGI, mslsp_OGMn, yr), NA)]
   combos[, peak_dist_abs := fifelse(has_adoy, abs(as.numeric(date_dist_days(yr, mslsp_Peak, landiq_ADOY))), Inf)]
   combos[is.na(peak_dist_abs), peak_dist_abs := Inf]
-  combos[, is_woody := identical(trimws(as.character(landiq_PFT)), "woody")]
+  combos[, is_woody := is_woody_pft(landiq_PFT)]
 
-  season_order <- landiq_active[order(component_priority, landiq_season), unique(landiq_season)]
+  season_order <- landiq_active[order(component_priority, -pcnt_ord, landiq_season), unique(landiq_season)]
   used_cycles <- integer()
   chosen_rows <- vector("list", length(season_order))
   n_chosen <- 0L
@@ -365,18 +551,22 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
     cand <- combos[landiq_season == sea & !(mslsp_cycle %in% used_cycles)]
     if (nrow(cand) == 0) next
 
-    in_window <- cand[adoy_in_window == TRUE]
-    if (nrow(in_window) > 0) {
-      # Nearest Peak to ADOY, then prefer cycle 1 (MSLSP strongest cycle)
-      setorder(in_window, peak_dist_abs, mslsp_cycle)
-      pick <- in_window[1]
-      pick[, assigned_woody_tiebreak := FALSE]
-    } else {
-      # No ADOY: tie-break by season priority and mslsp_cycle (woody and non-woody)
-      woody <- cand$is_woody[1L]
-      setorder(cand, peak_dist_abs, mslsp_cycle)
+    woody <- any(cand$is_woody, na.rm = TRUE)
+    if (isTRUE(woody)) {
+      setorder(cand, mslsp_cycle)
       pick <- cand[1]
-      pick[, assigned_woody_tiebreak := woody]
+      pick[, assigned_woody_tiebreak := TRUE]
+    } else {
+      in_window <- cand[adoy_in_window == TRUE]
+      if (nrow(in_window) > 0) {
+        setorder(in_window, peak_dist_abs, mslsp_cycle)
+        pick <- in_window[1]
+        pick[, assigned_woody_tiebreak := FALSE]
+      } else {
+        setorder(cand, peak_dist_abs, mslsp_cycle)
+        pick <- cand[1]
+        pick[, assigned_woody_tiebreak := FALSE]
+      }
     }
 
     n_chosen <- n_chosen + 1L
@@ -397,9 +587,9 @@ assign_one_4rows <- function(pid, yr, combined_row, landiq_rows) {
       fifelse(n_adoy_in_cycle == 1L, "one_adoy_in_cycle", "multiple_adoy_in_cycle")))]
   chosen[, assigned_woody_tiebreak := if ("assigned_woody_tiebreak" %in% names(chosen)) assigned_woody_tiebreak else FALSE]
   chosen[, qc_adoy_vs_cycle := fcase(
+    assigned_woody_tiebreak == TRUE, "woody_strongest_cycle",
     has_adoy & adoy_in_window == TRUE, "adoy_inside_cycle",
     has_adoy & (is.na(adoy_in_window) | !adoy_in_window), "adoy_outside_cycle",
-    !has_adoy & assigned_woody_tiebreak == TRUE, "no_adoy_woody_tiebreak",
     default = "no_adoy_recorded"
   )]
   chosen[, qc_mslsp_pixel_availability := qc_mslsp_pixel_availability_flag(mslsp_w_valid, mslsp_n_valid)]
@@ -552,7 +742,7 @@ extract_qc_summary <- function(assigned_path_or_dt, out_dir = NULL) {
       dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
       out_file <- file.path(out_dir, paste0("qc_summary_year=", yr, ".csv"))
       fwrite(out, out_file)
-      message("[QC] Summary: ", out_file)
+      message("QC summary: ", out_file)
     }
   }
   invisible(out)
@@ -570,10 +760,17 @@ run_assignment <- function(year, cr = combined_root,
                            out_path = out_dir) {
   yr <- as.integer(year)
   stopifnot("year must be a valid integer" = !is.na(yr))
-  message("[1/9] Loading combined MSLSP year=", yr)
+  spec <- match_subset_spec(yr, out_path)
+  out_path <- spec$out_path
+  ids <- spec$ids
+
+  message("Loading combined MSLSP year=", yr)
   pheno <- load_combined_mslsp(yr, cr)
   if (!"MULTIUSE" %in% names(pheno)) pheno[, MULTIUSE := NA_character_]
-  message("[2/9] Loading LandIQ year=", yr)
+  if (length(ids) > 0L) pheno <- pheno[parcel_id %in% ids]
+
+  message("Loading LandIQ year=", yr,
+          if (length(ids) > 0L) paste0(" (DEMO_TILE parcels only)") else "")
   lookup   <- fread(cropcode_csv)
   ag_pairs <- unique(lookup[is_agricultural == TRUE, .(CLASS = trimws(CLASS), SUBCLASS = as.character(SUBCLASS), PFT)])
   ag_classes <- unique(ag_pairs$CLASS)
@@ -582,11 +779,14 @@ run_assignment <- function(year, cr = combined_root,
       dplyr::filter(year == !!yr, CLASS %in% !!ag_classes) |>
       dplyr::collect()
   )
+  landiq[, parcel_id := trimws(as.character(parcel_id))]
+  if (length(ids) > 0L) {
+    landiq <- landiq[parcel_id %in% ids]
+  }
   landiq[, CLASS := trimws(as.character(CLASS))]
   landiq[, SUBCLASS := as.character(SUBCLASS)]
   # Normalize "no subclass" so CLASS X (fallow) and other ** in lookup match: NA, "", "**" -> "**"
   landiq[is.na(SUBCLASS) | trimws(SUBCLASS) == "" | trimws(SUBCLASS) == "**", SUBCLASS := "**"]
-  landiq[, parcel_id := trimws(as.character(parcel_id))]
   if ("MULTIUSE" %in% names(landiq)) landiq[, MULTIUSE := trimws(as.character(MULTIUSE))]
   landiq[, PCNT := suppressWarnings(as.numeric(PCNT))]
   landiq[, ADOY := suppressWarnings(as.numeric(ADOY))]
@@ -600,35 +800,30 @@ run_assignment <- function(year, cr = combined_root,
   } else {
     unique(landiq[, .(parcel_id, year)])
   }
-  if (nrow(fys) == 0) stop("No LandIQ field-years for year ", yr)
-  n_with_mslsp <- nrow(unique(fys[pheno, on = c("parcel_id", "year"), nomatch = 0]))
-  message("[3/9] LandIQ field-years: ", nrow(fys),
-          "; with combined MSLSP: ", n_with_mslsp,
-          "; LandIQ-only (no MSLSP): ", nrow(fys) - n_with_mslsp)
-  if (n_with_mslsp == 0) {
-    warning("No overlap with combined MSLSP for year ", yr, "; all rows will be assigned_by=no_mslsp")
-  }
-  if (length(assign_subset_ids) > 0) {
-    fys[, parcel_id := as.character(parcel_id)]
-    fys <- fys[parcel_id %in% assign_subset_ids]
-    if (nrow(fys) == 0) {
-      message("[3/9] No subset parcel_ids in overlap for year ", yr, "; skipping this year.")
+  if (nrow(fys) == 0) {
+    if (length(ids) > 0L) {
+      message("No LandIQ field-years in this subset for year ", yr, "; skipping.")
       return(invisible(list(assigned = data.table())))
     }
-    out_path <- file.path(out_path, "subsample_n400")
-  } else if (subset_test) {
+    stop("No LandIQ field-years for year ", yr)
+  }
+  if (isTRUE(subset_test) && length(ids) == 0L) {
     n_take <- min(samp_per_pft, nrow(fys))
     fys <- fys[sample(.N, n_take)]
   }
   setorder(fys, parcel_id, year)
-  message("[4/9] Assigning ", nrow(fys), " field-years")
+  n_with_mslsp <- uniqueN(fys[pheno, on = c("parcel_id", "year"), nomatch = 0, parcel_id])
+  message(
+    "LandIQ field-years: ", nrow(fys),
+    "; with MSLSP: ", n_with_mslsp,
+    "; without MSLSP: ", nrow(fys) - n_with_mslsp
+  )
+  if (n_with_mslsp == 0) {
+    warning("No overlap with combined MSLSP for year ", yr, "; all rows will be assigned_by=no_mslsp")
+  }
   pheno_split  <- split(pheno, pheno$parcel_id)
   landiq_split <- split(landiq, landiq$parcel_id)
-  results <- lapply(fys$parcel_id, function(pid) {
-    cr <- pheno_split[[pid]]; if (is.null(cr)) cr <- pheno[0L]
-    lr <- landiq_split[[pid]]; if (is.null(lr)) lr <- landiq[0L]
-    assign_one_4rows(pid, yr, cr, lr)
-  })
+  results <- assign_field_years(fys$parcel_id, yr, pheno, landiq, pheno_split, landiq_split)
   assigned <- rbindlist(lapply(results, `[[`, "assigned"), fill = TRUE)
   assigned[, match_outcome := {
     ac <- assignment_class_rollup(.SD)
@@ -638,6 +833,7 @@ run_assignment <- function(year, cr = combined_root,
   dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
   out_assigned <- file.path(out_path, paste0("assigned_year=", yr, ".parquet"))
   arrow::write_parquet(assigned, out_assigned)
+  message("Wrote ", out_assigned, " rows=", nrow(assigned))
   extract_qc_summary(assigned, out_path)
   invisible(list(assigned = assigned))
 }
@@ -645,6 +841,4 @@ run_assignment <- function(year, cr = combined_root,
 if (!is.null(year)) {
   run_assignment(year, subset_test = do_subset_test, samp_per_pft = sample_per_pft)
 }
-
-message("Loaded standalone matching script (rule-based + CLASS-aware).")
 

@@ -11,7 +11,7 @@
 metric_Coverage <- function(dat, ...) {
   q_low <- NULL
   q_high <- NULL
-  
+
   if (all(c("model_q05", "model_q95") %in% names(dat))) {
     q_low <- dat$model_q05
     q_high <- dat$model_q95
@@ -21,14 +21,15 @@ metric_Coverage <- function(dat, ...) {
   } else {
     PEcAn.logger::logger.severe("Metric Coverage requires quantile columns ('model_q05'/'model_q95' or 'model_q025'/'model_q975') in the dataset.")
   }
-  
+
   PEcAn.logger::logger.info("Metric: Prediction Interval Coverage")
-  
+
   valid <- !is.na(dat$obvs) & !is.na(q_low) & !is.na(q_high)
   if (!any(valid)) {
     return(NA_real_)
   }
 
   covered <- dat$obvs[valid] >= q_low[valid] & dat$obvs[valid] <= q_high[valid]
+
   return(mean(covered))
 }
