@@ -5,49 +5,39 @@
 pacman::p_load(data.table, arrow, bit64, dplyr)
 
 # ---- setup ----
-work_root = Sys.getenv("PROJECTION_WORK_ROOT")
-crops_path = Sys.getenv("PROJ_CROPS_PATH")
-lookup_path = Sys.getenv("PROJ_CROP_LOOKUP")
+config = config::get(config = "scc", file = "config.yml")
 
-if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
-}
+#Files produced by earlier workflow steps
+config$year_states_path = file.path(config$work_root, config$crop_data_file)
 
-if (!nzchar(crops_path)) {stop("PROJ_CROPS_PATH is not set. Source setup_projection_env.sh first.")
-}
+config$crop_history_path = file.path(config$work_root, config$crop_history_file)
 
-if (!nzchar(lookup_path)) {stop("PROJ_CROP_LOOKUP is not set. Source setup_projection_env.sh first.")
-}
+#Shared LandIQ inputs
+config$landiq_identity_path = config$crops_path
+config$lookup_path = config$crop_lookup_path
 
-if (!file.exists(crops_path)) {stop("Projection crops file not found: ", crops_path)
-}
+#Optimized matrices produced by the previous script
+config$crop_matrix_dir = file.path(config$work_root, config$matrix_out_dir)
 
-if (!file.exists(lookup_path)) {stop("Crop lookup not found: ", lookup_path)
-}
+#Scenario target files
+config$scenario_dir = file.path(config$work_root, config$scenario_dir)
 
-config = list(seed = 42L, start_year = 2023L, end_year = 2045L,
-  #Outputs from earlier projection steps
-  year_states_path = file.path(work_root, "crop_year_states_cleaned.csv"),
-  crop_history_path = file.path(work_root, "crops_full_counties.csv"),
-  
-  #Shared projection inputs
-  landiq_identity_path = crops_path,
-  lookup_path = lookup_path,
-  
-  #Outputs/intermediate products
-  crop_matrix_dir = file.path(work_root, "county_optimized_matrices"),
-  scenario_dir = file.path(work_root, "MAGiC_scenarios_FINAL"),
-  prediction_dir = file.path(work_root, "crop_predictions"))
+#Prediction outputs
+config$prediction_dir = file.path(config$work_root, config$prediction_dir)
 
 cover_scenario_files = c(BAU_Targets = file.path(config$scenario_dir, "BAU_Targets.csv"),
   NBS_Targets = file.path(config$scenario_dir, "NBS_Targets.csv"))
 
 set.seed(config$seed)
+
 start_year = config$start_year
 end_year = config$end_year
 crop_matrix_dir = config$crop_matrix_dir
 prediction_dir = config$prediction_dir
 
 dir.create(prediction_dir, recursive = TRUE, showWarnings = FALSE)
+
+message('Set up complete. Now loading required data')
 
 # ---- helpers ----
 safe_county_name = function(x) gsub("[^A-Za-z0-9_]+", "_", x)
@@ -287,8 +277,8 @@ predict_cover_scenario = function(future_landiq, cover_info, targets, scenario_n
         g[, rank_key := -log(pmax(rand, 1e-12)) / pmax(p_cover, 1e-6)]
         setorder(g, rank_key)
         
-        g[, acres_before := shift(cumsum(ACRES), fill = 0)]
-        g[, next_cover := as.integer(acres_before < target_acres)]
+        g[, acres_mid := cumsum(ACRES) - ACRES / 2]
+        g[, next_cover := as.integer(acres_mid < target_acres)]
       }
       
       county_output[[cty]] = g[, .(
@@ -701,8 +691,7 @@ predict_grouped_markov = function(year_states, transition_mats, group_col, start
 }
 
 # ---- load crop-year states ----
-if (!file.exists(config$year_states_path)) {
-  stop("crop_year_states_cleaned.csv not found: ", config$year_states_path)
+if (!file.exists(config$year_states_path)) {stop("crop_year_states_cleaned.csv not found: ", config$year_states_path)
 }
 
 crop_data = fread(config$year_states_path)
@@ -711,8 +700,7 @@ if ("V1" %in% names(crop_data)) crop_data[, V1 := NULL]
 required_crop_cols = c("parcel_id", "year", "county", "county_geoid", "state", "ACRES")
 missing_crop_cols = setdiff(required_crop_cols, names(crop_data))
 
-if (length(missing_crop_cols)) {
-  stop("crop_year_states_cleaned.csv is missing: ", paste(missing_crop_cols, collapse = ", "))
+if (length(missing_crop_cols)) {stop("crop_year_states_cleaned.csv is missing: ", paste(missing_crop_cols, collapse = ", "))
 }
 
 crop_data[, `:=`(
@@ -720,9 +708,9 @@ crop_data[, `:=`(
   crop_class = trimws(as.character(state)), ACRES = as.numeric(ACRES),  county_safe = safe_county_name(county)
 )]
 
-# ---- crop lookup / historical subclass ----
-if (!file.exists(config$lookup_path)) stop("LandIQ crop lookup not found: ", config$lookup_path)
+message("Crop data loaded, moving on to crop and subclass lookups")
 
+# ---- crop lookup / historical subclass ----
 lookup = fread(config$lookup_path)
 lookup[, `:=`(
   CLASS = as.character(CLASS), SUBCLASS = normalize_subclass(SUBCLASS)
@@ -765,6 +753,8 @@ with_subclass[, `:=`(
 )]
 
 with_subclass[is.na(season), season := 0L]
+
+message('Subclasses loaded, now loading LandIQ crop history')
 
 # ---- LandIQ crop identity history ----
 if (!file.exists(config$landiq_identity_path)) {
@@ -819,6 +809,8 @@ parcel_county_fixed = landiq_identity_hist[
   by = parcel_id
 ][, .(parcel_id, COUNTY)]
 
+message('LandIQ loaded and cleaned. Now building cover crop matrices')
+
 # ---- cover history / matrices / scenario targets ----
 cover_info = build_cover_history(landiq_identity_hist)
 
@@ -831,6 +823,12 @@ cover_cycle_lookups = build_cover_cycle_lookups(landiq_identity_hist)
 
 # ---- historical dominant-season identity lookups ----
 identity_hist_dominant = landiq_identity_hist[season == 2L]
+
+identity_hist_dominant = merge(identity_hist_dominant,
+  unique(lookup_subclass[, .(CLASS, SUBCLASS, PFT)], by = c("CLASS", "SUBCLASS")), by = c("CLASS", "SUBCLASS"),
+  all.x = TRUE)
+
+identity_hist_dominant[, global_key := 1L]
 
 make_identity_lookup = function(dt, keys, prefix) {
   keep = complete.cases(dt[, ..keys])
@@ -845,12 +843,11 @@ make_identity_lookup = function(dt, keys, prefix) {
 }
 
 identity_lookup_county_code = make_identity_lookup(identity_hist_dominant, c("COUNTY", "CLASS", "SUBCLASS"), "county_code_")
-
 identity_lookup_code = make_identity_lookup(identity_hist_dominant, c("CLASS", "SUBCLASS"), "code_")
-
 identity_lookup_county_class = make_identity_lookup(identity_hist_dominant, c("COUNTY", "CLASS"),"county_class_")
-
 identity_lookup_class = make_identity_lookup(identity_hist_dominant, "CLASS", "class_")
+identity_lookup_pft    = make_identity_lookup(identity_hist_dominant, "PFT", "pft_")
+identity_lookup_global = make_identity_lookup(identity_hist_dominant, "global_key", "global_")
 
 attach_identity_attributes = function(future_landiq) {
   dt = copy(future_landiq)
@@ -858,20 +855,23 @@ attach_identity_attributes = function(future_landiq) {
   dt[, parcel_id := bit64::as.integer64(as.character(parcel_id))]
   dt[, SUBCLASS := normalize_subclass(SUBCLASS)]
   
+  if (!"PFT" %in% names(dt)) stop("PFT column missing before attribute cascade.")
+  dt[, global_key := 1L]
+  
   dt = merge(dt, parcel_county_fixed, by = "parcel_id", all.x = TRUE)
-  dt = merge(dt, identity_lookup_county_code, by = c("COUNTY", "CLASS", "SUBCLASS"), all.x = TRUE)
-  dt = merge(dt, identity_lookup_code, by = c("CLASS", "SUBCLASS"), all.x = TRUE)
-  dt = merge(dt, identity_lookup_county_class, by = c("COUNTY", "CLASS"), all.x = TRUE)
-  dt = merge(dt, identity_lookup_class, by = "CLASS", all.x = TRUE)
+  dt = merge(dt, identity_lookup_county_code,  by = c("COUNTY", "CLASS", "SUBCLASS"), all.x = TRUE)
+  dt = merge(dt, identity_lookup_county_class, by = c("COUNTY", "CLASS"),             all.x = TRUE)
+  dt = merge(dt, identity_lookup_code,         by = c("CLASS", "SUBCLASS"),           all.x = TRUE)
+  dt = merge(dt, identity_lookup_class,        by = "CLASS",                          all.x = TRUE)
+  dt = merge(dt, identity_lookup_pft,          by = "PFT",                            all.x = TRUE)
+  dt = merge(dt, identity_lookup_global,       by = "global_key",                     all.x = TRUE)
   
-  dt[, SPECOND := fcoalesce(county_code_SPECOND, code_SPECOND, county_class_SPECOND, class_SPECOND
-  )]
-  
-  dt[, MULTIUSE := fcoalesce(county_code_MULTIUSE, code_MULTIUSE, county_class_MULTIUSE, class_MULTIUSE
-  )]
-  
-  dt[, ADOY := fcoalesce(county_code_ADOY, code_ADOY, county_class_ADOY, class_ADOY
-  )]
+  dt[, SPECOND := fcoalesce(county_code_SPECOND, county_class_SPECOND, code_SPECOND,
+                            class_SPECOND, pft_SPECOND, global_SPECOND)]
+  dt[, MULTIUSE := fcoalesce(county_code_MULTIUSE, county_class_MULTIUSE, code_MULTIUSE,
+                             class_MULTIUSE, pft_MULTIUSE, global_MULTIUSE)]
+  dt[, ADOY := fcoalesce(county_code_ADOY, county_class_ADOY, code_ADOY,
+                         class_ADOY, pft_ADOY, global_ADOY)]
   
   # Filled later by scenario-specific cover projection.
   dt[, COVER := NA_real_]
@@ -880,8 +880,7 @@ attach_identity_attributes = function(future_landiq) {
     year = as.integer(year), season = 2L, MULTIUSE = as.numeric(round(MULTIUSE)), ADOY = as.numeric(round(ADOY)), COVER = as.numeric(COVER)
   )]
   
-  if (anyNA(dt$COUNTY)) {
-    stop("Projected crop identity contains parcels without fixed COUNTY values.")
+  if (anyNA(dt$COUNTY)) {stop("Projected crop identity contains parcels without fixed COUNTY values.")
   }
   
   setorder(dt, row_id_identity)
