@@ -94,6 +94,46 @@ test_that("update_flag_lines", {
   )
 })
 
+test_that("leafNResorptionFrac trait reaches the v2 param file", {
+  pth <- withr::local_tempdir()
+  event_src_path <- file.path(pth, "events-a.in")
+  dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
+  writeLines("2025 1 irrig 0 1", con = event_src_path)
+
+  s <- PEcAn.settings::as.Settings(
+    list(
+      outdir = file.path(pth, "out"),
+      rundir = file.path(pth, "run"),
+      pfts = list(pft1 = list()),
+      model = list(binary = "", revision = "v2.2.0"),
+      run = list(
+        site = list(name = "site1", lat = 40, lon = -88),
+        inputs = list(
+          met = list(path = ""),
+          events = list(path = event_src_path)
+        ),
+        start.date = "2025-01-01",
+        end.date = "2025-01-02"
+      ),
+      host = list(
+        name = "",
+        outdir = file.path(pth, "out"),
+        rundir = file.path(pth, "run")
+      )
+    )
+  )
+
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list(SLA = 2.0))),
+    trait.values = list(pft1 = list(leafNResorptionFrac = 0.6)),
+    settings = s,
+    run.id = "run1"
+  )
+
+  param_result <- readLines(file.path(pth, "run", "run1", "sipnet.param"))
+  expect_match(param_result, "leafNResorptionFrac 0.6", fixed = TRUE, all = FALSE)
+})
+
 test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
   # scaffold for a v2 run; the irrig-only event file keeps internal phenology
   make_settings <- function(pth) {

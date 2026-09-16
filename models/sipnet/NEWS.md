@@ -1,5 +1,11 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
+    parameter, so PFT supplied values reach the param file instead of
+    silently keeping the template default. Completes the nitrogen cycle
+    trait mappings alongside the existing `leafOnReallocFrac`.
+    `plantStorageNInit` is deliberately not trait mapped; it is an initial
+    condition, set from the IC layer like the other Init parameters.
 * For SIPNET v2, `write.config.SIPNET` now sets `plantStorageNInit` to the N
     needed for one carbon-limited leaf flush, computed from the initialized
     wood pool, instead of leaving the template value. With the nitrogen cycle
