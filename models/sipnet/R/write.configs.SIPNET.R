@@ -62,6 +62,11 @@
 #' defines an option specified in settings$model$options, its value will be
 #' updated in place; options not already in the file will be added to the bottom.
 #'
+#' For SIPNET v2, plantStorageNInit is set to the additional N needed for one
+#' carbon-limited leaf flush, computed from the initialized wood pool, so the
+#' first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
+#' through the IC argument takes precedence over the computed value.
+#'
 #' @param defaults nested list of named constant parameter values. The
 #' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
 #' Only `defaults[[1]]$constants` is used; all other elements are silently ignored.
@@ -1015,7 +1020,32 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   } else {
     #some stuff about IC file that we can give in lieu of actual ICs
   }
+  
+  if ("plantStorageNInit" %in% param[, 1]) {
+    # If not supplied, set initial storage N to support leaf flush (g N/m2).
+    # Sipnet takes the smaller of its C and N limiters, so N sized to the
+    # carbon-limited flush removes N suppression without adding surplus N.
+    # check carbon available for initial leaf on
+    available_carbon <- param[param[, 1] == "plantWoodInit", 2] *
+      (1 - param[param[, 1] == "fineRootFrac", 2]) *
+      param[param[, 1] == "leafOnReallocFrac", 2]
 
+    # actual amount of carbon used for leaf on
+    leaf_carbon <- min(
+      param[param[, 1] == "leafGrowth", 2],
+      available_carbon
+    )
+
+    # N required to support leaf growth
+    storage_n <- leaf_carbon * max(
+      0,
+      1 / param[param[, 1] == "leafCN", 2] -
+        1 / param[param[, 1] == "woodCN", 2]
+    )
+
+    param[param[, 1] == "plantStorageNInit", 2] <-
+      IC[["plantStorageNInit"]] %||% storage_n
+  }
 
   if (!is.null(settings$run$inputs$soilmoisture)) {
     #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
