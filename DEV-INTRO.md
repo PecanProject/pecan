@@ -33,6 +33,14 @@ cd pecan
 # git clone https://github.com/PecanProject/pecan
 ```
 
+### GitHub Actions on Forks
+
+Scheduled workflows (such as weekly checks and nightly Docker builds) are configured to skip scheduled runs on forks by default (`if: github.repository == 'PecanProject/pecan' || github.event_name != 'schedule'`). This avoids consuming GitHub Actions runner minutes on personal accounts and prevents alerts from failed container push steps.
+
+If you want these scheduled workflows to run automatically on your personal fork:
+1. Update the repository check in the workflow files (`.github/workflows/*.yml`) to match your fork (for example, change `'PecanProject/pecan'` to `'<your-username>/pecan'`), or remove the repository condition on your working branch.
+2. Alternatively, you can trigger any workflow manually from your fork at any time via the GitHub Actions UI (**Actions** tab > select workflow > **Run workflow**).
+
 ## Developing in Docker
 
 The use of Docker in PEcAn is described in detail in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/latest/docker-index.html). This is intended as a quick start.
