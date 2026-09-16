@@ -1,26 +1,44 @@
-## Projects shared future leaf-on / leaf-off events using historical
-## county-by-crop-class means from the derived phenology product.
-## Crop projections are shared across BAU/NBS, so phenology is projected once.
+## Projects future leaf-on / leaf-off dates using historical phenology.
+## Phenology is conditional on county, crop class, and cover-crop status.
+## BAU and NBS are projected separately because cover-crop assignments differ.
 
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
-#REQUIRED: Choose a folder to define work_root, where you want this framework to save intermediate and output files
-#Uncomment the line below and replace the example path.
-#work_root = "/path/to/your/folder"
+work_root = Sys.getenv("PROJECTION_WORK_ROOT")
+phenology_dir = Sys.getenv("PROJ_PHENOLOGY_DIR")
+matched_dir = Sys.getenv("PROJ_MATCHED_PHENO_DIR")
+crops_path = Sys.getenv("PROJ_CROPS_PATH")
 
-#Shared Data: Shared project data, most users should not need to change this. 
-ccmmf_root = "/projectnb/dietzelab/ccmmf"
+if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
+}
 
-config = list(historical_years = 2018:2023, prediction_years = 2024:2045,
-  event_dir = file.path(ccmmf_root, "management", "event_files_v4.1.2"),
-  matched_dir = file.path(ccmmf_root, "management", "phenology", "matched_landiq_mslsp_v4.1.2", "gapfill_dates"),
+if (!nzchar(phenology_dir)) {stop("PROJ_PHENOLOGY_DIR is not set. Source setup_projection_env.sh first.")
+}
+
+if (!nzchar(matched_dir)) {stop("PROJ_MATCHED_PHENO_DIR is not set. Source setup_projection_env.sh first.")
+}
+
+if (!nzchar(crops_path)) {stop("PROJ_CROPS_PATH is not set. Source setup_projection_env.sh first.")
+}
+
+config = list(historical_years = 2016:2023, prediction_years = 2024:2045,
+  scenario_names = c("BAU_Targets", "NBS_Targets"),
+  
+  #Shared projection inputs
+  event_dir = phenology_dir,
+  matched_dir = matched_dir,
+  landiq_identity_path = crops_path,
+  
+  #Outputs from previous projection step
   prediction_dir = file.path(work_root, "crop_predictions"),
-  output_dir = file.path(work_root, "phenology_projections"),
-  landiq_identity_path = file.path(ccmmf_root, "LandIQ-harmonized-v4.1.2", "crops_all_years.parq"))
+  
+  #Outputs from this script
+  output_dir = file.path(work_root, "phenology_projections"))
 
 dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
 
+## ---- helpers ----
 safe_mean = function(x) {
   x = as.numeric(x)
   x = x[is.finite(x)]
@@ -74,7 +92,7 @@ if (!file.exists(config$landiq_identity_path)) {
   stop("Missing LandIQ identity file: ", config$landiq_identity_path)
 }
 
-landiq_ds = arrow::open_dataset(config$landiq_identity_path, format = "parquet")
+landiq_ds = arrow::read_parquet(config$landiq_identity_path, as_data_frame = FALSE)
 
 landiq_county = data.table::as.data.table(
   landiq_ds |>
@@ -83,10 +101,39 @@ landiq_county = data.table::as.data.table(
     dplyr::collect()
 )
 
+landiq_names = names(landiq_ds)
+
+if (!"COVER" %in% landiq_names) {
+  stop("LandIQ identity file is missing required COVER flag.")
+}
+
+cover_col = "COVER"
+
+landiq_cycle = data.table::as.data.table(
+  landiq_ds |>
+    dplyr::filter(.data$year <= 2023) |>
+    dplyr::select(parcel_id, year, season, dplyr::all_of(cover_col)
+    ) |>
+    dplyr::collect()
+)
+
+if (cover_col != "COVER") {
+  setnames(landiq_cycle, cover_col, "COVER")
+}
+
+landiq_cycle[, `:=`(
+  parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(year),
+  season = as.integer(season), COVER = as.integer(as.numeric(COVER) > 0)
+)]
+
+landiq_cycle = landiq_cycle[
+  ,
+  .(COVER = as.integer(any(COVER > 0, na.rm = TRUE))),
+  by = .(parcel_id, year, season)
+]
+
 landiq_county[, `:=`(
-  parcel_id = bit64::as.integer64(as.character(parcel_id)),
-  year = as.integer(year),
-  COUNTY = as.character(COUNTY)
+  parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(year), COUNTY = as.character(COUNTY)
 )]
 
 # Match the exact fixed-county logic used by crop projection
@@ -110,90 +157,143 @@ pheno_hist = rbindlist(lapply(config$historical_years, function(yy) {
   p = read_pheno_events(pheno_file, yy)
   m = as.data.table(read_parquet(matched_file))
   
-  if ("season" %in% names(m)) {
-    m[, season := as.integer(season)]
-    m = m[season == 2L]
-  }
-  
-  required_m = c("parcel_id", "landiq_CLASS", "mslsp_50PCGI", "mslsp_50PCGD")
+  required_m = c("parcel_id", "season", "landiq_CLASS", "mslsp_50PCGI", "mslsp_50PCGD")
+
   missing_m = setdiff(required_m, names(m))
   if (length(missing_m)) stop("Matched phenology product missing: ", paste(missing_m, collapse = ", "))
   
   m = unique(m[, .(
     parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(yy),
-    CLASS = as.character(landiq_CLASS), leafonday = as.IDate(mslsp_50PCGI), leafoffday = as.IDate(mslsp_50PCGD)
+    season = as.integer(season), CLASS = as.character(landiq_CLASS), leafonday = as.IDate(mslsp_50PCGI),
+    leafoffday = as.IDate(mslsp_50PCGD)
   )])
   
-  merge(p, m, by = c("parcel_id", "year", "leafonday", "leafoffday"), all.x = TRUE)
+  x = merge(p, m, by = c("parcel_id", "year", "leafonday", "leafoffday"), all.x = TRUE)
+  
+  x
 }), fill = TRUE)
 
-message("Historical phenology rows matched to crop class: ",
-        format(pheno_hist[!is.na(CLASS), .N], big.mark = ","), " of ",
-        format(nrow(pheno_hist), big.mark = ","))
+message("Historical phenology rows matched to crop class: ", format(pheno_hist[!is.na(CLASS), .N], big.mark = ","), " of ",
+  format(nrow(pheno_hist), big.mark = ","))
+
+pheno_hist = merge(pheno_hist, landiq_cycle, by = c("parcel_id", "year", "season"), all.x = TRUE)
+
+if (pheno_hist[!is.na(CLASS) & is.na(COVER), .N]) {
+  stop("Historical phenology rows matched to crop class but missing COVER status.")
+}
 
 pheno_hist = merge(pheno_hist, parcel_county, by = "parcel_id", all.x = TRUE)
+
 pheno_hist[, `:=`(
   leafon_offset = date_offset(leafonday, year), leafoff_offset = date_offset(leafoffday, year)
 )]
 
+# ---- historical phenology lookup hierarchy ----
+
 phenology_lookup = pheno_hist[
-  !is.na(county) & !is.na(CLASS),
-  .(leafon_offset = safe_mean(leafon_offset),
-    leafoff_offset = safe_mean(leafoff_offset)),
-  by = .(county, CLASS)
-]
-
-phenology_fallback = pheno_hist[
-  !is.na(CLASS),
+  !is.na(county) & !is.na(CLASS) & !is.na(COVER),
   .(
-    fallback_leafon_offset = safe_mean(leafon_offset),
-    fallback_leafoff_offset = safe_mean(leafoff_offset)
+    leafon_offset = safe_mean(leafon_offset), leafoff_offset = safe_mean(leafoff_offset)
   ),
-  by = CLASS
+  by = .(county, CLASS, COVER)
 ]
 
-# ---- shared future projection ----
-for (yy in config$prediction_years) {
-  crop_file = file.path(config$prediction_dir, paste0("crop_identity_statewide_", yy, ".parquet"))
-  if (!file.exists(crop_file)) stop("Missing projected crop file: ", crop_file)
-  
-  future = as.data.table(read_parquet(crop_file))
-  required = c("parcel_id", "COUNTY", "year", "CLASS")
-  missing = setdiff(required, names(future))
-  if (length(missing)) stop("Projected crop identity missing: ", paste(missing, collapse = ", "))
-  
-  future = future[, .(
-    parcel_id = bit64::as.integer64(as.character(parcel_id)), county = as.character(COUNTY),
-    year = as.integer(year), CLASS = as.character(CLASS)
-  )]
-  
-  pred = merge(future, phenology_lookup, by = c("county", "CLASS"), all.x = TRUE)
-  pred = merge(pred, phenology_fallback, by = "CLASS", all.x = TRUE)
-  
-  pred[, `:=`(
-    leafon_offset = fcoalesce(leafon_offset, fallback_leafon_offset),
-    leafoff_offset = fcoalesce(leafoff_offset, fallback_leafoff_offset)
-  )]
-  
-  pred[, `:=`(
-    leafonday = offset_to_date(year, leafon_offset),
-    leafoffday = offset_to_date(year, leafoff_offset)
-  )]
-  
-  message(yy, " rows without county/class phenology mean: ",
-          format(pred[is.na(leafonday) & is.na(leafoffday), .N], big.mark = ","))
-  
-  pheno_year = rbindlist(list(
-    pred[!is.na(leafonday), .(event_type = "leafon", parcel_id, date = leafonday)],
-    pred[!is.na(leafoffday), .(event_type = "leafoff", parcel_id, date = leafoffday)]
-  ), use.names = TRUE)
-  
-  pheno_year[, parcel_id := bit64::as.integer64(parcel_id)]
-  setorder(pheno_year, parcel_id, date, event_type)
-  
-  out_path = file.path(config$output_dir, paste0("phenology_statewide_", yy, ".parquet"))
-  write_parquet(pheno_year, out_path, compression = "zstd")
-  message("Wrote: ", out_path)
-}
+phenology_class_fallback = pheno_hist[
+  !is.na(CLASS) & !is.na(COVER),
+  .(
+    class_leafon_offset = safe_mean(leafon_offset), class_leafoff_offset = safe_mean(leafoff_offset)
+  ),
+  by = .(CLASS, COVER)
+]
 
-message("Shared phenology projection complete: ", config$output_dir)
+phenology_county_fallback = pheno_hist[
+  !is.na(county) & !is.na(COVER),
+  .(
+    county_leafon_offset = safe_mean(leafon_offset), county_leafoff_offset = safe_mean(leafoff_offset)
+  ),
+  by = .(county, COVER)
+]
+
+phenology_global_fallback = pheno_hist[
+  !is.na(COVER),
+  .(
+    global_leafon_offset = safe_mean(leafon_offset), global_leafoff_offset = safe_mean(leafoff_offset)
+  ),
+  by = COVER
+]
+
+# ---- scenario-specific future projection ----
+
+for (scen in config$scenario_names) {
+  
+  crop_dir = file.path(config$prediction_dir, scen)
+  output_dir = file.path(config$output_dir, scen)
+  
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  for (yy in config$prediction_years) {
+    
+    crop_file = file.path(crop_dir, paste0("crop_identity_statewide_", yy, ".parquet"))
+    
+    if (!file.exists(crop_file)) {
+      stop("Missing projected crop file: ", crop_file)
+    }
+    
+    future = as.data.table(read_parquet(crop_file))
+    
+    required = c("parcel_id", "COUNTY", "year", "season", "CLASS", "COVER")
+    
+    missing = setdiff(required, names(future))
+    if (length(missing)) {
+      stop("Projected crop identity missing: ", paste(missing, collapse = ", "))
+    }
+    
+    future = future[, .(
+      parcel_id = bit64::as.integer64(as.character(parcel_id)), county = as.character(COUNTY), year = as.integer(year),
+      season = as.integer(season), CLASS = as.character(CLASS), COVER = as.integer(as.numeric(COVER) > 0)
+    )]
+    
+    dup = future[, .N, by = .(parcel_id, year, season)][N > 1L]
+    if (nrow(dup)) {
+      stop(scen, " ", yy, " has duplicate parcel-year-season crop rows.")
+    }
+    
+    pred = merge(future, phenology_lookup, by = c("county", "CLASS", "COVER"), all.x = TRUE)
+    
+    pred = merge(pred, phenology_class_fallback, by = c("CLASS", "COVER"), all.x = TRUE)
+    
+    pred = merge(pred, phenology_county_fallback, by = c("county", "COVER"), all.x = TRUE)
+    
+    pred = merge(pred, phenology_global_fallback, by = "COVER", all.x = TRUE)
+    
+    pred[, `:=`(
+      leafon_offset = fcoalesce(leafon_offset, class_leafon_offset, county_leafon_offset, global_leafon_offset
+      ),
+      
+      leafoff_offset = fcoalesce(leafoff_offset, class_leafoff_offset, county_leafoff_offset, global_leafoff_offset
+      )
+    )]
+    
+    pred[, `:=`(
+      leafonday = offset_to_date(year, leafon_offset), leafoffday = offset_to_date(year, leafoff_offset)
+    )]
+    
+    if (pred[is.na(leafonday) | is.na(leafoffday), .N]) {
+      stop(scen, " ", yy, " has crop cycles missing projected phenology.")
+    }
+    
+    pheno_year = pred[, .(
+      parcel_id, leafonday, leafoffday
+    )]
+    
+    pheno_year[, parcel_id := bit64::as.integer64(parcel_id)]
+    
+    setorder(pheno_year, parcel_id, leafonday)
+    
+    out_path = file.path(output_dir, paste0("phenology_statewide_", yy, ".parquet"))
+    
+    write_parquet(pheno_year, out_path, compression = "zstd")
+    
+    message("Wrote: ", out_path, " (", format(nrow(pheno_year), big.mark = ","), " crop cycles)")
+  }
+}

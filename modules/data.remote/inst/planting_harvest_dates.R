@@ -6,19 +6,33 @@
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
-#REQUIRED: Choose a folder to define work_root, where you want this framework to save intermediate and output files
-#Uncomment the line below and replace the example path.
-#work_root = "/path/to/your/folder"
+work_root = Sys.getenv("PROJECTION_WORK_ROOT")
+planting_dir = Sys.getenv("PROJ_PLANTING_DIR")
+harvest_dir = Sys.getenv("PROJ_HARVEST_DIR")
 
-#Shared Data: Shared project data, most users should not need to change this.
-ccmmf_root = "/projectnb/dietzelab/ccmmf"
+if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
+}
 
-config = list(historical_years = 2018:2023, prediction_years = 2024:2045,
-              event_dir = file.path(ccmmf_root, "management", "event_files_v4.1.2"),
-              crop_history_path = file.path(work_root, "crops_full_counties.csv"),
-              prediction_dir = file.path(work_root, "crop_predictions"),
-              planting_output_root = file.path(work_root, "planting_projections"),
-              harvest_output_root = file.path(work_root, "harvest_projections"))
+if (!nzchar(planting_dir)) {stop("PROJ_PLANTING_DIR is not set. Source setup_projection_env.sh first.")
+}
+
+if (!nzchar(harvest_dir)) {stop("PROJ_HARVEST_DIR is not set. Source setup_projection_env.sh first.")
+}
+
+config = list(historical_years = 2016:2023, prediction_years = 2024:2045,
+  scenario_names = c("BAU_Targets", "NBS_Targets"),
+  
+  #Shared projection inputs
+  planting_dir = planting_dir,
+  harvest_dir = harvest_dir,
+  
+  #Output from earlier projection step
+  crop_history_path = file.path(work_root, "crops_full_counties.csv"),
+  prediction_dir = file.path(work_root, "crop_predictions"),
+  
+  #Outputs from this script
+  planting_output_root = file.path(work_root, "planting_projections"),
+  harvest_output_root = file.path(work_root, "harvest_projections"))
 
 # ---- helpers ----
 normalize_geoid = function(x) {
@@ -274,6 +288,7 @@ for (x in harvest_fraction_cols) {
 }
 
 # ---- pair planting -> harvest timing ----
+##creating plant_pairs step takes ~30 minutes which should be the longest run time in this file 
 plant_pairs = planting_hist[
   !is.na(crop_code),
   .(
@@ -326,140 +341,205 @@ harv_global = vapply(harvest_values,
 if (anyNA(harv_global))
   stop("Harvest global fallback contains missing values.")
 
-# ---- future crop projections ----
-prediction_files = list.files(config$prediction_dir, 
-                  pattern = "^crop_identity_statewide_[0-9]{4}\\.parquet$", full.names = TRUE)
+# ---- scenario-specific future crop projections ----
 
-if (!length(prediction_files))
-  stop("No shared crop prediction files found.")
-
-future = rbindlist(lapply(prediction_files, function(f) {
-  as.data.table(read_parquet(f))
-}), fill = TRUE)
-
-assert_columns(future, c("parcel_id", "year", "CLASS"), "Future crop predictions")
-
-if (!"SUBCLASS" %in% names(future)) future[, SUBCLASS := NA_character_]
-if (!"PFT" %in% names(future)) future[, PFT := NA_character_]
-
-future[, `:=`(
-  parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(year),
-  CLASS = trimws(as.character(CLASS)), SUBCLASS = normalize_subclass(SUBCLASS), PFT = as.character(PFT))]
-
-if ("season" %in% names(future)) {
-  future[, season := as.integer(season)]
-  if (anyNA(future$season) || any(future$season != 2L))
-    stop("Future crop predictions must contain only season 2.")
+for (scen in config$scenario_names) {
+  
+  scenario_prediction_dir = file.path(config$prediction_dir, scen)
+  
+  prediction_files = list.files(scenario_prediction_dir, pattern = "^crop_identity_statewide_[0-9]{4}\\.parquet$",
+    full.names = TRUE)
+  
+  if (!length(prediction_files)) {
+    stop("No crop prediction files found for ", scen)
+  }
+  
+  future = rbindlist(lapply(prediction_files, function(f) {
+      as.data.table(read_parquet(f))
+    }), fill = TRUE)
+  
+  assert_columns(future, c("parcel_id", "year", "season", "CLASS"), paste0(scen, " future crop predictions"))
+  
+  if (!"SUBCLASS" %in% names(future)) {
+    future[, SUBCLASS := NA_character_]
+  }
+  
+  if (!"PFT" %in% names(future)) {
+    future[, PFT := NA_character_]
+  }
+  
+  future[, `:=`(
+    parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(year), season = as.integer(season),
+    CLASS = trimws(as.character(CLASS)), SUBCLASS = normalize_subclass(SUBCLASS), PFT = as.character(PFT)
+  )]
+  
+  future[, crop_code := make_crop_code(CLASS, SUBCLASS)]
+  future[, crop_class := get_crop_class(crop_code)]
+  
+  if (!"county_geoid" %in% names(future)) {
+    future = merge(future, parcel_county, by = "parcel_id", all.x = TRUE
+    )
+  } else {
+    future[, county_geoid := normalize_geoid(county_geoid)]
+  }
+  
+  future = future[
+    year %in% config$prediction_years
+  ]
+  
+  if (anyNA(future$CLASS) || any(!nzchar(future$CLASS))) {
+    stop(scen, " future crop predictions contain missing/blank CLASS values.")
+  }
+  
+  # X = unclassified fallow; I = idle
+  future = future[
+    !CLASS %chin% c("X", "I")
+  ]
+  
+  if (anyNA(future$parcel_id)) {
+    stop(scen, " future crop predictions contain missing parcel IDs.")
+  }
+  
+  if (anyNA(future$county_geoid)) {
+    stop(scen, " future crop predictions contain missing county GEOIDs.")
+  }
+  
+  #Multiple crop cycles in one parcel-year are now valid, only duplicate parcel-year-season rows are invalid.
+  dups = future[
+    ,
+    .N,
+    by = .(parcel_id, year, season)
+  ][N > 1L]
+  
+  if (nrow(dups)) {
+    stop(scen,  " crop projections contain duplicate parcel-year-season rows: ", nrow(dups))
+  }
+  
+  #fill PFT where crop product does not contain it
+  future = merge(future, pft_code, by = "crop_code", all.x = TRUE)
+  
+  future = merge(future, pft_class, by = "crop_class", all.x = TRUE)
+  
+  future[
+    is.na(PFT) | !nzchar(PFT),
+    PFT := fcoalesce(lookup_PFT_code, lookup_PFT_class)
+  ]
+  
+  future[, c("lookup_PFT_code", "lookup_PFT_class"
+  ) := NULL]
+  
+  message(scen, " active future crop-cycle rows: ",  format(nrow(future), big.mark = ","))
+  # ---- project planting ----
+  
+  events = future[, .(
+    parcel_id, county_geoid, year, season, crop_code, crop_class, PFT
+  )]
+  
+  events = merge(events, plant_county_code, by = c("county_geoid", "crop_code"), all.x = TRUE)
+  
+  events = merge(events, plant_county_class, by = c("county_geoid", "crop_class"), all.x = TRUE)
+  
+  events = merge(events, plant_code, by = "crop_code", all.x = TRUE)
+  
+  events = merge(events, plant_class, by = "crop_class", all.x = TRUE)
+  
+  events = merge(events, plant_pft, by = "PFT", all.x = TRUE)
+  
+  coalesce_values(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"), plant_global)
+  
+  events[, planting_date :=
+           relative_day_to_date(year, planting_relative_day
+           )]
+  
+  drop_lookup_cols(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"))
+  
+  # ---- project harvest using duration from planting ----
+  
+  events = merge(events, harv_county_code, by = c("county_geoid", "crop_code"), all.x = TRUE)
+  
+  events = merge(events, harv_county_class, by = c("county_geoid", "crop_class"), all.x = TRUE)
+  
+  events = merge(events, harv_code, by = "crop_code", all.x = TRUE)
+  
+  events = merge( events, harv_class, by = "crop_class", all.x = TRUE)
+  
+  events = merge( events, harv_pft, by = "PFT", all.x = TRUE)
+  
+  coalesce_values( events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"),harv_global)
+  
+  events[, harvest_date := as.IDate(
+    as.Date(planting_date) +
+      as.integer(round(harvest_lag_days))
+  )]
+  
+  drop_lookup_cols(events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"))
+  
+  # ---- QC ----
+  
+  missing_plant = events[
+    is.na(planting_date),
+    .N
+  ]
+  
+  missing_harv = events[
+    is.na(harvest_date),
+    .N
+  ]
+  
+  bad_order = events[
+    !is.na(planting_date) &
+      !is.na(harvest_date) &
+      harvest_date <= planting_date,
+    .N
+  ]
+  
+  message(scen, " active rows without planting date: ", format(missing_plant, big.mark = ","))
+  
+  message(scen, " active rows without harvest date: ", format(missing_harv, big.mark = ","))
+  
+  message( scen, " rows with harvest not after planting: ", format(bad_order, big.mark = ","))
+  
+  if (missing_plant) {
+    stop(scen, " has active crops with no projected planting date.")
+  }
+  
+  if (missing_harv) {
+    stop(scen, " has active crops with no projected harvest date.")
+  }
+  
+  if (bad_order) {
+    stop(scen, " has projected harvest dates not after planting.")
+  }
+  
+  # ---- final SIPNET event products ----
+  
+  planting = events[, c(list(projection_year = year, event_type = "planting", parcel_id = parcel_id,
+      date = planting_date, crop_code = crop_code
+    ),
+    mget(plant_pool_cols)
+  )]
+  
+  harvest = events[, c(list(projection_year = year, event_type = "harvest", parcel_id = parcel_id,
+      date = harvest_date
+    ),
+    mget(harvest_fraction_cols)
+  )]
+  
+  for (x in harvest_fraction_cols) {
+    if (harvest[get(x) < 0 | get(x) > 1, .N]) {
+      stop("Projected harvest fraction outside [0,1]: ",
+        x
+      )
+    }
+  }
+  
+  planting_cols = c("event_type", "parcel_id", "date", "crop_code", plant_pool_cols)
+  
+  harvest_cols = c("event_type", "parcel_id", "date", harvest_fraction_cols)
+  
+  write_years( planting, file.path(config$planting_output_root, scen), "planting", planting_cols)
+  
+  write_years( harvest, file.path(config$harvest_output_root, scen), "harvest", harvest_cols)
+  
+  message(scen, " planting and harvest projection complete.")
 }
-
-future[, crop_code := make_crop_code(CLASS, SUBCLASS)]
-future[, crop_class := get_crop_class(crop_code)]
-
-if (!"county_geoid" %in% names(future)) {
-  future = merge(future, parcel_county, by = "parcel_id", all.x = TRUE)
-} else {
-  future[, county_geoid := normalize_geoid(county_geoid)]
-}
-
-future = future[year %in% config$prediction_years]
-
-if (anyNA(future$CLASS) || any(!nzchar(future$CLASS)))
-  stop("Future crop predictions contain missing/blank CLASS values.")
-
-# X = unclassified fallow; I = idle
-future = future[!CLASS %chin% c("X", "I")]
-
-if (anyNA(future$parcel_id))
-  stop("Future crop predictions contain missing parcel IDs.")
-
-if (anyNA(future$county_geoid))
-  stop("Future crop predictions contain missing county GEOIDs.")
-
-dups = future[, .N, by = .(parcel_id, year)][N > 1L]
-if (nrow(dups))
-  stop("Crop projections still contain duplicate parcel-year rows: ", nrow(dups))
-
-# fill PFT where crop product does not contain it
-future = merge(future, pft_code, by = "crop_code", all.x = TRUE)
-future = merge(future, pft_class, by = "crop_class", all.x = TRUE)
-
-future[is.na(PFT) | !nzchar(PFT),
-       PFT := fcoalesce(lookup_PFT_code, lookup_PFT_class)]
-
-future[, c("lookup_PFT_code", "lookup_PFT_class") := NULL]
-
-message("Active future crop rows: ", format(nrow(future), big.mark = ","))
-
-# ---- project planting ----
-events = future[, .(
-  parcel_id, county_geoid, year, crop_code, crop_class, PFT)]
-
-events = merge(events, plant_county_code, by = c("county_geoid", "crop_code"), all.x = TRUE)
-
-events = merge(events, plant_county_class, by = c("county_geoid", "crop_class"), all.x = TRUE)
-
-events = merge(events, plant_code, by = "crop_code", all.x = TRUE)
-events = merge(events, plant_class, by = "crop_class", all.x = TRUE)
-events = merge(events, plant_pft, by = "PFT", all.x = TRUE)
-
-coalesce_values(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"), plant_global)
-
-events[, planting_date := relative_day_to_date(year, planting_relative_day)]
-
-drop_lookup_cols(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"))
-
-# ---- project harvest using duration from planting ----
-events = merge(events, harv_county_code, by = c("county_geoid", "crop_code"), all.x = TRUE)
-
-events = merge(events, harv_county_class, by = c("county_geoid", "crop_class"), all.x = TRUE)
-
-events = merge(events, harv_code, by = "crop_code", all.x = TRUE)
-events = merge(events, harv_class, by = "crop_class", all.x = TRUE)
-events = merge(events, harv_pft, by = "PFT", all.x = TRUE)
-
-coalesce_values(events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"), harv_global)
-
-events[, harvest_date := as.IDate(
-  as.Date(planting_date) + as.integer(round(harvest_lag_days)))]
-
-drop_lookup_cols(events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"))
-
-# ---- QC ----
-missing_plant = events[is.na(planting_date), .N]
-missing_harv = events[is.na(harvest_date), .N]
-
-bad_order = events[
-  !is.na(planting_date) & !is.na(harvest_date) &
-    harvest_date <= planting_date,
-  .N]
-
-message("Active rows without planting date: ", format(missing_plant, big.mark = ","))
-message("Active rows without harvest date: ", format(missing_harv, big.mark = ","))
-message("Rows with harvest not after planting: ", format(bad_order, big.mark = ","))
-
-if (missing_plant) stop("Some active crops have no projected planting date.")
-if (missing_harv) stop("Some active crops have no projected harvest date.")
-if (bad_order) stop("Some projected harvest dates are not after planting.")
-
-# ---- final event products ----
-planting = events[, c(list(projection_year = year, event_type = "planting",
-    parcel_id = parcel_id, date = planting_date, crop_code = crop_code),
-  mget(plant_pool_cols))]
-
-harvest = events[, c(list(projection_year = year, event_type = "harvest",
-    parcel_id = parcel_id, date = harvest_date),
-  mget(harvest_fraction_cols))]
-
-for (x in harvest_fraction_cols) {
-  if (harvest[get(x) < 0 | get(x) > 1, .N])
-    stop("Projected harvest fraction outside [0,1]: ", x)
-}
-
-planting_cols = c("event_type", "parcel_id", "date", "crop_code", plant_pool_cols)
-
-harvest_cols = c("event_type", "parcel_id", "date", harvest_fraction_cols)
-
-write_years(planting, config$planting_output_root, "planting", planting_cols)
-write_years(harvest, config$harvest_output_root, "harvest", harvest_cols)
-
-message("Shared planting and harvest projection complete.")
