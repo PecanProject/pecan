@@ -1,5 +1,11 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
+    parameter, so PFT supplied values reach the param file instead of
+    silently keeping the template default. Completes the nitrogen cycle
+    trait mappings alongside the existing `leafOnReallocFrac`.
+    `plantStorageNInit` is deliberately not trait mapped; it is an initial
+    condition, set from the IC layer like the other Init parameters.
 * More flexible handling of Sipnet "restart" files (checkpoints containing full
   model state at the end of the run):
     - New setting `settings$model$copy.restart` is a logical runtime flag
