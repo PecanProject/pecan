@@ -4,28 +4,34 @@
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
-# REQUIRED: replace with path where outputs should be saved
-#work_root = "/path/to/your/folder"
+work_root = Sys.getenv("PROJECTION_WORK_ROOT")
+lookup_path = Sys.getenv("PROJ_CROP_LOOKUP")
+tillage_dir = Sys.getenv("PROJ_TILLAGE_DIR")
 
-# Shared project data; most users should not change this.
-ccmmf_root = "/projectnb/dietzelab/ccmmf"
+if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
+}
 
-#/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2/assigned_year={2016-2023}_tillage.parquet
+if (!nzchar(lookup_path)) {stop("PROJ_CROP_LOOKUP is not set. Source setup_projection_env.sh first.")
+}
+
+if (!nzchar(tillage_dir)) {stop("PROJ_TILLAGE_DIR is not set. Source setup_projection_env.sh first.")
+}
 
 config = list(all_data_path = file.path(work_root, "all_data.csv"),
-              crop_year_path = file.path(work_root, "crop_year_states_cleaned.csv"),
-              crop_prediction_dir = file.path(work_root, "crop_predictions"),
-              phenology_root = file.path(work_root, "phenology_projections"),
-              lookup_path = file.path(ccmmf_root, "management", "LandIQ_cropCode_lookup_table.csv"),
-              tillage_event_dir = file.path(ccmmf_root, "management", "event_files_v4.1.2"),
-              scenario_dir = file.path(work_root, "MAGiC_scenarios_FINAL"),
-              
-              output_root = file.path(work_root, "tillage_projections"),
-              
-              historical_years = 2016:2023, prediction_years = 2024:2045,
-              start_year = 2023L, end_year = 2045L,
-              scenarios = c("BAU_Targets", "NBS_Targets"),
-              no_till_threshold = 30, low_till_threshold = 70, seed = 1L)
+  crop_year_path = file.path(work_root, "crop_year_states_cleaned.csv"),
+  crop_prediction_dir = file.path(work_root, "crop_predictions"),
+  phenology_root = file.path(work_root, "phenology_projections"),
+  
+  #shared inputs
+  lookup_path = lookup_path,
+  tillage_event_dir = tillage_dir,
+  
+  scenario_dir = file.path(work_root, "MAGiC_scenarios_FINAL"),
+  output_root = file.path(work_root, "tillage_projections"),
+  
+  historical_years = 2016:2023, prediction_years = 2024:2045, start_year = 2023L, end_year = 2045L,
+  scenarios = c("BAU_Targets", "NBS_Targets"), no_till_threshold = 30, low_till_threshold = 70,
+  seed = 1L)
 
 scenario_files = c(BAU_Targets = file.path(config$scenario_dir, "BAU_Targets.csv"),
                    NBS_Targets = file.path(config$scenario_dir, "NBS_Targets.csv"))
