@@ -1,26 +1,28 @@
-## V1 tillage projection
-## all_data.csv -> historical county x crop tillage baseline
+## all_data.csv = historical county x crop tillage baseline
 ## BAU/NBS differ through future no/low/high till shares
-## old v4.1 events -> historical county + PFT + till-state timing/NDTI
-## old parcel IDs are NEVER joined to future v4.1.2 parcels
 
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
 # REQUIRED: replace with path where outputs should be saved
-work_root = "/path/to/your/folder"
+#work_root = "/path/to/your/folder"
 
 # Shared project data; most users should not change this.
 ccmmf_root = "/projectnb/dietzelab/ccmmf"
 
+#/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2/assigned_year={2016-2023}_tillage.parquet
+
 config = list(all_data_path = file.path(work_root, "all_data.csv"),
               crop_year_path = file.path(work_root, "crop_year_states_cleaned.csv"),
               crop_prediction_dir = file.path(work_root, "crop_predictions"),
+              phenology_root = file.path(work_root, "phenology_projections"),
               lookup_path = file.path(ccmmf_root, "management", "LandIQ_cropCode_lookup_table.csv"),
-              tillage_event_dir = file.path(ccmmf_root, "management", "event_files"),
+              tillage_event_dir = file.path(ccmmf_root, "management", "event_files_v4.1.2"),
               scenario_dir = file.path(work_root, "MAGiC_scenarios_FINAL"),
+              
               output_root = file.path(work_root, "tillage_projections"),
-              historical_years = 2018:2023, prediction_years = 2024:2045,
+              
+              historical_years = 2016:2023, prediction_years = 2024:2045,
               start_year = 2023L, end_year = 2045L,
               scenarios = c("BAU_Targets", "NBS_Targets"),
               no_till_threshold = 30, low_till_threshold = 70, seed = 1L)
@@ -106,6 +108,60 @@ doy_to_date = function(year, doy) {
   ref = as.Date("2001-01-01") + as.integer(round(doy[ok])) - 1L
   out[ok] = as.Date(paste0(as.integer(year[ok]), "-", format(ref, "%m-%d")))
   as.IDate(out)
+}
+
+move_tillage_to_fallow = function(events, windows) {
+  x = copy(events)
+  x[, event_id := .I]
+  
+  w = copy(windows)
+  setnames(w, c("active_start", "active_end"), c("start", "end"))
+  w[, `:=`(start = as.IDate(start), end = as.IDate(end))]
+  setkey(w, parcel_id, year, start, end)
+  
+  # Recheck after moving because crop cycles can overlap.
+  for (iter in 1:4) {
+    pts = x[, .(
+      event_id, parcel_id, year,
+      start = as.IDate(date),
+      end = as.IDate(date)
+    )]
+    
+    setkey(pts, parcel_id, year, start, end)
+    hit = foverlaps(pts, w, type = "within", nomatch = 0L)
+    if (!nrow(hit)) break
+    
+    hit[, `:=`(
+      before = start - 1L,
+      after = end + 1L
+    )]
+    
+    hit[, `:=`(
+      d_before = abs(as.integer(i.start - before)),
+      d_after = abs(as.integer(after - i.start))
+    )]
+    
+    hit[, candidate := as.IDate(fifelse(d_before <= d_after, before, after))]
+    hit[, distance := pmin(d_before, d_after)]
+    
+    choice = hit[order(distance), .SD[1L], by = event_id]
+    x[choice$event_id, date := choice$candidate]
+  }
+  
+  pts = x[, .(
+    event_id, parcel_id, year,
+    start = as.IDate(date),
+    end = as.IDate(date)
+  )]
+  
+  setkey(pts, parcel_id, year, start, end)
+  still_active = foverlaps(pts, w, type = "within", nomatch = 0L)
+  
+  if (nrow(still_active))
+    stop("Some projected tillage events could not be moved into a fallow period.")
+  
+  x[, event_id := NULL]
+  x[]
 }
 
 # ---- MAGiC crop -> LandIQ CLASS mapping ----
@@ -289,11 +345,6 @@ baseline_till = latest_till[, .(baseline_acres = sum(ACRES, na.rm = TRUE)),
 baseline_till[, baseline_share := baseline_acres / sum(baseline_acres),
               by = .(county_safe, crop_state)]
 
-# Historical metadata used ONLY with old tillage parcels.
-old_meta = all_data[!is.na(parcel_id) & !is.na(year),
-                    .(county_safe = mode_character(county_safe), crop_class = mode_character(crop_class)),
-                    by = .(parcel_id, year)]
-
 # ---- historical crop metadata for future v4.1.2 parcels ----
 crop_data = fread(config$crop_year_path, integer64 = "integer64")
 if ("V1" %in% names(crop_data)) crop_data[, V1 := NULL]
@@ -313,8 +364,7 @@ parcel_meta = crop_data[year <= config$start_year,
                         .SD[which.max(year)], by = parcel_id
 ][, .(parcel_id, county, county_safe, county_geoid, ACRES)]
 
-if (anyNA(parcel_meta[, .(county_safe, county_geoid, ACRES)]))
-  stop("Latest crop metadata contains missing values.")
+# county_geoid is retained as metadata but is not required by the tillage projection logic
 
 # ---- PFT lookup ----
 lookup = fread(config$lookup_path)
@@ -331,118 +381,236 @@ pft_code = lookup[!is.na(CLASS) & !is.na(SUBCLASS) & !is.na(PFT),
 pft_class = lookup[!is.na(CLASS) & !is.na(PFT),
                    .(fallback_PFT = mode_character(PFT)), by = CLASS]
 
-# ---- old v4.1 tillage events: timing/NDTI characteristics only ----
-all_till_files = list.files(config$tillage_event_dir,
-                            pattern = "^tillage_statewide_[0-9]{4}\\.parquet$", full.names = TRUE)
+# ---- gapfilled v4.1.2 tillage events: timing/NDTI characteristics ----
 
-file_years = as.integer(sub(".*tillage_statewide_([0-9]{4})\\.parquet$", "\\1", all_till_files))
-keep = file_years %in% config$historical_years
-tillage_files = all_till_files[keep]
-tillage_years = file_years[keep]
+tillage_files = file.path(config$tillage_event_dir, paste0("assigned_year=", config$historical_years, "_tillage.parquet"))
 
-if (!length(tillage_files)) stop("No usable old v4.1 tillage files found for 2018-2023.")
-message("Using old v4.1 tillage years: ", paste(sort(tillage_years), collapse = ", "))
+missing_tillage_files = tillage_files[!file.exists(tillage_files)]
 
-tillage_hist = rbindlist(Map(function(f, yy) {
-  x = as.data.table(read_parquet(f))
-  x[, source_year := as.integer(yy)]
-  x
-}, tillage_files, tillage_years), fill = TRUE)
+if (length(missing_tillage_files)) {
+  stop("Missing gapfilled tillage files:\n", paste(missing_tillage_files, collapse = "\n")
+  )
+}
 
-if ("site_id" %in% names(tillage_hist) && !"parcel_id" %in% names(tillage_hist))
-  setnames(tillage_hist, "site_id", "parcel_id")
+message("Using gapfilled v4.1.2 tillage years: ", paste(config$historical_years, collapse = ", "))
 
-if ("landiq_PFT" %in% names(tillage_hist) && !"PFT" %in% names(tillage_hist))
-  setnames(tillage_hist, "landiq_PFT", "PFT")
+tillage_hist = rbindlist(Map(
+  function(f, yy) {
+    x = as.data.table(arrow::read_parquet(f))
+    x[, source_year := as.integer(yy)]
+    x
+  },
+  tillage_files, config$historical_years
+),
+fill = TRUE
+)
 
-if ("ndti_pct_drop" %in% names(tillage_hist) && !"ndti_pct_change" %in% names(tillage_hist))
-  setnames(tillage_hist, "ndti_pct_drop", "ndti_pct_change")
-
-if (!"date" %in% names(tillage_hist) && "min_date" %in% names(tillage_hist))
-  setnames(tillage_hist, "min_date", "date")
-
-assert_cols(tillage_hist, c("parcel_id","PFT","date","ndti_pct_change"), "Old v4.1 tillage")
+assert_cols(tillage_hist, c("event_type", "parcel_id", "date", "ndti_pct_change", "tillage_eff_0to1"
+), "Gapfilled v4.1.2 tillage")
 
 tillage_hist[, `:=`(
-  parcel_id = as.character(parcel_id), PFT = as.character(PFT),
-  date = as.IDate(date), ndti_pct_change = as.numeric(ndti_pct_change))]
+  parcel_id = as.character(parcel_id),
+  date = as.IDate(date),
+  ndti_pct_change = as.numeric(ndti_pct_change),
+  tillage_eff_0to1 = as.numeric(tillage_eff_0to1)
+)]
 
-tillage_hist[!is.finite(ndti_pct_change), ndti_pct_change := NA_real_]
+tillage_hist = tillage_hist[event_type == "tillage"]
 
+tillage_hist[
+  !is.finite(ndti_pct_change),
+  ndti_pct_change := NA_real_
+]
+
+# classify event intensity using existing thresholds
 tillage_hist[, till_state := fcase(
-  ndti_pct_change >= 0 & ndti_pct_change <= config$no_till_threshold, "no_till",
-  ndti_pct_change > config$no_till_threshold & ndti_pct_change < config$low_till_threshold, "low_till",
-  ndti_pct_change >= config$low_till_threshold, "high_till",
-  default = NA_character_)]
+  ndti_pct_change >= 0 &
+    ndti_pct_change <= config$no_till_threshold,
+  "no_till",
+  
+  ndti_pct_change > config$no_till_threshold &
+    ndti_pct_change < config$low_till_threshold,
+  "low_till",
+  
+  ndti_pct_change >= config$low_till_threshold,
+  "high_till",
+  
+  default = NA_character_
+)]
 
 tillage_hist[, tillage_doy := date_to_doy(date)]
 
-# Join OLD events to OLD metadata only.
-tillage_hist = merge(tillage_hist, old_meta,
-                     by.x = c("parcel_id","source_year"), by.y = c("parcel_id","year"), all.x = TRUE)
+# ---- attach historical crop/county metadata to new v4.1.2 events ----
 
+event_meta = crop_data[
+  year %in% config$historical_years &
+    !is.na(parcel_id),
+  .(
+    county_safe = mode_character(county_safe),
+    crop_class = mode_character(crop_class)
+  ),
+  by = .(parcel_id, year)
+]
+
+event_meta[, parcel_id := as.character(parcel_id)]
+
+# derive PFT from LandIQ crop CLASS
+event_meta = merge(event_meta,
+  pft_class,
+  by.x = "crop_class",
+  by.y = "CLASS",
+  all.x = TRUE
+)
+
+setnames(event_meta, "fallback_PFT", "PFT")
+
+tillage_hist = merge(
+  tillage_hist,
+  event_meta,
+  by.x = c("parcel_id", "source_year"),
+  by.y = c("parcel_id", "year"),
+  all.x = TRUE
+)
+
+message(
+  "Tillage events missing county metadata: ",
+  tillage_hist[is.na(county_safe), .N]
+)
+
+message(
+  "Tillage events missing PFT metadata: ",
+  tillage_hist[is.na(PFT), .N]
+)
+
+
+# no-till is treated as a condition, not an emitted tillage event
 event_hist = tillage_hist[
-  till_state %chin% c("low_till","high_till") & !is.na(date) & is.finite(ndti_pct_change)]
+  till_state %chin% c("low_till", "high_till") &
+    !is.na(date) &
+    is.finite(ndti_pct_change)
+]
 
-if (!nrow(event_hist)) stop("No usable historical low/high-tillage events.")
-message("Historical low/high tillage events: ", format(nrow(event_hist), big.mark = ","))
+if (!nrow(event_hist)) {
+  stop("No usable historical low/high-tillage events.")
+}
 
-event_lookup_county_pft = event_hist[!is.na(county_safe) & !is.na(PFT),
-                                     .(tillage_doy = mean_wrapped_doy(tillage_doy),
-                                       ndti_pct_change = safe_mean(ndti_pct_change)),
-                                     by = .(county_safe, PFT, till_state)]
+message(
+  "Historical low/high tillage events: ",
+  format(nrow(event_hist), big.mark = ",")
+)
 
-event_lookup_pft = event_hist[!is.na(PFT),
-                              .(fallback_pft_doy = mean_wrapped_doy(tillage_doy),
-                                fallback_pft_ndti = safe_mean(ndti_pct_change)),
-                              by = .(PFT, till_state)]
 
-event_lookup_global = event_hist[,
-                                 .(fallback_global_doy = mean_wrapped_doy(tillage_doy),
-                                   fallback_global_ndti = safe_mean(ndti_pct_change)),
-                                 by = till_state]
+# ---- historical event characteristic lookups ----
 
-message("County/PFT/state lookup groups: ", nrow(event_lookup_county_pft),
-        "; unique NDTI means: ", uniqueN(event_lookup_county_pft$ndti_pct_change))
+event_lookup_county_pft = event_hist[
+  !is.na(county_safe) & !is.na(PFT),
+  .(
+    tillage_doy = mean_wrapped_doy(tillage_doy),
+    ndti_pct_change = safe_mean(ndti_pct_change)
+  ),
+  by = .(county_safe, PFT, till_state)
+]
 
-# ---- future v4.1.2 crop projections ----
-crop_files = file.path(config$crop_prediction_dir,
-                       paste0("crop_identity_statewide_", config$prediction_years, ".parquet"))
+event_lookup_pft = event_hist[
+  !is.na(PFT),
+  .(
+    fallback_pft_doy = mean_wrapped_doy(tillage_doy),
+    fallback_pft_ndti = safe_mean(ndti_pct_change)
+  ),
+  by = .(PFT, till_state)
+]
 
-missing = crop_files[!file.exists(crop_files)]
-if (length(missing)) stop("Missing crop prediction files:\n", paste(missing, collapse = "\n"))
+event_lookup_global = event_hist[
+  ,
+  .(
+    fallback_global_doy = mean_wrapped_doy(tillage_doy),
+    fallback_global_ndti = safe_mean(ndti_pct_change)
+  ),
+  by = till_state
+]
 
-future = rbindlist(lapply(crop_files, function(f) {
-  as.data.table(read_parquet(f,
-                             col_select = c("parcel_id","COUNTY","year","season","CLASS","SUBCLASS")))
-}), fill = TRUE)
+message(
+  "County/PFT/state lookup groups: ",
+  nrow(event_lookup_county_pft),
+  "; unique NDTI means: ",
+  uniqueN(event_lookup_county_pft$ndti_pct_change))
 
-future[, `:=`(
-  parcel_id = bit64::as.integer64(as.character(parcel_id)),
-  year = as.integer(year),
-  CLASS = trimws(as.character(CLASS)),
-  SUBCLASS = normalize_subclass(SUBCLASS))]
+# ---- scenario-specific future crop projections ----
 
-if ("season" %in% names(future) && future[!is.na(season) & season != 2L, .N])
-  stop("Future crop predictions contain season other than 2.")
+read_future_crops = function(scen) {
+  crop_files = file.path(config$crop_prediction_dir, scen,
+                         paste0("crop_identity_statewide_", config$prediction_years, ".parquet"))
+  
+  missing = crop_files[!file.exists(crop_files)]
+  if (length(missing))
+    stop("Missing crop prediction files for ", scen, ":\n", paste(missing, collapse = "\n"))
+  
+  future = rbindlist(lapply(crop_files, function(f) {
+    as.data.table(read_parquet(
+      f,
+      col_select = c("parcel_id", "COUNTY", "year", "season", "CLASS", "SUBCLASS")
+    ))
+  }), fill = TRUE)
+  
+  future[, `:=`(
+    parcel_id = bit64::as.integer64(as.character(parcel_id)),
+    year = as.integer(year),
+    season = as.integer(season),
+    CLASS = trimws(as.character(CLASS)),
+    SUBCLASS = normalize_subclass(SUBCLASS)
+  )]
+  
+  # Tillage scenario acreage applies to the dominant crop only.
+  # Cover crops affect available fallow timing, not acreage accounting.
+  future = future[season == 2L]
+  
+  if (future[, .N, by = .(parcel_id, year)][N > 1L, .N])
+    stop(scen, " dominant crop projection contains duplicate parcel-year rows.")
+  
+  future = merge(future, parcel_meta, by = "parcel_id", all.x = TRUE)
+  
+  if (anyNA(future[, .(county_safe, ACRES)]))
+    stop(scen, " future crop rows missing fixed county/acreage metadata.")
+  
+  future = merge(future, pft_code, by = c("CLASS", "SUBCLASS"), all.x = TRUE)
+  future = merge(future, pft_class, by = "CLASS", all.x = TRUE)
+  future[is.na(PFT), PFT := fallback_PFT]
+  future[, fallback_PFT := NULL]
+  
+  future[]
+}
 
-if (future[, .N, by = .(parcel_id, year)][N > 1L, .N])
-  stop("Future crop predictions still contain duplicate parcel-year rows.")
 
-future = merge(future, parcel_meta, by = "parcel_id", all.x = TRUE)
-
-if (anyNA(future[, .(county_safe, county_geoid, ACRES)]))
-  stop("Future crop rows missing fixed county/acreage metadata.")
-
-future = merge(future, pft_code, by = c("CLASS","SUBCLASS"), all.x = TRUE)
-future = merge(future, pft_class, by = "CLASS", all.x = TRUE)
-future[is.na(PFT), PFT := fallback_PFT]
-future[, fallback_PFT := NULL]
+read_pheno_windows = function(scen) {
+  pheno_files = file.path(config$phenology_root, scen,
+                          paste0("phenology_statewide_", config$prediction_years, ".parquet"))
+  
+  missing = pheno_files[!file.exists(pheno_files)]
+  if (length(missing))
+    stop("Missing phenology projections for ", scen, ":\n", paste(missing, collapse = "\n"))
+  
+  windows = rbindlist(Map(function(f, yy) {
+    x = as.data.table(read_parquet(f))
+    assert_cols(x, c("parcel_id", "leafonday", "leafoffday"), basename(f))
+    
+    x[, .(
+      parcel_id = bit64::as.integer64(as.character(parcel_id)),
+      year = as.integer(yy),
+      active_start = as.IDate(leafonday),
+      active_end = as.IDate(leafoffday)
+    )]
+  }, pheno_files, config$prediction_years), fill = TRUE)
+  
+  windows = windows[!is.na(active_start) & !is.na(active_end)]
+  windows[]
+}
 
 # ---- BAU/NBS tillage projections ----
 for (scen in config$scenarios) {
   message("Processing ", scen)
   set.seed(config$seed)
+  future = read_future_crops(scen)
+  pheno_windows = read_pheno_windows(scen)
   
   s = fread(scenario_files[[scen]])
   
@@ -550,30 +718,31 @@ for (scen in config$scenarios) {
   
   pred[, date := doy_to_date(year, selected_doy)]
   
+  #regular crops and cover crops both occupy active growing periods.
+  pred = move_tillage_to_fallow(pred, pheno_windows)
+  
   bad = pred[is.na(date) | is.na(selected_ndti)]
+  
   if (nrow(bad))
     stop(scen, " has ", format(nrow(bad), big.mark = ","),
          " projected tillage events without timing/NDTI values.")
   
   final = pred[, .(
-    projection_year = year,
-    event_type = "tillage",
-    parcel_id = bit64::as.integer64(parcel_id),
-    date,
-    ndti_pct_drop = selected_ndti)]
+    projection_year = year, event_type = "tillage", parcel_id = bit64::as.integer64(parcel_id),
+    OGMn_date = date, pct_ndti_change = selected_ndti
+  )]
   
-  message(scen, " unique ndti_pct_drop values: ",
-          uniqueN(final$ndti_pct_drop))
+  message(scen, " unique pct_ndti_change values: ", uniqueN(final$pct_ndti_change))
   
-  message(scen, " ndti_pct_drop range: ",
-          round(min(final$ndti_pct_drop), 2), " to ",
-          round(max(final$ndti_pct_drop), 2))
+  message(scen, " pct_ndti_change range: ", round(min(final$pct_ndti_change), 2), " to ",
+          round(max(final$pct_ndti_change), 2))
   
   for (yy in config$prediction_years) {
-    out = final[projection_year == yy,
-                .(event_type, parcel_id, date, ndti_pct_drop)]
     
-    setorder(out, parcel_id, date)
+    out = final[projection_year == yy,
+                .(event_type, parcel_id, OGMn_date, pct_ndti_change)]
+    
+    setorder(out, parcel_id, OGMn_date)
     
     if (out[!complete.cases(out), .N])
       stop(scen, " ", yy, " contains incomplete tillage events.")
@@ -585,10 +754,10 @@ for (scen in config$scenarios) {
     
     message("Wrote: ", path, " (",
             format(nrow(out), big.mark = ","), " events; ",
-            uniqueN(out$ndti_pct_drop), " unique NDTI values)")
+            uniqueN(out$pct_ndti_change), " unique NDTI values)")
   }
   
   message("Finished ", scen)
 }
 
-message("Tillage V1 complete: ", config$output_root)
+message("Tillage projections complete: ", config$output_root)
