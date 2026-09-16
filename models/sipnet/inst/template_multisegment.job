@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+# Redirect output
+exec 3>&1
+exec &> @OUTDIR@/logfile.txt
+
+# host specific setup
+@HOST_SETUP@
+
+# cdo setup
+@CDO_SETUP@
+
+
+SEGMENT_JOBS=(
+  @JOBSH_FILES@
+)
+SEGMENT_LOGS=(
+  @JOB_LOGFILES@
+)
+
+# Run model segments
+for j in $(seq 0 ${#SEGMENT_JOBS}); do
+  bash ${SEGMENT_JOBS[j]}
+  status=$?
+  # Concatenate segment logs to the run log (via redirected stdout)
+  echo "\n--> contents of ${SEGMENT_LOGS[j]}:" \
+    && cat ${SEGMENT_LOGS[j]}
+  if [ ${status} -ne 0 ]; then
+    n_run_errs=$((n_run_errs + 1))
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+    exit "$status"
+  fi
+done
+
+
+# Concatenate sipnet out files
+Rscript -e 'PEcAn.SIPNET::combine_sipnet_out(' \
+  -e 'directory = "@SEGMENT_ROOTDIR@",' \
+  -e 'outfile = "@OUTDIR@/sipnet.out")'
+status=$?
+if [ ${status} -ne 0 ]; then
+  echo -e "ERROR COMBINING OUTPUTS \nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  exit "$status"
+fi
+
+# Convert output to PEcAn standard
+Rscript -e 'PEcAn.SIPNET::model2netcdf.SIPNET(
+  outdir = "@OUTDIR@",
+  sitelat = @SITE_LAT@,
+  sitelon = @SITE_LON@,
+  start_date = "@START_DATE@"
+  end_date = "@END_DATE@"
+  delete.raw = @DELETE.RAW@,
+  revision = "@REVISION@",
+  sep = ", "
+)'
+status=$?
+if [ ${status} -ne 0 ]; then
+  echo -e "ERROR CONVERTING TO NETCDF\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  exit "$status"
+fi
+
+# copy readme with specs to output
+cp @RUNDIR@/README.txt @OUTDIR@/README.txt
+cp @RUNDIR@/segments.csv @OUTDIR@/segments.csv
+
+copy_restarts=@CP_RESTARTS@
+if [[ "$copy_restarts" == TRUE ]]; then
+  # copy restart.out from last-run segment to the output directory
+  cp @LAST_SEG_RESTART@ @OUTDIR@/restart.out
+fi
+
+rm_raws=@RM_RAWS@
+if [["$rm_raws" == TRUE ]]; then
+  # Remove per-segment outputs & logs after concatenating to job outdir
+  find @SEGMENT_ROOTDIR@ -name sipnet.out -delete
+  find @SEGMENT_ROOTDIR@ -name logfile.txt -delete
+  rm @RUNDIR@/README.txt
+  rm @RUNDIR@/segments.csv
+fi
+
+# host specific teardown
+@HOST_TEARDOWN@
+
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

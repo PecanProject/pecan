@@ -94,9 +94,9 @@ test_that("write_segmented_configs", {
 
   # job.sh includes calls to segment scripts
   jobsh <- readLines(file.path(run_path, "job.sh"))
-  expect_match(jobsh, "bash .*segment_001/run/1/job.sh", all = FALSE)
-  expect_match(jobsh, "bash .*segment_002/run/1/job.sh", all = FALSE)
-  expect_match(jobsh, "bash .*segment_003/run/1/job.sh", all = FALSE)
+  expect_match(jobsh, "segment_001/run/1/job.sh", all = FALSE)
+  expect_match(jobsh, "segment_002/run/1/job.sh", all = FALSE)
+  expect_match(jobsh, "segment_003/run/1/job.sh", all = FALSE)
 })
 
 test_that("segment_dataframe returns empty when run start is after all crop cycles", {
