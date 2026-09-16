@@ -34,15 +34,15 @@ expand_string_templates <- function(
     settings,
     ...,
     HOST_SETUP = paste(
-      paste(settings$model$prerun, sep = "\n"),
-      paste(settings$host$prerun, sep = "\n"),
+      paste(settings$model$prerun, collapse = "\n"),
+      paste(settings$host$prerun, collapse = "\n"),
       "",
       sep = "\n"
     ),
-    CDO_SETUP = paste(settings$host$cdosetup, "", sep = "\n"),
+    CDO_SETUP = paste(settings$host$cdosetup, "", collapse = "\n"),
     HOST_TEARDOWN = paste(
-      paste(settings$model$postrun, sep = "\n"),
-      paste(settings$host$postrun, sep = "\n"),
+      paste(settings$model$postrun, collapse = "\n"),
+      paste(settings$host$postrun, collapse = "\n"),
       "",
       sep = "\n"
     ),
