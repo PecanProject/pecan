@@ -132,7 +132,7 @@ test_that("leafNResorptionFrac trait reaches the v2 param file", {
 
   param_result <- readLines(file.path(pth, "run", "run1", "sipnet.param"))
   expect_match(param_result, "leafNResorptionFrac 0.6", fixed = TRUE, all = FALSE)
-)}
+})
 
 test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
   # scaffold for a v2 run; the irrig-only event file keeps internal phenology
