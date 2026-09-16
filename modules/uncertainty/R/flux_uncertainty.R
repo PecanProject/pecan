@@ -105,23 +105,22 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
   ## would be better to fit a two line model with a common intercept, but this
   ## is quicker to implement for the time being
   E2 <- errBin - errBin[zero]
-  E2 <- errBin - errBin[zero]
   intercept <- errBin[zero]
-  
-  return.list <- list(mag = magBin, 
-                      err = errBin, 
-                      bias = biasBin, 
+
+  return.list <- list(mag = magBin,
+                      err = errBin,
+                      bias = biasBin,
                       n = nBin,
                       intercept = intercept)
-  
-  if(!all(is.na(E2[pos]))){
+
+  if (!all(is.na(E2[pos]))) {
     mp <- stats::lm(E2[pos] ~ magBin[pos] - 1)
     return.list$slopeP <- mp$coefficients[1]
-  } 
-  if(!all(is.na(E2[neg]))){
+  }
+  if (!all(is.na(E2[neg]))) {
     mn <- stats::lm(E2[neg] ~ magBin[neg] - 1)
     return.list$slopeN <- mn$coefficients[1]
-  }else{
+  } else if (exists("mp", inherits = FALSE)) {
     return.list$slopeN <- mp$coefficients[1]
   }
   
