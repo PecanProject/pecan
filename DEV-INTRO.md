@@ -53,7 +53,7 @@ sudo adduser ${USER} docker
 
 ### Deploying PEcAn in Docker
 
-To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
+To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yml](docker-compose.dev.yml) file that adds additional containers, and changes some services to make it easier for development.
 
 By default Compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. :
 
