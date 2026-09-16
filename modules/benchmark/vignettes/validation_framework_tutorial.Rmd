@@ -184,11 +184,50 @@ print(metrics_results)
 
 ### Comparing Calculated Metrics against Theoretical Expectations
 
-Since the simulated observation fixture was generated with known parameters $\beta_v = 0.3$ and $\tau_v = 0.5$:
+Since the simulated observation fixture was generated with known statistical error parameters $\beta_v = 0.3$ and $\tau_v = 0.5$, closed-form theoretical expected values can be derived directly for BIAS, RMSE, MAE, and $R^2$:
 
-* **Theoretical Expected Bias**: The error model generates observations as $o = \bar{m} + S_v(\beta_v + \epsilon)$, where $S_v = \text{sd}(\bar{m}) \approx 6.35$. Because `BIAS` is defined as $(\bar{m} - o) = \text{model} - \text{obs}$, the expected theoretical bias is $-\beta_v \cdot S_v = -0.3 \times 6.35 \approx -1.905$.
-* **Empirical Calculated Bias**: The computed `BIAS` metric on this fixture yields $\approx -1.8$, closely matching the theoretical expectation within sampling error.
-* **Sign Explanation**: The negative sign occurs because the error model adds $+\beta_v S_v$ to the observation ($o > \bar{m}$), so model minus observation $(\bar{m} - o)$ is negative.
+* **Output Scale ($S_v$)**: $S_v = \text{sd}(\bar{m})$, computed dynamically from ensemble mean predictions.
+* **Expected BIAS**: $\text{E}[\bar{m} - o] = -\beta_v \cdot S_v$.
+* **Expected RMSE**: $\sqrt{\text{E}[(\bar{m} - o)^2]} = S_v \sqrt{\beta_v^2 + \tau_v^2}$.
+* **Expected MAE**: For residual $e \sim N(-\beta_v S_v, \tau_v^2 S_v^2)$, $\text{E}[|e|] = \sigma \sqrt{\frac{2}{\pi}} \exp\left(-\frac{\mu^2}{2\sigma^2}\right) + \mu \left( 1 - 2\Phi\left(-\frac{\mu}{\sigma}\right) \right)$.
+* **Expected $R^2$**: Population coefficient of determination between $\bar{m}$ and $o$: $\frac{1}{1 + \tau_v^2}$.
+
+```{r theoretical_expectations}
+# Error model parameters used in simulation fixture generator
+beta_v  <- 0.3  # 30% relative bias
+tau_v   <- 0.5  # 50% relative error noise
+
+# Output scale S_v = sd(ensemble_mean) computed from model summary
+S_v <- sd(model_summary$value)
+
+# Closed-form theoretical expectations
+exp_bias <- -beta_v * S_v
+exp_rmse <- S_v * sqrt(beta_v^2 + tau_v^2)
+
+mu    <- -beta_v * S_v
+sigma <- tau_v * S_v
+exp_mae  <- sigma * sqrt(2 / pi) * exp(-mu^2 / (2 * sigma^2)) + mu * (1 - 2 * pnorm(-mu / sigma))
+
+exp_r2   <- 1 / (1 + tau_v^2)
+
+# Format summary comparison table
+theoretical_comparison <- data.frame(
+  Metric = c("BIAS", "RMSE", "MAE", "R2"),
+  `Theoretical Expectation` = round(c(exp_bias, exp_rmse, exp_mae, exp_r2), 4),
+  `Empirical Calculated Metric` = round(as.numeric(metrics_results[1, c("BIAS", "RMSE", "MAE", "R2")]), 4),
+  check.names = FALSE
+)
+
+knitr::kable(
+  theoretical_comparison,
+  caption = "Comparison of Closed-Form Theoretical Expectations vs. Empirical Calculated Metrics"
+)
+```
+
+**Key Takeaways & Interpretation**:
+* **BIAS**: The theoretical expected bias is $-\beta_v S_v = -0.3 \times `r round(S_v, 2)` = `r round(exp_bias, 2)`$. The empirical calculated bias on this fixture (`r round(metrics_results$BIAS, 2)`) closely matches this expectation. The negative sign occurs because $+\beta_v S_v$ is added to observations ($o > \bar{m}$), so $\bar{m} - o < 0$.
+* **RMSE & MAE**: Theoretical expectations (`r round(exp_rmse, 2)` for RMSE and `r round(exp_mae, 2)` for MAE) align closely with empirical fixture metrics (`r round(metrics_results$RMSE, 2)` and `r round(metrics_results$MAE, 2)`), confirming consistency across standard error norms.
+* **$R^2$**: The population $R^2 = \frac{1}{1 + \tau_v^2} = \frac{1}{1 + 0.5^2} = 0.80$ matches the empirical calculated value (`r round(metrics_results$R2, 2)`).
 
 ---
 
@@ -223,13 +262,16 @@ print(p_res)
 
 ---
 
-## 6. Real-World EFI Long Dataset Example (`small_salinas`)
+## 6. Substituting Custom Processed Data & Real-World EFI Example
 
-To evaluate model predictions stored in standard EFI long format (such as the provided `small_salinas_ensemble.csv` and `small_salinas_obs.csv`):
+To evaluate your own custom model predictions and observational datasets using the `PEcAn.benchmark` framework:
 
-1. Format model predictions in EFI long format (`datetime`, `site_id`, `parameter`, `variable`, `prediction`).
-2. Use `efi_long_to_array()` to extract the ensemble matrix for a given variable and site.
-3. Pass aligned data into `align_by_time()` and `compute_metrics()`.
+1. **Model Predictions**: Format model outputs in standard EFI long format CSV (containing `datetime` or `time`, `site_id`, `parameter` or ensemble member ID, `variable`, and `prediction` or `value`).
+2. **Observations**: Format observations with timestamps (`time` or `date`), target values (`value`, `obvs`, or `obs_mean`), and uncertainty metrics (`obvs_sd`, `obs_sd`, or `obs_se`).
+3. **Array Extraction**: Use `efi_long_to_array(raw_model, var = "<variable>", site = "<site_id>")` to extract the $(N_{\text{time}} \times N_{\text{ensemble}})$ ensemble matrix.
+4. **Alignment & Metric Evaluation**: Pass your reshaped summaries into `align_by_time()` and compute point and probabilistic evaluation metrics with `compute_metrics()`.
+
+Below is a complete walkthrough demonstrating this workflow on a real-world dataset in EFI long format (`small_salinas_ensemble.csv` and `small_salinas_obs.csv`):
 
 ```{r efi_long_example}
 salinas_model <- read.csv(file.path(extdata_dir, "small_salinas_ensemble.csv"))
