@@ -1,31 +1,26 @@
 ## Optimize county crop-class transition matrices toward shared 2045 crop acreage targets.
-## BAU and NBS use the same crop acreage targets, so crop matrices are optimized once.
 
 pacman::p_load(PEcAn.data.remote, data.table, nloptr, expm, parallel, parallelly)
 
 # ---- setup ----
-#REQUIRED: Choose a folder to define work_root, where you want this framework to save intermediate and output files
-#Uncomment the line below and replace the example path.
-#work_root = "/path/to/your/folder"
+config = config::get(config = "default", file = "config.yml")
 
-##BAU and NBS target scenarios share the same acreage targets - can set crop target variables to just one and optimize matrices once
+config$crop_data_path = file.path(config$work_root, config$crop_data_file)
 
-config = list(crop_target_source = "BAU_Targets", start_year = 2023L, end_year = 2045L, workers = 6L,
-  lambda_target = 1e6, maxeval_optimizer = 50000, maxtime_optimizer = 360,
-  scale_crop_targets_to_x0 = TRUE, nominal_zero_acres = 0.01,
-  run_all_counties = TRUE, counties_manual = character(),
-  
-  crop_data_path = file.path(work_root, "crop_year_states_cleaned.csv"),
-  crop_target_path = file.path(work_root, "MAGiC_scenarios_FINAL", "BAU_Targets.csv"),
-  crop_matrix_dir = file.path(work_root, "county_crop_matrices"),
-  
-  ##output folder the optimized matrices are going to be stored in 
-  matrix_out_dir = file.path(work_root, "county_optimized_matrices"))
+##BAU and NBS use the same crop acreage targets, so crop matrices are optimized once
+config$crop_target_path = file.path(config$work_root, config$scenario_dir, config$bau_target_file)
+
+config$crop_matrix_dir = file.path(config$work_root, config$crop_matrix_dir)
+
+config$matrix_out_dir = file.path(config$work_root, config$matrix_out_dir)
 
 start_year = config$start_year
 end_year = config$end_year
 steps = end_year - start_year
+
 dir.create(config$matrix_out_dir, recursive = TRUE, showWarnings = FALSE)
+
+message('Set up complete. Moving to crop name mapping.')
 
 # ---- helpers ----
 safe_county_name = function(x) gsub("[^A-Za-z0-9_]+", "_", x)
@@ -278,7 +273,9 @@ build_scenario_crop_targets = function(scenarios, crop_data, cty, end_year, star
     target_dt = target_dt, unmatched = info$unmatched)
 }
 
-# ---- load crop data ----
+message('Crop mapping between landIQ and scenario target sheets complete. Now loading the necessary files.')
+
+# ---- load crop data and crop targets ----
 if (!file.exists(config$crop_data_path)) stop("Missing crop data: ", config$crop_data_path)
 crop_data = fread(config$crop_data_path)
 if ("V1" %in% names(crop_data)) crop_data[, V1 := NULL]
@@ -289,8 +286,6 @@ crop_data[, `:=`(
   crop_class = trimws(as.character(state)), ACRES = as.numeric(ACRES), county_safe = safe_county_name(county)
 )]
 
-# ---- load shared crop targets ----
-if (!file.exists(config$crop_target_path)) stop("Missing crop target CSV: ", config$crop_target_path)
 matrix_scenarios = fread(config$crop_target_path)
 setnames(matrix_scenarios, names(matrix_scenarios), trimws(names(matrix_scenarios)))
 
@@ -301,7 +296,7 @@ matrix_scenarios[, `:=`(
   county_safe = safe_county_name(County)
 )]
 
-message("Using shared crop target source: ", config$crop_target_source)
+message("Files loading. Moving to  optimization using shared acres goals in" , config$crop_target_source)
 
 # ---- optimize one county ----
 run_county = function(focus_county) {
@@ -328,6 +323,7 @@ run_county = function(focus_county) {
     nominal_zero_acres = config$nominal_zero_acres)
   
   check_matrix(A_orig, paste0("original crop matrix ", cty))
+  
   message("Starting optimizer for: ", cty)
   t0 = Sys.time()
   
@@ -372,7 +368,6 @@ run_county = function(focus_county) {
     target_acres_used_for_opt_total = sum(target_opt), optimized_crop_matrix_path = matrix_out, optimization_summary_path = summary_path,
     max_matrix_change = max(abs(opt$A_final - A_orig)), row_sum_error = max(abs(rowSums(opt$A_final) - 1)), total_opt_error_share = total_opt_error_share)
   
-  fwrite(manifest, file.path(config$matrix_out_dir, paste0("run_manifest_", cty, ".csv")))
   if (nrow(crop_target$unmatched)) fwrite(crop_target$unmatched,
                                           file.path(config$matrix_out_dir, paste0("unmatched_scenario_crops_", cty, ".csv")))
   
@@ -382,6 +377,7 @@ run_county = function(focus_county) {
 }
 
 # ---- run all counties ----
+
 counties_to_run = if (config$run_all_counties) {
   sort(intersect(
     unique(crop_data$county_safe),
@@ -392,6 +388,8 @@ counties_to_run = if (config$run_all_counties) {
 }
 
 message("Counties to optimize: ", length(counties_to_run))
+message("Expect the optimization to take some time. Using the 6 workers, the optimization should take ~1 hour and  
+         will start with the counties that have the longest run time and then move onto smaller ones as a worker frees up.")
 
 #Number of workers cannot exceed available cores or number of counties
 n_workers = min(config$workers, as.integer(parallelly::availableCores()), length(counties_to_run))
