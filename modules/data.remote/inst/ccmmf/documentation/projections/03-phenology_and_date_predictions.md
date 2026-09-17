@@ -75,7 +75,7 @@ label, only the year of the file they came from. A December planting is day 363 
 a few days apart, but averaging them without wrapping makes their average in July.
 
 For harvest dates, these are not predicted directly. For each parcel, year, and crop, we find its planting event and 
-its harvest event, and the gap between them is how long that crop took to grow. If the gap comes out negative or zero, 
+its harvest event, and the distance between them is the length of the growing season. If the growing season length comes out negative or zero, 
 the crop must have been harvested in the following calendar year, so we add a year.
 
 A future harvest date is then just the projected planting date plus that historical growing season length. Doing it this 
