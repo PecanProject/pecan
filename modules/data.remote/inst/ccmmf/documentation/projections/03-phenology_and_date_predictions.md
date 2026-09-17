@@ -3,7 +3,7 @@
 ## Overview
 
 This section turns projected crop identities into dated events to combine what is going to be grown with when its going
-to happen. `phenology_projection.R` produces leaf-on and leaf-off dates for every projected crop cycle, and `planting_harvest_projection.R` produces the planting and harvest 
+to happen. `phenology_projection.R` produces leaf-on and leaf-off dates for every projected perennial crop cycle, and `planting_harvest_projection.R` produces the planting and harvest 
 predictions. 
 
 Both are downstream of the crop predictions and this workflow does not include any sampling. All predictions 
