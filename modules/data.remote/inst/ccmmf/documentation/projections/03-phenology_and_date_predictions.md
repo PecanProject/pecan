@@ -54,9 +54,7 @@ is a global.
 
 ## Planting_harvest_projections.R
 Building the historical record:
-Historical planting and harvest events are read by year the same way as phenology, with older column names renamed on the 
-as they're loaded for simplicity. The event files hold the 8 N/C pools while harvest carries the litter fractions. Dates are 
-converted the same way to continuous numbers and parcels are assigned a county geoid. 
+Historical planting and harvest event files are read one year at a time and stacked, with older column names renamed as they load. Planting events carry the 8 C/N pools; harvest events carry the removal and litter fractions. Dates become continuous day counts the same way as in the phenology script, and each parcel is assigned a county geoid.
 
 Similarly, multiple levels of means are calculated so every parcel get a date, with missing information filled using a hierarchical "fall back" that has 6 tiers for prioritizing information:
 1. county + crop code
