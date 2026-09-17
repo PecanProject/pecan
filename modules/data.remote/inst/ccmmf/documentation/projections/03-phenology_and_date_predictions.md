@@ -58,7 +58,7 @@ Historical planting and harvest events are read by year the same way as phenolog
 as they're loaded for simplicity. The event files hold the 8 N/C pools while harvest carries the litter fractions. Dates are 
 converted the same way to continuous numbers and parcels are assigned a county geoid. 
 
-Similarly, multiple levels of means are calculated so every parcel get date, but the fall back goes back 6 steps:
+Similarly, multiple levels of means are calculated so every parcel get a date, with missing information filled using a hierarchical "fall back" that has 6 tiers for prioritizing information:
 1. county + crop code
 2. county + crop_class
 3. crop code
