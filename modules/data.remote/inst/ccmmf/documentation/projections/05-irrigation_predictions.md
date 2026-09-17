@@ -70,7 +70,7 @@ paired by position within each parcel-year. A count mismatch between the two is 
 Reconstructing peak greenness: the water balance needs a peak date to shape the canopy curve, and
 nothing observes one in the future. Instead the inventory phenology record gives where the peak fell as
 a fraction of the season — the gap from onset to peak over the gap from onset to end — and that
-fraction is applied to the projected season length. Matching previous sceipts, this has five fallback levels:
+fraction is applied to the projected season length. Matching previous scripts, this has five fallback levels:
 1. county + crop code
 2. county + crop class
 3. crop code
