@@ -29,7 +29,7 @@ currently in a given class draw their next class from that class's row of the co
 the starting state for the following year. Counties are projected independently.
 
 **Important**
-This script makes a few assumptions/simplifications to for a smoother prediction workflow:
+This script makes a few assumptions/simplifications for a smoother prediction workflow:
 1. The matrix predictions are for crop class only. The rest of the crop identity records, like subclass, 
 multiuse, adoy, are not projected as well, they are looked up from what those attributes historically were 
 for that crop.
