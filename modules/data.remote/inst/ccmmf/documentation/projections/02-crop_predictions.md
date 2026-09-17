@@ -9,7 +9,7 @@ separately, because while BAU and NBS targets share the same acres goals, their 
 
 The final outputs are state-wide annual crop projection parquets, with the same formatting as inventory. 
 
-The scripts uses 5 files:
+The scripts uses 5 files, which are outputs from prior workflows and whose locations are specified in the config.yml:
 1. `crop_year_states_cleaned.csv` — organizes the historical data as one crop state per parcel-year, created in transition_matrix.R 
 2. `crops_full_counties.csv` — the full record with SUBCLASS, also created in transition_matrix.R 
 3. LandIQ crop identity parquet — the inventory product, filtered to configured years 
