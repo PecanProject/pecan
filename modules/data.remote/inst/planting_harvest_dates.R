@@ -178,6 +178,7 @@ write_years = function(events, dir, stem, cols) {
 }
 
 # ---- fixed parcel county ----
+#Row names written by write.csv() come back as an unnamed first column, which fread names V1. Drop it if present, it carries no information.
 crop_history = fread(config$crop_history_path, integer64 = "integer64")
 if ("V1" %in% names(crop_history)) crop_history[, V1 := NULL]
 
