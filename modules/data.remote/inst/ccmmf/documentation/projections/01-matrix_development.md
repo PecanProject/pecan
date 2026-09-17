@@ -10,17 +10,6 @@ acreage distribution targets.
 The final optimized matrices are the ones used for the crop prediction workflow, and therefore serve as the 
 basis of the prediction pipeline. 
 
-## Setup
-1. The beginning line in these scripts start with pacman::p_load to download the necessary 
-packages, including PEcAn.data.remote which has the functions use to make transition matrices. 
-
-2. Next, you will have to load the configuration file to be able to pull and store the required data 
-for this workflow. All setting are inside `config.yml`, with the s3 paths stored in the default setting.
-  a. Inside `config.yml`, define `work_root` to your personal path, or wherever you want intermediate/final outputs 
-     to be stored. 
-  b. on the working scripts, you will load these configured paths using 
-    `config = config::get(config = "default", file = "config.yml")`
-
 ## transition_matrix.R
 This script filters the LandIQ records to agricultural classes and to the years
 between `historical_start_year` and `start_year`, then assigns each parcel to a
