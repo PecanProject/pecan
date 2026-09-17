@@ -150,7 +150,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     )
 
 
-  if (!("LAI" %in% colnames(sipnet_output))) {
+  if (!("lai" %in% colnames(sipnet_output))) {
     # When LAI not reported, calculate it from leaf C and leaf specific weight,
     # with the latter read from the parameter file.
     # Note the hardcoded + undocumented assumption that ../run/sipnet.param
@@ -163,7 +163,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                          "sipnet.param"), stringsAsFactors = FALSE)
     leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
     SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-    sipnet_output$LAI = sipnet_output$plantLeafC * SLA
+    sipnet_output$lai = sipnet_output$plantLeafC * SLA
   }
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
@@ -213,7 +213,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "litter_carbon_content" = sub.sipnet.output$litter,
       "fine_root_carbon_content" = sub.sipnet.output$fineRootC,
       "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
-      "LAI" = sub.sipnet.output$LAI,
+      "LAI" = sub.sipnet.output$lai,
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
