@@ -10,10 +10,6 @@ Both are downstream of the crop predictions and at the moment this workflow does
 are a historical mean applied to a projected crop, so if crop_class X has a historical mean planting date of March 5th, 
 that date is the same if crop class X appears in a future year. Similarly, predictions will loop through both scenarios. 
 
-##Setup
-Setup remains the same that is has been throughout the workflow: running pacman::p_load and making sure 
-`config::get(config = "default", file = "config.yml")` and `work_root` are set. 
-
 ## Phenology.R
 Overall, this scripts reads four types of files:
 a. `historical phenology_statewide_<year>.parquet` from the inventory phenology event directory 
