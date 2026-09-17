@@ -6,7 +6,7 @@ This section turns projected crop identities into dated events to combine what i
 to happen. `phenology_projection.R` produces leaf-on and leaf-off dates for every projected perennial crop cycle, and `planting_harvest_projection.R` produces the planting and harvest 
 predictions. 
 
-Both are downstream of the crop predictions and this workflow does not include any sampling. All predictions 
+Both are downstream of the crop predictions and at the moment this workflow does not include any sampling. All predictions 
 are a historical mean applied to a projected crop, so if crop_class X has a historical mean date of March 5th, 
 that date is the same if crop class X appears in a future year. Similarly, predictions will loop through both scenarios. 
 
