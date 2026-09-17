@@ -84,7 +84,7 @@ special cases.
 a. Two cycles of the same crop in one parcel-year are averaged into a single pair to find the growing season length. 
 County, crop class, and PFT are taken from the first record in each parcel-year-crop group rather than the most common one, since they do not vary inside a group.
 
-b. Cover crops are planted and terminated, never harvested..
+b. Cover crops receive a harvest event like any other crop, but the removal fractions are overridden, so nothing is removed and everything goes to litter.
 
 c. Phenology takes cover crop status into account; planting and harvest do not, because the historical planting records 
 do not carry a cover crop flag. 
