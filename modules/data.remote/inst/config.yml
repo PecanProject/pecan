@@ -1,0 +1,150 @@
+default:
+  # General project settings
+
+  #Where intermediate and final outputs are stored
+  work_root: "/path/to/your/folder"
+
+  #Inventory years are 2016-2023; projections begin after 2023
+  historical_start_year: 2016
+  start_year: 2023
+  end_year: 2045
+
+  #Management scenarios
+  scenario_names:
+    - "BAU_Targets"
+    - "NBS_Targets"
+
+
+  #Shared input data#
+
+  # Historical LandIQ crop information
+  crops_path: "s3://carb/management/crops/v4.1.2/crops_all_years.parq"
+
+  # LandIQ lookup
+  crop_lookup_path: "s3://carb/management/crops/LandIQ_cropCode_lookup_table.csv"
+
+  # Historical management/event data
+  planting_event_dir: "s3://carb/management/planting/v2.0/"
+  harvest_event_dir: "s3://carb/management/harvest/v2.0/"
+  phenology_event_dir: "s3://carb/management/phenology/v2.0/"
+  tillage_event_dir: "s3://carb/management/tillage/v2.0/"
+  fertilization_event_dir: "s3://carb/management/fertilization/v2.0/"
+  ncc_event_dir: "s3://carb/management/fertilization/v2.0/"
+  
+  # Matched LandIQ / MSLSP phenology
+  phenology_matched_dir: "s3://carb/management/crops/v4.1.2/gapfill_dates"
+  
+  # SSURGO
+  # Replace weights path once uploaded to S3
+  ssurgo_weights_path: "s3://carb/management/irrigation/ssurgo-weights.parquet"
+  ssurgo_gdb_path: "s3://carb/management/session3/ssurgo/gSSURGO_CA.gdb/"
+
+  # Cal-Adapt / WRF archive
+  wrf_archive_path: "s3://carb/met/wrf_met_CA_45km_2024_2051.tgz"
+
+  # Local extracted WRF directory.
+  # Relative path means: work_root/wrf_45km
+  wrf_base_dir: "wrf_45km"
+
+
+  # Scenario goal files
+
+  scenario_dir: "MAGiC_scenarios_FINAL"
+
+  bau_target_file: "BAU_Targets.csv"
+  nbs_target_file: "NBS_Targets.csv"
+  crop_target_source: "BAU_Targets"
+
+  # Intermediate/output files and folders
+
+
+  crop_data_file: "crop_year_states_cleaned.csv"
+  crop_history_file: "crops_full_counties.csv"
+  all_data_file: "all_data.csv"
+
+  crop_matrix_dir: "county_crop_matrices"
+  matrix_out_dir: "county_optimized_matrices"
+
+  prediction_dir: "crop_predictions"
+
+  phenology_output_dir: "phenology_projections"
+  planting_output_root: "planting_projections"
+  harvest_output_root: "harvest_projections"
+  tillage_output_root: "tillage_projections"
+  fertilization_output_root: "fertilization_projections"
+  ncc_output_root: "ncc_projections"
+
+  irrigation_output_dir: "irrigation_projections"
+  irrigation_awc_cache_dir: "irrigation_awc_cache"
+
+  climate_output_file: "caladapt_county_daily_climate.csv"
+
+
+  #Crop matrix optimization
+  workers: 6 #also used for irrigation predictions
+
+  lambda_target: 1000000
+  maxeval_optimizer: 50000
+  maxtime_optimizer: 360
+
+  scale_crop_targets_to_x0: true
+  nominal_zero_acres: 0.01
+
+  run_all_counties: true
+  counties_manual: []
+
+
+  # Randomization
+  seed: 42
+
+  # Tillage projection
+
+  tillage_seed: 1
+  no_till_threshold: 30
+  low_till_threshold: 70
+
+  # Climate
+
+  climate_gcm: "CESM2"
+  climate_ssp: "ssp370"
+  wind_height_m: 10
+
+
+  # Irrigation
+
+  rice_target: 125
+  rice_min: 62.5
+  rice_max: 175
+  rice_seepage: 2.5
+  irrigation_max: 150
+
+
+scc:
+
+  # SCC-specific overrides
+
+  work_root: "/projectnb/dietzelab/ananyak"
+
+  crops_path: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/crops_all_years.parq"
+
+  crop_lookup_path: "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv"
+
+  planting_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  harvest_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  phenology_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  phenology_matched_dir: "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates"
+
+  tillage_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  fertilization_event_dir: "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/v2.0"
+  
+  ncc_event_dir: "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc/v2.0"
+
+  ssurgo_weights_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/ssurgo-weights.parquet"
+
+  ssurgo_gdb_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"
+
+  wrf_base_dir: "/projectnb/dietzelab/ccmmf/CalAdapt/wrf_45km"
