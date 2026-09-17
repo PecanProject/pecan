@@ -1,20 +1,19 @@
-#using the 198 design points that have Cal-Adapt 2025-45 data already downloaded, and collapsing them into
-#county-level daily climate - this uses the spatial assumption that every parcel in a county experiences the same daily climate
+pacman::p_load(ncdf4, sf, tidyr, dplyr, fs, purrr, furrr, future, lubridate, tigris, FAO56, parallelly)
 
-pacman::p_load(ncdf4, sf, dplyr, fs, purrr, furrr, future,
-               lubridate, tigris, FAO56, parallelly)
+# ---- setup ----
+config = config::get(config = "scc", file = "config.yml")
+output_dir = config$work_root
+base_dir = config$wrf_base_dir
 
-#REQUIRED: Choose a folder where intermediate products will be saved
-#work_root = "/path/to/your/folder"
+# Default config uses a relative extracted directory under work_root
+if (!grepl("^/", base_dir)) {
+  base_dir = file.path(config$work_root, base_dir)
+}
 
-#Shared Data: Shared project data, most users should not need to change this.
-ccmmf_root = "/projectnb/dietzelab/ccmmf"
+years_keep = seq.int(config$start_year + 1L, config$end_year + 1L)
 
-##where you want the final output to be saved to
-output_dir = work_root
-
-##the Cal-Adapt 2025-45 info for irrigation estimates are already downloaded
-base_dir = file.path(ccmmf_root, "ensemble", "CalAdapt_runs", "data_raw", "CalAdaptWRF")
+gcm_keep = config$climate_gcm
+ssp_keep = config$climate_ssp
 
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -50,7 +49,7 @@ parse_nc_time = function(time_steps, time_units, year_val) {
   }
 }
 
-calculate_daily_et0 = function(df_hourly, wind_height_m = 10) {
+calculate_daily_et0 = function(df_hourly, wind_height_m) {
   df_daily = df_hourly |>
     dplyr::mutate(
       ea_kpa = specific_humidity_to_ea(.data$spec_hum, .data$pressure),
@@ -91,7 +90,7 @@ calculate_daily_et0 = function(df_hourly, wind_height_m = 10) {
     dplyr::ungroup()
 }
 
-process_nc_file = function(nc_path, wind_height_m = 10) {
+process_nc_file = function(nc_path, wind_height_m = config$wind_height_m) {
   nc = tryCatch(
     ncdf4::nc_open(nc_path),
     error = function(e) {
@@ -191,10 +190,8 @@ missing_counties_projected = st_transform(missing_counties, 3310)
 missing_county_points = st_point_on_surface(missing_counties_projected)
 nearest_site_index = st_nearest_feature(missing_county_points, sites_projected)
 
-missing_county_lookup = tibble(
-  County = missing_counties$County,
-  site_hash = sites_projected$site_hash[nearest_site_index]
-)
+missing_county_lookup = tibble(County = missing_counties$County,
+  site_hash = sites_projected$site_hash[nearest_site_index])
 
 internal_site_lookup = sites_with_county |> filter(!is.na(County)) |> select(County, site_hash)
 county_site_lookup = bind_rows(internal_site_lookup, missing_county_lookup) |> distinct()
@@ -207,16 +204,29 @@ unmatched_counties = setdiff(ca_counties$County, county_site_lookup$County)
 print(unmatched_counties)
 if (length(unmatched_counties)) stop("Some counties still have no Cal-Adapt site assignment.")
 
+# ---------- process required NetCDF files ----------
+site_dirs = fs::dir_ls(base_dir, type = "directory")
 
-# ---------- process all NetCDF files ----------
-all_nc_files = dir_ls(base_dir, recurse = TRUE, glob = "*.nc")
-cat(sprintf("Found %d NetCDF files.\n", length(all_nc_files)))
+all_nc_files = purrr::map(site_dirs,
+  \(site_dir) {
+    file.path(site_dir, paste0(gcm_keep, ".", ssp_keep, ".", years_keep, ".nc"))
+  }
+) |>
+  unlist()
+
+missing_files = all_nc_files[!file.exists(all_nc_files)]
+
+if (length(missing_files)) {
+  stop(length(missing_files), " expected climate files are missing. First missing file: ",
+    missing_files[1])
+}
+
+cat("Processing", length(all_nc_files), "files across", length(site_dirs), "grid cells.\n")
 
 plan(multisession, workers = max(1, parallelly::availableCores() - 1))
 
 daily_climate_dataset = future_map_dfr(all_nc_files, process_nc_file,
-  wind_height_m = 10, .progress = TRUE, .options = furrr_options(seed = TRUE))
-
+  wind_height_m = config$wind_height_m, .progress = TRUE, .options = furrr_options(seed = TRUE))
 
 # ---------- attach counties to daily climate records ----------
 daily_climate_county = daily_climate_dataset |> inner_join(county_site_lookup, by = "site_hash")
