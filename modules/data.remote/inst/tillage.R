@@ -1,37 +1,36 @@
 ## all_data.csv = historical county x crop tillage baseline
 ## BAU/NBS differ through future no/low/high till shares
+## County-crop groups with no scenario tillage target hold their historical shares
+## I/YP receive no tillage events
 
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
-work_root = Sys.getenv("PROJECTION_WORK_ROOT")
-lookup_path = Sys.getenv("PROJ_CROP_LOOKUP")
-tillage_dir = Sys.getenv("PROJ_TILLAGE_DIR")
+config = config::get(config = "scc", file = "config.yml")
 
-if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
-}
+config$historical_years = seq.int(config$historical_start_year, config$start_year)
 
-if (!nzchar(lookup_path)) {stop("PROJ_CROP_LOOKUP is not set. Source setup_projection_env.sh first.")
-}
+config$prediction_years = seq.int(config$start_year + 1L, config$end_year)
 
-if (!nzchar(tillage_dir)) {stop("PROJ_TILLAGE_DIR is not set. Source setup_projection_env.sh first.")
-}
+config$all_data_path = file.path(config$work_root, config$all_data_file)
 
-config = list(all_data_path = file.path(work_root, "all_data.csv"),
-  crop_year_path = file.path(work_root, "crop_year_states_cleaned.csv"),
-  crop_prediction_dir = file.path(work_root, "crop_predictions"),
-  phenology_root = file.path(work_root, "phenology_projections"),
-  
-  #shared inputs
-  lookup_path = lookup_path,
-  tillage_event_dir = tillage_dir,
-  
-  scenario_dir = file.path(work_root, "MAGiC_scenarios_FINAL"),
-  output_root = file.path(work_root, "tillage_projections"),
-  
-  historical_years = 2016:2023, prediction_years = 2024:2045, start_year = 2023L, end_year = 2045L,
-  scenarios = c("BAU_Targets", "NBS_Targets"), no_till_threshold = 30, low_till_threshold = 70,
-  seed = 1L)
+config$crop_year_path = file.path(config$work_root, config$crop_data_file)
+
+config$crop_prediction_dir = file.path(config$work_root, config$prediction_dir)
+
+config$lookup_path = config$crop_lookup_path
+
+config$scenario_dir = file.path(config$work_root, config$scenario_dir)
+
+config$phenology_root = file.path(config$work_root, config$phenology_output_dir)
+
+config$output_root = file.path(config$work_root, config$tillage_output_root)
+
+config$scenarios = config$scenario_names
+config$seed = config$tillage_seed
+
+# Classes with no scenario tillage mapping and no routine tillage.
+skip_classes = c("I", "YP", "X")
 
 scenario_files = c(BAU_Targets = file.path(config$scenario_dir, "BAU_Targets.csv"),
                    NBS_Targets = file.path(config$scenario_dir, "NBS_Targets.csv"))
@@ -248,33 +247,69 @@ make_targets = function(x) {
   rbindlist(list(no, low, high))
 }
 
-build_annual_targets = function(baseline, target, start_year, end_year) {
+# Annual shares are built for every county-crop group present in the projection,
+# not only those the scenario sheet breaks out. Groups with a scenario target ramp
+# from their historical baseline to that target; groups without one hold their
+# historical shares flat. Counties with no history for a crop use the statewide
+# historical shares for that crop.
+build_annual_targets = function(baseline, target, combos_needed, start_year, end_year) {
   target = copy(target)
   target[, target_total := sum(target_acres, na.rm = TRUE), by = .(county_safe, crop_state)]
   
   zero = unique(target[!is.finite(target_total) | target_total <= 0, .(county_safe, crop_state)])
-  if (nrow(zero)) message(nrow(zero), " county-crop groups have zero total tillage target.")
+  if (nrow(zero))
+    message(nrow(zero), " county-crop groups have no scenario tillage target; holding baseline shares.")
   
   target = target[is.finite(target_total) & target_total > 0]
   target[, target_share := target_acres / target_total]
   
-  combos = unique(target[, .(county_safe, crop_state)])
+  state_baseline = baseline[, .(acres = sum(baseline_acres, na.rm = TRUE)),
+                            by = .(crop_state, till_state)]
+  state_baseline[, state_share := acres / sum(acres), by = crop_state]
+  
+  combos = unique(copy(combos_needed)[, .(county_safe, crop_state)])
+  
   annual = combos[, CJ(till_state = c("no_till","low_till","high_till"),
-                       year = seq(start_year + 1L, end_year)), by = .(county_safe, crop_state)]
+                       year = seq.int(start_year + 1L, end_year)), by = .(county_safe, crop_state)]
   
   annual = merge(annual, baseline[, .(county_safe, crop_state, till_state, baseline_share)],
                  by = c("county_safe","crop_state","till_state"), all.x = TRUE)
+  annual = merge(annual, state_baseline[, .(crop_state, till_state, state_share)],
+                 by = c("crop_state","till_state"), all.x = TRUE)
   annual = merge(annual, target[, .(county_safe, crop_state, till_state, target_share)],
                  by = c("county_safe","crop_state","till_state"), all.x = TRUE)
   
+  annual[, `:=`(
+    has_target = any(is.finite(target_share) & target_share > 0),
+    has_baseline = any(is.finite(baseline_share) & baseline_share > 0),
+    has_state = any(is.finite(state_share) & state_share > 0)
+  ), by = .(county_safe, crop_state)]
+  
   annual[is.na(baseline_share), baseline_share := 0]
+  annual[is.na(state_share), state_share := 0]
   annual[is.na(target_share), target_share := 0]
+  
+  annual[, start_share := fifelse(has_baseline, baseline_share, state_share)]
   annual[, ramp := (year - start_year) / (end_year - start_year)]
-  annual[, till_share := (1 - ramp) * baseline_share + ramp * target_share]
+  
+  annual[, till_share := fifelse(
+    has_target,
+    (1 - ramp) * start_share + ramp * target_share,
+    start_share)]
+  
+  annual[, target_source := fcase(
+    has_target & has_baseline, "scenario_ramp",
+    has_target & !has_baseline, "scenario_ramp_statewide_start",
+    !has_target & has_baseline, "baseline_hold",
+    !has_target & has_state, "statewide_hold",
+    default = "none")]
+  
   annual[, share_sum := sum(till_share, na.rm = TRUE), by = .(county_safe, crop_state, year)]
   annual[is.finite(share_sum) & share_sum > 0, till_share := till_share / share_sum]
   annual[!is.finite(share_sum) | share_sum <= 0, till_share := NA_real_]
-  annual[, c("target_total","ramp","share_sum") := NULL]
+  
+  annual[, c("ramp","share_sum","has_target","has_baseline","has_state",
+             "start_share","state_share") := NULL]
   annual
 }
 
@@ -462,10 +497,10 @@ event_meta[, parcel_id := as.character(parcel_id)]
 
 # derive PFT from LandIQ crop CLASS
 event_meta = merge(event_meta,
-  pft_class,
-  by.x = "crop_class",
-  by.y = "CLASS",
-  all.x = TRUE
+                   pft_class,
+                   by.x = "crop_class",
+                   by.y = "CLASS",
+                   all.x = TRUE
 )
 
 setnames(event_meta, "fallback_PFT", "PFT")
@@ -615,8 +650,22 @@ read_pheno_windows = function(scen) {
 for (scen in config$scenarios) {
   message("Processing ", scen)
   set.seed(config$seed)
+  
+  out_dir = file.path(config$output_root, scen)
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  
   future = read_future_crops(scen)
   pheno_windows = read_pheno_windows(scen)
+  
+  # Idle and young perennial have no scenario tillage mapping and no routine tillage.
+  n_skip = future[CLASS %chin% skip_classes, .N]
+  if (n_skip)
+    message(scen, " rows excluded from tillage (", paste(skip_classes, collapse = "/"), "): ",
+            format(n_skip, big.mark = ","))
+  
+  future = future[!CLASS %chin% skip_classes]
+  
+  if (!nrow(future)) stop("No tillable future crop rows for ", scen)
   
   s = fread(scenario_files[[scen]])
   
@@ -642,8 +691,18 @@ for (scen in config$scenarios) {
   
   if (!nrow(targets)) stop("No tillage targets created for ", scen)
   
-  annual = build_annual_targets(baseline_till, targets,
+  # Every county-crop group in the projection needs annual shares, whether or not
+  # the scenario sheet breaks that group out.
+  combos_needed = unique(future[, .(county_safe, crop_state = CLASS)])
+  
+  annual = build_annual_targets(baseline_till, targets, combos_needed,
                                 config$start_year, config$end_year)
+  
+  covered = merge(combos_needed, unique(annual[!is.na(till_share), .(county_safe, crop_state)]),
+                  by = c("county_safe","crop_state"), all.x = TRUE, all.y = FALSE)
+  
+  message(scen, " county-crop groups in projection: ", nrow(combos_needed),
+          "; with usable shares: ", nrow(covered))
   
   pred = assign_tillage(future, annual)
   
@@ -652,8 +711,17 @@ for (scen in config$scenarios) {
   message(scen, " rows without tillage target: ",
           format(missing_target, big.mark = ","))
   
-  if (missing_target)
+  if (missing_target) {
+    gaps = pred[is.na(till_state), .(rows = .N, acres = sum(ACRES, na.rm = TRUE)),
+                by = .(county_safe, year, CLASS)]
+    setorder(gaps, -rows)
+    
+    gap_path = file.path(out_dir, "tillage_missing_targets.parquet")
+    write_parquet(gaps, gap_path, compression = "zstd")
+    
+    message("Wrote unassigned groups to: ", gap_path)
     stop(scen, " has future crop rows without a tillage target.")
+  }
   
   # ---- realized vs target QC ----
   realized = pred[, .(realized_acres = sum(ACRES, na.rm = TRUE)),
@@ -671,7 +739,7 @@ for (scen in config$scenarios) {
   
   qc_targets = annual[, .(
     county_safe, year, CLASS = crop_state,
-    till_state, target_share = till_share)]
+    till_state, target_share = till_share, target_source)]
   
   qc_targets = merge(qc_targets, active_groups,
                      by = c("county_safe","year","CLASS"), all = FALSE)
@@ -691,11 +759,12 @@ for (scen in config$scenarios) {
   
   setorder(tillage_qc, county_safe, year, CLASS, till_state)
   
-  out_dir = file.path(config$output_root, scen)
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  
   qc_path = file.path(out_dir, "tillage_projection_qc.parquet")
   write_parquet(tillage_qc, qc_path, compression = "zstd")
+  
+  message(scen, " share of groups on a scenario ramp: ",
+          round(tillage_qc[target_source %chin% c("scenario_ramp","scenario_ramp_statewide_start"), .N] /
+                  nrow(tillage_qc), 3))
   
   message(scen, " maximum absolute tillage-share difference: ",
           round(max(abs(tillage_qc$difference_share), na.rm = TRUE), 4))

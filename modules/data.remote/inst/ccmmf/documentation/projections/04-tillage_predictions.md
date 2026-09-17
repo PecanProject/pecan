@@ -2,507 +2,91 @@
 
 ## Overview
 
-This workflow projects future tillage states and tillage events from 2024
-through 2045.
+This section assigns a tillage state to every projected parcel-year and turns the tilled ones into
+dated events. There is no imagery past 2023, so nothing can be detected: the scenario says how many
+acres belong in each tillage class, the script decides which parcels those are, and timing and NDTI
+magnitude are filled in from historical means.
+
+Creating the tillage projections works as the reverse of the inventory, where the state is the result of 
+reading NDTI. Here the state is an input and the NDTI value is attached afterward so the event carries the 
+same fields. Parcel selection is random but seeded, so a rerun reproduces the same assignments, and the 
+script loops through both scenarios.
+
+## Setup
+
+Setup remains the same that it has been throughout the workflow: running `pacman::p_load` and making
+sure `config::get(config = "default", file = "config.yml")` and `work_root` are set.
+
+## Tillage_projection.R
+
+Overall, this script reads five types of files:
+
+a. `all_data.csv` for the historical county x crop tillage baseline
+b. `assigned_year=<2016-2023>_tillage.parquet` from the inventory tillage directory, for event timing and
+NDTI values
+c. `crop_year_states_cleaned.csv` for parcel acreage and county
+d. Projected crop identity files, one per scenario and year
+e. Projected phenology files, to keep events out of growing periods
+f. The scenario goal sheets, read for their tillage acreage columns
+
+To build the baseline: Each parcel's most recent tillage is taken, and acreage is totaled by county, 
+crop class, and state. That gives the share of each county-crop currently in no-till, reduced till, and 
+conventional till.
+
+To map the scenario onto LandIQ: The target sheets define/name crops differently than the LandIQ data, so the 
+script creates a map between the two. Most are one-to-one, but two are not — "All Other Field Crops" splits 
+across F and P, and "Annual Cropland" splits across F, G, T, and R — and both are weighted by how much
+acreage the county currently holds in each.
+
+Annual shares: the sheet gives a target for every projection year, but only the 2045 target is read. 
+Each county-crop moves from its baseline shares to that 2045 target in equal steps.
+
+Not every county-crop has a target, so a starting and ending point comes from one of three places:
+*scenario ramp — the sheet gives a breakdown, so the group ramps from baseline to target
+*baseline hold — the sheet gives nothing, so the county's current shares are held flat to 2045
+*statewide hold — the sheet gives nothing and the county has no history for that crop either, so the 
+statewide shares for that crop are held flat
+
+**Important:** only a minority of county-crops are on a scenario ramp. Most projected acreage carries
+its current tillage practice forward unchanged, and BAU and NBS differ only across the groups the
+sheet covers. A `target_source` column in the QC file records which of the three applied.
+
+Assigning parcels: within a county, year, and crop class, parcels are shuffled and assigned states in
+order using a cumulative acreage midpoint — a parcel takes a state if more than half its acreage falls
+in that state's share. Assigning by acreage rather than parcel count matters because parcel sizes vary
+enormously, and counting parcels would hit the target number of fields while missing the acres.
+
+Timing and NDTI: no-till parcels are dropped, since they produce no event. The rest take a day of year
+and a percent NDTI change from historical events, with three fallback levels:
 
-Unlike crop, phenology, planting, and harvest, tillage branches by scenario.
-
-Separate projections are produced for:
-
-```text
-BAU_Targets
-NBS_Targets
-```
-
-because the two scenarios contain different future tillage acreage targets.
-
-The script covered here is:
-
-```text
-tillage_projection.R
-```
-
-## Workflow
-
-```text
-all_data.csv
-        |
-        v
-2023 county × crop tillage baseline
-        |
-        +-----------------------------+
-                                      |
-BAU/NBS 2045 tillage targets          |
-        |                             |
-        +-------------+---------------+
-                      |
-                      v
-          interpolate annual shares
-               2024-2045
-                      |
-                      v
-          assign tillage to parcels
-                      |
-                      +--------------------------+
-                                                 |
-historical v4.1 tillage events                  |
-        |                                        |
-        v                                        |
-timing + NDTI lookups                           |
-        |                                        |
-        +----------------+-----------------------+
-                         |
-                         v
-               future tillage events
-                 /               \
-                v                 v
-         BAU_Targets         NBS_Targets
-```
-
-## 1. Historical tillage baseline
-
-The baseline is read from:
-
-```text
-<work_root>/all_data.csv
-```
-
-Required fields include:
-
-```text
-parcel_id
-year
-county
-crop_class
-ACRES
-till_state
-```
-
-For each parcel, the latest tillage state at or before 2023 is selected.
-
-Historical acreage is then summarized by:
-
-```text
-county
-crop class
-tillage state
-```
-
-to calculate the baseline acreage shares.
-
-## 2. Tillage states
-
-Tillage states are standardized to:
-
-```text
-no_till
-low_till
-high_till
-```
-
-Historical NDTI values are classified using:
-
-```text
-0-30%              -> no_till
->30% and <70%      -> low_till
->=70%              -> high_till
-```
-
-The thresholds are configurable.
-
-## 3. Future crop metadata
-
-Future parcels come from:
-
-```text
-crop_predictions/
-```
-
-and use the corrected v4.1.2 parcel metadata from:
-
-```text
-crop_year_states_cleaned.csv
-```
-
-including:
-
-```text
-county
-county_geoid
-ACRES
-CLASS
-SUBCLASS
-```
-
-## 4. Important old-v4.1 restriction
-
-Historical tillage event files come from the older v4.1 inventory.
-
-Those parcel IDs are used only to estimate historical:
-
-```text
-tillage timing
-NDTI magnitude
-```
-
-Old v4.1 parcel IDs are **never joined directly to future v4.1.2 parcels**.
-
-Historical old tillage events are joined only to historical metadata belonging
-to the same old parcel inventory.
-
-## 5. Scenario tillage targets
-
-Future targets are read from:
-
-```text
-MAGiC_scenarios_FINAL/BAU_Targets.csv
-MAGiC_scenarios_FINAL/NBS_Targets.csv
-```
-
-The relevant columns are:
-
-```text
-No till acres (CPS 329)
-Reduced till acres (CPS 345)
-Tilled acres
-```
-
-These are converted to:
-
-```text
-no_till
-low_till
-high_till
-```
-
-target acreage.
-
-## 6. MAGiC crop mapping
-
-MAGiC crop categories are mapped to LandIQ crop states.
-
-Examples include:
-
-```text
-Almonds -> D
-Citrus -> C
-Grapes -> V
-Fallow -> X
-```
-
-Some categories are split across multiple LandIQ states.
-
-```text
-All Other Field Crops
-    -> F / P
-
-Annual Cropland
-    -> F / G / T / R
-```
-
-Historical county crop acreage determines the split weights.
-
-## 7. 2045 tillage target shares
-
-For each county and crop state:
-
-```text
-target_share =
-    target tillage-state acreage /
-    total tillage target acreage
-```
-
-Target shares are calculated separately for:
-
-```text
-no_till
-low_till
-high_till
-```
-
-County/crop groups with zero total target acreage are reported.
-
-## 8. Annual interpolation
-
-Future tillage shares gradually move from the historical 2023 baseline to the
-2045 scenario target.
-
-For each year:
-
-```text
-ramp =
-    (year - 2023) /
-    (2045 - 2023)
-```
-
-The annual share is:
-
-```text
-annual share =
-    (1 - ramp) * baseline_share
-    + ramp * target_share
-```
-
-Therefore:
-
-```text
-2023 -> historical baseline
-2024 -> mostly historical
-...
-2045 -> scenario target
-```
-
-## 9. PFT assignment
-
-Future PFT is assigned from the LandIQ lookup table.
-
-Preferred matching is:
-
-```text
-CLASS + SUBCLASS
-```
-
-with fallback to:
-
-```text
-CLASS
-```
-
-PFT is later used to assign tillage event timing and NDTI magnitude.
-
-## 10. Acreage-aware parcel assignment
-
-Future tillage state is assigned separately for each:
-
-```text
-county
-year
-crop CLASS
-```
-
-When valid acreage exists, parcels are randomly ordered.
-
-Target tillage shares are converted to target acreage, and parcel acreage
-midpoints are assigned across the cumulative target acreage intervals.
-
-This produces realized acreage distributions that more closely follow scenario
-targets than simple parcel-count sampling.
-
-## 11. Reproducibility
-
-The random seed is reset separately for BAU and NBS.
-
-This causes both scenarios to begin from the same random ordering so that their
-differences are driven primarily by scenario target differences.
-
-## 12. Missing-target validation
-
-Every future crop parcel must receive:
-
-```text
-no_till
-low_till
-or
-high_till
-```
-
-The script reports the number of:
-
-```text
-rows without tillage target
-```
-
-and stops if any exist.
-
-A missing target is not treated as equivalent to no-till.
-
-## 13. Realized-versus-target QC
-
-For every:
-
-```text
-scenario
-county
-year
-crop class
-tillage state
-```
-
-the workflow calculates:
-
-```text
-target_share
-target_acres
-realized_share
-realized_acres
-difference_share
-difference_acres
-```
-
-QC outputs are:
-
-```text
-tillage_projections/BAU_Targets/tillage_projection_qc.parquet
-tillage_projections/NBS_Targets/tillage_projection_qc.parquet
-```
-
-Small discrepancies are expected because whole parcels rather than fractional
-acreage are assigned.
-
-## 14. No-till versus event generation
-
-All parcels receive a tillage state for scenario acreage accounting.
-
-However:
-
-```text
-no_till
-```
-
-represents a management condition rather than a physical disturbance event.
-
-Therefore only:
-
-```text
-low_till
-high_till
-```
-
-produce tillage event rows.
-
-## 15. Historical tillage event timing
-
-Historical v4.1 tillage event files are used to learn:
-
-```text
-event timing
-NDTI percent change
-```
-
-Only low- and high-tillage historical events are used for future event
-generation.
-
-## 16. Leap-year-safe timing
-
-Historical tillage dates are converted onto a fixed non-leap 365-day reference
-calendar.
-
-February 29 is mapped to February 28 for timing summaries.
-
-This prevents leap years from introducing day-366 inconsistencies.
-
-## 17. Year-boundary-safe timing
-
-Historical event dates near both December and January are averaged using
-wrapped day-of-year logic.
-
-For example:
-
-```text
-December 28
-January 5
-```
-
-is treated as a winter timing distribution rather than averaging to summer.
-
-## 18. Historical event lookup hierarchy
-
-Future low/high tillage events receive timing and NDTI magnitude using:
-
-```text
 1. county + PFT + tillage state
-2. statewide PFT + tillage state
-3. statewide tillage state
-```
+2. PFT + tillage state
+3. tillage state alone
 
-This retains local and PFT-specific information when available while still
-providing broader fallbacks.
+Day of year uses circular wrapping similar to the planting date prediction so winter tillage does not 
+average to mid-year.
 
-## 19. Event output
+Moving events into fallow: a projected date can land inside a growing period, which the inventory
+never has to handle because it only looks in fallow windows to begin with. Any event falling between a
+projected leaf-on and leaf-off is moved to the nearest day outside it. This repeats a few times, since
+cover crops mean a parcel-year can have overlapping active periods and moving an event out of one can
+put it inside another.
 
-The final tillage event schema is:
+**Important: simplifications**
+1. Tillage acreage applies to the dominant crop only. A cover crop affects when tillage can happen by occupying 
+part of the year, but does not count as more land. 
+2. Idle, young perennial, and unclassified fallow receive no 
+tillage events. None have a scenario mapping and none are a crop being prepared for planting. 
+3. Only the 2045 target is read from the sheet, and the path to it is a straight line. The sheet also gives 
+intermediate years,  so a future version could follow its trajectory instead of interpolating.
+4. A projected NDTI magnitude is a historical average for that county, plant type, and intensity. It is a 
+plausible number of the right size, not an observation.
+5. Historical tillage events missing a county fall back to statewide averages for their plant type, so some 
+counties are represented by a broader mean than others.
 
-```text
-event_type
-parcel_id
-date
-ndti_pct_drop
-```
+## Outputs
+Outputs go to scenario subdirectories under the tillage output root and match the inventory structure/column names:
+`<scenario>/tillage_statewide_<2024-2045>.parquet`
 
-where:
-
-```text
-event_type = tillage
-```
-
-## 20. Outputs
-
-BAU:
-
-```text
-tillage_projections/BAU_Targets/
-├── tillage_projection_qc.parquet
-├── tillage_statewide_2024.parquet
-├── ...
-└── tillage_statewide_2045.parquet
-```
-
-NBS:
-
-```text
-tillage_projections/NBS_Targets/
-├── tillage_projection_qc.parquet
-├── tillage_statewide_2024.parquet
-├── ...
-└── tillage_statewide_2045.parquet
-```
-
-## 21. Validation
-
-The workflow checks:
-
-- valid historical tillage states
-- scenario target mapping
-- zero-total target groups
-- missing future tillage assignments
-- realized versus target acreage shares
-- historical low/high tillage event availability
-- valid future event timing
-- complete NDTI values
-- complete annual output rows
-
-## 22. Running the workflow
-
-Required upstream inputs include:
-
-```text
-all_data.csv
-crop_year_states_cleaned.csv
-crop_predictions/
-MAGiC_scenarios_FINAL/
-```
-
-Run:
-
-```bash
-Rscript tillage_projection.R
-```
-
-## 23. Relationship to crop prediction
-
-Tillage is downstream of the shared crop projection:
-
-```text
-crop_prediction.R
-        |
-        v
-shared future crop identity
-        |
-        +---------------------+
-        |                     |
-        v                     v
-BAU tillage              NBS tillage
-```
-
-Future crop identity determines which crop-specific tillage target applies,
-while the BAU/NBS scenario determines the desired future tillage distribution.
+Diagnostics are written to separate files to preserve the output structure:
+`<scenario>/tillage_projection_qc.parquet` — target versus realized acreage and share by county, year, crop class, and tillage state, plus which fallback supplied the target <scenario>/tillage_missing_targets.parquet — written only if the completeness check fails, listing the groups with no usable target
