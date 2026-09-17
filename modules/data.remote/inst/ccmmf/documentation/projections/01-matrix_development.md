@@ -66,7 +66,7 @@ being converted to other uses or new farmland being added.
 b. The Magic scenario sheets are LandIQ classes do not perfectly map to each other. For example
 One code in LandIQ may not mean the same thing in the scenario sheet, or it may not be included at all. 
 This script accounts for these mismatches and applies a crop mapping before optimization. 
-  - Most mappig is one-to-one, but "All Other Field Crops" splits across `F`/`P` and "Annual 
+  - Most mapping is one-to-one, but "All Other Field Crops" splits across `F`/`P` and "Annual 
     Cropland" across `F`/`G`/`T`/`R`, all weighted by the county's current acreage in each. 
     
 c. BAU and NBS currently use the same crop acre targets, so this runs once and both
