@@ -2,455 +2,117 @@
 
 ## Overview
 
-This workflow projects future crop-season timing from 2024 through 2045 using
-historical CCMMF phenology, planting, and harvest products together with the
-shared future crop predictions.
-
-It consists of two related scripts:
-
-```text
-phenology_projection_shared_compact.R
-planting_harvest_projection.R
-```
-
-Phenology, planting, and harvest are projected once because the current BAU and
-NBS scenarios share the same future crop identity.
-
-## Workflow
-
-```text
-Future crop predictions
-        |
-        +-------------------------+
-        |                         |
-        v                         v
- historical phenology      historical planting
-      products             + harvest products
-        |                         |
-        v                         v
-county × crop CLASS       planting timing +
-leaf-on/off lookup        planting->harvest lag
-        |                         |
-        v                         v
-phenology projections     planting/harvest projections
-```
-
-# Phenology
-
-## 1. Historical phenology inputs
-
-Historical phenology events are read from:
-
-```text
-<ccmmf_root>/management/event_files_v4.1.2/
-```
-
-for:
-
-```text
-2018-2023
-```
-
-Matched LandIQ/MSLSP information is read from:
-
-```text
-<ccmmf_root>/management/phenology/
-matched_landiq_mslsp_v4.1.2/gapfill_dates/
-```
-
-The matched files provide:
-
-```text
-parcel_id
-landiq_CLASS
-mslsp_50PCGI
-mslsp_50PCGD
-```
-
-## 2. Historical phenology matching
-
-Historical phenology records are standardized to:
-
-```text
-parcel_id
-year
-leafonday
-leafoffday
-```
-
-These dates are matched to the LandIQ/MSLSP data using:
-
-```text
-parcel_id
-year
-leafonday
-leafoffday
-```
-
-This attaches the corresponding LandIQ crop class.
-
-## 3. County assignment
-
-County information is obtained from:
-
-```text
-crops_full_counties.csv
-```
-
-Each parcel must map to only one county.
-
-## 4. Phenology lookup
-
-Historical leaf-on and leaf-off timing is converted to offsets from January 1.
-
-The lookup is calculated by:
-
-```text
-county + crop CLASS
-```
-
-For each group:
-
-```text
-mean leaf-on offset
-mean leaf-off offset
-```
-
-is calculated across the historical 2018-2023 observations.
-
-## 5. Future phenology
-
-Each future parcel-year is matched using:
-
-```text
-county
-predicted CLASS
-```
-
-Projected dates are:
-
-```text
-leaf-on date =
-    January 1 of prediction year
-    + historical mean leaf-on offset
-
-leaf-off date =
-    January 1 of prediction year
-    + historical mean leaf-off offset
-```
-
-If no county/class historical estimate exists, the projected event remains
-missing and the number of missing rows is reported.
-
-## 6. Phenology outputs
-
-The final schema is:
-
-```text
-event_type
-parcel_id
-date
-```
-
-where:
-
-```text
-event_type = leafon
-```
-
-or:
-
-```text
-event_type = leafoff
-```
-
-Files are written to:
-
-```text
-phenology_projections/
-├── phenology_statewide_2024.parquet
-├── ...
-└── phenology_statewide_2045.parquet
-```
-
-# Planting and Harvest
-
-## 7. Historical planting inputs
-
-Historical planting events are read from:
-
-```text
-<ccmmf_root>/management/event_files_v4.1.2/
-```
-
-for:
-
-```text
-2018-2023
-```
-
-Planting records provide:
-
-```text
-crop code
-PFT
-planting date
-leaf C
-wood C
-fine-root C
-coarse-root C
-leaf N
-wood N
-fine-root N
-coarse-root N
-```
-
-The standardized C/N pool columns are:
-
-```text
-leaf_c_kg_m2
-wood_c_kg_m2
-fine_root_c_kg_m2
-coarse_root_c_kg_m2
-leaf_n_kg_m2
-wood_n_kg_m2
-fine_root_n_kg_m2
-coarse_root_n_kg_m2
-```
-
-## 8. Historical harvest inputs
-
-Historical harvest events provide:
-
-```text
-crop code
-harvest date
-frac_above_removed_0to1
-frac_below_removed_0to1
-frac_above_to_litter_0to1
-frac_below_to_litter_0to1
-```
-
-All historical fraction values are checked to ensure:
-
-```text
-0 <= fraction <= 1
-```
-
-## 9. Planting date timing
-
-Historical planting dates are converted to:
-
-```text
-planting_relative_day
-```
-
-relative to January 1.
-
-Dates occurring near December and January require circular-date handling.
-
-For example:
-
-```text
-December 25
-January 10
-```
-
-should represent one winter planting period rather than averaging to July.
-
-The workflow therefore shifts early-year observations forward by 365 days when
-the distribution crosses the year boundary before calculating mean planting
-timing.
-
-## 10. Planting lookup hierarchy
-
-Historical planting timing and C/N pool values use:
-
-```text
-1. county GEOID + crop code
-2. county GEOID + crop class
+This section turns projected crop identities into dated events to combine what is going to be grown with when its going
+to happen. `phenology_projection.R` produces leaf-on and leaf-off dates for every projected crop cycle, and `planting_harvest_projection.R` produces the planting and harvest 
+predictions. 
+
+Both are downstream of the crop predictions and this workflow does not include any sampling. All predictions 
+are a historical mean applied to a projected crop, so if crop_class X has a historical mean date of March 5th, 
+that date is the same if crop class X appears in a future year. Similarly, predictions will loop through both scenarios. 
+
+##Setup
+Setup remains the same that is has been throughout the workflow: running pacman::p_load and making sure 
+`config::get(config = "default", file = "config.yml")` and `work_root` are set. 
+
+## Phenology.R
+Overall, this scripts reads four types of files:
+a. `historical phenology_statewide_<year>.parquet` from the inventory phenology event directory 
+b. `assigned_year=<year>_gapfilled.parquet` from the matched directory, which is what connects a phenology cycle to 
+its LandIQ crop class 
+c. LandIQ crop identity parquet for county and cover status 
+d. Projected crop identity files, one per scenario and year
+
+To build the historical record: Historical phenology files are read year by year, and those files are joined to the matched 
+product to attach a LandIQ crop class and cover crop status. The assigned county comes from the most recent year each 
+parcel has one on record, which is the same rule the crop prediction script uses, so the two products always agree about 
+where in the state a parcel is. 
+
+To convert dates to offsets: Dates are stored as days they are from January 1st of that year, which creates continuous 
+values we can average. For example, March 5th becomes 63. The values are averaged across the historical rows, and then 
+converted back to an actual date for the final outputs. 
+**Important:** The offset dates can be negative if a crops growing period started the previous year. For example, a growing date 
+logged in December of the previous year can be a number like -20 instead of 345. Keeping the numbers in this order prevents
+skewing the averages. 
+
+Historical averages are ideally calculated as specifically as possible, but there must be fallbacks incase some do not exist
+for certain parcels. Four levels of averages are created to use as fallbacks if the prior is not available:
+1. county x crop class x cover status
+2. crop class x cover status
+3. county x cover status
+4. statewide, split just by cover status
+
+Projections: For each scenario and year, the projected crop file is read, unclassified fallow and idle are dropped, 
+and each cycle takes its offsets from the most specific level available. Adding the offset to January 1st of the 
+target year gives the predicted date.
+
+**Important: simplifications**
+1. Cover crop status is part of the lookup key, so a winter cover crop gets winter canopy dates rather than the summer 
+dates of the crop it follows. The simplification is that cover status is boolean: every cover crop in the same county and crop class gets identical 
+dates. Historical cover crop observations are also sparse, so more means will fallback to a broader level — the QC file is where to check how many.
+
+2.Every cycle receives dates. Where no county or class match exists, values will fallback to the statewide average and 
+the level used is recorded in the QC file.
+
+3.Leaf-on and leaf-off always come from the same level, so predicted date can never be a county mean while the other 
+is a global.
+
+## Planting_harvest_projections.R
+Building the historical record:
+Historical planting and harvest events are read by year the same way as phenology, with older column names renamed on the 
+as they're loaded for simplicity. The event files hold the 8 N/C pools while harvest carries the litter fractions. Dates are 
+converted the same way to continuous numbers and parcels are assigned a county geoid. 
+
+Similarly, multiple levels of means are calculated so every parcel get date, but the fall back goes back 6 steps:
+1. county + crop code
+2. county + crop_class
 3. crop code
 4. crop class
 5. PFT
-6. global historical mean
-```
+6. Statewide
 
-Planting timing uses wrapped averaging.
+Means are computed at six levels, matching the cascade documented for the inventory: county + crop code, 
+county + crop class, crop code, crop class, PFT, global. Planting day uses circular wrapping so December and 
+January plantings do not average to mid-year; the pools and fractions do not.
 
-C/N pool values use normal arithmetic means.
+**Unlike phenology,** planting dates must have day of year wrapping because planting records carry no growing-season 
+label, only the year of the file they came from. A December planting is day 363 and a January planting day 2, 
+a few days apart, but averaging them without wrapping makes their average in July.
 
-## 11. PFT fallback
+For harvest dates, these are not predicted directly. For each parcel, year, and crop, we find its planting event and 
+its harvest event, and the gap between them is how long that crop took to grow. If the gap comes out negative or zero, 
+the crop must have been harvested in the following calendar year, so we add a year.
 
-If future crop identity does not provide a PFT, the workflow attempts to assign
-one from historical information using:
+A future harvest date is then just the projected planting date plus that historical growing season length. Doing it this 
+way means harvest can never accidentally land before planting, and crops that run across New Year are handled without any 
+special cases.
 
-```text
-crop code
-        |
-        v
-crop class
-```
+**Important simplifications:** 
+a. Two cycles of the same crop in one parcel-year are averaged into a single pair to find the growing season length. 
+County, crop class, and PFT are taken from the first record in each parcel-year-crop group rather than the most common one, since they do not vary inside a group.
 
-## 12. Historical planting-to-harvest duration
+b. Cover crops are planted and terminated, never harvested..
 
-Historical planting and harvest events are paired by:
+c. Phenology takes cover crop status into account; planting and harvest do not, because the historical planting records 
+do not carry a cover crop flag. 
 
-```text
-parcel_id
-source_year
-crop_code
-```
+d. A wrapped planting average can come out larger than the length of the year, which puts a projected planting date in 
+the following January. 
 
-For each matched pair:
+e. Both scripts stop rather than carry on if dates are missing, if a harvest does not follow its planting, if a crop has 
+no county, or if the crop input has duplicate parcel-year-season rows. The planting script also re-checks that every projected 
+harvest fraction is between 0 and 1.
 
-```text
-harvest_lag_days =
-    harvest_relative_day
-    - planting_relative_day
-```
+## Outputs
 
-If the result is non-positive, harvest is interpreted as occurring in the next
-calendar year.
+Outputs go to scenario subdirectories under the phenology, planting, and harvest output roots and match the inventory 
+structure/column names:
 
-Only positive finite durations are retained.
+`<scenario>/phenology_statewide_<2024-2045>.parquet`
+`<scenario>/planting_statewide_<2024-2045>.parquet`
+`<scenario>/harvest_statewide_<2024-2045>.parquet` 
 
-## 13. Harvest lookup hierarchy
+Diagnostics are written to separate files to preserve the output structure:
 
-Historical harvest duration and harvest fractions use:
+`<scenario>/phenology_qc_<2024-2045>.parquet` — how many crops fell to each fallback level, by county, class, and cover status
+`<scenario>/planting_harvest_qc.parquet` — the same counts but for the C/N pools and harvest fractions
 
-```text
-1. county GEOID + crop code
-2. county GEOID + crop class
-3. crop code
-4. crop class
-5. PFT
-6. global historical mean
-```
-
-The harvest date itself is not independently averaged.
-
-## 14. Future crop filtering
-
-Future crops represent dominant:
-
-```text
-season = 2
-```
-
-The following states do not receive planting or harvest events:
-
-```text
-X = unclassified fallow
-I = idle
-```
-
-## 15. Project planting dates
-
-Projected planting is calculated as:
-
-```text
-planting_date =
-    January 1 of future year
-    + historical planting relative day
-    - 1
-```
-
-Because wrapped timing is retained on a continuous timeline, a valid planting
-date may occur in the following calendar year.
-
-## 16. Project harvest dates
-
-Future harvest is always calculated from planting:
-
-```text
-harvest_date =
-    planting_date
-    + historical mean harvest_lag_days
-```
-
-This guarantees:
-
-```text
-harvest_date > planting_date
-```
-
-and correctly preserves crop cycles that span calendar years.
-
-## 17. Planting outputs
-
-The planting schema is:
-
-```text
-event_type
-parcel_id
-date
-crop_code
-leaf_c_kg_m2
-wood_c_kg_m2
-fine_root_c_kg_m2
-coarse_root_c_kg_m2
-leaf_n_kg_m2
-wood_n_kg_m2
-fine_root_n_kg_m2
-coarse_root_n_kg_m2
-```
-
-Files are written to:
-
-```text
-planting_projections/
-├── planting_statewide_2024.parquet
-├── ...
-└── planting_statewide_2045.parquet
-```
-
-## 18. Harvest outputs
-
-The harvest schema is:
-
-```text
-event_type
-parcel_id
-date
-frac_above_removed_0to1
-frac_below_removed_0to1
-frac_above_to_litter_0to1
-frac_below_to_litter_0to1
-```
-
-Files are written to:
-
-```text
-harvest_projections/
-├── harvest_statewide_2024.parquet
-├── ...
-└── harvest_statewide_2045.parquet
-```
-
-## 19. Validation
-
-The timing workflow checks:
-
-- historical phenology-to-crop matching
-- parcel-to-county consistency
-- missing county/class phenology estimates
-- duplicate future parcel-year rows
-- missing planting dates
-- missing harvest dates
-- harvest always occurs after planting
-- harvest fractions remain between 0 and 1
-- annual output schemas are complete
-
-## 20. Running order
-
-Run after crop prediction:
-
-```text
-crop_prediction.R
-        |
-        +--------------------------+
-        |                          |
-        v                          v
-phenology_projection_      planting_harvest_
-shared_compact.R           projection.R
-```

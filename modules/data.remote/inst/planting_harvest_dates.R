@@ -1,38 +1,27 @@
-## Shared V1 planting + harvest projection
-## Future crops = dominant season 2
+## Planting + harvest projection, run per scenario
+## Cover crop cycles are additional non-dominant seasons and receive
+## termination events with zero removal
 ## X/I receive no planting/harvest events
 ## Harvest = projected planting date + historical planting->harvest duration
 
 pacman::p_load(data.table, arrow, bit64)
 
 # ---- setup ----
-work_root = Sys.getenv("PROJECTION_WORK_ROOT")
-planting_dir = Sys.getenv("PROJ_PLANTING_DIR")
-harvest_dir = Sys.getenv("PROJ_HARVEST_DIR")
+config = config::get(config = "scc", file = "config.yml")
 
-if (!nzchar(work_root)) {stop("PROJECTION_WORK_ROOT is not set. Source setup_projection_env.sh first.")
-}
+config$historical_years = seq.int(config$historical_start_year, config$start_year)
 
-if (!nzchar(planting_dir)) {stop("PROJ_PLANTING_DIR is not set. Source setup_projection_env.sh first.")
-}
+config$prediction_years = seq.int(config$start_year + 1L, config$end_year)
 
-if (!nzchar(harvest_dir)) {stop("PROJ_HARVEST_DIR is not set. Source setup_projection_env.sh first.")
-}
+config$crop_history_path = file.path(config$work_root, config$crop_history_file)
 
-config = list(historical_years = 2016:2023, prediction_years = 2024:2045,
-  scenario_names = c("BAU_Targets", "NBS_Targets"),
-  
-  #Shared projection inputs
-  planting_dir = planting_dir,
-  harvest_dir = harvest_dir,
-  
-  #Output from earlier projection step
-  crop_history_path = file.path(work_root, "crops_full_counties.csv"),
-  prediction_dir = file.path(work_root, "crop_predictions"),
-  
-  #Outputs from this script
-  planting_output_root = file.path(work_root, "planting_projections"),
-  harvest_output_root = file.path(work_root, "harvest_projections"))
+config$prediction_dir = file.path(config$work_root, config$prediction_dir)
+
+config$planting_output_root = file.path(config$work_root, config$planting_output_root)
+
+config$harvest_output_root = file.path(config$work_root, config$harvest_output_root)
+
+message('Set up complete. Now loading crop data')
 
 # ---- helpers ----
 normalize_geoid = function(x) {
@@ -130,12 +119,40 @@ make_lookup = function(dt, keys, values, prefix, wrapped_values = character()) {
   out
 }
 
+# Per-variable cascade. Use for timing values, where taking each one from the
+# best available tier is fine.
 coalesce_values = function(dt, values, prefixes, global) {
   for (x in values) {
     cols = paste0(prefixes, x)
     dt[, (x) := do.call(fcoalesce, mget(cols))]
     dt[is.na(get(x)), (x) := global[[x]]]
   }
+}
+
+# Whole-block cascade. Use for value sets that describe one thing together
+# (C/N pools, harvest fractions) so they are never mixed across tiers.
+# Records the tier used in source_col.
+coalesce_block = function(dt, values, prefixes, global, source_col) {
+  tier = rep(NA_integer_, nrow(dt))
+  
+  for (i in seq_along(prefixes)) {
+    cols = paste0(prefixes[i], values)
+    ok = is.na(tier) & Reduce(`&`, lapply(cols, function(cc) !is.na(dt[[cc]])))
+    tier[ok] = i
+  }
+  
+  for (x in values) {
+    v = rep(NA_real_, nrow(dt))
+    for (i in seq_along(prefixes)) {
+      idx = which(tier == i)
+      if (length(idx)) v[idx] = dt[[paste0(prefixes[i], x)]][idx]
+    }
+    v[is.na(tier)] = global[[x]]
+    dt[, (x) := v]
+  }
+  
+  dt[, (source_col) := fifelse(is.na(tier), "global", prefixes[tier])]
+  invisible(dt)
 }
 
 drop_lookup_cols = function(dt, values, prefixes) {
@@ -174,15 +191,17 @@ crop_history[, `:=`(
   county_geoid = normalize_geoid(county_geoid))]
 
 parcel_county = crop_history[
-  !is.na(parcel_id) & !is.na(year) & year <= 2023L & !is.na(county_geoid),
+  !is.na(parcel_id) & !is.na(year) & year <= config$start_year & !is.na(county_geoid),
   .SD[which.max(year)], by = parcel_id
 ][, .(parcel_id, county_geoid)]
 
 if (parcel_county[, anyDuplicated(parcel_id)])
   stop("Fixed parcel county lookup still contains duplicate parcel IDs.")
 
+message('Crop data loaded, now loading historical planting files')
+
 # ---- historical planting ----
-plant_files = file.path(config$event_dir, paste0("planting_statewide_", config$historical_years, ".parquet"))
+plant_files = file.path(config$planting_event_dir, paste0("planting_statewide_", config$historical_years, ".parquet"))
 
 if (any(!file.exists(plant_files))) stop("Missing historical planting files.")
 
@@ -198,9 +217,9 @@ rename_first(planting_hist, "PFT", c("landiq_PFT"), "Historical planting")
 rename_first(planting_hist, "date", c("planting_date"), "Historical planting")
 
 plant_alias = list(leaf_c_kg_m2 = c("C_LEAF"), wood_c_kg_m2 = c("C_STEM"),
-  fine_root_c_kg_m2 = c("C_FINEROOT"), coarse_root_c_kg_m2 = c("C_COARSEROOT"), 
-  leaf_n_kg_m2 = c("N_LEAF"), wood_n_kg_m2 = c("N_STEM"), fine_root_n_kg_m2 = c("N_FINEROOT"),
-  coarse_root_n_kg_m2 = c("N_COARSEROOT"))
+                   fine_root_c_kg_m2 = c("C_FINEROOT"), coarse_root_c_kg_m2 = c("C_COARSEROOT"), 
+                   leaf_n_kg_m2 = c("N_LEAF"), wood_n_kg_m2 = c("N_STEM"), fine_root_n_kg_m2 = c("N_FINEROOT"),
+                   coarse_root_n_kg_m2 = c("N_COARSEROOT"))
 
 for (x in names(plant_alias))
   rename_first(planting_hist, x, plant_alias[[x]], "Historical planting")
@@ -252,8 +271,10 @@ pft_class = planting_hist[
   !is.na(crop_class) & !is.na(PFT) & nzchar(PFT),
   .(lookup_PFT_class = mode_character(PFT)), by = crop_class]
 
+message('Historical plant files loaded & look ups made, now loading historical harvest files')
+
 # ---- historical harvest ----
-harvest_files = file.path(config$event_dir, paste0("harvest_statewide_", config$historical_years, ".parquet"))
+harvest_files = file.path(config$harvest_event_dir, paste0("harvest_statewide_", config$historical_years, ".parquet"))
 
 if (any(!file.exists(harvest_files))) stop("Missing historical harvest files.")
 
@@ -268,7 +289,7 @@ rename_first(harvest_hist, "crop_code", c("CLASS_SUBCLASS", "code"), "Historical
 rename_first(harvest_hist, "date", c("harvest_date"), "Historical harvest")
 
 harvest_fraction_cols = c("frac_above_removed_0to1", "frac_below_removed_0to1",
-  "frac_above_to_litter_0to1", "frac_below_to_litter_0to1")
+                          "frac_above_to_litter_0to1", "frac_below_to_litter_0to1")
 
 assert_columns(harvest_hist, c("parcel_id", "crop_code", "date", "source_year", harvest_fraction_cols),
                "Historical harvest")
@@ -287,13 +308,18 @@ for (x in harvest_fraction_cols) {
     stop("Historical harvest fraction outside [0,1]: ", x)
 }
 
+message('Historical harvest files loaded & look ups made, now pairing events')
+
 # ---- pair planting -> harvest timing ----
-##creating plant_pairs step takes ~30 minutes which should be the longest run time in this file 
+#county_geoid, crop_class and PFT are constant within a parcel-year-crop, so take the first row rather than a modal table scan. Sorting first keeps the
+#choice deterministic. Multiple cycles of the same crop in one year collapse into a single averaged pair.
+setorder(planting_hist, parcel_id, source_year, crop_code, date)
+
 plant_pairs = planting_hist[
   !is.na(crop_code),
   .(
-    county_geoid = mode_character(county_geoid), crop_class = mode_character(crop_class),
-    PFT = mode_character(PFT), planting_relative_day = mean_wrapped_day(planting_relative_day)
+    county_geoid = county_geoid[1L], crop_class = crop_class[1L],
+    PFT = PFT[1L], planting_relative_day = mean_wrapped_day(planting_relative_day)
   ),
   by = .(parcel_id, source_year, crop_code)]
 
@@ -341,6 +367,11 @@ harv_global = vapply(harvest_values,
 if (anyNA(harv_global))
   stop("Harvest global fallback contains missing values.")
 
+plant_prefixes = c("pc_", "pcl_", "pcode_", "pclass_", "ppft_")
+harv_prefixes = c("hc_", "hcl_", "hcode_", "hclass_", "hpft_")
+
+message('Events paired, now writing predictions')
+
 # ---- scenario-specific future crop projections ----
 
 for (scen in config$scenario_names) {
@@ -348,17 +379,18 @@ for (scen in config$scenario_names) {
   scenario_prediction_dir = file.path(config$prediction_dir, scen)
   
   prediction_files = list.files(scenario_prediction_dir, pattern = "^crop_identity_statewide_[0-9]{4}\\.parquet$",
-    full.names = TRUE)
+                                full.names = TRUE)
   
   if (!length(prediction_files)) {
     stop("No crop prediction files found for ", scen)
   }
   
   future = rbindlist(lapply(prediction_files, function(f) {
-      as.data.table(read_parquet(f))
-    }), fill = TRUE)
+    as.data.table(read_parquet(f))
+  }), fill = TRUE)
   
-  assert_columns(future, c("parcel_id", "year", "season", "CLASS"), paste0(scen, " future crop predictions"))
+  assert_columns(future, c("parcel_id", "year", "season", "CLASS", "COVER"),
+                 paste0(scen, " future crop predictions"))
   
   if (!"SUBCLASS" %in% names(future)) {
     future[, SUBCLASS := NA_character_]
@@ -370,7 +402,8 @@ for (scen in config$scenario_names) {
   
   future[, `:=`(
     parcel_id = bit64::as.integer64(as.character(parcel_id)), year = as.integer(year), season = as.integer(season),
-    CLASS = trimws(as.character(CLASS)), SUBCLASS = normalize_subclass(SUBCLASS), PFT = as.character(PFT)
+    CLASS = trimws(as.character(CLASS)), SUBCLASS = normalize_subclass(SUBCLASS), PFT = as.character(PFT),
+    COVER = as.integer(as.numeric(COVER) > 0)
   )]
   
   future[, crop_code := make_crop_code(CLASS, SUBCLASS)]
@@ -429,10 +462,12 @@ for (scen in config$scenario_names) {
   ) := NULL]
   
   message(scen, " active future crop-cycle rows: ",  format(nrow(future), big.mark = ","))
+  message(scen, " of which cover crop cycles: ", format(future[COVER == 1L, .N], big.mark = ","))
+  
   # ---- project planting ----
   
   events = future[, .(
-    parcel_id, county_geoid, year, season, crop_code, crop_class, PFT
+    parcel_id, county_geoid, year, season, crop_code, crop_class, PFT, COVER
   )]
   
   events = merge(events, plant_county_code, by = c("county_geoid", "crop_code"), all.x = TRUE)
@@ -445,13 +480,24 @@ for (scen in config$scenario_names) {
   
   events = merge(events, plant_pft, by = "PFT", all.x = TRUE)
   
-  coalesce_values(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"), plant_global)
+  # Timing cascades per variable; the eight C/N pools describe one plant's
+  # allocation and are taken from a single tier together.
+  coalesce_values(events, "planting_relative_day", plant_prefixes, plant_global)
+  
+  coalesce_block(events, plant_pool_cols, plant_prefixes, plant_global, "pool_source")
   
   events[, planting_date :=
            relative_day_to_date(year, planting_relative_day
            )]
   
-  drop_lookup_cols(events, plant_values, c("pc_", "pcl_", "pcode_", "pclass_", "ppft_"))
+  drop_lookup_cols(events, plant_values, plant_prefixes)
+  
+  spill = events[planting_relative_day > days_in_year(year), .N]
+  
+  if (spill) {
+    message(scen, " plantings falling in the following calendar year: ",
+            format(spill, big.mark = ","))
+  }
   
   # ---- project harvest using duration from planting ----
   
@@ -465,14 +511,29 @@ for (scen in config$scenario_names) {
   
   events = merge( events, harv_pft, by = "PFT", all.x = TRUE)
   
-  coalesce_values( events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"),harv_global)
+  coalesce_values(events, "harvest_lag_days", harv_prefixes, harv_global)
+  
+  coalesce_block(events, harvest_fraction_cols, harv_prefixes, harv_global, "frac_source")
   
   events[, harvest_date := as.IDate(
     as.Date(planting_date) +
       as.integer(round(harvest_lag_days))
   )]
   
-  drop_lookup_cols(events, harvest_values, c("hc_", "hcl_", "hcode_", "hclass_", "hpft_"))
+  drop_lookup_cols(events, harvest_values, harv_prefixes)
+  
+  # Cover crop termination: residue is incorporated, not removed. Overrides the
+  # G/P harvest fractions inherited from grain and hay history.
+  events[COVER == 1L, `:=`(
+    frac_above_removed_0to1 = 0,
+    frac_below_removed_0to1 = 0,
+    frac_above_to_litter_0to1 = 1,
+    frac_below_to_litter_0to1 = 1,
+    frac_source = "cover_termination"
+  )]
+  
+  message(scen, " cover-crop terminations (zero removal): ",
+          format(events[COVER == 1L, .N], big.mark = ","))
   
   # ---- QC ----
   
@@ -511,24 +572,36 @@ for (scen in config$scenario_names) {
     stop(scen, " has projected harvest dates not after planting.")
   }
   
+  # Fallback-tier record, written alongside the event files. Not part of the
+  # SIPNET event schema.
+  qc = events[, .N, by = .(year, county_geoid, crop_class, COVER, pool_source, frac_source)]
+  qc[, scenario := scen]
+  
+  qc_dir = file.path(config$planting_output_root, scen)
+  dir.create(qc_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  write_parquet(qc, file.path(qc_dir, "planting_harvest_qc.parquet"), compression = "zstd")
+  
+  message("Wrote: ", file.path(qc_dir, "planting_harvest_qc.parquet"))
+  
   # ---- final SIPNET event products ----
   
   planting = events[, c(list(projection_year = year, event_type = "planting", parcel_id = parcel_id,
-      date = planting_date, crop_code = crop_code
-    ),
-    mget(plant_pool_cols)
+                             date = planting_date, crop_code = crop_code
+  ),
+  mget(plant_pool_cols)
   )]
   
   harvest = events[, c(list(projection_year = year, event_type = "harvest", parcel_id = parcel_id,
-      date = harvest_date
-    ),
-    mget(harvest_fraction_cols)
+                            date = harvest_date
+  ),
+  mget(harvest_fraction_cols)
   )]
   
   for (x in harvest_fraction_cols) {
     if (harvest[get(x) < 0 | get(x) > 1, .N]) {
       stop("Projected harvest fraction outside [0,1]: ",
-        x
+           x
       )
     }
   }
