@@ -49,7 +49,7 @@ If you take a county's historical matrix and run it forward to 2045, you won't a
 the scenario's target acreage. Our goal is to take this historical data and reach target goals, but these scenarios 
 reflects policy and market changes that haven't happened yet. Therefore the matrix has to be adjusted.
 
-There's several matrices could hit the 2045 target, so which should we use for this prediction 
+There are several matrices that could hit the 2045 target, so which should we use for this prediction 
 workflow? This optimizer script gives us a rule for picking one. 
 Overall, this scripts rule is: change the historical matrix as little as possible while still reaching the target. 
 `lambda_target` sets how strictly the matrix has to hit the target — a higher value means the 
