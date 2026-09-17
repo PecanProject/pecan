@@ -7,7 +7,7 @@ to happen. `phenology_projection.R` produces leaf-on and leaf-off dates for ever
 predictions. 
 
 Both are downstream of the crop predictions and at the moment this workflow does not include any sampling. All predictions 
-are a historical mean applied to a projected crop, so if crop_class X has a historical mean date of March 5th, 
+are a historical mean applied to a projected crop, so if crop_class X has a historical mean planting date of March 5th, 
 that date is the same if crop class X appears in a future year. Similarly, predictions will loop through both scenarios. 
 
 ##Setup
