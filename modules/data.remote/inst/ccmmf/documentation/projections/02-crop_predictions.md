@@ -23,7 +23,7 @@ d. Crop code lookup — has CLASS/SUBCLASS, descriptions, and PFT
 e. county_optimized_matrices — each optimized matrix per county created in scenarios.R
 
 ## Crop class projection
-Each county's optimzied matrix is loaded and cleaned into a readable format before use. Every parcel start from 
+Each county's optimzied matrix is loaded and cleaned into a readable format before use. Every parcel starts from 
 the crop it was last observed growing at `start_year`. For each year from `start_year + 1` to `end_year`, the parcels 
 currently in a given class draw their next class from that class's row of the county matrix, and the draw becomes 
 the starting state for the following year. Counties are projected independently.
