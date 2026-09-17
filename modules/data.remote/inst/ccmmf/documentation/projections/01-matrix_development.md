@@ -64,7 +64,7 @@ The model projects parcels changing crops within a fixed land base, it does not 
 being converted to other uses or new farmland being added.
 
 b. The Magic scenario sheets are LandIQ classes do not perfectly map to each other. For example
-One code in LandIQ may not mean the same thing in the scenario sheet, or it may not be included at all. 
+one code in LandIQ may not mean the same thing in the scenario sheet, or it may not be included at all. 
 This script accounts for these mismatches and applies a crop mapping before optimization. 
   - Most mapping is one-to-one, but "All Other Field Crops" splits across `F`/`P` and "Annual 
     Cropland" across `F`/`G`/`T`/`R`, all weighted by the county's current acreage in each. 
