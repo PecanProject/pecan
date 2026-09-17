@@ -10,7 +10,7 @@ separately, because while BAU and NBS targets share the same acres goals, their 
 The final outputs are state-wide annual crop projection parquets, with the same formatting as inventory. 
 
 ## Setup
-The set up remainds the same as the previous scripts, and will continue to be the same for the rest of the workflow.
+The `config.yml` remains the same as the previous scripts, and will continue to be the same for the rest of the workflow.
 pacman::p_load loads the packages required for the script, and the file paths needed will be configured with 
 `config = config::get(config = "default", file = "config.yml")`. `work_root` will continue to be your directory to 
 save intermediate and final outputs too.
