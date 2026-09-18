@@ -4,7 +4,7 @@ litterInit		280
 soilInit		10000
 soilWFracInit	0.5
 snowInit		1.0
-plantStorageNInit 0.0
+plantStorageNInit 5.0
 fineRootFrac	0.200000
 coarseRootFrac	0.200000
 aMax			112.0

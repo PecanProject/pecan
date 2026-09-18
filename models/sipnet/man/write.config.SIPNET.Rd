@@ -102,6 +102,15 @@ first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
 through the IC argument takes precedence over the computed value.
 }
 
+\section{Parameter precedence}{
+Parameters are initialized from template parameter files (e.g. \code{inst/template.param_v2}
+for SIPNET v2, where \code{plantStorageNInit} defaults to 5.0 g N m-2). Values in
+the template or \code{defaults$constants} are used unless overridden. PFT trait values
+in \code{trait.values} override constants and template defaults. Initial condition
+values passed via \code{IC} or \code{poolinitcond} take highest precedence, including
+explicit zero values.
+}
+
 \author{
 Michael Dietze, Alexey Shiklomanov
 }
