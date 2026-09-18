@@ -36,7 +36,8 @@ eto_to_etc <- function(eto, kc) {
 ##' 1. **Date-based (percent-of-season) mode**: If `date` is
 ##'    provided, Kc is interpolated linearly between BIS/BISm growth-stage anchors
 ##'    (B--C--D--E) using percent-of-season, with default planting and
-##'    harvest dates taken from `bism_kc_by_crop`.
+##'    harvest dates taken from `bism_kc_by_crop`. Optional `planting` /
+##'    `harvest` override those defaults.
 ##'
 ##' 2. **Canopy-cover mode**: If `canopy_cover` is provided, Kc is
 ##'    estimated from observed ground cover. For field and row crops, canopy cover
@@ -55,6 +56,8 @@ eto_to_etc <- function(eto, kc) {
 ##' @param canopy_cover Optional numeric vector giving fractional ground cover
 ##'   (0-1), length 1 or `length(eto)`; triggers canopy-cover-based Kc
 ##'   estimation.
+##' @param planting,harvest Optional `Date` values for percent-of-season mode;
+##'   defaults come from `bism_kc_by_crop`.
 ##'
 ##' @return Numeric vector of crop evapotranspiration (ETc), with the same units as
 ##'   `eto` (e.g., mm d-1).
@@ -75,7 +78,9 @@ eto_to_etc_bism <- function(
   eto,
   crop_name,
   date = NULL,
-  canopy_cover = NULL
+  canopy_cover = NULL,
+  planting = NULL,
+  harvest = NULL
 ) {
   if (!is.numeric(eto)) {
     PEcAn.logger::logger.severe("`eto` must be numeric.")
@@ -89,14 +94,13 @@ eto_to_etc_bism <- function(
   }
 
   kc_row <- PEcAn.data.land::bism_kc_by_crop |>
-    dplyr::filter(.data$crop_name == .env$crop_name)
+    dplyr::filter(.data$crop_name == .env$crop_name) |>
+    dplyr::slice(1)
   if (nrow(kc_row) != 1) {
     PEcAn.logger::logger.severe("`crop_name` must match exactly one row in `bism_kc_by_crop`.")
   }
 
   ## percent of season from date (default BISm behavior)
-  ## Using default planting/harvest dates from bism_kc_by_crop
-  ## TODO: allow user-specified planting/harvest dates?
   if (!is.null(date)) {
     if (!inherits(date, "Date")) {
       PEcAn.logger::logger.severe("`date` must be a Date vector.")
@@ -104,16 +108,18 @@ eto_to_etc_bism <- function(
     if (length(eto) != length(date)) {
       PEcAn.logger::logger.severe("`eto` and `date` must be the same length.")
     }
-    planting <- lubridate::make_date(
-      lubridate::year(date), 
-      kc_row$planting_month, 
-      kc_row$planting_day)
-    harvest  <- lubridate::make_date(
-      lubridate::year(date), 
-      kc_row$harvest_month,  
-      kc_row$harvest_day)
-    idx <- harvest < planting
-    harvest[idx] <- harvest[idx] + lubridate::years(1)
+    if (is.null(planting)) {
+      planting <- lubridate::make_date(
+        lubridate::year(date),
+        kc_row$planting_month,
+        kc_row$planting_day)
+      harvest  <- lubridate::make_date(
+        lubridate::year(date),
+        kc_row$harvest_month,
+        kc_row$harvest_day)
+      idx <- harvest < planting
+      harvest[idx] <- harvest[idx] + lubridate::years(1)
+    }
     season_len <- as.numeric(harvest - planting)
     percent_season <- 100 * as.numeric(date - planting) / season_len
 
