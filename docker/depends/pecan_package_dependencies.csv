@@ -149,6 +149,7 @@
 "jsonlite","*","modules/data.remote","Suggests",FALSE
 "jsonvalidate","*","modules/data.land","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
+"knitr","*","modules/benchmark","Suggests",FALSE
 "knitr",">= 1.50","base/db","Suggests",FALSE
 "knitr",">= 1.50","base/qaqc","Suggests",FALSE
 "knitr",">= 1.50","base/visualization","Suggests",FALSE
@@ -534,6 +535,7 @@
 "rmarkdown","*","base/visualization","Suggests",FALSE
 "rmarkdown","*","models/biocro","Suggests",FALSE
 "rmarkdown","*","models/maat","Suggests",FALSE
+"rmarkdown","*","modules/benchmark","Suggests",FALSE
 "rmarkdown","*","modules/data.atmosphere","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE
 "rmarkdown","*","modules/rtm","Suggests",FALSE
