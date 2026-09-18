@@ -18,15 +18,15 @@ SEGMENT_LOGS=(
   @JOB_LOGFILES@
 )
 
-# Run model segments
-for j in $(seq 0 ${#SEGMENT_JOBS}); do
+for j in ${!SEGMENT_JOBS[@]}; do
+  # Run model segment
   bash ${SEGMENT_JOBS[j]}
   status=$?
   # Concatenate segment logs to the run log (via redirected stdout)
-  echo "\n--> contents of ${SEGMENT_LOGS[j]}:" \
-    && cat ${SEGMENT_LOGS[j]}
+  echo -e "\n--> Log output from segment $((j + 1)):"
+  cat ${SEGMENT_LOGS[j]}
+  echo -e "<-- End log output from segment $((j + 1))\n"
   if [ ${status} -ne 0 ]; then
-    n_run_errs=$((n_run_errs + 1))
     echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit "$status"
   fi
@@ -48,11 +48,10 @@ Rscript -e 'PEcAn.SIPNET::model2netcdf.SIPNET(
   outdir = "@OUTDIR@",
   sitelat = @SITE_LAT@,
   sitelon = @SITE_LON@,
-  start_date = "@START_DATE@"
-  end_date = "@END_DATE@"
+  start_date = "@START_DATE@",
+  end_date = "@END_DATE@",
   delete.raw = @DELETE.RAW@,
-  revision = "@REVISION@",
-  sep = ", "
+  revision = "@REVISION@"
 )'
 status=$?
 if [ ${status} -ne 0 ]; then
@@ -70,8 +69,8 @@ if [[ "$copy_restarts" == TRUE ]]; then
   cp @LAST_SEG_RESTART@ @OUTDIR@/restart.out
 fi
 
-rm_raws=@RM_RAWS@
-if [["$rm_raws" == TRUE ]]; then
+delete_raw=@DELETE.RAW@
+if [[ "$delete_raw" == TRUE ]]; then
   # Remove per-segment outputs & logs after concatenating to job outdir
   find @SEGMENT_ROOTDIR@ -name sipnet.out -delete
   find @SEGMENT_ROOTDIR@ -name logfile.txt -delete
