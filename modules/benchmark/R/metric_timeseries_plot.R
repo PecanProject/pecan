@@ -65,9 +65,14 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
       }
     }
     
+    min_time <- if ("time" %in% colnames(sub_dat)) min(sub_dat$time, na.rm = TRUE) else -Inf
+    max_val  <- max(c(sub_dat$model_q95, sub_dat$obvs), na.rm = TRUE)
+    
     data.frame(
       site = sub_dat$site[1],
       variable = sub_dat$variable[1],
+      x = min_time,
+      y = max_val,
       label = sprintf("Coverage: %.1f%%\nSharpness: %.2f\nBias: %.2f\nPMU: %s\nStatus: %s", coverage_pct, sharpness, bias, pmu_val_str, pass_str)
     )
   }))
@@ -139,8 +144,8 @@ metric_timeseries_plot <- function(metric_dat, var, unit = NULL, filename = NA, 
   # Add per-panel annotations
   p <- p + ggplot2::geom_label(
     data = annotations,
-    ggplot2::aes(x = -Inf, y = Inf, label = .data$label),
-    hjust = -0.05, vjust = 1.1,
+    ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+    hjust = 0, vjust = 1,
     inherit.aes = FALSE,
     alpha = 0.8
   )

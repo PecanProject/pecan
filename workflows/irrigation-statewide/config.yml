@@ -5,6 +5,7 @@ default:
   exec_type: "local"
   event_filename: "irrigation_1000"
   n_irr_ensemble: 20
+  kc_timing: "canopy"
 
 small:
 
