@@ -65,7 +65,7 @@
 #' # Parameter precedence
 #'
 #' Parameters are initialized from template parameter files (e.g. `inst/template.param_v2`
-#' for SIPNET v2, where `plantStorageNInit` defaults to 5.0 g N m-2). Values in
+#' for SIPNET v2). Values in
 #' the template or `defaults$constants` are used unless overridden. PFT trait values
 #' in `trait.values` override constants and template defaults. Initial condition
 #' values passed via `IC` or `poolinitcond` take highest precedence, including
@@ -672,9 +672,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("water_drain_frac" %in% pft.trait.names) {
       param[which(param[, 1] == "waterDrainFrac"), 2] <- pft.traits[which(pft.trait.names == "water_drain_frac")]
     }
-    if (caps$has_n_cycle && "plantStorageNInit" %in% pft.trait.names) {
-      param[which(param[, 1] == "plantStorageNInit"), 2] <- pft.traits[which(pft.trait.names == "plantStorageNInit")]
-    }
 
     #update LeafOnday and LeafOffDay
     has_event_pheno <- FALSE
@@ -895,12 +892,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
     ## plantStorageNInit gN/m2 (v2 only)
-    if (caps$has_n_cycle) {
-      if ("plantStorageNInit" %in% ic.names) {
-        param[which(param[, 1] == "plantStorageNInit"), 2] <- IC$plantStorageNInit
-      } else if ("plantStorageN" %in% ic.names) {
-        param[which(param[, 1] == "plantStorageNInit"), 2] <- IC$plantStorageN
-      }
+    if (caps$has_n_cycle && "plantStorageNInit" %in% ic.names) {
+      param[which(param[, 1] == "plantStorageNInit"), 2] <- IC$plantStorageNInit
     }
 
   } else if (length(settings$run$inputs$poolinitcond$path) > 0) {
@@ -928,7 +921,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         "SWE",
         "date_of_budburst",
         "date_of_senescence",
-        "Microbial Biomass C"
+        "Microbial Biomass C",
+        "plantStorageNInit"
       )
       ic_has_ncvars <- ic_ncvars_to_try %in% names(IC.nc$var)
       names(ic_has_ncvars) <- ic_ncvars_to_try
@@ -1028,17 +1022,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           param[param[, 1] == "microbeInit", 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
         }
       }
-      if (caps$has_n_cycle) {
-        if ("plantStorageNInit" %in% names(IC.nc$var)) {
-          storageN <- ncdf4::ncvar_get(IC.nc, "plantStorageNInit")
-          if (!is.na(storageN) && is.numeric(storageN)) {
-            param[param[, 1] == "plantStorageNInit", 2] <- storageN
-          }
-        } else if ("plantStorageN" %in% names(IC.nc$var)) {
-          storageN <- ncdf4::ncvar_get(IC.nc, "plantStorageN")
-          if (!is.na(storageN) && is.numeric(storageN)) {
-            param[param[, 1] == "plantStorageNInit", 2] <- storageN
-          }
+      if (caps$has_n_cycle && ic_has_ncvars[["plantStorageNInit"]]) {
+        storageN <- ncdf4::ncvar_get(IC.nc, "plantStorageNInit")
+        if (!is.na(storageN) && is.numeric(storageN)) {
+          param[param[, 1] == "plantStorageNInit", 2] <- storageN
         }
       }
 
