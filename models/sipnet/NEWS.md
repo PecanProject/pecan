@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 * `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
     parameter, so PFT supplied values reach the param file instead of
     silently keeping the template default. Completes the nitrogen cycle

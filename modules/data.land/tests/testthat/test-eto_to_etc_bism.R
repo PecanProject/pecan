@@ -8,8 +8,9 @@ test_that("eto_to_etc multiplies and validates", {
 data("bism_kc_by_crop", package = "PEcAn.data.land")
 
 test_that("eto_to_etc_bism handles date-based anchors", {
+  # landiq_match fallbacks reuse crop_name; pick the exact BIS row.
   kc_row <- bism_kc_by_crop |>
-    dplyr::filter(.data$crop_name == "Beets (table)")
+    dplyr::filter(.data$crop_name == "Beets (table)", .data$landiq_match == "exact")
   expect_equal(nrow(kc_row), 1)
 
   planting <- lubridate::make_date(
@@ -40,8 +41,9 @@ test_that("eto_to_etc_bism handles date-based anchors", {
 })
 
 test_that("eto_to_etc_bism handles canopy-cover rules", {
+  # landiq_match fallbacks reuse crop_name; pick the exact BIS row.
   kc_row <- bism_kc_by_crop |>
-    dplyr::filter(.data$crop_name == "Beets (table)")
+    dplyr::filter(.data$crop_name == "Beets (table)", .data$landiq_match == "exact")
   eto <- rep(4, 3)
   etc_field <- eto_to_etc_bism(
     eto,
@@ -51,7 +53,7 @@ test_that("eto_to_etc_bism handles canopy-cover rules", {
   expect_equal(etc_field, eto * c(kc_row$KcB, kc_row$KcC, kc_row$KcC))
 
   kc_tree <- bism_kc_by_crop |>
-    dplyr::filter(.data$crop_name == "Apple")
+    dplyr::filter(.data$crop_name == "Apple", .data$landiq_match == "exact")
   expect_equal(nrow(kc_tree), 1)
   eto_tree <- rep(4, 2)
   etc_tree <- eto_to_etc_bism(

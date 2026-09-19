@@ -156,6 +156,7 @@
 #'   \item{landiq_class}{LandIQ class code matched by BISm crop number.}
 #'   \item{landiq_subclass}{LandIQ subclass code matched by BISm crop number.}
 #'   \item{landiq_subclass_name}{LandIQ subclass name matched by BISm crop number.}
+#'   \item{landiq_match}{`exact` for a direct BIS LandIQ key; `fallback` maps an unmatched LandIQ class/subclass to an existing BISm crop_name.}
 #' }
 #'
 #' @details
