@@ -182,24 +182,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   # create host specific setttings
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
-    hostsetup <- paste(hostsetup, sep = "\n", paste(settings$model$prerun, collapse = "\n"))
+    hostsetup <- paste(hostsetup, paste(settings$model$prerun, collapse = "\n"), sep = "\n")
   }
   if (!is.null(settings$host$prerun)) {
-    hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
+    hostsetup <- paste(hostsetup, paste(settings$host$prerun, collapse = "\n"), sep = "\n")
   }
   
   # create cdo specific settings
   cdosetup <- ""
   if (!is.null(settings$host$cdosetup)) {
-    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+    cdosetup <- paste(cdosetup, paste(settings$host$cdosetup, collapse = "\n"), sep = "\n")
   }
   
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
-    hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
+    hostteardown <- paste(hostteardown, paste(settings$model$postrun, collapse = "\n"), sep = "\n")
   }
   if (!is.null(settings$host$postrun)) {
-    hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
+    hostteardown <- paste(hostteardown, paste(settings$host$postrun, collapse = "\n"), sep = "\n")
   }
   
   # create rabbitmq specific setup.
