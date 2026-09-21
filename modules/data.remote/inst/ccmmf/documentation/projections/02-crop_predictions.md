@@ -3,21 +3,28 @@
 ## Overview
 
 This script now applies the matrix development produced in the earlier stage.
-It takes each parcels last observed crop state and projects it one year at a time until the desired end year 
+It takes each parcel's last observed crop state and projects it one year at a time until the desired end year 
 (currently 2045), as well as other crop identity records derived from historical patterns. Cover crops are projected 
 separately, because while BAU and NBS targets share the same acres goals, their cover crop acres slightly differ.
 
 The final outputs are state-wide annual crop projection parquets, with the same formatting as inventory. 
 
+## Setup
+The set up remains the same as the previous scripts, and will continue to be the same for the rest of the workflow.
+pacman::p_load loads the packages required for the script, and the file paths needed will be configured with 
+`config = config::get(config = "default", file = "config.yml")`. See 
+[01-matrix_development.md](01-matrix_development.md) for what each setting in the `config.yml` means and how to 
+point it at your own paths. `work_root` will continue to be your directory to save intermediate and final outputs too.
+
 The scripts uses 5 files, which are outputs from prior workflows and whose locations are specified in the config.yml:
 1. `crop_year_states_cleaned.csv` — organizes the historical data as one crop state per parcel-year, created in transition_matrix.R 
 2. `crops_full_counties.csv` — the full record with SUBCLASS, also created in transition_matrix.R 
 3. LandIQ crop identity parquet — the inventory product, filtered to configured years 
-d. Crop code lookup — has CLASS/SUBCLASS, descriptions, and PFT 
-e. county_optimized_matrices — each optimized matrix per county created in scenarios.R
+4. Crop code lookup — has CLASS/SUBCLASS, descriptions, and PFT 
+5. county_optimized_matrices — each optimized matrix per county created in scenarios.R
 
 ## Crop class projection
-Each county's optimzied matrix is loaded and cleaned into a readable format before use. Every parcel starts from 
+Each county's optimized matrix is loaded and cleaned into a readable format before use. Every parcel starts from 
 the crop it was last observed growing at `start_year`. For each year from `start_year + 1` to `end_year`, the parcels 
 currently in a given class draw their next class from that class's row of the county matrix, and the draw becomes 
 the starting state for the following year. Counties are projected independently.
@@ -33,9 +40,9 @@ For example, a parcel projected to grow T for six years does not switch between 
 A new subclass is drawn only when the class changes, using the historical county-and-class distribution, falling 
 back to the statewide class distribution, then to a uniform draw over the lookup table.
 
-## Crop crop projection
+## Cover crop projection
 Cover crops are projected on top of the crop identity once for each scenario. Instead of predicting in general what 
-each parcel  will plant in each year, this part adds another layer to determine which of these will be cover crops. 
+each parcel will plant in each year, this part adds another layer to determine which of these will be cover crops. 
 
 The scenario sheet gives a cover crop acreage and a total acreage for each county and year. Dividing one by the 
 other gives a cover share. That share is applied to the acreage the pipeline is actually projecting for the county, 
