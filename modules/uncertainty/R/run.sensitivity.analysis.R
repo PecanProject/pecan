@@ -86,10 +86,10 @@ run.sensitivity.analysis <- function(settings,
   }
   if (is.null(variable)) {
     if ("variable" %in% names(settings$sensitivity.analysis)) {
-      var <- which(names(settings$sensitivity.analysis) == "variable")
-      for (i in seq_along(var)) {
-        variable[i] <- settings$sensitivity.analysis[[var[i]]]
-      }
+      variable <- unlist(
+        settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"],
+        use.names = FALSE
+      )
     }
   }
   if (is.null(variable)) {
@@ -111,48 +111,54 @@ run.sensitivity.analysis <- function(settings,
     }
   }
 
+  # Ensemble ID is expected to be specified in function args or settings.
+  # If none there, create one specific to this site.
+  ensemble.id <- ensemble.id %||%
+    settings$sensitivity.analysis$ensemble.id %||%
+    rlang::hash(settings)
+
+  ### Load samples
+  # Have to load samples.Rdata for the traits.
+  # But can overwrite the run ids if an SA ensemble id provided.
+  # samples.Rdata always has only the most recent ensembles for both ensemble
+  # and sensitivity runs.
+  # Load samples once before looping over variables to avoid repeated disk reads (Issue #3859).
+  fname <- file.path(settings$outdir, "samples.Rdata")
+  if (!file.exists(fname)) {
+    PEcAn.logger::logger.severe("No samples.Rdata file found!")
+  }
+  samples_base <- new.env()
+  load(fname, envir = samples_base)
+
+  fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
+                                ensemble.id = ensemble.id,
+                                all.var.yr = TRUE)
+  if (file.exists(fname)) {
+    load(fname, envir = samples_base)
+  }
+
+  # For backwards compatibility, define some variables if not just loaded
+  if (is.null(samples_base$pft.names)) {
+    samples_base$pft.names <- names(samples_base$trait.samples)
+  }
+  if (is.null(samples_base$trait.names)) {
+    samples_base$trait.names <- lapply(samples_base$trait.samples, names)
+  }
+  if (is.null(samples_base$sa.run.ids)) {
+    samples_base$sa.run.ids <- samples_base$runs.samples$sa
+  }
+
   variables <- variable
   for (variable in variables) {
     PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ", variable)
 
-    ### Load samples
-    # Have to load samples.Rdata for the traits.
-    # But can overwrite the run ids if an SA ensemble id provided.
-    # samples.Rdata always has only the most recent ensembles for both ensemble
-    # and sensitivity runs.
-    fname <- file.path(settings$outdir, "samples.Rdata")
-    if (!file.exists(fname)) {
-      PEcAn.logger::logger.severe("No samples.Rdata file found!")
-    }
-    samples <- new.env()
-    load(fname, envir = samples)
-
-    # Ensemble ID is expected to be specified in function args or settings.
-    # If none there, create one specific to this site.
-    ensemble.id <- ensemble.id %||%
-      settings$sensitivity.analysis$ensemble.id %||%
-      rlang::hash(settings)
-    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                  ensemble.id = ensemble.id,
-                                  all.var.yr = TRUE)
-    if (file.exists(fname)) {
-      load(fname, envir = samples)
-    }
-
-    # For backwards compatibility, define some variables if not just loaded
-    if (is.null(samples$pft.names)) {
-      samples$pft.names <- names(samples$trait.samples)
-    }
-    if (is.null(samples$trait.names)) {
-      samples$trait.names <- lapply(samples$trait.samples, names)
-    }
-    if (is.null(samples$sa.run.ids)) {
-      samples$sa.run.ids <- samples$runs.samples$sa
-    }
+    # Clone base samples for this variable iteration so that in-place modifications
+    # (e.g. unit conversions) do not persist across variable iterations
+    samples <- rlang::env_clone(samples_base)
 
     ### Load parsed model results
-    variables <- PEcAn.utils::convert.expr(variable)
-    variable.fn <- variables$variable.drv
+    parsed_var <- PEcAn.utils::convert.expr(variable)
+    variable.fn <- parsed_var$variable.drv
 
     fname <- sensitivity.filename(
       settings, "sensitivity.output", "Rdata",
