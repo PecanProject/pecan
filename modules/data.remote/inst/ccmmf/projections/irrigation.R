@@ -1,6 +1,4 @@
-## Shared irrigation projection
-## Final output schema: parcel_id, date, amount_mm
-
+#Irrigation projection: final output: parcel_id, date, amount_mm
 pacman::p_load(data.table, arrow, bit64, dplyr, readr, stringr, lubridate, sf,
                PEcAn.data.land, parallel, parallelly)
 
@@ -78,6 +76,116 @@ calc_effective_awc = function(hzdept_r, hzdepb_r, awc_r, rooting_depth_cm) {
 }
 
 
+# ---------- safe parcel_id coercion ----------
+as_parcel_id = function(x, label = "parcel_id") {
+  if (bit64::is.integer64(x)) return(x)
+  
+  chr = if (is.character(x) || is.factor(x)) {
+    trimws(as.character(x))
+  } else {
+    n = suppressWarnings(as.numeric(x))
+    out = rep(NA_character_, length(n))
+    ok = is.finite(n)
+    out[ok] = sprintf("%.0f", n[ok])
+    out
+  }
+  
+  chr[chr %chin% c("", "NA", "NaN", "NULL")] = NA_character_
+  
+  out = suppressWarnings(bit64::as.integer64(chr))
+  
+  n_bad = sum(is.na(out) & !is.na(chr))
+  if (n_bad)
+    message("[patch] ", label, ": ", format(n_bad, big.mark = ","),
+            " ids could not be parsed as integer64 and were set to NA.")
+  
+  out
+}
+
+# ---------- pre-flight report ----------
+#Cycles that fall outside the climate record are clipped in run_group(); crop names with no BISM Kc 
+#entry are dropped here because they would otherwise abort a worker partway through a county. Nothing stops.
+preflight_irrigation = function(modeled, climate, scen) {
+  message("\n[preflight] ", scen)
+  
+  m = as.data.table(modeled)[, .(
+    row_id = .I, county = as.character(county), crop_name = as.character(crop_name),
+    planting_date = as.Date(planting_date), harvest_date  = as.Date(harvest_date)
+  )]
+  
+  cl_dt = as.data.table(climate)[, .(County = as.character(County), date = as.Date(date))]
+  
+  span = cl_dt[, .(
+    clim_min = min(date), clim_max = max(date), n_days = .N, expected_days = as.integer(max(date) - min(date)) + 1L
+  ), by = County]
+  
+  gappy = span[n_days != expected_days]
+  
+  if (nrow(gappy)) {
+    message("[preflight] counties with missing days INSIDE their climate span ",
+            "(a cycle spanning the hole will still error in the worker):")
+    print(gappy[, .(County, clim_min, clim_max,
+                    missing_days = expected_days - n_days)])
+  } else {
+    message("[preflight] no internal gaps in any county climate series (",
+            nrow(span), " counties, ", min(span$clim_min), " to ",
+            max(span$clim_max), ")")
+  }
+  
+  chk = merge(m, span[, .(county = County, clim_min, clim_max)],
+              by = "county", all.x = TRUE)
+  
+  no_clim = unique(chk[is.na(clim_min), county])
+  if (length(no_clim))
+    message("[preflight] counties with no climate rows: ", paste(sort(no_clim), collapse = ", "))
+  
+  early = chk[!is.na(clim_min) & planting_date < clim_min]
+  if (nrow(early)) {
+    days_before = as.integer(early$clim_min - early$planting_date)
+    message("[preflight] ", format(nrow(early), big.mark = ","),
+            " cycles start before the climate record (earliest planting ",
+            min(early$planting_date), "). Median ", median(days_before),
+            " days, max ", max(days_before),
+            " days will be clipped off the front of those seasons.")
+  }
+  
+  late = chk[!is.na(clim_max) & harvest_date > clim_max]
+  if (nrow(late)) {
+    days_after = as.integer(late$harvest_date - late$clim_max)
+    message("[preflight] ", format(nrow(late), big.mark = ","),
+            " cycles end after the climate record (latest harvest ",
+            max(late$harvest_date), "). Median ", median(days_after),
+            " days, max ", max(days_after),
+            " days will be clipped off the end of those seasons.")
+  }
+  
+  if (!nrow(early) && !nrow(late))
+    message("[preflight] every crop cycle is fully covered by its county's climate.")
+  
+  kc = tryCatch(unique(as.character(PEcAn.data.land::bism_kc_by_crop$crop_name)),
+                error = function(e) character())
+  
+  if (!length(kc)) {
+    message("[preflight] could not read bism_kc_by_crop$crop_name; skipping Kc check.")
+  } else {
+    unknown = setdiff(unique(m$crop_name), kc)
+    
+    if (length(unknown)) {
+      message("[preflight] crop_name values with no BISM Kc entry, rows dropped: ",
+              paste(unknown, collapse = ", "))
+      print(m[crop_name %chin% unknown, .N, by = crop_name][order(-N)])
+      modeled = modeled[-m[crop_name %chin% unknown, row_id], , drop = FALSE]
+    } else {
+      message("[preflight] all crop_name values resolve in the BISM Kc table.")
+    }
+  }
+  
+  message("[preflight] ", format(nrow(modeled), big.mark = ","),
+          " crop cycles going into the water balance.\n")
+  
+  modeled
+}
+
 # ---------- future crops / planting / harvest ----------
 
 build_future = function(scen) {
@@ -92,15 +200,10 @@ build_future = function(scen) {
     
     x[, .(
       parcel_id = bit64::as.integer64(as.character(parcel_id)),
-      year = as.integer(yy),
-      season = as.integer(season),
-      county = norm_county(COUNTY),
-      CLASS = trimws(as.character(CLASS)),
-      SUBCLASS = norm_subclass(SUBCLASS),
-      crop_code = make_code(CLASS, SUBCLASS)
+      year = as.integer(yy), season = as.integer(season), county = norm_county(COUNTY), 
+      CLASS = trimws(as.character(CLASS)), SUBCLASS = norm_subclass(SUBCLASS), crop_code = make_code(CLASS, SUBCLASS)
     )]
   }
-  
   
   read_plant = function(yy) {
     path = file.path(config$planting_dir, scen,
@@ -220,8 +323,7 @@ message("Loading historical county lookup...")
 
 landiq = as.data.table(read_parquet(config$landiq_path, col_select = c("parcel_id", "COUNTY", "year")))
 landiq[, `:=`(
-  parcel_id = bit64::as.integer64(as.character(parcel_id)),
-  COUNTY = norm_county(COUNTY),
+  parcel_id = bit64::as.integer64(as.character(parcel_id)), COUNTY = norm_county(COUNTY),
   year = as.integer(year)
 )]
 landiq = landiq[year <= max(config$hist_years) & !is.na(COUNTY)]
@@ -304,8 +406,7 @@ for (scen in config$scenarios) {
   if (future[is.na(peak_date), .N]) stop("Could not project peak date for all active crops.")
   if (future[peak_date < planting_date | peak_date > harvest_date, .N]) stop("Impossible projected peak date.")
   
-  future[, c("peak_frac_cc", "peak_frac_cclass", "peak_frac_code",
-             "peak_frac_class", "season_days") := NULL]
+  future[, c("peak_frac_cc", "peak_frac_cclass", "peak_frac_code", "peak_frac_class", "season_days") := NULL]
   
   # ---------- crop-water parameters ----------
   bism = PEcAn.data.land::bism_kc_by_crop |>
@@ -333,12 +434,9 @@ for (scen in config$scenarios) {
     distinct(landiq_class, landiq_subclass, .keep_all = TRUE)
   
   modeled = as.data.frame(future) |>
-    mutate(
-      CLASS_lookup = as.character(CLASS),
-      SUBCLASS_lookup = suppressWarnings(as.integer(SUBCLASS)),
-      planting_date = as.Date(planting_date),
-      peak_date = as.Date(peak_date),
-      harvest_date = as.Date(harvest_date)
+    mutate(CLASS_lookup = as.character(CLASS),
+      SUBCLASS_lookup = suppressWarnings(as.integer(SUBCLASS)), planting_date = as.Date(planting_date),
+      peak_date = as.Date(peak_date), harvest_date = as.Date(harvest_date)
     ) |>
     left_join(bism, by = c("CLASS_lookup" = "landiq_class", "SUBCLASS_lookup" = "landiq_subclass")) |>
     left_join(crop_whc, by = "crop_name") |>
@@ -362,7 +460,8 @@ for (scen in config$scenarios) {
   
   ssurgo_weights = read_parquet(config$ssurgo_weights_path)
   assert_cols(ssurgo_weights, c("parcel_id", "mukey", "weight", "area_m2"), "SSURGO weights")
-  ssurgo_weights$parcel_id = bit64::as.integer64(as.character(ssurgo_weights$parcel_id))
+  ## PATCH: was bit64::as.integer64(as.character(...)) - see as_parcel_id()
+  ssurgo_weights$parcel_id = as_parcel_id(ssurgo_weights$parcel_id, "SSURGO weights parcel_id")
   
   ##load SSURGO tables once instead of once per county
   message("Loading SSURGO component/chorizon tables...")
@@ -393,7 +492,7 @@ for (scen in config$scenarios) {
     
     if (file.exists(cache_file)) {
       cache = read_parquet(cache_file) |> select(parcel_id, rooting_depth_m, whc_mm)
-      cache$parcel_id = bit64::as.integer64(as.character(cache$parcel_id))
+      cache$parcel_id = as_parcel_id(cache$parcel_id, paste0("AWC cache ", cty))
     } else {
       cache = tibble::tibble(parcel_id = bit64::integer64(), rooting_depth_m = numeric(), whc_mm = numeric())
     }
@@ -443,15 +542,15 @@ for (scen in config$scenarios) {
   
   climate = read_csv(config$climate_path, show_col_types = FALSE)
   
-  assert_cols(climate, c(
-    "County", "date", "GCM", "SSP", "ET0_mm", "precip_mm"),
-    "Climate"
-  )
+  assert_cols(climate, c("County", "date", "GCM", "SSP", "ET0_mm", "precip_mm"), "Climate")
   
-  # A crop planted late in the final projection year is harvested in the year
-  # after it, and the water balance runs to the harvest date, so the climate
-  # series has to extend one year past the last projection year.
-  climate_years = c(config$years, max(config$years) + 1L)
+  #A crop planted late in the final projection year is harvested in the year after it, and the water balance 
+  #runs to the harvest date, so the climate series has to extend one year past the last projection year.
+  #a planting that spills into year+1 can push its harvest into year+2, so keep that year if the climate 
+  #file happens to contain it. It is not required - anything still short is clipped in run_group().
+  
+  climate_years = seq.int(min(config$years), max(config$years) + 2L)
+  required_years = c(config$years, max(config$years) + 1L)
   
   climate = climate |>
     mutate(County = norm_county(County), date = as.Date(date), ET0_mm = as.numeric(ET0_mm), precip_mm = as.numeric(precip_mm)
@@ -468,9 +567,9 @@ for (scen in config$scenarios) {
   real_min = min(year(climate$date), na.rm = TRUE)
   real_max = max(year(climate$date), na.rm = TRUE)
   
-  if (real_min > min(climate_years) ||
-      real_max < max(climate_years)) {
-    stop("Climate file must contain the full ", min(climate_years), "-", max(climate_years), " period.")
+  if (real_min > min(required_years) ||
+      real_max < max(required_years)) {
+    stop("Climate file must contain the full ", min(required_years), "-", max(required_years), " period.")
   }
   
   if ( climate |>
@@ -490,6 +589,22 @@ for (scen in config$scenarios) {
     peak = g$peak_date[[1]]
     harvest_date = g$harvest_date[[1]]
     dates = seq.Date(plant, harvest_date, by = "day")
+    
+    ##for now clipping the window to the days the climate record actually covers at both ends. The canopy curve 
+    #below still uses the original plant/peak/harvest anchors, so this shortens the window withouT reshaping the 
+    #season. A missing day in the middle is still an error.
+    
+    clim_min = min(cclim$date)
+    clim_max = max(cclim$date)
+    keep_dates = dates >= clim_min & dates <= clim_max
+    
+    if (!all(keep_dates)) {
+      message("CLIP: ", crop, " ", plant, " -> ", harvest_date,
+              " | ", sum(dates < clim_min), " days before ", clim_min,
+              ", ", sum(dates > clim_max), " days after ", clim_max)
+      dates = dates[keep_dates]
+      if (!length(dates)) return(tibble::tibble())
+    }
     
     idx = match(dates, cclim$date)
     
@@ -545,6 +660,9 @@ for (scen in config$scenarios) {
       )
     }))
   }
+  
+  #coverage report + drop unresolvable crop names. Never stops.
+  modeled = preflight_irrigation(modeled, climate, scen)
   
   # ---------- parallel county predictions ----------
   counties = sort(unique(modeled$county))
@@ -656,12 +774,11 @@ for (scen in config$scenarios) {
     
     out = bind_rows(pieces) |>
       mutate(
-        event_type = "irrigation",
         parcel_id = bit64::as.integer64(as.character(parcel_id)),
         date = as.Date(date),
         amount_mm = as.numeric(amount_mm)
       ) |>
-      select(event_type, parcel_id, date, amount_mm) |>
+      select(parcel_id, date, amount_mm) |>
       arrange(parcel_id, date)
     
     if (nrow(out) && any(!complete.cases(out)))
