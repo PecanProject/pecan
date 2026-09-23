@@ -1,5 +1,10 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+## Fixed
+
+* `flux.uncertainty()`: removed a duplicate assignment of `E2` (the same line appeared twice in sequence with no effect except wasted computation).
+* `flux.uncertainty()`: fixed a crash that occurred when all positive-flux magnitude bins contained `NA` error estimates. In that case the positive-slope model `mp` was never assigned, but the `else` branch for the negative-slope fallback unconditionally referenced `mp$coefficients[1]`, producing an "object 'mp' not found" error. The fallback now uses `else if (exists("mp", inherits = FALSE))` so it only runs when `mp` was actually fitted.
+
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
