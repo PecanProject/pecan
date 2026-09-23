@@ -18,8 +18,8 @@ scenario_output <- data.water::generateFullTidalScenario(
    hindcast_start = 1933,
    forecast_start = 2024,
    forecast_end = 2100,
-   RCP = c("RCP2.6", "RCP4.5"),
-   RCP_probability = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+   scenario = c("ssp126", "ssp245"),
+   target_quantile = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
    include_lt_tidal_const = T,
    datum_start_year = 1980,
    datum_end_year = 2025)
