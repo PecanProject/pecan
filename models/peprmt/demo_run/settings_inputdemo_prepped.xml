@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <pecan>
  <info>
-  <notes>Compiled from template.xml at 2026-05-04 12:23:07.039298</notes>
+  <notes>Compiled from template.xml at 2026-08-11 13:21:53.253446</notes>
   <userid>-1</userid>
   <username></username>
  </info>
@@ -152,7 +152,7 @@
   <checked>TRUE</checked>
  </settings.info>
  <workflow>
-  <id>2026-05-04-12-23-07</id>
+  <id>2026-08-11-13-21-53</id>
  </workflow>
  <rundir>/Users/jamesholmquist/GitHub/pecan/models/peprmt/demo_run/input_demo_out/run</rundir>
  <modeloutdir>/Users/jamesholmquist/GitHub/pecan/models/peprmt/demo_run/input_demo_out/out</modeloutdir>

@@ -1,6 +1,6 @@
 runtype     : ensemble
- workflow id :  2026-05-04-12-23-39 
- ensemble id :  41e0ce8fdf11e1ba6e84415388012ec8 
+ workflow id :  2026-08-11-13-22-15 
+ ensemble id :  5a47199119d0f8c77ebe4b1adf30dabb 
  run         :  6 / 10 
  run id      :  ENS-00006-US_EDN 
  pft names   :  default default_mcmc 
@@ -8,7 +8,7 @@ runtype     : ensemble
  model id    :  peprmt_0_1_0 
  site        :  US_EDN 
  site  id    :  US_EDN 
- met         : data/met/ERA5_37.5N_122W/ERA5.10.2018-04-03.2021-06-16.dat
+ met         : data/met/ERA5_37.5N_122W/ERA5.7.2018-04-03.2021-06-16.dat
  start date  :  2018-04-03 
  end date    :  2021-06-16 
  hostname    :  localhost 

@@ -8,7 +8,7 @@ generateFullTidalScenario(
   station_id = 9410660,
   run_hindcast = T,
   run_forecast = T,
-  hindcast_start = 1923,
+  hindcast_start = 1928,
   forecast_start = 2018,
   forecast_end = 2100,
   RCP = c("RCP4.5"),

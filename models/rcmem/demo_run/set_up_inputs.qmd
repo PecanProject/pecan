@@ -1,5 +1,5 @@
 ---
-title: "Setting up PEPRMT inputs in PEcAn"
+title: "Setting up RCMEM inputs in PEcAn"
 author:
   - "Chris Black"
 ---

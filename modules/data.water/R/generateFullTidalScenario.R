@@ -8,8 +8,8 @@
 ##' @param run_forecast True or False, run a forecast
 ##' @param hindcast_start Calendar year (YYYY) that hindcast starts
 ##' @param forecast_start Calendar year (YYYY) that forecast starts
-##' @param forecast_end Calendar year (YYYY) that forecast ends, needs to be 2030, 2050, 2100, 2150 or 2200
-##' @param RCP Realized concentration pathway, either string or vector, must be RCP2.6, RCP4.5 or RCP8.5
+##' @param forecast_end Calendar year (YYYY) that forecast ends, needs to be 10 year intervals starting in 2020 going above 2100 
+##' @param RCP Realized concentration pathway, either string or vector, must be 
 ##' @param RCP_probability RCP probability, either numeric or vector, sea-level rise senario probabilities to test.
 ##' @param include_lt_tidal_const Include long term tidal constituents, True or False.
 ##' @param datum_start_year Datum start year over which to calculate tidal datums (calendar year, YYYY).
@@ -21,10 +21,11 @@ generateFullTidalScenario <- function(station_id=9410660,
                                       run_hindcast = T,
                                       run_forecast = T,
                                       hindcast_start = 1928,
-                                      forecast_start = 2018,
+                                      forecast_start = 2026,
                                       forecast_end = 2100,
-                                      RCP = c("RCP4.5"),
-                                      RCP_probability=c(0.25,0.5,0.75),
+                                      scenario = c("ssp126", "ssp245"),
+                                      confidence_level = "medium",
+                                      target_quantile =c(0.25,0.5,0.75),
                                       include_lt_tidal_const = T,
                                       datum_start_year = 1980,
                                       datum_end_year = 2025
@@ -35,12 +36,10 @@ generateFullTidalScenario <- function(station_id=9410660,
   require(VulnToolkit)
   # require(jsonlite)
 
-  # forecast_end needs to be one of the following
-  # 2030
-  # 2050
-  # 2100
-  # 2150
-  # 2200
+  
+  # [1] "ssp119"         "ssp126"         "ssp245"         "ssp370"         "ssp585"        
+  # [6] "tlim1.5win0.25" "tlim2.0win0.25" "tlim3.0win0.25" "tlim4.0win0.25" "tlim5.0win0.25"
+
   # First, do we create a hindcast?
   # if (run_hindcast) {
   #
@@ -79,100 +78,85 @@ generateFullTidalScenario <- function(station_id=9410660,
   msl_hindcast <- msl %>%
     dplyr::group_by(Year) %>%
     dplyr::summarise(MSL = mean(MSL)) %>%
-    dplyr::mutate(MSL = MSL * 100)
+    dplyr::mutate(meanSeaLevel = MSL * 100) %>% 
+    dplyr::select(-MSL) %>%
+    dplyr::rename(year=Year)
 
   # 2. Interpolate missing data
-  msl_spline <- loess(MSL ~ Year, data = msl_hindcast %>% dplyr::filter(complete.cases(.)))
+  # ??
+  # msl_spline <- loess(MSL ~ Year, data = msl_hindcast %>% dplyr::filter(complete.cases(.)))
+  # msl_hindcast$meanSeaLevel <- predict(msl_spline, newdata = msl_hindcast$Year)
 
-  msl_hindcast$meanSeaLevel <- predict(msl_spline, newdata = msl_hindcast$Year)
-
-  msl_hindcast <- msl_hindcast %>%
-    dplyr::select(-MSL) %>%
-    mutate(index = 1:n()-1) %>%
-    rename(year=Year)
+  # msl_hindcast <- msl_hindcast %>%
+  #   dplyr::select(-MSL) %>%
+  #   mutate(index = 1:n()-1) %>%
+  #   rename(year=Year)
 
   # 3. Get SLR rate at year of scenario start
 
   # If forecast == T
   if (run_forecast) {
 
-    init_slr <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
-      msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
+    # init_slr <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
+    #   msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
 
     path <- system.file("extdata",
-                        "Kopp_2014_projections_long.parquet",
+                        "ar6_us_compiled_senarios.parquet",
                         package = "data.water")
 
     # 4. Query future SLR
-    kopp_2014 <- arrow::read_parquet(path)
+    ar6 <- arrow::read_parquet(path)
 
-
-    kopp_filtered <- kopp_2014 %>%
+    ar6_filtered <- ar6 %>%
       dplyr::filter(noaa_id == station_id,
-                    year == forecast_end,
-                    rcp %in% RCP
+                    year <= forecast_end,
+                    scenario_name %in% scenario,
+                    confidence %in% confidence_level
       )
-
-    rcp_list <- list()
-    for (i in 1:length(RCP)) {
-
-      kopp_rcp <- kopp_filtered %>%
-        dplyr::filter(rcp == RCP[i])
-
-      msl_outputs <- approx(x = kopp_filtered$percentile/100,
-                            y = kopp_filtered$slr_cm,
-                            xout = RCP_probability)
-      names(msl_outputs) <- c("probabiliy", "slr_cm")
-
-      rcp_list[[i]] <- kopp_rcp %>%
-        dplyr::select(-c(percentile, slr_cm)) %>%
-        dplyr::distinct_all() %>%
-        merge(msl_outputs)
-
-    }
-
-    rcp_table <- bind_rows(rcp_list)
-
+    
+    init_msl <- mean(msl_hindcast$meanSeaLevel[msl_hindcast$year %in% 1995:2014])
+    
+    scp_table <- ar6_filtered %>% 
+      group_by(noaa_id, noaa_name, year, scenario_name, confidence) %>% 
+      reframe(
+        approx(
+          x = quantile,
+          y = sea_level_change_mm,
+          xout = target_quantile
+        ) %>%
+          as_tibble()
+      ) %>% 
+      mutate(y=y/10+init_msl) %>% 
+      rename(quantile=x,
+              meanSeaLevel=y) %>% 
+      filter(year>max(msl_hindcast$year))
+    
     # !!! Add a stop or warning for forecast starts greater than 2000
 
     # Forecast start - 2000
-    slr_2000toStart <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
-      msl_hindcast$meanSeaLevel[msl_hindcast$year == 2000]
+    # slr_2010toStart <- msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start] -
+    #   msl_hindcast$meanSeaLevel[msl_hindcast$year == 2010]
 
-    init_msl <- rev(msl_hindcast$meanSeaLevel)[1]
-
-    # Create an initial sea-level rise curve
-    scenario_curve_list <- list()
-
-    for (i in 1:nrow(rcp_table)) {
-
-      temp_curve <- buildScenarioCurve(startYear = forecast_start,
-                                       endYear = forecast_end,
-                                       meanSeaLevel = init_msl,
-                                       relSeaLevelRiseInit = init_slr,
-                                       relSeaLevelRiseTotal = rcp_table$slr_cm[i]-slr_2000toStart
-      )
-
-      if (run_hindcast) {
-
-        temp_curve <- temp_curve[-1,] %>%
-          mutate(index = index+max(msl_hindcast$index))
-
-        temp_curve <- bind_rows(msl_hindcast,
-                                temp_curve
-                                )
-
-      }
-
-      scenario_curve_list[[i]] <- temp_curve
-
-    }
-
-
+    all_scenario_names <- unique(scp_table$scenario_name)
+    
+    historical_by_scenario <- crossing(
+      msl_hindcast,
+      scenario_name = scenario,
+      confidence = confidence_level,
+      quantile = target_quantile
+    )
+    
+    dat <- bind_rows(
+      historical_by_scenario,
+      scp_table
+    )
+    
+  
   } else if (run_hindcast) {
 
     # Else if add the hindcast to a list
-    scenario_curve_list <- list(msl_hindcast)
+    dat <- msl_hindcast %>% 
+      mutate(scenario_name = NA, confidence= NA, quantile= NA)
 
   } else {
     # Else stop
@@ -180,13 +164,33 @@ generateFullTidalScenario <- function(station_id=9410660,
 
   } # end of run_forecast, run hindcast checks
 
-  # plot(scenario_curve_list[[1]]$year, scenario_curve_list[[1]]$meanSeaLevel, type = "l")
-
-  # for (i in 2:length(scenario_curve_list)) {
-  #
-  #   lines(scenario_curve_list[[i]]$year, scenario_curve_list[[i]]$meanSeaLevel)
-  #
-  # }
+  dat_spline <- dat %>%
+    group_by(scenario_name, confidence, quantile) %>%
+    arrange(year) %>%
+    reframe({
+      
+      years_out <- seq(
+        min(year),
+        max(year),
+        by = 1
+      )
+      
+      sp <- spline(
+        x = year,
+        y = meanSeaLevel,
+        xout = years_out
+      )
+      
+      tibble(
+        year = sp$x,
+        meanSeaLevel = sp$y
+      )
+    })
+  
+  ggplot(dat_spline, aes(x = year, y = meanSeaLevel)) +
+    geom_line(aes(group=quantile)) +
+    facet_wrap(.~scenario_name) +
+    geom_point(data=dat)
 
   # 5. Query tidal constituents
 
@@ -222,12 +226,12 @@ generateFullTidalScenario <- function(station_id=9410660,
     arrange(-observed)
 
   ampMat <- matrix(rep(tidal_datums_summarized$observed,
-                         nrow(scenario_curve_list[[1]])),
+                         length(unique(dat_spline$year))),
                      ncol = length(tidal_datums_summarized$observed),
                      byrow = T)
 
   datumNames <- tidal_datums_summarized$Datum
-
+  
   # 7. Query anomalous flood events?
 
   # !!! Leave this blank for now. There is room to grow
@@ -245,7 +249,7 @@ generateFullTidalScenario <- function(station_id=9410660,
       dplyr::rename(noaa_id=station_id) %>%
       dplyr::filter(noaa_id == station_id)
 
-    all_years <- scenario_curve_list[[1]]$year
+    all_years <- unique(dat_spline$year)
 
     for (j in 1:length(datumNames)) {
 
@@ -278,16 +282,18 @@ generateFullTidalScenario <- function(station_id=9410660,
 
   }
 
-  MHW_mat_list <- list()
-  MLW_mat_list <- list()
-  for (i in 1:length(scenario_curve_list)) {
-
-    ampMatTemp <- ampMat + scenario_curve_list[[i]]$meanSeaLevel
-
-    MHW_mat_list[[i]] <- ampMatTemp[,1:(ncol(ampMatTemp)/2)]
-    MLW_mat_list[[i]] <- ampMatTemp[, ((ncol(ampMatTemp)/2)+1):ncol(ampMatTemp)]
-
-  }
+  
+  amp_df <- as.data.frame(ampMat)
+  names(amp_df) <- datumNames
+  
+  amp_df <- amp_df %>% 
+    mutate(year = all_years)
+  
+  scenario_curves <- dat_spline %>% 
+    left_join(amp_df, by = "year") %>% 
+    mutate(
+      across(all_of(datumNames), ~ .x + meanSeaLevel)
+    )
 
   # Output a list of mean sea-levels
   # A vector of calendar years
@@ -297,12 +303,8 @@ generateFullTidalScenario <- function(station_id=9410660,
   # A vector of event times (hours)
   # A table with sea level rise scenario info
 
-  output_list <- list(rcp_table,
-                      scenario_curve_list,
-                      MHW_mat_list,
-                      MLW_mat_list,
-                      n_flood = tidal_datums_summarized$flood_n[1:(length(tidal_datums_summarized$flood_n)/2)],
-                      flood_times = tidal_datums_summarized$flood_time[1:(length(tidal_datums_summarized$flood_n)/2)]
+  output_list <- list(scenario_curves = scenario_curves,
+                      tidal_datums_summarized = tidal_datums_summarized
                       )
   return(output_list)
 }

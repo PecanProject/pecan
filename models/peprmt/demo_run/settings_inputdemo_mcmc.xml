@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <pecan>
  <info>
-  <notes>Compiled from template.xml at 2026-05-04 12:23:07.039298</notes>
+  <notes>Compiled from template.xml at 2026-08-11 13:21:53.253446</notes>
   <userid>-1</userid>
   <username></username>
  </info>
@@ -32,7 +32,7 @@
    </samplingspace>
    <start.year>2014</start.year>
    <end.year>2024</end.year>
-   <ensemble.id>c78188c3efe5e34d7395299d47b2ad65</ensemble.id>
+   <ensemble.id>8a7b551d1e80ee2000e7f59a9e300b20</ensemble.id>
   </site.US_EDN>
   <site.US_SRR>
    <size>10</size>
@@ -47,7 +47,7 @@
    </samplingspace>
    <start.year>2014</start.year>
    <end.year>2024</end.year>
-   <ensemble.id>48a3ac7ad0db78dcb1973f027bf1164f</ensemble.id>
+   <ensemble.id>ee61e77b62cf31d547ac91b98b9be5f7</ensemble.id>
   </site.US_SRR>
   <site.US_DMG>
    <size>10</size>
@@ -62,7 +62,7 @@
    </samplingspace>
    <start.year>2014</start.year>
    <end.year>2024</end.year>
-   <ensemble.id>31d5e4ec4eec2d5a0928cd71ed5db0b7</ensemble.id>
+   <ensemble.id>4354063a4475fbda82c3da74e74c37a6</ensemble.id>
   </site.US_DMG>
  </ensemble>
  <model>
@@ -199,7 +199,7 @@
   <checked>TRUE</checked>
  </settings.info>
  <workflow>
-  <id>2026-05-04-12-23-39</id>
+  <id>2026-08-11-13-22-15</id>
  </workflow>
  <rundir>/Users/jamesholmquist/GitHub/pecan/models/peprmt/demo_run/input_demo_mcmc_out/run</rundir>
  <modeloutdir>/Users/jamesholmquist/GitHub/pecan/models/peprmt/demo_run/input_demo_mcmc_out/out</modeloutdir>
