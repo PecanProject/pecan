@@ -1,17 +1,19 @@
 # PEcAn.DALEC
 
-<!-- badges: start -->
-
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) 
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![PEcAn.DALEC status badge](https://pecanproject.r-universe.dev/badges/PEcAn.DALEC)](https://pecanproject.r-universe.dev/PEcAn.DALEC)
 
-<!-- badges: end -->
+PEcAn Coupler for the DALEC Model
 
-PEcAn Package for Integration of the DALEC Model
+## Introduction
+
+DALEC (Data Assimilation Linked Ecosystem Carbon) is a simplified ecosystem model designed for carbon cycle data assimilation.
 
 ## Installation
 
-You can install the development version of `PEcAn.DALEC` from r-universe like so:
+### Install PEcAn.DALEC Package
+
+You can install the development version of `PEcAn.DALEC` from r-universe:
 
 ``` r
 # Enable repository from pecanproject
@@ -22,16 +24,18 @@ options(repos = c(
 install.packages('PEcAn.DALEC')
 ```
 
-Or you can install directly from GitHub with the remotes package like so:
+Or install directly from GitHub:
 
 ``` r
 library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/dalec")
 ```
 
-## Example
+### Install DALEC Model
 
-This is a basic example which shows you how to solve a common problem:
+DALEC is typically provided as a simple executable or script.
+
+## Example
 
 ``` r
 library(PEcAn.DALEC)

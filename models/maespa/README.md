@@ -1,46 +1,44 @@
-
 # PEcAn.MAESPA
-
-<!-- badges: start -->
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![PEcAn.MAESPA status badge](https://pecanproject.r-universe.dev/badges/PEcAn.MAESPA)](https://pecanproject.r-universe.dev/PEcAn.MAESPA)
 
-<!-- badges: end -->
+PEcAn Coupler for the MAESPA Model
 
-PEcAn Functions Used for Ecological Forecasts and Reanalysis using MAESPA
+## Introduction
+
+MAESPA is a model that simulates the radiation and water balance of forest canopies.
 
 ## Installation
 
-You can install the development version of `PEcAn.MAESPA` from r-universe like so:
+### Install PEcAn.MAESPA Package
 
 ``` r
-# Enable repository from pecanproject
-options(repos = c(
-  pecanproject = 'https://pecanproject.r-universe.dev',
-  CRAN = 'https://cloud.r-project.org'))
-# Download and install PEcAn.MAESPA in R
-install.packages('PEcAn.MAESPA')
+remotes::install_github('pecanproject/pecan',  subdir = "models/maespa")
 ```
 
-Or you can install directly from GitHub with the remotes package like so:
+### Install MAESPA Model
 
-``` r
-library(remotes)
-install_github('pecanproject/pecan',  subdir = "models/maespa")
+```bash
+git clone https://bitbucket.org/remkoduursma/maespa.git
+cd maespa
+make
 ```
 
-When writing configurations files PEcAn.MAESPA uses the `Maeswrap` package.
-We recommend Maeswrap 1.8.0 or later, which you can install from GitHub with `remotes::install_github("RemkoDuursma/Maeswrap")`.
-An older version of Maeswrap (1.7 at this writing in September 2024) is also available from CRAN and does provide the functionality PEcAn.MAESPA needs, but this version has a strong dependency on the `rgl` package, which can be hard to install and are not needed by PEcAn. If you have trouble installing the extra dependencies or if you are annoyed by an unwanted plot window opening every time you use PEcAn.MAESPA, try upgrading Maeswrap to 1.8 or later.
+### Maeswrap R Package
 
+MAESPA requires the `Maeswrap` R package. To install dependencies and the package:
 
-## Example
+```bash
+sudo apt-get install r-cran-rgl libglu1-mesa-dev
+```
 
-This is a basic example which shows you how to solve a common problem:
-
+Then in R:
 ```r
-library(PEcAn.MAESPA)
-## basic example code
+install.packages("Maeswrap")
 ```
 
+## Documentation
+
+- **Home Page**: http://maespa.github.io/
+- **Source Code**: http://maespa.github.io/download.html

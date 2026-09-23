@@ -7,21 +7,6 @@
 
 <!-- badges: end -->
 
-## What is SIPNET?
-
-The SIPNET v1 (**S**implified PnET (**P**hotosynthesis** and **E**vapo**t**ranspiration)) model is a lightweight ecosystem model designed to simulate ecosystem carbon and water dynamics. 
-
-SIPNET v2 added a nitrogen cycle, trace greenhouse-gas (N₂O, CH₄) fluxes, and support for cropland and ecosystem management. As of PEcAn v1.10, support for SIPNET v2 is partially implemented and under active development.
-
-**Key Features:**
-- Simulates photosynthesis, respiration, allocation, soil water, soil temperature, and nitrogen cycling
-- Operates on sub-daily time steps
-- Tracks vegetation, litter, soil, and mineral-N pools
-- Event-based management for agricultural processes (planting, harvest, tillage, irrigation)
-- Clean, modular, BSD-licensed codebase suitable for research and production
-
-For comprehensive SIPNET documentation, see the [SIPNET project website](https://pecanproject.github.io/sipnet).
-
 ## Using SIPNET via PEcAn
 
 PEcAn.SIPNET is the PEcAn interface package that enables SIPNET integration with the PEcAn workflow system. This package:

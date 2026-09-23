@@ -1,0 +1,42 @@
+# PEcAn Models {#pecan-models}
+
+This section provides an overview of all models and output variables supported by PEcAn. For detailed model-specific documentation and configuration, see the [PEcAn package documentation](https://pecanproject.r-universe.dev).
+
+| Model Name | Available in Docker | Prescribed Inputs | Input Conversion | Restart/DA |
+| -- | -- | -- | -- | -- |
+| [BASGRA](https://github.com/PecanProject/pecan/tree/develop/models/basgra) | Yes | Yes | Yes | No |
+| [BioCro](https://github.com/PecanProject/pecan/tree/develop/models/biocro) | Yes | Yes | Yes| No |
+| [CABLE](https://github.com/PecanProject/pecan/tree/develop/models/cable) | No | Yes | No | No |
+| [CLM](https://github.com/PecanProject/pecan/tree/develop/models/clm45)| No | No | No| No |
+| [DALEC](https://github.com/PecanProject/pecan/tree/develop/models/dalec)| Yes | Yes | Yes| No |
+| [Dvmdostem](https://github.com/PecanProject/pecan/tree/develop/models/dvmdostem) | No | Yes | Yes | No |
+| [ED2](https://github.com/PecanProject/pecan/tree/develop/models/ed)| Yes | Yes | Yes| Yes |
+| [FATES](https://github.com/PecanProject/pecan/tree/develop/models/fates) | No | Yes | Yes | No|
+| [GDAY](https://github.com/PecanProject/pecan/tree/develop/models/gday) | No | No | No| No |
+| [JULES](https://github.com/PecanProject/pecan/tree/develop/models/jules) | No | Yes | No | No |
+| [LDNDC](https://github.com/PecanProject/pecan/tree/develop/models/ldndc) | No | Yes | No | No |
+| [LINKAGES](https://github.com/PecanProject/pecan/tree/develop/models/linkages) | Yes | Yes | Yes| Yes |
+| [LPJ-GUESS](https://github.com/PecanProject/pecan/tree/develop/models/lpjguess)| No | Yes | No | No |
+| [MAAT](https://github.com/PecanProject/pecan/tree/develop/models/maat) | Yes | Yes | No | No |
+| [MAESPA](https://github.com/PecanProject/pecan/tree/develop/models/maespa)| Yes | Yes | No | No |
+| [PRELES](https://github.com/PecanProject/pecan/tree/develop/models/preles) | Yes | Yes | Partially | No |
+| [RothC](https://github.com/PecanProject/pecan/tree/develop/models/rothc) | No | Yes | Partially | No |
+| [SiPNET](https://github.com/PecanProject/pecan/tree/develop/models/sipnet)| Yes | Yes | Yes| Yes |
+| [STICS](https://github.com/PecanProject/pecan/tree/develop/models/stics)| Yes | Yes | No | No |
+
+**Column Definitions**
+
+*Available in Docker* - Indicates if a model is included in the PEcAn Docker container for ready-to-use deployment.
+
+*Prescribed Inputs* - Indicates whether PEcAn can prescribe model inputs (e.g., using MCMC or ensemble methods).
+
+*Input Conversion* - Indicates whether PEcAn has functions to convert standard meteorological/input formats into model-native input files (i.e., `met2model` and related functions).
+
+*Restart/DA* - Indicates the status of model data assimilation capabilities, including support for restarting from saved model state and sequential data assimilation.
+
+
+**Output Variables**
+
+PEcAn converts all model outputs to a single [Output Standards]. This standard evolved out of MsTMIP project, which is itself based on NACP, LBA, and other model-intercomparison projects. This standard was expanded for the PalEON MIP and the needs of the PEcAn modeling community to support variables not in these standards.
+
+_Model developers_: do not add variables to your PEcAn output without first adding them to the PEcAn standard table! Also, do not create new variables equivalent to existing variables but just with different names or units.
