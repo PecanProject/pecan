@@ -1,0 +1,639 @@
+---
+title: "DoD_site_selection"
+author: "Dongchen Zhang"
+date: '2026-05-05'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Set the root directory for all chunks
+knitr::opts_knit$set(root.dir = "/projectnb/dietzelab/dongchen/SDA_disturbance/")
+```
+# initialize parallel.
+```{r}
+future::plan(future::multisession)
+```
+
+# load basic files.
+```{r}
+# load shapefile.
+Dod.shapefile <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/DoD_shapefile/DoD_Sites_-_Boundary.shp")
+# load disturbance history table.
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/output/poly.agent.table.Rdata")
+```
+
+# select polygons.
+```{r}
+library(pathviewr)
+# Assuming 'df' is your data frame with numeric columns
+normalized_df <- as.data.frame(apply(poly.agent.table, 2, function(x) (x - min(x, na.rm = T)) / (max(x, na.rm = T) - min(x, na.rm = T))))
+dist.mat <- apply(normalized_df, 1, function(x) sqrt(sum(x^2)))
+dist.mat <- cbind(dist.mat, seq_along(Dod.shapefile))
+dist.mat <- dist.mat[which(dist.mat[,1]>0),]
+sorted.dist.mat <- data.frame(list(dist = sort(dist.mat[,1], decreasing = T), ID = 1:74))
+
+# find the elbow point.
+elbow_index <- find_curve_elbow(sorted.dist.mat)
+plot(sort(dist.mat[,1], decreasing = T), pch=18, ylab="Sqrt of sum of normalized index")
+abline(v=elbow_index, col=2, lwd=2)
+legend("topright", lty=1, col=2, lwd=2, legend="Elbow Point")
+
+# load("/projectnb/dietzelab/dongchen/SDA_disturbance/output/poly.agent.table.Rdata")
+# Dod.sel.poly <- Dod.shapefile[dist.mat[,2]]
+# Dod.sel.poly$total_area <- poly.agent.table$tot_area[dist.mat[,2]]
+# Dod.sel.poly$frac <- poly.agent.table$frac_gt_0[dist.mat[,2]]
+# Dod.sel.poly$mag <- poly.agent.table$mag[dist.mat[,2]]
+# terra::writeVector(Dod.sel.poly, "/projectnb/dietzelab/dongchen/SDA_disturbance/selected_polygons/selected_polygons.shp")
+Dod.sel.poly <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/selected_polygons/selected_polygons.shp")
+terra::plot(Dod.sel.poly, "total_area")
+
+# update the data frame.
+dist.mat <- dist.mat[order(dist.mat[, 1], decreasing=TRUE)[1:elbow_index], ]
+```
+
+# data prep.
+# setup base map.
+```{r}
+library(purrr)
+base.map <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/merged_images/AGENT_2022.tif")
+# resample all disturbance maps.
+raw.imgs <- list.files("/projectnb/dietzelab/dongchen/SDA_disturbance/merged_images/", pattern = "AGENT_", full.names = T)
+cmd <- "gdalwarp -te -129.2773199 21.8050362 -63.1184616 52.9217197 -tr 0.000325307972546 0.000325307972546 -t_srs EPSG:4326 -r near -co COMPRESS=DEFLATE @IN@ @OUT@"
+future::plan(future::multisession, workers = 12)
+temp <- raw.imgs %>% furrr::future_map(function(f) {
+  cmd <- gsub("@IN@", f, cmd)
+  cmd <- gsub("@OUT@", file.path("/projectnb/dietzelab/dongchen/SDA_disturbance/resample_agent_maps", basename(f)), cmd)
+  system(paste0("source /usr/share/Modules/init/bash; module load gdal; ", cmd), intern = T)
+}, .progress = T)
+```
+
+## GEDI-4A.
+```{r}
+dod.shp <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/selected_polygons/selected_polygons.shp")
+bb <- terra::ext(dod.shp[3,])
+# metadata <- PEcAn.data.remote::NASA_DAAC_download(ul_lat = 36.13, 
+#                                  ul_lon = -121.44, 
+#                                  lr_lat = 35.77, 
+#                                  lr_lon = -121, 
+#                                  from = "2019-01-01",
+#                                  to = "2025-12-31", 
+#                                  just_path = F,
+#                                  outdir = "/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/download/",
+#                                  credential_path = "~/.netrc",
+#                                  doi = "10.3334/ORNLDAAC/2056",
+#                                  ncore = parallel::detectCores()-1)
+# load("/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/coordinates.Rdata")
+# site_info <- list(lat = lon.lat.list[[3]]$lat, lon = lon.lat.list[[3]]$lon)
+# which.point.in.which.file <- PEcAn.data.remote::GEDI_L4A_Finder_batch(files = list.files("/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/download", full.names = T), 
+#                                                                       outdir = "/projectnb/dietzelab/dongchen/SDA_disturbance/gedi",
+#                                                                       num.folder = 30, 
+#                                                                       cores = 28,
+#                                                                       site_info = site_info, 
+#                                                                       buffer = 0.000325308/2)
+files <- list.files("/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/download/", full.names = T)
+# loop over beams.
+dat <- c()
+for (i in seq_along(files)) {
+# load file.
+level4a_h5 <- hdf5r::H5File$new(files[i], mode = "r")
+# load beams id.
+groups_id <- grep("BEAM\\d{4}$", gsub("/", "", hdf5r::list.groups(level4a_h5,recursive = F)), value = T)
+for (j in groups_id) {
+  level4a_i <- level4a_h5[[j]]
+  
+  if (any(hdf5r::list.datasets(level4a_i) == "shot_number")) {
+    rhs <- data.table::data.table(
+      lat_lowestmode = level4a_i[["lat_lowestmode"]][],
+      lon_lowestmode = level4a_i[["lon_lowestmode"]][],
+      agbd           = level4a_i[["agbd"]][],
+      agbd_se        = level4a_i[["agbd_se"]][],  # <-- Pulls the SD/SE directly from the H5 beam
+      delta_time     = level4a_i[["delta_time"]][]
+    )
+    
+    # Extract the raw seconds
+    rhs$shot_time <- as.POSIXct(rhs$delta_time, origin = "2018-01-01", tz = "UTC")
+    rhs <- rhs[which(rhs$agbd >= 0), ]
+    dat <- rbind(dat, rhs)
+  }
+}
+# lat/lon filter based on extends.
+dat <- dat[dat$lon_lowestmode >= bb[1] &
+           dat$lon_lowestmode <= bb[2] &
+           dat$lat_lowestmode >= bb[3] &
+           dat$lat_lowestmode <= bb[4], ]
+print(i)
+}
+save(dat, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/dat.Rdata")
+
+
+library(data.table)
+library(terra)
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/dat.Rdata")
+# 1. Load the reference DEM
+ref_dem <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem_resample.tif")
+
+# 2. Crop the DEM to the shapefile's extent, then wrap in rast() to create an empty template
+r_template <- terra::rast(terra::crop(ref_dem, dod.shp[3,]))
+# Ensure dat is a data.table (it looks like you already did this, but just in case)
+setDT(dat)
+
+# 1. Calculate the cell number for each point (super fast math operation)
+coords <- as.matrix(dat[, .(lon_lowestmode, lat_lowestmode)])
+dat[, cell_id := cellFromXY(r_template, coords)]
+
+# 2. Count the number of points in each cell (.N is data.table's count function)
+# (If you wanted mean AGBD instead, you'd do: mean_agbd = mean(agbd, na.rm=TRUE))
+cell_summary <- dat[!is.na(cell_id), .(pt_count = .N, mean_agbd = mean(agbd, na.rm = TRUE)), by = cell_id]
+
+# 3. Write those summarized values directly into your raster template
+point_count_raster <- r_template
+values(point_count_raster) <- NA # Ensure it's blank to start
+point_count_raster[cell_summary$cell_id] <- cell_summary$pt_count
+names(point_count_raster) <- "gedi_density"
+plot(point_count_raster)
+# writeRaster(point_count_raster, "/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/point_count_raster.tif", overwrite=TRUE)
+gedi_density <- terra::extract(point_count_raster*1, dod.shp[3,])
+gedi_density$gedi_density[which(is.na(gedi_density$gedi_density))] <- 0
+save(gedi_density, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/gedi_density.Rdata")
+
+# 
+point_count_raster <- r_template
+values(point_count_raster) <- NA # Ensure it's blank to start
+point_count_raster[cell_summary$cell_id] <- cell_summary$mean_agbd
+names(point_count_raster) <- "gedi_agb"
+plot(point_count_raster)
+writeRaster(point_count_raster, "/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/gedi_agb.tif", overwrite=TRUE)
+```
+
+## DEM.
+```{r}
+# load dem raster.
+dem <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem_resample.tif")
+# initialize list.
+dem.list <- vector("list", length = length(dist.mat[,2]))
+# loop over polygons.
+for (i in seq_along(dist.mat[, 2])) {
+  # extract.
+  temp.poly <- Dod.shapefile[dist.mat[i, 2], ]
+  temp.ext <- terra::extract(dem, temp.poly)
+  # store.
+  dem.list[[i]] <- list(dem.df = temp.ext, poly.id = dist.mat[i, 2])
+}
+save(dem.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/dem.Rdata")
+```
+
+## Stand Age.
+```{r}
+# read the forest age map.
+forest.age <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/forest_age_resample.tif")
+# initialize list.
+agent.raw.list <- forest.age.list <- vector("list", length = length(dist.mat[,2]))
+# setup agent ID for wildfire.
+agent.num <- 6
+# loop over polygons.
+for (i in seq_along(agent.raw.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  # loop over years.
+  agent.ext <- c()
+  forest.age.list[[i]] <- terra::extract(forest.age, temp.vect)[,2]
+  for (j in 1988:2022) {
+    # load the corresponding agent raster map.
+    temp.agent <- terra::rast(file.path(paste0("/projectnb/dietzelab/dongchen/SDA_disturbance/resample_agent_maps/AGENT_", j, ".tif")))
+    temp.agent.ext <- terra::extract(temp.agent, temp.vect) %>% data.frame
+    temp.agent.ext[,2][which(temp.agent.ext[,2] != agent.num)] <- 0
+    temp.agent.ext[,2][which(temp.agent.ext[,2] == agent.num)] <- 1
+    agent.ext <- rbind(agent.ext, temp.agent.ext[,2])
+  }
+  agent.raw.list[[i]] <- list(agent.ext)
+  print(i)
+}
+
+stand.age.calc <- function(x, age) {
+  ind <- which(x == 1)
+  if (length(ind) == 0) {
+    if (is.na(age)) {
+      return(length(x))
+    } else {
+      return(age - 10)
+    }
+  } else {
+    dist.year <- ind[length(ind)]
+    stand.age <- length(x) - dist.year
+    return(stand.age)
+  }
+}
+
+stand.age.list <- agent.raw.list %>% purrr::map2(forest.age.list, function(agent.raw, forest.age) {
+  seq_along(forest.age) %>% purrr::map(function(i) {
+    stand.age.calc(agent.raw[[1]][, i], forest.age[i])
+  }) %>% unlist
+})
+
+save(stand.age.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/stand_age.Rdata")
+
+# plot density distribution.
+for (i in seq_along(stand.age.list)) {
+  plot(density(stand.age.list[[i]]), xlab="Stand Age (Wildfire)")
+}
+```
+
+
+## gSURRGO soil data.
+```{r}
+library(sf)
+# gdalwarp -te -129.2773199 21.8050362 -63.1184616 52.9217197 -tr 0.000325307972546 0.000325307972546 -t_srs EPSG:4326 -r near -co COMPRESS=DEFLATE -co BIGTIFF=YES /projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem.tif /projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem_resample.tif
+# load the resampled raster map.
+mukey.rast <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/ALL_SSURGO_10_01_2025_gpkg/muraster_30m_resample.tif")
+
+# Load the attribute table from the GeoPackage (once extraction is 100%)
+gpkg_path <- "/projectnb/dietzelab/dongchen/SDA_disturbance/ALL_SSURGO_10_01_2025_gpkg/2025_ALL_SSURGO.gpkg"
+attributes <- st_read(gpkg_path, layer = "chorizon") # 'chorizon' contains the physical properties
+
+# 1. Load the component table from your GPKG
+components <- st_read(gpkg_path, layer = "component")
+# If they do, create the column manually:
+components$cokey <- rownames(components)
+# This forces the internal rowid (cokey) to be readable
+components <- st_read(gpkg_path, query = "SELECT rowid AS cokey, * FROM component")
+# merge the cockey field to the attribute table.
+attributes_with_mukey <- merge(
+  attributes, 
+  components[, c("mukey", "cokey")], 
+  by = "cokey"
+)
+# create dictionary for the naming conventions.
+col.select <- list("sand" = "sandtotal_r", "silt" = "silttotal_r", "clay" = "claytotal_r", # sand, silt, and clay percentage.
+                   "whc" = "awc_r", "hc" = "ksat_r", # water holding capacity and conductivity rate.
+                   "omp" = "om_r", "ph" = "ph1to1h2o_r") # organic matter percentage and pH.
+# loop over polygons.
+soil.list <- vector("list", length = length(dist.mat[,2]))
+for (i in seq_along(soil.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  soil.temp <- c()
+  # loop over variables.
+  for (j in seq_along(col.select)) {
+    temp.lookup <- attributes_with_mukey[, c("mukey", col.select[[j]])] %>% 
+      as.data.frame() %>% `colnames<-`(c("mukey", "var"))
+    # aggregate across depths.
+    temp.lookup <- aggregate(var ~ mukey, data = temp.lookup, FUN = mean)
+    # filter the 100cm depth.
+    # temp.lookup <- temp.lookup[attributes_with_mukey$hzdept_r == 100, ]
+    # extract mukey.
+    temp.mukey.ext <- terra::extract(mukey.rast, temp.vect)
+    # Passing it as a single table object
+    from_values <- as.numeric(as.character(temp.lookup[, 1]))
+    to_values <- as.numeric(as.character(temp.lookup[, 2]))
+    # replace mukey with the actual measurements.
+    res <- to_values[match(temp.mukey.ext$MUKEY, from_values)]
+    soil.temp <- cbind(soil.temp, res)
+  }
+  colnames(soil.temp) <- names(col.select)
+  soil.list[[i]] <- soil.temp
+}
+save(soil.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/soil.Rdata")
+```
+
+## prism climate.
+```{r}
+# "gdalwarp -te -129.2773199 21.8050362 -63.1184616 52.9217197 -tr 0.000325307972546 0.000325307972546 -t_srs EPSG:4326 -r near -co COMPRESS=DEFLATE -co BIGTIFF=YES /projectnb/dietzelab/dongchen/SDA_disturbance/LC/Annual_NLCD_LndCov_2000_CU_C1V1.tif /projectnb/dietzelab/dongchen/SDA_disturbance/LC/lc_resample.tif"
+var.names <- c("precip", "temp", "dewpoint", "solarRad", "vpdmax")
+# loop over polygons.
+climate.list <- vector("list", length = length(dist.mat[,2]))
+for (i in seq_along(climate.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  climate.temp <- c()
+  # loop over climate variables.
+  for (j in seq_along(var.names)) {
+    temp.rast <- terra::rast(file.path("/projectnb/dietzelab/dongchen/SDA_disturbance/climate/resample", paste0(var.names[j], ".tif")))
+    temp.ext <- terra::extract(temp.rast, temp.vect)
+    climate.temp <- cbind(climate.temp, temp.ext[,2])
+  }
+  colnames(climate.temp) <- var.names
+  climate.list[[i]] <- climate.temp
+}
+save(climate.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/climate.Rdata")
+```
+
+## AGB.
+```{r}
+# loop over polygons.
+agb.list <- vector("list", length = length(dist.mat[,2]))
+agb.rast <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/AGB/agb_2020_resample.tif")
+for (i in seq_along(agb.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  temp.ext <- terra::extract(agb.rast, temp.vect)
+  agb.list[[i]] <- temp.ext[,2]
+}
+save(agb.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/agb.Rdata")
+```
+
+## LC.
+```{r}
+# loop over polygons.
+lc.list <- vector("list", length = length(dist.mat[,2]))
+lc.rast <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/LC/lc_resample.tif")
+for (i in seq_along(lc.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  temp.ext <- terra::extract(lc.rast, temp.vect)
+  lc.list[[i]] <- temp.ext[,2]
+}
+save(lc.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/lc.Rdata")
+```
+
+## Coordinates.
+```{r}
+# loop over polygons.
+lon.lat.list <- vector("list", length = length(dist.mat[,2]))
+lc.rast <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/LC/lc_resample.tif")
+for (i in seq_along(lon.lat.list)) {
+  temp.vect <- Dod.shapefile[dist.mat[i, 2],]
+  temp.ext <- terra::extract(lc.rast, temp.vect, xy = TRUE)
+  lon.lat.list[[i]] <- temp.ext[,3:4] %>% `colnames<-`(c("lon", "lat"))
+}
+save(lon.lat.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/coordinates.Rdata")
+```
+
+# Site selection part.
+## setup the function.
+```{r}
+# loading libraries.
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+library(foreach)
+library(terra)
+```
+
+```{r}
+data.dir <- "/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data"
+load(file.path(data.dir, "lc.Rdata"))
+load(file.path(data.dir, "agb.Rdata"))
+load(file.path(data.dir, "dem.Rdata"))
+load(file.path(data.dir, "climate.Rdata"))
+load(file.path(data.dir, "soil.Rdata"))
+load(file.path(data.dir, "stand_age.Rdata"))
+load(file.path(data.dir, "gedi_density.Rdata"))
+# handling LC.
+nlcd_dict <- c(
+  "11" = "Open Water",
+  "12" = "Perennial Ice/Snow",
+  "21" = "Developed, Open Space",
+  "22" = "Developed, Low Intensity",
+  "23" = "Developed, Medium Intensity",
+  "24" = "Developed, High Intensity",
+  "31" = "Barren Land",
+  "41" = "Deciduous Forest",
+  "42" = "Evergreen Forest",
+  "43" = "Mixed Forest",
+  "52" = "Shrub/Scrub",
+  "71" = "Grassland/Herbaceous",
+  "81" = "Pasture/Hay",
+  "82" = "Cultivated Crops",
+  "90" = "Woody Wetlands",
+  "95" = "Emergent Herbaceous Wetlands"
+)
+non.veg.lc <- c("11", "12", "21", "22", "23", "24", "31")
+veg.len <- c()
+for (i in seq_along(lc.list)) {
+  veg.len <- c(veg.len, length(which(!lc.list[[i]] %in% non.veg.lc & agb.list[[i]] > 0)))
+}
+# sum(veg.len)
+# function for smooth division.
+smooth.div <- function(tot, v) {
+  vec <- c()
+  ceil <- TRUE
+  remain <- tot
+  
+  for (i in seq_along(v)) {
+    if (i == length(v)) {
+      vec <- c(vec, remain)
+      break
+    }
+    if (ceil) {
+      temp <- ceiling(v[i])
+    } else {
+      temp <- floor(v[i])
+    }
+    ceil <- !ceil
+    remain <- remain - temp
+    vec <- c(vec, temp)
+  }
+  vec
+}
+min.sample.size.per.lc <- 50
+pca.plot <- function(dat, inds, ids) {
+  # grab ecoClim for the current land cover class.
+  clusters.df <- dat[inds, c(2:16)]
+  # PCA operation.
+  pca_res <- prcomp(as.matrix(clusters.df), center = TRUE, scale. = TRUE)
+  summ <- summary(pca_res)
+  variance.explained <- summ$importance[2,]
+  pca.loading <- t(pca_res$rotation[,1:2])
+  plot_data <- cbind(as.data.frame(pca_res$x[, 1:2]), cluster = as.character(ids))
+  # calculate center points.
+  cent.loc <- data.frame()
+  for (j in seq_along(unique(ids))) {
+    cent.loc <- rbind(cent.loc, list(PC1 = median(plot_data[which(plot_data$cluster == j),1]), 
+                                     PC2 = median(plot_data[which(plot_data$cluster == j),2])))
+  }
+  cent.loc$cluster <- as.character(unique(k$cluster))
+  # cent.locs[[i]] <- cent.loc
+  p <- ggplot() +
+    geom_point(data = plot_data, mapping = aes(x = PC1, y = PC2, colour = cluster)) +
+    geom_point(data = cent.loc, mapping = aes(x = PC1, y = PC2, fill = cluster), 
+               shape = 23, size = 5, colour = "black") +
+    labs(x = paste0("PC1 (", variance.explained[1]*100, "%)"),
+         y = paste0("PC2 (", variance.explained[2]*100, "%)"))
+  return(list(plot = p, variance.explained = variance.explained, pca.loading = pca.loading, cent.loc = cent.loc))
+}
+```
+
+# cluster visualizations.
+
+```{r}
+# loop over polygons.
+poly.ind <- 3
+LC <- lc.list[[poly.ind]]
+AGB <- agb.list[[poly.ind]]
+DEM <- dem.list[[poly.ind]]$dem.df$dem
+CLIMATE <- climate.list[[poly.ind]]
+SOIL <- soil.list[[poly.ind]]
+STAND <- stand.age.list[[poly.ind]]
+var.names <- c("lc", "agb", "dem", colnames(CLIMATE), colnames(SOIL), "stand_age", "gedi_density")
+dat <- cbind(LC, AGB, DEM, CLIMATE, SOIL, STAND, gedi_density$gedi_density) %>% as.data.frame()
+colnames(dat) <- var.names
+dat$lc <- as.factor(dat$lc)
+# Create a copy to keep original data safe
+dat_norm <- dat
+# Apply Min-Max normalization to columns 2 through 16
+dat_norm[, 2:16] <- apply(dat[, 2:16], 2, function(x) {
+  (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+})
+# handling LC.
+veg.inds <- which(!dat$lc %in% non.veg.lc & dat$agb > 0 & complete.cases(dat))
+# determine the total number of samples.
+if (length(veg.inds)/500 < 500) {
+  tot.sample.size <- 500
+} else {
+  tot.sample.size <- ceiling(length(veg.inds)/500)
+}
+dat.dim <- dim(dat)
+dat <- dat_norm[veg.inds,]
+norm.fun <- function (vec) {
+  (vec - min(vec, na.rm = TRUE)) / (max(vec, na.rm = TRUE) - min(vec, na.rm = TRUE))
+}
+# AGB + 1 minus stand age + GEDI density.
+weights <- 1 + norm.fun(dat$agb) + (1 - norm.fun(dat$stand_age)) + norm.fun(dat$gedi_density)
+# loop over LC.
+lc <- unique(dat$lc)
+# remove LC that only few pixels cover.
+lc.pix.num <- lc %>% purrr::map(function(l){
+  length(which(dat$lc == l))
+}) %>% unlist
+if (length(which(lc.pix.num < min.sample.size.per.lc))) {
+  lc <- lc[-which(lc.pix.num < min.sample.size.per.lc)]
+}
+# calculate sample sizes per land cover class.
+LC.inds <- vector("list", length = length(lc))
+for (i in seq_along(LC.inds)) {
+  LC.inds[[i]] <- which(dat$lc == lc[i])
+}
+proportion <- LC.inds %>% purrr::map(length) %>% unlist
+proportion <- proportion/sum(proportion)
+lc.sizes <- smooth.div(tot.sample.size, (tot.sample.size - min.sample.size.per.lc*length(lc)) * proportion + min.sample.size.per.lc)
+# start clustering.
+clusters <- points <- tot.clust <- k.pca <- k.means.tot <- vector("list", length = length(lc))
+for (i in seq_along(lc)) {
+  print(paste("Processing", i, "land cover."))
+  # total pixels.
+  tot.inds <- which(dat$lc == lc[i])
+  # handling sample per land cover class.
+  sample.max <- 6e4
+  # choose sample size (only consider vegetated pixels).
+  initial.sample <- FALSE
+  if (length(tot.inds) > sample.max) {
+    sample.size <- sample.max
+    initial.sample <- TRUE
+  } else {
+    sample.size <- length(tot.inds)
+  }
+  # sample based on the weights of AGB.
+  if (initial.sample) {
+    # normalize weights.
+    # weights <- dat$agb[tot.inds]
+    sample.inds <- sample(x = tot.inds, size = sample.size, replace = F, prob = weights[tot.inds])
+    sample.inds <- na.omit(sample.inds)
+  } else {
+    sample.inds <- tot.inds
+  }
+  # k-means clustering.
+  # find the correct size for the current land cover.
+  tot.within <- c()
+  kmeans.lc <- vector("list", length = 20)
+  for (j in 1:20) {
+    temp <- factoextra::hkmeans(dat[sample.inds, c(2:16)], j, hc.metric = "euclidean", iter.max = 50)
+    kmeans.lc[[j]] <- temp
+    tot.within <- c(tot.within, temp$tot.withinss)
+    print(paste("Testing cluster size:", j))
+  }
+  k.means.tot[[i]] <- kmeans.lc
+  df <- data.frame(x = 1:20, y = tot.within)
+  # find the correct cluster size through the elbow location.
+  size <- pathviewr::find_curve_elbow(df)
+  # k-means clustering.
+  k <- kmeans.lc[[size]]
+  pca.res.all <- pca.plot(dat, sample.inds, k$cluster)
+  # loop over clusters.
+  cluster <- list()
+  tot.cluster.inds <- tot.cluster.ids <- c()
+  cluster.points.num <- smooth.div(lc.sizes[i], rep(lc.sizes[i]/size, size))
+  for (j in 1:size) {
+    # total cluster points.
+    cluster.sample.inds <- sample.inds[which(k$cluster == j)]
+    # sampling.
+    # weights <- dat$agb[cluster.sample.inds]
+    cluster.sample.inds <- sample(x = cluster.sample.inds, size = cluster.points.num[j], replace = F, prob = weights[cluster.sample.inds])
+    cluster.sample.inds <- na.omit(cluster.sample.inds)
+    # summarize.
+    cluster[[j]] <- list(inds = cluster.sample.inds)
+    tot.cluster.inds <- c(tot.cluster.inds, cluster.sample.inds)
+    tot.cluster.ids <- c(tot.cluster.ids, rep(j, length(cluster.sample.inds)))
+  }
+  # load to lists.
+  clusters[[i]] <- list(cluster.inds = cluster, tot.cluster.inds = tot.cluster.inds, tot.cluster.ids = tot.cluster.ids)
+  tot.clust[[i]] <- list(k_means = k, inds = sample.inds)
+  # pca plotting.
+  pca.res.clusters <- pca.plot(dat, tot.cluster.inds, tot.cluster.ids)
+  k.pca[[i]] <- list(pca.all = pca.res.all, pca.clusters = pca.res.clusters)
+  # print progress.
+  print(i)
+}
+save(list = c("k.means.tot", "clusters", "tot.clust", "k.pca"), file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/cluster.Rdata")
+```
+
+# generate shapefile.
+```{r}
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/cluster.Rdata")
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/coordinates.Rdata")
+gedi_density <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/point_count_raster.tif")
+poly.id <- 3
+LC <- lc.list[[poly.id]]
+AGB <- agb.list[[poly.id]]
+DEM <- dem.list[[poly.id]]$dem.df$dem
+CLIMATE <- climate.list[[poly.id]]
+SOIL <- soil.list[[poly.id]]
+STAND <- stand.age.list[[poly.id]]
+var.names <- c("lc", "agb", "dem", colnames(CLIMATE), colnames(SOIL), "stand_age", "lat", "lon")
+dat <- cbind(LC, AGB, DEM, CLIMATE, SOIL, STAND, lon.lat.list[[poly.id]]$lat, lon.lat.list[[poly.id]]$lon) %>% as.data.frame()
+colnames(dat) <- var.names
+dat$lc <- as.factor(dat$lc)
+# handling LC.
+veg.inds <- which(!dat$lc %in% non.veg.lc & dat$agb > 0 & complete.cases(dat))
+dat <- dat[veg.inds,]
+lc.type <- c("Shrub", "Mixed_Forest", "Evergreen_Forest", "Grassland", "Emergent_Herbaceous_Wetlands", "Woody_Wetlands", "Deciduous_Forest")
+for (i in seq_along(clusters)) {
+  df <- data.frame(lat = dat$lat[clusters[[i]][["tot.cluster.inds"]]],
+                   lon = dat$lon[clusters[[i]][["tot.cluster.inds"]]],
+                   cluster_id = clusters[[i]][["tot.cluster.ids"]],
+                   lc = dat$lc[clusters[[i]][["tot.cluster.inds"]]],
+                   agb = dat$agb[clusters[[i]][["tot.cluster.inds"]]])
+  points_vector <- terra::vect(df, geom = c("lon", "lat"), crs = "EPSG:4326")
+  # calculate frequency of fires per point.
+  # setup agent ID for wildfire.
+  agent.num <- 6
+  # loop over years.
+  agent.ext <- c()
+  for (j in 1988:2022) {
+    # load the corresponding agent raster map.
+    temp.agent <- terra::rast(file.path(paste0("/projectnb/dietzelab/dongchen/SDA_disturbance/resample_agent_maps/AGENT_", j, ".tif")))
+    temp.agent.ext <- terra::extract(temp.agent, points_vector) %>% data.frame
+    temp.agent.ext[,2][which(temp.agent.ext[,2] != agent.num)] <- 0
+    temp.agent.ext[,2][which(temp.agent.ext[,2] == agent.num)] <- 1
+    agent.ext <- rbind(agent.ext, temp.agent.ext[,2])
+  }
+  points_vector$fire_freq <- colSums(agent.ext)
+  gedi_dens <- terra::extract(gedi_density, points_vector)
+  points_vector$gedi_dens <- gedi_dens[,2]
+  terra::writeVector(points_vector, file.path("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_lc", paste0(lc.type[i], ".shp")))
+}
+```
