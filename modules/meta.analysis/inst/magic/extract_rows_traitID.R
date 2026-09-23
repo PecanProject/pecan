@@ -1,5 +1,6 @@
 library(readxl)
 library(dplyr)
+library(taxize)
 
 extract_rows_traitID <- function(excel_path, sheet_name = 1, trait_ID) {
   
