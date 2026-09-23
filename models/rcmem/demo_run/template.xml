@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <pecan>
  <info>
-  <notes>Template for demo runs of PEPRMT using PEcAn. This file is not by itself
+  <notes>Template for demo runs of RCMEM using PEcAn. This file is not by itself
     a usable PEcAn settings object, will be further processed by the workflow to
     create one.</notes>
   <userid>-1</userid>
@@ -30,23 +30,16 @@
    <met>
     <method>sampling</method>
    </met>
-  <!-- TODO disabled for now
-   <poolinitcond>
-     <method>sampling</method>
-   </poolinitcond> 
-   <soil_physics>
-    <method>sampling</method>
-   </soil_physics> -->
   </samplingspace>
   <start.year><!-- inserted at config time --></start.year>
   <end.year><!-- inserted at config time --></end.year>
  </ensemble>
  <model>
-  <id>peprmt_0_1_0</id>
-  <type>PEPRMT</type>
-  <revision>0.1.0</revision>
+  <id>rcmem_200</id>
+  <type>RCMEM</type>
+  <revision>2.0.0</revision>
   <delete.raw>FALSE</delete.raw>
-  <binary>/usr/local/bin/PEPRMT_v0.1.0</binary>
+  <binary>/usr/local/bin/rCMEM_v2.0.0</binary>
   <!-- TODO it seems like some settings get set here -->
  </model>
  <run>

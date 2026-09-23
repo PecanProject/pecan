@@ -17,8 +17,9 @@ exec &> "$(realpath @OUTDIR@)/logfile.txt"
 Rscript \
   -e 'drivers <- readRDS(file.path("@RUNDIR@", "drivers_RCMEM.rds"))' \
   -e 'parameters <- readRDS(file.path("@RUNDIR@", "parameters_RCMEM.rds"))' \
-  -e 'inits <- readRDS(file.path("@RUNDIR@", "inits_RCMEM.rds"))' \
-  -e 'res <- rCMEM::runCohortMem2(run_spinup = 0, 
+  -e 'run_spinup_TF <- as.numeric(ifelse(file.exists(file.path("@RUNDIR@", "inits_RCMEM.rds")))'\
+  -e 'inits <- ifelse(run_spinup_TF == 1, NA, readRDS(file.path("@RUNDIR@", "inits_RCMEM.rds")))' \
+  -e 'res <- rCMEM::runCohortMem2(run_spinup = run_spinup_TF, 
                            run_scenario = 1,
                            competition_function = 1,
                            
