@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
+- PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
 - Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 - Added a downscaling-error diagnostic to `inst/ilamb/` in PEcAn.benchmark: compares the downscaling random forest's out-of-bag RMSE against the between-member ensemble spread at the SDA sites, quantifying downscaling error the ensemble spread does not represent. (#4070)
 - Added `metric_Bias()` standalone function and registered `"BIAS"` in `PEcAn.benchmark` metric registry (#4062, #4059).
