@@ -42,9 +42,9 @@ with curly braces wrapping any expressions to be interpolated.
 Variables in these expressions are resolved in this order:
 \enumerate{
 \item Variables defined in each site's \code{run$site} settings block
-\item Variables passed as named arguments in \code{...} (same value at every site)
-\item \code{{n}} is replaced with the value of \code{1:n_reps}
-\item \code{{id}} is replaced with the siteid of each site.
+(notably meaning \code{{id}} will contain the site id that is always present as run$site$id)
+\item Variables passed as named arguments in \code{...} (these take the same value at every site)
+\item \code{{n}} is treated specially as a replicate number and replaced with the sequence \code{1:n_reps}
 }
 
 If the same name is defined in both run$site and \code{...}, uses the latter.
