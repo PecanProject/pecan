@@ -13,9 +13,9 @@
 #' with curly braces wrapping any expressions to be interpolated.
 #' Variables in these expressions are resolved in this order:
 #' 1. Variables defined in each site's `run$site` settings block
-#' 2. Variables passed as named arguments in `...` (same value at every site)
-#' 3. `{n}` is replaced with the value of `1:n_reps`
-#' 4. `{id}` is replaced with the siteid of each site.
+#'    (notably meaning `{id}` will contain the site id that is always present as run$site$id) 
+#' 2. Variables passed as named arguments in `...` (these take the same value at every site)
+#' 3. `{n}` is treated specially as a replicate number and replaced with the sequence `1:n_reps`
 #'
 #' If the same name is defined in both run$site and `...`, uses the latter.
 #' All variables must have length either 1 or `n_reps`.
