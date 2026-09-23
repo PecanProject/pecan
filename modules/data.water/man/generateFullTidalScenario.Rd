@@ -9,10 +9,11 @@ generateFullTidalScenario(
   run_hindcast = T,
   run_forecast = T,
   hindcast_start = 1928,
-  forecast_start = 2018,
+  forecast_start = 2026,
   forecast_end = 2100,
-  RCP = c("RCP4.5"),
-  RCP_probability = c(0.25, 0.5, 0.75),
+  scenario = c("ssp126", "ssp245"),
+  confidence_level = "medium",
+  target_quantile = c(0.25, 0.5, 0.75),
   include_lt_tidal_const = T,
   datum_start_year = 1980,
   datum_end_year = 2025
@@ -29,17 +30,17 @@ generateFullTidalScenario(
 
 \item{forecast_start}{Calendar year (YYYY) that forecast starts}
 
-\item{forecast_end}{Calendar year (YYYY) that forecast ends, needs to be 2030, 2050, 2100, 2150 or 2200}
-
-\item{RCP}{Realized concentration pathway, either string or vector, must be RCP2.6, RCP4.5 or RCP8.5}
-
-\item{RCP_probability}{RCP probability, either numeric or vector, sea-level rise senario probabilities to test.}
+\item{forecast_end}{Calendar year (YYYY) that forecast ends, needs to be 10 year intervals starting in 2020 going above 2100}
 
 \item{include_lt_tidal_const}{Include long term tidal constituents, True or False.}
 
 \item{datum_start_year}{Datum start year over which to calculate tidal datums (calendar year, YYYY).}
 
 \item{datum_end_year}{Datum end year over which to calculate tidal datums (calendar year, YYYY).}
+
+\item{RCP}{Realized concentration pathway, either string or vector, must be}
+
+\item{RCP_probability}{RCP probability, either numeric or vector, sea-level rise senario probabilities to test.}
 }
 \description{
 Generate a full sea-level rise and tidal inundation scenario
