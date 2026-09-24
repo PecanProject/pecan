@@ -6,6 +6,7 @@
 
 ## Fixed
 
+* `eto_to_etc_bism()` correctly anchors planting and harvest dates across the new year for overwinter crops in date mode. (#4125)
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
 * `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo. (#3776)
 
