@@ -44,6 +44,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added `PEcAn.data.land::to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
+- Added `PEcAn.remote::get_EVI_HLS()` for loading harmonized landsat-sentinel data and calculating EVI
 
 ### Fixed
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
