@@ -151,7 +151,7 @@ Each build starts by launching a separate clean virtual machine for each R versi
 * Run a simple integration test using SIPNET model
 * Create the docker images
   - Once your PR is merged, it will push them to DockerHub and github container repository.
-* Compiles the PEcAn documentation book (`book_source`) and the tutorials (`documentation/tutorials`) and uploads them to the [PEcAn website](https://pecanproject.github.io/pecan-documentation).
+* Compiles the PEcAn documentation book (`book_source`) and the tutorials (`documentation/tutorials`) and uploads them to the [PEcAn website](https://pecanproject.github.io/pecan-documentation/develop/).
     - This is only done for commits to the `master` or `develop` branch, so changes to in-progress pull requests never change the live documentation until after they are merged.
 
 If your build fails and indicates that files have been modified there are a few common causes. It should also list the files that have changes, and what has changed.
