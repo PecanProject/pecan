@@ -182,7 +182,31 @@ segment_dataframe <- function(run_settings) {
     dplyr::arrange(.data$start_date) |>
     dplyr::mutate(segment_id = sprintf("%03d", dplyr::row_number()))
 }
+drop_same_pft_segments <- function(segments) {
+  if (nrow(segments) <= 1) {
+    return(segments)
+  }
 
+  segments |>
+    dplyr::mutate(
+      pft_group = cumsum(
+        dplyr::row_number() == 1 |
+          .data$pft != dplyr::lag(.data$pft)
+      )
+    ) |>
+    dplyr::group_by(.data$pft_group) |>
+    dplyr::summarise(
+      site_id = dplyr::first(.data$site_id),
+      start_date = dplyr::first(.data$start_date),
+      end_date = dplyr::last(.data$end_date),
+      crop_code = dplyr::last(.data$crop_code),
+      pft = dplyr::first(.data$pft),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      segment_id = sprintf("%03d", dplyr::row_number())
+    )
+}
 write_segment_configs <- function(
   settings,
   run_row,
@@ -216,10 +240,9 @@ write_segment_configs <- function(
     # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
     dplyr::mutate(
-      pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code)),
-      segment_dir = file.path(segment_rootdir,
-                              sprintf("segment_%s", .data$segment_id))
-    )
+      pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code))
+        )
+    segments <- drop_same_pft_segments(segments)
   utils::write.csv(
     segments,
     file = file.path(run_dir, "segments.csv"),

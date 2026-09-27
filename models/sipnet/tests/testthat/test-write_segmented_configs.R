@@ -10,7 +10,7 @@ test_that("write_segmented_configs", {
 
   event_lines |>
     writeLines(con = event_src_path)
-  c("date,crop_code", "2025-01-02,D12", "2025-01-05,G6") |>
+  c("date,crop_code","2025-01-02,D12","2025-01-04,D13","2025-01-05,G6") |>
     writeLines(crp_chg_path)
   c("run_id,site_id", "ENS-00001-a,a") |>
     writeLines(file.path(pth, "runs_manifest.csv"))
