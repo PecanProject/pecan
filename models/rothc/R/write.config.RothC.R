@@ -1,15 +1,15 @@
-##' Writes a RothC config file.
-##'
-##' Requires a pft xml object, a list of trait values for a single model run,
-##' and the name of the file to create
-##'
-##' @param defaults list of defaults to process
-##' @param trait.values vector of samples for a given trait
-##' @param settings list of settings from pecan settings file
-##' @param run.id id of run
-##' @return configuration file for MODEL for given run
-##' @export
-##' @author Chris Black
+#' Writes a RothC config file.
+#'
+#' Requires a pft xml object, a list of trait values for a single model run,
+#' and the name of the file to create
+#'
+#' @param defaults list of defaults to process
+#' @param trait.values vector of samples for a given trait
+#' @param settings list of settings from pecan settings file
+#' @param run.id id of run
+#' @return configuration file for MODEL for given run
+#' @export
+#' @author Chris Black
 write.config.RothC <- function(defaults, trait.values, settings, run.id) {
 
   # find out where to write run/ouput
@@ -125,32 +125,57 @@ write.config.RothC <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@ENSNAME@", run.id, config.text)
   config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
 
-  # TODO make these editable -- hard-coding for MVP
   # OPT_RMMOIST: soil water parameterization.
   #   1: Standard RothC soil water parameters
   #   2: Van Genuchten soil properties and soil is allowed to be drier
   #     (ie hygroscopic / capillary water, -1000bar)
   #   3: Van Genuchten soil properties, but uses the Standard RothC
   #     soil water function
-  config.text <- gsub("@OPT_RMMOIST@", "1", config.text)
+  rmmoist <- settings$model$opt_RMmoist %||% 1
+  config.text <- gsub("@OPT_RMMOIST@", rmmoist, config.text)
+
   # Bare SMD: wilting point configuration
   #   1: Standard RothC bareSMD
   #   2: bareSMD is set to wilting point -15bar (could be better for dry soils)
-  config.text <- gsub("@OPT_SDDBARE@", "1", config.text)
+  smdbare <- settings$model$opt_RMmoist %||% 1
+  config.text <- gsub("@OPT_SMDBARE@", smdbare, config.text)
+
+  # min_RM_moist: Lowest value taken by the soil moisture rate modifier,
+  # reached when soil water potential is -1500 kPa.
+  # Note: Only used if smdbare == 2.
+  # 0.2 is compatible with RothC 1.0; 0.15 or 0.1 may be better for dry systems.
+  # see Farina et al 2013 10.1016/j.geoderma.2013.01.021
+  min_rmmoist <- settings$model$min_RM_moist %||% 0.2
+  # not added to config.text here bc written as part of @SOIL_PARAMS@ below
+
+  # Soil depth to simulate.
+  # Caution: Currently gets overridden by layer boundaries in soil file,
+  # so it's really "simulate no deeper than this". TODO: FIXME.
+  model_depth_cm <- settings$model$soil_depth_cm %||% 23
 
   ## Climate data
-  # (read here to use length in soil params, remainder of processing happens below)
+  # (we read it here to use its length in soil params,
+  # remainder of processing happens below)
   met_path <- settings$run$inputs$met$path
   met_in <- utils::read.table(met_path, header = TRUE)
   n_met <- nrow(met_in)
 
-  ## Soil parameters
+  soil_params <- read_soil_physics(settings$run$inputs$soil_physics$path)
+
+  ## Build string from soil params
   ## (plus number of timesteps, weirdly snuck into the middle)
-  # TODO: read from run$inputs$soil_physics
   soil_param_string <- paste(
-    "23.4  23.0   3.0041", # clay_pct, depth_cm, iom_tC_ha
+    round(soil_params$clay_pct, 1),
+    round(soil_params$depth_cm, 1),
+    round(soil_params$iom_tC_ha, 2),
     n_met + 12, # nsteps (includes extra year for spinup)
-    "58.6 1.27 0.94 0.2" # silt_pct, bulkdens_g_m3, org_C_pct, min_RM_moist
+    # NB these last 4 params are always written,
+    # but only used by model if smdbar == 2
+    round(soil_params$silt_pct, 1),
+    round(soil_params$bulkdens_g_cm3, 3),
+    round(soil_params$org_C_pct, 1),
+    min_rmmoist,
+    sep = "      " # just to align with headers, RothC doesn't care
   )
   config.text <- gsub("@SOIL_PARAMS@", soil_param_string, config.text)
 
@@ -176,31 +201,29 @@ write.config.RothC <- function(defaults, trait.values, settings, run.id) {
     OA_HUM_f = 0.02
   )
 
-input_rows <- met_in |>
-  dplyr::bind_cols(inputs) |>
-  dplyr::select(
-    "year", "month",
-    "modern_pct",
-    "Tmp_C", "Rain_mm", "Evap_mm",
-    "C_inp_tC_ha", "FYM_tC_ha", "PC",
-    "PL_DPM_f", "PL_RPM_f",
-    "OA_DPM_f", "OA_RPM_f", "OA_BIO_f", "OA_HUM_f"
-  ) |>
-  # Duplicate first year as the equilibrium block
-  # TODO we probably want a more principled approach here
-  duplicate_first_year() |>
-  dplyr::mutate(
-    dplyr::across(dplyr::where(is.double), zapsmall)
-  ) |>
-  # Kinda ugly: Convert to one string to cram it into the template via gsub
-  format() |>
-  apply(1, paste, collapse = " ") |>
-  paste(collapse = "\n")
-
+  input_rows <- met_in |>
+    dplyr::bind_cols(inputs) |>
+    dplyr::select(
+      "year", "month",
+      "modern_pct",
+      "Tmp_C", "Rain_mm", "Evap_mm",
+      "C_inp_tC_ha", "FYM_tC_ha", "PC",
+      "PL_DPM_f", "PL_RPM_f",
+      "OA_DPM_f", "OA_RPM_f", "OA_BIO_f", "OA_HUM_f"
+    ) |>
+    # Duplicate first year as the equilibrium block
+    # TODO we probably want a more principled approach here
+    duplicate_first_year() |>
+    dplyr::mutate(
+      dplyr::across(dplyr::where(is.double), zapsmall)
+    ) |>
+    # Kinda ugly: Convert to one string to cram it into the template via gsub
+    format() |>
+    apply(1, paste, collapse = " ") |>
+    paste(collapse = "\n")
   config.text <- gsub("@CLIM_DATA@", input_rows, config.text)
 
-  config.file.name <- "RothC_input.dat"
-  writeLines(config.text, con = file.path(rundir, config.file.name))
+  writeLines(config.text, con = file.path(rundir, "RothC_input.dat"))
 
   invisible(config.text)
 }

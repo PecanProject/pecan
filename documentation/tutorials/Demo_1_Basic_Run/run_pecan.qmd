@@ -39,7 +39,7 @@ This notebook demonstrates how to:
 
 We are modeling carbon and productivity dynamics at the Niwot Ridge Forest AmeriFlux site ([US-NR1](https://ameriflux.lbl.gov/sites/siteinfo/US-NR1), a high-elevation temperate coniferous forest in Colorado. The model configuration uses the SIPNET process-based ecosystem model, parameterized with a temperate coniferous plant functional type (PFT).
 
-The simulation is run for the full year 2004 (January 1 – December 31) using AmeriFlux LBL meteorological drivers from the Niwot Ridge site. The ensemble setup specifies one model run focusing on net primary productivity (NPP) as the target output variable.
+The simulation is run for the full year 2004 (January 1 – December 31) using AmeriFlux LBL meteorological drivers from the Niwot Ridge site. The ensemble setup specifies a small ten member ensemble focusing on net primary productivity (NPP) as the target output variable, so the plots later on show the spread across members rather than a single line.
 
 This scenario is designed to be a minimal, reproducible example to demonstrate how to run SIPNET within the PEcAn workflow. In later steps, this same framework can be extended to include more ensemble members, additional PFTs, longer time periods, or alternative meteorological inputs.
 
@@ -192,11 +192,25 @@ Additional outputs include logs, a `STATUS` file that records the steps of the w
 
 # Write Model Configuration Files
 
-This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process involves generating SIPNET configuration files using the `runModule.run.write.configs()` function.
+This step decides which model runs to do, then writes the configuration files for them.
+
+`generate_joint_ensemble_design()` builds the design: one row per run, holding indices that say which parameter draw and which input file each run uses. It returns those samples alongside the design, since the indices only mean anything together with the samples they point into.
+
+`runModule.run.write.configs()` then takes that whole object and writes the SIPNET configuration files.
 
 ```{r write-configs}
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+  settings,
+  ensemble_size = settings$ensemble$size
+)
+
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = design
+)
 ```
+
+You can call `runModule.run.write.configs()` without a design and it will build one for itself, but that path is deprecated and will warn. Generating the design yourself also lets you inspect it before any runs happen: `design$design_matrix` is the table of runs, and `design$samples` holds the parameter draws behind it.
 
 # Run Model Simulations and Fetch Results
 
@@ -215,27 +229,68 @@ This step generates raw model outputs in model-specific format (in this case, `s
 
 After the model simulation completes, we need to extract the results and prepare them for analysis. This involves:
 
-1. Reading the run ID
+1. Reading the run IDs
 2. Setting up output paths
 3. Defining time period
 4. Loading model output
 5. Convert to a standard format
 
 ```{r get-plot-vars}
-runid <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[1, 1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id
-outdir <- file.path(settings$outdir, "/out/", runid)
+runids <- as.character(read.table(paste(settings$outdir, "/run/", "runs.txt", sep = ""))[, 1])
 start.year <- lubridate::year(settings$run$start.date)
 end.year <- lubridate::year(settings$run$end.date)
-model_output <- PEcAn.utils::read.output(
-  runid,
-  outdir,
-  start.year,
-  end.year,
-  variables = NULL,
-  dataframe = TRUE,
-  verbose = FALSE
-)
+
+# one entry per ensemble member, keyed by run id
+ensemble_output <- lapply(runids, function(runid) {
+  PEcAn.utils::read.output(
+    runid,
+    file.path(settings$outdir, "/out/", runid),
+    start.year,
+    end.year,
+    variables = NULL,
+    dataframe = TRUE,
+    verbose = FALSE
+  )
+})
+names(ensemble_output) <- runids
+
+# the members share a variable set, so the first one describes them all
+model_output <- ensemble_output[[1]]
 available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
+
+# sub-daily fluxes are too spiky to read as ten overlaid lines, so keep a
+# daily-averaged copy of each member for those plots
+daily_output <- lapply(ensemble_output, function(member) {
+  day <- as.Date(member$posix)
+  vars <- setdiff(names(member), c("posix", "time_bounds"))
+  averaged <- lapply(member[vars], function(x) as.numeric(tapply(x, day, mean, na.rm = TRUE)))
+  names(averaged) <- vars
+  c(list(posix = as.POSIXct(sort(unique(day)), tz = "UTC")), averaged)
+})
+
+# draw one line per ensemble member, so the spread across the ensemble is visible
+plot_ensemble <- function(vars, cols, ylab, main, labels = vars, data = ensemble_output) {
+  yrange <- range(
+    unlist(lapply(data, function(member) unlist(member[vars]))),
+    na.rm = TRUE
+  )
+  # empty plot drawn off the real time axis, so the x axis stays dates
+  plot(
+    data[[1]]$posix,
+    data[[1]][[vars[1]]],
+    type = "n",
+    ylim = yrange,
+    xlab = "Date",
+    ylab = ylab,
+    main = main
+  )
+  for (i in seq_along(vars)) {
+    for (member in data) {
+      lines(member$posix, member[[vars[i]]], col = adjustcolor(cols[i], alpha.f = 0.4))
+    }
+  }
+  legend("topright", legend = labels, col = cols, lty = 1)
+}
 ```
 
 Running this code will convert model specific output files into a standardized netCDF ([year].nc) that can be downloaded for visualization and analysis (R, Matlab, ncview, panoply, etc). This is a key step, because this standardization enables PEcAn to apply downstream analyses to outputs from different ecosystem models.
@@ -267,64 +322,67 @@ knitr::kable(vars_df, caption = "Model Output Variables and Descriptions")
 
 This section provides examples of how to create time series plots of different model variables. The examples cover various ecosystem processes including carbon fluxes, carbon pools, water variables, and structural variables like Leaf Area Index (LAI).
 
+Each plot draws one line per ensemble member. The members differ only in their parameter draws, so the spread between the lines is the parameter uncertainty carried through the model.
+
 ## Plot Carbon Fluxes
 
+Some members run negative NPP even in the growing season. That happens when the drawn respiration parameters outweigh photosynthesis, and it shows up here because this demo samples from priors rather than from a meta-analysis, so the spread is wide. Demo 3 shows what constraining these parameters with data does to that spread.
+
+GPP and NPP are sub-daily fluxes, so ten overlaid members would just fill the panel. These are averaged to daily values first, which is enough to see the members apart.
+
 ```{r plot-carbon-fluxes}
-# Plot Gross Primary Productivity (GPP) and Net Primary Productivity (NPP)
-plot(model_output$posix, model_output$GPP,
-  type = "l",
-  col = "green",
-  xlab = "Date",
+plot_ensemble(
+  vars = c("GPP", "NPP"),
+  cols = c("green", "blue"),
   ylab = "Carbon Flux (kg C m-2 s-1)",
-  main = "Carbon Fluxes Over Time"
+  main = "Carbon Fluxes Over Time (daily average)",
+  data = daily_output
 )
-lines(model_output$posix, model_output$NPP, col = "blue")
-legend("topright", legend = c("GPP", "NPP"), col = c("green", "blue"), lty = 1)
 ```
 
 ## Plot Carbon Pools
 
 ```{r plot-carbon-pools}
-# Plot Total Live Biomass and Total Soil Carbon
-plot(model_output$posix, model_output$TotLivBiom,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
+plot_ensemble(
+  vars = c("TotLivBiom", "TotSoilCarb"),
+  cols = c("darkgreen", "brown"),
+  labels = c("Total Live Biomass", "Total Soil Carbon"),
   ylab = "Carbon Pool (kg C m-2)",
   main = "Carbon Pools Over Time"
 )
-lines(model_output$posix, model_output$TotSoilCarb, col = "brown")
-legend("topright", legend = c("Total Live Biomass", "Total Soil Carbon"), col = c("darkgreen", "brown"), lty = 1)
 ```
 
 ## Plot Water Variables
 
+Soil moisture separates into ten lines once the growing season starts, but snow water equivalent stays a single line. That is expected: snow is driven by the met input, which is the same file for every member, while soil moisture responds to the sampled parameters.
+
 ```{r plot-water-variables}
-# Plot Soil Moisture and Snow Water Equivalent
-plot(model_output$posix, model_output$SoilMoist,
-  type = "l",
-  col = "blue",
-  xlab = "Date",
-  ylab = "Soil Moisture (kg m-2)",
-  main = "Soil Moisture Over Time"
+plot_ensemble(
+  vars = c("SoilMoist", "SWE"),
+  cols = c("blue", "lightblue"),
+  labels = c("Soil Moisture", "Snow Water Equivalent"),
+  ylab = "Water (kg m-2)",
+  main = "Soil Moisture and Snow Water Equivalent Over Time"
 )
-lines(model_output$posix, model_output$SWE, col = "lightblue")
-legend("topright", legend = c("Soil Moisture", "Snow Water Equivalent"), col = c("blue", "lightblue"), lty = 1)
 ```
 
-## Plot LAI and Biomass
+## Plot LAI and Above Ground Wood
 
 ```{r plot-lai-biomass}
-# Plot Leaf Area Index (LAI) and Above Ground Wood
-plot(model_output$posix, model_output$LAI,
-  type = "l",
-  col = "darkgreen",
-  xlab = "Date",
+plot_ensemble(
+  vars = "LAI",
+  cols = "darkgreen",
   ylab = "LAI (m2 m-2)",
   main = "Leaf Area Index Over Time"
 )
-lines(model_output$posix, model_output$AbvGrndWood, col = "brown")
-legend("topright", legend = c("LAI", "Above Ground Wood"), col = c("darkgreen", "brown"), lty = 1)
+
+plot_ensemble(
+  vars = "AbvGrndWood",
+  cols = "brown",
+  labels = "Above Ground Wood",
+  ylab = "Wood (kg C m-2)",
+  main = "Above Ground Wood Over Time"
+)
 ```
 
 # Conclusion

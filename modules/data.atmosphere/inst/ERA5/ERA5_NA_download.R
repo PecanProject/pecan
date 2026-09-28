@@ -2,6 +2,12 @@ outfolder <- "/projectnb/dietzelab/dongchen/anchorSites/ERA5/"
 start_date <- "2012-01-01"
 end_date <- "2021-12-31"
 extent <- c(-179, -20, 7, 85)
+# cds credentials, from https://cds.climate.copernicus.eu/profile
+user <- "your_cds_uid"
+key <- "your_cds_api_key"
+# ecmwfr keeps the key in the keyring. a headless machine has no os keyring and
+# the default backend prompts for a password, so keep the key in the environment
+Sys.setenv(R_KEYRING_BACKEND = "env")
 variables <- c("2m_temperature",
                "surface_pressure",
                "2m_dewpoint_temperature",
@@ -15,4 +21,5 @@ results <- PEcAn.data.atmosphere::download.ERA5_cds(outfolder = outfolder,
                                                     end_date = end_date,
                                                     extent = extent,
                                                     variables = variables,
-                                                    auto.create.key = T)
+                                                    user = user,
+                                                    key = key)

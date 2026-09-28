@@ -1,5 +1,10 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
+    - No longer skips inputs that have a parent but no sampling method.
+    - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
+    - New argument `bad_parent_action` chooses how to handle parent ids that do not match an input path:
+      default "error" to stop with an error, "resample" to replace invalid indices from the input paths that do exist.
 * run.ensemble.analysis() now respects `settings$modeloutdir` rather than assuming an `out/` folder inside `settings$outdir` (@Akash-paluvai, #3722).
 * Added `generate_OAT_SA_design()` for creating input design matrices for
 sensitivity analysis. This function ensures non-parameter inputs

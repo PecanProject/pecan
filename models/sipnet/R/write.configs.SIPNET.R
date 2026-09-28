@@ -62,6 +62,11 @@
 #' defines an option specified in settings$model$options, its value will be
 #' updated in place; options not already in the file will be added to the bottom.
 #'
+#' For SIPNET v2, plantStorageNInit is set to the additional N needed for one
+#' carbon-limited leaf flush, computed from the initialized wood pool, so the
+#' first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
+#' through the IC argument takes precedence over the computed value.
+#'
 #' @param defaults nested list of named constant parameter values. The
 #' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
 #' Only `defaults[[1]]$constants` is used; all other elements are silently ignored.
@@ -110,6 +115,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   rev_str <- if (sipnet_version >= "2.0") "v2" else "v1"
+  # Version-specific capabilities (kept separate from input availability)
+  caps <- list(
+    has_runtime_flags = rev_str == "v2",
+    has_param_spatial = rev_str == "v1",
+    has_m_ballBerry = rev_str == "v1",
+    has_cold_soil_resp = rev_str == "v1",
+    has_litWaterDrainRate = rev_str == "v1",
+    has_litterWFracInit = rev_str == "v1",
+    has_microbeInit = rev_str == "v1"
+  )
+
+
+  # find out where to write run/ouput
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
+    rundir <- file.path(settings$rundir, as.character(run.id))
+    outdir <- file.path(settings$modeloutdir, as.character(run.id))
+  }
 
 
   ### WRITE sipnet.in
@@ -124,14 +148,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   # (e.g. NITROGEN_CYCLE requires LITTER_POOL and ANAEROBIC)
   # are handled by Sipnet at run time.
   user_flags <- settings$model$options
-  if (length(user_flags) > 0 && rev_str == "v1") {
+  if (length(user_flags) > 0 && !caps$has_runtime_flags) {
     PEcAn.logger::logger.warn(
       "Got model options", names(user_flags),
       "but sipnet version", rev_raw, "will ignore them.")
   }
   config.text <- update_flag_lines(config.text, user_flags)
 
-  writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
+  writeLines(config.text, con = file.path(rundir, "sipnet.in"))
   
   ### WRITE *.clim
   template.clim <- settings$run$inputs$met$path  ## read from settings
@@ -143,14 +167,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
 
-  # find out where to write run/ouput
-  rundir <- file.path(settings$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$host$outdir, as.character(run.id))
-  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
-    rundir <- file.path(settings$rundir, as.character(run.id))
-    outdir <- file.path(settings$modeloutdir, as.character(run.id))
-  }
-
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con = settings$model$jobtemplate, n = -1)
@@ -161,24 +177,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   # create host specific setttings
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
-    hostsetup <- paste(hostsetup, sep = "\n", paste(settings$model$prerun, collapse = "\n"))
+    hostsetup <- paste(hostsetup, paste(settings$model$prerun, collapse = "\n"), sep = "\n")
   }
   if (!is.null(settings$host$prerun)) {
-    hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
+    hostsetup <- paste(hostsetup, paste(settings$host$prerun, collapse = "\n"), sep = "\n")
   }
   
   # create cdo specific settings
   cdosetup <- ""
   if (!is.null(settings$host$cdosetup)) {
-    cdosetup <- paste(cdosetup, sep = "\n", paste(settings$host$cdosetup, collapse = "\n"))
+    cdosetup <- paste(cdosetup, paste(settings$host$cdosetup, collapse = "\n"), sep = "\n")
   }
   
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
-    hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
+    hostteardown <- paste(hostteardown, paste(settings$model$postrun, collapse = "\n"), sep = "\n")
   }
   if (!is.null(settings$host$postrun)) {
-    hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
+    hostteardown <- paste(hostteardown, paste(settings$host$postrun, collapse = "\n"), sep = "\n")
   }
   
   # create rabbitmq specific setup.
@@ -196,54 +212,48 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     rmoutdircmd <- paste("rm", file.path(outdir, "*"))
     rmrundircmd <- paste("rm", file.path(rundir, "*"))
   }
-  
-  # create job.sh
-  jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
-  jobsh <- gsub("@CDO_SETUP@", cdosetup, jobsh)
-  jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
-  
-  jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
-  jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
-  jobsh <- gsub("@SITE_MET@", template.clim, jobsh)
-  
-  jobsh <- gsub("@OUTDIR@", outdir, jobsh)
-  jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  
-  jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
-  jobsh <- gsub("@END_DATE@",settings$run$end.date , jobsh)
-  
-  jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  jobsh <- gsub("@REVISION@", settings$model$revision, jobsh)
 
-  jobsh <- gsub("@CPRUNCMD@", cpruncmd, jobsh)
-  jobsh <- gsub("@CPOUTCMD@", cpoutcmd, jobsh)
-  jobsh <- gsub("@RMOUTDIRCMD@", rmoutdircmd, jobsh)
-  jobsh <- gsub("@RMRUNDIRCMD@", rmrundircmd, jobsh)
-  
   if(is.null(settings$state.data.assimilation$NC.Prefix)){
     settings$state.data.assimilation$NC.Prefix <- "sipnet.out"
   }
-  jobsh <- gsub("@PREFIX@", settings$state.data.assimilation$NC.Prefix, jobsh)
-  
-  #overwrite argument
   if(is.null(settings$state.data.assimilation$NC.Overwrite)){
     settings$state.data.assimilation$NC.Overwrite <- FALSE
   }
-  jobsh <- gsub("@OVERWRITE@", settings$state.data.assimilation$NC.Overwrite, jobsh)
-  
   #allow conflict? meaning allow full year nc export.
   if(is.null(settings$state.data.assimilation$FullYearNC)){
     settings$state.data.assimilation$FullYearNC <- FALSE
   }
-  jobsh <- gsub("@CONFLICT@", settings$state.data.assimilation$FullYearNC, jobsh)
-  
   if (is.null(settings$model$delete.raw)) {
     settings$model$delete.raw <- FALSE
   }
-  jobsh <- gsub("@DELETE.RAW@", settings$model$delete.raw, jobsh)
-  
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+
+  # Treat end-of-simulation state dump as a first-class output
+  if (isTRUE(as.logical(settings$model$copy.restart))) {
+    cpruncmd <- paste(
+      cpruncmd,
+      "cp \"${RUNDIR}/restart.out\" \"${OUTDIR}/restart.out\"",
+      sep = "\n"
+    )
+  }
+
+  # create job.sh
+  jobsh <- expand_string_templates(
+    jobsh,
+    settings,
+    HOST_SETUP = hostsetup,
+    CDO_SETUP = cdosetup,
+    HOST_TEARDOWN = hostteardown,
+    CPRUNCMD = cpruncmd,
+    CPOUTCMD = cpoutcmd,
+    RMOUTDIRCMD = rmoutdircmd,
+    RMRUNDIRCMD = rmrundircmd,
+    SITE_MET = template.clim,
+    OUTDIR = outdir,
+    RUNDIR = rundir
+  )
+
+  writeLines(jobsh, con = file.path(rundir, "job.sh"))
+  Sys.chmod(file.path(rundir, "job.sh"))
   
 
   ### Copy event file
@@ -257,9 +267,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
 
   ### WRITE *.param-spatial
-  if (rev_str == "v1") {
+  if (caps$has_param_spatial) {
     template.paramSpatial <- system.file("template.param-spatial", package = "PEcAn.SIPNET")
-    file.copy(template.paramSpatial, file.path(settings$rundir, run.id, "sipnet.param-spatial"))
+    file.copy(template.paramSpatial, file.path(rundir, "sipnet.param-spatial"))
   }
   
   ### WRITE *.param
@@ -413,7 +423,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
     
     # Ball-berry stomatal slope parameter m (v1 only; m_ballBerry removed in v2)
-    if ("stomatal_slope.BB" %in% pft.trait.names && "m_ballBerry" %in% param[, 1]) {
+    if (caps$has_m_ballBerry &&
+        "stomatal_slope.BB" %in% pft.trait.names &&
+        "m_ballBerry" %in% param[, 1]) {
       id <- which(param[, 1] == "m_ballBerry")
       param[id, 2] <- pft.traits[which(pft.trait.names == "stomatal_slope.BB")]
     }
@@ -534,6 +546,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       id <- which(param[, 1] == "litterBreakdownRate")
       param[id, 2] <- pft.traits[which(pft.trait.names == "turn_over_time")]
     }
+
+    # fracLitterRespired, fraction of litter breakdown respired vs moved to soil
+    if ("fracLitterRespired" %in% pft.trait.names) {
+      param[which(param[, 1] == "fracLitterRespired"), 2] <- pft.traits[which(pft.trait.names == "fracLitterRespired")]
+    }
     # frozenSoilEff
     if ("frozenSoilEff" %in% pft.trait.names) {
       param[which(param[, 1] == "frozenSoilEff"), 2] <- pft.traits[which(pft.trait.names == "frozenSoilEff")]
@@ -552,7 +569,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # These results in improved winter soil respiration values
     # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
     # 2025-07-22 CKB: soilRespQ10Cold and baseSoilRespCold were removed from Sipnet V2.0
-    if (rev_str == "v1") {
+    if (caps$has_cold_soil_resp) {
       # assume soil resp Q10 cold == soil resp Q10
       param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
       # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
@@ -583,7 +600,13 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("GDD" %in% pft.trait.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.trait.names == "GDD")]
     }
-    
+    if ("leafOnReallocFrac" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafOnReallocFrac"), 2] <- pft.traits[which(pft.trait.names == "leafOnReallocFrac")]
+    }
+    if ("leafNResorptionFrac" %in% pft.trait.names) {
+      param[which(param[, 1] == "leafNResorptionFrac"), 2] <- pft.traits[which(pft.trait.names == "leafNResorptionFrac")]
+    }
+
     # Fraction of leaf fall per year (should be 1 for decid)
     if ("fracLeafFall" %in% pft.trait.names) {
       param[which(param[, 1] == "fracLeafFall"), 2] <- pft.traits[which(pft.trait.names == "fracLeafFall")]
@@ -646,7 +669,38 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
     #update LeafOnday and LeafOffDay
-    if (!is.null(settings$run$inputs$leaf_phenology)) {
+    has_event_pheno <- FALSE
+    event_leafoff_before_leafon <- FALSE
+    if (sipnet_version >= "2.0" && !is.null(event_file)) {
+      event_lines <- readLines(event_file)
+      # If leafon / leafoff events are passed in the event file,
+      # skip any leaf_phenology input + turn off internal phenology scheduling
+      # (Sipnet only allows one method to be active at a time)
+      leafon_lines <- grep("leafon", event_lines, fixed = TRUE)
+      leafoff_lines <- grep("leafoff", event_lines, fixed = TRUE)
+      if (length(leafon_lines) > 0 || length(leafoff_lines) > 0) {
+        has_event_pheno <- TRUE
+        if (isTRUE(leafon_lines[1] >= leafoff_lines[1] ||
+                   length(leafon_lines[1]) == 0)) {
+          # leafoff occurs before leafon => simulation starts with leaves.
+          # Used when handling initial LAI below
+          event_leafoff_before_leafon <- TRUE
+        }
+      }
+    }
+    if (has_event_pheno) {
+      param[param[, 1] == "leafOnDay", 2] <- 0
+      param[param[, 1] == "leafOffDay", 2] <- 0
+      param[param[, 1] == "gddLeafOn", 2] <- 0
+
+      if (!is.null(settings$run$inputs$leaf_phenology)) {
+        PEcAn.logger::logger.warn(
+          "Ignoring leaf_phenology input for site",
+          settings$run$site$id,
+          "because event file already contains leafon/leafoff events."
+        )
+      }
+    } else if (!is.null(settings$run$inputs$leaf_phenology)) {
       obs_year_start <- lubridate::year(settings$run$start.date)
       obs_year_end <- lubridate::year(settings$run$end.date)
       if (obs_year_start != obs_year_end) {
@@ -759,7 +813,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       if ("soil_hydraulic_conductivity_at_saturation" %in% names(soil_IC_list$vals)) {
          #litwaterDrainrate in cm/day (v1 only; litWaterDrainRate removed in v2)
-         if ("litWaterDrainRate" %in% param[, 1]) {
+         if (caps$has_litWaterDrainRate && "litWaterDrainRate" %in% param[, 1]) {
            param[which(param[, 1] == "litWaterDrainRate"), 2] <- PEcAn.utils::ud_convert(unlist(soil_IC_list$vals["soil_hydraulic_conductivity_at_saturation"])[1], "m s-1", "cm day-1")
          }
        }
@@ -810,7 +864,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "soilInit"), 2] <- IC$soil
     }
     ## litterWFracInit fraction (v1 only; removed in v2)
-    if ("litter_mass_content_of_water" %in% ic.names && "litterWFracInit" %in% param[, 1]) {
+    if (caps$has_litterWFracInit &&
+        "litter_mass_content_of_water" %in% ic.names &&
+        "litterWFracInit" %in% param[, 1]) {
       #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
       param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
     }
@@ -827,7 +883,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
     }
     ## microbeInit mgC/g soil (v1 only; removed in v2)
-    if ("microbe" %in% ic.names && "microbeInit" %in% param[, 1]) {
+    if (caps$has_microbeInit && "microbe" %in% ic.names && "microbeInit" %in% param[, 1]) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
 
@@ -885,10 +941,14 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       # ==> leaves are on from late May through mid-October.
       is_deciduous_pft <- isTRUE(param[param[, 1] == "fracLeafFall", 2] > 0.5)
       start_day <- lubridate::yday(settings$run$start.date)
-      starts_with_leaves <- (
-        start_day >= param[param[, 1] == "leafOnDay", 2]
-        && start_day <= param[param[, 1] == "leafOffDay", 2]
-      )
+      if (has_event_pheno) {
+        starts_with_leaves <- event_leafoff_before_leafon
+      } else {
+        starts_with_leaves <- (
+          start_day >= param[param[, 1] == "leafOnDay", 2]
+          && start_day <= param[param[, 1] == "leafOffDay", 2]
+        )
+      }
       if (is_deciduous_pft && !starts_with_leaves) {
         # Note that this doesn't adjust for winter LAI of evergreens!
         # Could consider using LAI*fracLeafFall,
@@ -944,7 +1004,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           param[param[, 1] == "leafOffDay", 2] <- leafOffDay
         }
       }
-      if (ic_has_ncvars[["Microbial Biomass C"]] && "microbeInit" %in% param[, 1]) {
+      if (caps$has_microbeInit &&
+          ic_has_ncvars[["Microbial Biomass C"]] &&
+          "microbeInit" %in% param[, 1]) {
         microbe <- ncdf4::ncvar_get(IC.nc, "Microbial Biomass C")
         if (!is.na(microbe) && is.numeric(microbe)) {
           param[param[, 1] == "microbeInit", 2] <- PEcAn.utils::ud_convert(microbe, "mg kg-1", "mg g-1") #BETY: mg microbial C kg-1 soil
@@ -958,7 +1020,32 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   } else {
     #some stuff about IC file that we can give in lieu of actual ICs
   }
+  
+  if ("plantStorageNInit" %in% param[, 1]) {
+    # If not supplied, set initial storage N to support leaf flush (g N/m2).
+    # Sipnet takes the smaller of its C and N limiters, so N sized to the
+    # carbon-limited flush removes N suppression without adding surplus N.
+    # check carbon available for initial leaf on
+    available_carbon <- param[param[, 1] == "plantWoodInit", 2] *
+      (1 - param[param[, 1] == "fineRootFrac", 2]) *
+      param[param[, 1] == "leafOnReallocFrac", 2]
 
+    # actual amount of carbon used for leaf on
+    leaf_carbon <- min(
+      param[param[, 1] == "leafGrowth", 2],
+      available_carbon
+    )
+
+    # N required to support leaf growth
+    storage_n <- leaf_carbon * max(
+      0,
+      1 / param[param[, 1] == "leafCN", 2] -
+        1 / param[param[, 1] == "woodCN", 2]
+    )
+
+    param[param[, 1] == "plantStorageNInit", 2] <-
+      IC[["plantStorageNInit"]] %||% storage_n
+  }
 
   if (!is.null(settings$run$inputs$soilmoisture)) {
     #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
@@ -970,12 +1057,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
 
   }
-  if (file.exists(file.path(settings$rundir, run.id, "sipnet.param"))) {
+  if (file.exists(file.path(rundir, "sipnet.param"))) {
     file.rename(
-      file.path(settings$rundir, run.id, "sipnet.param"),
+      file.path(rundir, "sipnet.param"),
       file.path(
-        settings$rundir,
-        run.id,
+        rundir,
         paste0("sipnet_", lubridate::year(settings$run$start.date), "_", lubridate::year(settings$run$end.date), ".param")
       )
     )
@@ -984,7 +1070,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
   utils::write.table(
     param,
-    file.path(settings$rundir, run.id, "sipnet.param"),
+    file.path(rundir, "sipnet.param"),
     row.names = FALSE,
     col.names = FALSE,
     quote = FALSE

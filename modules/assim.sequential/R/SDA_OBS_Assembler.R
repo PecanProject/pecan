@@ -70,11 +70,16 @@ SDA_OBS_Assembler <- function(settings){
     
     #if we are dealing with different timestep for different variables.
     if (diff_dates){
-      timestep[[i]] <- Obs_Prep[[i]]$timestep
-      if (!exists("timestep")){
-        PEcAn.logger::logger.error(paste0("Please provide timestep under each variable if you didn't provide timestep under Obs_Prep section!"))
+      # Each variable section must have its own 'timestep' sub-element when no
+      # global Obs_Prep$timestep is defined. Check for this explicitly.
+      if (is.null(Obs_Prep[[i]]$timestep)){
+        PEcAn.logger::logger.error(
+          paste0("Please provide 'timestep' under the '", names(Obs_Prep)[i],
+                 "' variable section of Obs_Prep,",
+                 " since no global Obs_Prep$timestep was found."))
         return(0)
       }
+      timestep[[i]] <- Obs_Prep[[i]]$timestep
       time_points <- obs_timestep2timepoint(Obs_Prep[[i]]$start.date, Obs_Prep[[i]]$end.date, timestep[[i]])
     }else{
       timestep[[i]] <- Obs_Prep$timestep

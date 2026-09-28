@@ -1,0 +1,10 @@
+column_number,column_name,contents,notes
+1,parcel_id,LandIQ parcel id,
+2,year,calendar year,
+3,date,HLS scene acquisition date,ISO date string
+4,ndti_mean,area-weighted mean NDTI,
+5,ndti_sd,area-weighted NDTI sd,
+6,n_valid,unmasked pixels contributing,
+7,w_valid,sum of pixel coverage fractions,
+8,sum_w2,sum of squared coverage fractions,n_eff = w_valid^2 / sum_w2
+9,na_frac,fraction of parcel area masked,quality flag

@@ -35,8 +35,7 @@ pecan_bench <- function(comp_run, bench_id, imp_limit, high_limit) {
   logic_check <- validation_check(comp_run)
   
   if (isFALSE(logic_check)) {
-    print("The results were found to be invalid")
-    stop()
+    PEcAn.logger::logger.severe("The results were found to be invalid")
   }
   
   # The observed values against which the runs will be compared to. Should be the same for all

@@ -2,7 +2,7 @@
 
 This section provides additional details about how PEcAn uses RabbitMQ to manage communication between its Docker containers.
 
-In PEcAn, we use the Python [`pika`](http://www.rabbitmq.com/tutorials/tutorial-one-python.html) client to retrieve messages from RabbitMQ. The PEcAn.remote library has convenience functions that wrap the API to post and read messages. The executor and models use the python version of the RabbitMQ scripts to retrieve messages, and launch the appropriate code.
+In PEcAn, we use the Python [`pika`](https://www.rabbitmq.com/tutorials/tutorial-one-python.html) client to retrieve messages from RabbitMQ. The PEcAn.remote library has convenience functions that wrap the API to post and read messages. The executor and models use the python version of the RabbitMQ scripts to retrieve messages, and launch the appropriate code.
 
 ### Producer -- `PEcAn.remote::rabbitmq_post_message` {#rabbitmq-basics-sender}
 
@@ -10,7 +10,7 @@ The `PEcAn.remote::rabbitmq_post_message` function allows you to post messages t
 
 The function has three required arguments and two optional ones:
 
-- `uri` -- This is the URI used to connect to RabbitMQ, it will have the form `amqp://username:password\@server:5672/vhost`. Most containers will have this injected using the environment variable `RABBITMQ_URI`.
+- `uri` -- This is the URI used to connect to RabbitMQ, it will have the form `amqp://username:password@server:5672/vhost`. Most containers will have this injected using the environment variable `RABBITMQ_URI`.
 - `queue` -- The queue to post the message on, this is either `pecan` for a workflow to be exected, the name of the model and version to be executed, for example `SIPNET_r136`.
 - `message` -- The actual message to be send, this is of type list and will be converted to a json string representation.
 - `prefix` -- The code will talk to the rest api, this is the prefix of the rest api. In the case of the default docker-compse file, this will be `/rabbitmq` and will be injected as `RABBITMQ_PREFIX`.

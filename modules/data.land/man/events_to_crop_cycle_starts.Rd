@@ -21,23 +21,24 @@ These are the dates when single-PFT models will need to restart to update
 their crop parameterization.
 }
 \details{
-TODO: For now this function requires each planting event to specify a
-`crop` attribute, but note that this is not enforced by v0.1 of the PEcAn
-events schema. The schema instead allows each site object to specify a
-site-level `PFT` attribute that is implied constant over time.
-As I write this I think the schema may need to change to require a crop or
-PFT identifier be specified for every planting event.
+Requires each planting event to specify a `crop_code` attribute,
+and reports a crop cycle change every time the crop code changes.
+Note that crop codes are not required to match your model's PFT names,
+so deciding how (or whether) to change parameterization on these dates
+is up to the model operator.
+
+Also note that only _changes_ in crop code are detected:
+If the event file contains no planting events the result has zero rows,
+and any crop present before the first observed planting event
+(say from initial conditions) is not reported.
 }
 \examples{
-# Not currently runnable because file does not list crop in planting events.
-# Revisit after deciding if schema update is warranted.
-\dontrun{
 evts <- system.file(
   "events_fixtures/events_site1_site2.json",
   package = "PEcAn.data.land"
 )
 events_to_crop_cycle_starts(evts)
-}
+
 }
 \author{
 Chris Black

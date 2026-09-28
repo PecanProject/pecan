@@ -1,5 +1,51 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
+* `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
+    parameter, so PFT supplied values reach the param file instead of
+    silently keeping the template default. Completes the nitrogen cycle
+    trait mappings alongside the existing `leafOnReallocFrac`.
+    `plantStorageNInit` is deliberately not trait mapped; it is an initial
+    condition, set from the IC layer like the other Init parameters.
+* For SIPNET v2, `write.config.SIPNET` now sets `plantStorageNInit` to the N
+    needed for one carbon-limited leaf flush, computed from the initialized
+    wood pool, instead of leaving the template value. With the nitrogen cycle
+    on, a zero initial storage N suppressed the first leaf-on event entirely
+    for vegetation initialized with standing wood (e.g. established orchards).
+    Sipnet takes the smaller of its carbon and nitrogen limiters, so sizing N
+    to the carbon-capped transfer removes the suppression without adding
+    surplus N. A `plantStorageNInit` supplied through the `IC` argument still
+    takes precedence, and zero-wood (annual) initializations still get 0.
+* More flexible handling of Sipnet "restart" files (checkpoints containing full
+  model state at the end of the run):
+    - New setting `settings$model$copy.restart` is a logical runtime flag
+      controlling whether to copy each run's `restart.out` to the output
+      directory at job completion or leave it in the run directory.
+    - New function `collect_restarts` works after the run and copies all the
+      `restart.out`s from an entire workflow run into a single directory,
+      for e.g. initializing follow-up workflows (#4110).
+    - The `collect_restarts()` function and the `copy.restart` flag work
+      independently of each other; point `collect_restarts()` at whichever of
+      `run/` or `out/` contains the restart files.
+* Improvements to the job.sh written by `write_segmented_configs`:
+  - Now places README.txt, segments.csv, and the full log files from each
+    segment, into the outdir (as was already done for one-segment runs).
+  - Now respects `settings$model$delete.raw` by deleting sipnet.out from segment
+    dirs as well as the from the job outdir
+  - No longer calls model2netcdf.SIPNET() inside each segment dir (it was
+    redundant with the whole-job netcdf output).
+  - Runs host setup and teardown steps once per job instead of once per segment.
+    This reduces duplicate computation and allows using these steps for
+    whole-rundir cleanups, e.g. `settings$model$postrun`  = "rm -rf @RUNDIR@".
+    This may be especially useful to keep file counts reasonable in workflows
+    with many crop changes (and hence many segment directories per site).
+  - Fixed incorrect run paths in the settings$host block passed to single segments
+* `model2netcdf.SIPNET` takes `LAI` from sipnet.out if present (which requires
+    Sipnet > v2.2). If it is not present, LAI is calculated as
+    `plantLeafC / leafCSpWt` as previously.
+* `split_inputs.SIPNET` now avoids internal time format conversions, giving a
+  substantial speedup and reduced memory use when processing multi-year files.
+* `model2netcdf.SIPNET` now detects the number of timesteps per day by taking the maximum count across all days in the first simulation year, rather than reading only from day 1. This prevents a factor-of-N error in flux unit conversions when the first day of output is partial (fewer timesteps than a complete day) (#3624, #3989).
 * Fixed a unit error in model2netcdf.SIPNET's calculation of `GWBI` (kgC/m2/sec)
     from `woodCreation` (actually gC/m2/timestep, was being treated as gC/m2/day).
 * `model2netcdf.SIPNET` now takes NPP directly from sipnet.out rather than repeat
@@ -22,8 +68,9 @@
   litterWFracInit, microbeInit, m_ballBerry) from being set when using v2 templates.
 * Removed workarounds for column naming bugs in output from long-outdated legacy
   Sipnet version `sipnet.unk`.
-* Added trait to parameter mappings for 13 nitrogen cycle parameters in `write.config.SIPNET`,
-  including tissue C:N ratios, N volatilization/leaching, fixation, and methane rates.
+* Added trait to parameter mappings for nitrogen cycle parameters in `write.config.SIPNET`,
+  including tissue C:N ratios, N volatilization/leaching/resorption, fixation, and methane rates.
+* `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
   
 
 # PEcAn.SIPNET 1.10.0

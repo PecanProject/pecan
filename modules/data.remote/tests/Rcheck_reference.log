@@ -38,12 +38,7 @@ License stub is invalid DCF.
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-download.LandTrendr.AGB: no visible binding for global variable ‘k’
-grid2netcdf: no visible binding for global variable ‘years’
-grid2netcdf: no visible binding for global variable ‘yieldarray’
-Undefined global functions or variables:
-  k years yieldarray
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -58,9 +53,8 @@ Undefined global functions or variables:
 * checking for detritus in the temp directory ... OK
 * DONE
 
-Status: 2 NOTEs
+Status: 1 NOTE
 See
   ‘/tmp/Rtmpr2UgRH/PEcAn.data.remote.Rcheck/00check.log’
 for details.
-
 

@@ -6,7 +6,6 @@
 #' @param start_date Start time of the simulation
 #' @param end_date End time of the simulation
 #' @export
-#' @importFrom rlang .data .env
 #'
 #' @author Chris Black
 model2netcdf.RothC <- function(outdir, sitelat, sitelon, start_date, end_date) {

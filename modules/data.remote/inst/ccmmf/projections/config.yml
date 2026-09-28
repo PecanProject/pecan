@@ -1,0 +1,232 @@
+# Crop and event projection workflow configuration file
+# File holds two profiles: default and scc, where the default setting holds the S3 paths that should be used.
+  #the scc setting is kept just incase a current BU/scc user wants to run the script.
+
+# Each script selects one setting with config::get(config = "setting", file = "config.yml").
+
+default:
+
+  #1: Setting a personal folder work_root
+  #this will act as the home base folder for all intermediate and final outputs. Every  relative path below will build off of this. For example, the final transition matrices
+    #and output parquets will be inside here.
+  #Used by all nine scripts.
+  work_root: "/path/to/your/folder"
+
+  #2: The projection period.
+  #historical_start_year = the first year of observed data used to build historical baselines and lookups, which is currently 2016.
+  #start_year = last observed year. Projections begin the year after this, which is currently 2023.
+  #end_year = final projection year, and the year the target acreage and practice targets apply to, which currently goes up until 2045.
+
+  #Inventory years are 2016-2023; projections begin after 2023.
+  #Used by all nine scripts.
+  historical_start_year: 2016
+  start_year: 2023
+  end_year: 2045
+
+  #3: Management scenarios and target sheets
+  #Defining these names now helps keep track of the scenarios being predicted, as scripts loop over this list and write one output folder per scenario.
+  #Each name must match a <name>.csv in scenario_dir, and all should follow the '<SCEN>_Targets' naming
+
+  #Used by: predict_and_store.R, phenology.R, planting_harvest_dates.R, tillage.R, fertilization.R, and irrigation.R
+  scenario_names:
+    - "BAU_Targets"
+    - "NBS_Targets"
+
+
+  #4: Historical LandIQ crop identity, with inventory years, one row per parcel-season
+  #This acts as the main source of crop class, subclass, county and cover status.
+  #Used by: transition_matrix.R, predict_and_store.R, phenology.R fertilization.R, irrigation.R
+  crops_path: "s3://carb/management/crops/v4.1.2/crops_all_years.parq"
+
+  #5: LandIQ crop code lookup
+  #Shows what specific crop each class/subclass combination. For example, the class/subclass combination G1 = Barley
+  #Used by: transition_matrix, predict_and_store, tillage, fertilization.
+  crop_lookup_path: "s3://carb/management/crops/LandIQ_cropCode_lookup_table.csv"
+
+  #6: Historical management event products. Each preojection script will read only the inventory its using.
+  #These supply the historical timing and magnitude that the projections sample from.
+
+  #read by planting_harvest_dates.R
+  planting_event_dir: "s3://carb/management/planting/v2.0/"
+  harvest_event_dir: "s3://carb/management/harvest/v2.0/"
+
+  #read by phenology.R
+  phenology_event_dir: "s3://carb/management/phenology/v2.0/"
+
+  #read by tillage.R
+  tillage_event_dir: "s3://carb/management/tillage/v2.0/"
+
+  #read by fertilization.R
+  fertilization_event_dir: "s3://carb/management/fertilization/v2.0/"
+  ncc_event_dir: "s3://carb/management/fertilization/v2.0/"
+
+  #7: LandIQ parcels matched to MSLSP remote-sensing phenology, gap-filled. Supplies observed green-up / peak / senescence dates.
+  #Used by: phenology.R for historical offsets and irrigation.R for peak-position fraction
+  phenology_matched_dir: "s3://carb/management/crops/v4.1.2/gapfill_dates"
+
+  #8: Cal-Adapt/WRF climate archive.
+  # NOTE: wrf_archive_path is documentation only - no script reads it. It
+  # records where the tarball came from; extract it yourself to wrf_base_dir.
+  wrf_archive_path: "s3://carb/met/wrf_met_CA_45km_2024_2051.tgz"
+
+  #9: SSURGO soils. Used only to compute each parcel's plant-available water capacity for the irrigation water balance. The first irrigation run is slow because it derives these;
+  #later runs reuse whats been calculated and stored in irrigation_awc_cache_dir.
+  #Used by: irrigation.R
+  ssurgo_weights_path: "s3://carb/management/irrigation/ssurgo-weights.parquet"
+  ssurgo_gdb_path: "s3://carb/management/session3/ssurgo/gSSURGO_CA.gdb/"
+
+  #10: scenario goal sheets
+  #The scenario target sheets define the end_year acreage and the adoption targets for tillage, cover cropping, and compost for each year and crop
+
+  #scenario_dir is a folder containing the scenario CSVs. This sheet is relative to work_root, so make sure the targets sit where ever work_root is defined to
+  #Used by: scenarios.R, predict_and_store.R, tillage.R, fertilization.R
+  scenario_dir: "MAGiC_scenarios_FINAL"
+
+  #The specific sheets per scenario will then live within scenario_dir
+  #Currently, the scenario we have (BAU and NBS) share the same crop acreage targets, so crop matrices are optimized once, against the BAU file named here.
+  #Used by: scenarios.R
+  bau_target_file: "BAU_Targets.csv"
+  crop_target_source: "BAU_Targets"
+
+  #NOTE: is not defined because predict_and_store.R, tillage.R and fertilization.R build their scenario file paths from scenario_names instead.
+  #Renaming a scenario file means editing scenario_names, not adding a new <scen>_target_file.
+
+  # ---------------------------------------------------------------------------
+  # Intermediate and output files
+  #Everything written and saved in this script workflow will be relative to work_root. Each is written by one script and later used for a different
+  #prediction
+
+  #1: Orgnanizes crop inventory into one crop state per parcel-year.
+  #Created in transition_matrix.R, and read by scenarios.R, predict_and_store.R, tillage.R, fertilization.R
+  crop_data_file: "crop_year_states_cleaned.csv"
+
+  #2: Full historical LandIQ records with county IDs attached (all seasons)
+  #created in transition_matrix.R, and read by predict_and_store.R for subclass assignment, planting_harvest_dates.R, and fertilization.R (for parcel county+acres).
+  crop_history_file: "crops_full_counties.csv"
+
+  #3: Historical county x crop tillage baseline, one row per parcel-year.
+  #This table is used an an input, its not created by any scripts. Make sure file is within work_root.
+  #Read by tillage.R to anchor the projected tillage shares.
+  all_data_file: "all_data.csv"
+
+  #4: County crop transition matrices, before and after optimization. crop_matrix_dir is written by transition_matrix.R and read by scenarios.R for optimization
+  #matrix_out_dir is written by scenarios.R, and read by predict_and_store.R for crop predictions
+  crop_matrix_dir: "county_crop_matrices"
+  matrix_out_dir: "county_optimized_matrices"
+
+  #5: Projected crop identity with one subfolder per scenario. Written by predict_and_store.R, and read by phenology.R, planting_harvest_dates.R,
+  #tillage.R, fertilization.R and irrigation.R.
+  prediction_dir: "crop_predictions"
+
+  #6: Projected event products, one subfolder per scenario and one parquet per year.
+  phenology_output_dir: "phenology_projections"          #created in phenology.R, read by tillage.R and fertilization.R
+  planting_output_root: "planting_projections"           #created in planting_harvest_dates, read by fertilization.R, irrigation.R
+  harvest_output_root: "harvest_projections"             # created in planting_harvest_dates.R, read by irrigation.R
+  tillage_output_root: "tillage_projections"             #created in tillage.R
+  fertilization_output_root: "fertilization_projections" #created in fertilization.R for synthetic N
+  ncc_output_root: "ncc_projections"                     #created in fertilization.R for compost
+
+  #7: Daily county climate, which holds the the historical climate information. Written by get_climate_data.R and read by irrigation.R
+  climate_output_file: "caladapt_county_daily_climate.csv"
+
+  #8: Irrigation outputs. The AWC cache holds the SSURGO-derived water holding capacity per parcel and rooting depth to help with run time.
+  #deleting it forces a recompute, which re-adds that time to the next run.
+  irrigation_output_dir: "irrigation_projections"
+  irrigation_awc_cache_dir: "irrigation_awc_cache"
+
+  # ---------------------------------------------------------------------------
+  #Fixed parameters used throughout the workflow, which are mostly defined to help with run time for the optimizer and projections
+
+  ##Randomization
+  #Master seed for the stochastic assignments: crop class draws, subclass draws, cover crop selection and compost parcel selection. Fixing it makes
+  #a run reproducible; changing it produces a different equally valid draw.
+  #Used by: predict_and_store.R, tillage.R, fertilization.R
+  seed: 42
+
+  ##Scenario optimization parameters
+  #1: Parallel workers. Capped at available cores and at the number of counties. (Also used by irrigation.R for its per-county water balance)
+  workers: 6
+
+  #2: Weight on hitting the acreage target, relative to the penalty for changing the historical transition matrix. Higher means the optimizer will distort
+  #the observed transition behavior more in order to land on the 2045 target.
+  lambda_target: 1000000
+
+  #3: COBYLA stopping conditions, per county. Maxtime is in seconds, so a county gives up after 6 minutes even if it has not perfectly converged
+  maxeval_optimizer: 50000
+  maxtime_optimizer: 360
+
+  #4: Rescale the scenario acreage target so its total matches the county's observed starting acreage. Keeps the optimization about the crop mix rather
+  #than about total farmed area.
+  scale_crop_targets_to_x0: true
+
+  #5: A crop with a target of exactly zero acres is given this token acreage instead, so the optimizer does not chase an unreachable exact zero amount
+  nominal_zero_acres: 0.01
+
+  #6: 'run_all_counties: true' optimizes every county present in both the crop data and the scenario targets. Set false and list specific counties in
+  #counties_manual to re-run a subset, e.g. ["Fresno", "Kern"].
+  run_all_counties: true
+  counties_manual: []
+
+  ##Tillage projection parameters
+  #1: Separate seed for tillage state assignment, which is reset per scenario run
+  tillage_seed: 1
+
+  #2: NDTI percent-change thresholds that classify a detected tillage event by intensity. An event:
+  #between 0 and the no till trheshold is treated as no-till
+  #between the two is reduced till
+  #at or above low_till_threshold is conventional till.
+  no_till_threshold: 30
+  low_till_threshold: 70
+
+  ##Climate (get_climate_data.R, irrigation.R) Parameters
+
+  #1: Which gcm/ssp combination to use. Both scripts must agree: get_climate_data.R extracts these from the climate data archive and irrigation filters
+  #the resulting CSV to the same pair. Changing either means regenerating climate_output_file before re-running irrigation.
+  climate_gcm: "CESM2"
+  climate_ssp: "ssp370"
+
+  #2: Height of the WRF wind measurement, metres. FAO-56 reference evapotranspiration expects wind at 2 m; anything else is adjusted to 2 m
+  #using the standard log wind profile.
+  wind_height_m: 10
+
+  ##Irrigation.R parameters (all in mm)
+
+  #1: Rice targets: gets its own water balance and its own parameters because rice is flooded rather than irrigated
+  rice_target: 125
+  rice_min: 62.5
+  rice_max: 175
+  rice_seepage: 2.5
+
+  #2: Maximum water applied in a single irrigation event for all non-rice crops. The balance refills the root zone when soil water is drawn down to the
+  #crop's allowable depletion, capped at this amount. Raising it produces fewer, larger events; lowering it produces more smaller ones.
+  irrigation_max: 150
+
+
+scc:
+
+  # SCC-specific overrides
+  work_root: "/projectnb/dietzelab/ananyak"
+
+  crops_path: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1.2/crops_all_years.parq"
+
+  crop_lookup_path: "/projectnb/dietzelab/ccmmf/management/LandIQ_cropCode_lookup_table.csv"
+
+  planting_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  harvest_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  phenology_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  phenology_matched_dir: "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1.2/gapfill_dates"
+
+  tillage_event_dir: "/projectnb/dietzelab/ccmmf/management/event_files_v4.1.2"
+
+  fertilization_event_dir: "/projectnb/dietzelab/ccmmf/usr/akash/event_files/fertilization/v2.0"
+
+  ncc_event_dir: "/projectnb/dietzelab/ccmmf/usr/akash/event_files/ncc/v2.0"
+
+  ssurgo_weights_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/ssurgo-weights.parquet"
+
+  ssurgo_gdb_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"
+
+  wrf_base_dir: "/projectnb/dietzelab/ccmmf/CalAdapt/wrf_45km"

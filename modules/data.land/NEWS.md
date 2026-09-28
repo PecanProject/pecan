@@ -2,19 +2,23 @@
 
 ## Added
 
+- Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
+
 ## Fixed
 
+* `eto_to_etc_bism()` correctly anchors planting and harvest dates across the new year for overwinter crops in date mode. (#4125)
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
 * `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo. (#3776)
 
 * Datasets
   *  `landiq_crop_mapping_codes` dataset mapping LandIQ crop classification codes to human-readable crop names.
   *  `bism_kc_by_crop` dataset containing BISm crop coefficient schedules and stage timing references for use in ET estimation, including columns that map to LandIQ class and subclass.
-  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 33 California crops from CDFA-FREP and UC ANR sources.
-  *  `ca_compost_amendment` dataset with C:N ratios, carbon, nitrogen, and PAN (g/m2) for 32 organic amendment materials.
+  *  `ca_n_application_rate` dataset with recommended N application rates (g N/m2) for 40 California crops from CDFA-FREP, UC ANR, Rosenstock 2013, Brown 2020 NBMP (Almonds age stages) and Lazicki 2016 (Potato) sources.
+  *  `ca_organic_amendment_properties` dataset with C:N ratios, nitrogen, and PAN for 32 organic amendment materials, plus a `material_class` column mapping each material to the CalRecycle taxonomy (14 CCR section 17852).
+  *  `ca_organic_amendment_app_rate` dataset with row-crop and orchard application rate envelopes (64 rows = 32 materials x 2 crop structures) that joins to `ca_organic_amendment_properties` on `material`.
 * Functions
   *  `look_up_ca_n_rate()` for looking up crop-specific N application rates by name (exact match first, partial match suggestions on miss).
-  *  `look_up_ca_compost_amendment()` for looking up organic amendment properties by material name.
+  *  `look_up_ca_organic_amendment()` for looking up organic amendment properties by material name.
   *  `to_co2e()` for converting SOC change, CH4, and N2O to CO2-equivalent emissions using IPCC Global Warming Potential values.
 
 ## Changed

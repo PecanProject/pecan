@@ -120,14 +120,4 @@ assimilation_rate,NA,kg C m-2 s-1,Leaf assimilation rate,Carbon Fluxes,real,lon,
 date_of_budburst,NA,day of year,Date of Budburst,Phenology,real,lon,lat,time,NA,Date of Budburst
 date_of_senescence,NA,day of year,Date of Senescence,Phenology,real,lon,lat,time,NA,Date of Senescence
 litter_mass_content_of_water,NA,kg m-2,Average layer litter moisture,Physical Variables,real,lon,lat,depth,time,Litter water content in litter layer including liquid vapor and ice
-mineral,NA,g,Mineral content.,Physical Variables,real,lon,lat,depth,time,Mineral dry mass present for a sediment cohort.
-fast,NA,g,Fast organic matter pool,Carbon Pools,real,lon,lat,depth,time,Fast decaying organic matter dry mass present for a sediment cohort.
-slow,NA,g,Slow organic matter pool,Carbon Pools,real,lon,lat,depth,time,Slow decaying organic matter dry mass present for a sediment cohort.
-root,NA,g,Live root pool,Carbon Pools,real,lon,lat,depth,time,Live root dry mass present for a sediment cohort.
-inputYrs,NA,yr,Soil cohort input years,Physical Variables,real,lon,lat,depth,time,Number of years of input represented by a sediment cohort.
-omPackingDensity,NA,g cm-3,Organic matter packing density,Physical Variables,real,lon,lat,depth,time,Organic matter packing density of a sediment cohort.
-mineralPackingDensity,NA,g cm-3,Mineral matter packing density,Physical Variables,real,lon,lat,depth,time,Mineral matter packing density of a sediment cohort.
-surface_elevation,NA,cm,Surface elevation,Physical Variables,real,lon,lat,time,NA,Surface elevation of soil relative to north american vertical datum of 1988.
-aboveground_biomass,NA,g cm-2,Above ground herbaceous biomass,Carbon Pools,real,lon,lat,time,NA,Aboveground biomass in grams dry mass per unit area.
-belowground_biomass,NA,g cm-2,Belowground herbaceous biomass,Carbon Pools,real,lon,lat,time,NA,Belowground biomass in grams dry mass per unit area.
-sediment_delivered,NA,g,Sediment delivered,Physical Variables,real,lon,lat,time,NA,Seimdnet trapped by surface within a year.
+year,NA,year,Year,Dimension,real,NA,NA,NA,Na,Year number (CE)

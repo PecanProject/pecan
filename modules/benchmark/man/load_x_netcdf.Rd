@@ -7,17 +7,20 @@
 load_x_netcdf(data.path, format, site, vars = NULL)
 }
 \arguments{
-\item{data.path}{character vector or list}
+\item{data.path}{character vector or list of paths to NetCDF files}
 
-\item{format}{list}
+\item{format}{list containing format info (e.g. na.strings)}
 
-\item{site}{list}
+\item{site}{list site info (optional)}
 
-\item{vars}{character}
+\item{vars}{character vector of variables to load}
+}
+\value{
+A data.frame with the requested variables and a `time` column (POSIXct)
 }
 \description{
 Load from netCDF
 }
 \author{
-Istem Fer
+Istem Fer, Anshul Jain
 }

@@ -20,7 +20,7 @@ download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, si
                     start_date = start_date)
   
   weather = met %>% 
-    dplyr::filter(.data$reference_datetime == as.POSIXct(start_date,tz="UTC"), sitename == sitename) %>%
+    dplyr::filter(.data$reference_datetime == as.POSIXct(start_date,tz="UTC"), .data$sitename == sitename) %>%
     dplyr::collect() %>%
     dplyr::select(.data$sitename, .data$prediction, .data$variable, .data$horizon, .data$parameter, .data$datetime)
   

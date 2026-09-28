@@ -4,7 +4,14 @@
 \alias{eto_to_etc_bism}
 \title{Convert ETo to ETc using BIS/BISm crop coefficients}
 \usage{
-eto_to_etc_bism(eto, crop_name, date = NULL, canopy_cover = NULL)
+eto_to_etc_bism(
+  eto,
+  crop_name,
+  date = NULL,
+  canopy_cover = NULL,
+  planting = NULL,
+  harvest = NULL
+)
 }
 \arguments{
 \item{eto}{Numeric vector of reference evapotranspiration (ETo).}
@@ -18,6 +25,9 @@ percent-of-season interpolation using BIS/BISm defaults.}
 \item{canopy_cover}{Optional numeric vector giving fractional ground cover
 (0-1), length 1 or \code{length(eto)}; triggers canopy-cover-based Kc
 estimation.}
+
+\item{planting, harvest}{Optional \code{Date} values for percent-of-season mode;
+defaults come from \code{bism_kc_by_crop}.}
 }
 \value{
 Numeric vector of crop evapotranspiration (ETc), with the same units as
@@ -34,7 +44,8 @@ selected by input:
 \item \strong{Date-based (percent-of-season) mode}: If \code{date} is
 provided, Kc is interpolated linearly between BIS/BISm growth-stage anchors
 (B--C--D--E) using percent-of-season, with default planting and
-harvest dates taken from \code{bism_kc_by_crop}.
+harvest dates taken from \code{bism_kc_by_crop}. Optional \code{planting} /
+\code{harvest} override those defaults.
 \item \strong{Canopy-cover mode}: If \code{canopy_cover} is provided, Kc is
 estimated from observed ground cover. For field and row crops, canopy cover
 is used to locate position within the B--C growth phase (linear increase from

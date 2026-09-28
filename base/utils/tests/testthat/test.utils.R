@@ -7,7 +7,7 @@ test.stats <- data.frame(Y=rep(1,5),
 
 test_that("transformstats works",{
   expect_equal(signif(transformstats(test.stats)$stat, 5),
-               c(0.5, 0.5, 0.12734, 0.071333, 1.1559))
+               c(0.5, 0.5, 0.25468, 0.071333, 1.1559))
   expect_true(all(transformstats(test.stats)$statname == "SE"))
   expect_equal(test.stats$Y, transformstats(test.stats)$Y)
   expect_equal(test.stats$n, transformstats(test.stats)$n)          

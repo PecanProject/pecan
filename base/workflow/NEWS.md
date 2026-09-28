@@ -1,6 +1,7 @@
 # PEcAn.workflow 1.10.0.9000
 
 ## Changed
+* `start_model_runs()` gains argument `check_interval`, setting the time in seconds to wait between queries of job status on queued systems.
 * Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
 * Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)
 * Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.

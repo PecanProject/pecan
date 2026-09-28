@@ -32,7 +32,13 @@ options <- list(
       "Should contain subdirs named by site id"
     )
   ),
-
+  optparse::make_option("--soil_dir",
+    default = "data/soil",
+    help = paste(
+      "Directory containing netCDFs of soil data.",
+      "Should contain subdirs named by site id"
+    )
+  ),
   optparse::make_option("--site_file",
     default = "site_info.csv",
     help = paste(
@@ -137,6 +143,17 @@ settings <- settings |>
   #   path = args$ic_dir,
   #   path_template = "{path}/{id}/IC_site_{id}_{n}.nc"
   # ) |>
+  setEnsemblePaths(
+    n_reps = args$n_ens,
+    input_type = "soil_physics",
+    path = args$soil_dir,
+    # n+1 bc current implementation of extract_soil_gSSURGO saves a
+    # gSSURGO_soil_1.nc containing pseudo-layers from _every_
+    # soil type found at site, then at least n more files after that
+    # ("at least" bc it also writes at least 1 file per soil type)
+    # TODO
+    path_template = "{path}/{id}/gSSURGO_soil_{n+1}.nc"
+  ) |>
   papply(add_soil_pft)
 
 # Update just the first component of the output directory,

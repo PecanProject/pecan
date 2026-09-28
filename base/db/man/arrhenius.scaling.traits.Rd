@@ -15,18 +15,20 @@ arrhenius.scaling.traits(
 \arguments{
 \item{data}{data frame of data to scale, as returned by query.data()}
 
-\item{covariates}{data frame of covariates, as returned by query.covariates().
-Note that data with no matching covariates will be unchanged.}
+\item{covariates}{data frame of covariates, as returned by query.covariates().}
 
 \item{temp.covariates}{names of covariates used to adjust for temperature;
 if length > 1, order matters (first will be used preferentially)}
 
-\item{new.temp}{the reference temperature for the scaled traits. Curerntly 25 degC}
+\item{new.temp}{the reference temperature for the scaled traits. Currently 25 degC}
 
-\item{missing.temp}{the temperature assumed for traits with no covariate found. Curerntly 25 degC}
+\item{missing.temp}{no longer used; kept for backward compatibility only}
 }
 \description{
-Apply Arrhenius scaling to 25 degC for temperature-dependent traits
+Rows whose measurement temperature covariate is missing are dropped with a
+warning rather than silently assigned a default temperature.  If no
+temperature covariate is recorded for any observation the function returns
+an empty data frame (zero rows, same columns as \code{data}).
 }
 \author{
 Carl Davidson, David LeBauer, Ryan Kelly

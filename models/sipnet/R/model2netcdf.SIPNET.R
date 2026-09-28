@@ -80,12 +80,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   # get number of model timesteps per day
   # outday is the number of time steps in a day - for example 6 hours would have out_day of 4
-  
-  out_day <- sum(
-    sipnet_output$year == simulation_years[1] &
-      sipnet_output$day == unique(sipnet_output$day)[1],
-    na.rm = TRUE
-  ) # switched to day 2 in case first day is partial
+  #
+  # Count rows per day in the first simulation year, then take the max.
+  # This correctly handles edge cases where the first or last day of the
+  # simulation is partial (has fewer timesteps than a complete day).
+  steps_per_day <- table(
+    sipnet_output$day[sipnet_output$year == simulation_years[1]]
+  )
+  out_day <- max(steps_per_day)
   
   
   timestep.s <- 86400 / out_day
@@ -128,7 +130,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       # Water pools
       dplyr::across(
         .cols = c(
-          dplyr::all_of(c("soilWater", "soilWetnessFrac", "snow")),
+          dplyr::all_of(c("soilWater", "snow")),
           dplyr::any_of("litterWater") # Only present in V1 output
         ),
         .fns = cm_to_mm
@@ -148,16 +150,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     )
 
 
-  # calculate LAI for standard output
-  # LAI = plantLeafC / leafCSpWt
-  # both operands are in carbon units (gC/m2 and gC/m2_leaf),
-  # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
-  param <- utils::read.table(file.path(gsub(pattern = "/out/",
-                                            replacement = "/run/", x = outdir),
-                                       "sipnet.param"), stringsAsFactors = FALSE)
-  leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
-  SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-
+  if (!("lai" %in% colnames(sipnet_output))) {
+    # When LAI not reported, calculate it from leaf C and leaf specific weight,
+    # with the latter read from the parameter file.
+    # Note the hardcoded + undocumented assumption that ../run/sipnet.param
+    # exists and contains the values that were used to generate this output.
+    # LAI = plantLeafC [gC/m2] / leafCSpWt [gC/m2 leaf] = m2 leaf / m2
+    # both operands are in carbon units (gC/m2 and gC/m2_leaf),
+    # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
+    param <- utils::read.table(file.path(gsub(pattern = "/out/",
+                                              replacement = "/run/", x = outdir),
+                                         "sipnet.param"), stringsAsFactors = FALSE)
+    leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
+    SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
+    sipnet_output$lai = sipnet_output$plantLeafC * SLA
+  }
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
@@ -206,7 +213,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "litter_carbon_content" = sub.sipnet.output$litter,
       "fine_root_carbon_content" = sub.sipnet.output$fineRootC,
       "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
-      "LAI" = sub.sipnet.output$plantLeafC * SLA,
+      "LAI" = sub.sipnet.output$lai,
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
@@ -392,31 +399,3 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     file.remove(sipnet_out_file)
   }
 } # model2netcdf.SIPNET
-#--------------------------------------------------------------------------------------------------#
-
-# Helper Function 
-
-sipnet2datetime <- function(year, doy, hour){
-  
-  hr <- floor(hour)
-  # minsec <- PEcAn.utils::ud_convert(hour - hr, "hour", "min")
-  minsec <- (hour - hr) * 60
-  minute <- floor(minsec)
-  
-  # sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
-  sec <- (minsec - minute) * 60
-  
-  minute <- ifelse(sec == 60, minute + 1, minute)
-  sec <- ifelse(sec == 60, 0, sec)
-  
-  hr <- ifelse(minute == 60, hr + 1, hr)
-  minute <- ifelse(minute == 60, 0, minute)
-  
-  datetime <- strptime(
-    paste(year, doy, hr, minute, sec),
-    "%Y %j %H %M %S", 
-    tz = "UTC"
-  )
-  
-  as.POSIXct(datetime)
-}

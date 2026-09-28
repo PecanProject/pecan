@@ -48,7 +48,7 @@ transformstats <- function(data) {
     data$stat[lsdi] <- (
       data$stat[lsdi]
       / (stats::qt(0.975, data$n[lsdi])
-          * sqrt((2 * data$n[lsdi]))))
+          * sqrt(2)))
     data$statname[lsdi] <- "SE"
   }
   ## Tukey's Honestly Significant Difference (HSD),

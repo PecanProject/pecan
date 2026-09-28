@@ -103,6 +103,8 @@ split_sipnet_events <- function(start.time, stop.time, eventfile, overwrite = FA
 split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outpath = NULL) {
   start.time <- coerce_to_datetime(start.time)
   stop.time <- coerce_to_datetime(stop.time)
+  start.sip <- datetime2sipnet(start.time)
+  stop.sip <- datetime2sipnet(stop.time)
   path <- dirname(met)
   prefix <- sub(".clim", "", basename(met), fixed = TRUE)
   if(is.null(outpath)){
@@ -132,16 +134,19 @@ split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outp
 
   if (ncol(input.dat) == 14) {
     # V1 format
-    in_posix <- sipnet2datetime(input.dat$V2, input.dat$V3, input.dat$V4)
+    rows <- sipnet_time_range_idx(input.dat$V2, input.dat$V3, input.dat$V4,
+                                  start.sip$year, start.sip$yday, start.sip$hour,
+                                  stop.sip$year, stop.sip$yday, stop.sip$hour)
   } else if (ncol(input.dat) == 12) {
-    in_posix <- sipnet2datetime(input.dat$V1, input.dat$V2, input.dat$V3)
+    rows <- sipnet_time_range_idx(input.dat$V1, input.dat$V2, input.dat$V3,
+                                  start.sip$year, start.sip$yday, start.sip$hour,
+                                  stop.sip$year, stop.sip$yday, stop.sip$hour)
   } else {
     PEcAn.logger::logger.error("Unknown clim format; can't split met files.")
     return(NA_character_)
   }
 
-  dat <- input.dat[in_posix >= start.time & in_posix < stop.time, ]
-  
+  dat <- input.dat[rows$start:rows$end,]
   
   ###### Write Met to file
   utils::write.table(dat, file, row.names = FALSE, col.names = FALSE)

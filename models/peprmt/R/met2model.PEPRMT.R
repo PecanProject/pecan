@@ -25,10 +25,9 @@ met2model.PEPRMT <- function(in.path, in.prefix, outfolder, start_date, end_date
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   start_date_string <- as.character(strptime(start_date, "%Y-%m-%d"))
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  if(nchar(in.prefix)>0 & 
-     !substr(in.prefix, nchar(in.prefix), nchar(in.prefix)) %in% c(".", "_")) {
-    in.prefix = paste0(in.prefix,".")
-    }
+  if (nchar(in.prefix) > 0 && !any(endsWith(in.prefix, c(".", "_")))) {
+    in.prefix <- paste0(in.prefix, ".")
+  }
 
   out.file <- paste0(in.prefix, start_date_string,".",
                     strptime(end_date, "%Y-%m-%d"),

@@ -1,0 +1,246 @@
+#' Run a simple benchmark pipeline
+#'
+#' Takes two validated dataframes, aligns by time,
+#' computes metrics, and returns a results table with a plot.
+#'
+#' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+#' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
+#' @param metrics character vector of metrics to compute. Options: "RMSE", "MAE"
+#' @param tolerance_secs nearest-neighbor time tolerance in seconds (default 1 hour)
+#' @param method alignment method: "nearest" or "interpolate"
+#'
+#' @return list with: metrics (data.frame), aligned (data.frame), plot (ggplot)
+#' @export
+#' @author Anshul Jain
+run_benchmark <- function(model_df, obs_df,
+                          metrics = c("RMSE", "MAE"),
+                          tolerance_secs = 3600,
+                          method = "nearest") {
+
+  # Stage 1: Validate schema
+  bm_validate(model_df, obs_df)
+
+  # Stage 2: Align by time
+  aligned <- align_by_time(model_df, obs_df, tolerance_secs = tolerance_secs)
+
+  # Stage 3: Compute metrics via registry
+  results <- compute_metrics(aligned, metrics)
+
+  # Stage 4: Plot
+  plot <- metric_timeseries_plot(aligned, var = "Model vs Observations", draw.plot = FALSE)
+
+  list(metrics = results, aligned = aligned, plot = plot)
+}
+
+#' Validate benchmark input dataframes
+#'
+#' @param model_df data.frame with columns: time (POSIXct), value (numeric)
+#' @param obs_df   data.frame with columns: time (POSIXct), value (numeric)
+#' @return invisible(TRUE)
+bm_validate <- function(model_df, obs_df) {
+  for (df in list(model_df, obs_df)) {
+    if (!"time" %in% names(df))
+      PEcAn.logger::logger.severe("Missing required column: 'time'")
+    if (!"value" %in% names(df))
+      PEcAn.logger::logger.severe("Missing required column: 'value'")
+      
+    if (!inherits(df$time, "POSIXct"))
+      PEcAn.logger::logger.severe(paste0("Column 'time' must be POSIXct, got: ", class(df$time)[1]))
+    if (!is.numeric(df$value))
+      PEcAn.logger::logger.severe(paste0("Column 'value' must be numeric, got: ", class(df$value)[1]))
+  }
+  invisible(TRUE)
+}
+
+#' Align model predictions and observations by time
+#'
+#' For each observation in `obs_df`, finds the nearest model prediction in `model_df`
+#' within `tolerance_secs`. Guarantees that each observation is paired with at most
+#' one model prediction.
+#'
+#' @param model_df data.frame containing model predictions with a `time` column (POSIXct) and `value` or `model` column.
+#' @param obs_df data.frame containing observations with a `time` column (POSIXct) and `value` or `obvs` column.
+#' @param tolerance_secs maximum allowable time difference in seconds between paired observation and model prediction.
+#'
+#' @return data.frame with aligned rows containing model and observation columns, where each observation corresponds to exactly one model prediction.
+#' @export
+align_by_time <- function(model_df, obs_df, tolerance_secs = 3600) {
+  if (nrow(model_df) == 0 || nrow(obs_df) == 0) {
+    return(data.frame())
+  }
+
+  # Sort both dataframes by time to ensure findInterval works correctly
+  model_df <- model_df[order(model_df$time), ]
+  obs_df <- obs_df[order(obs_df$time), ]
+
+  # For each observation time, find the nearest model prediction index in model_df$time
+  n_model <- nrow(model_df)
+  find_idx <- findInterval(obs_df$time, model_df$time)
+  idx_left <- pmax(1, pmin(n_model, find_idx))
+  idx_right <- pmin(n_model, idx_left + 1)
+
+  diff_left <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_left], units = "secs")))
+  diff_right <- abs(as.numeric(difftime(obs_df$time, model_df$time[idx_right], units = "secs")))
+
+  nearest_model_idx <- ifelse(diff_left <= diff_right, idx_left, idx_right)
+  time_diffs <- pmin(diff_left, diff_right)
+
+  # Filter by time tolerance
+  valid <- time_diffs <= tolerance_secs
+
+  n_kept <- sum(valid)
+  n_dropped <- length(valid) - n_kept
+  PEcAn.logger::logger.info(sprintf("Time alignment kept %d observation points and dropped %d points outside of tolerance (%d secs)", n_kept, n_dropped, tolerance_secs))
+
+  if (n_kept == 0) {
+    return(data.frame())
+  }
+
+  # Standardize value column names
+  names(model_df)[names(model_df) == "value"] <- "model"
+  names(obs_df)[names(obs_df) == "value"] <- "obvs"
+
+  model_sub <- model_df[nearest_model_idx[valid], , drop = FALSE]
+  obs_sub <- obs_df[valid, , drop = FALSE]
+
+  # Prevent time collision if obs_df carries it forward
+  if ("time" %in% names(obs_sub)) {
+    names(obs_sub)[names(obs_sub) == "time"] <- "obs_time"
+  }
+
+  # Drop overlapping columns from obs to cleanly cbind
+  obs_sub <- obs_sub[, !(names(obs_sub) %in% names(model_sub)), drop = FALSE]
+
+  aligned <- cbind(model_sub, obs_sub)
+  rownames(aligned) <- NULL
+
+  return(aligned)
+}
+
+#' Metric Registry for PEcAn.benchmark
+#' @export
+pecan_metric_registry <- new.env(parent = emptyenv())
+
+#' Register a new benchmark metric
+#'
+#' @param name Character name of the metric
+#' @param func Function that takes an aligned dataframe and returns a numeric value
+#' @export
+register_metric <- function(name, func) {
+  assign(toupper(name), func, envir = pecan_metric_registry)
+}
+
+# Pre-populate default metrics
+register_metric("RMSE", function(dat) sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE)))
+register_metric("MAE",  function(dat) mean(abs(dat$model - dat$obvs), na.rm = TRUE))
+register_metric("R2",   function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_R2", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_R2(dat))
+  }
+  numer <- sum((dat$obvs - mean(dat$obvs, na.rm=T)) * (dat$model - mean(dat$model, na.rm=T)), na.rm=T)
+  denom <- sqrt(sum((dat$obvs - mean(dat$obvs, na.rm=T))^2, na.rm=T)) * sqrt(sum((dat$model - mean(dat$model, na.rm=T))^2, na.rm=T))
+  (numer / denom)^2
+})
+register_metric("NSE",  function(dat) {
+  # Nash-Sutcliffe Efficiency
+  1 - (sum((dat$obvs - dat$model)^2, na.rm = TRUE) / sum((dat$obvs - mean(dat$obvs, na.rm = TRUE))^2, na.rm = TRUE))
+})
+register_metric("MEF", get("NSE", envir = pecan_metric_registry))
+register_metric("PMU", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_PMU", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_PMU(dat))
+  }
+  metric_PMU(dat)
+})
+register_metric("COVERAGE", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Coverage", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_Coverage(dat))
+  }
+  metric_Coverage(dat)
+})
+register_metric("CRPS", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_CRPS", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_CRPS(dat))
+  }
+  metric_CRPS(dat)
+})
+register_metric("BIAS", function(dat) {
+  if (requireNamespace("PEcAn.benchmark", quietly = TRUE) && exists("metric_Bias", where = asNamespace("PEcAn.benchmark"), mode = "function")) {
+    return(PEcAn.benchmark::metric_Bias(dat))
+  }
+  metric_Bias(dat)
+})
+
+
+#' Compute benchmark metrics
+#'
+#' @param aligned data.frame with columns: model, obvs, time
+#' @param metrics character vector of metric names
+#' @return data.frame in wide format with columns `Site` and each requested metric column per site.
+#' @export
+compute_metrics <- function(aligned, metrics = c("RMSE", "MAE", "R2")) {
+  # Treat data as one group if no site column
+  if (!"site" %in% colnames(aligned)) {
+    aligned$site <- "All"
+  }
+  
+  full_ens_mat <- attr(aligned, "ensemble_matrix")
+  if (!is.null(full_ens_mat)) {
+    if (!is.matrix(full_ens_mat) || nrow(full_ens_mat) != nrow(aligned)) {
+      PEcAn.logger::logger.severe(sprintf("ensemble_matrix attribute must be a matrix with nrow equal to nrow(aligned) (%d). Got: %s",
+                                          nrow(aligned),
+                                          if (is.matrix(full_ens_mat)) paste(nrow(full_ens_mat), "rows") else class(full_ens_mat)[1]))
+    }
+  }
+
+  aligned$..row_id.. <- seq_len(nrow(aligned))
+
+  # Split by site and compute metrics
+  site_list <- split(aligned, aligned$site)
+  site_results <- lapply(names(site_list), function(s) {
+    sub_df <- site_list[[s]]
+    row_ids <- sub_df$..row_id..
+    sub_df$..row_id.. <- NULL
+
+    if (!is.null(full_ens_mat)) {
+      attr(sub_df, "ensemble_matrix") <- full_ens_mat[row_ids, , drop = FALSE]
+    }
+
+    res <- sapply(toupper(metrics), function(m) {
+      if (!exists(m, envir = pecan_metric_registry)) {
+        PEcAn.logger::logger.severe(paste0("Unknown metric: ", m))
+      }
+      func <- get(m, envir = pecan_metric_registry)
+      func(sub_df)
+    })
+    
+    # Create a wide 1-row data frame for this site
+    df <- as.data.frame(t(res))
+    df$Site <- s
+    # Move Site to the first column
+    df <- df[, c("Site", toupper(metrics))]
+    df
+  })
+  
+  out_df <- do.call(rbind, site_results)
+  rownames(out_df) <- NULL
+  
+  # If there's more than one site (i.e. real multi-site data), add rollups
+  if (nrow(out_df) > 1 && !("All" %in% out_df$Site)) {
+    # Compute mean rollup for numeric columns
+    numeric_cols <- sapply(out_df, is.numeric)
+    rollup_mean <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) mean(x, na.rm=TRUE)))
+    rollup_mean$Site <- "Rollup (Mean)"
+    
+    rollup_median <- as.data.frame(lapply(out_df[, numeric_cols, drop=FALSE], function(x) stats::median(x, na.rm=TRUE)))
+    rollup_median$Site <- "Rollup (Median)"
+    
+    # Bind rollups
+    out_df <- rbind(out_df, 
+                    rollup_mean[, colnames(out_df)], 
+                    rollup_median[, colnames(out_df)])
+  }
+  
+  return(out_df)
+}
+
