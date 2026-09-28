@@ -4,23 +4,43 @@
 \alias{compute_sobol_indices}
 \title{Compute Sobol indices from a finished PEcAn run}
 \usage{
-compute_sobol_indices(outdir, sobol_obj, var = "GPP", stat_fun = mean)
+compute_sobol_indices(
+  settings,
+  sobol_obj,
+  variable,
+  start.year = settings$ensemble$start.year \%||\% NA,
+  end.year = settings$ensemble$end.year \%||\% NA,
+  nboot = sobol_obj$nboot
+)
 }
 \arguments{
-\item{outdir}{PEcAn run output directory that contains runs.txt}
+\item{settings}{single-site PEcAn settings, as returned by
+\code{runModule.run.write.configs()} so that
+\code{settings$ensemble$ensemble.id} is set. For a multi-site run call
+this once per site.}
 
-\item{sobol_obj}{object produced by PEcAn.uncertainty::generate_joint_ensemble_design()}
+\item{sobol_obj}{design returned by
+\code{generate_joint_ensemble_design(..., sobol = TRUE)} and used to
+write the configs for this run.}
 
-\item{var}{Variable name to summarise (default "GPP").}
+\item{variable}{output variable to compute indices for, as given in a
+\code{<variable>} entry of \code{settings$ensemble}.}
 
-\item{stat_fun}{Summary statistic applied to var default mean .}
+\item{start.year, end.year}{years the output was averaged over. Default to
+the ensemble years in \code{settings}, or NA as in \code{get.results()}.}
+
+\item{nboot}{number of bootstrap replicates for confidence intervals on the
+indices. Defaults to what \code{sobol_obj} was built with, which is 0 (no
+intervals) for a design from \code{generate_joint_ensemble_design()}.}
 }
 \value{
-sobol_obj 
-.
+\code{sobol_obj} with first and total order indices filled in by
+  \code{sensitivity::tell()}, with their confidence intervals when
+  \code{nboot} is above 0.
 }
 \description{
-Loads model outputs from a Sobol ensemble, calculates summary
-statistics for a chosen variable, feeds them to \code{sensitivity::tell()},
-and returns the updated Sobol object.
+Reads the ensemble output that \code{\link{get.results}} saved for one site
+and variable, and feeds it to \code{sensitivity::tell()}. Each value is the
+run's mean from \code{start.year} to \code{end.year}, in run order, which is
+the order of the design rows.
 }
