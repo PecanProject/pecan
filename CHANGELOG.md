@@ -46,6 +46,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- Sensitivity analyses with `<site.pft>` wrote runs moving the traits of every PFT, including PFTs not at that site. Those runs only repeated the median run and are no longer written.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
