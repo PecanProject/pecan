@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `read.sa.output()` now reads only the runs in `sa.run.ids`, so each site of a multisite sensitivity analysis gets its own results. Previously every site read the last site's runs from the shared `runs_manifest.csv`.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
