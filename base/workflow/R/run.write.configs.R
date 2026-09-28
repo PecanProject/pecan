@@ -245,6 +245,15 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
 
+    # a site's configs only get its own PFTs' parameters (see
+    # write.ensemble.configs), so a run moving another PFT's trait would just
+    # repeat the median run
+    site.pfts <- intersect(as.character(unlist(settings$run$site$site.pft)), pft.names)
+    if (length(site.pfts) > 0) {
+      keep <- is.na(input_design$sa_pft) | input_design$sa_pft %in% site.pfts
+      input_design <- input_design[keep, , drop = FALSE]
+    }
+
     # A sensitivity analysis is an ensemble whose parameter sets move one trait
     # at a time. The design says which run is which, so the parameter sets and
     # the run names are built from it here and the same writer writes them.
