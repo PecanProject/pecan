@@ -146,3 +146,47 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
   # no duplicate column headers from append
   expect_false(any(merged_manifest$run_id == "run_id"))
 })
+
+
+test_that("run.write.configs writes SA runs only for the site's PFTs", {
+  assign("write.config.FAKE", function(...) invisible(NULL), envir = .GlobalEnv)
+  withr::defer(rm("write.config.FAKE", envir = .GlobalEnv), priority = "first")
+
+  env <- make_test_env()
+  # the run samples pftA and pftB, but this site only has pftA
+  trait.samples <- list(pftA = list(Vcmax = c(40, 45)), pftB = list(Vcmax = c(60, 65)))
+  sa.samples <- lapply(c(pftA = 42, pftB = 62), function(v) {
+    matrix(c(v, v + 6), nrow = 2, ncol = 1, dimnames = list(c("50", "95"), "Vcmax"))
+  })
+  runs.samples <- list()
+  pft.names <- names(trait.samples)
+  trait.names <- lapply(trait.samples, names)
+  save(trait.samples, sa.samples, runs.samples, pft.names, trait.names,
+       file = file.path(env$workflow_root, "samples.Rdata"))
+  settings <- make_settings(env, "1001")
+  settings$pfts <- list(list(name = "pftA"), list(name = "pftB"))
+
+  input_design <- data.frame(
+    param       = c(1, 2, 3),
+    met         = c(1, 1, 1),
+    sa_pft      = c(NA, "pftA", "pftB"),
+    sa_trait    = c(NA, "Vcmax", "Vcmax"),
+    sa_quantile = c("50", "95", "95"),
+    stringsAsFactors = FALSE
+  )
+
+  run_write_configs <- PEcAn.workflow::run.write.configs
+  mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg", function(...) invisible(NULL))
+
+  run_write_configs(
+    settings = settings,
+    ensemble.size = 1,
+    input_design = input_design,
+    write = FALSE,
+    overwrite = TRUE
+  )
+
+  expect_length(readLines(file.path(env$rundir, "runs.txt")), 2)
+  manifest <- utils::read.csv(env$manifest_file, stringsAsFactors = FALSE)
+  expect_setequal(manifest$pft_name, "pftA")
+})
