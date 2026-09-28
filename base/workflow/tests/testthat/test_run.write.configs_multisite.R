@@ -1,8 +1,9 @@
 # Tests for run.write.configs manifest handling
 #
 # These tests verify the manifest file behavior that enables multisite workflows.
-# When runModule.run.write.configs processes MultiSettings, it clears the manifest
-# once and then calls run.write.configs with overwrite=FALSE for every site.
+# When runModule.run.write.configs processes MultiSettings with overwrite=TRUE, it
+# clears the manifest once, then runs each site with overwrite=FALSE, so every
+# site's run.write.configs call appends to it.
 
 
 make_test_env <- function() {
