@@ -1,8 +1,9 @@
 # Tests for run.write.configs manifest handling
 #
 # These tests verify the manifest file behavior that enables multisite workflows.
-# When runModule.run.write.configs processes MultiSettings, it calls run.write.configs
-# with overwrite=TRUE for the first site and overwrite=FALSE for subsequent sites.
+# When runModule.run.write.configs processes MultiSettings with overwrite=TRUE, it
+# clears the manifest once, then runs each site with overwrite=FALSE, so every
+# site's run.write.configs call appends to it.
 
 
 make_test_env <- function() {
@@ -91,6 +92,33 @@ test_that("run.write.configs writes manifest with expected structure", {
   expect_true(nrow(manifest) > 0)
   expect_true(all(manifest$type == "Sensitivity"))
   expect_equal(unique(as.character(manifest$site_id)), "1001")
+})
+
+
+test_that("rerunning a multisite write with overwrite = TRUE replaces the manifest", {
+  assign("write.config.FAKE", function(...) invisible(NULL), envir = .GlobalEnv)
+  withr::defer(rm("write.config.FAKE", envir = .GlobalEnv), priority = "first")
+
+  env <- make_test_env()
+  settings <- PEcAn.settings::MultiSettings(
+    PEcAn.settings::as.Settings(make_settings(env, "1001")),
+    PEcAn.settings::as.Settings(make_settings(env, "1002"))
+  )
+  input_design <- list(sensitivity = data.frame(
+    param       = c(1, 2),
+    met         = c(1, 1),
+    sa_pft      = c(NA, "pftA"),
+    sa_trait    = c(NA, "Vcmax"),
+    sa_quantile = c("50", "95"),
+    stringsAsFactors = FALSE
+  ))
+
+  # existing run directories and the appended manifest header both warn here
+  suppressWarnings(runModule.run.write.configs(settings, overwrite = TRUE, input_design = input_design))
+  first_count <- nrow(utils::read.csv(env$manifest_file))
+  suppressWarnings(runModule.run.write.configs(settings, overwrite = TRUE, input_design = input_design))
+
+  expect_equal(nrow(utils::read.csv(env$manifest_file)), first_count)
 })
 
 
