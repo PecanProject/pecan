@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `generate_joint_ensemble_design(sobol = TRUE)` shuffles the design rows before splitting them into `X1` and `X2`. Split in place, inputs sampled by `"looping"` and quasi-random parameter methods (`"halton"`, `"sobol"`) gave dependent halves and wrong Sobol indices. A given seed now gives a different design than before.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.

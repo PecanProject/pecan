@@ -197,6 +197,30 @@ test_that("attaching samples leaves the sobol object usable by tell()", {
   expect_identical(told$samples, fake_parameter_samples())
 })
 
+test_that("sobol halves do not pair looped inputs row for row", {
+  settings <- make_test_settings()
+  settings$ensemble$samplingspace$met$method <- "looping"
+  settings$run <- list(inputs = list(met = list(path = paste0("met", 1:4, ".nc"))))
+
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples",
+                function(...) fake_parameter_samples())
+
+  result <- withr::with_seed(1, generate_joint_ensemble_design(
+    settings, ensemble_size = 100, sobol = TRUE
+  ))
+
+  # looping gives met 1, 2, 3, 4, 1, ... so split in place, X1 and X2 would
+  # have the same met in every row
+  expect_lt(mean(result$X1$met == result$X2$met), 0.5)
+  # rows move whole: the halves split the design and met stays with its param
+  rows <- c(result$X1$param, result$X2$param)
+  expect_setequal(rows, 1:200)
+  expect_identical(c(result$X1$met, result$X2$met), rep_len(1:4, 200)[rows])
+})
+
+
 test_that("the design comes back as design_matrix, with X kept as its older name", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))

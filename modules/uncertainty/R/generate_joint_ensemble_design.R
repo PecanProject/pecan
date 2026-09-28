@@ -120,9 +120,12 @@ generate_joint_ensemble_design <- function(settings,
   design_matrix <- data.frame(design_list)
 
   if (sobol) {
+    # X1 and X2 must be independent, but rows come in draw order: looped inputs
+    # and quasi-random parameters would be correlated across a split in place
     half <- floor(ensemble_size / 2)
-    X1 <- design_matrix[1:half, ]
-    X2 <- design_matrix[(half + 1):ensemble_size, ]
+    rows <- sample.int(ensemble_size)
+    X1 <- design_matrix[rows[seq_len(half)], ]
+    X2 <- design_matrix[rows[half + seq_len(half)], ]
     sobol_obj <- sensitivity::soboljansen(model = NULL, X1 = X1, X2 = X2)
     # Carry the design and samples on the object so a sobol design travels like
     # any other. sensitivity sets $X itself; design_matrix is the same matrix
