@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+
+mkdir -p @OUTDIR@
+
+# Redirect output
+exec 3>&1
+exec &> "$(realpath @OUTDIR@)/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+# cdo setup
+# @CDO_SETUP@
+
+# Run RCMEM
+Rscript \
+  -e 'drivers <- readRDS(file.path("@RUNDIR@", "drivers_RCMEM.rds"))' \
+  -e 'parameters <- readRDS(file.path("@RUNDIR@", "parameters_RCMEM.rds"))' \
+  -e 'run_spinup_TF <- as.numeric(ifelse(file.exists(file.path("@RUNDIR@", "inits_RCMEM.rds")))'\
+  -e 'inits <- ifelse(run_spinup_TF == 1, NA, readRDS(file.path("@RUNDIR@", "inits_RCMEM.rds")))' \
+  -e 'res <- rCMEM::runCohortMem2(run_spinup = run_spinup_TF, 
+                           run_scenario = 1,
+                           competition_function = 1,
+                           
+                           msl = drivers$msl,
+                           mhwMat = drivers$mhwMat,
+                           mlwMat = drivers$mlwMat,
+                           flood_frequency = drivers$flood_frequency,
+                           
+                           scenario_calendar_years = drivers$scenario_calendar_years,
+                           suspendedSediment = drivers$suspendedSediment,
+                           
+                           initial_scenario = inits$initial_scenario,
+                           initial_cohorts = inits$initial_cohorts,
+                           initial_species = inits$initial_species,
+                           
+                           rootShape = parameters$rootShape,
+                           omDecayRateFast = parameters$omDecayRateFast,
+                           omDecayRateSlow = parameters$omDecayRateSlow,
+                           bMax = parameters$bMax,
+                           rootTurnover = parameters$rootTurnover,
+                           recalcitrantFrac = parameters$recalcitrantFrac,
+                           rootDepthMax = parameters$rootDepthMax,
+                           captureRate = parameters$captureRate,
+                           species_codes = parameters$species_codes,
+                           meanOmPackingDensity = parameters$meanOmPackingDensity, 
+                           meanMineralPackingDensity = parameters$meanMineralPackingDensity,
+                           zVegMax = parameters$zVegMax,
+                           zVegPeak = parameters$zVegPeak, 
+                           zVegMin = parameters$zVegMin,
+                           abovegroundTurnover = parameters$abovegroundTurnover,
+                           rootPackingDensity = parameters$rootPackingDensity,
+                           rootToShoot = parameters$rootToShoot)
+  ' \
+  -e 'res2 <- rCMEM::calculateCarbonFlux(cohorts = res[[1]], scenario = res[[2]]) ' \
+  -e 'write.csv(res2[[1]], file.path("@OUTDIR@", "scenario_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[1]], file.path("@OUTDIR@", "cohorts_out.csv"), row.names = FALSE)'\
+  -e 'write.csv(res[[3]], file.path("@OUTDIR@", "species_out.csv"), row.names = FALSE)'\
+
+# convert output to PEcAn format
+Rscript -e 'PEcAn.RCMEM::model2netcdf.RCMEM(
+  outdir = "@OUTDIR@",
+  sitelat = @SITE_LAT@,
+  sitelon = @SITE_LON@,
+  start_date = "@START_DATE@",
+  end_date = "@END_DATE@",
+  delete_raw = @DELETE_RAW@
+)'
