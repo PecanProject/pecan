@@ -24,10 +24,6 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
   outdir <- file.path(settings$host$outdir, as.character(run.id))
-  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
-    rundir <- file.path(settings$rundir, as.character(run.id))
-    outdir <- file.path(settings$modeloutdir, as.character(run.id))
-  }
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
