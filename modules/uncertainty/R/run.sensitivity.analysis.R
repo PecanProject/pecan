@@ -173,6 +173,20 @@ run.sensitivity.analysis <- function(settings,
         next
       }
       traits <- samples$trait.names[[pft$name]]
+      # a spline can't be fit through one repeated value
+      no.spread <- vapply(
+        traits,
+        function(trait) length(unique(samples$sa.samples[[pft$name]][[trait]])) < 2,
+        logical(1)
+      )
+      if (any(no.spread)) {
+        PEcAn.logger::logger.warn(
+          "no spread in the SA samples of", PEcAn.utils::vecpaste(traits[no.spread]),
+          "for pft", pft$name, "- skipping"
+        )
+        traits <- traits[!no.spread]
+      }
+      if (length(traits) == 0) next
       quantiles.str <- rownames(samples$sa.samples[[pft$name]])
       quantiles.str <- quantiles.str[which(quantiles.str != "50")]
       quantiles <- as.numeric(quantiles.str) / 100
@@ -194,7 +208,7 @@ run.sensitivity.analysis <- function(settings,
 
       ## only perform sensitivity analysis on traits where no more than 2 results are missing
       good.saruns <- sapply(
-        sens_out$sensitivity.output[[pft$name]],
+        sens_out$sensitivity.output[[pft$name]][traits],
         function(x) sum(is.na(x)) <= 2
       )
       if (!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
