@@ -12,9 +12,9 @@
 #' @param end.year last year to include in sensitivity analysis
 #' @param variable variables to be read from model output
 #' @param per.pft flag to determine whether we want SA on pft-specific variables
-#' @param sa.run.ids list of run ids to read.
-#'   If NULL, will look in `pecandir` for a file named `samples.Rdata`
-#'   and read from that
+#' @param sa.run.ids run ids of this site's sensitivity runs, as built by
+#'   \code{\link{sa_run_id_table}}. Needed when several sites share
+#'   `runs_manifest.csv`; if NULL, every run in the manifest is used
 #' @export
 #' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer, Akash B V
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
@@ -27,6 +27,10 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
     PEcAn.logger::logger.severe("runs_manifest.csv not found in ", pecandir)
   }
   manifest <- utils::read.csv(manifest_file, stringsAsFactors = FALSE)
+  # a multisite run writes every site's runs to the same manifest
+  if (!is.null(sa.run.ids)) {
+    manifest <- manifest[manifest$run_id %in% unlist(sa.run.ids), ]
+  }
 
   sa.output <- matrix(nrow = length(quantiles),
                       ncol = length(traits),
