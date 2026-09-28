@@ -29,45 +29,60 @@ scenario_output <- data.water::generateFullTidalScenario(
 ## Add files into one and visualize
 ```{r compile data}
 
-all_scenario_info <- scenario_output[[1]]
+all_scenario_info <- scenario_output[[1]] %>% 
+  distinct(scenario_name, confidence, quantile)
 
 MSL_list <- list()
 amp_list <- list()
 
-MHW_names <- c("annual max", "spring", "daily larger", "daily smaller")
-MLW_names <- c("daily smaller", "daily larger", "spring", "annual max")
+MHW_names <- c("HHA", "HHS", "HH", "LH")
+MLW_names <- c("LLA", "LLS", "LL", "HL")
+common_names = c("annual", "spring", "daily larger", "daily smaller")
 
 for (i in 1:nrow(all_scenario_info)) {
   
-  temp_scenario_info <- all_scenario_info[i,] %>% select(-year)
+  temp_scenario_info <- all_scenario_info[i,]
+  # 
+  MSL_temp <- scenario_output[[1]] %>% 
+    semi_join(temp_scenario_info)
   
-  MSL_list[[i]] <-  scenario_output[[2]][[i]] %>% cross_join(temp_scenario_info)
+  temp_MHW <- MSL_temp %>% 
+    select(scenario_name,confidence,quantile, MHW_names)
   
-  temp_MHW <- as.data.frame(scenario_output[[3]][[i]])
-  
-  names(temp_MHW) <- MHW_names
+ #  names(temp_MHW) <- MHW_names
   
   temp_MHW <- temp_MHW %>% 
-    mutate(year = MSL_list[[i]]$year) %>% 
+    mutate(year = MSL_temp$year) %>% 
     pivot_longer(names_to = "flood level",
                  values_to = "higher_flood",
-                 -year)
+                 -c(year, scenario_name,confidence,quantile)) %>% 
+     mutate(`flood level` = recode(`flood level`, 
+                                "HHA" =  "annual",
+                                "HHS" = "spring", 
+                                "HH" = "daily larger", 
+                                "LH"= "daily smaller"))
   
-  temp_MLW <- as.data.frame(scenario_output[[4]][[i]])
+  temp_MLW <- MSL_temp %>% 
+    select(scenario_name,confidence,quantile,MLW_names)
   
-  names(temp_MLW) <- MLW_names
+  # names(temp_MLW) <- MLW_names
   
   temp_MLW <- temp_MLW %>% 
-    mutate(year = MSL_list[[i]]$year) %>% 
+    mutate(year = MSL_temp$year) %>% 
     pivot_longer(names_to = "flood level",
                  values_to = "lower_flood",
-                 -year)
+                 -c(year, scenario_name,confidence,quantile)) %>% 
+    mutate(`flood level` = recode(`flood level`, 
+                                "LLA" =  "annual",
+                                "LLS" = "spring", 
+                                "LL" = "daily larger", 
+                                "HL"= "daily smaller"))
   
   amp_comp <- temp_MHW %>% 
-    left_join(temp_MLW) %>% 
-    cross_join(temp_scenario_info)
+    left_join(temp_MLW)
   
   amp_list[[i]] <- amp_comp
+  MSL_list[[i]] <- MSL_temp
   
 }
 
@@ -84,7 +99,7 @@ ggplot(MSL_vis) +
               fill = NA) +
   geom_line(aes(x = year, y = meanSeaLevel)) +
   # geom_point(aes(x = year, y = meanSeaLevel)) +
-  facet_wrap(rcp~probabiliy) +
+  facet_wrap(scenario_name~quantile) +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
   ggtitle("Los Angeles - Flooding Scenarios by RCP and probability") +
   ylab("Water Level (cm; NAVD88)")
