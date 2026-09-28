@@ -182,14 +182,15 @@ sda.enkf_local <- function(settings,
           settings$run$inputs$met$path[[i]] <- do.call(
             my.split_inputs,
             args = list(
-              settings = settings,
               start.time = lubridate::ymd_hms(settings$run$site$met.start, truncated = 3), # This depends if we are restart or not
               stop.time = lubridate::ymd_hms(settings$run$site$met.end, truncated = 3),
-              inputs =  settings$run$inputs$met$path[[i]],
+              inputs = list(
+                met = list(path = settings$run$inputs$met$path[[i]])
+              ),
               outpath = paste0(paste0(settings$outdir, "/Extracted_met/"), settings$run$site$id),
               overwrite =F
             )
-          )
+          )$met$path
           # changing the start and end date which will be used for model2netcdf.model
           settings$run$start.date <- lubridate::ymd_hms(settings$state.data.assimilation$start.date, truncated = 3)
           settings$run$end.date <- lubridate::ymd_hms(settings$state.data.assimilation$end.date, truncated = 3)
