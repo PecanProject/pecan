@@ -1,5 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* Breaking: `compute_sobol_indices()` now takes `settings` and `variable` in place of `outdir`, `var` and `stat_fun`, and reads the ensemble output that `get.results()` saved for one site. Previously it looked for `runs.txt` where PEcAn does not write it, read only GPP, and could not handle multisite runs. It gains `nboot` for bootstrap intervals and stops if any run has no output.
+* `inst/sobol/sobol_analysis.R` takes the settings file as an argument, runs the workflow steps through `get.results()`, saves the design and writes `sobol_indices.csv`.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
