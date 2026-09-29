@@ -1,7 +1,7 @@
 {
   
   drivers <- readRDS(file.path("models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/", "drivers_RCMEM.rds"))
-  inits <- readRDS(file.path("models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/", "inits_RCMEM.rds"))
+  # inits <- readRDS(file.path("models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/", "inits_RCMEM.rds"))
   parameters <- readRDS(file.path("models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/", "parameters_RCMEM.rds"))
 
   

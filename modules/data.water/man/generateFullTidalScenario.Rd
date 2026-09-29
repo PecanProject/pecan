@@ -2,49 +2,56 @@
 % Please edit documentation in R/generateFullTidalScenario.R
 \name{generateFullTidalScenario}
 \alias{generateFullTidalScenario}
-\title{Function to query NOAA tide gauge information and generate annual flood level scenearios}
+\title{Generate sea-level rise and tidal inundation scenarios}
 \usage{
 generateFullTidalScenario(
   station_id = 9410660,
-  run_hindcast = T,
-  run_forecast = T,
+  run_hindcast = TRUE,
+  run_forecast = TRUE,
   hindcast_start = 1928,
   forecast_start = 2026,
   forecast_end = 2100,
   scenario = c("ssp126", "ssp245"),
   confidence_level = "medium",
   target_quantile = c(0.25, 0.5, 0.75),
-  include_lt_tidal_const = T,
+  include_lt_tidal_const = TRUE,
   datum_start_year = 1980,
   datum_end_year = 2025
 )
 }
 \arguments{
-\item{station_id}{Unique NOAA station identifier}
+\item{station_id}{Vector of NOAA station identifiers.}
 
-\item{run_hindcast}{True or False, run a hindcast}
+\item{run_hindcast}{Logical. Generate historical sea-level data.}
 
-\item{run_forecast}{True or False, run a forecast}
+\item{run_forecast}{Logical. Generate forecast sea-level scenarios.}
 
-\item{hindcast_start}{Calendar year (YYYY) that hindcast starts}
+\item{hindcast_start}{First year of hindcast.}
 
-\item{forecast_start}{Calendar year (YYYY) that forecast starts}
+\item{forecast_start}{First year of forecast.}
 
-\item{forecast_end}{Calendar year (YYYY) that forecast ends, needs to be 10 year intervals starting in 2020 going above 2100}
+\item{forecast_end}{Final forecast year.}
 
-\item{include_lt_tidal_const}{Include long term tidal constituents, True or False.}
+\item{scenario}{Character vector of AR6 scenarios.}
 
-\item{datum_start_year}{Datum start year over which to calculate tidal datums (calendar year, YYYY).}
+\item{confidence_level}{Character vector of confidence levels.}
 
-\item{datum_end_year}{Datum end year over which to calculate tidal datums (calendar year, YYYY).}
+\item{target_quantile}{Numeric vector of target quantiles.}
 
-\item{RCP}{Realized concentration pathway, either string or vector, must be}
+\item{include_lt_tidal_const}{Include long-term tidal constituents.}
 
-\item{RCP_probability}{RCP probability, either numeric or vector, sea-level rise senario probabilities to test.}
+\item{datum_start_year}{First year used to calculate tidal datums.}
+
+\item{datum_end_year}{Last year used to calculate tidal datums.}
+}
+\value{
+A list containing:
+\itemize{
+\item scenario_curves: Combined scenario table for all gauges.
+\item tidal_datums_summarized: Combined tidal datum table for all gauges.
+}
 }
 \description{
-Generate a full sea-level rise and tidal inundation scenario
-}
-\author{
-J. Holmquist
+Queries one or more NOAA tide gauges and generates annual sea-level and
+tidal inundation scenarios for each gauge.
 }
