@@ -1,0 +1,217 @@
+---
+title: "DoD_data_IC"
+author: "Dongchen Zhang"
+date: '2026-06-02'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Set the root directory for all chunks
+knitr::opts_knit$set(root.dir = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/")
+```
+
+# loading data.
+
+```{r}
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+#read settings.
+settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/pecan.xml")
+#grab settings info.
+site_info <- settings %>% 
+  purrr::map(~.x[['run']] ) %>% 
+  purrr::map('site')%>% 
+  purrr::map(function(site.list){
+    #conversion from string to number
+    site.list$lat <- as.numeric(site.list$lat)
+    site.list$lon <- as.numeric(site.list$lon)
+    list(site_id=site.list$id, lat=site.list$lat, lon=site.list$lon, site_name=site.list$name)
+  })%>% 
+  dplyr::bind_rows() %>% 
+  as.list()
+#setup configurations.
+time_poimt <- as.Date("2011-07-15")
+ens <- 100
+source <- "RS_veg"
+Write_into_settings <- TRUE
+outfolder <- "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/IC"
+
+#read parameters and pfts.
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/samples.Rdata")
+pft <- read.csv(settings[[1]]$run$inputs$pft.site$path)
+```
+
+# LAI.
+
+```{r}
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+var.names.lai <- c("lai_hv", "lai_lv")
+lai.list <- list()
+# loop over years.
+for (t in 2000:2024) {
+  ncfile <- file.path("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SM/ERA5", paste0("ERA5_", t, ".nc"))
+  era5.temp <- raster::brick(ncfile, varname = "lai_hv", level = 8)
+  lai.temp <- raster::extract(era5.temp, sp::SpatialPoints(cbind(pts$lon, pts$lat)), method = 'simple')
+  lai.temp.h <- rowMeans(lai.temp)
+  
+  era5.temp <- raster::brick(ncfile, varname = "lai_lv", level = 8)
+  lai.temp <- raster::extract(era5.temp, sp::SpatialPoints(cbind(pts$lon, pts$lat)), method = 'simple')
+  lai.temp.l <- rowMeans(lai.temp)
+  
+  # loop over sites.
+  lai.ens.mat <- matrix(NA, length(pts), ens)
+  for (i in seq_along(pts)) {
+    lai.ens.mat[i,] <- runif(ens, lai.temp.l[i], lai.temp.h[i])
+  }
+  lai.list[[t-1999]] <- lai.ens.mat
+}
+save(lai.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/initial_condition/LAI/lai_list.Rdata")
+LAI_IC <- lai.list[[1]]
+```
+
+# SM.
+
+```{r}
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+var.names.sm <- c("swvl1", "swvl2", "swvl3")
+sm.list <- list()
+# loop over years.
+for (t in 2000:2024) {
+  ncfile <- file.path("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SM/ERA5", paste0("ERA5_", t, ".nc"))
+  era5.temp.l1 <- raster::brick(ncfile, varname = "swvl1", level = 8)
+  era5.temp.l2 <- raster::brick(ncfile, varname = "swvl2", level = 8)
+  era5.temp.l3 <- raster::brick(ncfile, varname = "swvl3", level = 8)
+  
+  temp.brick <- raster::brick(c(era5.temp.l1, era5.temp.l2, era5.temp.l3))
+  # 1. Extract values from the 3 layers for your spatial points
+  # This returns a matrix where columns represent the layers (swvl1, swvl2, swvl3)
+  sm.extracted <- raster::extract(temp.brick, sp::SpatialPoints(cbind(pts$lon, pts$lat)), method = 'simple')
+
+  # 2. Calculate the depth-weighted mean for 0-1m depth
+  # Weights: swvl1 (0.07), swvl2 (0.21), swvl3 (0.72)
+  sm.depth.weighted <- (0.07 * sm.extracted[,1:10]) + (0.21 * sm.extracted[,11:20]) + (0.72 * sm.extracted[,21:30])
+
+  # 3. Generate the ensemble matrix (Sites x Ensembles)
+  # Assuming you want to add a normal/uniform perturbation around the mean or use standard deviation
+  sm.ens.mat <- matrix(NA, length(pts), ens)
+
+  for (i in seq_along(pts)) {
+    sm.ens.mat[i, ] <- sample(sm.depth.weighted[i,], ens, T)
+  }
+
+  # 4. Save to your list for the current year 't'
+  sm.list[[t-1999]] <- sm.ens.mat
+}
+save(sm.list, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/initial_condition/SM/sm_list.Rdata")
+SM_IC <- sm.list[[1]]
+```
+
+# AGB.
+
+```{r}
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/AGB/agb_mean_std.Rdata")
+AGB_IC <- matrix(NA, length(pts), ens)
+for (i in seq_along(pts)) {
+  AGB_IC[i,] <- truncnorm::rtruncnorm(ens, a = 0, b = Inf, mean = agb.mean[i], sd = agb.std[i])
+}
+```
+
+# SOC.
+
+```{r}
+soc.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/soil_nc/SOC/SOC.tif")/10
+soc.pts <- terra::extract(soc.rast, pts)
+SOC_IC <- matrix(NA, length(pts), ens)
+for (i in seq_along(pts)) {
+  SOC_IC[i,] <- truncnorm::rtruncnorm(ens, a = 0, b = Inf, mean = soc.pts$mean[i], sd = soc.pts$std[i])
+}
+```
+
+# Convert and write IC files into local directory and into settings.
+## Here we will loop over each site and each ensemble member (we will be creating folders for each `site_id` and store the NC files associated with each ensemble member within the folder). Within each loop, we will first do some unit conversions (e.g., AGB, LAI), and then assemble the `poolinfo` object, which is required for writing the NC files through the `PEcAn.SIPNET::veg2model.SIPNET` function. Finally, if we set the `Write_into_settings` as TRUE at the beginning, we will then write those paths into the settings and rewrite the XML file to the `outdir`.
+
+```{r}
+# write with ensemble number
+pb <- utils::txtProgressBar(min = 0, max = length(site_info$site_id), style = 3)
+for (i in seq_along(site_info$site_id)) {
+  #create new folder for each site.
+  if(!file.exists(file.path(outfolder, site_info$site_id[i]))) {
+    dir.create(file.path(outfolder, site_info$site_id[i]))
+  } else {
+    #if folder already exists, go to the next.
+    next
+  }
+  #grab SLA from parameter file.
+  site_pft <- pft$pft[which(pft$site == site_info$site_id[i])]
+  sla <- ensemble.samples[[site_pft]]$SLA
+  paths <- c()
+  for (j in 1:ens) {
+    #unit conversion for AGB.
+    AGB <- ifelse(is.na(AGB_IC[i, j]), NULL, PEcAn.utils::ud_convert(AGB_IC[i, j], "Mg ha-1", "kg m-2"))
+    leaf_carbon_content <- ifelse(is.na(LAI_IC[i, j]), NULL, LAI_IC[i, j]/sample(sla, 1))
+    #woody biomass calculation based on leaf and aboveground biomass densities.
+    if (!is.null(AGB)) {
+      if (!is.null(leaf_carbon_content)) {
+        wood_carbon_content <- AGB - leaf_carbon_content
+      } else {
+        wood_carbon_content <- AGB
+      }
+    } else {
+      wood_carbon_content <- NULL
+    }
+    #assemble poolinfo and write into NC files.
+    dims <- list(time =1) #Time dimension may be irrelevant
+    variables <-list(AbvGrndWood = AGB, 
+                     wood_carbon_content = wood_carbon_content, 
+                     leaf_carbon_content = leaf_carbon_content, 
+                     soil_organic_carbon_content = ifelse(is.na(SOC_IC[i, j]), NULL, SOC_IC[i, j]),
+                     SoilMoistFrac = ifelse(is.na(SM_IC[i, j]), NULL, SM_IC[i, j]))
+    variables[sapply(variables, is.null)] <- NULL
+    poolinfo <- list(dims = dims, vals = variables)
+    out <- PEcAn.SIPNET::veg2model.SIPNET(file.path(outfolder, site_info$site_id[i]), 
+                                          poolinfo, as.numeric(site_info$site_id[i]), 
+                                          ens = j)
+    #record paths.
+    paths <- c(out$file, paths)
+  }
+  #write paths of initial conditions into settings.
+  if(Write_into_settings){
+    #populated IC file paths into settings
+    Create_mult_list <- function(list.names, paths){
+      out <- as.list(paths)
+      names(out) <- list.names
+      out
+    }
+    settings[[i]]$run$inputs$poolinitcond$source <- source
+    settings[[i]]$run$inputs$poolinitcond$output <- "poolinitcond"
+    settings[[i]]$run$inputs$poolinitcond$ensemble <- ens
+    settings[[i]]$run$inputs$poolinitcond$path <- Create_mult_list(rep("path", ens), paths)
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+#write settings.
+if(Write_into_settings){
+  PEcAn.settings::write.settings(settings, outputdir = file.path(settings$outdir), outputfile = "pecanIC.xml")
+}
+```

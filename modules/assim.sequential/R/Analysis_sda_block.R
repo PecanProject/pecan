@@ -435,110 +435,121 @@ MCMC_Init <- function (block.list, X) {
 ##' 
 ##' @return It returns the `block` object with analysis results filled in.
 MCMC_block_function <- function(block) {
-  # disable printing out messages.
-  nimbleOptions(verbose = FALSE, MCMCprogressBar = FALSE, checkNimbleFunction = FALSE, checkDuplicateNodeDefinitions = FALSE)
-  #build nimble model
-  #TODO: harmonize the MCMC code between block-based and general analysis functions to reduce the complexity of code.
-  model_pred <- nimble::nimbleModel(GEF.MultiSite.Nimble,
-                                    data = block$data,
-                                    inits = block$Inits,
-                                    constants = block$constant,
-                                    name = 'base')
-  #configure MCMC
-  conf <- nimble::configureMCMC(model_pred, print=FALSE)
-  conf$setMonitors(c("X", "X.mod", "q"))
-  
-  #Handle samplers
-  #hear we change the RW_block sampler to the ess sampler 
-  #because it has a better performance of MVN sampling
-  samplerLists <- conf$getSamplers()
-  samplerNumberOffset <- length(samplerLists)
-  if (block$constant$q.type == 4) {
-    #if we have wishart q
-    #everything should be sampled with ess sampler.
-    samplerLists %>% purrr::map(function(l){l$setName("ess")})
-  }
-  conf$setSamplers(samplerLists)
-  
-  #add Pf as propCov in the control list of the X.mod nodes.
-  X.mod.ind <- which(grepl("X.mod", samplerLists %>% purrr::map(~ .x$target) %>% unlist()))
-  conf$removeSampler(samplerLists[[X.mod.ind]]$target)
-  conf$addSampler(target = samplerLists[[X.mod.ind]]$target, type = "ess",
-                  control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
-                                 latents = "X", pfOptimizeNparticles = TRUE))
-  #add toggle Y sampler.
-  for (i in 1:block$constant$YN) {
-    conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
-  }
-  # conf$printSamplers()
-  #compile MCMC
-  Rmcmc <- nimble::buildMCMC(conf)
-  Cmodel <- nimble::compileNimble(model_pred)
-  Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
-  
-  #if we don't have any NA in the Y.
-  if (!any(is.na(block$data$y.censored))) {
+  # if it's in the disturbance DA mode.
+  if (as.logical(block$disturbance)) {
+    load(block$dist.prior.file) # load disturbance prior file.
+    # prescribe mu0 for the disturbance-related reductions in AGB and LAI.
+    mu0 <- c(att$agb.bio.reduce[as.numeric(block$site.ids)], att$lai.bio.reduce[as.numeric(block$site.ids)])
+    res <- disturbance_DA(block$X, block$data$y.censored, diag(1/diag(block$data$r)), block$constant$H, block$data$aq, block$data$bq, disturbance, mu0)
+    block$update <- list(aq = res$aqq, bq = res$bqq, mua = res$mu.overall, pa = res$cov.overall, muf = block$data$muf, pf = block$data$pf)
+    block$aqq[,block$t+1] <- block$update$aq
+    block$bqq[,block$t+1] <- block$update$bq
+  } else {
+    # disable printing out messages.
+    nimbleOptions(verbose = FALSE, MCMCprogressBar = FALSE, checkNimbleFunction = FALSE, checkDuplicateNodeDefinitions = FALSE)
+    #build nimble model
+    #TODO: harmonize the MCMC code between block-based and general analysis functions to reduce the complexity of code.
+    model_pred <- nimble::nimbleModel(GEF.MultiSite.Nimble,
+                                      data = block$data,
+                                      inits = block$Inits,
+                                      constants = block$constant,
+                                      name = 'base')
+    #configure MCMC
+    conf <- nimble::configureMCMC(model_pred, print=FALSE)
+    conf$setMonitors(c("X", "X.mod", "q"))
+    
+    #Handle samplers
+    #hear we change the RW_block sampler to the ess sampler 
+    #because it has a better performance of MVN sampling
+    samplerLists <- conf$getSamplers()
+    samplerNumberOffset <- length(samplerLists)
+    if (block$constant$q.type == 4) {
+      #if we have wishart q
+      #everything should be sampled with ess sampler.
+      samplerLists %>% purrr::map(function(l){l$setName("ess")})
+    }
+    conf$setSamplers(samplerLists)
+    
+    #add Pf as propCov in the control list of the X.mod nodes.
+    X.mod.ind <- which(grepl("X.mod", samplerLists %>% purrr::map(~ .x$target) %>% unlist()))
+    conf$removeSampler(samplerLists[[X.mod.ind]]$target)
+    conf$addSampler(target = samplerLists[[X.mod.ind]]$target, type = "ess",
+                    control = list(propCov= block$data$pf, adaptScaleOnly = TRUE,
+                                   latents = "X", pfOptimizeNparticles = TRUE))
     #add toggle Y sampler.
-    for(i in 1:block$constant$YN) {
-      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+    for (i in 1:block$constant$YN) {
+      conf$addSampler(paste0("y.censored[", i, "]"), 'toggle', control=list(type='RW'))
     }
-  }
-  
-  #run MCMC
-  dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
-  #update aq, bq, mua, and pa
-  M <- colMeans(dat)
-  block$update$aq <- block$Inits$q
-  if (block$constant$q.type == 3) {
-    #if it's a vector q case
-    aq <- bq <- rep(NA, length(block$data$muf))
-    for (i in seq_along(aq)) {
-      CHAR <- paste0("[", i, "]")
-      aq[i] <- (mean(dat[, paste0("q", CHAR)]))^2/stats::var(dat[, paste0("q", CHAR)])
-      bq[i] <- mean(dat[, paste0("q", CHAR)])/stats::var(dat[, paste0("q", CHAR)])
-    }
-    #update aqq and bqq
-    block$aqq[,block$t+1] <- block$aqq[, block$t]
-    block$aqq[,block$t+1] <- aq
-    block$bqq[,block$t+1] <- block$bqq[, block$t]
-    block$bqq[,block$t+1] <- bq
-  } else if (block$constant$q.type == 4) {
-    #previous updates
-    mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
-    q.bar <- matrix(apply(mq, 2, mean),
-                    length(block$constant$H),
-                    length(block$constant$H)
-    )
-    wish.df <- function(Om, X, i, j, col) {
-      (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
-    }
-    col <- matrix(1:length(block$constant$H) ^ 2,
-                  length(block$constant$H),
-                  length(block$constant$H))
-    WV  <- matrix(0, length(block$constant$H), length(block$constant$H))
-    for (i in seq_along(block$constant$H)) {
-      for (j in seq_along(block$constant$H)) {
-        WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
+    # conf$printSamplers()
+    #compile MCMC
+    Rmcmc <- nimble::buildMCMC(conf)
+    Cmodel <- nimble::compileNimble(model_pred)
+    Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
+    
+    #if we don't have any NA in the Y.
+    if (!any(is.na(block$data$y.censored))) {
+      #add toggle Y sampler.
+      for(i in 1:block$constant$YN) {
+        valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
       }
     }
-    bq <- mean(WV)
-    if (bq < block$constant$YN) {
-      bq <- block$constant$YN
+    
+    #run MCMC
+    dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
+    #update aq, bq, mua, and pa
+    M <- colMeans(dat)
+    block$update$aq <- block$Inits$q
+    if (block$constant$q.type == 3) {
+      #if it's a vector q case
+      aq <- bq <- rep(NA, length(block$data$muf))
+      for (i in seq_along(aq)) {
+        CHAR <- paste0("[", i, "]")
+        aq[i] <- (mean(dat[, paste0("q", CHAR)]))^2/stats::var(dat[, paste0("q", CHAR)])
+        bq[i] <- mean(dat[, paste0("q", CHAR)])/stats::var(dat[, paste0("q", CHAR)])
+      }
+      #update aqq and bqq
+      block$aqq[,block$t+1] <- block$aqq[, block$t]
+      block$aqq[,block$t+1] <- aq
+      block$bqq[,block$t+1] <- block$bqq[, block$t]
+      block$bqq[,block$t+1] <- bq
+    } else if (block$constant$q.type == 4) {
+      #previous updates
+      mq <- dat[,  grep("q", colnames(dat))]  # Omega, Precision
+      q.bar <- matrix(apply(mq, 2, mean),
+                      length(block$constant$H),
+                      length(block$constant$H)
+      )
+      wish.df <- function(Om, X, i, j, col) {
+        (Om[i, j]^2 + Om[i, i] * Om[j, j]) / stats::var(X[, col])
+      }
+      col <- matrix(1:length(block$constant$H) ^ 2,
+                    length(block$constant$H),
+                    length(block$constant$H))
+      WV  <- matrix(0, length(block$constant$H), length(block$constant$H))
+      for (i in seq_along(block$constant$H)) {
+        for (j in seq_along(block$constant$H)) {
+          WV[i, j] <- wish.df(q.bar, X = mq, i = i, j = j, col = col[i, j])
+        }
+      }
+      bq <- mean(WV)
+      if (bq < block$constant$YN) {
+        bq <- block$constant$YN
+      }
+      aq <- solve(q.bar) * bq
+      block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
+      block$bqq[block$t+1] <- bq
     }
-    aq <- solve(q.bar) * bq
-    block$aqq[,,block$t+1] <- GrabFillMatrix(block$aqq[,,block$t], block$constant$H, aq)
-    block$bqq[block$t+1] <- bq
+    #update mua and pa; muf, and pf
+    iX <- grep("X[", colnames(dat), fixed = TRUE)
+    iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
+    mua <- colMeans(dat[, iX])
+    pa <- stats::cov(dat[, iX])
+    # construct X.mod object.
+    muf <- colMeans(dat[, iX.mod])
+    pf <- stats::cov(dat[, iX.mod])
+    #return values.
+    block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, muf = muf, pf = pf)
   }
-  #update mua and pa; muf, and pf
-  iX <- grep("X[", colnames(dat), fixed = TRUE)
-  iX.mod <- grep("X.mod[", colnames(dat), fixed = TRUE)
-  mua <- colMeans(dat[, iX])
-  pa <- stats::cov(dat[, iX])
-  # construct X.mod object.
-  muf <- colMeans(dat[, iX.mod])
-  pf <- stats::cov(dat[, iX.mod])
-  #return values.
-  block$update <- list(aq = aq, bq = bq, mua = mua, pa = pa, muf = muf, pf = pf)
   return(block)
 }
 
