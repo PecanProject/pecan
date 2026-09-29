@@ -20,8 +20,14 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Build PEcAn base Docker image
+        env:
+          DOCKER_BUILDKIT: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker build -t pecan-base-ci:latest -f docker/base/Dockerfile .
+          docker build \
+            --secret id=GITHUB_PAT,env=GITHUB_TOKEN \
+            -t pecan-base-ci:latest \
+            -f docker/base/Dockerfile .
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
