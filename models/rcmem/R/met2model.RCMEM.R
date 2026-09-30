@@ -104,14 +104,14 @@ met2model.RCMEM <- function(
 
       MHWmat <- x |>
         dplyr::select(
-          year,
+         #  year,
           dplyr::all_of(MHW_names)
         )
 
       # Give columns names that describe the
       # corresponding flooding frequency class
       names(MHWmat) <- c(
-        "year",
+        # "year",
         "annual",
         "spring",
         "daily_larger",
@@ -124,12 +124,12 @@ met2model.RCMEM <- function(
 
       MLWmat <- x |>
         dplyr::select(
-          year,
+          # year,
           dplyr::all_of(MLW_names)
         )
 
       names(MLWmat) <- c(
-        "year",
+        # "year",
         "annual",
         "spring",
         "daily_larger",
@@ -175,10 +175,11 @@ met2model.RCMEM <- function(
       # -----------------------------
 
       drivers <- list(
-        MSL = MSL,
-        MHWmat = MHWmat,
-        MLWmat = MLWmat,
-        flood_frequency = flood_frequency
+        scenario_calendar_years = MSL$year,
+        msl = MSL$meanSeaLevel,
+        mhwMat = MHWmat,
+        mlwMat = MLWmat,
+        flood_frequency = flood_frequency$flood_n
       )
 
       # -----------------------------
@@ -260,7 +261,7 @@ met2model.RCMEM <- function(
         file_name
       ),
       
-      n_years = purrr::pmap_int(
+      startDate = purrr::pmap_int(
         list(
           gauge_id,
           scenario_name,
@@ -279,7 +280,36 @@ met2model.RCMEM <- function(
               .data$confidence == .env$confidence,
               .data$quantile == .env$quantile
             ) |>
-            nrow()
+            dplyr::summarise(
+              startDate = min(.data$year, na.rm = TRUE)
+            ) |>
+            dplyr::pull(.data$startDate)
+        }
+      ),
+      
+      endDate = purrr::pmap_int(
+        list(
+          gauge_id,
+          scenario_name,
+          confidence,
+          quantile
+        ),
+        function(gauge_id,
+                 scenario_name,
+                 confidence,
+                 quantile) {
+          
+          scenario_curves |>
+            dplyr::filter(
+              .data$gauge_id == .env$gauge_id,
+              .data$scenario_name == .env$scenario_name,
+              .data$confidence == .env$confidence,
+              .data$quantile == .env$quantile
+            ) |>
+            dplyr::summarise(
+              endDate = max(.data$year, na.rm = TRUE)
+            ) |>
+            dplyr::pull(.data$endDate)
         }
       )
     )
