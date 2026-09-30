@@ -30,4 +30,5 @@ if ("data.water" %in% (.packages())){
 
 remotes::install_github("abbylewis/pecan", 
                         subdir = "modules/data.water", 
-                        ref = "mem_dev")
+                        ref = "mem_dev",
+                        force=T)

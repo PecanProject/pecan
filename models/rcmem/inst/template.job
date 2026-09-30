@@ -17,10 +17,12 @@ exec &> "$(realpath @OUTDIR@)/logfile.txt"
 Rscript \
   -e 'drivers <- readRDS(file.path("@RUNDIR@", "drivers_RCMEM.rds"))' \
   -e 'parameters <- readRDS(file.path("@RUNDIR@", "parameters_RCMEM.rds"))' \
-  -e 'run_spinup_TF <- as.numeric(ifelse(file.exists(file.path("@RUNDIR@", "inits_RCMEM.rds")))'\
-  -e 'inits <- ifelse(run_spinup_TF == 1, NA, readRDS(file.path("@RUNDIR@", "inits_RCMEM.rds")))' \
-  -e 'res <- rCMEM::runCohortMem2(run_spinup = run_spinup_TF, 
+  -e 'res <- rCMEM::runCohortMem2(run_spinup = 1, 
                            run_scenario = 1,
+                           
+                           spinup_iterations = 50,
+                           years_per_spinup_iter = 10,
+                           
                            competition_function = 1,
                            
                            msl = drivers$msl,
@@ -30,11 +32,7 @@ Rscript \
                            
                            scenario_calendar_years = drivers$scenario_calendar_years,
                            suspendedSediment = drivers$suspendedSediment,
-                           
-                           initial_scenario = inits$initial_scenario,
-                           initial_cohorts = inits$initial_cohorts,
-                           initial_species = inits$initial_species,
-                           
+ 
                            rootShape = parameters$rootShape,
                            omDecayRateFast = parameters$omDecayRateFast,
                            omDecayRateSlow = parameters$omDecayRateSlow,

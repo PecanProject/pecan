@@ -2,10 +2,20 @@
 % Please edit documentation in R/met2model.RCMEM.R
 \name{met2model.RCMEM}
 \alias{met2model.RCMEM}
-\title{met2model.RCMEM}
+\title{Convert tidal scenarios to RCMEM meteorological inputs}
 \usage{
-met2model.RCMEM(...)
+met2model.RCMEM(scenario_output, outfolder, overwrite = FALSE)
+}
+\arguments{
+\item{scenario_output}{Output from data.water::generateFullTidalScenario().}
+
+\item{outfolder}{Directory in which to write RCMEM scenario files.}
+
+\item{overwrite}{Logical. Overwrite existing files?}
+}
+\value{
+A tibble describing all files written.
 }
 \description{
-met2model for RCMEM
+Convert tidal scenarios to RCMEM meteorological inputs
 }
