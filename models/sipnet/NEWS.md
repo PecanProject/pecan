@@ -7,15 +7,8 @@
     trait mappings alongside the existing `leafOnReallocFrac`.
     `plantStorageNInit` is deliberately not trait mapped; it is an initial
     condition, set from the IC layer like the other Init parameters.
-* For SIPNET v2, `write.config.SIPNET` now sets `plantStorageNInit` to the N
-    needed for one carbon-limited leaf flush, computed from the initialized
-    wood pool, instead of leaving the template value. With the nitrogen cycle
-    on, a zero initial storage N suppressed the first leaf-on event entirely
-    for vegetation initialized with standing wood (e.g. established orchards).
-    Sipnet takes the smaller of its carbon and nitrogen limiters, so sizing N
-    to the carbon-capped transfer removes the suppression without adding
-    surplus N. A `plantStorageNInit` supplied through the `IC` argument still
-    takes precedence, and zero-wood (annual) initializations still get 0.
+* For SIPNET v2, `write.config.SIPNET` now sets `plantStorageNInit` from initial conditions
+    (`IC` argument or poolinitcond file) if provided (#4114, @coder-Yash886).
 * More flexible handling of Sipnet "restart" files (checkpoints containing full
   model state at the end of the run):
     - New setting `settings$model$copy.restart` is a logical runtime flag
