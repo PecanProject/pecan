@@ -19,8 +19,6 @@ gauge_tab <- readr::read_csv(gauge_path, show_col_types = FALSE) %>%
   filter(noaa_id %in% c(c(9410170, 9410660, 9414290))) %>% 
   rename(gauge_id = noaa_id)
 
-
-
 scenario_output <- data.water::generateFullTidalScenario(
    station_id = c(9410170, 9410660, 9414290),
    run_hindcast = T,
@@ -161,4 +159,17 @@ ggplot(MSL_vis) +
 ```
 
 
+```{r check out nearest noaa gauge}
+
+
+sites <- data.frame(
+  site = c("Tijuana", "Seal Beach", "Triangle"), 
+  latitude = c(32.57427143, 33.73520729, 37.45842503),	
+  longitude = c(-117.1287429, -118.0792275, -121.9773209)
+)
+
+sites_w_gauges <- data.water::findNearestNoaaGauge(sites)
+(sites_w_gauges)
+
+```
 

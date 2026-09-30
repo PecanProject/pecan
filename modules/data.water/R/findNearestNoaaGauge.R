@@ -111,7 +111,10 @@ findNearestNoaaGauge <- function(
     dplyr::mutate(
       distance_km = as.numeric(distance_m) / 1000) %>% 
     sf::st_drop_geometry() %>% 
-    tidyr::as_tibble()
+    tidyr::as_tibble() %>% 
+    rename(gauge_id = noaa_id,
+           gauge_name = noaa_name
+           )
   
   return(sites_output)
     
