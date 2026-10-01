@@ -177,21 +177,6 @@ run.sensitivity.analysis <- function(settings,
       quantiles.str <- quantiles.str[which(quantiles.str != "50")]
       quantiles <- as.numeric(quantiles.str) / 100
 
-      C.units <- grepl(
-        "^Celsius$",
-        PEcAn.utils::trait.lookup(traits)$units,
-        ignore.case = TRUE
-      )
-      if (any(C.units)) {
-        for (x in which(C.units)) {
-          samples$trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(
-            samples$trait.samples[[pft$name]][[x]],
-            "degC",
-            "K"
-          )
-        }
-      }
-
       ## only perform sensitivity analysis on traits where no more than 2 results are missing
       good.saruns <- sapply(
         sens_out$sensitivity.output[[pft$name]],
