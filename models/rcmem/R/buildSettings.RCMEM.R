@@ -40,7 +40,7 @@ buildSettings.RCMEM <- function(
   
   if (is.null(template)) {
     template <- system.file(
-      "templates",
+      "templates/",
       "RCMEM.xml",
       package = "PEcAn.RCMEM"
     )
