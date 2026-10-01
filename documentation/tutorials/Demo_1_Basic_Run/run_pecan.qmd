@@ -256,13 +256,13 @@ names(ensemble_output) <- runids
 
 # the members share a variable set, so the first one describes them all
 model_output <- ensemble_output[[1]]
-available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
+available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bnds", "time_bounds")]
 
 # sub-daily fluxes are too spiky to read as ten overlaid lines, so keep a
 # daily-averaged copy of each member for those plots
 daily_output <- lapply(ensemble_output, function(member) {
   day <- as.Date(member$posix)
-  vars <- setdiff(names(member), c("posix", "time_bounds"))
+  vars <- setdiff(names(member), c("posix", "time_bnds", "time_bounds"))
   averaged <- lapply(member[vars], function(x) as.numeric(tapply(x, day, mean, na.rm = TRUE)))
   names(averaged) <- vars
   c(list(posix = as.POSIXct(sort(unique(day)), tz = "UTC")), averaged)
