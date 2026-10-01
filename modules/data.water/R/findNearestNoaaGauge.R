@@ -29,22 +29,22 @@ findNearestNoaaGauge <- function(
     site_lat = "latitude",
     site_lon = "longitude"
 ) {
-  
+
   # Convert sites to sf if needed
   if (!inherits(sites, "sf")) {
-    
+
     missing_cols <- setdiff(
       c(site_lat, site_lon),
       names(sites)
     )
-    
+
     if (length(missing_cols) > 0) {
       stop(
         "Sites are missing required coordinate column(s): ",
         paste(missing_cols, collapse = ", ")
       )
     }
-    
+
     sites <- sf::st_as_sf(
       sites,
       coords = c(site_lon, site_lat),
@@ -54,7 +54,7 @@ findNearestNoaaGauge <- function(
   } else {
     sites <- sf::st_transform(sites, crs = 4326)
   }
-  
+
   gauges_tab <- readr::read_csv(
     system.file(
       "extdata",
@@ -63,38 +63,38 @@ findNearestNoaaGauge <- function(
     ),
     show_col_types = F
   )
-  
-  
+
+
   # Put gauges in the same CRS as sites
   gauges <- sf::st_as_sf(gauges_tab,
                          coords = c("longitude", "latitude"),
                          crs = 4326,
                          remove = FALSE
                          )
-  
+
   # Find nearest gauge
   nearest_idx <- sf::st_nearest_feature(
     sites,
     gauges
   )
-  
+
   # Calculate distance to matched gauge
   distance_m <- sf::st_distance(
     sites,
     gauges[nearest_idx, ],
     by_element = TRUE
   )
-  
+
   # Get attributes for matched gauges
   gauge_attrs <- gauges[nearest_idx, ] |>
     sf::st_drop_geometry()
-  
+
   # Prefix gauge columns that conflict with site column names
   duplicate_names <- intersect(
     names(gauge_attrs),
     names(sites)
   )
-  
+
   if (length(duplicate_names) > 0) {
     gauge_attrs <- gauge_attrs |>
       dplyr::rename_with(
@@ -102,20 +102,23 @@ findNearestNoaaGauge <- function(
         dplyr::all_of(duplicate_names)
       )
   }
-  
+
   # Join gauge information to sites
   sites_output <- dplyr::bind_cols(
     sites,
     gauge_attrs
   ) |>
     dplyr::mutate(
-      distance_km = as.numeric(distance_m) / 1000) %>% 
-    sf::st_drop_geometry() %>% 
-    tidyr::as_tibble() %>% 
+      distance_km = as.numeric(distance_m) / 1000) %>%
+    sf::st_drop_geometry() %>%
+    tidyr::as_tibble() %>%
     rename(gauge_id = noaa_id,
            gauge_name = noaa_name
+           ) %>%
+    mutate(startDate = lubridate::as_date(startDate),
+           endDate = lubridate::as_date(endDate)
            )
-  
+
   return(sites_output)
-    
+
 }
