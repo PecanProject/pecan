@@ -24,7 +24,7 @@
 split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
   result <- inputs
   if ("met" %in% names(result)) {
-    result[["met"]][["path"]] <- split_sipnet_met(
+    result[["met"]][["path"]] <- split_sipnet_met_2(
       start.time,
       stop.time,
       result$met$path,
@@ -111,16 +111,16 @@ split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outp
     outpath <- path
   }
   if(!dir.exists(outpath)) dir.create(outpath, recursive = TRUE)
-  
+
 
   file <- NA
   names(file) <- paste(start.time, "-", stop.time)
-  
+
   #Changing the name of the files, so it would contain the name of the hour as well.
   formatted_start <- gsub(' ',"_", as.character(start.time))
   formatted_stop <- gsub(' ',"_", as.character(stop.time))
   file <- paste0(outpath, "/", prefix, ".", formatted_start, "-", formatted_stop, ".clim")
-  
+
   if(file.exists(file) && !overwrite){
     PEcAn.logger::logger.warn(
       file,
@@ -147,7 +147,7 @@ split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outp
   }
 
   dat <- input.dat[rows$start:rows$end,]
-  
+
   ###### Write Met to file
   utils::write.table(dat, file, row.names = FALSE, col.names = FALSE)
 
@@ -173,3 +173,52 @@ coerce_to_datetime <- function(x) {
   )
   as.POSIXct(x, tz = "UTC")
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+split_sipnet_met_2 <- function(start.time, stop.time, met, overwrite = FALSE, outpath = NULL) {
+  start.time <- coerce_to_datetime(start.time)
+  stop.time <- coerce_to_datetime(stop.time)
+  start.sip <- datetime2sipnet(start.time)
+  stop.sip <- datetime2sipnet(stop.time)
+  path <- dirname(met)
+  prefix <- sub(".clim", "", basename(met), fixed = TRUE)
+  if(is.null(outpath)){
+    outpath <- path
+  }
+  if(!dir.exists(outpath)) dir.create(outpath, recursive = TRUE)
+
+
+  file <- NA
+  names(file) <- paste(start.time, "-", stop.time)
+
+  #Changing the name of the files, so it would contain the name of the hour as well.
+  formatted_start <- gsub(' ',"_", as.character(start.time))
+  formatted_stop <- gsub(' ',"_", as.character(stop.time))
+  file <- paste0(outpath, "/", prefix, ".", formatted_start, "-", formatted_stop, ".clim")
+
+  if(file.exists(file) && !overwrite){
+    PEcAn.logger::logger.warn(
+      file,
+      " already exists and overwrite is FALSE, so keeping existing file."
+    )
+    return(file)
+  }
+
+  subset_met_lines(clim_in = met, clim_out = file, start_day = start.time, stop_day = stop.time)
+
+  ###### Output input path to inputs
+  #settings$run$inputs$met$path <- file
+  return(file)
+} # split_inputs.SIPNET
