@@ -1,5 +1,9 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `model2netcdf.SIPNET` now names the time bounds variable `time_bnds` (the
+    CF convention, and the name `cdo` already produces when merging
+    sub-annual outputs) instead of `time_bounds`. `read_restart.SIPNET`
+    reads `time_bnds` and falls back to `time_bounds` for older outputs (#3303).
 * Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 * `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
     parameter, so PFT supplied values reach the param file instead of

@@ -122,6 +122,23 @@ test_that("model2netcdf.SIPNET omits N2O/CH4 when columns absent", {
 })
 
 
+test_that("model2netcdf.SIPNET writes CF-style time_bnds", {
+  n <- 3L
+  paths <- setup_sipnet_test(make_base_sipnet(n))
+
+  nc <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+
+  expect_true("time_bnds" %in% names(nc$var))
+  expect_false("time_bounds" %in% names(nc$var))
+  expect_equal(ncdf4::ncatt_get(nc, "time", "bounds")$value, "time_bnds")
+
+  bnds <- ncdf4::ncvar_get(nc, "time_bnds")
+  expect_equal(dim(bnds), c(2L, n))
+  expect_true(all(bnds[2, ] >= bnds[1, ]))
+})
+
+
 test_that("delete.raw removes sipnet.out after conversion", {
   paths <- setup_sipnet_test(make_base_sipnet(n = 2L), delete.raw = TRUE)
 
