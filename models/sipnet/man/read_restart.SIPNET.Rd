@@ -4,7 +4,15 @@
 \alias{read_restart.SIPNET}
 \title{Read restart function for SDA with SIPNET}
 \usage{
-read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
+read_restart.SIPNET(
+  outdir,
+  runid,
+  stop.time,
+  settings,
+  var.names,
+  params,
+  start.time = NULL
+)
 }
 \arguments{
 \item{outdir}{Output directory}
@@ -18,6 +26,9 @@ read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
 \item{var.names}{Variable names to be extracted}
 
 \item{params}{Any parameters required for state calculations}
+
+\item{start.time}{Start of the forecast interval. If NULL, use January 1
+of the year containing stop.time.}
 }
 \value{
 X.vec      vector of forecasts
