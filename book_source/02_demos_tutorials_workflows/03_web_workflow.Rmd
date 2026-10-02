@@ -126,7 +126,7 @@ This error message means that there were gaps in the downloaded data, for whatev
 
 #### Could not get information about <site> . Is this an Ameriflux site? 
 
-This message occurs when PEcAn believes that a site is part of Ameriflux (because it was listed on the Ameriflux or FLUXNET webpage and has a US-* site code), but no data is present on the Ameriflux server. The most common reasons for this is that you have selected a site that has not submitted data to Ameriflux yet (or that data hasn't been processed yet), or you have selected a year that's outside the tower's operational period. Visit [Ameriflux](http://ameriflux.lbl.gov/sites/site-list-and-pages/) and [FLUXNET](http://fluxnet.ornl.gov/site_status) for lists of available site years.
+This message occurs when PEcAn believes that a site is part of Ameriflux (because it was listed on the Ameriflux or FLUXNET webpage and has a US-* site code), but no data is present on the Ameriflux server. The most common reasons for this is that you have selected a site that has not submitted data to Ameriflux yet (or that data hasn't been processed yet), or you have selected a year that's outside the tower's operational period. Visit [Ameriflux](https://ameriflux.lbl.gov/sites/site-list-and-pages/) and [FLUXNET](https://fluxnet.org/sites/site-list-and-pages/) for lists of available site years.
 
 #### Could not download data for <site> for the year <YEAR>
 
@@ -200,7 +200,7 @@ At the moment, what is functional is a prototype workflow that works for invento
 This tool works with an internal copy of the FIA that is uploaded to a postGRES database along side BETY, however for space reasons this database does not ship with the PEcAn VM. To turn this feature on:
 
 1. Download and Install the FIA database. Instructions in [Installing data for PEcAn]
-2. For web-base runs, specify the database settings in the [config.php](https://github.com/PecanProject/pecan/blob/main/web/config.example.php)
+2. For web-base runs, specify the database settings in the [config.php](https://github.com/PecanProject/pecan/blob/develop/web/config.example.php)
 3. For R-based runs, specify the database settings in the [THE PEcAn XML]
 
 More detailed information on how PEcAn processes inputs can be found on our [Input Conversion]page.
