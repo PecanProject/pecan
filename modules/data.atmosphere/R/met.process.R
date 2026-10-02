@@ -25,7 +25,7 @@
 #' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, spin=NULL,
-                        overwrite = FALSE) {
+                        overwrite = FALSE,pfr_sites = NULL) {
 
 
   # get met source and potentially determine where to start in the process
@@ -354,7 +354,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                     exact.dates = reg.model$exact.dates,
                                     spin = spin,
                                     register = register,
-                                    ensemble_name = i)
+                                    ensemble_name = i,
+                                    pfr_sites = pfr_sites)
       }
 
     model.id <- list()
