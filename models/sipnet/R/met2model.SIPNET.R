@@ -54,6 +54,10 @@
 #'  stored as a set of complete years (such as for forecasts).
 #' @param clim_format_version SIPNET clim file format to generate.
 #'  Default "v2" writes 12 columns, "v1" writes the legacy 14-column format.
+#' @param pfr_sites One-row site-level table used when `soil_temperature` is
+#'   absent from the meteorological NetCDF input. Must contain `index`,
+#'   `is_permafrost`, and `sand_pct`. TRUE indicates permafrost; FALSE or NA
+#'   is treated as non-permafrost.
 #' @param ... Additional arguments, currently ignored
 #' @author Luke Dramko, Michael Dietze, Alexey Shiklomanov, Rob Kooper
 met2model.SIPNET <- function(in.path,
@@ -66,6 +70,7 @@ met2model.SIPNET <- function(in.path,
                              verbose = FALSE,
                              year.fragment = FALSE,
                              clim_format_version = c("v2", "v1"),
+                             pfr_sites = NULL,
                              ...) {
 
   use_legacy_format <- isTRUE(match.arg(clim_format_version) == "v1")
@@ -143,6 +148,9 @@ met2model.SIPNET <- function(in.path,
   } else {
     end_year <- lubridate::year(end_date)
   }
+  
+  ## keep SoilT state continuous across annual files
+  soilT_prev <- NULL
   
   ## loop over files
   for (year in start_year:end_year) {
@@ -223,18 +231,58 @@ met2model.SIPNET <- function(in.path,
       if ("soil_temperature" %in% nc.var.names) {
         soilT <- ncdf4::ncvar_get(nc, "soil_temperature")
         soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
+        soilT_prev <- tail(soilT, 1)
       } else {
-        # approximation borrowed from SIPNET CRUNCEP preprocessing's tsoil.py
-        tau <- 15 * tstep
-        filt <- exp(-(1:length(Tair)) / tau)
-        filt <- (filt / sum(filt))
-        soilT <- stats::convolve(Tair, filt)
-        soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
+        if (is.null(pfr_sites) || nrow(pfr_sites) != 1L) {
+          stop("`pfr_sites` must contain exactly one row for the current site.", call. = FALSE)
+        }
+        is_permafrost <- !is.na(pfr_sites$is_permafrost[1]) && pfr_sites$is_permafrost[1]
+        sand_pct <- as.numeric(pfr_sites$sand_pct[1])
+        if (!is.finite(sand_pct)) {
+          stop("Missing `sand_pct` for SoilT calculation.", call. = FALSE)
+        }
+        if (is_permafrost) {
+          tau_days <- -89.857348 + 1.471765 * lat - 0.040394 * sand_pct
+          Tair_eff <- -0.6322846 + 0.8057916 * pmax(Tair_C, 0) + 0.2547151 * pmin(Tair_C, 0)
+        } else {
+          tau_days <- -19.822558 + 0.691479 * lat + 0.035727 * sand_pct
+          Tair_eff <- Tair_C
+        }
+        if (!is.finite(tau_days)) {
+          stop("SoilT regression produced non-finite tau.", call. = FALSE)
+        }
+        
+        tau_days_raw <- tau_days
+        tau_days <- max(tau_days, 0.125)
+        
+        if (verbose && tau_days_raw < 0.125) {
+          PEcAn.logger::logger.warn(
+            "SoilT tau below lower bound: ",
+            round(tau_days_raw, 4),
+            " d; set to 0.125 d."
+          )
+        }
+        alpha <- 1 - exp(-(dt / seconds_per_day) / tau_days)
+        soilT <- numeric(length(Tair_eff))
+        if (is.null(soilT_prev)) {
+          soilT[1] <- Tair_eff[1]
+        } else {
+          soilT[1] <- soilT_prev + alpha * (Tair_eff[1] - soilT_prev)
+        }
+        if (length(soilT) > 1L) {
+          for (i in 2:length(soilT)) {
+            soilT[i] <- soilT[i - 1L] + alpha * (Tair_eff[i] - soilT[i - 1L])
+          }
+        }
+        soilT_prev <- tail(soilT, 1)
         if (verbose) {
-          PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
+          PEcAn.logger::logger.info(
+            "soil_temperature absent; improved SoilT model used | ",
+            if (is_permafrost) "permafrost" else "non-permafrost",
+            " | tau = ", round(tau_days, 3), " days"
+          )
         }
       }
-      
       SVP <- PEcAn.utils::ud_convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       
       # if we have VPD.
@@ -259,31 +307,81 @@ met2model.SIPNET <- function(in.path,
     }
     
     ## build time variables (year, month, day of year)
-    nyr <- floor(length(sec) / seconds_per_day / 365 * dt)
+    steps_per_day <- as.integer(
+      round(seconds_per_day / dt)
+    )
+    hour_sequence <- seq(
+      from = 0,
+      by = 24 / steps_per_day,
+      length.out = steps_per_day
+    )
+    nyr <- floor(
+      length(sec) /
+        seconds_per_day /
+        365 *
+        dt
+    )
     yr <- NULL
     doy <- NULL
     hr <- NULL
-    asec <- sec
     for (y in year + 1:nyr - 1) {
-      ytmp <- rep(y, diy * seconds_per_day / dt)
-      dtmp <- rep(seq_len(diy), each = seconds_per_day / dt)
+      ytmp <- rep(
+        y,
+        diy * steps_per_day
+      )
+      dtmp <- rep(
+        seq_len(diy),
+        each = steps_per_day
+      )
       if (is.null(yr)) {
         yr <- ytmp
         doy <- dtmp
-        hr <- rep(NA, length(dtmp))
+        hr <- rep(NA_real_, length(dtmp))
       } else {
         yr <- c(yr, ytmp)
         doy <- c(doy, dtmp)
-        hr <- c(hr, rep(NA, length(dtmp)))
+        hr <- c(hr, rep(NA_real_, length(dtmp)))
       }
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
         skip <- TRUE
-        PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
+        PEcAn.logger::logger.warn(
+          paste(
+            year,
+            "is not a complete year and will not be included"
+          )
+        )
         break
       }
-      asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng] <- (asec[rng] - (dtmp - 1) * seconds_per_day) / seconds_per_day * 24
+      hr[rng] <- rep(
+        hour_sequence,
+        length.out = length(rng)
+      )
+    }
+    if (length(yr) < length(sec)) {
+      rng <- (length(yr) + 1):length(sec)
+      if (!all(rng >= 0)) {
+        skip <- TRUE
+        PEcAn.logger::logger.warn(
+          paste(
+            year,
+            "is not a complete year and will not be included"
+          )
+        )
+        break
+      }
+      yr[rng] <- rep(
+        y + 1,
+        length(rng)
+      )
+      doy[rng] <- rep(
+        1:366,
+        each = steps_per_day
+      )[1:length(rng)]
+      hr[rng] <- rep(
+        hour_sequence,
+        length.out = length(rng)
+      )
     }
     if (length(yr) < length(sec)) {
       rng <- (length(yr) + 1):length(sec)
