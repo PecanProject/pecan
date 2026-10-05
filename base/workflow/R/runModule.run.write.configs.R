@@ -44,6 +44,10 @@ runModule.run.write.configs <- function(settings,
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
       unlink(file.path(settings$rundir, "runs.txt"))
     }
+    # the per-site calls below only append to the manifest
+    if (overwrite) {
+      unlink(file.path(settings$outdir, "runs_manifest.csv"))
+    }
 
     # prepare designs once for all sites (consistent sampling)
     designs <- .prepare_input_designs(settings[1], input_design)
