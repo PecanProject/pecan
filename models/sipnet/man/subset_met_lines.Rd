@@ -20,9 +20,8 @@ subset_met_lines(clim_in, clim_out, start_day, stop_day, n_head = 10)
 \description{
 Ignores lines before the target date, reads and writes wanted lines as
 character without parsing any columns, and exits without touching lines after
-the end date. This can be faster than reading the entire table and
-subsetting, especially when taking small subsets of large files that live on
-slow disks.
+the end date. This is faster than reading the entire table and subsetting,
+especially when taking small subsets of large files that live on slow disks.
 }
 \details{
 If the input file is fixed-width (as files produced by met2model.SIPNET are),
