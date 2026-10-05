@@ -336,7 +336,7 @@ model_output <- PEcAn.utils::read.output(
   dataframe = TRUE,
   verbose = FALSE
 )
-available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
+available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bnds", "time_bounds")]
 ```
 
 # Display Available Model Variables
