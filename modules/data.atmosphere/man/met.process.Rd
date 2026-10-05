@@ -48,6 +48,11 @@ met.process(
 
        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
  List of `url`, `username`, `password`}
+
+\item{pfr_sites}{Optional permafrost and soil-property table for SIPNET.
+Contains `index`, `is_permafrost`, and `sand_pct`. May contain multiple
+sites; the current site's row is selected by matching `index` to
+`site$id`.}
 }
 \description{
 met.process

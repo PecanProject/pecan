@@ -20,6 +20,10 @@
 #'
 #'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 #'  List of `url`, `username`, `password`
+#' @param pfr_sites Optional permafrost and soil-property table for SIPNET.
+#'   Contains `index`, `is_permafrost`, and `sand_pct`. May contain multiple
+#'   sites; the current site's row is selected by matching `index` to
+#'   `site$id`.
 #' @importFrom rlang .data .env %||%
 #' @export
 #' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
@@ -333,6 +337,36 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # Prepare for Model
   if (stage$met2model) {
 
+    if (identical(model, "SIPNET") && !is.null(pfr_sites)) {
+      pfr_sites <- as.data.frame(pfr_sites)
+      
+      required_cols <- c("index", "is_permafrost", "sand_pct")
+      if (!all(required_cols %in% names(pfr_sites))) {
+        stop(
+          "`pfr_sites` must contain index, is_permafrost, and sand_pct.",
+          call. = FALSE
+        )
+      }
+      
+      site_index <- as.character(site$id)
+      if (length(site_index) != 1L || is.na(site_index)) {
+        stop("A valid `site$id` is required to match pfr_sites.", call. = FALSE)
+      }
+      
+      keep <- !is.na(pfr_sites$index) &
+        as.character(pfr_sites$index) == site_index
+      
+      pfr_sites <- pfr_sites[keep, required_cols, drop = FALSE]
+      
+      if (nrow(pfr_sites) != 1L) {
+        stop(
+          "`pfr_sites` must contain exactly one matching row for site ",
+          site_index, ".",
+          call. = FALSE
+        )
+      }
+    }
+    
     ## Get Model Registration
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))

@@ -226,18 +226,31 @@ met2model.SIPNET <- function(in.path,
           PEcAn.logger::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
         }
       }
-      
       # if we have soil temperature.
       if ("soil_temperature" %in% nc.var.names) {
         soilT <- ncdf4::ncvar_get(nc, "soil_temperature")
         soilT <- PEcAn.utils::ud_convert(soilT, "K", "degC")
-        soilT_prev <- tail(soilT, 1)
+        soilT_prev <- utils::tail(soilT, 1)
       } else {
-        if (is.null(pfr_sites) || nrow(pfr_sites) != 1L) {
-          stop("`pfr_sites` must contain exactly one row for the current site.", call. = FALSE)
+        if (is.null(pfr_sites) ||
+            !is.data.frame(pfr_sites) ||
+            nrow(pfr_sites) != 1L) {
+          stop(
+            "`pfr_sites` must contain exactly one row for the current site.",
+            call. = FALSE
+          )
         }
-        is_permafrost <- !is.na(pfr_sites$is_permafrost[1]) && pfr_sites$is_permafrost[1]
-        sand_pct <- as.numeric(pfr_sites$sand_pct[1])
+        required_cols <- c("index", "is_permafrost", "sand_pct")
+        if (!all(required_cols %in% names(pfr_sites))) {
+          stop(
+            "`pfr_sites` must contain index, is_permafrost, and sand_pct.",
+            call. = FALSE
+          )
+        }
+        is_permafrost <- isTRUE(
+          as.logical(as.character(pfr_sites$is_permafrost[1]))
+        )
+        sand_pct <- as.numeric(as.character(pfr_sites$sand_pct[1]))
         if (!is.finite(sand_pct)) {
           stop("Missing `sand_pct` for SoilT calculation.", call. = FALSE)
         }
@@ -251,10 +264,8 @@ met2model.SIPNET <- function(in.path,
         if (!is.finite(tau_days)) {
           stop("SoilT regression produced non-finite tau.", call. = FALSE)
         }
-        
         tau_days_raw <- tau_days
         tau_days <- max(tau_days, 0.125)
-        
         if (verbose && tau_days_raw < 0.125) {
           PEcAn.logger::logger.warn(
             "SoilT tau below lower bound: ",
@@ -274,7 +285,7 @@ met2model.SIPNET <- function(in.path,
             soilT[i] <- soilT[i - 1L] + alpha * (Tair_eff[i] - soilT[i - 1L])
           }
         }
-        soilT_prev <- tail(soilT, 1)
+        soilT_prev <- utils::tail(soilT, 1)
         if (verbose) {
           PEcAn.logger::logger.info(
             "soil_temperature absent; improved SoilT model used | ",
