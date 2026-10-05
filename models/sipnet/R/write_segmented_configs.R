@@ -249,7 +249,9 @@ write_segment_configs <- function(
       (dend + 1),
       run_settings$run$inputs,
       overwrite = TRUE,
-      outpath = segment_dir
+      outpath = segment_dir,
+      time_resolution = "day",
+      allow_varying_timesteps = FALSE
     )
 
     # Segment-specific settings
