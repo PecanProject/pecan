@@ -19,7 +19,7 @@
 #' @param cache_dir Directory used to cache ESA CCI PFR NetCDF files.
 #'
 #' @return A data.table with one row per SIPNET model site.
-#'
+#' @importFrom data.table :=
 #' @export
 #' @author Yang Gu
 build_sipnet_pfr_sites <- function(
@@ -34,6 +34,12 @@ build_sipnet_pfr_sites <- function(
     threshold_pct = 10,
     cache_dir = "/projectnb/dietzelab/guYANG/NA_runs/ESA_CCI"
 ) {
+  
+  # Declare column names used in data.table expressions for R CMD check.
+  index <- lat <- lon <- texture_sum_pct <- NULL
+  sand_pct <- silt_pct <- clay_pct <- PFR_pct <- NULL
+  mean_PFR_fraction <- mean_PFR_pct <- permafrost_zone <- NULL
+  is_permafrost <- soilT_model <- soil_file <- NULL
   
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package `data.table` is required.", call. = FALSE)
@@ -564,7 +570,7 @@ build_sipnet_pfr_sites <- function(
       
       if (length(valid_pfr) == 0L) {
         
-        .(
+        list(
           n_years = 0L,
           mean_PFR_pct = NA_real_,
           median_PFR_pct = NA_real_,
@@ -575,7 +581,7 @@ build_sipnet_pfr_sites <- function(
         
       } else {
         
-        .(
+        list(
           n_years = length(valid_pfr),
           mean_PFR_pct = mean(valid_pfr),
           median_PFR_pct = stats::median(valid_pfr),
@@ -677,7 +683,7 @@ build_sipnet_pfr_sites <- function(
   
   missing_sand <- pfr_sites[
     !is.finite(sand_pct),
-    .(
+    list(
       index,
       lat,
       lon,

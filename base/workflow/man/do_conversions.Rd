@@ -16,10 +16,11 @@ do_conversions(
 \arguments{
 \item{settings}{PEcAn settings list}
 
-\item{overwrite.met, overwrite.fia, overwrite.ic}{logical
-##' @param pfr_sites Optional site-level permafrost and soil-property table
-  for SIPNET. Contains `index`, `is_permafrost`, and `sand_pct`.
-  Site indices must match `settings$run$site$id`.}
+\item{overwrite.met, overwrite.fia, overwrite.ic}{logical}
+
+\item{pfr_sites}{Optional site-level permafrost and soil-property table
+for SIPNET. Contains `index`, `is_permafrost`, and `sand_pct`.
+Site indices must match `settings$run$site$id`.}
 }
 \description{
 Input conversion workflow

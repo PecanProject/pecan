@@ -5,7 +5,7 @@
 ##' @description Input conversion workflow
 ##' @param settings PEcAn settings list
 ##' @param overwrite.met,overwrite.fia,overwrite.ic logical
-##' ##' @param pfr_sites Optional site-level permafrost and soil-property table
+##' @param pfr_sites Optional site-level permafrost and soil-property table
 ##'   for SIPNET. Contains `index`, `is_permafrost`, and `sand_pct`.
 ##'   Site indices must match `settings$run$site$id`.
 ##'
