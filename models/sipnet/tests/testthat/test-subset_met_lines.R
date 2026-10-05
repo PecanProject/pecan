@@ -62,14 +62,14 @@ test_that("subset_met_lines", {
   out_1_7 <- withr::local_tempfile()
   subset_met_lines(infile, out_1_7, "2024-01-01", "2024-01-08")
   res_1_7 <- read_clim(out_1_7)
-  expect_shape(res_1_7, nrow = 168)
+  expect_equal(nrow(res_1_7), 168)
   expect_equal(res_1_7$doy, rep(1:7, each = 24))
 
   # middle of file
   out_3_5 <- withr::local_tempfile()
   subset_met_lines(infile, out_3_5, "2024-01-03", "2024-01-06")
   res_3_5 <- read_clim(out_3_5)
-  expect_shape(res_3_5, nrow = 72)
+  expect_equal(nrow(res_3_5), 72)
   expect_equal(res_3_5$doy, rep(3:5, each = 24))
 
 
@@ -77,14 +77,14 @@ test_that("subset_met_lines", {
   out_1_1 <- withr::local_tempfile()
   subset_met_lines(infile, out_1_1, "2024-01-01", "2024-01-02")
   res_1_1 <- read_clim(out_1_1)
-  expect_shape(res_1_1, nrow = 24)
+  expect_equal(nrow(res_1_1), 24)
   expect_equal(res_1_1$doy, rep(1, each = 24))
 
   # last day
   out_7_7 <- withr::local_tempfile()
   subset_met_lines(infile, out_7_7, "2024-01-07", "2024-01-08")
   res_7_7 <- read_clim(out_7_7)
-  expect_shape(res_7_7, nrow = 24)
+  expect_equal(nrow(res_7_7), 24)
   expect_equal(res_7_7$doy, rep(7, each = 24))
 
 
@@ -104,7 +104,7 @@ test_that("subset_met_lines", {
   # with n_head long enough to notice: reads as var width
   subset_met_lines(in_vw, out_vw_10, "2024-01-01", "2024-01-03")
   res_vw_10 <- read_clim(out_vw_10)
-  expect_shape(res_vw_10, nrow = 48)
+  expect_equal(nrow(res_vw_10), 48)
   expect_equal(res_vw_10$doy, rep(1:2, each = 24))
   # With n_head too short: Tries to read as fixed width,
   # errors when read finds partial lines
@@ -164,6 +164,6 @@ test_that("subset_met_lines", {
   out_vt_2 <- withr::local_tempfile()
   subset_met_lines(in_vt_2, out_vt_2, "2016-01-03", "2016-01-05", n_head = 1)
   res_vt_2 <- read_clim(out_vt_2)
-  expect_shape(res_vt_2, nrow = 4)
+  expect_equal(nrow(res_vt_2), 4)
   expect_equal(res_vt_2$doy, rep(3:4, each = 2))
 })
