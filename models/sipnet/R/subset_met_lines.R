@@ -11,9 +11,8 @@
 #' position needs to be determined by scanning for end-of-line markers),
 #' but they still benefit from skipping all lines after stop_day.
 #'
-#' Only works for files with a constant timestep,
-#' and only copies whole days, i.e. if you have hourly data the output length
-#' will be a multiple of 24.
+#' Only works for files with a constant timestep, and only copies whole days,
+#' i.e. if you have hourly data the output length will be a multiple of 24.
 #'
 #' The step size and line length are detected by reading the first `n_head` lines
 #' of the original file; this number is tunable with less being likely faster
