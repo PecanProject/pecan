@@ -11,7 +11,7 @@
 #' position needs to be determined by scanning for end-of-line markers),
 #' but they still benefit from skipping all lines after stop_day.
 #'
-#' Only works for 12-column (Sipnet V2) files with a constant timestep,
+#' Only works for files with a constant timestep,
 #' and only copies whole days, i.e. if you have hourly data the output length
 #' will be a multiple of 24.
 #'
