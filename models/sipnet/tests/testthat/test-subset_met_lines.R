@@ -48,13 +48,6 @@ test_that("check_start_end", {
 })
 
 test_that("subset_met_lines", {
-  # make_clim_lines <- function(n, yr, days, step) {
-  #   expand.grid(
-  #     year = yr, doy = days, hr = seq(0, 24, by = 24*step), step = step,
-  #     c5 = 1, c6 = 1, c7 = 1, c8 = 1, c9 = 1, c10 = 1, c11 = 1, c12 = 1
-  #   ) |>
-  #     dplyr::arrange(year, doy, hr)
-  # }
   read_clim <- function(path) {
     read.table(
       path,
