@@ -47,6 +47,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
+- Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
