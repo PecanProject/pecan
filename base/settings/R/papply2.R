@@ -103,10 +103,9 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
       err_strs <- purrr::map(errs[has_err], \(x)x$message)
       err_strs <- paste0(names(err_strs), ": ", sQuote(err_strs))
       PEcAn.logger::logger.warn(
-        "papply threw an error for element(s)", toString(err_i),
-        "of", length(settings), ", but is continuing since stop.on.error=FALSE",
-        "(there will be no results for this element, however).",
-        " Message(s):", toString(err_strs)
+        "papply encountered errors for element(s)", toString(err_i),
+        "of", length(settings), ", but continued since stop.on.error=FALSE.",
+        "Error(s):", toString(err_strs)
       )
       result <- result[!has_err]
     }
@@ -127,7 +126,7 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
       msg_i <- which(has_msg)
       msg_strs <- purrr::map(msgs[has_msg], \(x)x$message)
       msg_strs <- paste0(names(msg_strs), ": ", sQuote(msg_strs))
-      PEcAn.logger::logger.warn(
+      PEcAn.logger::logger.info(
         "papply got messages from element(s)", toString(msg_i),
         "of", length(settings), ". Messages(s):", toString(msg_strs)
       )
