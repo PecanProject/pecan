@@ -57,7 +57,7 @@ Found the following apparent S3 methods exported but not registered:
   update.settings
 See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
 manual.
-* checking replacement functionss ... WARNING
+* checking replacement functions ... WARNING
   ‘$<-.MultiSettings’ ‘[<-.MultiSettings’ ‘[[<-.MultiSettings’
 The argument of a replacement function which corresponds to the right
 hand side must be named ‘value’.
