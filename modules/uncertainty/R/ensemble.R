@@ -456,7 +456,6 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
       }
       runs[i, "id"] <- run.id
-      runs[i, "ens_num"] <- i
 
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id,
