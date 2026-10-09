@@ -51,6 +51,7 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
+    data.table,
     XML (>= 3.98-1.4)
 Suggests:
     dataone,

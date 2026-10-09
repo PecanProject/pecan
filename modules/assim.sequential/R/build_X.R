@@ -29,14 +29,16 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
         
         for (i in seq_len(nens)) {
           X_tmp[[i]] <- do.call( my.read_restart,
-                                 args = list(
+                                 args = c(list(
                                    outdir = outdir,
                                    runid = my_settings$run$id[i] %>% as.character(),
                                    stop.time = read_restart_times[t+1],
                                    settings = my_settings,
                                    var.names = var.names,
                                    params = siteparams[[i]]
-                                 )
+                                 ), if (identical(my.read_restart, "read_restart.SIPNET")) {
+                                   list(start.time = read_restart_times[t] + as.integer(t > 1))
+                                 })
           )
           
         }
@@ -51,13 +53,15 @@ build_X <- function(out.configs, settings, new.params, nens, read_restart_times,
         
         for (i in seq_len(nens)) {
           X_tmp[[i]] <- do.call( my.read_restart,
-                                 args = list(
+                                 args = c(list(
                                    outdir = outdir,
                                    runid = configs$runs$id[i] %>% as.character(),
                                    stop.time = read_restart_times[t+1],
                                    var.names = var.names,
                                    params = siteparams[[i]]
-                                 )
+                                 ), if (identical(my.read_restart, "read_restart.SIPNET")) {
+                                   list(start.time = read_restart_times[t] + as.integer(t > 1))
+                                 })
           )
           
         }

@@ -5,12 +5,22 @@
 ##' @description Input conversion workflow
 ##' @param settings PEcAn settings list
 ##' @param overwrite.met,overwrite.fia,overwrite.ic logical
+##' @param pfr_sites Optional site-level permafrost and soil-property table
+##'   for SIPNET. Contains `index`, `is_permafrost`, and `sand_pct`.
+##'   Site indices must match `settings$run$site$id`.
 ##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 
-do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE,pfr_sites = NULL) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
-    return(PEcAn.settings::papply(settings, do_conversions))
+    return(PEcAn.settings::papply(
+      settings,
+      do_conversions,
+      overwrite.met = overwrite.met,
+      overwrite.fia = overwrite.fia,
+      overwrite.ic = overwrite.ic,
+      pfr_sites = pfr_sites
+    ))
   }
   
   needsave <- FALSE
@@ -118,7 +128,8 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
             spin       = settings$spin,
-            overwrite  = overwrite.met)
+            overwrite  = overwrite.met,
+            pfr_sites = pfr_sites)
         PEcAn.logger::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
         needsave <- TRUE
       }
