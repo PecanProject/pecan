@@ -83,13 +83,7 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
     PEcAn.logger::logger.severe("Could not find manifest file: ", manifest_file)
   }
   inputs_runs <- utils::read.csv(manifest_file) |>
-    dplyr::filter(.data$site_id == settings$run$site$id) |>
-    # TODO the manifest should probably report these already...
-    dplyr::mutate(
-      ens_num = .data$run_id |>
-        stringr::str_extract("ENS-(\\d+)", group = 1) |>
-        as.integer()
-    )
+    dplyr::filter(.data$site_id == settings$run$site$id)
   if (!is.null(input_design)) {
     inputs_runs <- inputs_runs |>
       dplyr::left_join(
@@ -242,7 +236,7 @@ write_segment_configs <- function(
 
     runid_dummy <- "1"
 
-    segment_inputs <- PEcAn.SIPNET::split_inputs.SIPNET(
+    segment_inputs <- split_inputs.SIPNET(
       dstart,
       # NOTE: In split_inputs, end.time is *not* inclusive.
       # But `dend` *is* inclusive. So `+1` as a workaround here.
@@ -320,7 +314,7 @@ write_segment_configs <- function(
     # Write dummy runs file
     writeLines(runid_dummy, file.path(segment_rundir, "runs.txt"))
 
-    PEcAn.SIPNET::write.config.SIPNET(
+    write.config.SIPNET(
       defaults = segment_settings[["pfts"]],
       trait.values = segment_traits,
       settings = segment_settings,
