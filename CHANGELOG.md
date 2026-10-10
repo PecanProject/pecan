@@ -46,6 +46,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
