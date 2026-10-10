@@ -69,8 +69,22 @@ jobs:
 
     - name: check package versions
       run: |
-        tag=$(\
-          curl -s https://api.github.com/repos/PecanProject/pecan/releases/latest \
-          | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
+        if [ -n "$GITHUB_PAT" ]; then
+          tag=$(curl -s -H "Authorization: Bearer $GITHUB_PAT" -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/PecanProject/pecan/releases/latest \
+            | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
+        else
+          tag=$(curl -s -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/PecanProject/pecan/releases/latest \
+            | sed -n 's!.*"tag_name": "\(.*\)".*!\1!p')
+        fi
+        if [ -z "$tag" ]; then
+          tag=$(git ls-remote --tags --sort=-v:refname https://github.com/PecanProject/pecan.git 'v*' \
+            | grep -v '\^{}' | head -n1 | sed 's!.*refs/tags/!!')
+        fi
+        if [ -z "$tag" ]; then
+          echo "::error::Could not determine latest release tag for version check"
+          exit 1
+        fi
         git fetch https://github.com/PecanProject/pecan.git "refs/tags/${tag}:refs/tags/${tag}" --depth=1
         ./scripts/ensure_version_bump.sh "$tag"
