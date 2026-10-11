@@ -182,15 +182,6 @@ run.sensitivity.analysis <- function(settings,
         PEcAn.utils::trait.lookup(traits)$units,
         ignore.case = TRUE
       )
-      if (any(C.units)) {
-        for (x in which(C.units)) {
-          samples$trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(
-            samples$trait.samples[[pft$name]][[x]],
-            "degC",
-            "K"
-          )
-        }
-      }
 
       ## only perform sensitivity analysis on traits where no more than 2 results are missing
       good.saruns <- sapply(
@@ -213,6 +204,16 @@ run.sensitivity.analysis <- function(settings,
         sa.output = sens_out$sensitivity.output[[pft$name]][, traits, drop = FALSE],
         outdir = pft$outdir
       )
+      # the splines stay in the units the SA ran in, but CV and elasticity are
+      # ratios, so temperatures take those in K
+      for (trait in traits[C.units]) {
+        x <- samples$trait.samples[[pft$name]][[trait]]
+        x.K <- PEcAn.utils::ud_convert(x, "degC", "K")
+        vd <- sensitivity.results[[pft$name]]$variance.decomposition.output
+        vd$coef.vars[[trait]] <- get.coef.var(x.K)
+        vd$elasticities[[trait]] <- vd$elasticities[[trait]] * stats::median(x.K) / stats::median(x)
+        sensitivity.results[[pft$name]]$variance.decomposition.output <- vd
+      }
 
       ### Send diagnostic output to the console
       print(sensitivity.results[[pft$name]]$variance.decomposition.output)

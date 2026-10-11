@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `run.sensitivity.analysis()` no longer converts traits in Celsius (e.g. `psnTOpt`) to K before evaluating their splines, which are fit in Celsius. Their sensitivity, elasticity and variance were wrong in earlier versions, and so were the partial variances of the other traits in the PFT. CV and elasticity are still computed in K.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
