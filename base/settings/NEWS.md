@@ -8,6 +8,7 @@
 * Breaking: `loadPath.SitePFT(path)` now takes only one argument, removing the previously required but ignored `settings` (@Thomas-Sedhom, #3834).
 * `check.model.settings()` now skips lookup of the model binary path if no DB connection is provided (#3863).
 * When no DB connection is provided to `check.database.settings`, it now skips with an INFO instead of a WARN. Rationale: now that the database is optional, a settings with no DB block is a valid settings.
+* `check.bety.version()` now emits its intended warning when the database has migrations unknown to this release. Previously it called `any()` on a character vector, which produced a coercion warning and then an error.
 
 
 # PEcAn.settings 1.9.1
