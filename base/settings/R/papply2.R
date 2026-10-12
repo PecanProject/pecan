@@ -67,6 +67,14 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
                         fun = fn,
                         len = length(settings),
                         stop_err = stop.on.error) {
+      # PEcAn.logger writes to stderr() by default, which is hard to redirect
+      # and gets lost easily in parallel contexts. Instead switch to stdout()
+      # for duration of this call.
+      orig_logger_console <- PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
+      on.exit(
+        PEcAn.logger::logger.setUseConsole(orig_logger_console),
+        add = TRUE
+      )
       err <- NULL
       wrn <- NULL
       msg <- NULL
