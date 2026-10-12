@@ -228,7 +228,7 @@ update.settings <- function(settings, force = FALSE) {
       "https://pecanproject.github.io/pecan-documentation/develop/pecanXML.html.")
     settings$run$inputs$lu <- file.path(settings$model$inputs, "glu")
     settings$run$inputs$thsums <- settings$model$inputs
-    settings$model$soil <- NULL
+    settings$model$inputs <- NULL
   }
 
   # Set 'checked' flag so update.settings will be skipped in the future
