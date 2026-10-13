@@ -281,6 +281,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       median_rows <- unique(moved_rows[, c("pft_name", "trait"), drop = FALSE])
       median_rows$run_id   <- median_row$run_id
       median_rows$site_id  <- median_row$site_id
+      median_rows$ens_num  <- median_row$ens_num
       median_rows$quantile <- "50"
       median_rows$type     <- "Sensitivity"
 
