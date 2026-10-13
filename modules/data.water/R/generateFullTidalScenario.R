@@ -39,11 +39,6 @@ generateFullTidalScenario <- function(
     datum_end_year = 2025
 ) {
   
-  require(arrow)
-  require(tidyverse)
-  require(VulnToolkit)
-  # require(jsonlite)
-  
   gauge_path <- system.file("extdata",
                             "noaa_us_gauge_info.csv",
                             package = "data.water")
@@ -96,49 +91,51 @@ generateFullTidalScenario <- function(
     # Workflow in creating a sea-level rise scenario
     
     # Steps
-    # noaa_psml_tab <- read.csv("inst/extdata/npsset_data.csv")
-    # psmsl_id <- dplyr::filter(noaa_psml_tab, noaa_id == station_id) %>% dplyr::distinct_all()
+    # noaa_psml_tab <- utils::read.csv("inst/extdata/npsset_data.csv")
+    # psmsl_id <- dplyr::filter(noaa_psml_tab, noaa_id == station_id) |> dplyr::distinct_all()
     if (! station_id %in% gauge_tab$noaa_id) {stop(paste0(station_id, " is not a recognized long term NOAA gauge."))}
     
     # 1. Query long term MSL
     
     # We have to do this anyway
-    noaa_data <- VulnToolkit::noaa.parameters(stn = station_id) %>%
-      mutate(startDate = format(lubridate::ymd_hm(startDate), format = "%Y%m%d"),
-             endDate = format(lubridate::ymd_hm(endDate), format = "%Y%m%d")
+    noaa_data <- VulnToolkit::noaa.parameters(stn = station_id) |>
+      dplyr::mutate(
+        startDate = format(lubridate::ymd_hm(.data$startDate), format = "%Y%m%d"),
+        endDate = format(lubridate::ymd_hm(.data$endDate), format = "%Y%m%d")
       )
     
-    msl <- VulnToolkit::noaa(begindate = max(min(noaa_data$startDate),
-                                             paste0(hindcast_start, "0101"),
-                                             na.rm = T
-    ),
-    enddate = min(max(noaa_data$endDate),
-                  paste0(forecast_start, "1231"),
-                  na.rm = T
-    ),
-    station = station_id,
-    interval = "monthly",
-    datum = "NAVD",
-    units = "meters",
-    met=F
+    msl <- VulnToolkit::noaa(
+      begindate = max(min(noaa_data$startDate),
+                      paste0(hindcast_start, "0101"),
+                      na.rm = T
+      ),
+      enddate = min(max(noaa_data$endDate),
+                    paste0(forecast_start, "1231"),
+                    na.rm = T
+      ),
+      station = station_id,
+      interval = "monthly",
+      datum = "NAVD",
+      units = "meters",
+      met=F
     )
     
     # annualize
-    msl_hindcast <- msl %>%
-      dplyr::group_by(Year) %>%
-      dplyr::summarise(MSL = mean(MSL)) %>%
-      dplyr::mutate(meanSeaLevel = MSL * 100) %>% 
-      dplyr::select(-MSL) %>%
-      dplyr::rename(year=Year)
+    msl_hindcast <- msl |>
+      dplyr::group_by(.data$Year) |>
+      dplyr::summarise(MSL = mean(.data$MSL)) |>
+      dplyr::mutate(meanSeaLevel = .data$MSL * 100) |>
+      dplyr::select(-"MSL") |>
+      dplyr::rename(year = "Year")
     
     # 2. Interpolate missing data
     # ??
     # msl_spline <- loess(MSL ~ Year, data = msl_hindcast %>% dplyr::filter(complete.cases(.)))
     # msl_hindcast$meanSeaLevel <- predict(msl_spline, newdata = msl_hindcast$Year)
     
-    # msl_hindcast <- msl_hindcast %>%
-    #   dplyr::select(-MSL) %>%
-    #   mutate(index = 1:n()-1) %>%
+    # msl_hindcast <- msl_hindcast |>
+    #   dplyr::select(-MSL) |>
+    #   mutate(index = 1:n()-1) |>
     #   rename(year=Year)
     
     # 3. Get SLR rate at year of scenario start
@@ -156,29 +153,37 @@ generateFullTidalScenario <- function(
       # 4. Query future SLR
       ar6 <- arrow::read_parquet(path)
       
-      ar6_filtered <- ar6 %>%
-        dplyr::filter(noaa_id == station_id,
-                      year <= forecast_end,
-                      scenario_name %in% scenario,
-                      confidence %in% confidence_level
+      ar6_filtered <- ar6 |>
+        dplyr::filter(.data$noaa_id == .env$station_id,
+                      .data$year <= .env$forecast_end,
+                      .data$scenario_name %in% .env$scenario,
+                      .data$confidence %in% .env$confidence_level
         )
       
       init_msl <- mean(msl_hindcast$meanSeaLevel[msl_hindcast$year %in% 1995:2014], na.rm = T)
       
-      scp_table <- ar6_filtered %>% 
-        group_by(noaa_id, noaa_name, year, scenario_name, confidence) %>% 
-        reframe(
-          approx(
-            x = quantile,
-            y = sea_level_change_mm,
-            xout = target_quantile
-          ) %>%
-            as_tibble()
-        ) %>% 
-        mutate(y=y/10+init_msl) %>% 
-        rename(quantile=x,
-               meanSeaLevel=y) %>% 
-        filter(year>max(msl_hindcast$year))
+      scp_table <- ar6_filtered |>
+        dplyr::group_by(
+          .data$noaa_id,
+          .data$noaa_name,
+          .data$year,
+          .data$scenario_name,
+          .data$confidence
+        ) |>
+        dplyr::reframe(
+          stats::approx(
+            x = .data$quantile,
+            y = .data$sea_level_change_mm,
+            xout = .data$target_quantile
+          ) |>
+            tibble::as_tibble()
+        ) |>
+        dplyr::mutate(y = .data$y/10 + .env$init_msl) |>
+        dplyr::rename(
+          quantile = "x",
+          meanSeaLevel = "y"
+        ) |>
+        dplyr::filter(.data$year > max(.env$msl_hindcast$year))
       
       # !!! Add a stop or warning for forecast starts greater than 2000
       
@@ -188,14 +193,14 @@ generateFullTidalScenario <- function(
       
       all_scenario_names <- unique(scp_table$scenario_name)
       
-      historical_by_scenario <- crossing(
+      historical_by_scenario <- tidyr::crossing(
         msl_hindcast,
         scenario_name = scenario,
         confidence = confidence_level,
         quantile = target_quantile
       )
       
-      dat <- bind_rows(
+      dat <- dplyr::bind_rows(
         historical_by_scenario,
         scp_table
       )
@@ -204,33 +209,37 @@ generateFullTidalScenario <- function(
     } else if (run_hindcast) {
       
       # Else if add the hindcast to a list
-      dat <- msl_hindcast %>% 
-        mutate(scenario_name = "hindcast", confidence= "not applicable", quantile= 0.5)
-      
+      dat <- msl_hindcast |>
+        dplyr::mutate(
+          scenario_name = "hindcast",
+          confidence = "not applicable",
+          quantile = 0.5
+        )
+
     } else {
       # Else stop
       stop("Must specify either a hindcast, a forecast, or both.")
       
     } # end of run_forecast, run hindcast checks
     
-    dat_spline <- dat %>%
-      group_by(scenario_name, confidence, quantile) %>%
-      arrange(year) %>%
-      reframe({
+    dat_spline <- dat |>
+      dplyr::group_by(.data$scenario_name, .data$confidence, .data$quantile) |>
+      dplyr::arrange(.data$year) |>
+      dplyr::reframe({
         
         years_out <- seq(
-          min(year),
-          max(year),
+          min(.data$year),
+          max(.data$year),
           by = 1
         )
         
-        sp <- spline(
-          x = year,
-          y = meanSeaLevel,
+        sp <- stats::spline(
+          x = .data$year,
+          y = .data$meanSeaLevel,
           xout = years_out
         )
         
-        tibble(
+        tibble::tibble(
           year = sp$x,
           meanSeaLevel = sp$y
         )
@@ -245,35 +254,39 @@ generateFullTidalScenario <- function(
     
     tidal_datum_path <- system.file("extdata",
                                     "annual_compiled_datums.csv",
-                                    package = "data.water")
-    
-    tidal_datums <- read.csv(tidal_datum_path) %>%
-      dplyr::rename(noaa_id=station_id) %>%
-      dplyr::filter(noaa_id == station_id) %>%
-      filter(! Datum %in% c("HOT", "LOT"))
-    
-    tidal_datums_MSL <- tidal_datums %>%
-      filter(Datum %in% c("MSL"),
-             n_obs >= 364*24) %>%
-      select(Datum, observed, year) %>%
-      pivot_wider(names_from = "Datum", values_from = "observed")
-    
-    tidal_datums_summarized <- tidal_datums %>%
-      filter(Datum != "MSL") %>%
-      left_join(tidal_datums_MSL) %>%
-      mutate(observed = observed - MSL) %>%
-      filter(year >= datum_start_year & year <= datum_end_year) %>%
-      group_by(Datum) %>%
-      summarise(observed = mean(observed,na.rm=T),
-                flood_n = mean(n_pred),
-                risingTime = mean(risingTime),
-                fallingTime = mean(fallingTime)) %>%
-      ungroup() %>%
-      mutate(flood_time = (risingTime + abs(fallingTime))/2,
-             observed = observed * 100) %>%
-      select(Datum, observed, flood_n, flood_time) %>%
-      arrange(-observed)
-    
+                                    package = "PEcAn.data.water")
+
+    tidal_datums <- utils::read.csv(tidal_datum_path) |>
+      dplyr::rename(noaa_id = "station_id") |>
+      dplyr::filter(.data$noaa_id == .env$station_id) |>
+      dplyr::filter(! .data$Datum %in% c("HOT", "LOT"))
+
+    tidal_datums_MSL <- tidal_datums |>
+      dplyr::filter(.data$Datum %in% c("MSL"),
+             .data$n_obs >= 364*24) |>
+      dplyr::select("Datum", "observed", "year") |>
+      tidyr::pivot_wider(names_from = "Datum", values_from = "observed")
+
+    tidal_datums_summarized <- tidal_datums |>
+      dplyr::filter(.data$Datum != "MSL") |>
+      dplyr::left_join(tidal_datums_MSL) |>
+      dplyr::mutate(observed = .data$observed - .data$MSL) |>
+      dplyr::filter(.data$year >= .env$datum_start_year & .data$year <= .env$datum_end_year) |>
+      dplyr::group_by(.data$Datum) |>
+      dplyr::summarise(
+        observed = mean(.data$observed, na.rm = TRUE),
+        flood_n = mean(.data$n_pred),
+        risingTime = mean(.data$risingTime),
+        fallingTime = mean(.data$fallingTime)
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::mutate(
+        flood_time = (.data$risingTime + abs(.data$fallingTime))/2,
+        observed = .data$observed * 100
+      ) |>
+      dplyr::select("Datum", "observed", "flood_n", "flood_time") |>
+      dplyr::arrange(-.data$observed)
+
     ampMat <- matrix(rep(tidal_datums_summarized$observed,
                          length(unique(dat_spline$year))),
                      ncol = length(tidal_datums_summarized$observed),
@@ -290,20 +303,20 @@ generateFullTidalScenario <- function(
       
       lt_tide_const_path <- system.file("extdata",
                                         "long_term_tidal_constituents.csv",
-                                        package = "data.water")
+                                        package = "PEcAn.data.water")
       
-      lt_tide_const <- read.csv(lt_tide_const_path)
+      lt_tide_const <- utils::read.csv(lt_tide_const_path)
       
-      lt_tide_const <- lt_tide_const %>%
-        dplyr::rename(noaa_id=station_id) %>%
-        dplyr::filter(noaa_id == station_id)
+      lt_tide_const <- lt_tide_const |>
+        dplyr::rename(noaa_id = "station_id") |>
+        dplyr::filter(.data$noaa_id == .env$station_id)
       
       all_years <- unique(dat_spline$year)
       
       for (j in 1:length(datumNames)) {
         
-        temp_lt_tide <- lt_tide_const %>%
-          dplyr::filter(tide == datumNames[j])
+        temp_lt_tide <- lt_tide_const |>
+          dplyr::filter(.data$tide == .env$datumNames[j])
         
         # Is 4.4 sig?
         is4p4_sig_1 <- temp_lt_tide$amp44>1 | temp_lt_tide$amp44/temp_lt_tide$amp18 > 0.4
@@ -335,13 +348,13 @@ generateFullTidalScenario <- function(
     amp_df <- as.data.frame(ampMat)
     names(amp_df) <- datumNames
     
-    amp_df <- amp_df %>% 
-      mutate(year = all_years)
+    amp_df <- amp_df |>
+      dplyr::mutate(year = .env$all_years)
     
-    scenario_curves <- dat_spline %>% 
-      left_join(amp_df, by = "year") %>% 
-      mutate(
-        across(all_of(datumNames), ~ .x + meanSeaLevel)
+    scenario_curves <- dat_spline |>
+      dplyr::left_join(amp_df, by = "year") |>
+      dplyr::mutate(
+        dplyr::across(dplyr::all_of(datumNames), ~ .x + meanSeaLevel)
       )
     
     # Output a list of mean sea-levels
@@ -352,13 +365,13 @@ generateFullTidalScenario <- function(
     # A vector of event times (hours)
     # A table with sea level rise scenario info
     
-    scenario_curves <- scenario_curves %>%
+    scenario_curves <- scenario_curves |>
       dplyr::mutate(
         gauge_id = station_id,
         .before = 1
       )
     
-    tidal_datums_summarized <- tidal_datums_summarized %>%
+    tidal_datums_summarized <- tidal_datums_summarized |>
       dplyr::mutate(
         gauge_id = station_id,
         .before = 1
@@ -414,12 +427,12 @@ generateFullTidalScenario <- function(
   names(results) <- as.character(station_id)
   
   # Combine corresponding outputs across gauges
-  scenario_curves <- results %>%
-    purrr::map("scenario_curves") %>%
+  scenario_curves <- results |>
+    purrr::map("scenario_curves") |>
     dplyr::bind_rows()
   
-  tidal_datums_summarized <- results %>%
-    purrr::map("tidal_datums_summarized") %>%
+  tidal_datums_summarized <- results |>
+    purrr::map("tidal_datums_summarized") |>
     dplyr::bind_rows()
   
   list(

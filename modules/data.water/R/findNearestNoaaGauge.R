@@ -60,7 +60,7 @@ findNearestNoaaGauge <- function(
     system.file(
       "extdata",
       "noaa_us_gauge_info.csv",
-      package = "data.water"
+      package = "PEcAn.data.water"
     ),
     show_col_types = F
   )
@@ -110,15 +110,17 @@ findNearestNoaaGauge <- function(
     gauge_attrs
   ) |>
     dplyr::mutate(
-      distance_km = as.numeric(distance_m) / 1000) %>%
-    sf::st_drop_geometry() %>%
-    tidyr::as_tibble() %>%
-    rename(gauge_id = noaa_id,
-           gauge_name = noaa_name
-           ) %>%
-    mutate(startDate = lubridate::as_date(startDate),
-           endDate = lubridate::as_date(endDate)
-           )
+      distance_km = as.numeric(distance_m) / 1000) |>
+    sf::st_drop_geometry() |>
+    tidyr::as_tibble() |>
+    dplyr::rename(
+      gauge_id = "noaa_id",
+      gauge_name = "noaa_name"
+    ) |>
+    dplyr::mutate(
+      startDate = lubridate::as_date(.data$startDate),
+      endDate = lubridate::as_date(.data$endDate)
+    )
 
   return(sites_output)
 
