@@ -1,4 +1,11 @@
-## Scenario Generation for RCMEM
+---
+title: "Scenario Generation for RCMEM"
+output: rmarkdown::html_vignette
+vignette: >
+   %\VignetteIndexEntry{Scenario Generation for RCMEM}
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteEncoding{UTF-8}
+---
 
 ```{r libraries}
 library(PEcAn.data.water)
@@ -6,7 +13,7 @@ library(tidyverse)
 ```
 
 
-### Run Some Queries
+## Run Some Queries
 
 ``` {r run queries}
 

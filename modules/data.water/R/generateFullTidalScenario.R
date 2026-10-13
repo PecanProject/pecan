@@ -41,7 +41,7 @@ generateFullTidalScenario <- function(
   
   gauge_path <- system.file("extdata",
                             "noaa_us_gauge_info.csv",
-                            package = "data.water")
+                            package = "PEcAn.data.water")
   
   # 4. Query future SLR
   gauge_tab <- readr::read_csv(gauge_path, show_col_types = FALSE)
@@ -148,7 +148,7 @@ generateFullTidalScenario <- function(
       
       path <- system.file("extdata",
                           "ar6_us_compiled_senarios.parquet",
-                          package = "data.water")
+                          package = "PEcAn.data.water")
       
       # 4. Query future SLR
       ar6 <- arrow::read_parquet(path)
@@ -174,7 +174,7 @@ generateFullTidalScenario <- function(
           stats::approx(
             x = .data$quantile,
             y = .data$sea_level_change_mm,
-            xout = .data$target_quantile
+            xout = .env$target_quantile
           ) |>
             tibble::as_tibble()
         ) |>
