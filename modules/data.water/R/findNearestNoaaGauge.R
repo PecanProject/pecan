@@ -23,6 +23,7 @@
 #' applications, the nearest gauge by straight-line distance may not
 #' necessarily be the most hydrologically connected gauge. This also won't work outside the U.S.
 #'
+#' @importFrom rlang .data
 #' @export
 findNearestNoaaGauge <- function(
     sites,

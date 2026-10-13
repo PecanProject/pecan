@@ -2,3 +2,5 @@
 
 export(findNearestNoaaGauge)
 export(generateFullTidalScenario)
+importFrom(rlang,.data)
+importFrom(rlang,.env)

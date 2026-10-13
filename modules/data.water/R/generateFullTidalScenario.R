@@ -22,6 +22,7 @@
 #'   \item tidal_datums_summarized: Combined tidal datum table for all gauges.
 #' }
 #'
+#' @importFrom rlang .data .env
 #' @export
 generateFullTidalScenario <- function(
     station_id = 9410660,

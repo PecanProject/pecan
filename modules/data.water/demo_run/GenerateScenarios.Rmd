@@ -1,7 +1,7 @@
 ## Scenario Generation for RCMEM
 
 ```{r libraries}
-library(data.water)
+library(PEcAn.data.water)
 library(tidyverse)
 ```
 

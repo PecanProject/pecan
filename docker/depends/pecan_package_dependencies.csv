@@ -7,6 +7,7 @@
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.land","Imports",FALSE
+"arrow","*","modules/data.water","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
 "assertthat","*","modules/data.atmosphere","Imports",FALSE
 "BayesianTools","*","modules/assim.batch","Imports",FALSE
@@ -66,6 +67,7 @@
 "dplyr","*","modules/benchmark","Imports",FALSE
 "dplyr","*","modules/data.land","Imports",FALSE
 "dplyr","*","modules/data.remote","Suggests",FALSE
+"dplyr","*","modules/data.water","Imports",FALSE
 "dplyr","*","modules/priors","Suggests",FALSE
 "dplyr","*","modules/uncertainty","Imports",FALSE
 "dplyr",">= 0.8.1","modules/data.atmosphere","Imports",FALSE
@@ -173,6 +175,7 @@
 "lubridate","*","models/stics","Imports",FALSE
 "lubridate","*","modules/data.land","Imports",FALSE
 "lubridate","*","modules/data.remote","Suggests",FALSE
+"lubridate","*","modules/data.water","Imports",FALSE
 "lubridate",">= 1.6.0","base/settings","Imports",FALSE
 "lubridate",">= 1.6.0","base/utils","Imports",FALSE
 "lubridate",">= 1.6.0","models/dalec","Imports",FALSE
@@ -478,6 +481,7 @@
 "purrr","*","modules/assim.sequential","Imports",FALSE
 "purrr","*","modules/data.land","Imports",FALSE
 "purrr","*","modules/data.remote","Imports",FALSE
+"purrr","*","modules/data.water","Imports",FALSE
 "purrr","*","modules/uncertainty","Imports",FALSE
 "purrr",">= 0.2.3","base/workflow","Imports",FALSE
 "purrr",">= 0.2.3","modules/data.atmosphere","Imports",FALSE
@@ -498,6 +502,7 @@
 "readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
 "readr","*","modules/data.land","Suggests",FALSE
+"readr","*","modules/data.water","Imports",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -529,6 +534,7 @@
 "rlang","*","modules/assim.sequential","Imports",FALSE
 "rlang","*","modules/benchmark","Imports",FALSE
 "rlang","*","modules/data.land","Imports",FALSE
+"rlang","*","modules/data.water","Imports",FALSE
 "rlang","*","modules/uncertainty","Imports",FALSE
 "rlang",">= 0.2.0","modules/data.atmosphere","Imports",FALSE
 "rlist","*","modules/assim.sequential","Suggests",FALSE
@@ -581,6 +587,7 @@
 "roxygen2","== 7.3.3","modules/data.atmosphere","Roxygen",FALSE
 "roxygen2","== 7.3.3","modules/data.land","Roxygen",FALSE
 "roxygen2","== 7.3.3","modules/data.remote","Roxygen",FALSE
+"roxygen2","== 7.3.3","modules/data.water","Roxygen",FALSE
 "roxygen2","== 7.3.3","modules/emulator","Roxygen",FALSE
 "roxygen2","== 7.3.3","modules/meta.analysis","Roxygen",FALSE
 "roxygen2","== 7.3.3","modules/photosynthesis","Roxygen",FALSE
@@ -599,6 +606,7 @@
 "sf","*","modules/data.atmosphere","Imports",FALSE
 "sf","*","modules/data.land","Imports",FALSE
 "sf","*","modules/data.remote","Suggests",FALSE
+"sf","*","modules/data.water","Imports",FALSE
 "SimilarityMeasures","*","modules/benchmark","Imports",FALSE
 "sirt","*","modules/data.land","Suggests",FALSE
 "sp","*","base/visualization","Suggests",FALSE
@@ -683,6 +691,7 @@
 "tibble","*","modules/data.atmosphere","Imports",FALSE
 "tibble","*","modules/data.land","Imports",FALSE
 "tibble","*","modules/data.remote","Suggests",FALSE
+"tibble","*","modules/data.water","Imports",FALSE
 "tibble","*","modules/meta.analysis","Suggests",FALSE
 "tictoc","*","modules/assim.sequential","Suggests",FALSE
 "tidyr","*","base/db","Imports",FALSE
@@ -691,6 +700,7 @@
 "tidyr","*","modules/benchmark","Imports",FALSE
 "tidyr","*","modules/data.atmosphere","Imports",FALSE
 "tidyr","*","modules/data.land","Imports",FALSE
+"tidyr","*","modules/data.water","Imports",FALSE
 "tidyr","*","modules/uncertainty","Imports",FALSE
 "tidyselect","*","modules/benchmark","Imports",FALSE
 "tidyselect","*","modules/data.atmosphere","Imports",FALSE
@@ -719,8 +729,10 @@
 "utils","*","modules/benchmark","Imports",FALSE
 "utils","*","modules/data.atmosphere","Imports",FALSE
 "utils","*","modules/data.remote","Suggests",FALSE
+"utils","*","modules/data.water","Imports",FALSE
 "utils","*","modules/photosynthesis","Imports",FALSE
 "vdiffr",">= 1.0.2","base/qaqc","Suggests",FALSE
+"VulnToolkit","*","modules/data.water","Imports",FALSE
 "withr","*","base/db","Suggests",FALSE
 "withr","*","base/logger","Suggests",FALSE
 "withr","*","base/qaqc","Suggests",FALSE
