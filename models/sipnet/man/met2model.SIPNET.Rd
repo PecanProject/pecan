@@ -15,6 +15,7 @@ met2model.SIPNET(
   verbose = FALSE,
   year.fragment = FALSE,
   clim_format_version = c("v2", "v1"),
+  pfr_sites = NULL,
   ...
 )
 }
@@ -43,6 +44,11 @@ stored as a set of complete years (such as for forecasts).}
 
 \item{clim_format_version}{SIPNET clim file format to generate.
 Default "v2" writes 12 columns, "v1" writes the legacy 14-column format.}
+
+\item{pfr_sites}{One-row site-level table used when \code{soil_temperature} is
+absent from the meteorological NetCDF input. Must contain \code{index},
+\code{is_permafrost}, and \code{sand_pct}. TRUE indicates permafrost; FALSE or NA
+is treated as non-permafrost.}
 
 \item{...}{Additional arguments, currently ignored}
 }

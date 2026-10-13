@@ -28,11 +28,11 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   # if we only have one CPU.
   if (cores < 1) cores <- 1
   #convert from vector values to block lists.
-  if ("try-error" %in% class(try(block.results <- build.block.xy(settings = settings, 
-                                                                 block.list.all = block.list.all, 
-                                                                 X = X, 
-                                                                 obs.mean = obs.mean, 
-                                                                 obs.cov = obs.cov, 
+  if ("try-error" %in% class(try(block.results <- build.block.xy(settings = settings,
+                                                                 block.list.all = block.list.all,
+                                                                 X = X,
+                                                                 obs.mean = obs.mean,
+                                                                 obs.cov = obs.cov,
                                                                  t = t)))) {
     PEcAn.logger::logger.severe("Something wrong within the build.block.xy function.")
     return(0)
@@ -42,7 +42,7 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   H <- block.results[[2]]
   Y <- block.results[[3]]
   R <- block.results[[4]]
-  
+
   #update q.
   if ("try-error" %in% class(try(block.list.all <- update_q(block.list.all, t, nt, aqq.Init = as.numeric(settings$state.data.assimilation$aqq.Init),
                                                             bqq.Init = as.numeric(settings$state.data.assimilation$bqq.Init),
@@ -51,29 +51,29 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
     PEcAn.logger::logger.severe("Something wrong within the update_q function.")
     return(0)
   }
-  
+
   #add initial conditions for the MCMC sampling.
   if ("try-error" %in% class(try(block.list.all[[t]] <- MCMC_Init(block.list.all[[t]], X)))) {
     PEcAn.logger::logger.severe("Something wrong within the MCMC_Init function.")
     return(0)
   }
-  
+
   #update MCMC args.
-  block.list.all[[t]] <- block.list.all[[t]] %>% 
+  block.list.all[[t]] <- block.list.all[[t]] %>%
     purrr::map(function(l){
       l$MCMC <- MCMC.args
       l
     })
-  
+
   #parallel for loop over each block.
   PEcAn.logger::logger.info(paste0("Running MCMC ", "for ", length(block.list.all[[t]]), " blocks"))
   cl <- parallel::makeCluster(as.numeric(cores))
   doSNOW::registerDoSNOW(cl)
   l <- NULL
-  if ("try-error" %in% class(try(block.list.all[[t]] <- foreach::foreach(l = block.list.all[[t]], 
-                                                                         .packages = c("Kendall", 
-                                                                                       "purrr", 
-                                                                                       "nimble", 
+  if ("try-error" %in% class(try(block.list.all[[t]] <- foreach::foreach(l = block.list.all[[t]],
+                                                                         .packages = c("Kendall",
+                                                                                       "purrr",
+                                                                                       "nimble",
                                                                                        "PEcAnAssimSequential")) %dopar% {MCMC_block_function(l)}))) {
     parallel::stopCluster(cl)
     foreach::registerDoSEQ()
@@ -83,13 +83,13 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
   parallel::stopCluster(cl)
   foreach::registerDoSEQ()
   PEcAn.logger::logger.info("Completed!")
-  
+
   #convert from block lists to vector values.
   if ("try-error" %in% class(try(V <- block.2.vector(block.list.all[[t]], X, H, settings$state.data.assimilation$adjustment)))) {
     PEcAn.logger::logger.severe("Something wrong within the block.2.vector function.")
     return(0)
   }
-  
+
   #return values
   return(list(block.list.all = block.list.all,
               mu.f = V$mu.f,
@@ -100,6 +100,17 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
               R = R,
               analysis = V$analysis))
 }
+
+# Resolve internal helper functions from the installed PEcAn package.
+environment(analysis_sda_block) <-
+  asNamespace("PEcAnAssimSequential")
+
+# Replace the package's entry point for this R session.
+utils::assignInNamespace(
+  "analysis_sda_block",
+  analysis_sda_block,
+  ns = "PEcAnAssimSequential"
+)
 
 ##' @title build.block.xy
 ##' @name  build.block.xy
@@ -447,19 +458,17 @@ MCMC_block_function <- function(block) {
   #configure MCMC
   conf <- nimble::configureMCMC(model_pred, print=FALSE)
   conf$setMonitors(c("X", "X.mod", "q"))
-  
   #Handle samplers
   #hear we change the RW_block sampler to the ess sampler 
   #because it has a better performance of MVN sampling
   samplerLists <- conf$getSamplers()
-  samplerNumberOffset <- length(samplerLists)
+  # samplerNumberOffset <- length(samplerLists)
   if (block$constant$q.type == 4) {
     #if we have wishart q
     #everything should be sampled with ess sampler.
     samplerLists %>% purrr::map(function(l){l$setName("ess")})
   }
   conf$setSamplers(samplerLists)
-  
   #add Pf as propCov in the control list of the X.mod nodes.
   X.mod.ind <- which(grepl("X.mod", samplerLists %>% purrr::map(~ .x$target) %>% unlist()))
   conf$removeSampler(samplerLists[[X.mod.ind]]$target)
@@ -475,15 +484,16 @@ MCMC_block_function <- function(block) {
   Rmcmc <- nimble::buildMCMC(conf)
   Cmodel <- nimble::compileNimble(model_pred)
   Cmcmc <- nimble::compileNimble(Rmcmc, project = model_pred, showCompilerOutput = FALSE)
-  
-  #if we don't have any NA in the Y.
-  if (!any(is.na(block$data$y.censored))) {
-    #add toggle Y sampler.
-    for(i in 1:block$constant$YN) {
-      valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
-    }
-  }
-  
+  #if we don't have any NA in the Y. Don't use it because
+  # Toggle samplers are added only for missing observations,
+  # so there is no need to disable them when all observations are present.
+  # Remove offset-based indexing, which may reference nonexistent samplers.
+  # if (!any(is.na(block$data$y.censored))) {
+  #   #add toggle Y sampler.
+  #   for(i in 1:block$constant$YN) {
+  #     valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 0)
+  #   }
+  # }
   #run MCMC
   dat <- runMCMC(Cmcmc, niter = block$MCMC$niter, nburnin = block$MCMC$nburnin, thin = block$MCMC$nthin, nchains = block$MCMC$nchain)
   #update aq, bq, mua, and pa

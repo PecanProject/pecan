@@ -4,37 +4,61 @@
 ##' 
 ##' @inheritParams PEcAn.ModelName::read_restart.ModelName
 ##' 
+##' @param start.time Start of the forecast interval. If NULL, use January 1
+##'   of the year containing stop.time.
 ##' @description Read Restart for SIPNET
 ##' 
 ##' @return X.vec      vector of forecasts
 ##' @export
-read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
+read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params, start.time = NULL) {
   
   prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
   params$restart <-c() #state.vars not in var.names will be added here
   #SIPNET inital states refer to models/sipnet/inst/template.param
-  state.vars <- c("SWE", "SoilMoist", "SoilMoistFrac", "AbvGrndWood", "TotSoilCarb", "LAI", 
-                  "litter_carbon_content", "fine_root_carbon_content", 
-                  "coarse_root_carbon_content", "litter_mass_content_of_water")
+  state.vars <- c(
+    "SWE",
+    "SoilMoist",
+    "SoilMoistFrac",
+    "AbvGrndWood",
+    "NEE",
+    "Qle",
+    "TotSoilCarb",
+    "LAI",
+    "litter_carbon_content",
+    "fine_root_carbon_content",
+    "coarse_root_carbon_content",
+    "litter_mass_content_of_water"
+  )
   #when adding new state variables make sure the naming is consistent across read_restart, write_restart and write.configs
   #pre-populate parsm$restart with NAs so state names can be added
   params$restart <- rep(NA, length(setdiff(state.vars, var.names)))
   #add states to params$restart NOT in var.names
   names(params$restart) <- setdiff(state.vars, var.names)
+  # Read the current forecast interval from annual NetCDF files.
+  if (is.null(start.time)) {
+    start.time <- as.POSIXct(
+      paste0(lubridate::year(stop.time), "-01-01"), tz = "UTC"
+    )
+  }
   # Read ensemble output
-  ens <- PEcAn.utils::read.output(runid = runid,
-                                  outdir = file.path(outdir, runid),
-                                  start.year = lubridate::year(stop.time),
-                                  end.year = lubridate::year(stop.time),
-                                  variables = c(state.vars,"time_bounds"))
-  #calculate last
-  start.time <- as.Date(paste0(lubridate::year(stop.time),"-01-01"))
-  time_var <- ens$time_bounds[1,]
-  real_time <- as.POSIXct(time_var*3600*24, origin = start.time)
-  # last <- which(as.Date(real_time)==as.Date(stop.time))[1]
-  last <- which(as.Date(real_time)==as.Date(stop.time))[length(which(as.Date(real_time)==as.Date(stop.time)))]
+  ens <- PEcAn.utils::read.output(
+    runid = runid,
+    outdir = file.path(outdir, runid),
+    start.year = lubridate::year(start.time),
+    end.year = lubridate::year(stop.time),
+    variables = unique(c(state.vars, var.names)),
+    dataframe = TRUE
+  )
+  ens <- ens[
+    ens$posix >= start.time & ens$posix <= stop.time,
+    , drop = FALSE
+  ]
+  if (!nrow(ens)) {
+    stop("No SIPNET output in the forecast interval.", call. = FALSE)
+  }
+  last <- nrow(ens)
   
   #### PEcAn Standard Outputs
   if ("AbvGrndWood" %in% var.names) {
@@ -63,16 +87,17 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("GWBI")
   }
   
-  # Reading in NET Ecosystem Exchange for SDA - unit is kg C m-2 s-1 and the average is estimated
+  # Reading in NET Ecosystem Exchange for SDA - kg C m-2 s-1 -> g C m-2 day-1 and the average is estimated
   if ("NEE" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- mean(ens$NEE)  ## 
-    names(forecast[[length(forecast)]]) <- c("NEE")
+    forecast[[length(forecast) + 1]] <- nee_model_to_obs(
+      get_interval_mean(ens, "NEE")
+    )
+    names(forecast[[length(forecast)]]) <- "NEE"
   }
   
-  
-  # Reading in Latent heat flux for SDA  - unit is MW m-2
+  # Reading in Latent heat flux for SDA  - unit is W m-2 and the average is estimated
   if ("Qle" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$Qle[last]*1e-6  ##  
+    forecast[[length(forecast) + 1]] <- get_interval_mean(ens, "Qle")
     names(forecast[[length(forecast)]]) <- c("Qle")
   }
   
@@ -145,3 +170,51 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   return(X_tmp)
 } # read_restart.SIPNET
+
+
+##' @title Calculate the mean of a model output variable
+##'
+##' @description Calculates the mean of a variable over the model output
+##' supplied in \code{ens}, excluding missing values.
+##'
+##' @param ens List of model output variables.
+##' @param v Character. Name of the variable to average.
+##'
+##' @details The averaging interval is determined by the data supplied in
+##' \code{ens}. This function does not filter timestamps.
+##'
+##' @return Numeric scalar containing the mean of the non-missing values.
+##' @keywords internal
+##' @noRd
+get_interval_mean <- function(ens, v) {
+  x <- ens[[v]]
+  if (is.null(x)) {
+    stop("Variable `", v, "` is missing from NetCDF.", call. = FALSE)
+  }
+  
+  x <- as.numeric(x)
+  if (!length(x) || all(is.na(x))) {
+    stop("Variable `", v, "` has no valid values.", call. = FALSE)
+  }
+  
+  mean(x, na.rm = TRUE)
+}
+
+
+##' @title Convert model NEE to SDA observation units
+##'
+##' @description Converts model NEE from kg C m-2 s-1 to
+##' g C m-2 day-1 for comparison with SDA observations.
+##'
+##' @param x Numeric vector of NEE values in kg C m-2 s-1.
+##'
+##' @details The conversion factor is approximately \code{1000 * 86400}.
+##' The sign of NEE is preserved. Corresponding SDA observations must
+##' use g C m-2 day-1.
+##'
+##' @return Numeric vector of NEE values in g C m-2 day-1.
+##' @keywords internal
+##' @noRd
+nee_model_to_obs <- function(x) {
+  x * 1e8 / 1.157407
+}

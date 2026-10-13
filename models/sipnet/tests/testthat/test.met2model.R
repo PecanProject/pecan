@@ -3,6 +3,12 @@ context("met2model")
 outfolder <- tempfile()
 setup(dir.create(outfolder, showWarnings = FALSE))
 teardown(unlink(outfolder, recursive = TRUE))
+# Synthetic site properties used by meteorological conversion tests.
+pfr_test <- data.frame(
+  index = 1L,
+  is_permafrost = FALSE,
+  sand_pct = 40
+)
 
 add_gaps_to_nc <- function(src_nc, gapped_nc,
                            indices = c(1:5, 10, 15:30),
@@ -25,7 +31,7 @@ test_that("Met conversion runs without error", {
   in.prefix <- "CRUNCEP"
   start_date <- "2000-01-01"
   end_date <- "2000-12-31"
-  result <- met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date)
+  result <- met2model.SIPNET(in.path, in.prefix, outfolder, start_date, end_date, pfr_sites = pfr_test)
   expect_s3_class(result, "data.frame")
   expect_true(file.exists(result[["file"]][[1]]))
 })
@@ -40,7 +46,8 @@ test_that("Missing data throws an error", {
         in.prefix = "gapped",
         outfolder = ".",
         start_date = "2000-01-01",
-        end_date = "2000-12-31"
+        end_date = "2000-12-31",
+        pfr_sites = pfr_test
       ),
       type = "message"
     )
@@ -63,7 +70,8 @@ test_that("clim format switch", {
     outfolder = outdir1,
     start_date = "2000-01-01",
     end_date = "2000-12-31",
-    clim_format_version = "v1"
+    clim_format_version = "v1",
+    pfr_sites = pfr_test
   )
   res2 <- met2model.SIPNET(
     in.path = dirname(full_nc),
@@ -71,7 +79,8 @@ test_that("clim format switch", {
     outfolder = outdir2,
     start_date = "2000-01-01",
     end_date = "2000-12-31",
-    clim_format_version = "v2"
+    clim_format_version = "v2",
+    pfr_sites = pfr_test
   )
 
   expect_true(file.exists(res1$file[[1]]))
