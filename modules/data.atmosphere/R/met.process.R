@@ -20,7 +20,7 @@
 #' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 #' @param overwrite Whether to force met.process to proceed. See details.
 #'
-#' @importFrom rlang .data .env
+#' @importFrom rlang .data .env %||%
 #' @export
 #' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
