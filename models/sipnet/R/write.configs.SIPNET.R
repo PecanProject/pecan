@@ -170,7 +170,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       template.clim <- inputs$met$path
     }
   }
-  PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
 
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
