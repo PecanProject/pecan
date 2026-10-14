@@ -347,7 +347,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
                      sep = ",",
                      row.names = FALSE,
                      col.names = overwrite || !file.exists(manifest.file),
-                     append = !overwrite)
+                     append = !overwrite && file.exists(manifest.file))
   
   PEcAn.logger::logger.info("Run manifest written to ", manifest.file)
 
