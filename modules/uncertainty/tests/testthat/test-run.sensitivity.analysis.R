@@ -65,3 +65,22 @@ test_that("a pft whose traits all have no spread is skipped", {
 
   expect_null(sa_results(settings)$pft1)
 })
+
+test_that("a trait in Celsius is analysed in the units it was run in", {
+  dir <- withr::local_tempdir()
+  withr::local_seed(1)
+  samples <- data.frame(psnTOpt = stats::rnorm(5000, 25, 3), SLA = stats::rnorm(5000, 20, 4))
+  settings <- write_sa_fixture(dir, samples, function(x) 10 - 0.05 * (x$psnTOpt - 28)^2 + 0.2 * x$SLA)
+  vd <- sa_results(settings)$pft1$variance.decomposition.output
+
+  expect_equal(vd$sensitivities[["psnTOpt"]], -0.1 * (stats::median(samples$psnTOpt) - 28), tolerance = 0.02)
+  expect_equal(vd$variances[["psnTOpt"]], stats::var(-0.05 * (samples$psnTOpt - 28)^2), tolerance = 0.01)
+  # CV and elasticity are still taken in K
+  t_K <- samples$psnTOpt + 273.15
+  y <- 10 - 0.05 * (samples$psnTOpt - 28)^2 + 0.2 * stats::median(samples$SLA)
+  expect_equal(vd$coef.vars[["psnTOpt"]], get.coef.var(t_K))
+  expect_equal(vd$elasticities[["psnTOpt"]],
+               -0.1 * (stats::median(samples$psnTOpt) - 28) * stats::median(t_K) / stats::median(y),
+               tolerance = 0.02)
+  expect_equal(vd$sensitivities[["SLA"]], 0.2, tolerance = 0.01)
+})
