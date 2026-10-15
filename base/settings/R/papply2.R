@@ -104,7 +104,10 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
       list(result = res, error = err, warning = wrn, message = msg)
     }
 
+    # Q: Why unclass()? A: Because MultiSettings is a list under the hood but
+    # overrides `[[` and `names()` in ways that confuse purrr and friends.
     res_list <- furrr::future_imap(unclass(settings), \(s, i) catcher(s, i))
+
     result <- purrr::map(res_list, "result")
     errs <- purrr::map(res_list, "error")
     wrns <- purrr::map(res_list, "warning")
@@ -112,15 +115,16 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
 
     has_err <- !purrr::map_lgl(errs, is.null)
     if (any(has_err)) {
-      # TODO do we need to switch on stop.on error here?
-      # Currently assuming it's FALSE here bc if TRUE and any errors we would
-      # have stopped inside catcher, but check that.
       err_i <- which(has_err)
       err_strs <- purrr::map(errs[has_err], \(x)x$message)
       err_strs <- paste0(names(err_strs), ": ", sQuote(err_strs))
+      # Q: Shouldn't we check stop.on.error here?
+      # A: No, assume it's FALSE bc TRUE should have stopped inside catcher(),
+      # and however we got here we want to print the errors anyway.
       PEcAn.logger::logger.warn(
         "papply encountered errors for element(s)", toString(err_i),
-        "of", length(settings), ", but continued since stop.on.error=FALSE.",
+        "of", length(settings), ", but continued since stop.on.error=FALSE",
+        "(there are no results for these elements, however).",
         "Error(s):", toString(err_strs)
       )
       result <- result[!has_err]
@@ -155,9 +159,6 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
     return(result)
   } else if (is.Settings(settings)) {
     return(fn(settings, ...))
-  } else if (is.list((settings))) {
-    # Assume it's settings list that hasn't been coerced to Settings class...
-    return(fn(as.Settings(settings), ...))
   } else {
     PEcAn.logger::logger.severe(
       "The function", fn, "requires input of type MultiSettings or Settings")
