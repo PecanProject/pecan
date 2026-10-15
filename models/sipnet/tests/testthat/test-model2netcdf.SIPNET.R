@@ -219,13 +219,16 @@ test_that("pools are converted from gC/m2 to kgC/m2", {
   out_dir <- setup_sipnet_test(sip)$outdir
   pec <- PEcAn.utils::read.output(
     ncfiles = file.path(out_dir, "2002.nc"),
-    variables = c("litter_carbon_content", "SoilMoist", "SoilMoistFrac"),
+    variables = c("litter_carbon_content", "soil_organic_carbon_content", "TotSoilCarb",
+                  "SoilMoist", "SoilMoistFrac"),
     dataframe = TRUE,
     verbose = FALSE,
     print_summary = FALSE
   )
 
   expect_equal(pec$litter_carbon_content, sip$litter / 1000) # g -> kg
+  expect_equal(pec$soil_organic_carbon_content, sip$soil / 1000)
+  expect_equal(pec$TotSoilCarb, (sip$soil + sip$litter) / 1000)
   expect_equal(pec$SoilMoist, sip$soilWater * 10) # cm -> mm AKA kg H2O/m2
   expect_equal(pec$SoilMoistFrac, sip$soilWetnessFrac) # no conversion needed
 })
