@@ -78,11 +78,20 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
       err <- NULL
       wrn <- NULL
       msg <- NULL
-      res <- tryCatch(
-        fun(settings_i, ...),
-        error = \(e) err <<- e,
-        warning = \(w) wrn <<- w,
-        message = \(m) msg <<- m
+      res <- withCallingHandlers(
+          fun(settings_i, ...),
+          message = function(m) {
+            msg <<- append(msg, m)
+            tryInvokeRestart("muffleMessage")
+          },
+          warning = function(w) {
+            wrn <<- append(wrn, w)
+            tryInvokeRestart("muffleWarning")
+          },
+          error = function(e) {
+            err <<- append(err, e)
+            NULL
+          }
       )
       if (stop_err && !is.null(err)) {
         PEcAn.logger::logger.error(
@@ -92,7 +101,6 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
         )
         stop()
       }
-      if (inherits(res, "condition")) res <- NULL
       list(result = res, error = err, warning = wrn, message = msg)
     }
 
