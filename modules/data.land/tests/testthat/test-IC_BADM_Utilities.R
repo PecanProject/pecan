@@ -20,6 +20,28 @@ test_that("Read.IC.info.BADM falls back to L1 and ALL if no L2 data", {
 })
 
 
+test_that("Read.IC.info.BADM does not return all-NA carbon pool rows", {
+  
+  result <- Read.IC.info.BADM(42.5378, -72.1715)
+  
+  carbon_cols <- c(
+    "AGB",
+    "soil_organic_carbon_content",
+    "litter_carbon_content",
+    "root_carbon_content"
+  )
+  
+  all_na_rows <- apply(
+    result[, carbon_cols],
+    1,
+    function(x) all(is.na(x))
+  )
+  
+  expect_false(any(all_na_rows))
+})
+
+
+
 test_that("EPA_ecoregion_finder returns valid L1 and L2 codes", {
   eco <- EPA_ecoregion_finder(42.5378, -72.1715)
   expect_s3_class(eco, "data.frame")
