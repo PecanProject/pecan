@@ -47,7 +47,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
-- Authenticate and add fallback tag lookup for check package versions in CI to prevent rate-limit failures (#4128).
+- Query latest release tag via git ls-remote in check package versions CI step to avoid API rate-limit failures (#4128).
 - Multisite sensitivity analyses gave every site the results of the last site, because `read.sa.output()` looked runs up in the shared run manifest instead of each site's `sa.run.ids`.
 - Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
 - A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
