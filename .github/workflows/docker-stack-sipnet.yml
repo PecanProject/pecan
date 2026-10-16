@@ -8,6 +8,7 @@ on :
   - cron: '30 4 * * 1,3,5'
 jobs:
   sipnet:
+    if: github.repository == 'PecanProject/pecan' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     env:
