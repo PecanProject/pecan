@@ -340,11 +340,7 @@ This information is currently used by the following PEcAn workflow function:
 
 #### Model-specific configuration {#xml-model-specific}
 
-See the following:
-
-* [ED2 Configuration](#models-ed)
-* [SIPNET Configuration](#models-sipnet)
-* [BIOCRO Configuration](#models-biocro)
+See the [PEcAn Models](pecan-models.html) reference for detailed documentation on all supported models.
 
 #### ED2 specific tags {#xml-ed}
 
