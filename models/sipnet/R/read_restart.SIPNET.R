@@ -144,7 +144,8 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]
     names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }else{
-    params$restart["TotSoilCarb"] <- PEcAn.utils::ud_convert(ens$TotSoilCarb[last], 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    # write.config.SIPNET maps `soil`, the pool alone (not soil + litter), to soilInit
+    params$restart["soil"] <- PEcAn.utils::ud_convert(ens$TotSoilCarb[last] - litter_carbon_content, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
   }
   
   #remove any remaining NAs from params$restart
