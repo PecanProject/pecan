@@ -69,8 +69,10 @@ jobs:
 
     - name: check package versions
       run: |
-        tag=$(git ls-remote --tags --refs --sort=-v:refname https://github.com/PecanProject/pecan.git 'v*' \
-          | head -n1 | sed 's!.*refs/tags/!!')
+        tag=$(git ls-remote --tags --refs --sort=-v:refname \
+          https://github.com/PecanProject/pecan.git 'v*' \
+          | head -n1 \
+          | sed 's!.*refs/tags/!!')
         if [ -z "$tag" ]; then
           echo "::error::Could not determine latest release tag for version check"
           exit 1
