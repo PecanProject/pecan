@@ -1,5 +1,11 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write_restart.SIPNET` wrote the SDA `TotSoilCarb` analysis (soil + litter)
+    into `soilInit`, which is the soil pool alone, so every restart counted
+    litter twice. It now writes `TotSoilCarb` minus litter, or 0 with a warning
+    when the analysis is below litter. When `TotSoilCarb` is not assimilated,
+    `read_restart.SIPNET` now carries the forecast soil pool forward instead of
+    leaving `soilInit` at the template value.
 * `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
     soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
     litter pool, so it is not comparable to a measured soil organic carbon
