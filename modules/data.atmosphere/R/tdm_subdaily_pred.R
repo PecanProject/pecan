@@ -1,30 +1,22 @@
-##' Subdaily Prediction
-##' Pulls information from linear regression models to predict subdaily meteorology
-# ----------------------------------- 
-# Description
-# -----------------------------------
-##' @title subdaily_pred
-##' @family tdm - Temporally Downscale Meteorology
-##' @author Christy Rollinson, James Simkins
-##' @description Function to pull objects created in linear regression models
-##'              and are used to predict subdaily meteorology. This function is called in
-##'              lm_ensemble_sims() to downscale a meteorology product.
-##'              Linear regression models are created in gen.subdaily.models()
-# ----------------------------------- 
-# Parameters
-# -----------------------------------
-##' @param newdata dataframe with data to be downscaled
-##' @param model.predict saved linear regression model
-##' @param Rbeta matrix with Rbetas from saved linear regression model
-##' @param resid.err logical, whether to include residual error or not
-##' @param model.resid data.frame of model residuals
-##' @param Rbeta.resid data.frame of Rbeta residuals
-##' @param n.ens number of ensembles to create
-##' @export
-# -----------------------------------
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
+#' Pulls information from linear regression models to predict subdaily meteorology
+#'
+#' Function to pull objects created in linear regression models and are used
+#' to predict subdaily meteorology.
+#' This function is called in lm_ensemble_sims() to downscale a meteorology product.
+#' Linear regression models are created in gen.subdaily.models()
+#'
+#' @family tdm - Temporally Downscale Meteorology
+#' @author Christy Rollinson, James Simkins
+#'
+#' @param newdata dataframe with data to be downscaled
+#' @param model.predict saved linear regression model
+#' @param Rbeta matrix with Rbetas from saved linear regression model
+#' @param resid.err logical, whether to include residual error or not
+#' @param model.resid data.frame of model residuals
+#' @param Rbeta.resid data.frame of Rbeta residuals
+#' @param n.ens number of ensembles to create
+#'
+#' @export
 subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, model.resid = NULL, 
                           Rbeta.resid = NULL, n.ens) {
 

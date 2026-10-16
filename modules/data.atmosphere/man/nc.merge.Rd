@@ -2,7 +2,7 @@
 % Please edit documentation in R/nc_merge.R
 \name{nc.merge}
 \alias{nc.merge}
-\title{nc.merge}
+\title{Parses multiple netCDF files into one central document for temporal downscaling procedure}
 \usage{
 nc.merge(
   outfolder,
@@ -27,7 +27,9 @@ nc.merge(
 
 \item{end_date}{- yyyy-mm-dd}
 
-\item{upscale}{- Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to}
+\item{upscale}{- Upscale can either be set for FALSE (leave alone) or to the
+temporal resolution you want to aggregate to.
+options are: "year", "doy" (day of year), or "hour"}
 
 \item{overwrite}{logical: replace output file if it already exists?}
 
@@ -37,14 +39,11 @@ functions print debugging information as they run?}
 \item{...}{further arguments, currently ignored}
 }
 \description{
-This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
-             parses multiple netCDF files into one central training data file called 'dat.train_file'. This netCDF
-             file will be used to generate the subdaily models in the next step of the workflow, generate.subdaily.models(). 
-             It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
-}
-\details{
-nc.merge
-Parses multiple netCDF files into one central document for temporal downscaling procedure
+This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow.
+The nc2dat.train function parses multiple netCDF files into one central training data file called 'dat.train_file'.
+This netCDF file will be used to generate the subdaily models in the next step of the workflow,
+  generate.subdaily.models().
+It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

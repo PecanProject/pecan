@@ -1,11 +1,12 @@
 #' Cosine of Solar Zenith Angle
 #'
-#' Calculates the cosine of the solar zenith angle based on the given parameters. 
+#' Calculates the cosine of the solar zenith angle based on the given parameters.
 #' This angle is crucial in determining the amount of solar radiation reaching a point on Earth.
 #'
 #' For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
 #' @author Alexey Shiklomanov
+#'
 #' @param doy Day of year. Integer representing the day of the year (1-365).
 #' @param lat Latitude in degrees. Positive for the Northern Hemisphere and negative for the Southern Hemisphere.
 #' @param lon Longitude in degrees. Positive for East and negative for West.
@@ -14,7 +15,7 @@
 #'
 #' @return Numeric value representing the cosine of the solar zenith angle.
 #'
-#' @references 
+#' @references
 #' "Understanding Solar Position and Solar Radiation" - RAMMB: [Link](https://rammb.cira.colostate.edu/wmovl/vrl/tutorials/euromet/courses/english/nwp/n5720/n5720005.htm)
 #'
 #' @examples
@@ -41,7 +42,9 @@ cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
 #' For description of calculations, see https://en.wikipedia.org/wiki/Equation_of_time#Calculating_the_equation_of_time
 #'
 #' @author Alexey Shiklomanov
+#'
 #' @param doy Day of year
+#'
 #' @return `numeric(1)` length of the solar day, in hours.
 #' @export
 equation_of_time <- function(doy) {

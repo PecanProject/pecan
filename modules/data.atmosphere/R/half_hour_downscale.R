@@ -1,8 +1,7 @@
-#' @name half_hour_downscale
-#' @title half_hour_downscale
+#' half_hour_downscale
 #'
-#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
-#' data frame contains information about one file.
+#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.
+#' Each data frame contains information about one file.
 #'
 #' @param input_file location of NOAAGEFS_1hr files
 #' @param output_file location where to store half_hour files
@@ -10,7 +9,7 @@
 #' @param hr set half hour
 #'
 #' @export
-#' 
+#'
 temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TRUE, hr = 0.5){
   
     # open netcdf
@@ -151,7 +150,8 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
 } #temporal_downscale
 
 
-#' @title Downscale spline to half hourly
+#' Downscale spline to half hourly
+#'
 #' @param df dataframe of data to be downscales
 #' @param VarNames variable names to be downscaled
 #' @param hr hour to downscale to- default is 0.5
@@ -160,7 +160,6 @@ temporal_downscale_half_hour <- function(input_file, output_file, overwrite = TR
 #' @author Laura Puckett
 #' @export
 #'
-
 downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
   time <- NULL
   t0 = min(df$time)
@@ -181,7 +180,8 @@ downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
   return(noaa_data_interp)
 }
 
-#' @title Downscale shortwave to half hourly
+#' Downscale shortwave to half hourly
+#'
 #' @return A dataframe of downscaled state variables
 #' 
 #' @param df data frame of variables
@@ -193,7 +193,6 @@ downscale_spline_to_half_hrly <- function(df,VarNames, hr = 0.5){
 #' @author Laura Puckett
 #' @export
 #'
-
 downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   ## downscale shortwave to half hourly
   
@@ -267,7 +266,8 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
   
 }
 
-#' @title Downscale repeat to half hourly
+#' Downscale repeat to half hourly
+#'
 #' @param df dataframe of data to be downscaled (Longwave)
 #' @param varName variable names to be downscaled
 #' @param hr hour to downscale to- default is 0.5
@@ -276,7 +276,6 @@ downscale_ShortWave_to_half_hrly <- function(df,lat, lon, hr = 0.5){
 #' @author Laura Puckett
 #' @export
 #'
-
 downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   
   #bind variables
@@ -329,16 +328,16 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
   return(data.hrly)
 }
 
-#' @title Calculate potential shortwave radiation
+#' Calculate potential shortwave radiation
 #'
 #' @param doy, day of year in decimal
 #' @param lon, longitude
 #' @param lat, latitude
+#'
 #' @return vector of potential shortwave radiation for each doy
-#' 
+#'
 #' @author Quinn Thomas
 #' @export
-#'
 #'
 downscale_solar_geom_halfhour <- function(doy, lon, lat) {
   

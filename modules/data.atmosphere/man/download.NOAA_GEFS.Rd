@@ -36,8 +36,9 @@ download.NOAA_GEFS(
 \item{...}{Additional optional parameters, currently ignored}
 }
 \value{
-A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
-data frame contains information about one file.
+A list of data frames is returned containing information about the
+data file that can be used to locate it later.
+Each data frame contains information about one file.
 }
 \description{
 Download NOAA GEFS Weather Data
@@ -76,7 +77,8 @@ for details.
 
 Data is saved in the netcdf format to the specified directory.
   File names reflect the precision of the data to the given range of days.
-NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast, using ensemble number 3 at willow creek on
+NOAA.GEFS.willow creek.3.2018-06-08T06:00.2018-06-24T06:00.nc specifies the forecast,
+using ensemble number 3 at willow creek on
 June 6th, 2018 at 6:00 a.m. to June 24th, 2018 at 6:00 a.m.
 }
 

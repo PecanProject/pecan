@@ -1,14 +1,15 @@
 
 #' Convert geostreams JSON to CF met file
-#' 
+#'
 #' @param in.path directory containing Geostreams JSON file(s) to be converted
 #' @param in.prefix initial portion of input filenames (everything before the dates)
 #' @param outfolder directory where nc output files should be written. Will be created if necessary
 #' @param start_date,end_date beginning and end of run, YYYY-MM-DD.
 #' @param overwrite logical: Regenerate existing files of the same name?
-#' @param verbose logical, passed on to \code{\link[ncdf4]{nc_create}} 
+#' @param verbose logical, passed on to \code{\link[ncdf4]{nc_create}}
 #'  to control how chatty it should be during netCDF creation
 #' @param ... other arguments, currently ignored
+#'
 #' @export
 #' @author Harsh Agrawal, Chris Black
 met2CF.Geostreams <- function(in.path, in.prefix, outfolder, 

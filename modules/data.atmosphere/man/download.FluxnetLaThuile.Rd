@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.FluxnetLaThuile.R
 \name{download.FluxnetLaThuile}
 \alias{download.FluxnetLaThuile}
-\title{download.FluxnetLaThuile}
+\title{Download Flxunet LaThuile CSV files}
 \usage{
 download.FluxnetLaThuile(
   sitename,

@@ -1,25 +1,28 @@
-##' take mean at fixed intervals along a vector
-##' @param x numeric vector
-##' @param step integer step size
-##' @return numeric of length length(x)/step
-##' @details User should check that length(x) is an even multiple of step
+#' Take mean at fixed intervals along a vector
+#'
+#' User should check that length(x) is an even multiple of step
+#'
+#' @param x numeric vector
+#' @param step integer step size
+#'
+#' @return numeric of length length(x)/step
 step_means <- function(x, step){
   colMeans(matrix(x, nrow = step))
 }
 
-##' upscale_met upscales the temporal resolution of a dataset
-##' @name upscale_met
-##' @title upscale_met
-##' @export
-##' @param input_met path to netcdf file containing met dataset
-##' @param outfolder path to directory where output should be saved
-##'           Output is netcdf named as <input_met_filename>.upscaled.nc
-##' @param resolution desired output resolution, in days
-##' @param overwrite logical: replace output file if it already exists?
-##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
-##' @param ... other arguments, currently ignored
-##' @author James Simkins, Chris Black
-
+#' Upscales the temporal resolution of a dataset
+#'
+#' @param input_met path to netcdf file containing met dataset
+#' @param outfolder path to directory where output should be saved
+#'           Output is netcdf named as <input_met_filename>.upscaled.nc
+#' @param resolution desired output resolution, in days
+#' @param overwrite logical: replace output file if it already exists?
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
+#' @param ... other arguments, currently ignored
+#'
+#' @author James Simkins, Chris Black
+#'
+#' @export
 upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FALSE,
                         verbose = FALSE, ...) {
 

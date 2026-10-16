@@ -1,28 +1,26 @@
-##' Download NEON Site Met CSV files
-##'
-##' download.NEONmet
-##' 
-##' Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
-##' 
-##' @export
-##' @param sitename the NEON ID of the site to be downloaded, used as file name prefix. 
-##' The 4-letter SITE code  in \href{https://www.neonscience.org/field-sites/explore-field-sites}{list of NEON sites}
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
-##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose makes the function output more text
-##' @param ... further arguments, currently ignored
-##'
-##' @examples 
-##' \dontrun{
-##' result <- download.NEONmet(
-##'    sitename = 'HARV',
-##'    outfolder = '~/',
-##'    start_date = '2017-01-01',
-##'    end_date = '2017-01-31',
-##'    overwrite = TRUE)
-##' }
+#' Download NEON Site Met CSV files
+#'
+#' Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
+#'
+#' @export
+#' @param sitename the NEON ID of the site to be downloaded, used as file name prefix.
+#' The 4-letter SITE code  in \href{https://www.neonscience.org/field-sites/explore-field-sites}{list of NEON sites}
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
+#' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose makes the function output more text
+#' @param ... further arguments, currently ignored
+#'
+#' @examples
+#' \dontrun{
+#' result <- download.NEONmet(
+#'    sitename = 'HARV',
+#'    outfolder = '~/',
+#'    start_date = '2017-01-01',
+#'    end_date = '2017-01-31',
+#'    overwrite = TRUE)
+#' }
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE,  ...) {
 

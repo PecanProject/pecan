@@ -1,8 +1,7 @@
-#' @name download.raw.met.module
-#' @title download.raw.met.module
-#' 
-#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.  Each
-#' data frame contains information about one file.
+#' download.raw.met.module
+#'
+#' @return A list of data frames is returned containing information about the data file that can be used to locate it later.
+#'   Each data frame contains information about one file.
 #'
 #' @param dir directory to write outputs to
 #' @param met source included in input_met
@@ -21,13 +20,10 @@
 #' @param username database username
 #' @param overwrite whether to force download.raw.met.module to proceed
 #' @param dbparms database settings from settings file
-#' @param Ens.Flag default set to FALSE 
+#' @param Ens.Flag default set to FALSE
 #'
-#' 
 #' @export
 #'
-#'
-
 .download.raw.met.module <-
   function(dir,
            met,

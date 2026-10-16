@@ -17,6 +17,7 @@
 #' @param site list[like]. Only components `lat` and `lon` (both in decimal degrees) are currently used
 #' @param format specification of variable names and units in the format returned by `PEcAn.DB::query.format.vars`
 #' @param ... other arguments, currently ignored
+#'
 #' @author Elizabeth Cowdery
 #'
 #' @export

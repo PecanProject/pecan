@@ -1,6 +1,6 @@
 #' Download ICOS Ecosystem data products
 #'
-#' Currently available products: 
+#' Currently available products:
 #' Drought-2018 ecosystem eddy covariance flux product https://www.icos-cp.eu/data-products/YVR0-4898
 #' ICOS Final Fully Quality Controlled Observational Data (Level 2) https://www.icos-cp.eu/data-products/ecosystem-release
 #'

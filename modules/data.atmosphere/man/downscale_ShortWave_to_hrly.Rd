@@ -17,8 +17,6 @@ downscale_ShortWave_to_hrly(df, lat, lon, hr = 1)
 }
 \value{
 A dataframe of downscaled state variables
-
-ShortWave.ds
 }
 \description{
 Downscale shortwave to hourly

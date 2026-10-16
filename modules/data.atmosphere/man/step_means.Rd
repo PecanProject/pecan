@@ -2,7 +2,7 @@
 % Please edit documentation in R/upscale_met.R
 \name{step_means}
 \alias{step_means}
-\title{take mean at fixed intervals along a vector}
+\title{Take mean at fixed intervals along a vector}
 \usage{
 step_means(x, step)
 }
@@ -15,8 +15,5 @@ step_means(x, step)
 numeric of length length(x)/step
 }
 \description{
-take mean at fixed intervals along a vector
-}
-\details{
 User should check that length(x) is an even multiple of step
 }

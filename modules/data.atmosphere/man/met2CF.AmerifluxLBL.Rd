@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.AmerifluxLBL.R
 \name{met2CF.AmerifluxLBL}
 \alias{met2CF.AmerifluxLBL}
-\title{met2CF.AmerifluxLBL}
+\title{Get meteorology variables from Ameriflux LBL and convert to netCDF CF format}
 \usage{
 met2CF.AmerifluxLBL(
   in.path,
@@ -27,24 +27,7 @@ met2CF.AmerifluxLBL(
 
 \item{end_date}{the end date of the data to be downloaded (will only use the year part of the date)}
 
-\item{format}{is data frame or list with elements as described below
-The AmerifluxLBL format is Bety record 5000000002
-which could be returned from PEcAn.DB::query.format.vars(format.id=5000000002)
-format is output from db/R/query.format.vars, and should have:
-  REQUIRED:
-  format$lat = latitude of site
-  format$lon = longitude of site
-  format$header = number of lines of header
-  format$vars is a data.frame with lists of information for each variable to read, at least airT is required
-    format$vars$input_name = Name in CSV file
-    format$vars$input_units = Units in CSV file
-    format$vars$bety_name = Name in BETY
-  OPTIONAL:
-  format$na.strings = list of missing values to convert to NA, such as -9999
-  format$skip = lines to skip excluding header
-  format$vars$column_number = Column number in CSV file (optional, will use header name first)
-Columns with NA for bety variable name are dropped. 
-Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
+\item{format}{is data frame or list with elements as described in details}
 
 \item{overwrite}{should existing files be overwritten}
 
@@ -53,7 +36,25 @@ Units for datetime field are the lubridate function that will be used to parse t
 \item{...}{further arguments, currently ignored}
 }
 \description{
-Get meteorology variables from Ameriflux LBL and convert to netCDF CF format
+The AmerifluxLBL format is Bety record 5000000002
+which could be returned from PEcAn.DB::query.format.vars(format.id=5000000002)
+Format is output from db/R/query.format.vars, and should have:
+  REQUIRED:
+  format$lat = latitude of site
+  format$lon = longitude of site
+  format$header = number of lines of header
+  format$vars is a data.frame with lists of information for each variable to read.
+    At least airT is required.
+    format$vars$input_name = Name in CSV file
+    format$vars$input_units = Units in CSV file
+    format$vars$bety_name = Name in BETY
+  OPTIONAL:
+  format$na.strings = list of missing values to convert to NA, such as -9999
+  format$skip = lines to skip excluding header
+  format$vars$column_number = Column number in CSV file (optional, will use header name first)
+Columns with NA for bety variable name are dropped.
+Units for datetime field are the lubridate function that will be used to parse the date
+ (e.g. \code{ymd_hms} or \code{mdy_hm}).
 }
 \author{
 Ankur Desai

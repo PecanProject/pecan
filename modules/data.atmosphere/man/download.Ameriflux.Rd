@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.Ameriflux.R
 \name{download.Ameriflux}
 \alias{download.Ameriflux}
-\title{download.Ameriflux}
+\title{Download Ameriflux L2 netCDF files}
 \usage{
 download.Ameriflux(
   sitename,
@@ -15,7 +15,7 @@ download.Ameriflux(
 )
 }
 \arguments{
-\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix.
 The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 
 \item{outfolder}{location on disk where outputs will be stored}
