@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - Multisite sensitivity analyses gave every site the results of the last site, because `read.sa.output()` looked runs up in the shared run manifest instead of each site's `sa.run.ids`.
+- Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
 - A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
