@@ -225,7 +225,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   ## Prepare for model output.  Clean up any old config files (if exists)
   # TODO: shouldn't this check if the files exist before removing them?
   my.remove.config <- paste0("remove.config.", model)
-  if (exists(my.remove.config)) {
+  if (overwrite && exists(my.remove.config)) {
     do.call(my.remove.config, args = list(settings$rundir, settings))
   }
 
