@@ -1,0 +1,363 @@
+---
+title: "DoD_observation"
+author: "Dongchen Zhang"
+date: '2026-06-02'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+library(foreach)
+library(terra)
+```
+
+# AGB.
+## GEDI extractions.
+
+```{r}
+# GEDI footprints.
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+dod.shp <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/selected_polygons/selected_polygons.shp")
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/gedi/dat.Rdata")
+start.dates <- c("2018-07-16", "2019-07-16", "2020-07-16", "2021-07-16", "2022-07-16", "2023-07-16")
+end.dates <- c("2019-07-15", "2020-07-15", "2021-07-15", "2022-07-15", "2023-07-15", "2024-07-15")
+ref_dem <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem_resample.tif")
+r_template <- terra::rast(terra::crop(ref_dem, dod.shp[3,]))
+# loop over time.
+# 1. Create the matrix with 6 columns (to match your 6 dates)
+agb.mean.gedi.ts <- agb.sd.gedi.ts <- matrix(NA, length(pts), 6)
+# 2. Assign the column names
+colnames(agb.mean.gedi.ts) <- colnames(agb.sd.gedi.ts) <- end.dates
+for (i in seq_along(start.dates)) {
+  # filter by date.
+  dat_filtered <- dat %>%
+    mutate(shot_time = as.POSIXct(shot_time)) %>%
+    filter(shot_time >= as.POSIXct(start.dates[i]) & shot_time <= as.POSIXct(end.dates[i])) %>%
+    data.table::setDT()
+  # aggregation.
+  coords <- as.matrix(dat_filtered[, .(lon_lowestmode, lat_lowestmode)])
+  dat_filtered[, cell_id := cellFromXY(r_template, coords)]
+
+  # 2. Count the number of points in each cell (.N is data.table's count function)
+  # (If you wanted mean AGBD instead, you'd do: mean_agbd = mean(agbd, na.rm=TRUE))
+  cell_summary <- dat_filtered[!is.na(cell_id), .(pt_count = .N, mean_agbd = mean(agbd, na.rm = TRUE), max_std = max(agbd_se, na.rm = TRUE)), by = cell_id]
+
+  # 3. Write those summarized values directly into your raster template
+  agb.mean.gedi <- r_template
+  values(agb.mean.gedi) <- NA # Ensure it's blank to start
+  agb.mean.gedi[cell_summary$cell_id] <- cell_summary$mean_agbd
+  
+  agb.sd.gedi <- r_template
+  values(agb.sd.gedi) <- NA # Ensure it's blank to start
+  agb.sd.gedi[cell_summary$cell_id] <- cell_summary$max_std
+  # extraction.
+  agb.m.pts <- terra::extract(agb.mean.gedi * 1, pts)
+  agb.mean.gedi.ts[,i] <- agb.m.pts[,2]
+  
+  agb.sd.pts <- terra::extract(agb.sd.gedi * 1, pts)
+  agb.sd.gedi.ts[,i] <- agb.sd.pts[,2]
+}
+save(list = c("agb.mean.gedi.ts", "agb.sd.gedi.ts"), file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/AGB/agb_mean_std_gedi.Rdata")
+```
+
+# LAI.
+
+```{r}
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+LAI <- read.csv("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/LAI/LAI.csv")
+LAI <- LAI[which(LAI$sd<24.8),]
+LAI$sd[which(LAI$sd == 0)] <- 0.1
+# 
+dates <- seq(as.Date("2002-07-15"), as.Date("2024-07-15"), "1 year")
+data.table::setDT(LAI)
+# Ensure the date columns are actual Date objects for matching
+LAI[, date_formatted := as.Date(date)] 
+
+LAI.mean.ts <- LAI.std.ts <- matrix(NA, length(pts), 23)
+for (i in seq_along(pts)) {
+  LAI.temp <- LAI[which(LAI$site_id == as.character(i)),]
+  # Create a data.table for your target dates
+  target_dates <- data.table::data.table(target_date = dates)
+  # Join target dates to LAI to find absolute differences
+  closest_records <- target_dates[, {
+    # Calculate absolute difference between this target_date and all LAI dates
+    differences <- abs(as.numeric(LAI.temp$date_formatted - target_date))
+    # Return the row with the minimum difference
+    LAI.temp[which.min(differences), ]
+  }, by = target_date]
+  LAI.mean.ts[i, ] <- closest_records$lai
+  LAI.std.ts[i, ] <- closest_records$sd
+}
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/initial_condition/LAI/lai_list.Rdata")
+lai.mean.2001 <- apply(lai.list[[2]], 1, mean)
+LAI.mean.ts <- cbind(lai.mean.2001, LAI.mean.ts)
+lai.std.2001 <- apply(lai.list[[2]], 1, sd)
+LAI.std.ts <- cbind(lai.mean.2001, LAI.std.ts)
+colnames(LAI.mean.ts) <- colnames(LAI.std.ts) <- seq(as.Date("2001-07-15"), as.Date("2024-07-15"), "1 year") %>% as.character()
+save(list = c("LAI.mean.ts", "LAI.std.ts"), file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/LAI/lai_mean_std.Rdata")
+```
+
+# SM.
+
+```{r}
+# CDS SM.
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/initial_condition/SM/sm_list.Rdata")
+dates <- seq(as.Date("2001-07-15"), as.Date("2024-07-15"), "1 year")
+sm.mean.era5.ts <- sm.std.era5.ts <- matrix(NA, length(pts), 24)
+colnames(sm.mean.era5.ts) <- colnames(sm.std.era5.ts) <- as.character(dates)
+# loop over time.
+for (i in seq_along(dates)) {
+  temp.sm <- sm.list[[i+1]]
+  sm.mean.era5.ts[,i] <- apply(temp.sm, 1, mean)
+  sm.std.era5.ts[,i] <- apply(temp.sm, 1, sd)
+}
+save(list = c("sm.mean.era5.ts", "sm.std.era5.ts"), file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SM/sm_mean_std_era5.Rdata")
+
+# SMAP SM.
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+SM <- read.csv("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SM/SMAP/SMAP.csv")
+dates <- seq(as.Date("2015-07-15"), as.Date("2024-07-15"), "1 year")
+data.table::setDT(SM)
+# Ensure the date columns are actual Date objects for matching
+SM[, date_formatted := as.Date(date)] 
+sm.mean.smap.ts <- sm.std.smap.ts <- matrix(NA, length(pts), length(dates))
+colnames(sm.mean.smap.ts) <- colnames(sm.std.smap.ts) <- as.character(dates)
+for (i in seq_along(pts)) {
+  SM.temp <- SM[which(SM$site_id == as.character(i)),]
+  # Create a data.table for your target dates
+  target_dates <- data.table::data.table(target_date = dates)
+  # Join target dates to LAI to find absolute differences
+  closest_records <- target_dates[, {
+    # Calculate absolute difference between this target_date and all LAI dates
+    differences <- abs(as.numeric(SM.temp$date_formatted - target_date))
+    # Return the row with the minimum difference
+    SM.temp[which.min(differences), ]
+  }, by = target_date]
+  sm.mean.smap.ts[i, ] <- closest_records$smp
+  sm.std.smap.ts[i, ] <- closest_records$sd
+}
+save(list = c("sm.mean.smap.ts", "sm.std.smap.ts"), file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SM/sm_mean_std_smap.Rdata")
+```
+
+# SOC.
+
+```{r}
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+SOC.rast <- terra::rast("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/soil_nc/SOC/SOC.tif")/10
+soc.mean.std.soilgrids <- terra::extract(SOC.rast, pts)
+save(soc.mean.std.soilgrids, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation/SOC/soc_mean_std_soilgrids.Rdata")
+```
+
+# Combine observations.
+
+```{r}
+library(purrr)
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+years <- 2001:2024
+obs.path <- "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/observation"
+# AGB
+load(file.path(obs.path, "AGB", "agb_mean_std_landtrendr.Rdata"))
+load(file.path(obs.path, "AGB", "agb_mean_std_gedi.Rdata"))
+
+# LAI.
+load(file.path(obs.path, "LAI", "lai_mean_std.Rdata"))
+
+# SM.
+load(file.path(obs.path, "SM", "sm_mean_std_era5.Rdata"))
+load(file.path(obs.path, "SM", "sm_mean_std_smap.Rdata"))
+
+# SOC
+load(file.path(obs.path, "SOC", "soc_mean_std_soilgrids.Rdata"))
+
+# loop over time.
+time_points <- seq(as.Date("2001-07-15"), as.Date("2024-07-15"), "1 year")
+obs.mean <- obs.cov <- vector("list", length = length(time_points))
+names(obs.mean) <- time_points
+names(obs.cov) <- time_points
+for (i in seq_along(time_points)) {
+  print(time_points[i])
+  # initialize annual observation.
+  annual.mean <- annual.cov <- vector("list", length = length(pts))
+  names(annual.mean) <- seq_along(pts)
+  names(annual.cov) <- seq_along(pts)
+  
+  # Annual AGB.
+  if (i < 24) {
+    agb_landtrendr_annual <- list(mean = agb.mean[,i], std = agb.std[,i])
+  } else {
+    agb_landtrendr_annual <- NULL
+  }
+  if (i >= 19) {
+    agb_gedi_annual <- list(mean = agb.mean.gedi.ts[,as.character(time_points[i])],
+                            std = agb.sd.gedi.ts[,as.character(time_points[i])])
+  } else {
+    agb_gedi_annual <- NULL
+  }
+  
+  # Annual LAI.
+  lai_annual <- list(mean = LAI.mean.ts[,i], std = LAI.std.ts[,i])
+  
+  # Annual SM.
+  sm_era5_annual <- list(mean = sm.mean.era5.ts[,i], std = sm.std.era5.ts[,i])
+  if (i >= 15) {
+    sm_smap_annual <- list(mean = sm.mean.smap.ts[,as.character(time_points[i])],
+                           std = sm.std.smap.ts[,as.character(time_points[i])])
+  } else {
+    sm_smap_annual <- NULL
+  }
+  
+  # Annual SOC.
+  soc_annual <- list(mean = soc.mean.std.soilgrids$mean, std = soc.mean.std.soilgrids$std)
+  
+  # loop over sites.
+  for (j in seq_along(pts)) {
+    # LandTrendr, MODIS, ERA5_SM, SoilGrids.
+    if (i >= 1 & i <= 15) {
+      var.names <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+      products <- c("LandTrendr", "MODIS", "ERA5_SM", "SoilGrids")
+      vec.mean <- c(agb_landtrendr_annual$mean[j],
+                    lai_annual$mean[j],
+                    sm_era5_annual$mean[j]*100,
+                    soc_annual$mean[j])
+      vec.cov <- diag(c(agb_landtrendr_annual$std[j]^2, 
+                        lai_annual$std[j]^2, 
+                        (sm_era5_annual$std[j]*100)^2, 
+                        soc_annual$std[j]^2))
+    }
+    # LandTrendr, MODIS, ERA5_SM, SMAP, SoilGrids.
+    if (i >= 15 & i <= 19) {
+      var.names <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "SoilMoistFrac", "TotSoilCarb")
+      products <- c("LandTrendr", "MODIS", "ERA5_SM", "SMAP", "SoilGrids")
+      vec.mean <- c(agb_landtrendr_annual$mean[j],
+                    lai_annual$mean[j],
+                    sm_era5_annual$mean[j]*100,
+                    sm_smap_annual$mean[j],
+                    soc_annual$mean[j])
+      vec.cov <- diag(c(agb_landtrendr_annual$std[j]^2, 
+                        lai_annual$std[j]^2, 
+                        (sm_era5_annual$std[j]*100)^2, 
+                        sm_smap_annual$std[j]^2,
+                        soc_annual$std[j]^2))
+    }
+    # LandTrendr, GEDI, MODIS, ERA5_SM, SMAP, SoilGrids.
+    if (i >= 19 & i <= 23) {
+      var.names <- c("AbvGrndWood", "AbvGrndWood", "LAI", "SoilMoistFrac", "SoilMoistFrac", "TotSoilCarb")
+      products <- c("LandTrendr", "GEDI", "MODIS", "ERA5_SM", "SMAP", "SoilGrids")
+      vec.mean <- c(agb_landtrendr_annual$mean[j],
+                    agb_gedi_annual$mean[j],
+                    lai_annual$mean[j],
+                    sm_era5_annual$mean[j]*100,
+                    sm_smap_annual$mean[j],
+                    soc_annual$mean[j])
+      vec.cov <- diag(c(agb_landtrendr_annual$std[j]^2, 
+                        agb_gedi_annual$std[j]^2,
+                        lai_annual$std[j]^2, 
+                        (sm_era5_annual$std[j]*100)^2, 
+                        sm_smap_annual$std[j]^2,
+                        soc_annual$std[j]^2))
+    }
+    # GEDI, MODIS, ERA5_SM, SMAP, SoilGrids.
+    if (i == 24) {
+      var.names <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "SoilMoistFrac", "TotSoilCarb")
+      products <- c("GEDI", "MODIS", "ERA5_SM", "SMAP", "SoilGrids")
+      vec.mean <- c(agb_gedi_annual$mean[j],
+                    lai_annual$mean[j],
+                    sm_era5_annual$mean[j]*100,
+                    sm_smap_annual$mean[j],
+                    soc_annual$mean[j])
+      vec.cov <- diag(c(agb_gedi_annual$std[j]^2,
+                        lai_annual$std[j]^2, 
+                        (sm_era5_annual$std[j]*100)^2, 
+                        sm_smap_annual$std[j]^2,
+                        soc_annual$std[j]^2))
+    }
+    na_ind <- which(is.na(diag(vec.cov)))
+    if (length(na_ind) > 0) {
+      if(length(vec.mean) == 1){
+        vec.cov <- vec.cov[-na_ind]
+      }else{
+        vec.cov <- vec.cov[-na_ind, -na_ind]
+      }
+      products <- products[-na_ind]
+      vec.mean <- vec.mean[-na_ind]
+      vec.mean <- data.frame(matrix(vec.mean, 1)) %>% `colnames<-`(var.names[-na_ind])
+      names(vec.mean) <- var.names[-na_ind]
+    } else {
+      vec.mean <- data.frame(matrix(vec.mean, 1)) %>% `colnames<-`(var.names)
+    }
+    # add attributes.
+    for (k in seq_along(products)) {
+      attr(vec.mean[[k]], "source") <- products[k]
+    }
+    annual.mean[[j]] <- vec.mean
+    annual.cov[[j]] <- vec.cov
+  }
+  obs.mean[[i]] <- annual.mean
+  obs.cov[[i]] <- annual.cov
+}
+save(obs.mean, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.mean.Rdata")
+save(obs.cov, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.cov.Rdata")
+```
+
+# remove ERA5 observation.
+
+```{r}
+# 1. Load the original datasets
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.mean.Rdata")
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.cov.Rdata")
+
+# 2. Loop through years (i) and polygons/sites (j)
+for (i in seq_along(obs.mean)) {
+  for (j in seq_along(obs.mean[[i]])) {
+    
+    # Get the current list of variables for this site
+    current_mean <- obs.mean[[i]][[j]]
+    current_cov  <- obs.cov[[i]][[j]]
+    
+    # Identify which columns/elements do NOT have the "ERA5_SM" attribute
+    keep_indices <- sapply(seq_along(current_mean), function(k) {
+      src_attr <- attr(current_mean[[k]], "source")
+      is.null(src_attr) || src_attr != "ERA5_SM"
+    })
+    
+    # If any ERA5_SM variables were found, filter them out
+    if (!all(keep_indices)) {
+      # Filter the data frame columns/list elements
+      obs.mean[[i]][[j]] <- current_mean[keep_indices]
+      
+      # Subset the covariance matrix symmetrically (both rows and columns)
+      if (is.matrix(current_cov) || is.data.frame(current_cov)) {
+        obs.cov[[i]][[j]] <- current_cov[keep_indices, keep_indices, drop = FALSE]
+      } else {
+        obs.cov[[i]][[j]] <- current_cov[keep_indices]
+      }
+    }
+  }
+}
+
+# 3. Save the cleaned versions back to disk
+save(obs.mean, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.mean_noERA5_SM.Rdata")
+save(obs.cov, file = "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/obs.cov_noERA5_SM.Rdata")
+```
