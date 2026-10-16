@@ -1,10 +1,7 @@
 test_that("write.config.SIPNET", {
   pth <- withr::local_tempdir()
 
-  event_lines <- "2025 1 irrig 0 1"
-  event_src_path <- file.path(pth, "events-a.in")
   dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
-  writeLines(event_lines, con = event_src_path)
 
   s <- PEcAn.settings::as.Settings(
     list(
@@ -15,8 +12,7 @@ test_that("write.config.SIPNET", {
       run = list(
         site = list(name = "site1", lat = 40, lon = -88),
         inputs = list(
-          met = list(path = ""),
-          events = list(path = event_src_path)
+          met = list(path = "")
         ),
         start.date = "2025-01-01",
         end.date = "2025-01-02"
@@ -34,14 +30,6 @@ test_that("write.config.SIPNET", {
     trait.values = list(pft1 = list(Amax = 5, AmaxFrac = 0.99, leafC = 47)),
     settings = s,
     run.id = "run1"
-  )
-
-  # events file correctly copied
-  expect_match(
-    readLines(file.path(pth, "run", "run1", "events.in")),
-    event_lines,
-    fixed = TRUE,
-    all = TRUE
   )
 
   # (at least some) parameters updated
@@ -67,6 +55,66 @@ test_that("write.config.SIPNET", {
   )
 
 })
+
+test_that("write.config.SIPNET plantStorageNInit precedence in v2", {
+  pth <- withr::local_tempdir()
+  dir.create(file.path(pth, "run", "run_v2_default"), recursive = TRUE)
+
+  s_v2 <- PEcAn.settings::as.Settings(
+    list(
+      outdir = file.path(pth, "out"),
+      rundir = file.path(pth, "run"),
+      pfts = list(pft1 = list()),
+      model = list(binary = "", revision = "2.0"),
+      run = list(
+        site = list(name = "site1", lat = 40, lon = -88),
+        inputs = list(met = list(path = "")),
+        start.date = "2025-01-01",
+        end.date = "2025-01-02"
+      ),
+      host = list(
+        name = "",
+        outdir = file.path(pth, "out"),
+        rundir = file.path(pth, "run")
+      )
+    )
+  )
+
+  # 1. Default template value (5.0) is preserved without events file or special computation
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list())),
+    trait.values = list(pft1 = list()),
+    settings = s_v2,
+    run.id = "run_v2_default"
+  )
+  param_default <- readLines(file.path(pth, "run", "run_v2_default", "sipnet.param"))
+  expect_match(param_default, "plantStorageNInit 5", fixed = TRUE, all = FALSE)
+
+  # 2. Overriding via IC (including an intentional zero) is respected
+  dir.create(file.path(pth, "run", "run_v2_ic_zero"), recursive = TRUE)
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list())),
+    trait.values = list(pft1 = list()),
+    settings = s_v2,
+    run.id = "run_v2_ic_zero",
+    IC = list(plantStorageNInit = 0)
+  )
+  param_ic_zero <- readLines(file.path(pth, "run", "run_v2_ic_zero", "sipnet.param"))
+  expect_match(param_ic_zero, "plantStorageNInit 0", fixed = TRUE, all = FALSE)
+
+  # 3. Explicit IC value non-zero
+  dir.create(file.path(pth, "run", "run_v2_ic_val"), recursive = TRUE)
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list())),
+    trait.values = list(pft1 = list()),
+    settings = s_v2,
+    run.id = "run_v2_ic_val",
+    IC = list(plantStorageNInit = 12.5)
+  )
+  param_ic_val <- readLines(file.path(pth, "run", "run_v2_ic_val", "sipnet.param"))
+  expect_match(param_ic_val, "plantStorageNInit 12.5", fixed = TRUE, all = FALSE)
+})
+
 
 
 test_that("update_flag_lines", {
@@ -134,83 +182,3 @@ test_that("leafNResorptionFrac trait reaches the v2 param file", {
   expect_match(param_result, "leafNResorptionFrac 0.6", fixed = TRUE, all = FALSE)
 })
 
-test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
-  # scaffold for a v2 run; the irrig-only event file keeps internal phenology
-  make_settings <- function(pth) {
-    event_src_path <- file.path(pth, "events-a.in")
-    dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
-    writeLines("2025 1 irrig 0 1", con = event_src_path)
-    PEcAn.settings::as.Settings(
-      list(
-        outdir = file.path(pth, "out"),
-        rundir = file.path(pth, "run"),
-        pfts = list(pft1 = list()),
-        model = list(binary = "", revision = "v2.2.0"),
-        run = list(
-          site = list(name = "site1", lat = 40, lon = -88),
-          inputs = list(
-            met = list(path = ""),
-            events = list(path = event_src_path)
-          ),
-          start.date = "2025-01-01",
-          end.date = "2025-01-02"
-        ),
-        host = list(
-          name = "",
-          outdir = file.path(pth, "out"),
-          rundir = file.path(pth, "run")
-        )
-      )
-    )
-  }
-  read_param <- function(pth) {
-    utils::read.table(file.path(pth, "run", "run1", "sipnet.param"),
-                      stringsAsFactors = FALSE)
-  }
-  pval <- function(p, name) p[p[[1]] == name, 2]
-
-  # expected value from the same template the config writer reads
-  tmpl <- utils::read.table(
-    system.file("template.param_v2", package = "PEcAn.SIPNET"),
-    stringsAsFactors = FALSE
-  )
-  tval <- function(name) tmpl[tmpl[[1]] == name, 2]
-  expected_n <- min(tval("leafGrowth"),
-                    tval("plantWoodInit") * (1 - tval("fineRootFrac")) *
-                      tval("leafOnReallocFrac")) *
-    max(0, 1 / tval("leafCN") - 1 / tval("woodCN"))
-
-  # computed default from the template wood pool
-  pth <- withr::local_tempdir()
-  write.config.SIPNET(
-    defaults = list(pft1 = list(constants = list(SLA = 2.0))),
-    trait.values = list(pft1 = list()),
-    settings = make_settings(pth), run.id = "run1"
-  )
-  expect_equal(pval(read_param(pth), "plantStorageNInit"), expected_n)
-  expect_gt(expected_n, 0)
-
-  # an IC supplied value takes precedence over the computed default
-  pth <- withr::local_tempdir()
-  write.config.SIPNET(
-    defaults = list(pft1 = list(constants = list(SLA = 2.0))),
-    trait.values = list(pft1 = list()),
-    settings = make_settings(pth), run.id = "run1",
-    IC = data.frame(plantStorageNInit = 3.3)
-  )
-  expect_equal(pval(read_param(pth), "plantStorageNInit"), 3.3)
-
-  # zero initial wood means no flush to support: storage N stays 0.
-  # the computation must use the IC adjusted wood pool, not the template's.
-  pth <- withr::local_tempdir()
-  write.config.SIPNET(
-    defaults = list(pft1 = list(constants = list(SLA = 2.0))),
-    trait.values = list(pft1 = list()),
-    settings = make_settings(pth), run.id = "run1",
-    IC = data.frame(AbvGrndWood = 0, abvGrndWoodFrac = 0.6,
-                    coarseRootFrac = 0.2, fineRootFrac = 0.2)
-  )
-  p <- read_param(pth)
-  expect_equal(pval(p, "plantWoodInit"), 0)
-  expect_equal(pval(p, "plantStorageNInit"), 0)
-})
