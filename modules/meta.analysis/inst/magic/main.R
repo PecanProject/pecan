@@ -1,6 +1,7 @@
 #this will be the main file where the entire program will be run
 library(readxl)
 library(dplyr)
+library(taxize)
 
 source("extract_rows_traitID.R")
 
