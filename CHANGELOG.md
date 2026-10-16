@@ -47,6 +47,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- SIPNET SDA restarts wrote the `TotSoilCarb` analysis (soil + litter) into the soil pool, counting litter twice at every restart, and reset soil carbon to the template value when `TotSoilCarb` was not assimilated.
 - Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
 - A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
