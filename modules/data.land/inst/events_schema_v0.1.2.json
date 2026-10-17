@@ -50,6 +50,7 @@
               "org_n_kg_m2": { "type": "number", "minimum": 0 },
               "nh4_n_kg_m2": { "type": "number", "minimum": 0 },
               "no3_n_kg_m2": { "type": "number", "minimum": 0 },
+              "urea_n_kg_m2": { "type": "number", "minimum": 0 },
 
               "tillage_eff_0to1": { "type": "number", "minimum": 0 },
               "intensity_category": { "type": "string" },
@@ -66,7 +67,8 @@
                 "then": { "anyOf": [
                   { "required": ["org_c_kg_m2"] },
                   { "required": ["nh4_n_kg_m2"] },
-                  { "required": ["no3_n_kg_m2"] }
+                  { "required": ["no3_n_kg_m2"] },
+                  { "required": ["urea_n_kg_m2"] }
                 ] } },
               { "if": { "properties": { "event_type": { "const": "tillage" } } },
                 "then": { "required": ["tillage_eff_0to1"] } }
