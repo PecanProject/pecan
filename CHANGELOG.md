@@ -11,6 +11,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
+- `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
 - PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
 - Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 - Added a downscaling-error diagnostic to `inst/ilamb/` in PEcAn.benchmark: compares the downscaling random forest's out-of-bag RMSE against the between-member ensemble spread at the SDA sites, quantifying downscaling error the ensemble spread does not represent. (#4070)
@@ -47,6 +48,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - `PEcAn.DB::query.format.vars()` now stops with an informative error when the requested `format.id` (or the format of the requested `input.id`) does not exist in the database, instead of sending a malformed mimetype query and failing with a PostgreSQL syntax error (#2078).
+- Query latest release tag via git ls-remote in check package versions CI step to avoid API rate-limit failures (#4128).
+- Multisite sensitivity analyses gave every site the results of the last site, because `read.sa.output()` looked runs up in the shared run manifest instead of each site's `sa.run.ids`.
+- Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
+- A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).

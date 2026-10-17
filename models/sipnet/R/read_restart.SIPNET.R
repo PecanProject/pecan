@@ -28,10 +28,19 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
                                   outdir = file.path(outdir, runid),
                                   start.year = lubridate::year(stop.time),
                                   end.year = lubridate::year(stop.time),
-                                  variables = c(state.vars,"time_bounds"))
+                                  variables = c(state.vars,"time_bnds"))
+  time_bnds <- ens$time_bnds
+  if (is.null(time_bnds)) {
+    # outputs written before PEcAn.SIPNET switched to CF-style `time_bnds`
+    time_bnds <- PEcAn.utils::read.output(runid = runid,
+                                          outdir = file.path(outdir, runid),
+                                          start.year = lubridate::year(stop.time),
+                                          end.year = lubridate::year(stop.time),
+                                          variables = "time_bounds")$time_bounds
+  }
   #calculate last
   start.time <- as.Date(paste0(lubridate::year(stop.time),"-01-01"))
-  time_var <- ens$time_bounds[1,]
+  time_var <- time_bnds[1,]
   real_time <- as.POSIXct(time_var*3600*24, origin = start.time)
   # last <- which(as.Date(real_time)==as.Date(stop.time))[1]
   last <- which(as.Date(real_time)==as.Date(stop.time))[length(which(as.Date(real_time)==as.Date(stop.time)))]
