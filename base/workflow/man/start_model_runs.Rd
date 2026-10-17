@@ -5,19 +5,33 @@
 \alias{runModule_start_model_runs}
 \title{Start selected ecosystem model runs within PEcAn workflow}
 \usage{
-start_model_runs(settings, write = TRUE, stop.on.error = TRUE)
+start_model_runs(
+  settings,
+  write = TRUE,
+  stop.on.error = TRUE,
+  check_interval = 10
+)
 
-runModule_start_model_runs(settings, stop.on.error = TRUE)
+runModule_start_model_runs(settings, stop.on.error = TRUE, ...)
 }
 \arguments{
-\item{settings}{pecan settings object}
+\item{settings}{PEcAn settings object}
 
 \item{write}{(logical) Whether or not to write to the database. Default TRUE.}
 
-\item{stop.on.error}{Throw error if _any_ of the runs fails. Default TRUE.}
+\item{stop.on.error}{logical: Kill entire run if any job throws an error?}
+
+\item{check_interval}{Time in seconds to wait between queries of qsub job
+status.}
+
+\item{...}{passed on to start_model_runs}
 }
 \description{
-Start selected ecosystem model runs within PEcAn workflow
+Note: When using a queue system, PEcAn queries each job individually every
+`check_interval` seconds. The default interval of ten seconds was chosen for
+small sets of jobs in a fast-moving queue, and if used for large runs it can
+create excessive load. If you expect the whole run to take hours,
+consider checking much less often (every few minutes?) instead.
 }
 \section{Functions}{
 \itemize{

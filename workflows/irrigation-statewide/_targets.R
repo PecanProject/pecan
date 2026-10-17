@@ -31,10 +31,13 @@ exec_type <- Sys.getenv("IRRIGATION_EXEC_TYPE", config[["exec_type"]])
 stopifnot(exec_type %in% c("cluster", "local"))
 event_filename <- config[["event_filename"]]
 n_irr_ensemble <- config[["n_irr_ensemble"]]
-
+kc_timing <- config[["kc_timing"]]
+year1 <- as.integer(config[["year1"]])
+year2 <- as.integer(config[["year2"]])
 message(glue::glue(
   "PROJECT: {project}\n",
   "Running {n_parcels} parcels in batches of {batch_size} parcels each.\n",
+  "Kc timing: {kc_timing}.\n",
   "Execution type: {exec_type} with ",
   if (exec_type == "local") {
     "{n_local_workers} workers.\n"
@@ -117,7 +120,7 @@ list(
     stopifnot(
       file.exists(crops_path),
       dir.exists(mslsp_path),
-      length(list.files(mslsp_path, "\\.parquet")) == 7,
+      length(list.files(mslsp_path, "\\.parquet")) >= (year2 - year1 + 1L),
       dir.exists(cimis_etref_path),
       dir.exists(chirps_precip_path),
       file.exists(ssurgo_weights_path),
@@ -172,7 +175,7 @@ list(
 
   tar_target(
     complete_crop_timeseries,
-    make_crop_timeseries(crops_with_soil, phenology, precip, etref),
+    make_crop_timeseries(crops_with_soil, phenology, precip, etref, kc_timing),
     pattern = map(crops_with_soil, phenology, precip, etref),
     format = "parquet"
   ),

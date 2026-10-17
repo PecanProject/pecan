@@ -68,21 +68,23 @@ build_quietly <- function(pkg, ...) {
   warns <- list()
 
   tryCatch(
-    build_and_copy(pkg = pkg, ...),
+    withCallingHandlers(
+      build_and_copy(pkg = pkg, ...),
+      # Use withCallingHandlers so warnings are captured in the signalling
+      # context without aborting the build, and can be muffled properly
+      warning = function(w) {
+        w$message <- paste(
+          "⚠️ Warning building pkgdown site for", pkg, ":", w$message
+        )
+        warns <<- append(warns, list(w))
+        tryInvokeRestart("muffleWarning")
+      }
+    ),
     error = function(e) {
       e$message <- paste(
         "❌ Error building pkgdown site for", pkg, ":", e$message
       )
       err <<- e
-    },
-    # TODO this branch doesn't ever seem to run.
-    # Seems like pkgdown reports warnings as they happen, before returning
-    warning = function(w) {
-      w$message <- paste(
-        "⚠️ Warning building pkgdown site for", pkg, ":", w$message
-      )
-      warns <<- append(warns, w)
-      tryInvokeRestart("muffleWarning")
     }
   )
 
@@ -133,8 +135,9 @@ writeLines(
 build_warns <- purrr::map_lgl(build_results, \(x) length(x$warnings) > 0)
 if (any(build_warns)) {
   logger("⚠️ Warnings found in package(s)", packages[build_warns], ":")
-  purrr::map(build_results[build_warns], "warnings") |>
-    purrr::walk(rlang::warn)
+  purrr::walk(build_results[build_warns], \(res) {
+    purrr::walk(res$warnings, \(w) rlang::warn(conditionMessage(w)))
+  })
 }
 
 build_err <- purrr::map_lgl(build_results, \(x) !is.null(x$error))

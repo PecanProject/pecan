@@ -88,6 +88,11 @@ calc_water_balance <- function(
   if (!is.null(whc_min_frac)) {
     whc_min_frac <- ensure_vec(whc_min_frac, n, "whc_min_frac")
   }
+  # Allows irrigation_max to vary by timestep (150 when cropped, 0 between
+  # seasons). Without [t] below, R's min() looks at every value and one 0 zeros all irr.
+  if (!is.null(irrigation_max)) {
+    irrigation_max <- ensure_vec(irrigation_max, n, "irrigation_max")
+  }
 
   if (is.null(w_min)) {
     if (is.null(whc_min_frac)) {
@@ -118,7 +123,7 @@ calc_water_balance <- function(
     # If W0 falls below w_min (e.g., high ET; low precip), irrigate
     # to field capacity (i.e., full WHC), but no more than irrigation_max.
     if (W0 < w_min[t]) {
-      irr[t] <- min(whc[t] - W0, irrigation_max)
+      irr[t] <- min(whc[t] - W0, irrigation_max[t])
       W0 <- W0 + irr[t]
     } else {
       irr[t] <- 0
@@ -388,7 +393,7 @@ apply_water_balance <- function(
   }
 
   others <- df |>
-    dplyr::filter(.data$crop_name != "Rice") |>
+    dplyr::filter(is.na(.data$crop_name) | .data$crop_name != "Rice") |>
     dplyr::arrange(.data[[idcol]], .data$date) |> # nolint: object_usage_linter
     dplyr::mutate(
       year = as.integer(format(.data$date, "%Y")),

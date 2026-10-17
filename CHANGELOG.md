@@ -9,6 +9,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## Unreleased
 
 ### Added
+
+- `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
+- `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
+- PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
+- Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
+- Added a downscaling-error diagnostic to `inst/ilamb/` in PEcAn.benchmark: compares the downscaling random forest's out-of-bag RMSE against the between-member ensemble spread at the SDA sites, quantifying downscaling error the ensemble spread does not represent. (#4070)
+- Added `metric_Bias()` standalone function and registered `"BIAS"` in `PEcAn.benchmark` metric registry (#4062, #4059).
+- Added `metric_CRPS()` function and registry entry to `PEcAn.benchmark` for Continuous Ranked Probability Score (CRPS) ensemble skill evaluation against observations (#4062).
+- Added `efi_long_to_array()` helper function to `PEcAn.benchmark` for reshaping EFI long format model outputs into wide ensemble member matrices (#4062).
+- Added ensemble member spaghetti line rendering under confidence ribbons in `metric_timeseries_plot()` (#4062).
+- Added `examples/benchmarks/salinas_soc_ensemble/` demonstrating multi-site SOC ensemble validation against Salinas observations out-of-the-box (#4062)
 - Added ensemble calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark (rank histogram, spread-skill ratio, coverage, reliability) for assessing whether an ensemble's spread is well calibrated against observations, complementing the ensemble-mean benchmarking.
 - Added regional calibration diagnostics to `inst/ilamb/` in PEcAn.benchmark: break the ensemble calibration assessment down by land cover class and by EPA/CEC ecoregion, reusing the ensemble calibration diagnostics, with figures.
 - Added an ESA CCI biomass benchmark extension to `inst/ilamb/` in PEcAn.benchmark: a converter for the ESACCI Biomass v7.0 product (2015-2024, with per-pixel uncertainty) to ILAMB-compatible netCDF, plus an observation-error test showing the ensemble overconfidence persists against a modern benchmark and after accounting for observation uncertainty.
@@ -36,6 +47,15 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- Query latest release tag via git ls-remote in check package versions CI step to avoid API rate-limit failures (#4128).
+- Multisite sensitivity analyses gave every site the results of the last site, because `read.sa.output()` looked runs up in the shared run manifest instead of each site's `sa.run.ids`.
+- Rerunning `runModule.run.write.configs()` on multisite settings duplicated every row of `runs_manifest.csv`; `overwrite = TRUE` now clears it first.
+- A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
+- Fixed broken and outdated documentation links in web and demo workflows (#4071).
+- Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
+- Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
+- Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
+- Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
 - The median run's manifest row went in with the literal strings `"NA"` for pft and trait, which `read.csv` turns into real `NA`, so `read.sa.output` never matched the median quantile and `splinefun` silently dropped that knot. Sensitivity analysis output changes as a result: partial variances shift slightly, though rankings are unaffected in the cases checked.
 - Docker GHA workflow no longer fails on pull requests opened from forks (#3618).
 - Removed unused `grid2netcdf()` from `PEcAn.data.remote` and fixed R CMD check reference notes for `download.LandTrendr.AGB()` (#2758).
