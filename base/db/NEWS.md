@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `query.format.vars()`: if no format was found for the given `format.id` (or for the format of the given `input.id`), it now stops with "No format found ..." instead of sending a malformed mimetype query (`... where id = `) and failing with a PostgreSQL syntax error (#2078).
 * `arrhenius.scaling.traits()`: previously returned `NULL` when no temperature covariates were found, crashing `query.trait.data()` with `argument is of length zero`. The function now drops rows that lack a measurement temperature covariate and emits a `logger.warn()` with the row count. If no observations have any temperature covariate, an empty data frame (zero rows, same columns) is returned. The `missing.temp` argument is retained for backward compatibility but is no longer applied.
 * `filter_sunleaf_traits()`: returned `NULL` instead of `data` unchanged when no `canopy_layer` covariate was found. Now returns the input data frame unmodified in that case, consistent with the more standardised measurement protocol for sun-leaf traits.
 * `query.trait.data()`: the `warning()` call for missing trait data was placed after `return(NA)` and therefore never fired. Moved before the return and changed to `logger.warn()` for consistency with the rest of the codebase.
