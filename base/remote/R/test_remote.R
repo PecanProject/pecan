@@ -30,7 +30,9 @@ test_remote <- function(host, stderr = TRUE, ...) {
   }
   out <- remote.execute.cmd(host, cmd, args = args, stderr = stderr)
 
-  if (length(out) > 0 && out == test_string) {
+  # `out` can have several elements, e.g. when stderr = TRUE and the remote
+  # shell or ssh prints warnings or a banner alongside the echoed test string.
+  if (test_string %in% out) {
     return(TRUE)
   } else {
     msg <- paste("Error in remote execution. Here is the remote output:\n", paste(out, collapse = '\n'))

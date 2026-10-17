@@ -1,3 +1,8 @@
+# PEcAn.remote 1.9.1.9000
+
+* `test_remote()` no longer fails with a cryptic `'length = 2' in coercion to 'logical(1)'` error when the remote command produces more than one line of output (for example an SSH warning or login banner alongside the echoed test string). It now reports success if the test string appears anywhere in the output, and otherwise gives the documented error or `FALSE` result, including all the output.
+
+
 # PEcAn.remote 1.9.1
 
 * Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
