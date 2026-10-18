@@ -191,7 +191,12 @@ drop_same_pft_segments <- function(segments) {
     dplyr::mutate(
       pft_group = cumsum(
         dplyr::row_number() == 1 |
-          .data$pft != dplyr::lag(.data$pft)
+          is.na(.data$pft) |
+          is.na(dplyr::lag(.data$pft)) |
+          dplyr::coalesce(
+            .data$pft != dplyr::lag(.data$pft),
+            FALSE
+          )
       )
     ) |>
     dplyr::group_by(.data$pft_group) |>
@@ -235,14 +240,20 @@ write_segment_configs <- function(
     # No restarts needed. Return path to unaltered full-run script.
     return(file.path(run_dir, "job.sh"))
   }
-
   segments <- segments |>
     # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
     dplyr::mutate(
       pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code))
-        )
-    segments <- drop_same_pft_segments(segments)
+    )
+
+  segments <- drop_same_pft_segments(segments) |>
+    dplyr::mutate(
+      segment_dir = file.path(
+        segment_rootdir,
+        paste0("segment_", .data$segment_id)
+      )
+    )
   utils::write.csv(
     segments,
     file = file.path(run_dir, "segments.csv"),
