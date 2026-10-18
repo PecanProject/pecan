@@ -32,16 +32,15 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   # truning lists to dfs  for both mean and cov
   date.obs <-
     strsplit(names(point_list$median_AGB), "_")[3:length(point_list$median_AGB)] %>%
-    purrr::map_chr( ~ .x[2]) %>% paste0(., "/12/31")
+    purrr::map_chr( ~ .x[2]) %>% paste0("/12/31")
   
   #Making in a format that we need
   obs.mean <-
     names(point_list$median_AGB)[3:length(point_list$median_AGB)] %>%
     purrr::map(function(namesl) {
-      ((point_list$median_AGB)[[namesl]] %>%
-         purrr::map( ~ .x %>% as.data.frame %>% `colnames<-`(c('AbvGrndWood'))) %>%
-         stats::setNames(site.ids[1:length(.)])
-      )
+      site_means <- (point_list$median_AGB)[[namesl]] %>%
+        purrr::map( ~ .x %>% as.data.frame %>% `colnames<-`(c('AbvGrndWood')))
+      stats::setNames(site_means, site.ids[seq_along(site_means)])
     }) %>% stats::setNames(date.obs)
   
   
@@ -49,10 +48,9 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   obs.cov <-
     names(point_list$stdv_AGB)[3:length(point_list$median_AGB)] %>%
     purrr::map(function(namesl) {
-      ((point_list$stdv_AGB)[[namesl]] %>%
-         purrr::map(~ (.x) ^ 2 %>% as.matrix()) %>%
-         stats::setNames(site.ids[1:length(.)]))
-      
+      site_vars <- (point_list$stdv_AGB)[[namesl]] %>%
+        purrr::map(~ (.x) ^ 2 %>% as.matrix())
+      stats::setNames(site_vars, site.ids[seq_along(site_vars)])
     }) %>% stats::setNames(date.obs)
   
   
@@ -398,7 +396,7 @@ SDA_remote_launcher <-function(settingPath,
                                    )
 
    # Let's see what is the job id of the job doing
-   out.job.id<-PEcAn.remote::qsub_get_jobid(out = out.job.id[length(out.job.id)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = stop.on.error)
+   out.job.id<-PEcAn.remote::qsub_get_jobid(out = out.job.id[length(out.job.id)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = TRUE)
    
    if (length(out.job.id)==0 | is.null(out.job.id)){
      PEcAn.logger::logger.severe("Something broke the run before it starts!")

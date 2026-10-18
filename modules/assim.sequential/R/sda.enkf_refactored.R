@@ -185,14 +185,18 @@ sda.enkf <- function(settings,
       weight_list[[tt]] <- rep(1,nens) #no weights
     }
   } else{
-    load(file.path(settings$outdir, "ensemble_weights.Rdata"))  ## loads ensemble.samples
+    weights_env <- new.env()
+    load(file.path(settings$outdir, "ensemble_weights.Rdata"), envir = weights_env)  ## contains weight_list
+    weight_list <- weights_env$weight_list
   }
     
 
 
   #Generate parameter needs to be run before this to generate the samples. This is hopefully done in the main workflow.
   if(!file.exists(file.path(settings$outdir, "samples.Rdata"))) PEcAn.logger::logger.severe("samples.Rdata cannot be found. Make sure you generate samples by running the get.parameter.samples function before running SDA.")
-  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+  samples_env <- new.env()
+  load(file.path(settings$outdir, "samples.Rdata"), envir = samples_env)  ## contains ensemble.samples
+  ensemble.samples <- samples_env$ensemble.samples
   #reformatting params
   new.params <- list()
   for (i in seq_len(nens)) {
