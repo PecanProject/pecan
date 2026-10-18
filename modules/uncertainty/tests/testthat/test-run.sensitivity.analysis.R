@@ -48,6 +48,24 @@ sa_results <- function(settings) {
 }
 
 
+test_that("a trait with no spread is skipped and the rest are analysed", {
+  dir <- withr::local_tempdir()
+  withr::local_seed(1)
+  samples <- data.frame(SLA = stats::rnorm(5000, 20, 4), Vcmax = 50)
+  settings <- write_sa_fixture(dir, samples, function(x) 0.2 * x$SLA)
+  vd <- sa_results(settings)$pft1$variance.decomposition.output
+
+  expect_named(vd$partial.variances, "SLA")
+  expect_equal(vd$sensitivities[["SLA"]], 0.2, tolerance = 0.01)
+})
+
+test_that("a pft whose traits all have no spread is skipped", {
+  dir <- withr::local_tempdir()
+  settings <- write_sa_fixture(dir, data.frame(Vcmax = rep(50, 100)), function(x) x$Vcmax)
+
+  expect_null(sa_results(settings)$pft1)
+})
+
 test_that("a trait in Celsius is analysed in the units it was run in", {
   dir <- withr::local_tempdir()
   withr::local_seed(1)

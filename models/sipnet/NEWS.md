@@ -1,5 +1,9 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
+    soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
+    litter pool, so it is not comparable to a measured soil organic carbon
+    stock when the litter pool is on.
 * `model2netcdf.SIPNET` now names the time bounds variable `time_bnds` (the
     CF convention, and the name `cdo` already produces when merging
     sub-annual outputs) instead of `time_bounds`. `read_restart.SIPNET`
