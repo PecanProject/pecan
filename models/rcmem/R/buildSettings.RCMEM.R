@@ -211,8 +211,8 @@ buildSettings.RCMEM <- function(
   
   site_time_periods <- distinct(manifest_selected, gauge_id, startDate, endDate)
   
-  site_info <- site_info %>% 
-    dplyr::select(-c("startDate", "endDate")) %>%  
+  site_info <- site_info |>
+    dplyr::select(-c("startDate", "endDate")) |> 
     dplyr::left_join(site_time_periods, by = "gauge_id")
   
   # ------------------------------------------------------------------
@@ -264,7 +264,7 @@ buildSettings.RCMEM <- function(
       #     site_id
       #   )
       # }
-      
+
       # if (dplyr::n_distinct(site_runs$endDate) != 1) {
       #   stop(
       #     "Scenario end dates are not consistent for site ",
@@ -320,7 +320,7 @@ buildSettings.RCMEM <- function(
   PEcAn.settings::write.settings(
     settings,
     outputfile = "settings_RCMEM_unprepared.xml",
-    outputdir = .env$outdir
+    outputdir = outdir
   )
 
 }

@@ -234,7 +234,7 @@ met2model.RCMEM <- function(
     }
   )
 
-  # output_files
+  output_files
   
   
   manifest <- scenario_info |>

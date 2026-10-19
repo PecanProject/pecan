@@ -18,11 +18,12 @@ devtools::install_github("https://github.com/Smithsonian/rCMEM")
 # 4. Load version into memory
 library(rCMEM)
 
+if ("PEcAn.RCMEM" %in% (.packages())){
+  detach("PEcAn.RCMEM", unload=TRUE) 
+}
 
 remotes::install_github("abbylewis/pecan", subdir = "models/rcmem", 
                         ref = "mem_dev")
-
-
 
 if ("data.water" %in% (.packages())){
   detach("package:data.water", unload=TRUE) 

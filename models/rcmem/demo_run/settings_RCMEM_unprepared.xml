@@ -66,9 +66,9 @@
     </met>
    </inputs>
   </site.Tijuana>
-  <site.Seal Beach>
+  <site.SealBeach>
    <site>
-    <id>Seal Beach</id>
+    <id>SealBeach</id>
     <met.start>1923-01-01</met.start>
     <met.end>2100-12-31</met.end>
     <gauge_id>9410660</gauge_id>
@@ -93,7 +93,7 @@
      </path>
     </met>
    </inputs>
-  </site.Seal Beach>
+  </site.SealBeach>
   <site.Triangle>
    <site>
     <id>Triangle</id>

@@ -3,7 +3,7 @@
 
 # Create Site Table
 sites <- data.frame(
-  id = c("Tijuana", "Seal Beach", "Triangle"), 
+  id = c("Tijuana", "SealBeach", "Triangle"), 
   latitude = c(32.57427143, 33.73520729, 37.45842503),	
   longitude = c(-117.1287429, -118.0792275, -121.9773209)
 )
@@ -26,14 +26,20 @@ scenario_output <- data.water::generateFullTidalScenario(
   datum_start_year = 1980,
   datum_end_year = 2025)
 
-met2model.RCMEM(scenario_output, outfolder = "demo_run/data/met")
+PEcAn.RCMEM::met2model.RCMEM(scenario_output, 
+                             outfolder = "demo_run/data/met",
+                             overwrite = T)
 
 scenario_manifest <- read_csv("demo_run/data/met/scenario_manifest.csv")
 
-buildSettings.RCMEM(site_info = sites_w_gauges,
+PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
                     scenario_manifest = scenario_manifest,
                     scenario = c("ssp126", "ssp245", "ssp370"),
                     confidence = "medium",
                     quantiles = c(0.25, 0.5, 0.75),
                     outdir = "demo_run/"
                     )
+settings_unprepared <-  PEcAn.settings::read.settings("demo_run/settings_RCMEM_unprepared.xml")
+
+settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
+
