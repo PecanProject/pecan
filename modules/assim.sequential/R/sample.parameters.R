@@ -23,9 +23,7 @@ sample.parameters <- function(ne, settings, con) {
   prior.db <- PEcAn.DB::db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", 
                               settings$assim.sequential$prior), con)
   prior.db <- prior.db[grep("post.distns.Rdata", prior.db$file_name), ]
-  prior_env <- new.env()
-  load(file.path(prior.db$file_path, "post.distns.Rdata"), envir = prior_env)
-  post.distns <- prior_env$post.distns
+  post.distns <- PEcAn.utils::load_local(file.path(prior.db$file_path, "post.distns.Rdata"))$post.distns
 
   ## sample from priors
   nvar <- nrow(post.distns)

@@ -38,9 +38,9 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
   obs.mean <-
     names(point_list$median_AGB)[3:length(point_list$median_AGB)] %>%
     purrr::map(function(namesl) {
-      site_means <- (point_list$median_AGB)[[namesl]] %>%
-        purrr::map( ~ .x %>% as.data.frame %>% `colnames<-`(c('AbvGrndWood')))
-      stats::setNames(site_means, site.ids[seq_along(site_means)])
+      site_medians <- (point_list$median_AGB)[[namesl]] %>%
+        purrr::map(\(x) data.frame(AbvGrndWood = x))
+      stats::setNames(site_medians, site.ids[seq_along(site_medians)])
     }) %>% stats::setNames(date.obs)
   
   
@@ -49,7 +49,7 @@ Obs.data.prepare.MultiSite <- function(obs.path, site.ids) {
     names(point_list$stdv_AGB)[3:length(point_list$median_AGB)] %>%
     purrr::map(function(namesl) {
       site_vars <- (point_list$stdv_AGB)[[namesl]] %>%
-        purrr::map(~ (.x) ^ 2 %>% as.matrix())
+        purrr::map(~as.matrix(.x^2))
       stats::setNames(site_vars, site.ids[seq_along(site_vars)])
     }) %>% stats::setNames(date.obs)
   
@@ -396,9 +396,9 @@ SDA_remote_launcher <-function(settingPath,
                                    )
 
    # Let's see what is the job id of the job doing
-   out.job.id<-PEcAn.remote::qsub_get_jobid(out = out.job.id[length(out.job.id)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = TRUE)
-   
-   if (length(out.job.id)==0 | is.null(out.job.id)){
+   out.job.id<-PEcAn.remote::qsub_get_jobid(out = out.job.id[length(out.job.id)], qsub.jobid = settings$host$qsub.jobid, stop.on.error = FALSE)
+
+   if (length(out.job.id)==0 || is.null(out.job.id) || all(is.na(out.job.id))){
      PEcAn.logger::logger.severe("Something broke the run before it starts!")
      PEcAn.logger::logger.severe(paste0("In order to get a better sense of what happened you can check out ",settings$outdir,"/log.qlog"))
    }

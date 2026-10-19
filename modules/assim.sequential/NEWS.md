@@ -3,10 +3,9 @@
 ## Fixed
 
 * `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument; they previously referenced an undefined variable `rloc` and would fail when called (#2758).
-* `tobit_model_censored()` keeps the compiled nimble model and MCMC objects it reuses across timesteps in a package-level environment instead of assigning them into the global environment (#2758).
 * `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` now read `nt`, `obs.mean`, `blocked.dis` and `distances` from `...` explicitly instead of assigning them into the global environment (#2758).
-* `SDA_remote_launcher()` no longer references an undefined `stop.on.error` when reading the qsub job id (#2758).
-* Loading of `post.distns.Rdata` and `samples.Rdata` now reads the needed object from a local environment instead of relying on `load()` to create it by name (#2758).
+* `SDA_remote_launcher()` no longer references an undefined `stop.on.error` when reading the qsub job id, and now reports a missing job id through its own error message (#2758).
+* Objects read from `post.distns.Rdata`, `samples.Rdata` and `ensemble_weights.Rdata` are now loaded with `PEcAn.utils::load_local()` instead of relying on `load()` to create them by name (#2758).
 
 
 

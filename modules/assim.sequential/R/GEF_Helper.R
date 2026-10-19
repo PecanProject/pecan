@@ -1,8 +1,3 @@
-# Compiled nimble model and MCMC objects built by tobit_model_censored() at
-# t == 1 and reused on later timesteps. Kept here rather than in the global
-# environment.
-.tobit_env <- new.env(parent = emptyenv())
-
 #' tobit_model_censored
 #'
 #' @param settings (list) pecan standard settings list.
@@ -64,11 +59,11 @@ tobit_model_censored <- function(settings, X, var.names, mu.f, Pf, t) {
       nu_0 = 3
     )#some measure of prior obs
     
-    inits.tobit2space <-
+    inits.tobit2space <<-
       list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
     #set.seed(0)
     #ptm <- proc.time()
-    tobit2space_pred <-
+    tobit2space_pred <<-
       nimbleModel(
         tobit2space.model,
         data = data.tobit2space,
@@ -77,14 +72,14 @@ tobit_model_censored <- function(settings, X, var.names, mu.f, Pf, t) {
         name = 'space'
       )
     ## Adding X.mod,q,r as data for building model.
-    conf_tobit2space <-
+    conf_tobit2space <<-
       configureMCMC(tobit2space_pred, thin = 10, print = TRUE)
     conf_tobit2space$addMonitors(c("pf", "muf", "y.censored"))
     ## important!
     ## this is needed for correct indexing later
-    samplerNumberOffset_tobit2space <-
+    samplerNumberOffset_tobit2space <<-
       length(conf_tobit2space$getSamplers())
-
+    
     for (j in seq_along(mu.f)) {
       for (n in seq_len(nrow(X))) {
         node <- paste0('y.censored[', n, ',', j, ']')
@@ -92,20 +87,15 @@ tobit_model_censored <- function(settings, X, var.names, mu.f, Pf, t) {
                                                                      'RW'))
       }
     }
-
+    
     #conf_tobit2space$printSamplers()
-
-    Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
-
-    Cmodel_tobit2space <- compileNimble(tobit2space_pred)
-    Cmcmc_tobit2space <-
+    
+    Rmcmc_tobit2space <<- buildMCMC(conf_tobit2space)
+    
+    Cmodel_tobit2space <<- compileNimble(tobit2space_pred)
+    Cmcmc_tobit2space <<-
       compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
-
-    ## keep the compiled objects for reuse at t > 1
-    .tobit_env$samplerNumberOffset_tobit2space <- samplerNumberOffset_tobit2space
-    .tobit_env$Cmodel_tobit2space <- Cmodel_tobit2space
-    .tobit_env$Cmcmc_tobit2space <- Cmcmc_tobit2space
-
+    
     for (i in seq_along(X)) {
       ## ironically, here we have to "toggle" the value of y.ind[i]
       ## this specifies that when y.ind[i] = 1,
@@ -115,32 +105,23 @@ tobit_model_censored <- function(settings, X, var.names, mu.f, Pf, t) {
                                     'toggle',
                                     1 - x.ind[i])
     }
-
+    
   } else{
-    samplerNumberOffset_tobit2space <- .tobit_env$samplerNumberOffset_tobit2space
-    Cmodel_tobit2space <- .tobit_env$Cmodel_tobit2space
-    Cmcmc_tobit2space <- .tobit_env$Cmcmc_tobit2space
-    if (is.null(Cmcmc_tobit2space)) {
-      PEcAn.logger::logger.severe(
-        "tobit_model_censored() must be called with t == 1 before later timesteps,",
-        "so that the compiled nimble model exists.")
-    }
-
     Cmodel_tobit2space$y.ind <- x.ind
     Cmodel_tobit2space$y.censored <- x.censored
-
+    
     inits.tobit2space = list(pf = Pf, muf = colMeans(X))
     Cmodel_tobit2space$setInits(inits.tobit2space)
-
+    
     for (i in seq_along(X)) {
       valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space +
                                                                           i]],
                                     'toggle',
                                     1 - x.ind[i])
     }
-
+    
   }
-
+  
   dat.tobit2space <-
     runMCMC(Cmcmc_tobit2space,
             niter = 50000,

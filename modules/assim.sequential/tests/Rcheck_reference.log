@@ -46,8 +46,29 @@ sda.enkf.original: no visible binding for global variable ‘YN’
 sda.enkf.original: no visible binding for global variable ‘J’
 sda.enkf.original: no visible binding for global variable ‘lambda_0’
 sda.enkf.original: no visible binding for global variable ‘nu_0’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘tobit2space_pred’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘conf_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘tobit2space_pred’
+tobit_model_censored: no visible binding for global variable
+  ‘conf_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘samplerNumberOffset_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘Rmcmc_tobit2space’
+tobit_model_censored: no visible binding for '<<-' assignment to
+  ‘Cmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘Rmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘Cmcmc_tobit2space’
+tobit_model_censored: no visible binding for global variable
+  ‘samplerNumberOffset_tobit2space’
 Undefined global functions or variables:
-  J N YN lambda_0 nu_0 returnType
+  Cmcmc_tobit2space J N Rmcmc_tobit2space YN conf_tobit2space lambda_0
+  nu_0 returnType samplerNumberOffset_tobit2space tobit2space_pred
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK

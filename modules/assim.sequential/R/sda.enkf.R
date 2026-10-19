@@ -211,9 +211,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     # 
     # repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
       PEcAn.uncertainty::get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
-      samples_env <- new.env()
-      load(file.path(settings$outdir, "samples.Rdata"), envir = samples_env)  ## contains ensemble.samples
-      ensemble.samples <- samples_env$ensemble.samples
+      ensemble.samples <- PEcAn.utils::load_local(file.path(settings$outdir, "samples.Rdata"))$ensemble.samples
     #   cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
     #   tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1
     #   cumulative_ensemble_samples <- cumulative_ensemble_samples[tot_check,]
