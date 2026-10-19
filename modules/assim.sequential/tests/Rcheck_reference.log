@@ -39,30 +39,6 @@ License stub is invalid DCF.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-EnKF.MultiSite: no visible binding for global variable ‘blocked.dis’
-GEF: no visible binding for global variable ‘obs.mean’
-GEF: no visible global function definition for ‘abline’
-GEF.MultiSite: no visible binding for global variable ‘blocked.dis’
-GEF.MultiSite: no visible binding for global variable ‘nt’
-GEF.MultiSite: no visible binding for global variable ‘distances’
-GEF.MultiSite: no visible binding for global variable ‘obs.mean’
-Obs.data.prepare.MultiSite: no visible binding for global variable ‘.’
-Obs.data.prepare.MultiSite : <anonymous>: no visible binding for global
-  variable ‘.’
-SDA_remote_launcher: no visible binding for global variable
-  ‘stop.on.error’
-generate_colors_sda: no visible global function definition for
-  ‘col2rgb’
-generate_colors_sda: no visible global function definition for ‘rgb’
-load_data_paleon_sda: no visible binding for global variable
-  ‘MCMC_iteration’
-load_data_paleon_sda: no visible binding for global variable ‘site_id’
-load_data_paleon_sda: no visible binding for global variable ‘pft.cat’
-piecew.poly.local: no visible binding for global variable ‘rloc’
-sample.parameters: no visible binding for global variable ‘post.distns’
-sample_met: no visible binding for global variable ‘host’
-sda.enkf: no visible binding for global variable ‘ensemble.samples’
-sda.enkf.original: no visible global function definition for ‘is’
 sda.enkf.original : <anonymous>: no visible global function definition
   for ‘returnType’
 sda.enkf.original: no visible binding for global variable ‘N’
@@ -70,10 +46,6 @@ sda.enkf.original: no visible binding for global variable ‘YN’
 sda.enkf.original: no visible binding for global variable ‘J’
 sda.enkf.original: no visible binding for global variable ‘lambda_0’
 sda.enkf.original: no visible binding for global variable ‘nu_0’
-sda.enkf.original: no visible global function definition for ‘cov’
-sda.enkf.original : <anonymous>: no visible global function definition
-  for ‘quantile’
-simple.local: no visible binding for global variable ‘rloc’
 tobit_model_censored: no visible binding for '<<-' assignment to
   ‘tobit2space_pred’
 tobit_model_censored: no visible binding for '<<-' assignment to
@@ -95,24 +67,8 @@ tobit_model_censored: no visible binding for global variable
 tobit_model_censored: no visible binding for global variable
   ‘samplerNumberOffset_tobit2space’
 Undefined global functions or variables:
-  . Cmcmc_tobit2space J MCMC_iteration N Rmcmc_tobit2space YN abline
-  blocked.dis col2rgb conf_tobit2space cov distances ensemble.samples
-  host is lambda_0 nt nu_0 obs.mean pft.cat post.distns quantile
-  returnType rgb rloc samplerNumberOffset_tobit2space site_id
-  stop.on.error tobit2space_pred
-Consider adding
-  importFrom("grDevices", "col2rgb", "rgb")
-  importFrom("graphics", "abline")
-  importFrom("methods", "is")
-  importFrom("stats", "cov", "quantile")
-to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
-contains 'methods').
-
-Found the following assignments to the global environment:
-File ‘PEcAnAssimSequential/R/Analysis_sda.R’:
-  assign(name, dots[[name]], pos = 1)
-File ‘PEcAnAssimSequential/R/Analysis_sda_multiSite.R’:
-  assign(name, dots[[name]], pos = 1)
+  Cmcmc_tobit2space J N Rmcmc_tobit2space YN conf_tobit2space lambda_0
+  nu_0 returnType samplerNumberOffset_tobit2space tobit2space_pred
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
