@@ -14,11 +14,6 @@
 #'         \code{MultiSettings}.
 #'   \item If \code{settings} is a \code{Settings} object,
 #'         then \code{papply} knows to call \code{fn} on it directly.
-#'   \item If \code{settings} is a generic \code{list},
-#'         then \code{papply} coerces it to a \code{Settings} object
-#'         and then calls \code{fn} on it directly.
-#'         This is meant for backwards compatibility with old-fashioned PEcAn
-#'         settings lists, but could have unintended consequences
 #'   \item By default, \code{papply} will proceed even if \code{fn} throws an
 #'         error for one or more of the elements in \code{settings}.
 #'         Note that if this option is used, the returned results list will
@@ -163,4 +158,4 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
     PEcAn.logger::logger.severe(
       "The function", fn, "requires input of type MultiSettings or Settings")
   }
-} # papply
+} # papply2
