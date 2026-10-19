@@ -15,11 +15,12 @@ test_that("write_segmented_configs", {
   c("run_id,site_id", "ENS-00001-a,a") |>
     writeLines(file.path(pth, "runs_manifest.csv"))
   data.frame(
-    year=2025,
+    year = 2025,
     day = rep(1:31, each = 4),
     hour = rep(c(0, 6, 12, 18), 31),
+    step = 0.25,
     # rest of columns not used by test, just need to be 12 of them
-    c4 = NA, c5 = NA, c6 = NA, c7 = NA, c8 = NA, c9 = NA, c10 = NA, c11 = NA,
+    c5 = NA, c6 = NA, c7 = NA, c8 = NA, c9 = NA, c10 = NA, c11 = NA,
     c12 = NA 
   ) |>
     write.table(file = met_path, quote = FALSE,

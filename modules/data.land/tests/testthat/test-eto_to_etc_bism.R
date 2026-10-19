@@ -40,6 +40,35 @@ test_that("eto_to_etc_bism handles date-based anchors", {
   expect_equal(etc_date, eto * expected_kc)
 })
 
+test_that("eto_to_etc_bism handles overwinter cross-year crops in date mode", {
+  kc_row <- bism_kc_by_crop |>
+    dplyr::filter(.data$crop_name == "Wheat", .data$landiq_match == "exact")
+  expect_equal(nrow(kc_row), 1)
+
+  # Wheat plants Nov 1 and harvests May 31.
+  # Evaluate dates crossing the Jan 1 calendar year boundary.
+  dates <- as.Date(c(
+    "2020-11-01",  # planting (0%)
+    "2020-12-27",  # early growth (~26.5%, between B=20 and C=45)
+    "2021-01-10",  # mid-growth (~33.2%, between B=20 and C=45)
+    "2021-02-28",  # mid-season peak (~56.4%, between C=45 and D=75)
+    "2021-05-31"   # harvest (100%)
+  ))
+  eto <- rep(5, length(dates))
+
+  etc <- eto_to_etc_bism(eto, crop_name = "Wheat", date = dates)
+  kc <- etc / eto
+
+  # Kc on Jan 10 must be higher than Dec 27 across the new year
+  expect_gt(kc[3], kc[2])
+
+  # Kc in late February reaches peak mid-season KcC (1.10)
+  expect_equal(kc[4], kc_row$KcC)
+
+  # Kc at harvest equals end-of-season KcE (0.15)
+  expect_equal(kc[5], kc_row$KcE)
+})
+
 test_that("eto_to_etc_bism handles canopy-cover rules", {
   # landiq_match fallbacks reuse crop_name; pick the exact BIS row.
   kc_row <- bism_kc_by_crop |>
