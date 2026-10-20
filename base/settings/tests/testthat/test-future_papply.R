@@ -89,5 +89,3 @@ test_that("stop.on.error works as expected when returning new MultiSettings", {
   expect_error(actual <- future_papply(multiSettings, fun2, stop.on.error = TRUE))
   expect_null(actual)
 })
-
-# test_that("parallel papply", {})
