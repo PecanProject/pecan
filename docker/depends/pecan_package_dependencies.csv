@@ -7,7 +7,6 @@
 "amerifluxr","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.atmosphere","Imports",FALSE
 "arrow","*","modules/data.land","Imports",FALSE
-"arrow","*","modules/data.water","Imports",FALSE
 "assertthat","*","models/ed","Imports",FALSE
 "assertthat","*","modules/data.atmosphere","Imports",FALSE
 "BayesianTools","*","modules/assim.batch","Imports",FALSE
@@ -503,7 +502,6 @@
 "readr","*","models/ldndc","Imports",FALSE
 "readr","*","modules/assim.sequential","Suggests",FALSE
 "readr","*","modules/data.land","Suggests",FALSE
-"readr","*","modules/data.water","Imports",FALSE
 "REddyProc","*","modules/data.atmosphere","Imports",FALSE
 "redland","*","modules/data.land","Suggests",FALSE
 "reshape","*","modules/data.remote","Suggests",FALSE
@@ -732,7 +730,6 @@
 "utils","*","modules/benchmark","Imports",FALSE
 "utils","*","modules/data.atmosphere","Imports",FALSE
 "utils","*","modules/data.remote","Suggests",FALSE
-"utils","*","modules/data.water","Imports",FALSE
 "utils","*","modules/photosynthesis","Imports",FALSE
 "vdiffr",">= 1.0.2","base/qaqc","Suggests",FALSE
 "VulnToolkit","*","modules/data.water","Imports",FALSE

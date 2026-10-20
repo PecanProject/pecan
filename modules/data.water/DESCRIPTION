@@ -7,16 +7,13 @@ Authors@R:
 Description: Functions for querying databases and creating scenarios for models that take water level and flooding parameters as inputs.
 Depends: R (>= 4.1.0)
 Imports:
-    arrow,
     dplyr,
     lubridate,
     purrr,
-    readr,
     rlang,
     sf,
     tibble,
     tidyr,
-    utils,
     VulnToolkit
 Suggests:
     knitr,

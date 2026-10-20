@@ -56,13 +56,12 @@ findNearestNoaaGauge <- function(
     sites <- sf::st_transform(sites, crs = 4326)
   }
 
-  gauges_tab <- readr::read_csv(
+  gauges_tab <- readRDS(
     system.file(
       "extdata",
-      "noaa_us_gauge_info.csv",
+      "noaa_us_gauge_info.rds",
       package = "PEcAn.data.water"
-    ),
-    show_col_types = F
+    )
   )
 
 

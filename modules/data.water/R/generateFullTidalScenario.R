@@ -40,11 +40,11 @@ generateFullTidalScenario <- function(
 ) {
 
   gauge_path <- system.file("extdata",
-                            "noaa_us_gauge_info.csv",
+                            "noaa_us_gauge_info.rds",
                             package = "PEcAn.data.water")
 
   # 4. Query future SLR
-  gauge_tab <- utils::read.csv(gauge_path)
+  gauge_tab <- readRDS(gauge_path)
 
   # [1] "ssp119"         "ssp126"         "ssp245"         "ssp370"         "ssp585"
   # [6] "tlim1.5win0.25" "tlim2.0win0.25" "tlim3.0win0.25" "tlim4.0win0.25" "tlim5.0win0.25"
@@ -147,11 +147,11 @@ generateFullTidalScenario <- function(
       #   msl_hindcast$meanSeaLevel[msl_hindcast$year == forecast_start-1]
 
       path <- system.file("extdata",
-                          "ar6_us_compiled_senarios.parquet",
+                          "ar6_us_compiled_scenarios.rds",
                           package = "PEcAn.data.water")
 
       # 4. Query future SLR
-      ar6 <- arrow::read_parquet(path)
+      ar6 <- readRDS(path)
 
       ar6_filtered <- ar6 |>
         dplyr::filter(.data$noaa_id == .env$station_id,
@@ -253,10 +253,10 @@ generateFullTidalScenario <- function(
     # 5. Query tidal constituents
 
     tidal_datum_path <- system.file("extdata",
-                                    "annual_compiled_datums.parquet",
+                                    "annual_compiled_datums.rds",
                                     package = "PEcAn.data.water")
 
-    tidal_datums <- arrow::read_parquet(tidal_datum_path) |>
+    tidal_datums <- readRDS(tidal_datum_path) |>
       dplyr::rename(noaa_id = "station_id") |>
       dplyr::filter(.data$noaa_id == .env$station_id) |>
       dplyr::filter(! .data$Datum %in% c("HOT", "LOT"))
@@ -302,10 +302,10 @@ generateFullTidalScenario <- function(
     if (include_lt_tidal_const) {
 
       lt_tide_const_path <- system.file("extdata",
-                                        "long_term_tidal_constituents.parquet",
+                                        "long_term_tidal_constituents.rds",
                                         package = "PEcAn.data.water")
 
-      lt_tide_const <- arrow::read_parquet(lt_tide_const_path)
+      lt_tide_const <- readRDS(lt_tide_const_path)
 
       lt_tide_const <- lt_tide_const |>
         dplyr::rename(noaa_id = "station_id") |>
