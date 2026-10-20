@@ -79,8 +79,20 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("TotSoilCarb" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
-    if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
+    # TotSoilCarb is soil + litter, but soilInit is the soil pool alone
+    litter <- if ("litter_carbon_content" %in% variables) {
+      new.state$litter_carbon_content
+    } else {
+      PEcAn.utils::ud_convert(new.params$restart[["litter_carbon_content"]], 'g m-2', 'kg m-2')
+    }
+    soil <- new.state$TotSoilCarb - litter
+    # the analysis is bounded per variable, so it can fall below litter, and sipnet has no negative soil pool
+    if (soil < 0) {
+      PEcAn.logger::logger.warn("TotSoilCarb analysis", new.state$TotSoilCarb,
+                                "is less than litter carbon", litter, "in run", runid, "; soilInit set to 0")
+      soil <- 0
+    }
+    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(soil, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
     names(analysis.save[[length(analysis.save)]]) <- c("soil")
   }
   
