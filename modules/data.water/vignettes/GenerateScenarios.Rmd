@@ -16,13 +16,8 @@ library(tidyverse)
 ## Run Some Queries
 
 ``` {r run queries}
-
-gauge_path <- system.file("extdata",
-                          "noaa_us_gauge_info.rds",
-                          package = "PEcAn.data.water")
-
 # 4. Query future SLR
-gauge_tab <- readRDS(gauge_path) |>
+gauge_tab <- PEcAn.data.water::noaa_us_gauge_info |>
   filter(noaa_id %in% c(c(9410170, 9410660, 9414290))) |>
   rename(gauge_id = noaa_id)
 
