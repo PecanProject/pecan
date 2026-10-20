@@ -38,7 +38,7 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
 
   years <- as.numeric(start_date):as.numeric(end_date)
   
-  ### Loop over years in PEPRMT output to create separate netCDF outputs
+  ### Loop over years in output to create separate netCDF outputs
   for (y in years) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
       next
@@ -94,8 +94,6 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     # time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
     #                                   longname="history time interval endpoint dimensions",
     #                                   vals = 1:2, units="")
-    
-    # sub.PEPRMT.output <- sub.PEPRMT.output[c(fluxes, pools)]
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list()

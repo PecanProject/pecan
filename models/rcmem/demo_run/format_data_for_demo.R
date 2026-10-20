@@ -4,7 +4,7 @@ library(rCMEM)
 
 # Inputs
 # SLR
-annapolis_gap_filled <- read_csv("models/rcmem/demo_run/data/annapolis_gap_filled.csv")
+annapolis_gap_filled <- read_csv("demo_run/data/annapolis_gap_filled.csv")
 
 loess_model <- loess(msl_cm~year, data = annapolis_gap_filled)
 annapolis_gap_filled$loess_msl <- predict(loess_model, data.frame(year = annapolis_gap_filled$year))
@@ -56,9 +56,7 @@ a_mem_run <- runCohortMem2(run_spinup = 1,
                            rootToShoot = 1.7
 )
 
-a_mem_run2 <- rCMEM::calculateCarbonFlux(a_mem_run[[1]], a_mem_run[[2]])
-
-scenario <- a_mem_run2[[1]] %>% filter(year == 1928)
+scenario <- a_mem_run[[2]] %>% filter(year == 1928)
 cohorts <- a_mem_run[[1]] %>% filter(year == 1928)
 species <- a_mem_run[[3]] %>% filter(year == 1928)
 
@@ -67,7 +65,7 @@ inits_to_run <- list(initial_scenario = scenario,
                      initial_species = species
                      )
 
-write_rds(inits_to_run, "models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/inits_RCMEM.rds")
+write_rds(inits_to_run, "demo_run/input_demo_out/run/ENS-00001-SERC/inits_RCMEM.rds")
 
 drivers_to_run <- list(nFloods = nFloods,
                        flood_frequency = flood_frequency,
@@ -78,7 +76,7 @@ drivers_to_run <- list(nFloods = nFloods,
                        suspendedSediment = 10 * 1e-06
                        )
 
-write_rds(drivers_to_run, "models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/drivers_RCMEM.rds")
+write_rds(drivers_to_run, "demo_run/input_demo_out/run/ENS-00001-SERC/drivers_RCMEM.rds")
 
 parameters_to_run <- list(rootShape = c(0),
                           omDecayRateFast = 0.99,
@@ -101,7 +99,7 @@ parameters_to_run <- list(rootShape = c(0),
                           rootPackingDensity = 0.07
                           )
 
-write_rds(parameters_to_run, "models/rcmem/demo_run/input_demo_out/run/ENS-00001-SERC/parameters_RCMEM.rds")
+write_rds(parameters_to_run, "demo_run/input_demo_out/run/ENS-00001-SERC/parameters_RCMEM.rds")
 
 
 a_core <- buildSoilCore(cohorts = a_mem_run[[1]], coreYear = 1928, coreDepth = 200)
@@ -112,6 +110,6 @@ a_dates_4 <- simulateRadioisotopeDates(core = a_core, cs137_anomaly = 0.6,
                                        cs137_erosion_loss = 0.25,
                                        pb210_erosion_loss = 0.25)
 
-write_csv(scenario, "models/rcmem/demo_run/input_demo_out/out/ENS-00001-SERC/scenario_out.csv")
-write_csv(cohorts, "models/rcmem/demo_run/input_demo_out/out/ENS-00001-SERC/cohorts_out.csv")
-write_csv(species, "models/rcmem/demo_run/input_demo_out/out/ENS-00001-SERC/species_out.csv")
+write_csv(scenario, "demo_run/input_demo_out/out/ENS-00001-SERC/scenario_out.csv")
+write_csv(cohorts, "demo_run/input_demo_out/out/ENS-00001-SERC/cohorts_out.csv")
+write_csv(species, "demo_run/input_demo_out/out/ENS-00001-SERC/species_out.csv")
