@@ -40,11 +40,11 @@ generateFullTidalScenario <- function(
 ) {
 
   gauge_path <- system.file("extdata",
-                            "noaa_us_gauge_info.parquet",
+                            "noaa_us_gauge_info.csv",
                             package = "PEcAn.data.water")
 
   # 4. Query future SLR
-  gauge_tab <- arrow::read_parquet(gauge_path, show_col_types = FALSE)
+  gauge_tab <- utils::read.csv(gauge_path)
 
   # [1] "ssp119"         "ssp126"         "ssp245"         "ssp370"         "ssp585"
   # [6] "tlim1.5win0.25" "tlim2.0win0.25" "tlim3.0win0.25" "tlim4.0win0.25" "tlim5.0win0.25"
@@ -302,10 +302,10 @@ generateFullTidalScenario <- function(
     if (include_lt_tidal_const) {
 
       lt_tide_const_path <- system.file("extdata",
-                                        "long_term_tidal_constituents.csv",
+                                        "long_term_tidal_constituents.parquet",
                                         package = "PEcAn.data.water")
 
-      lt_tide_const <- utils::read.csv(lt_tide_const_path)
+      lt_tide_const <- arrow::read_parquet(lt_tide_const_path)
 
       lt_tide_const <- lt_tide_const |>
         dplyr::rename(noaa_id = "station_id") |>
