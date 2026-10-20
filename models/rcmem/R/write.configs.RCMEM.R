@@ -18,9 +18,8 @@ write.config.RCMEM <- function(defaults, trait.values, settings, run.id) {
   # The point of this function is to write the settings for one ensemble member and site combination
   # Generates one subfolder in output/run and one in output/out
   # and one subfolder in 
-  #  settings <- xml2::read_xml("models/rcmem/demo_run/settings.xml")
+  #  settings <- xml2::read_xml("mode %>% ls/rcmem/demo_run/settings.xml")
 
-  
   # Defaults - overrides trait values
   # trait.values - list of parameters for each pft, even if it only has one pdf
   # settings - settings (classed list, classed as settings or multiple settings), if you're running multiple sites, this will get called 

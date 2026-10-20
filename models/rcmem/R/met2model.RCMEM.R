@@ -234,9 +234,6 @@ met2model.RCMEM <- function(
     }
   )
 
-  # output_files
-  
-  
   manifest <- scenario_info |>
     dplyr::mutate(
       quantile_id = sprintf(
