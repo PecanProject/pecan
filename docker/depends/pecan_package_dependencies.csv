@@ -152,6 +152,7 @@
 "jsonvalidate","*","modules/data.land","Suggests",FALSE
 "keras3",">= 1.0.0","modules/assim.sequential","Suggests",FALSE
 "knitr","*","modules/benchmark","Suggests",FALSE
+"knitr","*","modules/data.water","Suggests",FALSE
 "knitr",">= 1.50","base/db","Suggests",FALSE
 "knitr",">= 1.50","base/qaqc","Suggests",FALSE
 "knitr",">= 1.50","base/visualization","Suggests",FALSE
@@ -543,6 +544,7 @@
 "rmarkdown","*","models/maat","Suggests",FALSE
 "rmarkdown","*","modules/benchmark","Suggests",FALSE
 "rmarkdown","*","modules/data.atmosphere","Suggests",FALSE
+"rmarkdown","*","modules/data.water","Suggests",FALSE
 "rmarkdown","*","modules/priors","Suggests",FALSE
 "rmarkdown","*","modules/rtm","Suggests",FALSE
 "rmarkdown",">= 2.19","base/db","Suggests",FALSE
@@ -706,6 +708,7 @@
 "tidyselect","*","modules/data.atmosphere","Imports",FALSE
 "tidyselect","*","modules/data.land","Imports",FALSE
 "tidyverse","*","base/db","Suggests",FALSE
+"tidyverse","*","modules/data.water","Suggests",FALSE
 "tools","*","base/remote","Suggests",FALSE
 "tools","*","modules/allometry","Imports",FALSE
 "traits","*","modules/data.land","Suggests",FALSE
