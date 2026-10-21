@@ -57,9 +57,14 @@ metric_residual_plot <- function(metric_dat, var, unit = NULL, filename = NA, dr
     }
     
     fitted_list[[g]] <- sub_dat
+    min_time <- if ("time" %in% colnames(sub_dat)) min(sub_dat$time, na.rm = TRUE) else -Inf
+    max_diff <- max(sub_dat$diff, na.rm = TRUE)
+
     annotations_list[[g]] <- data.frame(
       site = sub_dat$site[1],
       variable = sub_dat$variable[1],
+      x = min_time,
+      y = max_diff,
       label = label_str
     )
   }
@@ -84,8 +89,8 @@ metric_residual_plot <- function(metric_dat, var, unit = NULL, filename = NA, dr
   # Add per-panel annotations
   p <- p + ggplot2::geom_label(
     data = annotations,
-    ggplot2::aes(x = -Inf, y = Inf, label = .data$label),
-    hjust = -0.05, vjust = 1.1,
+    ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+    hjust = 0, vjust = 1,
     inherit.aes = FALSE,
     alpha = 0.8
   )

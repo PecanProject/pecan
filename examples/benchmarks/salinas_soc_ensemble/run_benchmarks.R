@@ -16,8 +16,14 @@ if (!file.exists(model_csv_path)) {
   PEcAn.logger::logger.severe(sprintf("Model CSV not found at: '%s'. Please pass the path to ensemble_output.csv as an argument:\n  Rscript run_benchmarks.R <path_to_ensemble_output.csv>", model_csv_path))
 }
 
-if (!requireNamespace("PEcAn.benchmark", quietly = TRUE)) {
+if (requireNamespace("devtools", quietly = TRUE)) {
   devtools::load_all(file.path(base_dir, "../../../modules/benchmark"))
+} else if (!requireNamespace("PEcAn.benchmark", quietly = TRUE)) {
+  bench_r_dir <- file.path(base_dir, "../../../modules/benchmark/R")
+  if (dir.exists(bench_r_dir)) {
+    r_files <- list.files(bench_r_dir, pattern = "\\.[Rr]$", full.names = TRUE)
+    invisible(lapply(r_files, source))
+  }
 } else {
   library(PEcAn.benchmark)
 }

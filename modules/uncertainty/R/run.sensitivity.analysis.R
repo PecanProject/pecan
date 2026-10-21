@@ -179,6 +179,20 @@ run.sensitivity.analysis <- function(settings,
         next
       }
       traits <- samples$trait.names[[pft$name]]
+      # a spline can't be fit through one repeated value
+      no.spread <- vapply(
+        traits,
+        function(trait) length(unique(samples$sa.samples[[pft$name]][[trait]])) < 2,
+        logical(1)
+      )
+      if (any(no.spread)) {
+        PEcAn.logger::logger.warn(
+          "no spread in the SA samples of", PEcAn.utils::vecpaste(traits[no.spread]),
+          "for pft", pft$name, "- skipping"
+        )
+        traits <- traits[!no.spread]
+      }
+      if (length(traits) == 0) next
       quantiles.str <- rownames(samples$sa.samples[[pft$name]])
       quantiles.str <- quantiles.str[which(quantiles.str != "50")]
       quantiles <- as.numeric(quantiles.str) / 100
@@ -188,19 +202,10 @@ run.sensitivity.analysis <- function(settings,
         PEcAn.utils::trait.lookup(traits)$units,
         ignore.case = TRUE
       )
-      if (any(C.units)) {
-        for (x in which(C.units)) {
-          samples$trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(
-            samples$trait.samples[[pft$name]][[x]],
-            "degC",
-            "K"
-          )
-        }
-      }
 
       ## only perform sensitivity analysis on traits where no more than 2 results are missing
       good.saruns <- sapply(
-        sens_out$sensitivity.output[[pft$name]],
+        sens_out$sensitivity.output[[pft$name]][traits],
         function(x) sum(is.na(x)) <= 2
       )
       if (!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
@@ -219,6 +224,16 @@ run.sensitivity.analysis <- function(settings,
         sa.output = sens_out$sensitivity.output[[pft$name]][, traits, drop = FALSE],
         outdir = pft$outdir
       )
+      # the splines stay in the units the SA ran in, but CV and elasticity are
+      # ratios, so temperatures take those in K
+      for (trait in traits[C.units]) {
+        x <- samples$trait.samples[[pft$name]][[trait]]
+        x.K <- PEcAn.utils::ud_convert(x, "degC", "K")
+        vd <- sensitivity.results[[pft$name]]$variance.decomposition.output
+        vd$coef.vars[[trait]] <- get.coef.var(x.K)
+        vd$elasticities[[trait]] <- vd$elasticities[[trait]] * stats::median(x.K) / stats::median(x)
+        sensitivity.results[[pft$name]]$variance.decomposition.output <- vd
+      }
 
       ### Send diagnostic output to the console
       print(sensitivity.results[[pft$name]]$variance.decomposition.output)

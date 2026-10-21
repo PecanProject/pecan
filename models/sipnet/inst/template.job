@@ -45,6 +45,7 @@ fi
 
 # copy readme with specs to output
 cp  "${RUNDIR}/README.txt" "${OUTDIR}/README.txt"
+@CPRUNCMD@
 
 # run getdata to extract right variables
 

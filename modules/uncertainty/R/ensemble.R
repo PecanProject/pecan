@@ -460,6 +460,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id,
         site_id = settings$run$site$id,
+        ens_num = i,
         pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
         trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
         quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
@@ -607,6 +608,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id[[i]],
         site_id = settings$run$site$id,
+        ens_num = i,
         pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
         trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
         quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
