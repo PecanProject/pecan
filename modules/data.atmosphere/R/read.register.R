@@ -55,5 +55,12 @@ read.register <- function(register.xml, con) {
                "' AND type_string = '", register$format$mimetype, "'"), con)[[1]]
     }
   }
+  if (!length(register$format$id) && isTRUE(as.logical(register$format$create))) {
+    mime <- PEcAn.DB::get.id("mimetypes", "type_string", register$format$mimetype,
+      con = con, create = TRUE)
+    register$format$id <- PEcAn.DB::db.query(paste0(
+      "INSERT INTO formats (name, mimetype_id) VALUES (",
+      shQuote(register$format$name), ", ", mime, ") RETURNING id"), con)[[1]]
+  }
   return(invisible(register))
 } # read.register
