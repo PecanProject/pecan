@@ -459,9 +459,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("stem_respiration_rate" %in% pft.trait.names) {
       vegRespQ10 <- param[which(param[, 1] == "vegRespQ10"), 2]
       id <- which(param[, 1] == "baseVegResp")
-      ## Convert from umols CO2 kg s-1 to gC g day-1
-      stem_resp_g <- (((pft.traits[which(pft.trait.names == "stem_respiration_rate")]) *
-                         (44.0096 / 1e+06) * (12.01 / 44.0096)) / 1000) * 86400
+      # sipnet reads a per year rate and divides by 365 itself
+      stem_resp_g <- PEcAn.utils::ud_convert(
+        pft.traits[which(pft.trait.names == "stem_respiration_rate")],
+        "umol kg-1 s-1", "mol g-1 common_year-1"
+      ) * 12.01 # g C per mol CO2
       ## use Q10 to convert stem resp from reference of 25C to 0C param[id,2] =
       ## pft.traits[which(pft.trait.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
       param[id, 2] <- stem_resp_g * vegRespQ10^(-25/10)
@@ -482,9 +484,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("root_respiration_rate" %in% pft.trait.names) {
       fineRootQ10 <- param[which(param[, 1] == "fineRootQ10"), 2]
       id <- which(param[, 1] == "baseFineRootResp")
-      ## Convert from umols CO2 kg s-1 to gC g day-1
-      root_resp_rate_g <- (((pft.traits[which(pft.trait.names == "root_respiration_rate")]) *
-                              (44.0096/1e+06) * (12.01 / 44.0096)) / 1000) * 86400
+      # sipnet reads a per year rate and divides by 365 itself
+      root_resp_rate_g <- PEcAn.utils::ud_convert(
+        pft.traits[which(pft.trait.names == "root_respiration_rate")],
+        "umol kg-1 s-1", "mol g-1 common_year-1"
+      ) * 12.01 # g C per mol CO2
       ## use Q10 to convert stem resp from reference of 25C to 0C param[id,2] =
       ## pft.traits[which(pft.trait.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
       param[id, 2] <- root_resp_rate_g * fineRootQ10 ^ (-25 / 10)
