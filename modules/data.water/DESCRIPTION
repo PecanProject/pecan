@@ -23,6 +23,7 @@ Remotes: github::Smithsonian/VulnToolkit
 License: BSD_3_clause + file LICENSE
 Copyright: Authors
 LazyData: true
+LazyDataCompression: xz
 Encoding: UTF-8
 VignetteBuilder: knitr, rmarkdown
 Roxygen: list(markdown = TRUE)
