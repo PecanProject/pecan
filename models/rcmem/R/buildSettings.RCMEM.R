@@ -105,9 +105,9 @@ buildSettings.RCMEM <- function(
   
   manifest_selected <- scenario_manifest |>
     dplyr::filter(
-      .data$scenario_name %in% .env$scenario,
-      .data$confidence %in% .env$confidence,
-      .data$quantile %in% .env$quantiles,
+      .data$scenario_name %in% scenario,
+      .data$confidence %in% confidence,
+      .data$quantile %in% quantiles,
       .data$gauge_id %in% site_info$gauge_id
     )
   
@@ -319,7 +319,7 @@ buildSettings.RCMEM <- function(
   PEcAn.settings::write.settings(
     settings,
     outputfile = "settings_RCMEM_unprepared.xml",
-    outputdir = .env$outdir
+    outputdir = outdir
   )
 }
 
