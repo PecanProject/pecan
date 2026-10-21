@@ -91,7 +91,6 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   # Checking only for Bety parameters prevents the dbfiles entry from causing
   # undesired connection attempts. 
   if (!isTRUE(write) && is.null(settings$database$bety)) {
-    PEcAn.logger::logger.info("Not writing this run to database, so database connection skipped")
     con <- NULL # Set con to NULL to avoid errors in subsequent code
   } else if (is.null(settings$database$bety)) {
     PEcAn.logger::logger.error(
@@ -115,7 +114,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
-    ## if posterior.files is specified us that
+    ## if posterior.files is specified use that
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
