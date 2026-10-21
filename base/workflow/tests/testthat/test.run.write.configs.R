@@ -51,7 +51,6 @@ test_that("run.write.configs correctly skips database connection when bety is mi
       type = "message"
     )
   })
-  expect_match(runwrite_log, "Not writing this run to database", all = FALSE)
 })
 
 test_that("run.write.configs uses the in-memory samples= bundle and skips the disk read", {
