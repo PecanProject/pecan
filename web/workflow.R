@@ -69,8 +69,11 @@ settings <-
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
 # start from scratch if no continue is passed in
+# (`R CMD BATCH --continue workflow.R` puts the flag before the script name,
+# so optparse does not see it; look for it in the full command line too)
+continue <- args$continue || "--continue" %in% commandArgs()
 status_file <- file.path(settings$outdir, "STATUS")
-if (args$continue && file.exists(status_file)) {
+if (!continue && file.exists(status_file)) {
   file.remove(status_file)
 }
 
