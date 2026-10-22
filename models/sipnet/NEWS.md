@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
     soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
     litter pool, so it is not comparable to a measured soil organic carbon
