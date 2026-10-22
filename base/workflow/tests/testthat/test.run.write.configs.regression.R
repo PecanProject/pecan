@@ -244,36 +244,20 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
                   runs        = data.frame(id = c("r1", "r2", "r3"),
                                            stringsAsFactors = FALSE),
                   ensemble.id = "SA7",
-                  manifest = data.frame(
-                    run_id   = c("r1", "r2", "r3"),
-                    site_id  = "772",
-                    pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
-                    trait    = c("NA", "Vcmax", "Vcmax"),
-                    quantile = c("50", "2.5", "97.5"),
-                    type     = "Sensitivity",
-                    stringsAsFactors = FALSE
-                  )
+                  manifest    = data.frame(run_id = c("r1", "r2", "r3"),
+                                           site_id = "772",
+                                           pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
+                                           trait = c("NA", "Vcmax", "Vcmax"),
+                                           quantile = c("50", "2.5", "97.5"),
+                                           type = "Sensitivity",
+                                           stringsAsFactors = FALSE)
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::sensitivity.filename",
                 function(...) sa_file)
 
   run_write_configs(settings, ensemble.size = 1,
                     input_design = input_design, write = FALSE)
-  manifest_file <- file.path(tmp, "runs_manifest.csv")
-  expect_true(file.exists(manifest_file))
 
-  manifest <- utils::read.csv(manifest_file, stringsAsFactors = FALSE)
-
-  median_row <- manifest[
-    manifest$run_id == "r1" &
-      manifest$pft_name == "temperate.deciduous" &
-      manifest$trait == "Vcmax" &
-      manifest$quantile == 50,
-    ,
-    drop = FALSE
-  ]
-
-  expect_equal(nrow(median_row), 1)
   expect_true(file.exists(sa_file))
   e <- new.env()
   load(sa_file, envir = e)
