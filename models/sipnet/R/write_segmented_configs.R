@@ -182,25 +182,13 @@ drop_same_pft_segments <- function(segments) {
   }
 
   segments |>
-    dplyr::mutate(
-      pft_group = cumsum(
-        dplyr::row_number() == 1 |
-          is.na(.data$pft) |
-          is.na(dplyr::lag(.data$pft)) |
-          dplyr::coalesce(
-            .data$pft != dplyr::lag(.data$pft),
-            FALSE
-          )
-      )
-    ) |>
-    dplyr::group_by(.data$pft_group) |>
+    dplyr::mutate(pft_group = dplyr::consecutive_id(.data$pft)) |>
     dplyr::summarise(
-      site_id = dplyr::first(.data$site_id),
-      start_date = dplyr::first(.data$start_date),
-      end_date = dplyr::last(.data$end_date),
-      crop_code = dplyr::last(.data$crop_code),
+      start_date = min(.data$start_date),
+      end_date = max(.data$end_date),
+      crop_code = paste(.data$crop_code, collapse = " "),
       pft = dplyr::first(.data$pft),
-      .groups = "drop"
+      .by = "pft_group"
     ) |>
     dplyr::mutate(
       segment_id = sprintf("%03d", dplyr::row_number())
@@ -239,9 +227,8 @@ write_segment_configs <- function(
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
     dplyr::mutate(
       pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code))
-    )
-
-  segments <- drop_same_pft_segments(segments) |>
+    ) |>
+    drop_same_pft_segments() |>
     dplyr::mutate(
       segment_dir = file.path(
         segment_rootdir,
@@ -393,7 +380,19 @@ write_segment_configs <- function(
   if (replace_and_link) {
     run_jobsh_backup <- file.path(run_dir, "job_original.sh")
     file.rename(run_jobsh, run_jobsh_backup)
-    file.symlink(segmented_jobsh_file, run_jobsh)
+    link_created <- suppressWarnings(
+      file.symlink(segmented_jobsh_file, run_jobsh)
+    )
+    if (!link_created) {
+      copy_created <- file.copy(
+        segmented_jobsh_file,
+        run_jobsh,
+        overwrite = TRUE
+      )
+      if (!copy_created) {
+        stop("Failed to create job.sh from job_segmented.sh")
+      }
+    }
     Sys.chmod(run_jobsh, mode = "0755")
   }
   invisible(segmented_jobsh_file)
