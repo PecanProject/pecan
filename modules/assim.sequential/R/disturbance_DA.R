@@ -16,6 +16,7 @@ tobit <- function(x){
 ##' @param disturbance logical (dim = 1): if the current site experienced the disturbance (1) or not (0).
 ##' @param mu0 numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model
 ##' @param V0 numeric matrix (dim B*B): covariance to be used for the disturbance model
+##' @param pD prior distribution of disturbance Vs. not disturbance probability, default is c(0.5, 0.5).
 ##'  
 ##' @description This function provides semi-analytical updates for the disturbance probability.
 ##' 
@@ -23,7 +24,7 @@ tobit <- function(x){
 ##' @importFrom dplyr %>%
 ##' @export
 
-disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), V0=diag(rep(0.25, 2))) {
+disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), V0=diag(rep(0.25, 2)), pD = c(0.5, 0.5)) {
   
   # store number of ensemble members, state vars, components
   ne <- nrow(X)
@@ -80,7 +81,6 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), 
   
   # kalman update to compute analysis means, covariances, weights
   n.obs <- length(Y)
-  pD <- c(0.9, 0.1) # prior probability of disturbance 0.1, default value which can be tweaked
   H.mat <- array(0, dim=c(n.obs, n.state))
   for (i in 1:n.obs) {
     H.mat[i,H[i]] <- 1
