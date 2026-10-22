@@ -36,7 +36,7 @@ disturbance_DA(
 
 \item{V0}{numeric matrix (dim B*B): covariance to be used for the disturbance model}
 
-\item{pD}{prior distribution of disturbance Vs. not disturbance probability, default is c(0.5, 0.5).}
+\item{pD}{prior of disturbed Vs. undisturbed probability, default is c(0.5, 0.5).}
 }
 \value{
 returns a vector of mua (dim = N, vector of means for each updated state variable) and pa (dim = N*N, covariance matrix for the updated state variables).

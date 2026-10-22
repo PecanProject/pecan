@@ -16,7 +16,7 @@ tobit <- function(x){
 ##' @param disturbance logical (dim = 1): if the current site experienced the disturbance (1) or not (0).
 ##' @param mu0 numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model
 ##' @param V0 numeric matrix (dim B*B): covariance to be used for the disturbance model
-##' @param pD prior distribution of disturbance Vs. not disturbance probability, default is c(0.5, 0.5).
+##' @param pD prior of disturbed Vs. undisturbed probability, default is c(0.5, 0.5).
 ##'  
 ##' @description This function provides semi-analytical updates for the disturbance probability.
 ##' 
@@ -26,10 +26,11 @@ tobit <- function(x){
 
 disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), V0=diag(rep(0.25, 2)), pD = c(0.5, 0.5)) {
   
-  # store number of ensemble members, state vars, components
+  # store number of ensemble members, state vars, components, variable names.
   ne <- nrow(X)
   n.state <- ncol(X)
   n.comp <- 2
+  var.names <- unique(names(X))
   
   # initialize variables
   Nf <- as.matrix(X) # array(NA, dim=c(ne,n.state))
@@ -59,7 +60,8 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), 
   sel.dist = which(d.class == 1)
   bio.idxs = c(1, 2) # --- Fill in ---- (indices of biomass state variables)
   for(j in sel.dist){
-    Nf[j,] = disturbance.p(Nf[j,], 1-mu0, V0, bio.idxs, 0.25)
+    temp <- disturbance.p(Nf[j,], var.names, 1-mu0, V0, bio.idxs, 0.25)
+    Nf[j,] <- temp$x
   }
   Nf <- tobit(Nf)
   muF[1,] = colMeans(X[sel.undisturbed,])
@@ -82,38 +84,66 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), 
   # kalman update to compute analysis means, covariances, weights
   n.obs <- length(Y)
   H.mat <- array(0, dim=c(n.obs, n.state))
+  # loop over observations based on their mapping index to the specific state variables.
   for (i in 1:n.obs) {
     H.mat[i,H[i]] <- 1
   }
+  # loop over disturbed and undisturbed ensembles.
   for (d in 1:2) {
     muf <- muF[d,]
     Cf <- CF[d,,]
     pf <- pF[d,,]
     CA[d,,] <- solve(pf + t(H.mat) %*% solve(R) %*% H.mat)
-    muA[d,] <-  CA[d,,] %*% (pf %*% muf + t(H.mat) %*% solve(R) %*% Y)
+    muA[d,] <-  CA[d,,] %*% (pf %*% muf + t(H.mat) %*% solve(R) %*% Y) # updated analysis.
+    # the multivariate normal density likelihood of the observed data given the forecast model parameters.
     lik <- dmvnorm(Y, mean=H.mat %*% muf, sigma = H.mat %*% Cf %*% t(H.mat) + R)
+    # multiply the likelihood by the disturbed/undisturbed prior probability.
     wA[d] <- lik * pD[d]
   }
-  wA <- wA / sum(wA)
+  wA <- wA / sum(wA) # normalize the weight.
   
-  # n is the number of ensemble members or observations
-  n_samples <- nrow(X) 
+  # Grab the undisturbed weight (assuming index 1 = undisturbed, index 2 = disturbed)
+  prob_undisturbed <- wA[1]
   
-  # Calculate the squared anomalies/residuals between forecast and expected trajectory
-  # (Assuming Nf is your forecast and X is your starting state)
-  residuals <- (Nf - X)^2 
-  SS_residual <- colSums(residuals) # Sum of squares for each state variable
+  # Only update hyperparameters if there is a non-zero probability of being undisturbed
+  if (prob_undisturbed > 0 && length(sel.undisturbed) > 0) {
+    # Subset matrix to undisturbed ensemble members
+    undisturbed_Nf <- Nf[sel.undisturbed, , drop = FALSE]
+    undisturbed_X  <- X[sel.undisturbed, , drop = FALSE]
+    
+    n_samples <- nrow(undisturbed_X)
+    
+    # Calculate sum of squared residuals across undisturbed members, weighted by posterior prob
+    residuals <- (undisturbed_Nf - undisturbed_X) ^ 2
+    SS_residual <- colSums(residuals) * prob_undisturbed
+    
+    # Update Hyperparameters
+    aqq.new <- aqq + ((n_samples * prob_undisturbed) / 2)
+    bqq.new <- bqq + (SS_residual / 2)
+  } else {
+    aqq.new <- aqq
+    bqq.new <- bqq
+  }
   
-  # Update the Hyperparameters for the next cycle
-  aqq.new <- aqq + (n_samples / 2)
-  bqq.new <- bqq + (SS_residual / 2)
+  # Resample/adjust an analysis ensemble separately for undisturbed (d=1) and disturbed (d=2) classes
+  ana.ens <- matrix(NA, nrow = ne, ncol = n.state)
   
-  # resample an analysis ensemble from the posterior
-  ana.ens <- array(NA, dim=c(ne, n.state))
-  ana.class <- rbinom(ne, size=1, prob=wA) + 1
-  for (i in 1:ne) {
-    d <- ana.class[i]
-    ana.ens[i,] <- rmvnorm(1, mean = muA[d,], sigma = CA[d,,])
+  # Define list of member indices for each class (d.class: 0 = undisturbed, 1 = disturbed)
+  class_members <- list(
+    which(d.class == 0), # Undisturbed (d = 1)
+    which(d.class == 1)  # Disturbed   (d = 2)
+  )
+  
+  for (d in 1:n.comp) {
+    inds <- class_members[[d]]
+    if (length(inds) > 0) {
+      # Extract forecast ensemble for class d
+      X_d <- X[inds, , drop = FALSE]
+      
+      # Apply standard ensemble adjustment using component d's moments
+      # Cf[d,,] = forecast covariance, muF[d,] = forecast mean, muA[d,] = analysis mean, CA[d,,] = analysis covariance
+      ana.ens[inds, ] <- adj.ens(Cf[d, , ], X_d, muF[d, ], muA[d, ], CA[d, , ])
+    }
   }
   
   # overall mean / covariance of the 2-component mixture
@@ -137,6 +167,7 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), 
 
 
 ##' @param x vector of biomass / soil moisture values, dim N (number of state variables)
+##' @param var.names vector of variable names across x.
 ##' @param mu0 mean biomass % retention after disturbance, dim B (number of biomass state variables)
 ##' @param V0 covariance in post disturbance leaf and stem biomass, dim BxB
 ##' @param bio.idxs vector of indices of biomass values in x, dim B
@@ -145,17 +176,22 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), 
 ##' @description
 ##' This function simulates a disturbance on a vector of biomass values.
 ##' 
-##' @return returns an updated vector of state variables (dim N)
-disturbance.p <- function(x,mu0,V0,bio.idxs,alloc.soil){        
+##' @return returns list containing: 
+##' 1) an updated vector of state variables (dim N), `X`;
+##' 2) total biomass loss before and after the disturbance, `tot.bioloss`;
+##' 3) biomass added to the SOC, `soc.add`;
+##' 4) total removal of biomass, `removal`;
+disturbance.p <- function(x,var.names,mu0,V0,bio.idxs,alloc.soil){        
   old.biomass <- x[bio.idxs]
   new.biomass <- tobit(mvtnorm::rmvnorm(1,mu0*old.biomass,tcrossprod(old.biomass,old.biomass)*V0)) ## draw disturbed leaf and stem
   check.max <- which(new.biomass > old.biomass)
   if(length(check.max)>0) new.biomass[check.max] = old.biomass[check.max] # constrain new.biomass[i] <= old.biomass[i]
   residual = sum(old.biomass-new.biomass)
   x[bio.idxs] <- new.biomass # update state with disturbed biomass
-  x[4] <- x[4] + residual*alloc.soil # some of the biomass gets transported to the soil
+  soc.ind <- which(var.names == "TotSoilCarb")
+  x[soc.ind] <- x[soc.ind] + residual*alloc.soil # some of the biomass gets transported to the soil
   removal <- residual*(1-alloc.soil)
-  return(x)
+  return(list(x = x, tot.bioloss = residual, soc.add = residual*alloc.soil, removal = residual*(1-alloc.soil)))
 }
 
 
