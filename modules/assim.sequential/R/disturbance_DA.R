@@ -14,9 +14,9 @@ tobit <- function(x){
 ##' @param aqq numeric vector (dim = N): the vector of the `shape` parameter for the gamma distribution for each state variable.
 ##' @param bqq numeric vector (dim = N): the vector of the `rate` parameter for the gamma distribution for each state variable.
 ##' @param disturbance logical (dim = 1): if the current site experienced the disturbance (1) or not (0).
-##' @param mu0 numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model
+##' @param mu0 numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model.
 ##' @param V0 numeric matrix (dim B*B): covariance to be used for the disturbance model
-##' @param pD prior of disturbed Vs. undisturbed probability, default is c(0.5, 0.5).
+##' @param pD prior of disturbed Vs. undisturbed probability, default is c(0.99, 0.01).
 ##'  
 ##' @description This function provides semi-analytical updates for the disturbance probability.
 ##' 
@@ -24,7 +24,7 @@ tobit <- function(x){
 ##' @importFrom dplyr %>%
 ##' @export
 
-disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(80, 80), V0=diag(rep(0.25, 2)), pD = c(0.5, 0.5)) {
+disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(0.8, 0.8), V0=diag(rep(0.25, 2)), pD = c(0.99, 0.01)) {
   
   # store number of ensemble members, state vars, components, variable names.
   ne <- nrow(X)

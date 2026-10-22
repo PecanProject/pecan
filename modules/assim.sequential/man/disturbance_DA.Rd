@@ -12,9 +12,9 @@ disturbance_DA(
   aqq,
   bqq,
   disturbance,
-  mu0 = rep(80, 80),
+  mu0 = rep(0.8, 0.8),
   V0 = diag(rep(0.25, 2)),
-  pD = c(0.5, 0.5)
+  pD = c(0.99, 0.01)
 )
 }
 \arguments{
@@ -32,11 +32,11 @@ disturbance_DA(
 
 \item{disturbance}{logical (dim = 1): if the current site experienced the disturbance (1) or not (0).}
 
-\item{mu0}{numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model}
+\item{mu0}{numeric vector (dim = B where B is the number of biomass variables): percent decreases of biomass to be used for the disturbance model.}
 
 \item{V0}{numeric matrix (dim B*B): covariance to be used for the disturbance model}
 
-\item{pD}{prior of disturbed Vs. undisturbed probability, default is c(0.5, 0.5).}
+\item{pD}{prior of disturbed Vs. undisturbed probability, default is c(0.99, 0.01).}
 }
 \value{
 returns a vector of mua (dim = N, vector of means for each updated state variable) and pa (dim = N*N, covariance matrix for the updated state variables).
