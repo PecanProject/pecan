@@ -4,7 +4,15 @@
 \alias{build.block.xy}
 \title{build.block.xy}
 \usage{
-build.block.xy(settings, block.list.all, X, obs.mean, obs.cov, t)
+build.block.xy(
+  settings,
+  block.list.all,
+  X,
+  obs.mean,
+  obs.cov,
+  t,
+  dist.att = NULL
+)
 }
 \arguments{
 \item{settings}{pecan standard multi-site settings list.}
@@ -18,6 +26,9 @@ build.block.xy(settings, block.list.all, X, obs.mean, obs.cov, t)
 \item{obs.cov}{List of covariance matrices of state variables , named with observation datetime.}
 
 \item{t}{time point.}
+
+\item{dist.att}{the disturbance matrix prescribing the prior biomass reductions due to disturbance 
+(list(agb.bio.reduce (len = N site), lai.bio.reduce (len = N site))). Default is NULL.}
 }
 \description{
 This function split long vector and covariance matrix into blocks corresponding to the localization.
