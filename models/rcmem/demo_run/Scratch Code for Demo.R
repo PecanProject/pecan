@@ -33,7 +33,6 @@ PEcAn.RCMEM::met2model.RCMEM(scenario_output,
 
 scenario_manifest <- read_csv("demo_run/data/met/scenario_manifest.csv")
 
-
 # Vegetation parameters
 veg.distns <- data.frame(
   distn = c("gamma", "norm", "norm",
@@ -80,6 +79,8 @@ soil.distns <- data.frame(
 
 
 
+
+
 PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
                     scenario_manifest = scenario_manifest,
                     scenario = c("ssp126", "ssp245", "ssp370"),
@@ -93,3 +94,5 @@ PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
 settings_unprepared <-  PEcAn.settings::read.settings("demo_run/settings_RCMEM_unprepared.xml")
 
 settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
+
+

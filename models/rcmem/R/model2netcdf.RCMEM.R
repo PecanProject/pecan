@@ -154,7 +154,7 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     # 
     
     ## setup nc file
-    # ******************** Declar netCDF variables ********************#
+    # ******************** Declare netCDF variables ********************#
     nc_var <- list()
     nc_var[[1]]  <- ncdf4::ncvar_def(name = "mineral", units = "g", longname = "cohort mineral dry mass", dim = dims_cohorts, NA, prec = "double") 
     nc_var[[2]] <- ncdf4::ncvar_def(name = "fast", units = "g", longname = "cohort fast decaying organic matter dry mass", dim = dims_cohorts, NA, prec = "double")

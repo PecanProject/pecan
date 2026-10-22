@@ -13,10 +13,15 @@
 #' @param scenario_manifest A data frame describing available RCMEM scenario
 #'   files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
 #'   and `path`.
+#' @param site_pfts A data frame defining site and pft relationshpis. Must contain
+#'   `id`, `pft_name`, `pft_type`.
+#' @param pft_manifest A data fram definint links between pft names and datasets. 
+#'   Must contain `pft_name`, `pft_type`, `posterior_file`.
 #' @param scenario Character vector. Scenario to use, for example `"ssp245"`.
 #' @param confidence Character vector. Confidence level to use, for example
 #'   `"medium"`.
 #' @param quantiles Numeric vector of quantiles to include in the ensemble.
+#' @param ensemble_variable Character vector with outputs to track.
 #' @param outdir Output directory for the PEcAn run.
 #' @param template Optional path to an RCMEM settings template. If `NULL`,
 #'   the template installed with the package is used.
@@ -27,9 +32,12 @@
 buildSettings.RCMEM <- function(
     site_info,
     scenario_manifest,
+    site_pfts,
+    pft_manifest,
     scenario,
     confidence = "medium",
     quantiles,
+    ensemble_variable = "surface_elevation",
     outdir = "output",
     template = NULL
 ) {
@@ -97,6 +105,122 @@ buildSettings.RCMEM <- function(
       "`scenario_manifest` is missing required columns: ",
       paste(missing_manifest_cols, collapse = ", ")
     )
+  }
+  
+  
+  # ---------------------------------------------------------------
+  # Validate site PFT assignments
+  # ---------------------------------------------------------------
+  
+  required_pft_cols <- c("id", "pft_type", "pft_name")
+  
+  missing_cols <- setdiff(required_pft_cols, names(site_pfts))
+  
+  if (length(missing_cols) > 0) {
+    stop(
+      "site_pfts is missing required columns: ",
+      paste(missing_cols, collapse = ", ")
+    )
+  }
+  
+  if (any(!site_pfts$id %in% site_info$id)) {
+    stop("site_pfts contains site IDs not present in site_info.")
+  }
+  
+  if (any(!site_pfts$pft_type %in% c("vegetation", "soil"))) {
+    stop("pft_type must be either vegetation or soil.")
+  }
+  
+  if (anyDuplicated(site_pfts[c("id", "pft_type", "pft_name")])) {
+    stop("Duplicate site/PFT assignments detected.")
+  }
+  
+  pft_counts <- site_pfts |>
+    dplyr::count(id, pft_type) |>
+    tidyr::pivot_wider(
+      names_from = pft_type,
+      values_from = n,
+      values_fill = 0
+    )
+  
+  if (any(pft_counts$soil != 1)) {
+    stop("Each site must have exactly one soil PFT.")
+  }
+  
+  # ------------------------------------------------------------------
+  # Validate PFT manifest
+  # ------------------------------------------------------------------
+  
+  required_pft_cols <- c(
+    "pft_name",
+    "pft_type",
+    "posterior_file"
+  )
+  
+  missing_cols <- setdiff(
+    required_pft_cols,
+    names(pft_manifest)
+  )
+  
+  if (length(missing_cols) > 0) {
+    stop(
+      "pft_manifest is missing required columns: ",
+      paste(missing_cols, collapse = ", ")
+    )
+  }
+  
+  if (anyDuplicated(pft_manifest$pft_name)) {
+    stop("PFT names must be unique in pft_manifest.")
+  }
+  
+  if (anyNA(pft_manifest$pft_name) ||
+      anyNA(pft_manifest$posterior_file)) {
+    stop("PFT names and posterior paths cannot be NA.")
+  }
+  
+  if (any(!pft_manifest$pft_type %in% c("vegetation", "soil"))) {
+    stop("pft_type must be vegetation or soil.")
+  }
+  
+  if (any(!file.exists(pft_manifest$posterior_file))) {
+    stop(
+      "Missing PFT posterior files: ",
+      paste(
+        pft_manifest$posterior_file[
+          !file.exists(pft_manifest$posterior_file)
+        ],
+        collapse = ", "
+      )
+    )
+  }
+  
+  # Ensure every assigned PFT has a posterior definition
+  missing_pfts <- setdiff(
+    unique(site_pfts$pft_name),
+    pft_manifest$pft_name
+  )
+  
+  if (length(missing_pfts) > 0) {
+    stop(
+      "No posterior definitions for PFTs: ",
+      paste(missing_pfts, collapse = ", ")
+    )
+  }
+  
+  # Ensure the assigned PFT type agrees with the manifest
+  pft_type_check <- site_pfts |>
+    dplyr::left_join(
+      pft_manifest |>
+        dplyr::select(pft_name, pft_type),
+      by = "pft_name",
+      suffix = c("_site", "_manifest")
+    ) |>
+    dplyr::filter(
+      .data$pft_type_site != .data$pft_type_manifest
+    )
+  
+  if (nrow(pft_type_check) > 0) {
+    stop("PFT types disagree between site_pfts and pft_manifest.")
   }
   
   # ------------------------------------------------------------------
@@ -195,6 +319,8 @@ buildSettings.RCMEM <- function(
   settings <- PEcAn.settings::read.settings(template)
   
   # Ensemble size is the number of scenario/confidence/quantile combinations
+  
+  settings$ensemble$variable <- ensemble_variable
   settings$ensemble$size <- nrow(ensemble_design)
   
   # Overall ensemble date range
@@ -257,20 +383,6 @@ buildSettings.RCMEM <- function(
         )
       }
       
-      # # All ensemble members for a site should cover the same period
-      # if (dplyr::n_distinct(site_runs$startDate) != 1) {
-      #   stop(
-      #     "Scenario start dates are not consistent for site ",
-      #     site_id
-      #   )
-      # }
-      # if (dplyr::n_distinct(site_runs$endDate) != 1) {
-      #   stop(
-      #     "Scenario end dates are not consistent for site ",
-      #     site_id
-      #   )
-      # }
-      
       # Site metadata
       s$run$site$gauge_id <- site_row$gauge_id
       
@@ -286,6 +398,7 @@ buildSettings.RCMEM <- function(
       s$run$site$met.start <- lubridate::ymd(
         paste0(site_runs$startDate[[1]], "-01-01")
       )
+      
       s$run$site$met.end   <- lubridate::ymd(
         paste0(site_runs$endDate[[1]], "-12-31")
       )
@@ -303,10 +416,50 @@ buildSettings.RCMEM <- function(
         )
       )
       
+      # Get PFTs assigned to this site
+      assigned_pfts <- site_pfts |>
+        dplyr::filter(.data$id == site_id)
+      
+      veg_pfts <- assigned_pfts |>
+        dplyr::filter(.data$pft_type == "vegetation") |>
+        dplyr::pull(.data$pft_name)
+      
+      soil_pft <- assigned_pfts |>
+        dplyr::filter(.data$pft_type == "soil") |>
+        dplyr::pull(.data$pft_name)
+      
+      # Store the assignments
+      s$run$site$site.pft <- as.list(
+        stats::setNames(
+          c(veg_pfts, soil_pft),
+          c(
+            paste0("vegetation", seq_along(veg_pfts)),
+            "soil"
+          )
+        )
+      )
+      
       s
     },
     stop.on.error = TRUE
   )
+  
+  # ------------------------------------------------------------------
+  # Register PFT posterior definitions
+  # ------------------------------------------------------------------
+  
+  settings$pfts <- lapply(
+    seq_len(nrow(pft_manifest)),
+    function(i) {
+      list(
+        name = pft_manifest$pft_name[[i]],
+        posterior.files = pft_manifest$posterior_file[[i]]
+      )
+    }
+  )
+  
+  names(settings$pfts) <- rep("pft", nrow(pft_manifest))
+  
   
   
   # ------------------------------------------------------------------

@@ -7,9 +7,12 @@
 buildSettings.RCMEM(
   site_info,
   scenario_manifest,
+  site_pfts,
+  pft_manifest,
   scenario,
   confidence = "medium",
   quantiles,
+  ensemble_variable = "surface_elevation",
   outdir = "output",
   template = NULL
 )
@@ -23,12 +26,20 @@ buildSettings.RCMEM(
 files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
 and `path`.}
 
+\item{site_pfts}{A data frame defining site and pft relationshpis. Must contain
+`id`, `pft_name`, `pft_type`.}
+
+\item{pft_manifest}{A data fram definint links between pft names and datasets. 
+Must contain `pft_name`, `pft_type`, `posterior_file`.}
+
 \item{scenario}{Character vector. Scenario to use, for example `"ssp245"`.}
 
 \item{confidence}{Character vector. Confidence level to use, for example
 `"medium"`.}
 
 \item{quantiles}{Numeric vector of quantiles to include in the ensemble.}
+
+\item{ensemble_variable}{Character vector with outputs to track.}
 
 \item{outdir}{Output directory for the PEcAn run.}
 
