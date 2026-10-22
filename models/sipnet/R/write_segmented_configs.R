@@ -222,6 +222,7 @@ write_segment_configs <- function(
     # No restarts needed. Return path to unaltered full-run script.
     return(file.path(run_dir, "job.sh"))
   }
+
   segments <- segments |>
     # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
@@ -380,7 +381,7 @@ write_segment_configs <- function(
   if (replace_and_link) {
     run_jobsh_backup <- file.path(run_dir, "job_original.sh")
     file.rename(run_jobsh, run_jobsh_backup)
-  file.symlink(segmented_jobsh_file, run_jobsh)
+    file.symlink(segmented_jobsh_file, run_jobsh)
     Sys.chmod(run_jobsh, mode = "0755")
   }
   invisible(segmented_jobsh_file)

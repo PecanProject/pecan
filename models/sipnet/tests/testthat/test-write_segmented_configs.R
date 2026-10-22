@@ -115,6 +115,7 @@ test_that("write_segmented_configs", {
       )
     }
   }
+
   # job.sh includes calls to segment scripts
   jobsh <- readLines(file.path(run_path, "job.sh"))
   expect_match(jobsh, "segment_001/run/1/job.sh", all = FALSE)
