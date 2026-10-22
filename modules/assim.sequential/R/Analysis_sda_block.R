@@ -13,13 +13,15 @@
 ##' @param block.list.all.pre pre-existed block.list.all object for passing the aqq and bqq to the current SDA run, the default is NULL. Details can be found in the roxygen structure for `pre_enkf_params` of the `sda.enkf.multisite` function.
 ##' @param dist.att the disturbance matrix prescribing the prior biomass reductions due to disturbance 
 ##' (list(agb.bio.reduce (len = N site), lai.bio.reduce (len = N site))). Default is NULL.
+##' @param pD prior of disturbed Vs. undisturbed probability. Default is NULL.
+##' @param V0 numeric matrix (dim B*B): covariance to be used for the disturbance model. Default is NULL.
 ##' @details This function will add data and constants into each block that are needed for the MCMC sampling.
 ##'  
 ##' @description This function provides the block-based MCMC sampling approach.
 ##' 
 ##' @return It returns the `build.block.xy` object and the analysis results.
 ##' @importFrom dplyr %>%
-analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, block.list.all.pre = NULL, dist.att = NULL) {
+analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, block.list.all.pre = NULL, dist.att = NULL, V0 = NULL) {
   # grab cores from settings.
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   # if we didn't assign number of CPUs in the settings.
@@ -36,7 +38,9 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
                                                                  obs.mean = obs.mean, 
                                                                  obs.cov = obs.cov, 
                                                                  t = t,
-                                                                 dist.att = dist.att)))) {
+                                                                 dist.att = dist.att,
+                                                                 pD = pD,
+                                                                 V0 = V0)))) {
     PEcAn.logger::logger.severe("Something wrong within the build.block.xy function.")
     return(0)
   }
@@ -116,11 +120,13 @@ analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, 
 ##' @param t time point.
 ##' @param dist.att the disturbance matrix prescribing the prior biomass reductions due to disturbance 
 ##' (list(agb.bio.reduce (len = N site), lai.bio.reduce (len = N site))). Default is NULL.
+##' @param pD prior of disturbed Vs. undisturbed probability. Default is NULL.
+##' @param V0 numeric matrix (dim B*B): covariance to be used for the disturbance model. Default is NULL.
 ##' @details This function will add data and constants into each block that are needed for the MCMC sampling.
 ##'  
 ##' @description This function split long vector and covariance matrix into blocks corresponding to the localization.
 ##' 
-build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t, dist.att = NULL) {
+build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t, dist.att = NULL, pD = NULL, V0 = NULL) {
   #set q.type from settings.
   if (settings$state.data.assimilation$q.type == "vector") {
     q.type <- 3
@@ -265,6 +271,14 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t, di
       # add disturbance att to the block.
       if (!is.null(dist.att)) {
         block$att <- dist.att
+      }
+      # add prior undisturbed/disturbed probability.
+      if (!is.null(pD)) {
+        block$pD <- pD
+      }
+      # add covariance to be used for the disturbance model
+      if (!is.null(V0)) {
+        block$V0 <- V0
       }
     }
     names(block.list) <- site.ids
@@ -449,7 +463,7 @@ MCMC_block_function <- function(block) {
     load(block$dist.prior.file) # load disturbance prior file.
     # prescribe mu0 for the disturbance-related reductions in AGB and LAI.
     mu0 <- c(block$att$agb.bio.reduce[as.numeric(block$site.ids)], block$att$lai.bio.reduce[as.numeric(block$site.ids)])
-    res <- disturbance_DA(block$X, block$data$y.censored, diag(1/diag(block$data$r)), block$constant$H, block$data$aq, block$data$bq, disturbance, mu0)
+    res <- disturbance_DA(block$X, block$data$y.censored, diag(1/diag(block$data$r)), block$constant$H, block$data$aq, block$data$bq, disturbance, mu0, block$V0, blcok$pD)
     block$update <- list(aq = res$aqq, bq = res$bqq, mua = res$mu.overall, pa = res$cov.overall, muf = block$data$muf, pf = block$data$pf)
     block$aqq[,block$t+1] <- block$update$aq
     block$bqq[,block$t+1] <- block$update$bq

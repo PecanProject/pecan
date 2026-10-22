@@ -11,7 +11,9 @@ build.block.xy(
   obs.mean,
   obs.cov,
   t,
-  dist.att = NULL
+  dist.att = NULL,
+  pD = NULL,
+  V0 = NULL
 )
 }
 \arguments{
@@ -29,6 +31,10 @@ build.block.xy(
 
 \item{dist.att}{the disturbance matrix prescribing the prior biomass reductions due to disturbance 
 (list(agb.bio.reduce (len = N site), lai.bio.reduce (len = N site))). Default is NULL.}
+
+\item{pD}{prior of disturbed Vs. undisturbed probability. Default is NULL.}
+
+\item{V0}{numeric matrix (dim B*B): covariance to be used for the disturbance model. Default is NULL.}
 }
 \description{
 This function split long vector and covariance matrix into blocks corresponding to the localization.

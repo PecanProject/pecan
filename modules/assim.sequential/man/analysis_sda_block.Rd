@@ -14,7 +14,8 @@ analysis_sda_block(
   nt,
   MCMC.args,
   block.list.all.pre = NULL,
-  dist.att = NULL
+  dist.att = NULL,
+  V0 = NULL
 )
 }
 \arguments{
@@ -38,6 +39,10 @@ analysis_sda_block(
 
 \item{dist.att}{the disturbance matrix prescribing the prior biomass reductions due to disturbance 
 (list(agb.bio.reduce (len = N site), lai.bio.reduce (len = N site))). Default is NULL.}
+
+\item{V0}{numeric matrix (dim B*B): covariance to be used for the disturbance model. Default is NULL.}
+
+\item{pD}{prior of disturbed Vs. undisturbed probability. Default is NULL.}
 }
 \value{
 It returns the `build.block.xy` object and the analysis results.
