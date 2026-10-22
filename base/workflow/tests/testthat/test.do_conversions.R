@@ -29,3 +29,36 @@ test_that("`do_conversions` able to call met.process if the input tag has met, u
     expect_true(file.exists(file.path(getwd(), "pecan.METProcess.xml")))
   })
 })
+
+test_that("`do_conversions` works for settings with no database section", {
+  withr::with_tempdir({
+    settings <- list(
+      host = list(name = "localhost"),
+      outdir = getwd(),
+      run = list(
+        site = list(id = 0),
+        inputs = list(met = list(path = "existing.clim"))
+      )
+    )
+    expect_null(settings$database)
+    res <- expect_no_error(do_conversions(settings))
+    # input already has a path, so it is left alone
+    expect_equal(res$run$inputs$met$path, "existing.clim")
+  })
+})
+
+test_that("`do_conversions` uses the host folder for dbfiles when running on a remote host", {
+  withr::with_tempdir({
+    mockery::stub(do_conversions, "PEcAn.remote::is.localhost", FALSE)
+    settings <- list(
+      host = list(name = "remote.example.org", folder = "/remote/folder"),
+      outdir = getwd(),
+      database = list(dbfiles = "/local/dbfiles"),
+      run = list(
+        site = list(id = 0),
+        inputs = list(met = list(path = "existing.clim"))
+      )
+    )
+    expect_no_error(do_conversions(settings))
+  })
+})

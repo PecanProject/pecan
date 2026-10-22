@@ -204,14 +204,17 @@ if ("benchmarking" %in% names(settings)
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
   PEcAn.remote::kill.tunnel(settings)
-  db.query(
-    paste(
-      "UPDATE workflows SET finished_at=NOW() WHERE id=",
-      settings$workflow$id,
-      "AND finished_at IS NULL"
-    ),
-    params = settings$database$bety
-  )
+  # Only record completion if there is a database to record it in
+  if (!is.null(settings$database$bety)) {
+    db.query(
+      paste(
+        "UPDATE workflows SET finished_at=NOW() WHERE id=",
+        settings$workflow$id,
+        "AND finished_at IS NULL"
+      ),
+      params = settings$database$bety
+    )
+  }
 
   # Send email if configured
   if (!is.null(settings$email)

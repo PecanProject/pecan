@@ -19,7 +19,13 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   }
   
   dbfiles.local <- settings$database$dbfiles
-  dbfiles <- ifelse(!PEcAn.remote::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
+  # `ifelse()` would fail here when `dbfiles.local` is NULL
+  # (e.g. settings with no <database> section)
+  dbfiles <- if (!PEcAn.remote::is.localhost(settings$host) && !is.null(settings$host$folder)) {
+    settings$host$folder
+  } else {
+    dbfiles.local
+  }
   PEcAn.logger::logger.debug("do.conversion outdir",dbfiles)
   # For each input
   for (i in seq_along(settings$run$inputs)) {
