@@ -222,7 +222,6 @@ write_segment_configs <- function(
     # No restarts needed. Return path to unaltered full-run script.
     return(file.path(run_dir, "job.sh"))
   }
-  
   segments <- segments |>
     # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
