@@ -152,13 +152,13 @@ test_that("stem and root respiration are written as per year rates", {
     settings = s, run.id = "run1"
   )
   p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"), stringsAsFactors = FALSE)
-  pval <- function(name) p[p[[1]] == name, 2]
+  param_value <- function(name) p[p[[1]] == name, 2]
 
   # 1 umol CO2 kg-1 s-1 is 12.01e-9 g C g-1 s-1; sipnet's year is 365 days.
   # template Q10s (2.0 veg, 2.6 fine root) take the 25 C rates to 0 C
   g_per_year <- 12.01e-9 * 86400 * 365
-  expect_equal(pval("baseVegResp"), 1 * g_per_year * 2.0^(-2.5))
-  expect_equal(pval("baseFineRootResp"), 10 * g_per_year * 2.6^(-2.5))
+  expect_equal(param_value("baseVegResp"), 1 * g_per_year * 2.0^(-2.5))
+  expect_equal(param_value("baseFineRootResp"), 10 * g_per_year * 2.6^(-2.5))
 })
 
 test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
