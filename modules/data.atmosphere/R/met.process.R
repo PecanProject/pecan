@@ -134,6 +134,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
     stage$local <- FALSE
   }
 
+  if (!is.null(register$standardize)) {
+    stage$standardize <- stage$standardize && isTRUE(as.logical(register$standardize))
+  }
   stage$model <- !is.null(model)
   
   PEcAn.logger::logger.debug(stage)
@@ -326,7 +329,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     } # End for loop
 
   } else {
-    ready.id <- input_met$id
+    ready.id <- cf.id
   }
 
   #--------------------------------------------------------------------------------------------------#

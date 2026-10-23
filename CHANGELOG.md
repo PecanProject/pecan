@@ -10,6 +10,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- Added separate Cal-Adapt WRF source download and CF-conversion adapters in `PEcAn.data.atmosphere`, using the normal site-level ingestion stages.
+
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
 - `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
 - PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
