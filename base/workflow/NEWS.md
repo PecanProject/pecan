@@ -1,5 +1,8 @@
 # PEcAn.workflow 1.10.0.9000
 
+## Fixed
+* `do_conversions()` now passes `overwrite.met`, `overwrite.fia` and `overwrite.ic` on to each site when given a MultiSettings. Previously they were silently reset to `FALSE` for every site (#4175).
+
 ## Changed
 * `runModule.run.write.configs()` with `overwrite = TRUE` now replaces `runs_manifest.csv` for multisite settings, as it does `runs.txt`. Previously every rerun appended a second copy of each row.
 * `start_model_runs()` gains argument `check_interval`, setting the time in seconds to wait between queries of job status on queued systems.
