@@ -1,5 +1,8 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `get.ensemble.samples()` now again returns a list of dataframes as it did
+  before v1.9.0. The returned list also now has attribute `sampled.indices`,
+  giving the position of each sampled value in its input set (#4127, @Devansh-56)
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.
