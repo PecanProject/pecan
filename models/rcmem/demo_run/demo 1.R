@@ -139,3 +139,31 @@ settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
 settings <- PEcAn.workflow::runModule.run.write.configs(
   settings_prepared
 )
+
+PEcAn.workflow::runModule_start_model_runs(settings)
+
+
+runid <- read.csv(file.path(settings$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings$outdir, "out", runid)
+model_output <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = function(id, dir) {
+    PEcAn.utils::read.output(
+      runid = id, outdir = dir,
+      start.year = NA, end.year = NA,
+      variables = c("surface_elevation","cFlux"),
+      dataframe = TRUE,
+      verbose = FALSE,
+      print_summary = FALSE
+    )
+  },
+  .id = "run_id"
+)
+available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
+
+ggplot(model_output, aes(x = year, y = surface_elevation)) +
+  geom_line(aes(group=run_id))
+
+ggplot(model_output, aes(x = year, y = cFlux)) +
+  geom_line(aes(group=run_id))
