@@ -4,7 +4,7 @@
 \alias{write.config.RCMEM}
 \title{Write RCMEM configuration files}
 \usage{
-write.config.RCMEM(defaults, trait.values, settings, run.id)
+write.config.RCMEM(defaults = NULL, trait.values, settings, run.id)
 }
 \arguments{
 \item{defaults}{list of defaults to process}

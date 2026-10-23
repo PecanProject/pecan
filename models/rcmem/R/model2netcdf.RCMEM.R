@@ -29,8 +29,18 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
   ### Read in model output in RCMEM
   RCMEM.cohort.output <- utils::read.csv(raw_output_cohort)
   RCMEM.scenario.output <- utils::read.csv(raw_output_scenario)
-  RCMEM.species.output <- utils::read.csv(raw_species_scenario) %>% 
-    tidyr::pivot_longer(names_to = "species_code", values_to = "aboveground_biomass", -year)
+  RCMEM.species.output <- utils::read.csv(raw_species_scenario) %>%
+    tidyr::pivot_longer(
+      names_to = "species_code",
+      values_to = "aboveground_biomass",
+      -year
+    ) %>%
+    dplyr::mutate(
+      species_index = match(
+        .data$species_code,
+        unique(.data$species_code)
+      )
+    )
   
   # RCMEM.cohort.dims <- dim(RCMEM.cohort.output)
   # RCMEM.scenario.dims <- dim(RCMEM.scenario.output)
@@ -48,8 +58,9 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     ## Subset data for processing
     sub.RCMEM.output_cohort <- dplyr::filter(RCMEM.cohort.output, .data$year == y)
     sub.RCMEM.output_scenario <- dplyr::filter(RCMEM.scenario.output, .data$year == y)
-    sub.RCMEM.output_species <- dplyr::filter(RCMEM.species.output, .data$year == y) %>% 
-      dplyr::mutate(species_index = 1:n())
+    sub.RCMEM.output_species <- RCMEM.species.output %>%
+      dplyr::filter(.data$year == y) %>%
+      dplyr::arrange(.data$species_index)
   
     # sub.RCMEM.output_cohort.dims <- dim(sub.RCMEM.output_cohort)
     # sub.RCMEM.output_scenario.dims <- dim(sub.RCMEM.output_scenario)
@@ -79,12 +90,12 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     
    
     pft <- ncdf4::ncdim_def(
-        name = "pft",
-        units = "unitless",
-        vals = as.numeric(sub.RCMEM.output_species[,"species_index"]),
-        longname = "Plant Functional Type",
-        unlim = TRUE
-      )
+      name = "pft",
+      units = "unitless",
+      vals = sub.RCMEM.output_species$species_index,
+      longname = "Plant Functional Type",
+      unlim = FALSE
+    )
     
     dims_scenario <- list(lon = lon, lat = lat, time = t)
     dims_cohorts <- list(lon = lon, lat = lat, depth = depth,  time = t)
@@ -139,7 +150,7 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     
     # Species
     # "species_code"        "aboveground_biomass"
-    output[[17]] <- sub.RCMEM.output_species[,"aboveground_biomass"]
+    output[[17]] <- sub.RCMEM.output_species$aboveground_biomass
 
     ## time_bounds
     # output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),

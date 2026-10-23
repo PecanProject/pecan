@@ -439,6 +439,16 @@ buildSettings.RCMEM <- function(
         )
       )
       
+      # Optional site-specific met inputs
+      if ("site_met_path" %in% names(site_row)) {
+        
+        site_met_path <- site_row$site_met_path[[1]]
+        
+        if (!is.na(site_met_path) && nzchar(site_met_path)) {
+          s$run$site$site_met_path <- as.character(site_met_path)
+        }
+      }
+      
       s
     },
     stop.on.error = TRUE

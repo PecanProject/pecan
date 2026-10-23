@@ -2,8 +2,8 @@
 
 # Test
 library(tidyverse)
-library(PEcAn.RCMEM)
-library(PEcAn.data.water)
+# library(PEcAn.RCMEM)
+# library(PEcAn.data.water)
 
 # Create Site Table
 sites <- data.frame(
@@ -86,23 +86,25 @@ dir.create(
   recursive = TRUE,
   showWarnings = FALSE
 )
+
 post.distns <- veg.distns
+
 save(
-  veg.distns,
+  post.distns,
   file = "demo_run/demo_1/data/pfts/vegetation/scam/post.distns.RData"
 )
 
-post.distns <- veg.distns
-# Soil PFT
 dir.create(
   "demo_run/demo_1/data/pfts/soil",
   recursive = TRUE,
   showWarnings = FALSE
 )
 
+post.distns <- soil.distns
+
 save(
   post.distns,
-  file = "demo_run/demo_1/data/pfts/soil/soil.RData"
+  file = "demo_run/demo_1/data/pfts/soil/post.distns.RData"
 )
 
 site_pfts <- data.frame( id = c("GCReW", "GCReW"),
@@ -130,6 +132,10 @@ PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
 
 settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_1/settings_RCMEM_unprepared.xml")
 
+settings_unprepared$ensemble$size <- 20L
+
 settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
 
-settings2 <- PEcAn.workflow::runModule.run.write.configs(settings_prepared)
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings_prepared
+)
