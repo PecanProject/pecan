@@ -12,6 +12,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
 - `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
+- Added regression tests to `PEcAn.settings` confirming `check.ensemble.settings()` does not add an `ensemble` block to settings that lack one (#3024).
 - PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
 - Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 - Added a downscaling-error diagnostic to `inst/ilamb/` in PEcAn.benchmark: compares the downscaling random forest's out-of-bag RMSE against the between-member ensemble spread at the SDA sites, quantifying downscaling error the ensemble spread does not represent. (#4070)
