@@ -24,76 +24,77 @@ class Worker:
         self.finished = False
 
     def runfunc(self):
-        logging.debug(self.body)
-        jbody = json.loads(self.body.decode('UTF-8'))
+        try:
+            logging.debug(self.body)
+            jbody = json.loads(self.body.decode('UTF-8'))
 
-        folder = jbody.get('folder')
-        rebuild = jbody.get('rebuild')
-        pecan_xml = jbody.get('pecan_xml')
-        custom_application = jbody.get('custom_application')
+            folder = jbody.get('folder')
+            rebuild = jbody.get('rebuild')
+            pecan_xml = jbody.get('pecan_xml')
+            custom_application = jbody.get('custom_application')
 
-        if rebuild is not None:
-            logging.info("Rebuilding PEcAn with make")
-            application = 'make'
-            folder = '/pecan'
-        elif pecan_xml is not None:
-            # Passed entire pecan XML as a string
-            logging.info("Running XML passed directly")
-            try:
-                os.mkdir(folder)
-            except OSError as e:
-                logging.info("Caught the following OSError. ",
-                             "If it's just that the directory exists, ",
-                             "this can probably be ignored: ", e)
-            workflow_path = os.path.join(folder, "workflow.R")
-            shutil.copyfile("/work/workflow.R", workflow_path)
-            xml_file = open(os.path.join(folder, "pecan.xml"), "w")
-            xml_file.write(pecan_xml)
-            xml_file.close()
+            if rebuild is not None:
+                logging.info("Rebuilding PEcAn with make")
+                application = 'make'
+                folder = '/pecan'
+            elif pecan_xml is not None:
+                # Passed entire pecan XML as a string
+                logging.info("Running XML passed directly")
+                try:
+                    os.mkdir(folder)
+                except OSError as e:
+                    logging.info("Caught the following OSError. ",
+                                 "If it's just that the directory exists, ",
+                                 "this can probably be ignored: ", e)
+                workflow_path = os.path.join(folder, "workflow.R")
+                shutil.copyfile("/work/workflow.R", workflow_path)
+                xml_file = open(os.path.join(folder, "pecan.xml"), "w")
+                xml_file.write(pecan_xml)
+                xml_file.close()
 
-            # Set variables for execution
-            application = "R CMD BATCH workflow.R"
-        elif custom_application is not None:
-            application = custom_application
-        elif default_application == "workflow":
-            application = "R CMD BATCH"
-            if jbody.get("continue") == True:
-                application = application + " --continue workflow.R workflow2.Rout";
+                # Set variables for execution
+                application = "R CMD BATCH workflow.R"
+            elif custom_application is not None:
+                application = custom_application
+            elif default_application == "workflow":
+                application = "R CMD BATCH"
+                if jbody.get("continue") == True:
+                    application = application + " --continue workflow.R workflow2.Rout";
+                else:
+                    if jbody.get("modeledit") == True:
+                        application = application + " --advanced"
+                    application = application + " workflow.R workflow.Rout";
             else:
-                if jbody.get("modeledit") == True:
-                    application = application + " --advanced"
-                application = application + " workflow.R workflow.Rout";
-        else:
-            logging.info("Running default command: %s" % default_application)
-            application = default_application
+                logging.info("Running default command: %s" % default_application)
+                application = default_application
 
-        logging.info("Running command: %s" % application)
-        logging.info("Starting command in directory %s." % folder)
-        try:
-            output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=folder)
-            status = 'OK'
-        except subprocess.CalledProcessError as e:
-            logging.exception("Error running job.")
-            output = e.output
-            status = 'ERROR'
-        except Exception as e:
-            logging.exception("Error running job.")
-            output = str(e)
-            status = 'ERROR'
+            logging.info("Running command: %s" % application)
+            logging.info("Starting command in directory %s." % folder)
+            try:
+                output = subprocess.check_output(application, stderr=subprocess.STDOUT, shell=True, cwd=folder)
+                status = 'OK'
+            except subprocess.CalledProcessError as e:
+                logging.exception("Error running job.")
+                output = e.output
+                status = 'ERROR'
+            except Exception as e:
+                logging.exception("Error running job.")
+                output = str(e)
+                status = 'ERROR'
 
-        logging.info("Finished running job with status " + status)
-        logging.info(output)
+            logging.info("Finished running job with status " + status)
+            logging.info(output)
 
-        try:
-            with open(os.path.join(folder, 'rabbitmq.out'), 'w') as out:
-                out.write(str(output) + "\n")
-                out.write(status + "\n")
-        except Exception:
-            logging.exception("Error writing status.")
+            try:
+                with open(os.path.join(folder, 'rabbitmq.out'), 'w') as out:
+                    out.write(str(output) + "\n")
+                    out.write(status + "\n")
+            except Exception:
+                logging.exception("Error writing status.")
 
-        # done processing, set finished to true
-        self.finished = True
-
+        finally:
+            # Always release the delivery, even if parsing or setup fails.
+            self.finished = True
 
 # called for every message, this will start the program and ack message if all is ok.
 def callback(ch, method, properties, body):
