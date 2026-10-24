@@ -1,0 +1,2 @@
+gauge_id,scenario_name,confidence,quantile,quantile_id,file_name,path,startDate,endDate
+8575512,ssp245,medium,0.5,q500,RCMEM_8575512_ssp245_medium_q500.rds,demo_run/demo_1/data/met/8575512/ssp245/medium/RCMEM_8575512_ssp245_medium_q500.rds,1928,2100

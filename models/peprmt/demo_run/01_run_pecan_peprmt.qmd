@@ -50,17 +50,17 @@ Before running this notebook, make sure you have:
 ```{r packages, eval = FALSE}
 
 # Enable repository from pecanproject
-options(repos = c(
-  pecanproject = 'https://pecanproject.r-universe.dev',
-  CRAN = 'https://cloud.r-project.org'))
-# Download and install PEcAn.all in R
-install.packages(c('PEcAn.all', 'PEcAn.PEPRMT'))
-
-# Alternatively, install from GitHub
-remotes::install_github("pecanproject/pecan", subdir = "base/all", 
-                        ref = "develop", force = T)
-remotes::install_github("pecanproject/pecan", subdir = "models/peprmt", 
-                        ref = "develop")
+# options(repos = c(
+#   pecanproject = 'https://pecanproject.r-universe.dev',
+#   CRAN = 'https://cloud.r-project.org'))
+# # Download and install PEcAn.all in R
+# install.packages(c('PEcAn.all', 'PEcAn.PEPRMT'))
+# 
+# # Alternatively, install from GitHub
+# remotes::install_github("pecanproject/pecan", subdir = "base/all", 
+#                         ref = "develop", force = T)
+# remotes::install_github("pecanproject/pecan", subdir = "models/peprmt", 
+#                         ref = "develop")
 ```
 
 - You will also need a valid `pecan.xml` configuration file, such as the example provided: `pecan/models/peprmt/demo_run/settings.xml`
