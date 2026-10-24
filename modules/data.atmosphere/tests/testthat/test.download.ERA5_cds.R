@@ -1,5 +1,4 @@
 test_that("download.ERA5_cds parameter validation and core functionality", {
-  skip_if_not_installed("ecmwfr")
   outdir <- withr::local_tempdir()
 
   # Mock only ecmwfr and logger dependencies
@@ -52,7 +51,6 @@ test_that("download.ERA5_cds parameter validation and core functionality", {
 })
 
 test_that("download.ERA5_cds handles time parameter and dataset options", {
-  skip_if_not_installed("ecmwfr")
   outdir <- withr::local_tempdir()
 
   local_mocked_bindings(
@@ -91,7 +89,6 @@ test_that("download.ERA5_cds handles time parameter and dataset options", {
 })
 
 test_that("download.ERA5_cds error handling and ecmwfr dependency", {
-  skip_if_not_installed("ecmwfr")
   skip("Cannot reliably mock requireNamespace in base R; use a package-level wrapper for robust tests.")
   # The following test would check for error handling if ecmwfr is missing,
   # but is skipped due to R's locked base functions.

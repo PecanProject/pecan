@@ -1,7 +1,6 @@
 context("validate_events_json")
 
 testthat::test_that("validate_events_json validates good fixtures", {
-    testthat::skip_if_not_installed("jsonvalidate")
     f1 <- system.file("events_fixtures/events_site1.json", package = "PEcAn.data.land", mustWork = TRUE)
     f2 <- system.file("events_fixtures/events_site1_site2.json", package = "PEcAn.data.land", mustWork = TRUE)
     testthat::expect_true(PEcAn.data.land::validate_events_json(f1))
@@ -9,7 +8,6 @@ testthat::test_that("validate_events_json validates good fixtures", {
 })
 
 testthat::test_that("validate_events_json returns FALSE on invalid JSON", {
-    testthat::skip_if_not_installed("jsonvalidate")
     bad <- withr::local_tempfile(fileext = ".json")
     # Missing required field: events
     jsonlite::write_json(list(pecan_events_version = "0.1.0", site_id = "X"), bad, auto_unbox = TRUE)
