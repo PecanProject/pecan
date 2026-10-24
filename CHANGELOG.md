@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- The weekly CI now also runs the SIPNET integration test against SIPNET v2.2.0, in addition to v1.3.0 (#3870).
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
 - `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
 - PEcAn.workflow::start_model_runs() gains argument `check_interval` to set the time between update checks. Psst, we just checked and your HPC admin says try keeping this longer than the default.
