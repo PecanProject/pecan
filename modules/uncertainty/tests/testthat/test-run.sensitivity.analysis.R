@@ -2,7 +2,7 @@
 
 # SA inputs for one pft, with the output of each run from a known model,
 # written where run.sensitivity.analysis looks for them
-write_sa_fixture <- function(dir, trait.samples, model) {
+write_sa_fixture <- function(dir, trait.samples, model, variables = "NPP") {
   q <- stats::pnorm(-3:3)
   sa.samples <- list(pft1 = as.data.frame(lapply(trait.samples, stats::quantile, q),
                                           row.names = as.character(round(q * 100, 3))))
@@ -24,16 +24,21 @@ write_sa_fixture <- function(dir, trait.samples, model) {
     row.names = rownames(sa.samples$pft1)
   ))
 
+  sa_settings <- list(ensemble.id = "1", start.year = 2001, end.year = 2001)
+  for (v in variables) {
+    sa_settings <- c(sa_settings, list(variable = v))
+  }
   settings <- list(
     outdir = dir,
     pfts = list(pft = list(name = "pft1", outdir = dir)),
-    sensitivity.analysis = list(ensemble.id = "1", variable = "NPP",
-                                start.year = 2001, end.year = 2001)
+    sensitivity.analysis = sa_settings
   )
-  save(sensitivity.output, file = sensitivity.filename(
-    settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
-    ensemble.id = "1", variable = "NPP", start.year = 2001, end.year = 2001
-  ))
+  for (v in variables) {
+    save(sensitivity.output, file = sensitivity.filename(
+      settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
+      ensemble.id = "1", variable = v, start.year = 2001, end.year = 2001
+    ))
+  }
   settings
 }
 
@@ -89,75 +94,25 @@ test_that("run.sensitivity.analysis returns NULL when sensitivity.analysis is mi
   expect_null(run.sensitivity.analysis(list()))
 })
 
-test_that("run.sensitivity.analysis loads samples once before variables loop and preserves loop variable", {
-  tmpdir <- withr::local_tempdir()
-
-  # Create mock samples.Rdata
-  trait.samples <- list(pft1 = list(sla = c(10, 20)))
-  sa.samples <- list(pft1 = matrix(c(10, 20), nrow = 2, dimnames = list(c("25", "75"), "sla")))
-  runs.samples <- list(sa = c("run1", "run2"))
-  save(trait.samples, sa.samples, runs.samples, file = file.path(tmpdir, "samples.Rdata"))
-
-  settings <- list(
-    outdir = tmpdir,
-    sensitivity.analysis = list(
-      variable = c("NPP", "GPP"),
-      start.year = 2000,
-      end.year = 2001,
-      ensemble.id = "ENS-TEST"
-    ),
-    pfts = list(list(name = "pft1", outdir = tmpdir))
-  )
-
-  # Mock sensitivity output file for both variables
-  for (var in c("NPP", "GPP")) {
-    sens_out_file <- sensitivity.filename(
-      settings, "sensitivity.output", "Rdata",
-      all.var.yr = FALSE,
-      ensemble.id = "ENS-TEST",
-      variable = var,
-      start.year = 2000,
-      end.year = 2001
-    )
-    sensitivity.output <- list(pft1 = data.frame(sla = c(1.0, 2.0)))
-    dir.create(dirname(sens_out_file), showWarnings = FALSE, recursive = TRUE)
-    save(sensitivity.output, file = sens_out_file)
-  }
-
-  # Mock trait.lookup, convert.expr, sensitivity.analysis
-  mockery::stub(run.sensitivity.analysis, "PEcAn.utils::trait.lookup", function(...) data.frame(units = "m2/kg"))
-  mockery::stub(run.sensitivity.analysis, "PEcAn.utils::convert.expr", function(var) list(variable.drv = var))
-  mockery::stub(run.sensitivity.analysis, "sensitivity.analysis", function(...) list(
-    variance.decomposition.output = list(),
-    sensitivity.output = list()
-  ))
-
-  # Track load calls to verify samples.Rdata is only loaded once
-  load_count <- 0
-  mock_load <- function(file, envir) {
-    if (grepl("samples\\.Rdata$", file)) {
-      load_count <<- load_count + 1
-    }
-    base::load(file, envir = envir)
-  }
-  mockery::stub(run.sensitivity.analysis, "load", mock_load)
+test_that("run.sensitivity.analysis calculates results for multiple variables", {
+  dir <- withr::local_tempdir()
+  withr::local_seed(1)
+  samples <- data.frame(SLA = stats::rnorm(5000, 20, 4))
+  settings <- write_sa_fixture(dir, samples, function(x) 0.2 * x$SLA, variables = c("NPP", "GPP"))
 
   run.sensitivity.analysis(settings, plot = FALSE)
 
-  # samples.Rdata should be loaded exactly once despite multiple variables
-  expect_equal(load_count, 1)
-
-  # Both variable results should be generated
   for (var in c("NPP", "GPP")) {
+    res_env <- new.env()
     res_file <- sensitivity.filename(
       settings, "sensitivity.results", "Rdata",
-      all.var.yr = FALSE,
-      pft = NULL,
-      ensemble.id = "ENS-TEST",
-      variable = var,
-      start.year = 2000,
-      end.year = 2001
+      all.var.yr = FALSE, pft = NULL,
+      ensemble.id = "1", variable = var,
+      start.year = 2001, end.year = 2001
     )
     expect_true(file.exists(res_file))
+    load(res_file, envir = res_env)
+    vd <- res_env$sensitivity.results$pft1$variance.decomposition.output
+    expect_equal(vd$sensitivities[["SLA"]], 0.2, tolerance = 0.01)
   }
 })

@@ -86,10 +86,10 @@ run.sensitivity.analysis <- function(settings,
   }
   if (is.null(variable)) {
     if ("variable" %in% names(settings$sensitivity.analysis)) {
-      variable <- unlist(
-        settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"],
-        use.names = FALSE
-      )
+      var <- which(names(settings$sensitivity.analysis) == "variable")
+      for (i in seq_along(var)) {
+        variable[i] <- settings$sensitivity.analysis[[var[i]]]
+      }
     }
   }
   if (is.null(variable)) {
@@ -127,34 +127,30 @@ run.sensitivity.analysis <- function(settings,
   if (!file.exists(fname)) {
     PEcAn.logger::logger.severe("No samples.Rdata file found!")
   }
-  samples_base <- new.env()
-  load(fname, envir = samples_base)
+  samples <- new.env()
+  load(fname, envir = samples)
 
   fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
                                 ensemble.id = ensemble.id,
                                 all.var.yr = TRUE)
   if (file.exists(fname)) {
-    load(fname, envir = samples_base)
+    load(fname, envir = samples)
   }
 
   # For backwards compatibility, define some variables if not just loaded
-  if (is.null(samples_base$pft.names)) {
-    samples_base$pft.names <- names(samples_base$trait.samples)
+  if (is.null(samples$pft.names)) {
+    samples$pft.names <- names(samples$trait.samples)
   }
-  if (is.null(samples_base$trait.names)) {
-    samples_base$trait.names <- lapply(samples_base$trait.samples, names)
+  if (is.null(samples$trait.names)) {
+    samples$trait.names <- lapply(samples$trait.samples, names)
   }
-  if (is.null(samples_base$sa.run.ids)) {
-    samples_base$sa.run.ids <- samples_base$runs.samples$sa
+  if (is.null(samples$sa.run.ids)) {
+    samples$sa.run.ids <- samples$runs.samples$sa
   }
 
   variables <- variable
   for (variable in variables) {
     PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ", variable)
-
-    # Clone base samples for this variable iteration so that in-place modifications
-    # (e.g. unit conversions) do not persist across variable iterations
-    samples <- rlang::env_clone(samples_base)
 
     ### Load parsed model results
     parsed_var <- PEcAn.utils::convert.expr(variable)
