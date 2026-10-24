@@ -126,7 +126,67 @@ organize_pft_parameters.RCMEM <- function(
     } else {
       stop("Missing soil parameter: ", param)
     }
+    
+    
+    
   }
+  
+  # ------------------------------------------------------------
+  # Organic matter to organic carbon conversion parameters
+  # ------------------------------------------------------------
+  
+  carbon_params <- c("B0", "B1", "B2")
+  
+  omToOcParams <- list()
+  
+  for (param in carbon_params) {
+    
+    trait_name <- paste0("omToOc_", param)
+    
+    # First priority: sampled soil PFT
+    if (trait_name %in% names(soil_values)) {
+      
+      omToOcParams[[param]] <- as.numeric(
+        soil_values[[trait_name]]
+      )
+      
+      # Second priority: study/site defaults
+    } else if (!is.null(defaults$omToOcParams[[param]])) {
+      
+      omToOcParams[[param]] <- defaults$omToOcParams[[param]]
+      
+    }
+  }
+  
+  # Built-in defaults for required coefficients
+  if (is.null(omToOcParams$B0)) {
+    omToOcParams$B0 <- 0
+  }
+  
+  if (is.null(omToOcParams$B1)) {
+    omToOcParams$B1 <- 0.48
+  }
+  
+  # B2 is intentionally not assigned a default.
+  # Its presence determines whether the conversion is quadratic.
+  
+  # Validate coefficients
+  if (any(!vapply(
+    omToOcParams,
+    function(x) is.numeric(x) &&
+    length(x) == 1L &&
+    is.finite(x),
+    logical(1)
+  ))) {
+    stop("OM-to-OC coefficients must be finite numeric scalars.")
+  }
+  
+  # Ensure consistent coefficient order
+  omToOcParams <- omToOcParams[
+    c("B0", "B1", "B2")[
+      c("B0", "B1", "B2") %in% names(omToOcParams)
+    ]
+  ]
   
   # SSC is optional at this stage.
   # It may subsequently be replaced by site-specific met.
@@ -145,7 +205,8 @@ organize_pft_parameters.RCMEM <- function(
   # Preserve PFT order
   result$species_codes <- veg_names
   
-  # result$species_codes <- as.character(veg$species_code)
-  # 
-  result
+  list(
+    model_parameters = result,
+    omToOcParams = omToOcParams
+  )
 }

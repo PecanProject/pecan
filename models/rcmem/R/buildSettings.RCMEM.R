@@ -10,6 +10,7 @@
 #' @param site_info A data frame containing one row per site. Must contain
 #'   `id` and `gauge_id`. Additional columns required by
 #'   `PEcAn.settings::createMultiSiteSettings()` may also be supplied.
+#'   These include `site_met_path` and  `site_defaults_path`.
 #' @param scenario_manifest A data frame describing available RCMEM scenario
 #'   files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
 #'   and `path`.
@@ -25,6 +26,8 @@
 #' @param outdir Output directory for the PEcAn run.
 #' @param template Optional path to an RCMEM settings template. If `NULL`,
 #'   the template installed with the package is used.
+#' @param ensemble_size Number of parameter ensembles to include
+#' @param study_defaults Character string link point towards defalt memory rds.
 #'
 #' @return A PEcAn settings object.
 #'
@@ -39,7 +42,9 @@ buildSettings.RCMEM <- function(
     quantiles,
     ensemble_variable = "surface_elevation",
     outdir = "output",
-    template = NULL
+    template = NULL,
+    ensemble_size,
+    study_defaults = NULL
 ) {
   
   # ------------------------------------------------------------------
@@ -318,8 +323,23 @@ buildSettings.RCMEM <- function(
   
   settings <- PEcAn.settings::read.settings(template)
   
-  # Ensemble size is the number of scenario/confidence/quantile combinations
   
+  # ------------------------------------------------------------
+  # Study-level defaults
+  # ------------------------------------------------------------
+  
+  study_defaults_path <- NULL
+  
+  if (!is.null(study_defaults)) {
+    
+    if (!file.exists(study_defaults)) {
+      stop("Study defaults file not found: ", study_defaults)
+    }
+    
+    study_defaults_path <- study_defaults
+  }
+  
+  # Ensemble size is the number of scenario/confidence/quantile combinations
   settings$ensemble$variable <- ensemble_variable
   settings$ensemble$size <- nrow(ensemble_design)
   
@@ -347,9 +367,14 @@ buildSettings.RCMEM <- function(
   
   settings <- PEcAn.settings::papply(
     settings,
-    function(s) {
+    function(s, study_defaults_path) {
       
       site_id <- as.character(s$run$site$id)
+      
+      if (!is.null(study_defaults_path)) {
+        s$run$rcmem_defaults_path <- study_defaults_path
+      }
+      
       
       # Find site metadata
       site_row <- site_info |>
@@ -449,9 +474,33 @@ buildSettings.RCMEM <- function(
         }
       }
       
+      # ------------------------------------------------------------
+      # Optional site-specific defaults
+      # ------------------------------------------------------------
+      
+      if ("site_defaults_path" %in% names(site_row)) {
+        
+        path <- site_row$site_defaults_path[[1]]
+        
+        if (!is.na(path) && nzchar(path)) {
+          
+          if (!file.exists(path)) {
+            stop(
+              "Site defaults file not found for ",
+              site_id, ": ", path
+            )
+          }
+          
+          s$run$site$site_defaults_path <- path
+  
+        }
+      }
+      
       s
     },
-    stop.on.error = TRUE
+    
+    study_defaults_path = study_defaults_path,
+    stop.on.error = T
   )
   
   # ------------------------------------------------------------------
@@ -470,8 +519,6 @@ buildSettings.RCMEM <- function(
   
   names(settings$pfts) <- rep("pft", nrow(pft_manifest))
   
-  
-  
   # ------------------------------------------------------------------
   # Keep ensemble metadata for inspection
   # ------------------------------------------------------------------
@@ -479,10 +526,17 @@ buildSettings.RCMEM <- function(
   attr(settings, "rcmem_ensemble_design") <- ensemble_design
   attr(settings, "rcmem_run_manifest") <- run_manifest
   
+  # Add parameter ensemble size
+  settings$ensemble$size <- ensemble_size
+  
+  
   PEcAn.settings::write.settings(
     settings,
     outputfile = "settings_RCMEM_unprepared.xml",
     outputdir = outdir
   )
+  
+  settings
+  
 }
 

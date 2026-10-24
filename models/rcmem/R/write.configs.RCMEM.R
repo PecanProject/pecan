@@ -31,6 +31,17 @@ write.config.RCMEM <- function(
     dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
     
     # ------------------------------------------------------------
+    # Resolve model defaults
+    # ------------------------------------------------------------
+    
+    # ------------------------------------------------------------
+    # Resolve RCMEM study and site defaults
+    # ------------------------------------------------------------
+    
+    rcmem_defaults <- resolve_defaults.RCMEM(settings)
+    
+    
+    # ------------------------------------------------------------
     # Read gauge-level met
     # ------------------------------------------------------------
     
@@ -74,11 +85,14 @@ write.config.RCMEM <- function(
     
     # Read and align site-level met first
     # met already contains merged gauge and site input
-    parameters <- organize_pft_parameters.RCMEM(
+    organized <- organize_pft_parameters.RCMEM(
       trait.values = trait.values,
       settings = settings,
-      defaults = defaults
+      defaults = rcmem_defaults
     )
+    
+    parameters <- organized$model_parameters
+    omToOcParams <- organized$omToOcParams
     
     
     # ------------------------------------------------------------
@@ -131,8 +145,48 @@ write.config.RCMEM <- function(
     model_met$species_active <- NULL
     model_met$suspendedSediment <- NULL
     
-    model_args <- utils::modifyList(
-      parameters,
+    # ------------------------------------------------------------
+    # Assemble final model arguments
+    # ------------------------------------------------------------
+    
+    # Start with all resolved study and site defaults
+    model_parameters <- rcmem_defaults
+    
+    # Sampled PFT parameters override defaults
+    model_parameters <- utils::modifyList(
+      model_parameters,
+      parameters
+    )
+    
+    # Site-specific SSC takes precedence
+    if (!is.null(met$suspendedSediment)) {
+      model_parameters$suspendedSediment <- met$suspendedSediment
+    }
+    
+    # Remove optional inputs not yet accepted by the model
+    model_met <- met
+    species_active <- model_met$species_active
+    
+    model_met$species_active <- NULL
+    model_met$suspendedSediment <- NULL
+    
+    # Check for duplicate argument names
+    duplicate_args <- intersect(
+      names(model_parameters),
+      names(model_met)
+    )
+    
+    if (length(duplicate_args) > 0L) {
+      stop(
+        "Duplicate RCMEM arguments: ",
+        paste(duplicate_args, collapse = ", ")
+      )
+    }
+    
+    rcmem_defaults$omToOcParams <- NULL
+    
+    model_args <- c(
+      model_parameters,
       model_met
     )
     
@@ -140,6 +194,7 @@ write.config.RCMEM <- function(
       run_id = run.id,
       site_id = settings$run$site$id,
       model_args = model_args,
+      omToOcParams = omToOcParams,
       future_inputs = list(
         species_active = species_active
       ),
@@ -148,6 +203,20 @@ write.config.RCMEM <- function(
         site_met = site_met_path
       )
     )
+    
+    valid_args <- names(formals(rCMEM::runCohortMem2))
+    
+    unknown_args <- setdiff(
+      names(model_args),
+      valid_args
+    )
+    
+    if (length(unknown_args) > 0L) {
+      stop(
+        "Unrecognized RCMEM model arguments: ",
+        paste(unknown_args, collapse = ", ")
+      )
+    }
     
     saveRDS(
       rcmem_inputs,

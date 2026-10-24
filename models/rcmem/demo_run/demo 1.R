@@ -12,6 +12,7 @@ sites <- data.frame(
   longitude = c(-76.549052)
 )
 
+# Find the nearest tide gauge data
 sites_w_gauges <- PEcAn.data.water::findNearestNoaaGauge(sites)
 (sites_w_gauges)
 
@@ -30,14 +31,15 @@ scenario_output <- PEcAn.data.water::generateFullTidalScenario(
   datum_start_year = 1980,
   datum_end_year = 2025)
 
-
+# Run the met2model function to format scenario as a PECAN input
 PEcAn.RCMEM::met2model.RCMEM(scenario_output, 
                              outfolder = "demo_run/demo_1/data/met",
                              overwrite = T)
 
+# Read in the scenario manifest produced by met2model
 scenario_manifest <- read_csv("demo_run/demo_1/data/met/scenario_manifest.csv")
 
-# Vegetation parameters
+# Add some marginal posterior vegetation parameters from a different analysis
 veg.distns <- data.frame(
   distn = c("gamma", "norm", "norm",
             "norm", "gamma", "gamma",
@@ -63,20 +65,25 @@ veg.distns <- data.frame(
 soil.distns <- data.frame(
   distn = c("gamma", "gamma", "beta", 
             "unif", "beta", "lnorm", 
-            "lnorm", "norm"),
+            "lnorm", "norm",
+            "norm", "norm"
+            ),
   parama = c(39.7, 6.6, 80.0,
-             0.001, 9.6, 1.7,
-             -12.32, -13.9
+             0, 9.6, 1.7,
+             -12.32, -13.9,
+             40, 25
   ),
   paramb = c(399.6, 4.9, 4.3,
-             0.001, 13.8, 0.4,
-             0.34, 2.6
+             0, 13.8, 0.4,
+             0.34, 2.6,
+             2, 3
   ),
   n = NA_integer_,
   row.names = c(
     "meanOmPackingDensity", "meanMineralPackingDensity", "omDecayRateFast",
     "omDecayRateSlow", "recalcitrantFrac", "captureRate",
-    "suspendedSediment", "initElv"
+    "suspendedSediment", "initElv",
+    "omToOc_B1", "omToOc_B2"
   )
 )
 
@@ -107,11 +114,14 @@ save(
   file = "demo_run/demo_1/data/pfts/soil/post.distns.RData"
 )
 
+# Need to create a table to associate sites with different PFTs. This could be useful later
+# ... when we have sites in different regions with different vegetation and soil types
 site_pfts <- data.frame( id = c("GCReW", "GCReW"),
                          pft_type = c("soil", "vegetation"),
                          pft_name = c("soil", "scam")
 )
 
+# PFT needs a manifest to connect pft names, types, and output file locations
 pft_manifest <- data.frame(pft_name = c("soil", "scam"), 
                            pft_type = c("soil", "vegetation"),
                            posterior_file = c("demo_run/demo_1/data/pfts/soil/post.distns.RData",
@@ -119,20 +129,41 @@ pft_manifest <- data.frame(pft_name = c("soil", "scam"),
                            )
 )
 
-PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
-                                 scenario_manifest = scenario_manifest,
-                                 site_pfts = site_pfts,
-                                 pft_manifest = pft_manifest,
-                                 scenario = c("ssp245"),
-                                 confidence = "medium",
-                                 quantiles = c(0.5),
-                                 ensemble_variable = "surface_elevation",
-                                 outdir = "demo_run/demo_1/"
+dir.create(
+  "demo_run/demo_1/data/defaults",
+  recursive = TRUE,
+  showWarnings = FALSE
 )
 
-settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_1/settings_RCMEM_unprepared.xml")
+study_defaults <- list(
+  run_spinup = 1,
+  run_scenario = 1,
+  spinup_iterations = 50,
+  years_per_spinup_iter = 10,
+  competition_function = 1,
+  rootShape = 0)
 
-settings_unprepared$ensemble$size <- 20L
+saveRDS(
+  study_defaults,
+  "demo_run/demo_1/data/defaults/study_defaults.rds"
+)
+
+# Build setting. This will build your settings.xml file based on what'weve already generated
+PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges, # Table we created by hand 
+                                 scenario_manifest = scenario_manifest, # Generated from met2model
+                                 site_pfts = site_pfts, # We created this
+                                 pft_manifest = pft_manifest, # We created this
+                                 scenario = c("ssp245"), # Same input as generateFullTidalScenario
+                                 confidence = "medium", # Same input as generateFullTidalScenario
+                                 quantiles = c(0.5), # Same input as generateFullTidalScenario
+                                 ensemble_variable = "surface_elevation", # Specify a variable
+                                 outdir = "demo_run/demo_1/", # Specify an output location
+                                 ensemble_size = 20,
+                                 study_defaults = "demo_run/demo_1/data/defaults/study_defaults.rds" # we created this
+)
+
+# Read in the settings file created by buildSettings
+settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_1/settings_RCMEM_unprepared.xml")
 
 settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
 
@@ -167,3 +198,13 @@ ggplot(model_output, aes(x = year, y = surface_elevation)) +
 
 ggplot(model_output, aes(x = year, y = cFlux)) +
   geom_line(aes(group=run_id))
+
+sample_files <- list.files(
+  "demo_run/demo_1",
+  pattern = "^samples\\.Rdata$",
+  recursive = TRUE,
+  full.names = TRUE,
+  ignore.case = TRUE
+)
+
+sample_files

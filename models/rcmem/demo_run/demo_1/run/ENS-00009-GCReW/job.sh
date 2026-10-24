@@ -35,7 +35,8 @@ res <- do.call(
 # Calculate carbon fluxes
 res2 <- rCMEM::calculateCarbonFlux(
   cohorts = res[[1]],
-  scenario = res[[2]]
+  scenario = res[[2]],
+  omToOcParams = rcmem_inputs$omToOcParams
 )
 
 # Write outputs

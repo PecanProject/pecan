@@ -14,13 +14,16 @@ buildSettings.RCMEM(
   quantiles,
   ensemble_variable = "surface_elevation",
   outdir = "output",
-  template = NULL
+  template = NULL,
+  ensemble_size,
+  study_defaults = NULL
 )
 }
 \arguments{
 \item{site_info}{A data frame containing one row per site. Must contain
 `id` and `gauge_id`. Additional columns required by
-`PEcAn.settings::createMultiSiteSettings()` may also be supplied.}
+`PEcAn.settings::createMultiSiteSettings()` may also be supplied.
+These include `site_met_path` and  `site_defaults_path`.}
 
 \item{scenario_manifest}{A data frame describing available RCMEM scenario
 files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
@@ -45,6 +48,10 @@ Must contain `pft_name`, `pft_type`, `posterior_file`.}
 
 \item{template}{Optional path to an RCMEM settings template. If `NULL`,
 the template installed with the package is used.}
+
+\item{ensemble_size}{Number of parameter ensembles to include}
+
+\item{study_defaults}{Character string link point towards defalt memory rds.}
 }
 \value{
 A PEcAn settings object.

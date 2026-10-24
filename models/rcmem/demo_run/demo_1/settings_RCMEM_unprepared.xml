@@ -21,7 +21,7 @@
   </pft>
  </pfts>
  <ensemble>
-  <size>1</size>
+  <size>20</size>
   <variable>surface_elevation</variable>
   <samplingspace>
    <parameters>
@@ -64,6 +64,7 @@
     </path>
    </met>
   </inputs>
+  <rcmem_defaults_path>demo_run/demo_1/data/defaults/study_defaults.rds</rcmem_defaults_path>
  </run>
  <host>
   <name>localhost</name>

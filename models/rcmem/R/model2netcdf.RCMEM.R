@@ -83,10 +83,13 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
-    depth <- ncdf4::ncdim_def("depth", 
-                                     "cm", 
-                                     vals = as.numeric(sub.RCMEM.output_cohort[,"cumVol"]),
-                                     longname = "Depth from surface")
+    cohort <- ncdf4::ncdim_def(
+      name = "cohort",
+      units = "1",
+      vals = as.numeric(sub.RCMEM.output_cohort$cohort_index),
+      longname = "Cohort index",
+      unlim = FALSE
+    )
     
    
     pft <- ncdf4::ncdim_def(
@@ -97,9 +100,21 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
       unlim = FALSE
     )
     
-    dims_scenario <- list(lon = lon, lat = lat, time = t)
-    dims_cohorts <- list(lon = lon, lat = lat, depth = depth,  time = t)
-    dims_species <- list(lon = lon, lat = lat, pft = pft,  time = t)
+    dims_scenario <- list(lon = lon, 
+                          lat = lat, 
+                          time = t)
+    
+    dims_cohorts <- list(
+      lon = lon,
+      lat = lat,
+      cohort = cohort,
+      time = t
+    )
+    
+    dims_species <- list(lon = lon, 
+                         lat = lat, 
+                         pft = pft,  
+                         time = t)
     
     # What is this below???
     # time_interval <- ncdf4::ncdim_def(name = "hist_interval", 
@@ -151,6 +166,9 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     # Species
     # "species_code"        "aboveground_biomass"
     output[[17]] <- sub.RCMEM.output_species$aboveground_biomass
+    
+    # Cumulative cohort volume
+    output[[18]] <- sub.RCMEM.output_cohort$cumVol
 
     ## time_bounds
     # output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),
@@ -189,6 +207,14 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     
     nc_var[[17]] <- ncdf4::ncvar_def(name = "aboveground_biomass", units = "g cm-2", longname = "aboveground herbacious biomass", dim = dims_species, NA, prec = "double")
     
+    nc_var[[18]] <- ncdf4::ncvar_def(
+      name = "cumVol",
+      units = "cm",
+      longname = "Cumulative cohort volume per unit area",
+      dim = dims_cohorts,
+      missval = NA,
+      prec = "double"
+    )
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
