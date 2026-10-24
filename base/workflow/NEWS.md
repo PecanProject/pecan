@@ -1,6 +1,9 @@
 # PEcAn.workflow 1.10.0.9000
 
 ## Changed
+* `run.write.configs()` now requires `samples` to contain an `ensemble.samples` (as
+  was already required for `sa.samples`) and no longer re-draws it from
+  `trait.samples`. (#4185)
 * `runModule.run.write.configs()` with `overwrite = TRUE` now replaces `runs_manifest.csv` for multisite settings, as it does `runs.txt`. Previously every rerun appended a second copy of each row.
 * `start_model_runs()` gains argument `check_interval`, setting the time in seconds to wait between queries of job status on queued systems.
 * Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
