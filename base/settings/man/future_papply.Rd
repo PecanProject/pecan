@@ -7,8 +7,8 @@
 future_papply(settings, fn, ..., stop.on.error = FALSE)
 }
 \arguments{
-\item{settings}{A \code{\link{MultiSettings}}, \code{\link{Settings}},
-or \code{\link[base]{list}} to operate on}
+\item{settings}{A \code{\link{MultiSettings}} or \code{\link{Settings}}
+object to operate on}
 
 \item{fn}{The function to apply to \code{settings}}
 

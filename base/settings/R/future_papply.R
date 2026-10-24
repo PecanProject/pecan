@@ -44,8 +44,8 @@
 #' * Testing against unusually-formatted MultiSettings objects (e.g. anything
 #'   that varies a dimension other than site)
 #'
-#' @param settings A \code{\link{MultiSettings}}, \code{\link{Settings}},
-#'   or \code{\link[base]{list}} to operate on
+#' @param settings A \code{\link{MultiSettings}} or \code{\link{Settings}}
+#'   object to operate on
 #' @param fn The function to apply to \code{settings}
 #' @param stop.on.error Whether to halt execution if a single element in
 #'   \code{settings} results in error. See Details.
