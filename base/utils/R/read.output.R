@@ -36,8 +36,9 @@
 #'   variable is read, as well as all NetCDF diagnostics (from
 #'   `verbose` argument to, e.g., [ncdf4::nc_open()]) (default =
 #'   `FALSE`).
-#' @param print_summary Logical. If `TRUE` (default), calculate and
+#' @param print_summary Logical. If `TRUE`, calculate and
 #'   print a summary of the means of each variable for each year.
+#'   Defaults to `FALSE`.
 #' @param start.year,end.year first and last year of output to read.
 #'   Specify as a date-time (only the year portion is used) or as a
 #'   four-digit number or string. If `NULL`, reads all years found in
@@ -57,7 +58,7 @@ read.output <- function(runid, outdir,
                         pft.name = NULL,
                         ncfiles = NULL,
                         verbose = FALSE,
-                        print_summary = TRUE) {
+                        print_summary = FALSE) {
 
   ## vars in units s-1 to be converted to y-1
   ## cflux = c('GPP', 'NPP', 'NEE', 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
@@ -158,11 +159,12 @@ read.output <- function(runid, outdir,
     keep <- which(nc_years >= start.year & nc_years <= end.year)
     ncfiles <- ncfiles[keep]
   } else {
-    PEcAn.logger::logger.info(
-      "No start or end year provided; reading output for all years"
-    )
+    if (verbose) {
+      PEcAn.logger::logger.info(
+        "No start or end year provided; reading output for all years"
+      )
+    }
   }
-
   origin_year <- start.year
   if (!is.finite(origin_year)) {
     PEcAn.logger::logger.warn(
@@ -191,12 +193,13 @@ read.output <- function(runid, outdir,
     }
     nofiles <- TRUE
   } else {
-    PEcAn.logger::logger.info(
-      "Reading the following files: ",
-      normalizePath(ncfiles)
-    )
+    if (verbose) {
+      PEcAn.logger::logger.info(
+        "Reading the following files: ",
+        normalizePath(ncfiles)
+      )
+    }
   }
-
   result <- list()
 
   if (nofiles) {
@@ -208,10 +211,12 @@ read.output <- function(runid, outdir,
       nc <- ncdf4::nc_open(ncfile, verbose = verbose)
       if (is.null(variables)) {
         variables <- names(nc[["var"]])
-        PEcAn.logger::logger.info(
-          "Variables not specified. Reading output for all variables, which are as follows: ",
-          paste(variables, collapse = ", ")
-        )
+        if (verbose) {
+          PEcAn.logger::logger.info(
+            "Variables not specified. Reading output for all variables, which are as follows: ",
+            paste(variables, collapse = ", ")
+          )
+        }
       }
 
       if (dataframe) {
