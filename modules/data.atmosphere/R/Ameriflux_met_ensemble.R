@@ -184,7 +184,7 @@ AmeriFlux_met_ensemble <- function(site_id,
       verbose = verbose
     )
 
-    fill_vars <- coverage_results$fill_vars
+    fill_vars <- coverage_results$fill_vars_cds
 
     if (length(fill_vars) > 0) {
       start_year <- lubridate::year(as.Date(start_date))
