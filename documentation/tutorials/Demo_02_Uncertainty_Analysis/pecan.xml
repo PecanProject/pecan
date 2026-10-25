@@ -20,35 +20,33 @@
     <sigma>1</sigma>
    </quantiles>
    <variable>NPP</variable>
-   <start.year>2004</start.year>
-   <end.year>2004</end.year>
+   <start.year>2016</start.year>
+   <end.year>2017</end.year>
   </sensitivity.analysis>
  <model>
   <type>SIPNET</type>
-  <revision>1.3.0</revision>
+  <revision>2.2.0</revision>
   <delete.raw>FALSE</delete.raw>
   <binary>demo_outdir/sipnet</binary>
  </model>
  <run>
   <site>
-   <met.start>2004/01/01</met.start>
-   <met.end>2004/12/31</met.end>
-   <name>Niwot Ridge Forest/LTER NWT1 (US-NR1)</name>
-   <lat>40.0329</lat>
-   <lon>-105.546</lon>
+   <met.start>2016/01/01</met.start>
+   <met.end>2017/12/31</met.end>
+   <name>Russell Ranch</name>
   </site>
   <inputs>
    <met>
-    <source>AmerifluxLBL</source>
-    <output>SIPNET</output>
-    <username>Aritra_2004</username>
     <path>
-     <path1>dbfiles/AMF_US-NR1_BASE_HH_23-5.2004-01-01.2004-12-31.clim</path1>
+     <path1>../Demo_1_Basic_Run/inputs/sipnet.clim</path1>
     </path>
    </met>
+   <events>
+    <path>../Demo_1_Basic_Run/inputs/events.in</path>
+   </events>
   </inputs>
-  <start.date>2004/01/01</start.date>
-  <end.date>2004/12/31</end.date>
+  <start.date>2016/01/01</start.date>
+  <end.date>2017/12/31</end.date>
  </run>
  <host>
   <name>localhost</name>
