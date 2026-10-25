@@ -62,3 +62,31 @@ test_that("`check.bety.version`` gives errors for missing significant versions",
   expect_silent(check.bety.version(dbcon))
 })
 
+
+test_that("`check.bety.version` warns, without error, about migrations unknown to this release", {
+  known <- c("1", "20140617163304", "20140708232320", "20140729045640", "20151011190026")
+
+  warn_mock <- mockery::mock(NULL)
+  mockery::stub(
+    check.bety.version,
+    "PEcAn.DB::db.query",
+    list(version = c(known, "99999999999999"))
+  )
+  mockery::stub(check.bety.version, "PEcAn.logger::logger.warn", warn_mock)
+  expect_no_error(check.bety.version(1))
+  mockery::expect_called(warn_mock, 1)
+  expect_match(
+    paste(mockery::mock_args(warn_mock)[[1]], collapse = " "),
+    "99999999999999"
+  )
+})
+
+test_that("`check.bety.version` does not warn when all migrations are known", {
+  known <- c("1", "20140617163304", "20140708232320", "20140729045640", "20151011190026")
+
+  warn_mock <- mockery::mock(NULL)
+  mockery::stub(check.bety.version, "PEcAn.DB::db.query", list(version = known))
+  mockery::stub(check.bety.version, "PEcAn.logger::logger.warn", warn_mock)
+  check.bety.version(1)
+  mockery::expect_called(warn_mock, 0)
+})
