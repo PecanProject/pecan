@@ -72,7 +72,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 #' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
 #' @param ... Other arguments passed on to the sampling method
 #'
-#' @return matrix of (quasi-)random samples from trait distributions
+#' @return named list of data.frames with sampled indices as an attribute
 #' @export
 #' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
@@ -184,10 +184,12 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 
     }  #end pft
     names(ensemble.samples) <- names(pft.samples)
+    names(sampled.indices) <- names(pft.samples)
     ans <- ensemble.samples
+    attr(ans, "sampled.indices") <- sampled.indices
   }
 
-  return(list(ans,sampled.indices))
+  return(ans)
 } # get.ensemble.samples
 
 
@@ -460,6 +462,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id,
         site_id = settings$run$site$id,
+        ens_num = i,
         pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
         trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
         quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
@@ -607,6 +610,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       manifest_df <- rbind(manifest_df, data.frame(
         run_id = run.id[[i]],
         site_id = settings$run$site$id,
+        ens_num = i,
         pft_name = if (!is.null(run_descriptions)) run_descriptions$pft_name[i] else "NA",
         trait    = if (!is.null(run_descriptions)) run_descriptions$trait[i] else "NA",
         quantile = if (!is.null(run_descriptions)) run_descriptions$quantile[i] else "NA",
