@@ -1,5 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
   giving the position of each sampled value in its input set (#4127, @Devansh-56)
