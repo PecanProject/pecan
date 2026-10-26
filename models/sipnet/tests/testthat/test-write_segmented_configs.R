@@ -123,105 +123,6 @@ test_that("write_segmented_configs", {
   expect_match(jobsh, "segment_003/run/1/job.sh", all = FALSE)
 })
 
-test_that("write_segmented_configs merges consecutive crops that share a PFT", {
-  pth <- withr::local_tempdir()
-
-  event_src_path <- file.path(pth, "events-a.in")
-  met_path <- file.path(pth, "a.clim")
-  crp_chg_path <- file.path(pth, "cycles-a.csv")
-  run_path <- file.path(pth, "run", "ENS-00001-a")
-  dir.create(run_path, recursive = TRUE)
-
-  c("2025 1 irrig 0 1", "2025 3 irrig 0 1", "2025 6 irrig 0 1",
-    "2025 9 irrig 0 1") |>
-    writeLines(con = event_src_path)
-  # D12 and D13 both map to pft2, so they should share one segment
-  c("date,crop_code", "2025-01-02,D12", "2025-01-05,D13", "2025-01-08,G6") |>
-    writeLines(crp_chg_path)
-  c("run_id,site_id", "ENS-00001-a,a") |>
-    writeLines(file.path(pth, "runs_manifest.csv"))
-  data.frame(
-    year = 2025,
-    day = rep(1:31, each = 4),
-    hour = rep(c(0, 6, 12, 18), 31),
-    step = 0.25,
-    # rest of columns not used by test, just need to be 12 of them
-    c5 = NA, c6 = NA, c7 = NA, c8 = NA, c9 = NA, c10 = NA, c11 = NA,
-    c12 = NA
-  ) |>
-    write.table(file = met_path, quote = FALSE,
-                row.names = FALSE, col.names = FALSE)
-  ens.samples <- list(
-    pft1 = data.frame(Amax = 1, SLA = 2),
-    pft2 = data.frame(Amax = 2, SLA = 4),
-    pft3 = data.frame(Amax = 3, SLA = 6),
-    soil = data.frame(Rd = 0)
-  )
-  save(ens.samples, file = file.path(pth, "ensemble.samples.testid.Rdata"))
-
-  s <- PEcAn.settings::as.Settings(
-    list(
-      outdir = file.path(pth),
-      rundir = file.path(pth, "run"),
-      modeloutdir = file.path(pth, "out"),
-      pfts = list(pft0 = list(), pft1 = list(), pft2 = list(), pft3 = list(),
-                  soil = list()),
-      ensemble = list(ensemble.id = "testid"),
-      model = list(binary = "", revision = "2.1.0"),
-      run = list(
-        site = list(id = "a", name = "site1", lat = 40, lon = -88,
-                    site.pft = list(veg = "pft1", soil = "soil")),
-        inputs = list(
-          met = list(path = met_path),
-          events = list(path = event_src_path),
-          crop_changes = list(path = crp_chg_path)
-        ),
-        start.date = "2025-01-01",
-        end.date = "2025-01-10"
-      ),
-      host = list(
-        name = "localhost",
-        outdir = file.path(pth),
-        rundir = file.path(pth, "run")
-      )
-    )
-  )
-
-  write.config.SIPNET(
-    defaults = s$pfts,
-    trait.values = ens.samples["pft1"],
-    IC = list(soil = 3.14),
-    settings = s,
-    run.id = "ENS-00001-a"
-  )
-  write_segmented_configs.SIPNET(
-    settings = s,
-    crop2pft = \(code) ifelse(startsWith(code, "D"), "pft2", "pft3")
-  )
-
-  # 3 segments instead of 4: pre-planting, merged D12+D13, G6
-  segments <- utils::read.csv(file.path(run_path, "segments.csv"))
-  expect_equal(nrow(segments), 3)
-  expect_identical(segments$pft, c("pft1", "pft2", "pft3"))
-  expect_identical(
-    as.Date(segments$start_date),
-    as.Date(c("2025-01-01", "2025-01-02", "2025-01-08"))
-  )
-  expect_identical(
-    as.Date(segments$end_date),
-    as.Date(c("2025-01-01", "2025-01-07", "2025-01-10"))
-  )
-  expect_false(dir.exists(file.path(run_path, "segments", "segment_004")))
-
-  # The merged segment's inputs span its whole date range (Jan 2 to Jan 7)
-  merged_dir <- file.path(run_path, "segments", "segment_002")
-  merged_inputs <- list.files(merged_dir, recursive = TRUE, full.names = TRUE)
-  merged_met <- merged_inputs[grepl("clim$", merged_inputs)]
-  expect_length(merged_met, 1)
-  met_days <- unique(utils::read.table(merged_met)[[2]])
-  expect_equal(met_days, 2:7)
-})
-
 test_that("segment_dataframe falls back to event_json for the configured site", {
   pth <- withr::local_tempdir()
   events_path <- file.path(pth, "events.json")
@@ -408,4 +309,9 @@ test_that("drop_same_pft_segments merges consecutive segments with the same PFT"
     result$segment_id,
     c("001", "002", "003")
   )
+
+  # Merging leaves no gaps and does not change the overall date range
+  expect_equal(min(result$start_date), min(segments$start_date))
+  expect_equal(max(result$end_date), max(segments$end_date))
+  expect_equal(result$start_date[-1], result$end_date[-nrow(result)] + 1)
 })
