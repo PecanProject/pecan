@@ -23,7 +23,9 @@ read_web_config <- function(php.config = "../../web/config.php",
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
 
   rxp <- paste0("^\\$([[:graph:]]+?)[[:space:]]*",
-                "=[[:space:]]*(.*?);?(?:[[:space:]]*//+.*)?$")
+                "=[[:space:]]*",
+                "((?:\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|[^;\"'])*?)",
+                ";?(?:[[:space:]]*//+.*)?$")
   rxp_matches <- regexec(rxp, config, perl = TRUE)
   results <- regmatches(config, rxp_matches)
   list_names <- vapply(results, `[[`, character(1), 2, USE.NAMES = FALSE)

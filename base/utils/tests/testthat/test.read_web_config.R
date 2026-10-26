@@ -1,5 +1,26 @@
 context("Read web config")
 
+test_that("comment markers inside quoted values are preserved", {
+  withr::with_tempfile("config", {
+    writeLines(c(
+      '$api_url = "https://example.org/api/"; // service endpoint',
+      '$path = "folder;//part"; // a literal separator',
+      "$single = 'https://example.org/data'; // single quoted",
+      '$count = 30; // numeric setting'
+    ), config)
+
+    raw <- read_web_config(config, parse = FALSE, expand = FALSE)
+    expect_identical(raw$api_url, '"https://example.org/api/"')
+    expect_identical(raw$path, '"folder;//part"')
+    expect_identical(raw$single, "'https://example.org/data'")
+
+    parsed <- read_web_config(config, expand = FALSE)
+    expect_identical(parsed$api_url, "https://example.org/api/")
+    expect_identical(parsed$path, "folder;//part")
+    expect_identical(parsed$count, 30)
+  })
+})
+
 php_config_example <- file.path("data", "config.example.php")
 
 test_that("Read example config file", {

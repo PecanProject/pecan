@@ -1,5 +1,9 @@
 # PEcAn.utils 1.8.2.9000
 
+## Fixed
+
+* `read_web_config()` preserves `//` inside quoted settings instead of interpreting it as a PHP comment and truncating URLs or paths.
+
 ## Changed
 
 * `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).
