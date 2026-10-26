@@ -59,8 +59,8 @@ mcmc.list2init <- function(dat) {
       } else if (dim == 2){
         ## MATRIX
         for(c in seq_len(nc)){
-          ic[[c]][[v]] <- matrix(seq_along(cols),max(ind[cols,1]),max(ind[cols,2])) ## set up matrix for storage
-          ic[[c]][[v]][ind[cols]] <- dat[[c]][nr,cols]
+          ic[[c]][[v]] <- matrix(NA_real_,max(ind[cols,1]),max(ind[cols,2])) ## set up matrix for storage
+          ic[[c]][[v]][ind[cols,,drop=FALSE]] <- dat[[c]][nr,cols]
           names(ic[[c]])[v] <- uname[v]
         }
         
