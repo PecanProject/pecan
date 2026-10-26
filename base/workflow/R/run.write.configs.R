@@ -278,17 +278,17 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       moved_rows <- sa_manifest[!is_median, , drop = FALSE]
       median_row <- sa_manifest[is_median, , drop = FALSE][1, , drop = FALSE]
 
-      median_rows <- unique(moved_rows[, c("pft_name", "trait"), drop = FALSE])
-      median_rows$run_id   <- median_row$run_id
-      median_rows$site_id  <- median_row$site_id
-      median_rows$ens_num  <- median_row$ens_num
+      traits <- unique(moved_rows[, c("pft_name", "trait"), drop = FALSE])
+      median_rows <- median_row[rep(1, nrow(traits)), , drop = FALSE]
+      median_rows$pft_name <- traits$pft_name
+      median_rows$trait    <- traits$trait
       median_rows$quantile <- "50"
       median_rows$type     <- "Sensitivity"
 
       run_manifest_df <- rbind(
         run_manifest_df,
         moved_rows,
-        median_rows[, names(sa_manifest), drop = FALSE]
+        median_rows
       )
     } else if ("manifest" %in% names(sa.runs)) {
       run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
