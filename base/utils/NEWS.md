@@ -2,7 +2,7 @@
 
 ## Fixed
 
-* `match_file()` now matches prefixes at the beginning of filenames, excluding similarly named backup files. Regular-expression prefixes used by ED2 remain supported.
+* `match_file()` now matches prefixes at the beginning of filenames, excluding similarly named backup files.
 
 ## Changed
 
