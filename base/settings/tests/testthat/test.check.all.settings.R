@@ -243,3 +243,30 @@ test_that("`check.ensemble.settings` able to update ensemble settings when varia
   expect_equal(settings$ensemble$samplingspace$parameters$method, "uniform")
   expect_equal(settings$ensemble$samplingspace$met$method, "sampling")
 })
+
+test_that("`check.ensemble.settings` leaves settings without an ensemble block unchanged", {
+  settings <- list(
+    run = list(
+      start.date = "2000-01-01",
+      end.date = "2003-12-31"
+    )
+  )
+  checked <- check.ensemble.settings(settings)
+  expect_false("ensemble" %in% names(checked))
+  expect_identical(checked, settings)
+})
+
+test_that("`check.ensemble.settings` does not add an ensemble block to a sensitivity-analysis-only run", {
+  settings <- list(
+    sensitivity.analysis = list(
+      variable = "GPP"
+    ),
+    run = list(
+      start.date = "2000-01-01",
+      end.date = "2003-12-31"
+    )
+  )
+  checked <- check.ensemble.settings(settings)
+  expect_false("ensemble" %in% names(checked))
+  expect_identical(checked, settings)
+})
