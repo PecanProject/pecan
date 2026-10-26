@@ -1,5 +1,9 @@
 # PEcAn.utils 1.8.2.9000
 
+## Fixed
+
+* `download.url()` now applies `.opts` to availability checks as well as the download, so authentication options work for protected files.
+
 ## Changed
 
 * `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).

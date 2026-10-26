@@ -20,11 +20,11 @@
 #' }
 download.url <- function(url, file, timeout = 600, .opts = list(), retry = TRUE) {
   count <- 0
-  while (retry && !url_found(url) && count < timeout) {
+  while (retry && !url_found(url, .opts = .opts) && count < timeout) {
     count <- count + 1
     Sys.sleep(1)
   }
-  if (count >= timeout || (!retry && !url_found(url))) {
+  if (count >= timeout || (!retry && !url_found(url, .opts = .opts))) {
     return(NA)
   }
   dir.create(dirname(file), recursive = TRUE)
@@ -39,8 +39,8 @@ download.url <- function(url, file, timeout = 600, .opts = list(), retry = TRUE)
 
 # An approximate replacement for RCurl::url.exists
 # Treats any 200 status as success (NB does not follow redirects!)
-url_found <- function(url) {
-  h <- curl::new_handle(nobody = 1L) # "nobody" = header-only request
+url_found <- function(url, .opts = list()) {
+  h <- curl::new_handle(nobody = 1L, .list = .opts) # "nobody" = header-only request
   res <- curl::curl_fetch_memory(url, handle = h)
 
   res$status_code %/% 200 == 1
