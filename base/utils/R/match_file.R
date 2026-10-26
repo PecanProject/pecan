@@ -19,7 +19,7 @@ match_file <- function(path_prefix, suffix = NULL, expect = NULL) {
     path <- dirname(path_prefix)
     prefix <- basename(path_prefix)
   }
-  file_matches <- list.files(path, prefix, full.names = TRUE)
+  file_matches <- list.files(path, paste0("^(", prefix, ")"), full.names = TRUE)
   if (!is.null(suffix)) {
     file_matches <- grep(paste0(suffix, "$"), file_matches, value = TRUE)
   }
