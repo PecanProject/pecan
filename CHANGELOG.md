@@ -57,6 +57,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Fixed dead MsTMIP variable-standard and PEcAn workflow diagram links in the PEcAn book, tutorial and package documentation (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
+- `PEcAn.workflow::do_conversions()` now honors `overwrite.met`, `overwrite.fia` and `overwrite.ic` for multi-site settings; previously they were silently reset to `FALSE` for every site (#4175).
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
