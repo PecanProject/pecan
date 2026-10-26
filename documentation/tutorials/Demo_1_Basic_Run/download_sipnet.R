@@ -48,6 +48,12 @@ download.file(
     mode = "wb"
 )
 utils::untar(tarball, files = "sipnet", exdir = demo_outdir)
+if (!file.exists(dest_path)) {
+  PEcAn.logger::logger.severe(
+    "Extracting ", tarball, " did not produce ", dest_path, ". ",
+    "The layout of the SIPNET release archive may have changed."
+  )
+}
 
 # Make executable
 Sys.chmod(dest_path, mode = "0755")
