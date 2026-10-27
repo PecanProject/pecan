@@ -145,7 +145,7 @@ runs model.
 
 #### OUTPUT:
 
-All model outputs are converted to [standard netCDF format](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
+All model outputs are converted to [standard netCDF format](https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
 
 
 #### ENSEMBLE & SENSITIVITY: 
@@ -174,7 +174,7 @@ FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/dev
 
 1. **Select a Year and Y-axis Variable, and then click 'Plot run/year/variable'.** Initially leave the X-axis as time.
 2. Within this figure the **points indicate the daily mean** for the variable while the **envelope encompasses the diurnal variability (max and min)**.
-3. Variable names and units are based on a [standard netCDF format](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml).
+3. Variable names and units are based on a [standard netCDF format](https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml).
 4. Try looking at a number of different output variables over different years.
 5. Try **changing the X-axis** to look at bivariate plots of how different output variables are related to one another. Be aware that PEcAn currently runs a moving min/mean/max through bivariate plots, just as it does with time series plots. In some cases this makes more sense than others.
 
