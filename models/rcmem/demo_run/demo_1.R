@@ -149,26 +149,42 @@ saveRDS(
 )
 
 # Build setting. This will build your settings.xml file based on what'weve already generated
-PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges, # Table we created by hand 
-                                 scenario_manifest = scenario_manifest, # Generated from met2model
-                                 site_pfts = site_pfts, # We created this
-                                 pft_manifest = pft_manifest, # We created this
-                                 scenario = c("ssp245"), # Same input as generateFullTidalScenario
-                                 confidence = "medium", # Same input as generateFullTidalScenario
-                                 quantiles = c(0.5), # Same input as generateFullTidalScenario
-                                 ensemble_variable = "surface_elevation", # Specify a variable
-                                 outdir = "demo_run/demo_1/", # Specify an output location
-                                 ensemble_size = 20,
-                                 study_defaults = "demo_run/demo_1/data/defaults/study_defaults.rds" # we created this
+settings_unprepared <- PEcAn.RCMEM::buildSettings.RCMEM(
+  site_info = sites_w_gauges, # Table we created by hand
+  scenario_manifest = scenario_manifest, # Generated from met2model
+  site_pfts = site_pfts, # We created this
+  pft_manifest = pft_manifest, # We created this
+  scenario = c("ssp245"), # Same input as generateFullTidalScenario
+  confidence = "medium", # Same input as generateFullTidalScenario
+  quantiles = c(0.5), # Same input as generateFullTidalScenario
+  ensemble_variable = "surface_elevation", # Specify a variable
+  outdir = "demo_run/demo_1/", # Specify an output location
+  ensemble_size = 20,
+  study_defaults = "demo_run/demo_1/data/defaults/study_defaults.rds" # we created this
 )
 
-# Read in the settings file created by buildSettings
-settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_1/settings_RCMEM_unprepared.xml")
+settings <- PEcAn.settings::prepare.settings(settings_unprepared)
+PEcAn.settings::write.settings(settings, "settings_RCMEM_prepared.xml")
 
-settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
+# Take draws from parameter distributions, save with their design matrix
+ens_design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+  settings = settings[[1]],
+  ensemble_size = settings$ensemble$size,
+  samples = NULL
+)
+write.csv(ens_design$design_matrix, file.path(settings$outdir, "input_design.csv"))
+sample_env <- list2env(ens_design$samples)
+save(
+  list = ls(sample_env),
+  envir = sample_env,
+  file = file.path(settings$outdir, "samples.Rdata")
+)
+
+settings$ensemble$id <- rlang::hash(ens_design)
 
 settings <- PEcAn.workflow::runModule.run.write.configs(
-  settings_prepared
+  settings,
+  input_design = ens_design
 )
 
 PEcAn.workflow::runModule_start_model_runs(settings)
