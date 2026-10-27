@@ -204,10 +204,10 @@ Here is an example:
 ## Output Standards
 
 * created by `model2netcdf` functions
-* based on format used by [MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
+* based on format used by [MsTMIP](https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml)
 * Can be seen at HERE
 
-We originally used the [MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
+We originally used the [MsTMIP](https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml) conventions. Since then, we've added the PaLEON variable conventions to our standard as well. If a variable isn't in one of those two, we stick to the CF conventions.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data("standard_vars", package = "PEcAn.utils")
