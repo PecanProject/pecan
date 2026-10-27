@@ -10,6 +10,7 @@ Maintainer: James Holmquist <HolmquistJ@si.edu>
 Description: This module provides functions to link RCMEM to PEcAn.
 URL: https://pecanproject.github.io
 BugReports: https://github.com/PecanProject/pecan/issues
+Depends: R (>= 4.1.0)
 Imports:
     dplyr,
     tidyr,

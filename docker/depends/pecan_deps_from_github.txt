@@ -7,5 +7,6 @@ RemkoDuursma/Maeswrap
 ropensci-archive/nneo
 ropensci/geonames
 ropensci/traits
+Smithsonian/rCMEM
 SticsRPacks/SticsOnR
 SticsRPacks/SticsRFiles
