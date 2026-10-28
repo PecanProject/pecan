@@ -463,7 +463,7 @@ MCMC_block_function <- function(block) {
     load(block$dist.prior.file) # load disturbance prior file.
     # prescribe mu0 for the disturbance-related reductions in AGB and LAI.
     mu0 <- c(block$att$agb.bio.reduce[as.numeric(block$site.ids)], block$att$lai.bio.reduce[as.numeric(block$site.ids)])
-    res <- disturbance_DA(block$X, block$data$y.censored, diag(1/diag(block$data$r)), block$constant$H, block$data$aq, block$data$bq, disturbance, mu0, block$V0, blcok$pD)
+    res <- disturbance_DA(block$X, block$data$y.censored, diag(1/diag(block$data$r)), block$constant$H, block$data$aq, block$data$bq, block$disturbance, mu0, block$V0, block$pD)
     block$update <- list(aq = res$aqq, bq = res$bqq, mua = res$mu.overall, pa = res$cov.overall, muf = block$data$muf, pf = block$data$pf)
     block$aqq[,block$t+1] <- block$update$aq
     block$bqq[,block$t+1] <- block$update$bq

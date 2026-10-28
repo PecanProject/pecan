@@ -43,7 +43,7 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(0.8, 0.8)
   
   # select undisturbed / disturbed forecast
   d.ens.p <- c(0.5, 0.5)
-  d.forecast <- rmultinom(ne, 1, d.ens.p)
+  d.forecast <- stats::rmultinom(ne, 1, d.ens.p)
   d.class <- apply(d.forecast,2,which.max) - 1
   sel.undisturbed <- which(d.class == 0)
   
@@ -65,10 +65,10 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(0.8, 0.8)
   }
   Nf <- tobit(Nf)
   muF[1,] = colMeans(X[sel.undisturbed,])
-  CF[1,,] = var(Nf[sel.undisturbed,])
+  CF[1,,] = stats::var(Nf[sel.undisturbed,])
   pF[1,,] = solve(CF[1,,])
   muF[2,] = colMeans(Nf[sel.dist,])
-  CF[2,,] = var(Nf[sel.dist,])
+  CF[2,,] = stats::var(Nf[sel.dist,])
   pF[2,,] = try(solve(CF[2,,]))
   
   # default values if disturbed forecast stats fail
@@ -96,7 +96,7 @@ disturbance_DA <- function (X, Y, R, H, aqq, bqq, disturbance, mu0=rep(0.8, 0.8)
     CA[d,,] <- solve(pf + t(H.mat) %*% solve(R) %*% H.mat)
     muA[d,] <-  CA[d,,] %*% (pf %*% muf + t(H.mat) %*% solve(R) %*% Y) # updated analysis.
     # the multivariate normal density likelihood of the observed data given the forecast model parameters.
-    lik <- dmvnorm(Y, mean=H.mat %*% muf, sigma = H.mat %*% Cf %*% t(H.mat) + R)
+    lik <- mvtnorm::dmvnorm(Y, mean=H.mat %*% muf, sigma = H.mat %*% Cf %*% t(H.mat) + R)
     # multiply the likelihood by the disturbed/undisturbed prior probability.
     wA[d] <- lik * pD[d]
   }
