@@ -22,7 +22,7 @@ One CSV (`ecoClim_global.csv` for reference), one row per candidate pixel:
 |---|---|
 | `LC` | land-cover class |
 | `longitude`, `latitude` | coordinates |
-| `SOC`, `AGB` |  Fro Total carbon weighting, not clustering features |
+| `SOC`, `AGB` |  For Total carbon weighting, not clustering features |
 | `GEDI` | GEDI sampling-weight boost |
 | `t2m, ssrd, tp, d2m, PH, N, Sand, elevation` | clustering features |
 
