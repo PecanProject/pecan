@@ -1,5 +1,9 @@
 # PEcAn.utils 1.8.2.9000
 
+## Fixed
+
+* `mcmc.list2init()` now restores matrix parameters at their monitored row and column indices. Unmonitored entries remain `NA` instead of receiving placeholder values.
+
 ## Changed
 
 * `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).
