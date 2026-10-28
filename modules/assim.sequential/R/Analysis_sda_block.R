@@ -21,7 +21,7 @@
 ##' 
 ##' @return It returns the `build.block.xy` object and the analysis results.
 ##' @importFrom dplyr %>%
-analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, block.list.all.pre = NULL, dist.att = NULL, V0 = NULL) {
+analysis_sda_block <- function (settings, block.list.all, X, obs.mean, obs.cov, t, nt, MCMC.args, block.list.all.pre = NULL, dist.att = NULL, pD = NULL, V0 = NULL) {
   # grab cores from settings.
   cores <- as.numeric(settings$state.data.assimilation$batch.settings$general.job$cores)
   # if we didn't assign number of CPUs in the settings.
