@@ -37,7 +37,7 @@ library(Kendall)
 library(lgarch)
 library(parallel)
 #read settings.
-settings <- PEcAn.settings::read.settings("~/pecan/modules/assim.sequential/inst/anchor/disturbanceDA_scripts/pecan_disturbance.xml")
+settings <- readRDS("~/pecan/modules/assim.sequential/inst/anchor/disturbanceDA_scripts/pecan_disturbance.rds")
 #grab settings info.
 site_info <- settings %>% 
   purrr::map(~.x[['run']] ) %>% 
