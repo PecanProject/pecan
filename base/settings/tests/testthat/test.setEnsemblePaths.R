@@ -63,4 +63,35 @@ test_that("setEnsemblePaths sets paths across sites", {
     one_path$run$site.s1$inputs$met$path,
     two_path$run$site.s1$inputs$met$path$path1
   )
+
+  # variables in run$site block get used for interpolation
+  site_specific_settings <- createMultiSiteSettings(
+    template_settings,
+    data.frame(id = siteids, soil_type = c("clay", "silty_loam"))
+  )
+  site_specific_with_paths <- setEnsemblePaths(
+    site_specific_settings,
+    n_reps = 3,
+    input_type = "soil_physics",
+    soil_path_prefix = "/soil/by_texture",
+    path_template = "{soil_path_prefix}/{soil_type}/soil_physics_{n}.nc"
+  )
+  expect_identical(
+    site_specific_with_paths$run$site.s2$inputs$soil_physics$path$path3,
+    "/soil/by_texture/silty_loam/soil_physics_3.nc"
+  )
+
+  # When same var defined in site info and setEnsemblePaths call, call wins
+  site_specific_overriding <- setEnsemblePaths(
+    site_specific_settings,
+    n_reps = 3,
+    input_type = "soil_physics",
+    soil_path_prefix = "/soil/by_texture",
+    soil_type = "default",
+    path_template = "{soil_path_prefix}/{soil_type}/soil_physics_{n}.nc"
+  )
+  expect_identical(
+    site_specific_overriding$run$site.s2$inputs$soil_physics$path$path3,
+    "/soil/by_texture/default/soil_physics_3.nc"
+  )
 })

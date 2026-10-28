@@ -83,13 +83,7 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
     PEcAn.logger::logger.severe("Could not find manifest file: ", manifest_file)
   }
   inputs_runs <- utils::read.csv(manifest_file) |>
-    dplyr::filter(.data$site_id == settings$run$site$id) |>
-    # TODO the manifest should probably report these already...
-    dplyr::mutate(
-      ens_num = .data$run_id |>
-        stringr::str_extract("ENS-(\\d+)", group = 1) |>
-        as.integer()
-    )
+    dplyr::filter(.data$site_id == settings$run$site$id)
   if (!is.null(input_design)) {
     inputs_runs <- inputs_runs |>
       dplyr::left_join(
@@ -182,7 +176,24 @@ segment_dataframe <- function(run_settings) {
     dplyr::arrange(.data$start_date) |>
     dplyr::mutate(segment_id = sprintf("%03d", dplyr::row_number()))
 }
+drop_same_pft_segments <- function(segments) {
+  if (nrow(segments) <= 1) {
+    return(segments)
+  }
 
+  segments |>
+    dplyr::mutate(pft_group = dplyr::consecutive_id(.data$pft)) |>
+    dplyr::summarise(
+      start_date = min(.data$start_date),
+      end_date = max(.data$end_date),
+      crop_code = paste(.data$crop_code, collapse = " "),
+      pft = dplyr::first(.data$pft),
+      .by = "pft_group"
+    ) |>
+    dplyr::mutate(
+      segment_id = sprintf("%03d", dplyr::row_number())
+    )
+}
 write_segment_configs <- function(
   settings,
   run_row,
@@ -216,9 +227,14 @@ write_segment_configs <- function(
     # Adds an all-NA pft column if needed w/o clobbering one that exists already
     dplyr::bind_rows(tibble::tibble(pft = character())) |>
     dplyr::mutate(
-      pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code)),
-      segment_dir = file.path(segment_rootdir,
-                              sprintf("segment_%s", .data$segment_id))
+      pft = dplyr::coalesce(.data$pft, crop2pft(.data$crop_code))
+    ) |>
+    drop_same_pft_segments() |>
+    dplyr::mutate(
+      segment_dir = file.path(
+        segment_rootdir,
+        paste0("segment_", .data$segment_id)
+      )
     )
   utils::write.csv(
     segments,
@@ -242,14 +258,16 @@ write_segment_configs <- function(
 
     runid_dummy <- "1"
 
-    segment_inputs <- PEcAn.SIPNET::split_inputs.SIPNET(
+    segment_inputs <- split_inputs.SIPNET(
       dstart,
       # NOTE: In split_inputs, end.time is *not* inclusive.
       # But `dend` *is* inclusive. So `+1` as a workaround here.
       (dend + 1),
       run_settings$run$inputs,
       overwrite = TRUE,
-      outpath = segment_dir
+      outpath = segment_dir,
+      time_resolution = "day",
+      allow_varying_timesteps = FALSE
     )
 
     # Segment-specific settings
@@ -318,7 +336,7 @@ write_segment_configs <- function(
     # Write dummy runs file
     writeLines(runid_dummy, file.path(segment_rundir, "runs.txt"))
 
-    PEcAn.SIPNET::write.config.SIPNET(
+    write.config.SIPNET(
       defaults = segment_settings[["pfts"]],
       trait.values = segment_traits,
       settings = segment_settings,

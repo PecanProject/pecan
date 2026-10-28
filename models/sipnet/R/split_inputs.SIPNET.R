@@ -9,11 +9,31 @@
 #' files contain only dates. Comparing a datetime to a date will coerce the
 #' date to midnight UTC.
 #'
+#' @section Efficiency:
+#'
+#' Splitting met files goes faster by far when all the inputs are known to have
+#' a uniform timestep, fixed number of characters per line, and all splits are
+#' at day boundaries. Setting `time_resolution = "days"` and
+#' `allow_varying_timesteps = FALSE` opts in to a fast code path that finds the
+#' wanted lines of the file by computing byte offsets and therefore avoids
+#' needing to read every row of the input file.
+#' For small subsets of large files this can be several times faster.
+#'
+#' If the input has variable line length but constant timesteps (as determined
+#' by checking the first 10 lines; see the `n_head` argument of
+#' `subset_met_lines()`), the fast path is taken but is not _as_ fast: it
+#' must scan from the beginning to count line separators, but still skips the
+#' tail of the file after `stop.time` is reached.
+#'
 #' @param start.time Start date or datetime for splitting
 #' @param stop.time End date or datetime for splitting
 #' @param inputs Named `inputs` list as provided by PEcAn `settings`. Must have
 #' structure like:
 #' `list(met = list(path = "path/to/sipnet.clim"), events = list(path = "path/to/events.in"), ...)`
+#' @param time_resolution One of "row", "day". Should the split happen
+#'  at the closest row to the end time or align with a time unit? See details
+#' @param allow_varying_timesteps logical: Accept files where not all rows have
+#'  the same duration? Disallowing can be substantially faster.
 #'
 #' @inheritParams split_sipnet_met
 #' @author Alexey Shiklomanov
@@ -21,16 +41,42 @@
 #' @return Modified `inputs` list with all `path` entries replaced with new
 #' paths (suitable for inserting back into `settings$run$inputs`).
 #' @export
-split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
+split_inputs.SIPNET <- function(
+  start.time,
+  stop.time,
+  inputs,
+  overwrite = FALSE,
+  outpath = NULL,
+  time_resolution = c("row", "day"),
+  allow_varying_timesteps = TRUE
+) {
+
+  time_resolution <- match.arg(time_resolution)
+  # TODO: might want to accept "year" here too
+  if (time_resolution == "day") {
+    start.time <- as.Date(start.time)
+    stop.time <- as.Date(stop.time)
+  }
+
   result <- inputs
   if ("met" %in% names(result)) {
-    result[["met"]][["path"]] <- split_sipnet_met(
-      start.time,
-      stop.time,
-      result$met$path,
-      overwrite = overwrite,
-      outpath = outpath
-    )
+    if (isFALSE(allow_varying_timesteps) && time_resolution != "row") {
+      result[["met"]][["path"]] <- split_sipnet_met_by_line_count(
+        start.time,
+        stop.time,
+        result$met$path,
+        overwrite = overwrite,
+        outpath = outpath
+      )
+    } else {
+      result[["met"]][["path"]] <- split_sipnet_met(
+        start.time,
+        stop.time,
+        result$met$path,
+        overwrite = overwrite,
+        outpath = outpath
+      )
+    }
   }
 
   if ("events" %in% names(result)) {
@@ -43,7 +89,9 @@ split_inputs.SIPNET <- function(start.time, stop.time, inputs, overwrite = FALSE
     )
   }
   result
-}
+} # split_inputs.SIPNET
+
+
 
 #' Split sipnet `events.in` files according to start and stop date
 #'
@@ -87,7 +135,9 @@ split_sipnet_events <- function(start.time, stop.time, eventfile, overwrite = FA
   events_out_str <- events_in_raw[idx_keep]
   writeLines(events_out_str, outfile)
   invisible(outfile)
-}
+} # split_sipnet_events
+
+
 
 ##' Extract subset of a sipnet clim file based on start and end time
 ##'
@@ -111,16 +161,16 @@ split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outp
     outpath <- path
   }
   if(!dir.exists(outpath)) dir.create(outpath, recursive = TRUE)
-  
+
 
   file <- NA
   names(file) <- paste(start.time, "-", stop.time)
-  
+
   #Changing the name of the files, so it would contain the name of the hour as well.
   formatted_start <- gsub(' ',"_", as.character(start.time))
   formatted_stop <- gsub(' ',"_", as.character(stop.time))
   file <- paste0(outpath, "/", prefix, ".", formatted_start, "-", formatted_stop, ".clim")
-  
+
   if(file.exists(file) && !overwrite){
     PEcAn.logger::logger.warn(
       file,
@@ -147,14 +197,16 @@ split_sipnet_met <- function(start.time, stop.time, met, overwrite = FALSE, outp
   }
 
   dat <- input.dat[rows$start:rows$end,]
-  
+
   ###### Write Met to file
   utils::write.table(dat, file, row.names = FALSE, col.names = FALSE)
 
   ###### Output input path to inputs
   #settings$run$inputs$met$path <- file
   return(file)
-} # split_inputs.SIPNET
+} # split_sipnet_met
+
+
 
 coerce_to_datetime <- function(x) {
   if (inherits(x, "POSIXt")) {
@@ -172,4 +224,40 @@ coerce_to_datetime <- function(x) {
     "Coercing to datetime by setting to midnight UTC."
   )
   as.POSIXct(x, tz = "UTC")
-}
+} # coerce_to_datetime
+
+
+
+split_sipnet_met_by_line_count <- function(
+  start.time,
+  stop.time,
+  met,
+  overwrite = FALSE,
+  outpath = NULL
+) {
+  start.time <- as.Date(start.time)
+  stop.time <- as.Date(stop.time)
+  path <- dirname(met)
+  prefix <- sub(".clim", "", basename(met), fixed = TRUE)
+  if(is.null(outpath)){
+    outpath <- path
+  }
+  if(!dir.exists(outpath)) dir.create(outpath, recursive = TRUE)
+
+
+  file <- NA
+  names(file) <- paste(start.time, "-", stop.time)
+  file <- paste0(outpath, "/", prefix, ".", start.time, "-", stop.time, ".clim")
+
+  if(file.exists(file) && !overwrite){
+    PEcAn.logger::logger.warn(
+      file,
+      " already exists and overwrite is FALSE, so keeping existing file."
+    )
+    return(file)
+  }
+
+  subset_met_lines(clim_in = met, clim_out = file, start_day = start.time, stop_day = stop.time)
+
+  return(file)
+} # split_sipnet_met_by_line_count

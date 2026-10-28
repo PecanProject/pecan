@@ -34,9 +34,9 @@ read.sa.output(
 
 \item{variable}{variables to be read from model output}
 
-\item{sa.run.ids}{list of run ids to read.
-If NULL, will look in `pecandir` for a file named `samples.Rdata`
-and read from that}
+\item{sa.run.ids}{run ids of this site's sensitivity runs, as built by
+\code{\link{sa_run_id_table}}. Needed when several sites share
+`runs_manifest.csv`; if NULL, every run in the manifest is used}
 
 \item{per.pft}{flag to determine whether we want SA on pft-specific variables}
 }

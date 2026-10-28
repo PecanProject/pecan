@@ -111,48 +111,50 @@ run.sensitivity.analysis <- function(settings,
     }
   }
 
+  # Ensemble ID is expected to be specified in function args or settings.
+  # If none there, create one specific to this site.
+  ensemble.id <- ensemble.id %||%
+    settings$sensitivity.analysis$ensemble.id %||%
+    rlang::hash(settings)
+
+  ### Load samples
+  # Have to load samples.Rdata for the traits.
+  # But can overwrite the run ids if an SA ensemble id provided.
+  # samples.Rdata always has only the most recent ensembles for both ensemble
+  # and sensitivity runs.
+  # Load samples once before looping over variables to avoid repeated disk reads (Issue #3859).
+  fname <- file.path(settings$outdir, "samples.Rdata")
+  if (!file.exists(fname)) {
+    PEcAn.logger::logger.severe("No samples.Rdata file found!")
+  }
+  samples <- new.env()
+  load(fname, envir = samples)
+
+  fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
+                                ensemble.id = ensemble.id,
+                                all.var.yr = TRUE)
+  if (file.exists(fname)) {
+    load(fname, envir = samples)
+  }
+
+  # For backwards compatibility, define some variables if not just loaded
+  if (is.null(samples$pft.names)) {
+    samples$pft.names <- names(samples$trait.samples)
+  }
+  if (is.null(samples$trait.names)) {
+    samples$trait.names <- lapply(samples$trait.samples, names)
+  }
+  if (is.null(samples$sa.run.ids)) {
+    samples$sa.run.ids <- samples$runs.samples$sa
+  }
+
   variables <- variable
   for (variable in variables) {
     PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ", variable)
 
-    ### Load samples
-    # Have to load samples.Rdata for the traits.
-    # But can overwrite the run ids if an SA ensemble id provided.
-    # samples.Rdata always has only the most recent ensembles for both ensemble
-    # and sensitivity runs.
-    fname <- file.path(settings$outdir, "samples.Rdata")
-    if (!file.exists(fname)) {
-      PEcAn.logger::logger.severe("No samples.Rdata file found!")
-    }
-    samples <- new.env()
-    load(fname, envir = samples)
-
-    # Ensemble ID is expected to be specified in function args or settings.
-    # If none there, create one specific to this site.
-    ensemble.id <- ensemble.id %||%
-      settings$sensitivity.analysis$ensemble.id %||%
-      rlang::hash(settings)
-    fname <- sensitivity.filename(settings, "sensitivity.samples", "Rdata",
-                                  ensemble.id = ensemble.id,
-                                  all.var.yr = TRUE)
-    if (file.exists(fname)) {
-      load(fname, envir = samples)
-    }
-
-    # For backwards compatibility, define some variables if not just loaded
-    if (is.null(samples$pft.names)) {
-      samples$pft.names <- names(samples$trait.samples)
-    }
-    if (is.null(samples$trait.names)) {
-      samples$trait.names <- lapply(samples$trait.samples, names)
-    }
-    if (is.null(samples$sa.run.ids)) {
-      samples$sa.run.ids <- samples$runs.samples$sa
-    }
-
     ### Load parsed model results
-    variables <- PEcAn.utils::convert.expr(variable)
-    variable.fn <- variables$variable.drv
+    parsed_var <- PEcAn.utils::convert.expr(variable)
+    variable.fn <- parsed_var$variable.drv
 
     fname <- sensitivity.filename(
       settings, "sensitivity.output", "Rdata",
@@ -173,6 +175,20 @@ run.sensitivity.analysis <- function(settings,
         next
       }
       traits <- samples$trait.names[[pft$name]]
+      # a spline can't be fit through one repeated value
+      no.spread <- vapply(
+        traits,
+        function(trait) length(unique(samples$sa.samples[[pft$name]][[trait]])) < 2,
+        logical(1)
+      )
+      if (any(no.spread)) {
+        PEcAn.logger::logger.warn(
+          "no spread in the SA samples of", PEcAn.utils::vecpaste(traits[no.spread]),
+          "for pft", pft$name, "- skipping"
+        )
+        traits <- traits[!no.spread]
+      }
+      if (length(traits) == 0) next
       quantiles.str <- rownames(samples$sa.samples[[pft$name]])
       quantiles.str <- quantiles.str[which(quantiles.str != "50")]
       quantiles <- as.numeric(quantiles.str) / 100
@@ -182,19 +198,10 @@ run.sensitivity.analysis <- function(settings,
         PEcAn.utils::trait.lookup(traits)$units,
         ignore.case = TRUE
       )
-      if (any(C.units)) {
-        for (x in which(C.units)) {
-          samples$trait.samples[[pft$name]][[x]] <- PEcAn.utils::ud_convert(
-            samples$trait.samples[[pft$name]][[x]],
-            "degC",
-            "K"
-          )
-        }
-      }
 
       ## only perform sensitivity analysis on traits where no more than 2 results are missing
       good.saruns <- sapply(
-        sens_out$sensitivity.output[[pft$name]],
+        sens_out$sensitivity.output[[pft$name]][traits],
         function(x) sum(is.na(x)) <= 2
       )
       if (!all(good.saruns)) { # if any bad saruns, reduce list of traits and print warning
@@ -213,6 +220,16 @@ run.sensitivity.analysis <- function(settings,
         sa.output = sens_out$sensitivity.output[[pft$name]][, traits, drop = FALSE],
         outdir = pft$outdir
       )
+      # the splines stay in the units the SA ran in, but CV and elasticity are
+      # ratios, so temperatures take those in K
+      for (trait in traits[C.units]) {
+        x <- samples$trait.samples[[pft$name]][[trait]]
+        x.K <- PEcAn.utils::ud_convert(x, "degC", "K")
+        vd <- sensitivity.results[[pft$name]]$variance.decomposition.output
+        vd$coef.vars[[trait]] <- get.coef.var(x.K)
+        vd$elasticities[[trait]] <- vd$elasticities[[trait]] * stats::median(x.K) / stats::median(x)
+        sensitivity.results[[pft$name]]$variance.decomposition.output <- vd
+      }
 
       ### Send diagnostic output to the console
       print(sensitivity.results[[pft$name]]$variance.decomposition.output)

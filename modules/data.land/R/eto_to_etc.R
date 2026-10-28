@@ -109,16 +109,41 @@ eto_to_etc_bism <- function(
       PEcAn.logger::logger.severe("`eto` and `date` must be the same length.")
     }
     if (is.null(planting)) {
-      planting <- lubridate::make_date(
-        lubridate::year(date),
-        kc_row$planting_month,
-        kc_row$planting_day)
-      harvest  <- lubridate::make_date(
-        lubridate::year(date),
-        kc_row$harvest_month,
-        kc_row$harvest_day)
-      idx <- harvest < planting
-      harvest[idx] <- harvest[idx] + lubridate::years(1)
+      cross_year <- (kc_row$harvest_month < kc_row$planting_month) ||
+        (kc_row$harvest_month == kc_row$planting_month && kc_row$harvest_day < kc_row$planting_day)
+
+      if (cross_year) {
+        harvest_same_year <- lubridate::make_date(
+          lubridate::year(date),
+          kc_row$harvest_month,
+          kc_row$harvest_day
+        )
+        is_prior_cycle <- date <= harvest_same_year
+        planting_year <- lubridate::year(date) - as.integer(is_prior_cycle)
+        harvest_year  <- lubridate::year(date) + as.integer(!is_prior_cycle)
+
+        planting <- lubridate::make_date(
+          planting_year,
+          kc_row$planting_month,
+          kc_row$planting_day
+        )
+        harvest <- lubridate::make_date(
+          harvest_year,
+          kc_row$harvest_month,
+          kc_row$harvest_day
+        )
+      } else {
+        planting <- lubridate::make_date(
+          lubridate::year(date),
+          kc_row$planting_month,
+          kc_row$planting_day
+        )
+        harvest <- lubridate::make_date(
+          lubridate::year(date),
+          kc_row$harvest_month,
+          kc_row$harvest_day
+        )
+      }
     }
     season_len <- as.numeric(harvest - planting)
     percent_season <- 100 * as.numeric(date - planting) / season_len

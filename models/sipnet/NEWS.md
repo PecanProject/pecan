@@ -1,5 +1,18 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
+* `write.config.SIPNET` converted `stem_respiration_rate` and
+    `root_respiration_rate` to per day rates, but SIPNET reads `baseVegResp`
+    and `baseFineRootResp` as per year and divides by 365 itself, so both were
+    written 365x too low. They are now converted to per year.
+* `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
+    soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
+    litter pool, so it is not comparable to a measured soil organic carbon
+    stock when the litter pool is on.
+* `model2netcdf.SIPNET` now names the time bounds variable `time_bnds` (the
+    CF convention, and the name `cdo` already produces when merging
+    sub-annual outputs) instead of `time_bounds`. `read_restart.SIPNET`
+    reads `time_bnds` and falls back to `time_bounds` for older outputs (#3303).
 * Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 * `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
     parameter, so PFT supplied values reach the param file instead of
@@ -27,6 +40,11 @@
     - The `collect_restarts()` function and the `copy.restart` flag work
       independently of each other; point `collect_restarts()` at whichever of
       `run/` or `out/` contains the restart files.
+* `write_segmented_configs.SIPNET` now subsets met files by day instead of
+  datetime to match the daily resolution of event files, and requires met files
+  to have a constant timestep (i.e. same number of rows every day). Enforcing
+  constant timesteps allowed major efficiency gains in the met splitting step,
+  which is in practice often the slowest step of a segmented run.
 * Improvements to the job.sh written by `write_segmented_configs`:
   - Now places README.txt, segments.csv, and the full log files from each
     segment, into the outdir (as was already done for one-segment runs).
@@ -45,6 +63,10 @@
     `plantLeafC / leafCSpWt` as previously.
 * `split_inputs.SIPNET` now avoids internal time format conversions, giving a
   substantial speedup and reduced memory use when processing multi-year files.
+  The speedup is especially large for files that have fixed line length,
+  constant time step, and all splits at day boundaries; for these the start and
+  end of the split can be calculated by byte offset and lines not in the subset
+  are never even read from the file.
 * `model2netcdf.SIPNET` now detects the number of timesteps per day by taking the maximum count across all days in the first simulation year, rather than reading only from day 1. This prevents a factor-of-N error in flux unit conversions when the first day of output is partial (fewer timesteps than a complete day) (#3624, #3989).
 * Fixed a unit error in model2netcdf.SIPNET's calculation of `GWBI` (kgC/m2/sec)
     from `woodCreation` (actually gC/m2/timestep, was being treated as gC/m2/day).

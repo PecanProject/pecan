@@ -1,5 +1,9 @@
 # PEcAn.utils 1.8.2.9000
 
+## Changed
+
+* `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).
+
 ## Added
 
 * New function `netcdf2df()` reads a netCDF as a dataframe, with units attached as an attribute. It is intended so far for files that are already "basically a rectangle" (dense grids where all variables have the same dimensions and all dimensions are scalars or fully-crossed vectors), but if you try it on files with more complex dimensions please report how it goes.

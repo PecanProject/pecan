@@ -1,8 +1,11 @@
-context("input validation for write.ensemble.configs")
-library(testthat)
 
 # Mock a model write.configs function to avoid model-specific errors
-write.configs.SIPNET <- function(...) TRUE
+make_write_env <- function() {
+  e <- new.env()
+  e$write.configs.SIPNET <- function(...) TRUE
+
+  e
+}
 
 # 1. One input, no samples → should pass
 test_that("1 input, no samples: passes", {
@@ -10,13 +13,16 @@ test_that("1 input, no samples: passes", {
   ensemble.samples <- NULL
   defaults <- list()
   
-  expect_silent(write.ensemble.configs(
-    defaults = defaults,
-    ensemble.samples = ensemble.samples,
-    settings = settings,
-    model = "SIPNET",
-    write.to.db = FALSE
-  ))
+  withr::with_environment(
+    make_write_env(),
+    expect_silent(write.ensemble.configs(
+      defaults = defaults,
+      ensemble.samples = ensemble.samples,
+      settings = settings,
+      model = "SIPNET",
+      write.to.db = FALSE
+    ))
+  )
 })
 
 
@@ -27,13 +33,16 @@ test_that("no input error", {
   defaults <- list()
   
   # Capture logger message
-  expect_silent(write.ensemble.configs(
-    defaults = defaults,
-    ensemble.samples = ensemble.samples,
-    settings = settings,
-    model = "SIPNET",
-    write.to.db = FALSE
-  ))
+ withr::with_environment(
+    make_write_env(),
+     expect_silent(write.ensemble.configs(
+      defaults = defaults,
+      ensemble.samples = ensemble.samples,
+      settings = settings,
+      model = "SIPNET",
+      write.to.db = FALSE
+    ))
+  )
 })
 
 
@@ -107,14 +116,17 @@ test_that("multiple inputs and multiple samples", {
   
   # Run test - should create directories and configs
   result <- expect_silent(
-    write.ensemble.configs(
-      defaults = defaults,
-      ensemble.size = 5,
-      ensemble.samples = ensemble.samples,
-      settings = settings,
-      model = "SIPNET",
-      write.to.db = FALSE,
-      input_design = input_design
+     withr::with_environment(
+      make_write_env(),
+      write.ensemble.configs(
+        defaults = defaults,
+        ensemble.size = 5,
+        ensemble.samples = ensemble.samples,
+        settings = settings,
+        model = "SIPNET",
+        write.to.db = FALSE,
+        input_design = input_design
+      )
     )
   )
   
@@ -125,7 +137,26 @@ test_that("multiple inputs and multiple samples", {
 })
 
 
+test_that("get.ensemble.samples", {
+  pft_samp <- list(
+    a = data.frame(aa = c(1, 5, 2, 8, 2)),
+    b = data.frame(aa = c(20, 44, 53, 70, 65), bb = c(1, 5, 3, 4, 2))
+  )
+  env_samp <- list()
 
-  
+  res <- get.ensemble.samples(2, pft_samp, env_samp)
+  res_idx <- attr(res, "sampled.indices")
+  expect_type(res, "list")
+  expect_named(res, c("a", "b", "env"))
+  expect_true(all(sapply(res, inherits, "data.frame")))
+  expect_equal(lengths(res), c(a = 1, b = 2, env = 0))
+  expect_equal(sapply(res, nrow), c(a = 2, b = 2, env = 2))
 
-
+  expect_type(res_idx, "list")
+  expect_named(res_idx, c("a", "b", "env"))
+  expect_true(all(sapply(res_idx, inherits, "matrix")))
+  expect_equal(sapply(res_idx, ncol), c(a = 1, b = 2, env = 0))
+  expect_equal(sapply(res_idx, nrow), c(a = 2, b = 2, env = 2))
+  # pft_samp has 5 rows -> all indices <= 5
+  expect_true(all(sapply(res_idx, \(mat)all(mat %in% 1:5))))
+})

@@ -20,7 +20,7 @@ sample_met <- function(settings, nens=1){
     ens_members <- list.files(path, recursive = TRUE)
   }else{
     # remote
-    ens_members <- PEcAn.remote::remote.execute.cmd(host, paste0('ls -d -1 ', path, "/*.*"))
+    ens_members <- PEcAn.remote::remote.execute.cmd(settings$host, paste0('ls -d -1 ', path, "/*.*"))
   }
   
   start_date <- as.POSIXlt((settings$run$site$met.start))
