@@ -106,13 +106,13 @@ load_data_paleon_sda <- function(settings){
       if(!is.null(obvs[[i]]$AbvGrndWood))obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon #* kgm2Mgha 
       if(!is.null(obvs[[i]]$GWBI)) obvs[[i]]$GWBI <- obvs[[i]]$GWBI * biomass2carbon  #* kgms2Mghayr 
       arguments <- list(
-        plyr::.(year, MCMC_iteration, site_id),
-        plyr::.(variable))
-      arguments2 <- list(plyr::.(year), plyr::.(variable))
+        plyr::as.quoted(c("year", "MCMC_iteration", "site_id")),
+        plyr::as.quoted("variable"))
+      arguments2 <- list(plyr::as.quoted("year"), plyr::as.quoted("variable"))
       arguments3 <- list(
-        plyr::.(MCMC_iteration),
-        plyr::.(variable),
-        plyr::.(year))
+        plyr::as.quoted("MCMC_iteration"),
+        plyr::as.quoted("variable"),
+        plyr::as.quoted("year"))
 
       dataset <- obvs[[i]]
       
@@ -138,13 +138,13 @@ load_data_paleon_sda <- function(settings){
         
         variable <- c('AbvGrndWood')
         arguments <- list(
-          plyr::.(year, MCMC_iteration, site_id, pft.cat),
-          plyr::.(variable))
-        arguments2 <- list(plyr::.(year, pft.cat), plyr::.(variable))
+          plyr::as.quoted(c("year", "MCMC_iteration", "site_id", "pft.cat")),
+          plyr::as.quoted("variable"))
+        arguments2 <- list(plyr::as.quoted(c("year", "pft.cat")), plyr::as.quoted("variable"))
         arguments3 <- list(
-          plyr::.(MCMC_iteration),
-          plyr::.(pft.cat, variable),
-          plyr::.(year))
+          plyr::as.quoted("MCMC_iteration"),
+          plyr::as.quoted(c("pft.cat", "variable")),
+          plyr::as.quoted("year"))
       }
 
       PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
