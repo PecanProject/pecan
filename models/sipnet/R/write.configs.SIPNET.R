@@ -165,7 +165,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       template.clim <- inputs$met$path
     }
   }
-  PEcAn.logger::logger.info(paste0("Writing SIPNET configs with input ", template.clim))
 
   # create launch script (which will create symlink)
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
@@ -460,9 +459,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("stem_respiration_rate" %in% pft.trait.names) {
       vegRespQ10 <- param[which(param[, 1] == "vegRespQ10"), 2]
       id <- which(param[, 1] == "baseVegResp")
-      ## Convert from umols CO2 kg s-1 to gC g day-1
-      stem_resp_g <- (((pft.traits[which(pft.trait.names == "stem_respiration_rate")]) *
-                         (44.0096 / 1e+06) * (12.01 / 44.0096)) / 1000) * 86400
+      # sipnet reads a per year rate and divides by 365 itself
+      stem_resp_g <- PEcAn.utils::ud_convert(
+        pft.traits[which(pft.trait.names == "stem_respiration_rate")],
+        "umol kg-1 s-1", "mol g-1 common_year-1"
+      ) * 12.01 # g C per mol CO2
       ## use Q10 to convert stem resp from reference of 25C to 0C param[id,2] =
       ## pft.traits[which(pft.trait.names=='stem_respiration_rate')]*vegRespQ10^(-25/10)
       param[id, 2] <- stem_resp_g * vegRespQ10^(-25/10)
@@ -483,9 +484,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("root_respiration_rate" %in% pft.trait.names) {
       fineRootQ10 <- param[which(param[, 1] == "fineRootQ10"), 2]
       id <- which(param[, 1] == "baseFineRootResp")
-      ## Convert from umols CO2 kg s-1 to gC g day-1
-      root_resp_rate_g <- (((pft.traits[which(pft.trait.names == "root_respiration_rate")]) *
-                              (44.0096/1e+06) * (12.01 / 44.0096)) / 1000) * 86400
+      # sipnet reads a per year rate and divides by 365 itself
+      root_resp_rate_g <- PEcAn.utils::ud_convert(
+        pft.traits[which(pft.trait.names == "root_respiration_rate")],
+        "umol kg-1 s-1", "mol g-1 common_year-1"
+      ) * 12.01 # g C per mol CO2
       ## use Q10 to convert stem resp from reference of 25C to 0C param[id,2] =
       ## pft.traits[which(pft.trait.names=='root_respiration_rate')]*fineRootQ10^(-25/10)
       param[id, 2] <- root_resp_rate_g * fineRootQ10 ^ (-25 / 10)
@@ -495,19 +498,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("coarse_root_respiration_Q10" %in% pft.trait.names) {
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.trait.names == "coarse_root_respiration_Q10")]
     }
-    # WARNING: fineRootAllocation + woodAllocation + leafAllocation isn't supposed to exceed 1
-    # see sipnet.c code L2005 :
-    # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
-    # priors can be chosen accordingly, and SIPNET doesn't really crash when sum>1 but better keep an eye
+    # SIPNET sets coarse root allocation to 1 - leaf - wood - fine root
+    # (ensureAllocation in sipnet.c), so the three must not sum past 1.
+    # On a sum > 1, SIPNET v1 zeroes wood allocation (then fine root, then
+    # leaf) until it fits; v2 exits.
     alloc_params <- c("root_allocation_fraction", "wood_allocation_fraction", "leaf_allocation_fraction")
     if (all(alloc_params %in% pft.trait.names)) {
       sum_alloc <- pft.traits[which(pft.trait.names == "root_allocation_fraction")] +
         pft.traits[which(pft.trait.names == "wood_allocation_fraction")] +
         pft.traits[which(pft.trait.names == "leaf_allocation_fraction")]
-      if(sum_alloc > 1){
-        # I want this to be a severe for now, lateer can be changed back to warning
-        PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
-                                  "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
+      if (sum_alloc > 1) {
+        PEcAn.logger::logger.warn(
+          "Sum of allocation parameters exceeds 1 for runid =", run.id, "-",
+          if (rev_str == "v2") {
+            "SIPNET v2 will exit with an error for this run."
+          } else {
+            "SIPNET v1 will set wood allocation (and, if needed, fine root allocation) to 0."
+          }
+        )
       }
     }
     
