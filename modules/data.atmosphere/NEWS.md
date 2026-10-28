@@ -1,5 +1,9 @@
 # PEcAn.data.atmosphere 1.9.1.9000
 
+## Added
+
+* `download.CalAdaptWRF()` stages native WRF sources; `met2CF.CalAdaptWRF()` delegates CF conversion to caladaptaer. Registration metadata supplies product defaults, distinguishes product identities, and preserves source calendars by disabling gap filling. Requires caladaptaer's source-staging and bulk-export APIs.
+
 ## Fixed
 
 * `align.met()` now correctly calculates output timesteps in cases where the source data is at a coarser time step than the training data and `align == "repeat"` (#4012, @anshul23102).
