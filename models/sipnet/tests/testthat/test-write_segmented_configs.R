@@ -309,4 +309,16 @@ test_that("drop_same_pft_segments merges consecutive segments with the same PFT"
     result$segment_id,
     c("001", "002", "003")
   )
+
+  # Merging leaves no gaps and does not change the overall date range
+  expect_equal(min(result$start_date), min(segments$start_date))
+  expect_equal(max(result$end_date), max(segments$end_date))
+  expect_equal(result$start_date[-1], result$end_date[-nrow(result)] + 1)
+
+  # First and last segments can be part of a merge: all one PFT -> one row
+  segments$pft <- "pft1"
+  all_one <- PEcAn.SIPNET:::drop_same_pft_segments(segments)
+  expect_equal(nrow(all_one), 1)
+  expect_equal(all_one$start_date, min(segments$start_date))
+  expect_equal(all_one$end_date, max(segments$end_date))
 })

@@ -1,5 +1,7 @@
 # PEcAn.settings 1.9.1.9000
 
+* New function `future_papply()` is an experimental rewrite of `papply()` that runs in parallel when your session configures it
+  (by setting `future::plan()`. If testing goes well, `papply()` may adopt this behavior by default in a future release.
 * `setEnsemblePaths()` now looks up variables in settings$run$site when interpolating path templates (#4100). This allows site-specific path components via e.g.
     ```
     createMultiSiteSettings(s, data.frame(id = ..., grid_cell = ...)) |>

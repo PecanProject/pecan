@@ -503,19 +503,24 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("coarse_root_respiration_Q10" %in% pft.trait.names) {
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.trait.names == "coarse_root_respiration_Q10")]
     }
-    # WARNING: fineRootAllocation + woodAllocation + leafAllocation isn't supposed to exceed 1
-    # see sipnet.c code L2005 :
-    # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
-    # priors can be chosen accordingly, and SIPNET doesn't really crash when sum>1 but better keep an eye
+    # SIPNET sets coarse root allocation to 1 - leaf - wood - fine root
+    # (ensureAllocation in sipnet.c), so the three must not sum past 1.
+    # On a sum > 1, SIPNET v1 zeroes wood allocation (then fine root, then
+    # leaf) until it fits; v2 exits.
     alloc_params <- c("root_allocation_fraction", "wood_allocation_fraction", "leaf_allocation_fraction")
     if (all(alloc_params %in% pft.trait.names)) {
       sum_alloc <- pft.traits[which(pft.trait.names == "root_allocation_fraction")] +
         pft.traits[which(pft.trait.names == "wood_allocation_fraction")] +
         pft.traits[which(pft.trait.names == "leaf_allocation_fraction")]
-      if(sum_alloc > 1){
-        # I want this to be a severe for now, lateer can be changed back to warning
-        PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
-                                  "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
+      if (sum_alloc > 1) {
+        PEcAn.logger::logger.warn(
+          "Sum of allocation parameters exceeds 1 for runid =", run.id, "-",
+          if (rev_str == "v2") {
+            "SIPNET v2 will exit with an error for this run."
+          } else {
+            "SIPNET v1 will set wood allocation (and, if needed, fine root allocation) to 0."
+          }
+        )
       }
     }
     
