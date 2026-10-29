@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
 - PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
 - Query latest release tag via git ls-remote in check package versions CI step to avoid API rate-limit failures (#4128).
