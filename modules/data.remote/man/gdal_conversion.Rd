@@ -6,6 +6,7 @@
 \usage{
 gdal_conversion(
   in_path,
+  doi,
   outfolder = NULL,
   band_name = NULL,
   tile_id = NULL,
@@ -15,6 +16,8 @@ gdal_conversion(
 }
 \arguments{
 \item{in_path}{character: physical path to the image file.}
+
+\item{doi}{character: data identification.}
 
 \item{outfolder}{character: physical path to the folder where you want to export the converted image. Default is NULL.}
 

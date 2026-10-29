@@ -5,6 +5,7 @@
 #' https://gdal.org/en/stable/programs/gdalwarp.html
 #' 
 #' @param in.path character: physical path to the folder that contains all the original image tiles.
+#' @param doi character: data identification.
 #' @param out.path  character: physical path to the folder that contains converted and merged images.
 #' @param band.name character: band name of the image. Default is NULL.
 #' @param just.band.name logical: if we just want the band names of the image file. Default is TRUE.
@@ -23,6 +24,7 @@
 #' @author Dongchen Zhang
 #' @importFrom purrr %>%
 merge_image_tiles <- function(in.path, 
+                              doi = doi, 
                               out.path = NULL, 
                               band.name = NULL,
                               just.band.name = TRUE,
@@ -75,6 +77,7 @@ merge_image_tiles <- function(in.path,
     converted.file.paths <- file.paths %>% 
       purrr::map2(seq_along(file.paths), function(f, tile.id) {
         gdal_conversion(in_path = f, 
+                        doi = doi,
                         outfolder = out.path, 
                         band_name = band.name, 
                         tile_id = tile.id, 
@@ -158,6 +161,7 @@ merge_image_tiles <- function(in.path,
 #' 
 #' @title gdal_conversion
 #' @param in_path character: physical path to the image file.
+#' @param doi character: data identification.
 #' @param outfolder character: physical path to the folder where you want to export the converted image. Default is NULL.
 #' @param band_name character: band name of the image. Default is NULL.
 #' @param tile_id character/numeric: id for differentiate different converted image tiles.
@@ -185,14 +189,14 @@ merge_image_tiles <- function(in.path,
 #'     just_band_name = FALSE, 
 #'     target_format = ".tif")
 #' }
-gdal_conversion <- function(in_path, outfolder = NULL, band_name = NULL, tile_id = NULL, just_band_name = TRUE, target_format = ".tif") {
+gdal_conversion <- function(in_path, doi, outfolder = NULL, band_name = NULL, tile_id = NULL, just_band_name = TRUE, target_format = ".tif") {
   # grab subdataset paths.
   sds <- get_subdatasets(in_path)
   # grab band names.
   band_names <- sds %>% purrr::map(function(s){
     str <- strsplit(s, split = ":", fixed = T)[[1]]
     return(str[length(str)])
-  }) %>% unlist
+  }) %>% unlist %>% basename
   # return band names.
   if (just_band_name) {
     return(band_names)
@@ -219,6 +223,22 @@ gdal_conversion <- function(in_path, outfolder = NULL, band_name = NULL, tile_id
   # conversion.
   band.ind <- which(band_names == band_name)
   out <- gdal_translate(sds[band.ind], file.path(outfolder, target_file_name))
+  # if it's the VIIRS LAI image.
+  # we need to grab the crs and ext and rewrite the image.
+  if (doi == "10.5067/VIIRS/VJ215A2H.002") {
+    target_path <- file.path(outfolder, target_file_name)
+    temp_path   <- file.path(outfolder, paste0("temp_", target_file_name))
+    
+    # Read image and update spatial properties
+    temp.img <- terra::rast(target_path)
+    crs.ext  <- grab.viirs.crs.ext(in_path)
+    terra::crs(temp.img) <- crs.ext$crs
+    terra::ext(temp.img) <- crs.ext$ext
+    
+    # Write to temp file and rename to replace original
+    terra::writeRaster(temp.img, temp_path, overwrite = TRUE)
+    file.rename(temp_path, target_path)
+  }
   return(file.path(outfolder, target_file_name))
 }
 
@@ -255,4 +275,25 @@ gdal_translate <- function (from, to) {
   # create cmd.
   cmd <- paste(paste('"',gdal_path,'"',sep=""), paste('"',from,'"',sep=""), paste('"',to,'"',sep=""))
   out <- system(cmd, intern = T)
+}
+
+#' @describeIn Grab CRS and Extents from the VIIRS LAI product.
+#' @title grab.viirs.crs.ext
+#' 
+#' @param in_path character: physical path to the image file.
+#'
+grab.viirs.crs.ext <- function (in_path){
+  # VIIRS projection.
+  crs <- "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
+  # manually calculate extents based on the tile ID.
+  tile_match <- regmatches(basename(in_path), regexpr("h\\d{2}v\\d{2}", basename(in_path)))
+  if (length(tile_match) == 0) return(NULL)
+  h <- as.numeric(substr(tile_match, 2, 3))
+  v <- as.numeric(substr(tile_match, 5, 6))
+  tile_size <- 20015109.354 / 18
+  xmin <- -20015109.354 + (h * tile_size)
+  xmax <- xmin + tile_size
+  ymax <- 10007554.68 - (v * tile_size)
+  ymin <- ymax - tile_size
+  return(list(crs = crs, ext = c(xmin, xmax, ymin, ymax)))
 }
