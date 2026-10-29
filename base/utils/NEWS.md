@@ -2,7 +2,7 @@
 
 ## Fixed
 
-* `match_file()` now matches prefixes at the beginning of filenames, excluding similarly named backup files.
+* `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
 
 ## Changed
 
