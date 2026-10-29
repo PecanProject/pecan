@@ -11,12 +11,12 @@ vignette: >
 
 # Overview
 
-This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are described in the [PEcAn met data documentation](https://pecanproject.github.io/pecan-documentation/develop/input-standards.html#meteorology-standards).
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are described in the [PEcAn met data documentation](https://pecanproject.org/pecan-documentation/develop/input-standards.html#meteorology-standards).
 
 We’ll download 12 years of met data from the [Bondville Ameriflux site](https://ameriflux.lbl.gov/sites/siteinfo/US-Bo1), which has a `SITE_ID` of `US-Bo1`.
 
 
-The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/main/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.atmosphere/).
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.atmosphere/).
 
 
 
@@ -53,7 +53,7 @@ met2CF.Ameriflux(in.path = "/tmp/", in.prefix = "US-Bo1", outfolder = "/tmp/out/
 
 ## Concatenate years
 
-NB: this is not required within PEcAn; used here for convenience. See documentation for [NCO `ncrcat` function](http://research.jisao.washington.edu/data_sets/nco/#example8).
+NB: this is not required within PEcAn; used here for convenience. See documentation for [NCO `ncrcat` function](https://nco.sourceforge.net/nco.html#ncrcat-netCDF-Record-Concatenator).
 
 ```{r concatenate, eval=FALSE}
 system("ncrcat -O -h /tmp/out/US-Bo1.199[6789].nc /tmp/out/US-Bo1.200[12348678].nc /tmp/out/US-Bo11996-2008.nc")

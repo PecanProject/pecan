@@ -17,7 +17,7 @@ download.FluxnetLaThuile(
 }
 \arguments{
 \item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix.
-The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}}
+The 'SITE_ID' field in \href{https://web.archive.org/web/20181016150417/http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}}
 
 \item{outfolder}{location on disk where outputs will be stored}
 

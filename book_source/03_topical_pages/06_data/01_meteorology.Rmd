@@ -49,7 +49,7 @@ Scale: site
 
 Resolution: 30 or 60 min
 
-Availability: varies by site http:\/\/ameriflux.lbl.gov\/data\/data-availability\/
+Availability: varies by site [AmeriFlux Data Availability](https://ameriflux.lbl.gov/data/data-availability/)
 
 Notes: Old ORNL server, use is deprecated
 
@@ -59,7 +59,7 @@ Scale: site
 
 Resolution: 30 or 60 min
 
-Availability: varies by site http:\/\/ameriflux.lbl.gov\/data\/data-availability\/
+Availability: varies by site [AmeriFlux Data Availability](https://ameriflux.lbl.gov/data/data-availability/)
 
 Notes: new Lawrence Berkeley Lab server
 
@@ -69,7 +69,7 @@ Scale: site
 
 Resolution: 30 or 60 min
 
-Availability: varies by site [http:\/\/fluxnet.fluxdata.org\/sites\/site-list-and-pages](http://fluxnet.fluxdata.org/sites/site-list-and-pages/)
+Availability: varies by site [FLUXNET Site List](https://fluxnet.org/sites/site-list-and-pages/)
 
 Notes: Fluxnet 2015 synthesis product. Does not cover all FLUXNET sites
 
@@ -129,7 +129,7 @@ Scale: site
 
 Resolution: 30 or 60 min
 
-Availability: varies by site  http:\/\/www.fluxdata.org\/DataInfo\/Dataset%20Doc%20Lib\/SynthDataSummary.aspx
+Availability: varies by site [FLUXNET LaThuile Synthesis Summary](https://web.archive.org/web/20181016150417/http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx)
 
 Notes: 2007 synthesis. Fluxnet2015 supercedes this for sites that have been updated
 
@@ -141,7 +141,7 @@ Resolution: varies
 
 Availability: varies by site
 
-Notes: This is a protocol, not a single archive. The PEcAn functions currently default to querying [https://terraref.ncsa.illinois.edu/clowder/api/geostreams], which requires login and contains data from only two sites (Urbana IL and Maricopa AZ). However the interface can be used with any server that supports the [Geostreams API](https://opensource.ncsa.illinois.edu/confluence/display/CATS/Geostreams+API).
+Notes: This is a protocol, not a single archive. The PEcAn functions currently default to querying https://terraref.ncsa.illinois.edu/clowder/api/geostreams, which requires login and contains data from only two sites (Urbana IL and Maricopa AZ). However the interface can be used with any server that supports the [Geostreams API](https://web.archive.org/web/20240817201125/https://opensource.ncsa.illinois.edu/confluence/display/CATS/Geostreams+API).
 
 ## ERA5
 
