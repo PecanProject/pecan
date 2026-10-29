@@ -128,9 +128,9 @@ test_that("Correctly read all variables, from custom ncfiles", {
       verbose = TRUE
     )
   })
-  expect_true(any(grepl("No start or end year provided", verbose_log)))
-  expect_true(any(grepl("Reading the following files", verbose_log)))
-  expect_true(any(grepl("Variables not specified", verbose_log)))
+  expect_match(verbose_log, "No start or end year provided", all = FALSE)
+  expect_match(verbose_log, "Reading the following files", all = FALSE)
+  expect_match(verbose_log, "Variables not specified", all = FALSE)
   expect_named(verbose_out, c("x", "y", "z"))
 
   summary_log <- capture.output(type = "message", {
