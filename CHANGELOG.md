@@ -49,6 +49,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
+- PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
 - Query latest release tag via git ls-remote in check package versions CI step to avoid API rate-limit failures (#4128).
 - Multisite sensitivity analyses gave every site the results of the last site, because `read.sa.output()` looked runs up in the shared run manifest instead of each site's `sa.run.ids`.
@@ -56,6 +57,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - A trait with no spread in its sensitivity analysis samples stopped `run.sensitivity.analysis()` with a spline error; it is now skipped with a warning.
 - The `align_pft` tests in PEcAn.benchmark are now skipped when no BETY database connection is available instead of failing (#4179).
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
+- Fixed dead MsTMIP variable-standard and PEcAn workflow diagram links in the PEcAn book, tutorial and package documentation (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
