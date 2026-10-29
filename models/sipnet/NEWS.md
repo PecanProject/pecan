@@ -5,6 +5,10 @@
     `root_respiration_rate` to per day rates, but SIPNET reads `baseVegResp`
     and `baseFineRootResp` as per year and divides by 365 itself, so both were
     written 365x too low. They are now converted to per year.
+* `write.events.SIPNET()` includes optional `urea_n_kg_m2` in mineral nitrogen,
+  assuming immediate availability and preserving the organic N and C pools
+  (#3963, #4047).
+
 * `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
     soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
     litter pool, so it is not comparable to a measured soil organic carbon

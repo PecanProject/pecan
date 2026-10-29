@@ -9,11 +9,14 @@ A tibble with one row per fertilizer type and the following columns:
 \describe{
   \item{name}{\code{character}. Short identifier from SWAT (e.g., \code{"urea"}, \code{"manure"}).}
   \item{description}{\code{character}. Longer description of the fertilizer or manure type.}
-  \item{fraction_mineral_n}{\code{numeric}. Fraction of total nitrogen in mineral form.}
+  \item{fraction_mineral_n}{\code{numeric}. Fraction of fertilizer by mass that is
+    mineral or rapidly available nitrogen, including urea-N.
+    Equal to \code{fraction_nh3_n + fraction_no3_n + fraction_urea_n}.}
   \item{fraction_nh3_n}{\code{numeric}. Fraction of fertilizer by mass that is ammonium-n (NH\eqn{_3}-N).}
   \item{fraction_no3_n}{\code{numeric}. Fraction of fertilizer by mass that is nitrate-N (NO\eqn{_3}-N).
-    Computed as \code{fraction_mineral_n - fraction_nh3_n}.}
+    Computed as \code{fraction_mineral_n - fraction_nh3_n - fraction_urea_n}.}
   \item{fraction_organic_n}{\code{numeric}. Fraction of organic matter that is nitrogen.}
+  \item{fraction_urea_n}{\code{numeric}. Fraction of fertilizer by mass that is urea-N.}
   \item{fraction_c}{\code{numeric}. Fraction of mass that is carbon.}
   \item{cn_ratio}{\code{numeric}. Carbon-to-nitrogen ratio for organic matter.
     Assigned based on DayCent organic matter parameterterizations.}
@@ -39,5 +42,8 @@ C:N ratios (\code{cn_ratio}) from DayCent model default parameter files.
 \code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of
 fertilizer by mass that is ammonium-N and nitrate-N, respectively. This is different from
 the SWAT model's definition of \code{fraction_nh3_n} as a fraction of the total mineral N.
+Total nitrogen by mass is \code{fraction_mineral_n + fraction_organic_n}.
+Urea is tracked separately from organic nitrogen and contributes no modeled
+organic carbon. SIPNET treats urea-N as immediately available mineral nitrogen.
 }
 \keyword{datasets}

@@ -158,11 +158,11 @@ Addition of exogenous nutrients, including non-crop carbon (e.g. manure, compost
 
 Required properties:
 
-* at least one of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2`, which are respectively the amount of organic C, ammonium N, and nitrate N added.
+* at least one of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2`, `urea_n_kg_m2`, which are respectively the amount of organic C, ammonium N, nitrate N, and urea N added (kg/m2). Urea N is supported in schema version 0.1.2.
 
 Optional properties:
 
-* any of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2` not already counted as required. All are assumed zero if not specified.
+* any of `org_c_kg_m2`, `nh4_n_kg_m2`, `no3_n_kg_m2`, `urea_n_kg_m2` not already counted as required. All are assumed zero if not specified. `org_n_kg_m2` specifies organic nitrogen separately. SIPNET adds urea N directly to mineral nitrogen without adding organic N or C.
 * `org_n_kg_m2`: the amount of N added in organic compounds. Assumed zero if not specified. If specifying, you probably want to specify `org_c_kg_m2` as well but the schema does not enforce this.
 
 #### tillage
