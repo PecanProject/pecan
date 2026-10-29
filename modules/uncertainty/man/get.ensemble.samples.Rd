@@ -27,7 +27,7 @@ get.ensemble.samples(
 \item{...}{Other arguments passed on to the sampling method}
 }
 \value{
-matrix of (quasi-)random samples from trait distributions
+named list of data.frames with sampled indices as an attribute
 }
 \description{
 Returns a matrix of randomly or quasi-randomly sampled trait values
