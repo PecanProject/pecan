@@ -19,7 +19,7 @@ get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
 numeric vector
 }
 \description{
-internal convenience function for
+Internal convenience function for
 streamlining extraction of data from netCDF files
 with CF-compliant variable names
 }

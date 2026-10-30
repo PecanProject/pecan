@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.ALMA.R
 \name{met2CF.ALMA}
 \alias{met2CF.ALMA}
-\title{met2CF.ALMA}
+\title{Get meteorology variables from ALMA netCDF files and convert to netCDF CF format}
 \usage{
 met2CF.ALMA(
   in.path,

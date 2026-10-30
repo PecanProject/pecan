@@ -2,7 +2,7 @@
 % Please edit documentation in R/upscale_met.R
 \name{upscale_met}
 \alias{upscale_met}
-\title{upscale_met}
+\title{Upscales the temporal resolution of a dataset}
 \usage{
 upscale_met(
   outfolder,
@@ -28,7 +28,7 @@ Output is netcdf named as <input_met_filename>.upscaled.nc}
 \item{...}{other arguments, currently ignored}
 }
 \description{
-upscale_met upscales the temporal resolution of a dataset
+Upscales the temporal resolution of a dataset
 }
 \author{
 James Simkins, Chris Black

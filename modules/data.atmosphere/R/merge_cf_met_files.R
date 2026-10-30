@@ -13,8 +13,7 @@
 #' @return character. Path to the newly created NetCDF file
 #'
 #' @noRd
-
-  merge_cf_met_files <- function(
+merge_cf_met_files <- function(
     primary_cf,
     secondary_cf,
     vars,

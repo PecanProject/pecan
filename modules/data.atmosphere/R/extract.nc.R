@@ -1,20 +1,18 @@
-##' Given latitude and longitude coordinates, extract site data from NARR file
-##'
-##' @name extract.nc
-##' @title extract.nc
-##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input files
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be permuted (will only use the year part of the date)
-##' @param end_date the end date of the data to be permuted (will only use the year part of the date)
-##' @param slat the latitude of the site
-##' @param slon the longitude of the site
-##' @param overwrite should existing files be overwritten
-##' @param verbose should ouput of function be extra verbose
-##' @param ... further arguments, currently ignored
-##'
-##' @export
-##' @author Betsy Cowdery
+#' Given latitude and longitude coordinates, extract site data from NARR file
+#'
+#' @param in.path location on disk where inputs are stored
+#' @param in.prefix prefix of input files
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be permuted (will only use the year part of the date)
+#' @param end_date the end date of the data to be permuted (will only use the year part of the date)
+#' @param slat the latitude of the site
+#' @param slon the longitude of the site
+#' @param overwrite should existing files be overwritten
+#' @param verbose should ouput of function be extra verbose
+#' @param ... further arguments, currently ignored
+#'
+#' @export
+#' @author Betsy Cowdery
 extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat, slon,
                        overwrite = FALSE, verbose = FALSE, ...) {
   

@@ -217,20 +217,21 @@ cfmet.downscale.daily <- function(dailymet, output.dt = 1, lat) {
 } # cfmet.downscale.daily
 
 
-##' Get time series vector from netCDF file
-##'
-##' internal convenience function for
-##' streamlining extraction of data from netCDF files
-##' with CF-compliant variable names
-##'
-##' @param var name of variable to extract
-##' @param lati,loni latitude and longitude to extract
-##' @param run.dates data frame of dates to read
-##' @param met.nc netcdf file with CF variable names
-##'
-##' @return numeric vector
-##' @export
-##' @author David Shaner LeBauer
+#' Get time series vector from netCDF file
+#'
+#' Internal convenience function for
+#' streamlining extraction of data from netCDF files
+#' with CF-compliant variable names
+#'
+#' @param var name of variable to extract
+#' @param lati,loni latitude and longitude to extract
+#' @param run.dates data frame of dates to read
+#' @param met.nc netcdf file with CF variable names
+#'
+#' @author David Shaner LeBauer
+#'
+#' @return numeric vector
+#' @export
 get.ncvector <- function(var, lati = lati, loni = loni, run.dates = run.dates, met.nc) {
 
   start.idx <- c(latitude = lati, longitude = loni, time = run.dates$index[1])

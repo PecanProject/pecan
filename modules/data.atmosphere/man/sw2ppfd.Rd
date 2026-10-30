@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{sw2ppfd}
 \alias{sw2ppfd}
-\title{SW to PPFD}
+\title{CF Shortwave to PPFD}
 \usage{
 sw2ppfd(sw)
 }
@@ -13,9 +13,6 @@ sw2ppfd(sw)
 PPFD umol /m2 / s
 }
 \description{
-CF Shortwave to PPFD
-}
-\details{
 Cambell and Norman 1998 p 151, ch 10
 }
 \author{

@@ -1,26 +1,24 @@
 # lookup the site based on the site_id
 download.FluxnetLaThuile.site <- function(site_id) {
-  sites <- utils::read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
+  sites <- utils::read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"),
                     stringsAsFactors = FALSE)
   sites$FLUX.id[which(sites$site.id == site_id)]
 } # download.FluxnetLaThuile.site
 
-##' Download Flxunet LaThuile CSV files
-##'
-##' @name download.FluxnetLaThuile
-##' @title download.FluxnetLaThuile
-##' @export
-##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix.
-##'   The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose should the function be very verbose
-##' @param username should be the registered Fluxnet username, else defaults to pecan
-##' @param ... further arguments, currently ignored
-##' 
-##' @author Ankur Desai
+#' Download Flxunet LaThuile CSV files
+#'
+#' @export
+#' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix.
+#'   The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose should the function be very verbose
+#' @param username should be the registered Fluxnet username, else defaults to pecan
+#' @param ... further arguments, currently ignored
+#'
+#' @author Ankur Desai
 download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date, 
                                      overwrite = FALSE, verbose = FALSE, username = "pecan", ...) {
   # get start/end year code works on whole years only

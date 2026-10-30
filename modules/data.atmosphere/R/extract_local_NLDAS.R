@@ -1,29 +1,27 @@
-##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a point from a local download of the full grid
-# -----------------------------------
-# Description
-# -----------------------------------
-##' @author Christy Rollinson
-##' @description This function extracts NLDAS data from grids that have been downloaded and stored locally.
-##'              Once upon a time, you could query these files directly from the internet, but now they're 
-##'              behind a tricky authentication wall. Files are saved as a netCDF file in CF conventions. 
-##'              These files are ready to be used in the general PEcAn workflow or fed into the downscaling 
-##'              workflow.
-# ----------------------------------- 
-# Parameters
-# -----------------------------------
-##' @param outfolder - directory where output files will be stored
-##' @param in.path - path to the raw full grids
-##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
-##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param lat.in site latitude in decimal degrees
-##' @param lon.in site longitude in decimal degrees
-##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
-##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
-##'   to control printing of debug info
-##' @param ... Other arguments, currently ignored
-##' @export
-# -----------------------------------
+#' Extract NLDAS from local download
+#'
+#' Extract NLDAS meteorology for a point from a local download of the full grid
+#'
+#' This function extracts NLDAS data from grids that have been downloaded and stored locally.
+#'   Once upon a time, you could query these files directly from the internet, but now they're
+#'   behind a tricky authentication wall. Files are saved as a netCDF file in CF conventions.
+#'   These files are ready to be used in the general PEcAn workflow or fed into the downscaling
+#'   workflow.
+#'
+#' @author Christy Rollinson
+#'
+#' @param outfolder - directory where output files will be stored
+#' @param in.path - path to the raw full grids
+#' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
+#' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
+#' @param lat.in site latitude in decimal degrees
+#' @param lon.in site longitude in decimal degrees
+#' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
+#' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+#'   to control printing of debug info
+#' @param ... Other arguments, currently ignored
+#' @export
+#'
 extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 overwrite = FALSE, verbose = FALSE, ...){
 

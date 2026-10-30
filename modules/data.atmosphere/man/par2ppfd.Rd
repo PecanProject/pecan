@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{par2ppfd}
 \alias{par2ppfd}
-\title{par2ppfd}
+\title{convert PAR to PPFD}
 \usage{
 par2ppfd(watts)
 }
@@ -13,9 +13,6 @@ par2ppfd(watts)
 PPFD (umol / m2 / s)
 }
 \description{
-convert PAR to PPFD
-}
-\details{
 Converts photosynthetically active radiation (PAR, units of Watts / m2) to
 photosynthetic photon flux density (PPFD) in units of umol / m2 / s
 From Campbell and Norman p151

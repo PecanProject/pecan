@@ -1,5 +1,14 @@
 #' met.process
 #'
+#' @details
+#' `overwrite` may be a list with individual components corresponding to
+#' `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
+#' the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
+#' Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
+#' *except* raw met downloads. I.e., it corresponds to:
+#'
+#'  list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+#'
 #' @param site Site info from settings file
 #' @param input_met Which data source to process.
 #' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
@@ -9,17 +18,8 @@
 #' @param dbparms  database settings from settings file
 #' @param dir  directory to write outputs to
 #' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
-#' @param overwrite Whether to force met.process to proceed.
+#' @param overwrite Whether to force met.process to proceed. See details.
 #'
-#'
-#'        `overwrite` may be a list with individual components corresponding to
-#'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
-#'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
-#'        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
-#'        *except* raw met downloads. I.e., it corresponds to:
-#'
-#'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
-#'  List of `url`, `username`, `password`
 #' @importFrom rlang .data .env %||%
 #' @export
 #' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
@@ -404,21 +404,21 @@ met.process <- function(site, input_met, start_date, end_date, model,
 
 
 
-#################################################################################################################################
 
-##' Function to find the site code for a specific tag
-##'
-##' Example:
-##'   sitename = 'Rhinelander Aspen FACE Experiment (FACE-RHIN)'
-##'   tag = 'FACE'
-##'   site_from_tag(sitename,tag) = 'RHIN'
-##' Requires that site names be set up specifically with (tag-sitecode) - this may change
-##'
-##' @param sitename full name of site
-##' @param tag abbreviated name of site
-##' @author Betsy Cowdery
-##'
-##' @export
+
+#' Function to find the site code for a specific tag
+#'
+#' Example:
+#'   sitename = 'Rhinelander Aspen FACE Experiment (FACE-RHIN)'
+#'   tag = 'FACE'
+#'   site_from_tag(sitename,tag) = 'RHIN'
+#' Requires that site names be set up specifically with (tag-sitecode) - this may change
+#'
+#' @param sitename full name of site
+#' @param tag abbreviated name of site
+#' @author Betsy Cowdery
+#'
+#' @export
 site_from_tag <- function(sitename, tag) {
   temp <- regmatches(sitename, gregexpr("(?<=\\().*?(?=\\))", sitename, perl = TRUE))[[1]]
   pref <- paste0(tag, "-")

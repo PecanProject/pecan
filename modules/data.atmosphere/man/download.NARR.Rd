@@ -25,7 +25,8 @@ download.NARR(
 
 \item{verbose}{Turn on verbose output? Default=FALSE}
 
-\item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.}
+\item{method}{Method of file retrieval.
+Can set this using `options(download.ftp.method=[method])` in your Rprofile.}
 
 \item{...}{other inputs}
 }

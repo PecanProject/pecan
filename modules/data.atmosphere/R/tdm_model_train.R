@@ -1,31 +1,25 @@
-##' TDM Model Train
-##' Linear regression calculations for specific met variables
-# ----------------------------------- 
-# Description
-# -----------------------------------
-##' @title model.train
-##' @family tdm - Temporally Downscale Meteorology
-##' @author Christy Rollinson, James Simkins
-##' @description Function to create linear regression models for specific met
-##'              variables. This is used in conjunction with temporal.downscale.functions()
-##'              to generate linear regression statistics and save their output to be called
-##'              later in lm_ensemble_sims().
-# ----------------------------------- 
-# Parameters
-# -----------------------------------
-##' @param dat.subset data.frame containing lags, next, and downscale period data
-##' @param v variable name, as character
-##' @param n.beta number of betas to pull from
-##' @param resids TRUE or FALSE, whether to use residuals or not
-##' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
-##'                  distinction between day and night (no shortwave without sunlight)
-##' @param ... further arguments, currently ignored
-##'
-##' @export
-# -----------------------------------
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
+#' TDM Model Train
+#'
+#' Linear regression calculations for specific met variables
+#'
+#' Function to create linear regression models for specific met variables.
+#' This is used in conjunction with temporal.downscale.functions()
+#' to generate linear regression statistics and save their output to be called
+#' later in lm_ensemble_sims().
+#'
+#' @family tdm - Temporally Downscale Meteorology
+#' @author Christy Rollinson, James Simkins
+#'
+#' @param dat.subset data.frame containing lags, next, and downscale period data
+#' @param v variable name, as character
+#' @param n.beta number of betas to pull from
+#' @param resids TRUE or FALSE, whether to use residuals or not
+#' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
+#'                  distinction between day and night (no shortwave without sunlight)
+#' @param ... further arguments, currently ignored
+#'
+#' @export
+#'
 model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...) {
   dat.subset$year <- as.ordered(dat.subset$year) 
   if (v == "air_temperature") {

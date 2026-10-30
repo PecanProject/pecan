@@ -1,10 +1,10 @@
-##' @name read.register
-##' @title read.register
-##' @export
-##' @param register.xml path of xml file
-##' @param con betydb connection
-##' 
-##' @author Betsy Cowdery
+#' read.register
+#'
+#' @param register.xml path of xml file
+#' @param con betydb connection
+#'
+#' @author Betsy Cowdery
+#' @export
 read.register <- function(register.xml, con) {
   
   register <- XML::xmlToList(XML::xmlParse(register.xml))

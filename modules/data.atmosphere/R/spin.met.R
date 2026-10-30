@@ -1,7 +1,15 @@
 #' Spin-up meteorology
 #'
+#' @details
+#' spin.met works by creating symbolic links to the sampled met file,
+#' rather than copying the whole file. Be aware that the internal dates in
+#' those files are not modified. Right now this is designed to be called within
+#' met2model.[MODEL] before the met is processed (it's designed to work with annual CF
+#' files not model-specific files) for example with models that process met
+#' into one large file
+#'
 #' @param in.path    met input folder path
-#' @param in.prefix  met input file prefix (shared by all annual files, can be "") 
+#' @param in.prefix  met input file prefix (shared by all annual files, can be "")
 #' @param start_date start of met
 #' @param end_date   end of met
 #' @param nyear      number of years of spin-up, default 1000
@@ -9,14 +17,6 @@
 #' @param resample   resample (TRUE, default) or cycle (FALSE) meteorology
 #' @param run_start_date date the run itself starts, which can be different than the start of met
 #' @param overwrite whether to replace previous resampling
-#' 
-#' @details 
-#' spin.met works by creating symbolic links to the sampled met file, 
-#' rather than copying the whole file. Be aware that the internal dates in 
-#' those files are not modified. Right now this is designed to be called within
-#' met2model.[MODEL] before the met is processed (it's designed to work with annual CF
-#' files not model-specific files) for example with models that process met
-#' into one large file
 #'
 #' @return updated start date
 #' @export
@@ -27,7 +27,7 @@
 #' nyear      <- 10
 #' nsample    <- 50
 #' resample   <- TRUE
-#' 
+#'
 #' \dontrun{
 #' if(!is.null(spin)){
 #'    ## if spinning up, extend processed met by resampling or cycling met

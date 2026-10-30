@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_save_model.R
 \name{save.model}
 \alias{save.model}
-\title{save.model}
+\title{TDM Save Models}
 \usage{
 save.model(model.out, model, outfile)
 }
@@ -14,12 +14,8 @@ save.model(model.out, model, outfile)
 \item{outfile}{location where output will be stored}
 }
 \description{
-Function to save models as a .nc file. This is utilized in
-             gen.subdaily.models() when linear regression models are created
-}
-\details{
-TDM Save Models
-Saves models that are created during gen.subdaily.models()
+Saves models that are created during gen.subdaily.models() as a .nc file.
+This is utilized in gen.subdaily.models() when linear regression models are created
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

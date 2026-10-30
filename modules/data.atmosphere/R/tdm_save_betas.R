@@ -1,24 +1,17 @@
-##' TDM Save Betas
-##' Saves betas that are calculated during gen.subdaily.models()
-# ----------------------------------- 
-# Description
-# -----------------------------------
-##' @title save.betas
-##' @family tdm - Temporally Downscale Meteorology
-##' @author Christy Rollinson, James Simkins
-##' @description Function to save betas as a .nc file. This is utilized in
-##'              gen.subdaily.models() when linear regression models are created
-# ----------------------------------- 
-# Parameters
-# -----------------------------------
-##' @param model.out list linear regression model output
-##' @param betas name of the layer of betas to save (e.g. 'betas' or 'betas.resid')
-##' @param outfile location where output will be stored
-##' @export
-# -----------------------------------
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
+#' TDM Save Betas
+#'
+#' Saves betas that are calculated during gen.subdaily.models() as a .nc file.
+#' This is utilized in gen.subdaily.models() when linear regression models are created
+#'
+#' @family tdm - Temporally Downscale Meteorology
+#' @author Christy Rollinson, James Simkins
+#'
+#' @param model.out list linear regression model output
+#' @param betas name of the layer of betas to save (e.g. 'betas' or 'betas.resid')
+#' @param outfile location where output will be stored
+#'
+#' @export
+#'
 save.betas <- function(model.out, betas, outfile) {
   
   var.list <- list()

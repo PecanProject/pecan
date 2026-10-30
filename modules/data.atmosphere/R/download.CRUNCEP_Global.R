@@ -1,26 +1,26 @@
-##' Download CRUNCEP data
-##'
-##' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
-##' @param outfolder Directory where results should be written
-##' @param start_date,end_date Range of years to retrieve. Format is YYYY-MM-DD,
-##'   but only the year portion is used and the resulting files always contain a full year of data.
-##' @param lat.in site latitude in decimal degrees
-##' @param lon.in site longitude in decimal degrees
-##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
-##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
-##'   to control printing of debug info
-##' @param maxErrors Maximum times to re-try following an error accessing netCDF data through THREDDS
-##' @param sleep Wait time between attempts following a THREDDS or other error
-##' @param method (string) Data access method. `opendap` (default)
-##'   attempts to directly access files via OpenDAP. `ncss` (NetCDF
-##'   subset) subsets the file on the server, downloads the subsetted
-##'   file to `tempfile` and then reads it locally. `opendap` is
-##'   faster when it works, but often fails because of server issues.
-##'   `ncss` can be much slower, but is more reliable.
-##' @param ... Other arguments, currently ignored
-##' @export
-##'
-##' @author James Simkins, Mike Dietze, Alexey Shiklomanov
+#' Download CRUNCEP data
+#'
+#' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
+#' @param outfolder Directory where results should be written
+#' @param start_date,end_date Range of years to retrieve. Format is YYYY-MM-DD,
+#'   but only the year portion is used and the resulting files always contain a full year of data.
+#' @param lat.in site latitude in decimal degrees
+#' @param lon.in site longitude in decimal degrees
+#' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
+#' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+#'   to control printing of debug info
+#' @param maxErrors Maximum times to re-try following an error accessing netCDF data through THREDDS
+#' @param sleep Wait time between attempts following a THREDDS or other error
+#' @param method (string) Data access method. `opendap` (default)
+#'   attempts to directly access files via OpenDAP. `ncss` (NetCDF
+#'   subset) subsets the file on the server, downloads the subsetted
+#'   file to `tempfile` and then reads it locally. `opendap` is
+#'   faster when it works, but often fails because of server issues.
+#'   `ncss` can be much slower, but is more reliable.
+#' @param ... Other arguments, currently ignored
+#' @export
+#'
+#' @author James Simkins, Mike Dietze, Alexey Shiklomanov
 download.CRUNCEP <- function(outfolder, start_date, end_date, lat.in, lon.in,
                              overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2,
                              method = "ncss", ...) {

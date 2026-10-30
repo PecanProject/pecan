@@ -1,36 +1,35 @@
-##' Download Ameriflux LBL CSV files
-##'
-##' download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package
-##' to download a zip-file of data. The zip-file is extracted to a csv-file that is stored
-##' to the given outfolder. Details about amf_download_base function can be found here:
-##' https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
-##'
-##' Uses Ameriflux LBL JSON API to download met data from Ameriflux towers in CSV format
-##'
-##' @export
-##' @param sitename the Ameriflux ID of the site to be downloaded, used as file name prefix.
-##' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose should the function be very verbose
-##' @param username Ameriflux username
-##' @param method Optional. download_file() function option.  Use this to set custom programs such as ncftp
-##' @param useremail Used email, should include 'address sign' for code to be functional
-##' @param data_product AmeriFlux data product
-##' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'
-##' @param ... further arguments, currently ignored
-##'
-##' @examples
-##' \dontrun{
-##' options(download.ftp.method = "ncftpget")
-##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
-##' }
-##'
-##' @author Ankur Desai, Henri Kajasilta based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
-
-
+#' Download Ameriflux LBL CSV files
+#'
+#' download.AmerifluxLBL. Function uses amf_download_base function from amerifluxr package
+#' to download a zip-file of data. The zip-file is extracted to a csv-file that is stored
+#' to the given outfolder. Details about amf_download_base function can be found here:
+#' https://github.com/chuhousen/amerifluxr/blob/master/R/amf_download_base.R
+#'
+#' Uses Ameriflux LBL JSON API to download met data from Ameriflux towers in CSV format
+#'
+#' @export
+#' @param sitename the Ameriflux ID of the site to be downloaded, used as file name prefix.
+#' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose should the function be very verbose
+#' @param username Ameriflux username
+#' @param method Optional. download_file() function option.  Use this to set custom programs such as ncftp
+#' @param useremail Used email, should include 'address sign' for code to be functional
+#' @param data_product AmeriFlux data product
+#' @param data_policy Two possible licenses (based on the site): 'CCBY4.0' or 'LEGACY'
+#' @param ... further arguments, currently ignored
+#'
+#' @examples
+#' \dontrun{
+#' options(download.ftp.method = "ncftpget")
+#' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+#' }
+#'
+#' @author Ankur Desai, Henri Kajasilta based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
+#'
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                                   overwrite = FALSE, verbose = FALSE, username = "pecan", method,
                                   useremail = "@", data_product = "BASE-BADM", data_policy = "CCBY4.0", ...) {

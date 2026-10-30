@@ -1,36 +1,37 @@
-##' Extract NLDAS from local download
-##' Extract NLDAS meteorology for a point from a local download of the full grid
-# -----------------------------------
-# Description
-# -----------------------------------
-##' @author Christy Rollinson
-##' @description This function extracts CMIP5 data from grids that have been downloaded and stored locally.
-##'              Files are saved as a netCDF file in CF conventions at *DAILY* resolution.  Note: At this point
-##'              in time, variables that are only available at a native monthly resolution will be repeated to
-##'              give a pseudo-daily record (and can get dealt with in the downscaling workflow).  These files 
-##'              are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
-# ----------------------------------- 
-# Parameters
-# -----------------------------------
-##' @param outfolder - directory where output files will be stored
-##' @param in.path - path to the raw full grids
-##' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
-##' @param end_date - last day for which you want to extract met (yyyy-mm-dd)
-##' @param lat.in site latitude in decimal degrees
-##' @param lon.in site longitude in decimal degrees
-##' @param model which GCM to extract data from
-##' @param scenario which experiment to pull (p1000, historical, ...)
-##' @param ensemble_member which CMIP5 experiment ensemble member
-##' @param date.origin (optional) specify the date of origin for timestamps in the files being read.  
-##'                    If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
-##'                    850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD
-##' @param adjust.pr - adjustment factor fore precipitation when the extracted values seem off
-##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
-##' @param verbose logical. to control printing of debug info
-##' @param ... Other arguments, currently ignored
-##' @export
-##'
-# -----------------------------------
+#' Extract NLDAS from local download
+#'
+#' Extract NLDAS meteorology for a point from a local download of the full grid
+#'
+#' This function extracts CMIP5 data from grids that have been downloaded and stored locally.
+#' Files are saved as a netCDF file in CF conventions at *DAILY* resolution.
+#'
+#' Note: At this point in time, variables that are only available at a native monthly
+#' resolution will be repeated to give a pseudo-daily record (and can get dealt
+#' with in the downscaling workflow).
+#' These files are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
+#'
+#' @author Christy Rollinson
+#'
+#' @param outfolder directory where output files will be stored
+#' @param in.path path to the raw full grids
+#' @param start_date first day for which you want to extract met (yyyy-mm-dd)
+#' @param end_date last day for which you want to extract met (yyyy-mm-dd)
+#' @param lat.in site latitude in decimal degrees
+#' @param lon.in site longitude in decimal degrees
+#' @param model which GCM to extract data from
+#' @param scenario which experiment to pull (p1000, historical, ...)
+#' @param ensemble_member which CMIP5 experiment ensemble member
+#' @param date.origin (optional) specify the date of origin for timestamps in the files being read.
+#'   If NULL defaults to 1850 for historical simulations (except MPI-ESM-P)
+#'   and 850 for p1000 simulations (plus MPI-ESM-P historical).
+#'   Format: YYYY-MM-DD
+#' @param adjust.pr adjustment factor fore precipitation when the extracted values seem off
+#' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
+#' @param verbose logical. to control printing of debug info
+#' @param ... Other arguments, currently ignored
+#'
+#' @export
+#'
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 
                                 model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, adjust.pr=1,
                                 overwrite = FALSE, verbose = FALSE, ...){

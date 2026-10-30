@@ -1,82 +1,70 @@
-##' Align meteorology datasets for debiasing
-# -----------------------------------
-# Description
-# -----------------------------------
-##'
-##' @title align.met
-##' @family debias - Debias & Align Meteorology Datasets into continuous time series
-##' @author Christy Rollinson
-##' @description This script aligns meteorology datasets in at temporal resolution for debiasing & 
-##'              temporal downscaling.  
-##'              Note: The output here is stored in memory!  
-##'              Note: can probably at borrow from or adapt align_data.R in Benchmarking module, but 
-##'              it's too much of a black box at the moment.
-# -----------------------------------
-# Notes
-# -----------------------------------
-##' @details 1. Assumes that both the training and source data are in *at least* daily resolution 
-##'             and each dataset is in a consistent temporal resolution being read from a single file 
-##'             (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers 
-##'             are in monthly resolution and temperature is in daily will need to be reconciled using
-##'             one of the "met2CF" or "download" or "extract" functions
-##'          2. Default file structure: Ensembles members for a given site or set of simes are housed 
-##'             in a common folder with the site ID.  Right now everything is based off of Christy's 
-##'             PalEON ensemble ID scheme where the site ID is a character string (e.g. HARVARD) followed
-##'             the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
-##'             (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
-##'             "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
-##'             with each year in a separate netcdf file inside of it.  "bcc-csm1-1_004" is an example of
-##'             an ensemnle member ID that might be used if you are specifying mems.train.
-##' @return 2-layered list (stored in memory) containing the training and source data that are now matched
-##'         in temporal resolution have the specified number of ensemble members
-##'          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
-##'            are both lists that contain separate data frames for time indices and all available met 
-##'            variables with ensemble members in columns
-# -----------------------------------
-# Parameters
-# -----------------------------------
-##' @param train.path - path to the dataset to be used to downscale the data
-##' @param source.path - data to be bias-corrected aligned with training data (from align.met)
-##' @param yrs.train - (optional) specify a specific years to be loaded for the training data; 
-##'                    prevents needing to load the entire dataset.  If NULL, all available years 
-##'                    will be loaded. If not null, should be a vector of numbers (so you can skip
-##'                    problematic years)
-##' @param yrs.source - (optional) specify a specific years to be loaded for the source data;
-##'                     prevents needing to load the entire dataset.  If NULL, all available years 
-##'                     will be loaded. If not null, should be a vector of numbers (so you can skip
-##'                     problematic years)
-##' @param n.ens  - number of ensemble members to generate and save
-##' @param pair.mems - logical stating whether ensemble members should be paired in 
-##'                    the case where ensembles are being read in in both the training and source data
-##' @param mems.train - (optional) string of ensemble identifiers that ensure the training data is read 
-##'                     in a specific order to ensure consistent time series & proper error propagation.
-##'                     If null, members of the training data ensemble will be randomly selected and 
-##'                     ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will 
-##'                     ensure ensemble members are properly identified and combined.
-##' @param seed - specify seed so that random draws can be reproduced
-##' @param print.progress - if TRUE, prints progress bar
-##' @export
-# -----------------------------------
-# Workflow
-# -----------------------------------
-# 1. Read in & format the training data
-#    1.1. Determine if training data is a single series or ensemble
-#       - note: assumes training data is at the temporal resolution you want to work with
-#    1.2. If not already, coerce training data into the size of the desired output ensemble
-# 2. Read in & format the source data to match the temporal resolution of training data
-#    - Note: for now this is only going to work with a single time series & not an ensemble of source data
-#    - Note: end dimensions should match that of the training data
-# 3. export data (stored in memory) for input into the debiasing or temporal downscaling workflow
-# 
-# Returns a list called met.out with 2 levels that are matched in temporal resolution & number of ensembles
-# List Layers
-#  1. dat.train
-#  2. dat.source
-# Sublist Layers: time, met variables
-
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
+#' Align meteorology datasets for debiasing
+#'
+#' This script aligns meteorology datasets in at temporal resolution for debiasing &
+#'   temporal downscaling.
+#'   Note: The output here is stored in memory!
+#'   Note: can probably at borrow from or adapt align_data.R in Benchmarking module, but
+#'   it's too much of a black box at the moment.
+#'
+#'  Assumes that both the training and source data are in *at least* daily resolution
+#'     and each dataset is in a consistent temporal resolution being read from a single file
+#'     (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers
+#'     are in monthly resolution and temperature is in daily will need to be reconciled using
+#'     one of the "met2CF" or "download" or "extract" functions
+#'
+#'  Default file structure: Ensembles members for a given site or set of simes are housed
+#'     in a common folder with the site ID.  Right now everything is based off of Christy's
+#'     PalEON ensemble ID scheme where the site ID is a character string (e.g. HARVARD) followed
+#'     the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number
+#'     (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
+#'     "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
+#'     with each year in a separate netcdf file inside of it.  "bcc-csm1-1_004" is an example of
+#'     an ensemnle member ID that might be used if you are specifying mems.train.
+#' @section Workflow:
+#'   1. Read in & format the training data
+#'      1.1. Determine if training data is a single series or ensemble
+#'         - note: assumes training data is at the temporal resolution you want to work with
+#'      1.2. If not already, coerce training data into the size of the desired output ensemble
+#'   2. Read in & format the source data to match the temporal resolution of training data
+#'      - Note: for now this is only going to work with a single time series & not an ensemble of source data
+#'      - Note: end dimensions should match that of the training data
+#'   3. export data (stored in memory) for input into the debiasing or temporal downscaling workflow
+#'
+#' @family debias - Debias & Align Meteorology Datasets into continuous time series
+#' @author Christy Rollinson
+#' @return 2-layered list (stored in memory) containing the training and source data that are now matched
+#'         in temporal resolution have the specified number of ensemble members
+#'          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
+#'            are both lists that contain separate data frames for time indices and all available met
+#'            variables with ensemble members in columns
+#'
+#' @param train.path - path to the dataset to be used to downscale the data
+#' @param source.path - data to be bias-corrected aligned with training data (from align.met)
+#' @param yrs.train - (optional) specify a specific years to be loaded for the training data;
+#'                    prevents needing to load the entire dataset.
+#'                    If NULL, all available years will be loaded.
+#'                    If not null, should be a vector of numbers (so you can skip problematic years)
+#' @param yrs.source - (optional) specify a specific years to be loaded for the source data;
+#'                     prevents needing to load the entire dataset.  If NULL, all available years
+#'                     will be loaded. If not null, should be a vector of numbers (so you can skip
+#'                     problematic years)
+#' @param n.ens  - number of ensemble members to generate and save
+#' @param pair.mems - logical stating whether ensemble members should be paired in
+#'                    the case where ensembles are being read in in both the training and source data
+#' @param mems.train - (optional) string of ensemble identifiers that ensure the training data is read
+#'                     in a specific order to ensure consistent time series & proper error propagation.
+#'                     If null, members of the training data ensemble will be randomly selected and
+#'                     ordered.  Specifying the ensemble members IDs (e.g. CCSM_001, CCSM_002) will
+#'                     ensure ensemble members are properly identified and combined.
+#' @param seed - specify seed so that random draws can be reproduced
+#' @param print.progress - if TRUE, prints progress bar
+#'
+#' @return a list called met.out with 2 levels that are matched in temporal resolution & number of ensembles.
+#'   List Layers: dat.train, dat.source
+#'   Sublist Layers: time, met variables
+#'
+#' @export
+#'
 align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
   
   met.out <- list() # where the aligned data will be stored
