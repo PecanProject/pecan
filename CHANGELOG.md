@@ -71,6 +71,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed `web/08-finished.php`: show database info instead of "Still running" when workflow folder doesn't exist locally (#3501).
 - `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
+- `PEcAn.DB::db.exists()` now returns `FALSE` when the primary key lookup for the requested table fails, instead of continuing with a `NULL` key and failing with "argument is of length zero".
 
 ### Changed
 
