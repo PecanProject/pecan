@@ -47,3 +47,11 @@ jobs:
     with:
       R-version: ${{ matrix.R }}
     secrets: inherit
+
+  # The job above tests SIPNET v1.3.0; also check against SIPNET v2
+  sipnet-v2:
+    uses: ./.github/workflows/sipnet.yml
+    with:
+      R-version: "4.5"
+      sipnet-version: v2.2.0
+    secrets: inherit
