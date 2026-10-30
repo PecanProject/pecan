@@ -1,5 +1,9 @@
 # PEcAn.utils 1.8.2.9000
 
+## Fixed
+
+* `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
+
 ## Changed
 
 * `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).
