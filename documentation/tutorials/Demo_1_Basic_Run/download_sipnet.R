@@ -4,16 +4,28 @@ os <- Sys.info()["sysname"]
 if(os == "Darwin") {
   os <- "MacOS"
 }
+arch <- Sys.info()["machine"]
 
-base_url <- "https://github.com/PecanProject/sipnet/releases/download/v1.3.0/"
+sipnet_version <- "v2.2.0"
+base_url <- paste0(
+  "https://github.com/PecanProject/sipnet/releases/download/",
+  sipnet_version, "/"
+)
 
-if (os == "Linux") {
-  download_url <- paste0(base_url, "sipnet-linux-v1.3.0")
-} else if (os == "MacOS") {
-  download_url <- paste0(base_url, "sipnet-macos-v1.3.0")
+# SIPNET v2 releases are tarballs containing a single `sipnet` binary.
+# Only Linux x86_64 and macOS arm64 builds are provided.
+if (os == "Linux" && arch == "x86_64") {
+  asset <- paste0("sipnet-linux-x86_64-", sipnet_version, ".tar.gz")
+} else if (os == "MacOS" && arch == "arm64") {
+  asset <- paste0("sipnet-macos-arm64-", sipnet_version, ".tar.gz")
 } else {
-  PEcAn.logger::logger.error("Unsupported operating system: ", os)
+  PEcAn.logger::logger.severe(
+    "No prebuilt SIPNET ", sipnet_version, " binary for ", os, " (", arch, "). ",
+    "See https://github.com/PecanProject/sipnet/releases ",
+    "or build SIPNET from source."
+  )
 }
+download_url <- paste0(base_url, asset)
 
 demo_outdir <- file.path("demo_outdir")
 dest_path <- file.path(demo_outdir, "sipnet")
@@ -29,11 +41,19 @@ PEcAn.logger::logger.info(
     "Downloading SIPNET binary for", os, "..."
 )
 
+tarball <- file.path(demo_outdir, asset)
 download.file(
-    url = download_url, 
-    destfile = dest_path,
+    url = download_url,
+    destfile = tarball,
     mode = "wb"
 )
+utils::untar(tarball, files = "sipnet", exdir = demo_outdir)
+if (!file.exists(dest_path)) {
+  PEcAn.logger::logger.severe(
+    "Extracting ", tarball, " did not produce ", dest_path, ". ",
+    "The layout of the SIPNET release archive may have changed."
+  )
+}
 
 # Make executable
 Sys.chmod(dest_path, mode = "0755")

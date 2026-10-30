@@ -20,7 +20,7 @@
   </ensemble>
  <model>
   <type>SIPNET</type>
-  <revision>git</revision>
+  <revision>2.2.0</revision>
   <delete.raw>FALSE</delete.raw>
   <binary>demo_outdir/sipnet</binary>
  </model>
