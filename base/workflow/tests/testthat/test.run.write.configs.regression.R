@@ -1,13 +1,10 @@
 # Regression tests pinning the run.write.configs() behaviour the
 # config-writer refactor will move: the input_design/ensemble.size guard,
-# the param-column rebuild of ensemble.samples from trait.samples, and the
+# use of a provided ensemble.samples, and the
 # object-name contract of the ensemble/sensitivity .samples.<id>.Rdata saves.
 # write.*.configs(), the *.filename() helpers and load.modelpkg() are stubbed.
 # DB-skip is covered in test.run.write.configs.R, manifest handling in
 # test_run.write.configs_multisite.R.
-
-skip_if_not_installed("mockery")
-skip_if_not_installed("withr")
 
 # --------------------
 # Helpers
@@ -81,7 +78,7 @@ test_that("run.write.configs errors when input_design rows != ensemble.size", {
 # ensemble.samples sourcing (param column vs samples.Rdata)
 # -----------------------------------------------------------
 
-test_that("ensemble.samples are rebuilt from trait.samples via input_design$param", {
+test_that("samples$ensemble.samples is used if present, not regenerated", {
   tmp <- withr::local_tempdir()
   local_fake_model_writer()
   settings <- make_rwc_settings(tmp, with_ensemble = TRUE)
@@ -92,11 +89,12 @@ test_that("ensemble.samples are rebuilt from trait.samples via input_design$para
       SLA   = c(1,  2,  3,  4,  5)
     )
   )
-  # ensemble.samples on disk is deliberately wrong, so this fails if the
-  # param-column rebuild is skipped and the disk copy is used instead.
+  # This test doesn't cover _how_ ensemble.samples would wind up differing from
+  # what's in trait.samples, just shows that ensemble.samples is what's used.
   write_samples_file(
     tmp, trait.samples,
-    ensemble.samples = list(temperate.deciduous = data.frame(Vcmax = -1, SLA = -1))
+    ensemble.samples = list(
+      temperate.deciduous = data.frame(Vcmax = 1:3, SLA = -(1:3)))
   )
 
   input_design <- data.frame(param = c(2, 4, 5))
@@ -120,8 +118,8 @@ test_that("ensemble.samples are rebuilt from trait.samples via input_design$para
 
   mockery::expect_called(wec, 1)
   passed <- mockery::mock_args(wec)[[1]]$ensemble.samples
-  expect_equal(passed$temperate.deciduous$Vcmax, c(20, 40, 50))
-  expect_equal(passed$temperate.deciduous$SLA,   c(2, 4, 5))
+  expect_equal(passed$temperate.deciduous$Vcmax, c(1, 2, 3))
+  expect_equal(passed$temperate.deciduous$SLA,   c(-1, -2, -3))
 })
 
 test_that("without a param column ensemble.samples come straight from samples.Rdata", {
@@ -169,7 +167,8 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
   settings <- make_rwc_settings(tmp, with_ensemble = TRUE)
 
   trait.samples <- list(temperate.deciduous = list(Vcmax = c(10, 20, 30)))
-  write_samples_file(tmp, trait.samples)
+  ensemble.samples = list(temperate.deciduous = list(Vcmax = c(20, 20 ,10)))
+  write_samples_file(tmp, trait.samples, ensemble.samples = ensemble.samples)
 
   input_design <- data.frame(param = c(1, 2, 3))
   ens_file <- file.path(tmp, "ensemble.samples.ENS9.Rdata")
@@ -184,10 +183,10 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
                   manifest    = data.frame(
                     run_id   = c("r1", "r2", "r3"),
                     site_id  = "772",
-                    pft_name = c("NA", "temperate.deciduous", "temperate.deciduous"),
-                    trait    = c("NA", "Vcmax", "Vcmax"),
-                    quantile = c("50", "2.5", "97.5"),
-                    type     = "Sensitivity",
+                    pft_name = "NA",
+                    trait    = "NA",
+                    quantile = "NA",
+                    type     = "Ensemble",
                     stringsAsFactors = FALSE
                   )
                 ))
@@ -206,7 +205,7 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
   )
   expect_equal(e$ens.run.ids, c("r1", "r2", "r3"))
   expect_equal(e$ens.ensemble.id, "ENS9")
-  expect_equal(e$ens.samples$temperate.deciduous$Vcmax, c(10, 20, 30))
+  expect_equal(e$ens.samples$temperate.deciduous$Vcmax, c(20, 20, 10))
   expect_equal(e$pft.names, "temperate.deciduous")
   expect_equal(e$trait.names, list(temperate.deciduous = "Vcmax"))
 })
@@ -218,9 +217,9 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
 
   trait.samples <- list(temperate.deciduous = list(Vcmax = c(10, 20, 30)))
   sa.samples <- list(
-    temperate.deciduous = matrix(
-      c(12, 20, 28), nrow = 3, ncol = 1,
-      dimnames = list(c("2.5", "50", "97.5"), "Vcmax")
+    temperate.deciduous = data.frame(
+      Vcmax = c(12, 20, 28),
+      row.names = c("2.5", "50", "97.5")
     )
   )
   write_samples_file(tmp, trait.samples, sa.samples = sa.samples)

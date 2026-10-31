@@ -117,11 +117,7 @@ runModule.run.write.configs <- function(settings,
       settings_ens$sensitivity.analysis <- NULL
 
       # determine ensemble size from design
-      ensemble_size <- if (!is.null(designs$ensemble)) {
-        nrow(designs$ensemble)
-      } else {
-        settings$ensemble$size %||% 1
-      }
+      ensemble_size <- nrow(designs$ensemble)
 
       settings_ens_out <- PEcAn.workflow::run.write.configs(
         settings = settings_ens,
