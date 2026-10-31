@@ -77,19 +77,13 @@ soil.distns <- data.frame(
 )
 
 
-
-
-
-
 PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges,
                     scenario_manifest = scenario_manifest,
                     scenario = c("ssp126", "ssp245", "ssp370"),
                     confidence = "medium",
                     quantiles = c(0.25, 0.5, 0.75),
-                    outdir = "demo_run/"
+                    outdir = "demo_run/demo_2"
                     )
-
-
 
 settings_unprepared <-  PEcAn.settings::read.settings("demo_run/settings_RCMEM_unprepared.xml")
 

@@ -16,14 +16,16 @@ buildSettings.RCMEM(
   outdir = "output",
   template = NULL,
   ensemble_size,
-  study_defaults = NULL
+  study_defaults = NULL,
+  samples = NULL,
+  sample_seed = NULL
 )
 }
 \arguments{
 \item{site_info}{A data frame containing one row per site. Must contain
 `id` and `gauge_id`. Additional columns required by
 `PEcAn.settings::createMultiSiteSettings()` may also be supplied.
-These include `site_met_path` and  `site_defaults_path`.}
+These include `site_met_path`,  `site_defaults_path`, and `initial_conditions_path`.}
 
 \item{scenario_manifest}{A data frame describing available RCMEM scenario
 files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
@@ -52,6 +54,8 @@ the template installed with the package is used.}
 \item{ensemble_size}{Number of parameter ensembles to include}
 
 \item{study_defaults}{Character string link point towards defalt memory rds.}
+
+\item{samples}{= List of dataframe with preconfigured samples}
 }
 \value{
 A PEcAn settings object.

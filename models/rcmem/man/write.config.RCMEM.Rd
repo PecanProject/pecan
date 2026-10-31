@@ -7,24 +7,20 @@
 write.config.RCMEM(defaults = NULL, trait.values, settings, run.id)
 }
 \arguments{
-\item{defaults}{list of defaults to process}
+\item{defaults}{PEcAn workflow defaults. Retained for compatibility;
+PFT metadata is not merged into RCMEM model arguments.}
 
-\item{trait.values}{vector of samples for a given trait}
+\item{trait.values}{Sampled PFT parameter values for one run.}
 
-\item{settings}{list of settings from pecan settings file}
+\item{settings}{Run-specific PEcAn settings object.}
 
-\item{run.id}{id of run}
+\item{run.id}{Unique PEcAn run identifier.}
 }
 \value{
-configuration file for RCMEM for given run
+Invisibly returns the path to the generated job script.
 }
 \description{
-Writes a RCMEM config file.
-}
-\details{
-Requires a pft xml object, a list of trait values for a single RCMEM run,
-and the name of the file to create
-}
-\author{
-Rob Kooper, edited by James Holmquist
+Creates a run-specific RCMEM input RDS and executable job script.
+Combines study/site defaults, sampled PFT parameters, gauge-level
+meteorology, optional site-level meteorology, and initial conditions.
 }

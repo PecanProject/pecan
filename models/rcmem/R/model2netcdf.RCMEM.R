@@ -169,6 +169,8 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
     
     # Cumulative cohort volume
     output[[18]] <- sub.RCMEM.output_cohort$cumVol
+    
+    output[[19]] <- sub.RCMEM.output_scenario[,"sediment_augmented"]
 
     ## time_bounds
     # output[[26]] <- c(lubridate::ymd(paste(start_date, "01", "01", sep="-")),
@@ -215,6 +217,8 @@ model2netcdf.RCMEM <- function(outdir="models/rcmem/demo_run/input_demo_out/out/
       missval = NA,
       prec = "double"
     )
+    
+    nc_var[[19]] <- ncdf4::ncvar_def(name = "sediment_augmented", units = "g cm-2", longname = "augmented sediment captured in one year", dim = dims_scenario, NA, prec = "double")
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

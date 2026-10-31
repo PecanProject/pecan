@@ -2,6 +2,7 @@
 
 export(align_site_met.RCMEM)
 export(buildSettings.RCMEM)
+export(mcmc_to_pecan_samples.RCMEM)
 export(met2model.RCMEM)
 export(model2netcdf.RCMEM)
 export(organize_pft_parameters.RCMEM)

@@ -2,22 +2,22 @@
 % Please edit documentation in R/align_site_met.RCMEM.R
 \name{align_site_met.RCMEM}
 \alias{align_site_met.RCMEM}
-\title{Align site-level meteorological inputs with an RCMEM scenario}
+\title{Align site-specific met inputs with an RCMEM scenario}
 \usage{
 align_site_met.RCMEM(site_met, scenario_years, species_codes)
 }
 \arguments{
-\item{site_met}{List containing a year vector and optional
-suspendedSediment and species_active inputs.}
+\item{site_met}{Named list containing `year` and optionally
+`suspendedSediment` and `species_presence`.}
 
-\item{scenario_years}{Calendar years used by the RCMEM scenario.}
+\item{scenario_years}{Numeric vector of scenario calendar years.}
 
-\item{species_codes}{Ordered vegetation PFT names.}
+\item{species_codes}{Character vector of vegetation PFT names
+in the order expected by RCMEM.}
 }
 \value{
-A list of site-level inputs aligned to scenario years.
+Named list of aligned site-specific met inputs.
 }
 \description{
-Align site-level meteorological inputs with an RCMEM scenario
+Align site-specific met inputs with an RCMEM scenario
 }
-\keyword{internal}

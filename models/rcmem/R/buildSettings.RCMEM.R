@@ -10,14 +10,14 @@
 #' @param site_info A data frame containing one row per site. Must contain
 #'   `id` and `gauge_id`. Additional columns required by
 #'   `PEcAn.settings::createMultiSiteSettings()` may also be supplied.
-#'   These include `site_met_path` and  `site_defaults_path`.
+#'   These include `site_met_path`,  `site_defaults_path`, and `initial_conditions_path`.
 #' @param scenario_manifest A data frame describing available RCMEM scenario
 #'   files. Must contain `gauge_id`, `scenario_name`, `confidence`, `quantile`,
 #'   and `path`.
 #' @param site_pfts A data frame defining site and pft relationshpis. Must contain
 #'   `id`, `pft_name`, `pft_type`.
-#' @param pft_manifest A data fram definint links between pft names and datasets. 
-#'   Must contain `pft_name`, `pft_type`, `posterior_file`.
+#' @param pft_manifest Data frame with `pft_name` and `pft_type`.
+#'   `posterior_file` is required only when `samples` is NULL.
 #' @param scenario Character vector. Scenario to use, for example `"ssp245"`.
 #' @param confidence Character vector. Confidence level to use, for example
 #'   `"medium"`.
@@ -28,8 +28,13 @@
 #'   the template installed with the package is used.
 #' @param ensemble_size Number of parameter ensembles to include
 #' @param study_defaults Character string link point towards defalt memory rds.
-#'
-#' @return A PEcAn settings object.
+#' @param samples Optional PEcAn precomputed sample bundle containing
+#'   `trait.samples` and `ensemble.samples`, both keyed by PFT name.
+#' 
+#' @param sample_seed Optional random seed for native sampling.
+#' @param log_info settting for pecan logger info 
+#' 
+#' @return List with `settings` and `input_design`.
 #'
 #' @export
 buildSettings.RCMEM <- function(
@@ -44,8 +49,14 @@ buildSettings.RCMEM <- function(
     outdir = "output",
     template = NULL,
     ensemble_size,
-    study_defaults = NULL
+    study_defaults = NULL,
+    samples = NULL,
+    sample_seed = NULL,
+    log_level = "INFO"
 ) {
+  
+  # Set pecan logger
+  PEcAn.logger::logger.setLevel(log_level)
   
   # ------------------------------------------------------------------
   # Find template
@@ -155,12 +166,18 @@ buildSettings.RCMEM <- function(
   # ------------------------------------------------------------------
   # Validate PFT manifest
   # ------------------------------------------------------------------
-  
   required_pft_cols <- c(
     "pft_name",
-    "pft_type",
-    "posterior_file"
+    "pft_type"
   )
+  
+  # Posterior paths are required only for native PEcAn sampling
+  if (is.null(samples)) {
+    required_pft_cols <- c(
+      required_pft_cols,
+      "posterior_file"
+    )
+  }
   
   missing_cols <- setdiff(
     required_pft_cols,
@@ -179,27 +196,99 @@ buildSettings.RCMEM <- function(
   }
   
   if (anyNA(pft_manifest$pft_name) ||
-      anyNA(pft_manifest$posterior_file)) {
-    stop("PFT names and posterior paths cannot be NA.")
+      any(!nzchar(as.character(pft_manifest$pft_name)))) {
+    stop("PFT names cannot be missing or empty.")
   }
   
   if (any(!pft_manifest$pft_type %in% c("vegetation", "soil"))) {
     stop("pft_type must be vegetation or soil.")
   }
   
-  if (any(!file.exists(pft_manifest$posterior_file))) {
-    stop(
-      "Missing PFT posterior files: ",
-      paste(
-        pft_manifest$posterior_file[
-          !file.exists(pft_manifest$posterior_file)
-        ],
-        collapse = ", "
+  # ------------------------------------------------------------
+  # Validate posterior paths or precomputed samples
+  # ------------------------------------------------------------
+  
+  if (is.null(samples)) {
+    
+    # Native PEcAn sampling requires posterior files
+    if (anyNA(pft_manifest$posterior_file) ||
+        any(!nzchar(pft_manifest$posterior_file)) ||
+        any(!file.exists(pft_manifest$posterior_file))) {
+      stop(
+        "Valid posterior_file paths are required ",
+        "when samples = NULL."
       )
+    }
+    
+  } else {
+    
+    # Precomputed samples must contain all assigned PFTs
+    if (!is.list(samples) ||
+        is.null(samples$trait.samples) ||
+        is.null(samples$ensemble.samples)) {
+      stop(
+        "Precomputed samples must contain trait.samples ",
+        "and ensemble.samples."
+      )
+    }
+    
+    required_pfts <- unique(site_pfts$pft_name)
+    
+    missing_pfts <- setdiff(
+      required_pfts,
+      names(samples$ensemble.samples)
     )
+    
+    if (length(missing_pfts) > 0L) {
+      stop(
+        "Precomputed samples are missing PFTs: ",
+        paste(missing_pfts, collapse = ", ")
+      )
+    }
+    
+    # Validate sample dimensions and trait structure
+    for (pft in required_pfts) {
+      
+      x <- samples$ensemble.samples[[pft]]
+      traits <- samples$trait.samples[[pft]]
+      
+      if (!is.data.frame(x) ||
+          nrow(x) != ensemble_size ||
+          anyNA(x) ||
+          anyDuplicated(names(x))) {
+        stop("Invalid ensemble samples for PFT: ", pft)
+      }
+      
+      if (!is.list(traits) ||
+          !identical(names(traits), names(x)) ||
+          !all(vapply(
+            traits,
+            length,
+            integer(1)
+          ) == ensemble_size)) {
+        stop("Invalid trait.samples for PFT: ", pft)
+      }
+      
+      # run.write.configs reconstructs the ensemble from trait.samples
+      # when the input design has a param column. Verify consistency.
+      for (param in names(x)) {
+        if (!is.numeric(x[[param]]) ||
+            any(!is.finite(x[[param]])) ||
+            !is.numeric(traits[[param]]) ||
+            !isTRUE(all.equal(
+              unname(traits[[param]]),
+              unname(x[[param]])
+            ))) {
+          stop(
+            "trait.samples and ensemble.samples disagree for ",
+            pft, " / ", param
+          )
+        }
+      }
+    }
   }
   
-  # Ensure every assigned PFT has a posterior definition
+  # Ensure every assigned PFT is registered in the manifest
   missing_pfts <- setdiff(
     unique(site_pfts$pft_name),
     pft_manifest$pft_name
@@ -207,7 +296,7 @@ buildSettings.RCMEM <- function(
   
   if (length(missing_pfts) > 0) {
     stop(
-      "No posterior definitions for PFTs: ",
+      "PFTs assigned to sites are missing from pft_manifest: ",
       paste(missing_pfts, collapse = ", ")
     )
   }
@@ -492,7 +581,28 @@ buildSettings.RCMEM <- function(
           }
           
           s$run$site$site_defaults_path <- path
-  
+          
+        }
+      }
+      
+      # ------------------------------------------------------------
+      # Optional site-specific initial conditions
+      # ------------------------------------------------------------
+      
+      if ("initial_conditions_path" %in% names(site_row)) {
+        
+        path <- site_row$initial_conditions_path[[1]]
+        
+        if (!is.na(path) && nzchar(path)) {
+          
+          if (!file.exists(path)) {
+            stop(
+              "Initial conditions file not found for site ",
+              site_id, ": ", path
+            )
+          }
+          
+          s$run$site$initial_conditions_path <- path
         }
       }
       
@@ -504,20 +614,32 @@ buildSettings.RCMEM <- function(
   )
   
   # ------------------------------------------------------------------
-  # Register PFT posterior definitions
-  # ------------------------------------------------------------------
+  # Register PFT definitions
+  # ------------------------------------------------------------
   
   settings$pfts <- lapply(
     seq_len(nrow(pft_manifest)),
     function(i) {
-      list(
-        name = pft_manifest$pft_name[[i]],
-        posterior.files = pft_manifest$posterior_file[[i]]
+      
+      pft <- list(
+        name = pft_manifest$pft_name[[i]]
       )
+      
+      # Add posterior path only when native sampling is used
+      if (is.null(samples)) {
+        pft$posterior.files <-
+          pft_manifest$posterior_file[[i]]
+      }
+      
+      pft
     }
   )
   
-  names(settings$pfts) <- rep("pft", nrow(pft_manifest))
+  names(settings$pfts) <- rep(
+    "pft",
+    length(settings$pfts)
+  )
+  
   
   # ------------------------------------------------------------------
   # Keep ensemble metadata for inspection
@@ -526,9 +648,15 @@ buildSettings.RCMEM <- function(
   attr(settings, "rcmem_ensemble_design") <- ensemble_design
   attr(settings, "rcmem_run_manifest") <- run_manifest
   
-  # Add parameter ensemble size
+  # ------------------------------------------------------------
+  # Set parameter ensemble size
+  # ------------------------------------------------------------
+  
   settings$ensemble$size <- ensemble_size
   
+  # ------------------------------------------------------------
+  # Save unprepared settings
+  # ------------------------------------------------------------
   
   PEcAn.settings::write.settings(
     settings,
@@ -536,7 +664,91 @@ buildSettings.RCMEM <- function(
     outputdir = outdir
   )
   
-  settings
+  # ------------------------------------------------------------
+  # Prepare settings
+  # ------------------------------------------------------------
+  
+  settings <- PEcAn.settings::prepare.settings(settings)
+  
+  PEcAn.settings::write.settings(
+    settings,
+    outputfile = "settings_RCMEM_prepared.xml",
+    outputdir = outdir
+  )
+  
+  # ------------------------------------------------------------
+  # Generate parameter ensemble design
+  # ------------------------------------------------------------
+  
+  # Use all PFTs assigned across all sites
+  all_pfts <- unique(site_pfts$pft_name)
+  
+  # Reuse the PFT definitions registered above; do not assume
+  # posterior_file exists for precomputed samples.
+  sampling_settings <- settings[[1]]
+  sampling_settings$pfts <- Filter(
+    function(pft) pft$name %in% all_pfts,
+    settings$pfts
+  )
+  
+  # Optional reproducible sampling
+  if (!is.null(sample_seed)) {
+    set.seed(sample_seed)
+  }
+  
+  if (is.null(samples)) {
+    message("RCMEM: Using PEcAn marginal sampling")
+  } else {
+    message("RCMEM: Using precomputed parameter samples")
+    
+    stopifnot(
+      is.list(samples),
+      !is.null(samples$ensemble.samples)
+    )
+    
+  }
+  
+  ens_design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+    settings = sampling_settings,
+    ensemble_size = ensemble_size,
+    samples = samples
+  )
+  
+  # Save parameter ensemble design
+  # ------------------------------------------------------------
+  
+  utils::write.csv(
+    ens_design$design_matrix,
+    file.path(outdir, "input_design.csv"),
+    row.names = FALSE
+  )
+  
+  sample_env <- list2env(
+    ens_design$samples,
+    parent = emptyenv()
+  )
+  
+  save(
+    list = ls(sample_env),
+    envir = sample_env,
+    file = file.path(outdir, "samples.Rdata")
+  )
+  
+  settings$ensemble$id <- rlang::hash(ens_design)
+  
+  saveRDS(
+    ens_design,
+    file.path(outdir, "ensemble_design.rds")
+  )
+  
+  # ------------------------------------------------------------
+  # Return settings and design
+  # ------------------------------------------------------------
+  
+  list(
+    settings = settings,
+    input_design = ens_design
+  )
   
 }
 

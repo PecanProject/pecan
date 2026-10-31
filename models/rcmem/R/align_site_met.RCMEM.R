@@ -1,13 +1,12 @@
-#' Align site-level meteorological inputs with an RCMEM scenario
+#' Align site-specific met inputs with an RCMEM scenario
 #'
-#' @param site_met List containing a year vector and optional
-#'   suspendedSediment and species_active inputs.
-#' @param scenario_years Calendar years used by the RCMEM scenario.
-#' @param species_codes Ordered vegetation PFT names.
+#' @param site_met Named list containing `year` and optionally
+#'   `suspendedSediment` and `species_presence`.
+#' @param scenario_years Numeric vector of scenario calendar years.
+#' @param species_codes Character vector of vegetation PFT names
+#'   in the order expected by RCMEM.
 #'
-#' @return A list of site-level inputs aligned to scenario years.
-#'
-#' @keywords internal
+#' @return Named list of aligned site-specific met inputs.
 #' @export
 align_site_met.RCMEM <- function(
     site_met,
@@ -15,22 +14,40 @@ align_site_met.RCMEM <- function(
     species_codes
 ) {
   
-  if (is.null(site_met$year)) {
-    stop("Site met must contain a year vector.")
+  if (!is.list(site_met) || is.data.frame(site_met)) {
+    stop("site_met must be a named list.")
   }
   
-  if (anyNA(site_met$year) ||
-      anyDuplicated(site_met$year)) {
-    stop("Site met years must be unique and nonmissing.")
+  allowed <- c(
+    "year",
+    "suspendedSediment",
+    "species_presence"
+  )
+  
+  if (is.null(names(site_met)) ||
+      anyNA(names(site_met)) ||
+      any(!nzchar(names(site_met))) ||
+      anyDuplicated(names(site_met)) ||
+      any(!names(site_met) %in% allowed)) {
+    stop("site_met contains invalid or duplicate field names.")
   }
   
-  if (anyNA(scenario_years) ||
+  site_years <- site_met$year
+  
+  if (is.null(site_years) ||
+      !is.numeric(site_years) ||
+      anyNA(site_years) ||
+      anyDuplicated(site_years)) {
+    stop("site_met$year must contain unique numeric years.")
+  }
+  
+  if (!is.numeric(scenario_years) ||
+      anyNA(scenario_years) ||
       anyDuplicated(scenario_years)) {
-    stop("Scenario years must be unique and nonmissing.")
+    stop("scenario_years must contain unique numeric years.")
   }
   
-  # Match scenario years to site met years
-  idx <- match(scenario_years, site_met$year)
+  idx <- match(scenario_years, site_years)
   
   if (anyNA(idx)) {
     stop(
@@ -42,7 +59,7 @@ align_site_met.RCMEM <- function(
   result <- list()
   
   # ------------------------------------------------------------
-  # Suspended sediment concentration
+  # Suspended sediment
   # ------------------------------------------------------------
   
   if (!is.null(site_met$suspendedSediment)) {
@@ -50,11 +67,12 @@ align_site_met.RCMEM <- function(
     ssc <- site_met$suspendedSediment
     
     if (!is.numeric(ssc) ||
-        length(ssc) != length(site_met$year) ||
+        !is.null(dim(ssc)) ||
+        length(ssc) != length(site_years) ||
         any(!is.finite(ssc))) {
       stop(
         "suspendedSediment must be a finite numeric vector ",
-        "with one value per site met year."
+        "with one value per site year."
       )
     }
     
@@ -62,53 +80,51 @@ align_site_met.RCMEM <- function(
   }
   
   # ------------------------------------------------------------
-  # Species activity
+  # Species presence
   # ------------------------------------------------------------
   
-  if (!is.null(site_met$species_active)) {
+  if (!is.null(site_met$species_presence)) {
     
-    x <- site_met$species_active
+    x <- site_met$species_presence
     
     if (!is.matrix(x) ||
         !is.numeric(x) ||
-        nrow(x) != length(site_met$year) ||
+        nrow(x) != length(site_years) ||
         anyNA(x) ||
         !all(x %in% c(0, 1))) {
       stop(
-        "species_active must be a binary numeric matrix ",
-        "with one row per site met year."
+        "species_presence must be a binary numeric matrix ",
+        "with years as rows and species as columns."
       )
     }
     
     if (is.null(colnames(x)) ||
-        anyDuplicated(colnames(x))) {
+        anyNA(colnames(x)) ||
+        anyDuplicated(colnames(x)) ||
+        !setequal(colnames(x), species_codes)) {
       stop(
-        "species_active must have unique PFT names as columns."
+        "species_presence columns must match species_codes."
       )
     }
     
-    if (!setequal(colnames(x), species_codes)) {
-      stop(
-        "species_active columns must match species_codes."
-      )
-    }
-    
-    # Check that optional row names agree with the year vector
     if (!is.null(rownames(x)) &&
-        !identical(rownames(x), as.character(site_met$year))) {
+        !identical(
+          rownames(x),
+          as.character(site_years)
+        )) {
       stop(
-        "species_active row names must match site_met$year."
+        "species_presence row names must match site_met$year."
       )
     }
     
-    # Match years and reorder species columns
-    result$species_active <- x[
+    result$species_presence <- x[
       idx,
       species_codes,
       drop = FALSE
     ]
     
-    rownames(result$species_active) <- as.character(scenario_years)
+    rownames(result$species_presence) <-
+      as.character(scenario_years)
   }
   
   result

@@ -32,3 +32,18 @@ remotes::install_github("abbylewis/pecan",
                         subdir = "modules/data.water", 
                         ref = "mem_dev",
                         force=T)
+
+
+options(repos = c(
+  pecanproject = "https://pecanproject.r-universe.dev",
+  CRAN = "https://cloud.r-project.org"
+))
+
+install.packages("PEcAn.all")
+
+remotes::install_github("pecanproject/pecan",
+                        subdir = "modules/uncertainty",
+                        ref = "develop",
+                        force=T)
+
+

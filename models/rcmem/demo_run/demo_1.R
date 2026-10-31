@@ -2,8 +2,8 @@
 
 # Test
 library(tidyverse)
-# library(PEcAn.RCMEM)
-# library(PEcAn.data.water)
+library(PEcAn.RCMEM)
+library(PEcAn.data.water)
 
 # Create Site Table
 sites <- data.frame(
@@ -43,47 +43,43 @@ scenario_manifest <- read_csv("demo_run/demo_1/data/met/scenario_manifest.csv")
 veg.distns <- data.frame(
   distn = c("gamma", "norm", "norm",
             "norm", "gamma", "gamma",
-            "unif", "gamma", "unif"
+            "gamma"
   ),
   parama = c(74.08, -1.14, 1.84,
              1.48, 192.1, 34.2,
-             1, 94.1, 0.07
+             94.1
   ),
   paramb = c(1406, 0.16, 0.12,
              0.08, 115.3, 63.2,
-             1, 1.9, 0.07
+             1.9
   ),
   n = NA_integer_,
   row.names = c(
     "bMax","zVegMin","zVegMax",
     "zVegPeak","rootToShoot","rootTurnover",
-    "abovegroundTurnover","rootDepthMax","rootPackingDensity"
+    "rootDepthMax"
   )
 )
 
 # Soil parameters
 soil.distns <- data.frame(
-  distn = c("gamma", "gamma", "beta", 
-            "unif", "beta", "lnorm", 
-            "lnorm", "norm",
-            "norm", "norm"
+  distn = c("gamma", "gamma", "beta",
+            "beta", "lnorm", 
+            "lnorm", "norm"
             ),
   parama = c(39.7, 6.6, 80.0,
-             0, 9.6, 1.7,
-             -12.32, -13.9,
-             0.40, 0.25
+            9.6, 1.7,
+             -12.32, -13.9
   ),
   paramb = c(399.6, 4.9, 4.3,
-             0, 13.8, 0.4,
-             0.34, 2.6,
-             0.025, 0.025
+             13.8, 0.4,
+             0.34, 2.6
   ),
   n = NA_integer_,
   row.names = c(
     "meanOmPackingDensity", "meanMineralPackingDensity", "omDecayRateFast",
-    "omDecayRateSlow", "recalcitrantFrac", "captureRate",
-    "suspendedSediment", "initElv",
-    "omToOc_B1", "omToOc_B2"
+    "recalcitrantFrac", "captureRate",
+    "suspendedSediment", "initElv"
   )
 )
 
@@ -141,7 +137,11 @@ study_defaults <- list(
   spinup_iterations = 50,
   years_per_spinup_iter = 10,
   competition_function = 1,
-  rootShape = 0)
+  rootShape = 0,
+  abovegroundTurnover = 1,
+  omDecayRateSlow = 0,
+  rootPackingDensity = 0.07
+  )
 
 saveRDS(
   study_defaults,
@@ -149,46 +149,28 @@ saveRDS(
 )
 
 # Build setting. This will build your settings.xml file based on what'weve already generated
-settings_unprepared <- PEcAn.RCMEM::buildSettings.RCMEM(
-  site_info = sites_w_gauges, # Table we created by hand
-  scenario_manifest = scenario_manifest, # Generated from met2model
-  site_pfts = site_pfts, # We created this
-  pft_manifest = pft_manifest, # We created this
-  scenario = c("ssp245"), # Same input as generateFullTidalScenario
-  confidence = "medium", # Same input as generateFullTidalScenario
-  quantiles = c(0.5), # Same input as generateFullTidalScenario
-  ensemble_variable = "surface_elevation", # Specify a variable
-  outdir = "demo_run/demo_1/", # Specify an output location
+setup <- PEcAn.RCMEM::buildSettings.RCMEM(
+  site_info = sites_w_gauges,
+  scenario_manifest = scenario_manifest,
+  site_pfts = site_pfts,
+  pft_manifest = pft_manifest,
+  scenario = "ssp245",
+  confidence = "medium",
+  quantiles = 0.5,
+  ensemble_variable = "surface_elevation",
   ensemble_size = 20,
-  study_defaults = "demo_run/demo_1/data/defaults/study_defaults.rds" # we created this
+  study_defaults =
+    "demo_run/demo_1/data/defaults/study_defaults.rds",
+  samples = NULL,
+  outdir = "demo_run/demo_1/"
 )
-
-settings <- PEcAn.settings::prepare.settings(settings_unprepared)
-PEcAn.settings::write.settings(settings, "settings_RCMEM_prepared.xml")
-
-# Take draws from parameter distributions, save with their design matrix
-ens_design <- PEcAn.uncertainty::generate_joint_ensemble_design(
-  settings = settings[[1]],
-  ensemble_size = settings$ensemble$size,
-  samples = NULL
-)
-write.csv(ens_design$design_matrix, file.path(settings$outdir, "input_design.csv"))
-sample_env <- list2env(ens_design$samples)
-save(
-  list = ls(sample_env),
-  envir = sample_env,
-  file = file.path(settings$outdir, "samples.Rdata")
-)
-
-settings$ensemble$id <- rlang::hash(ens_design)
 
 settings <- PEcAn.workflow::runModule.run.write.configs(
-  settings,
-  input_design = ens_design
+  settings = setup$settings,
+  input_design = setup$input_design
 )
 
 PEcAn.workflow::runModule_start_model_runs(settings)
-
 
 runid <- read.csv(file.path(settings$outdir, "runs_manifest.csv"))$run_id
 outdirs <- file.path(settings$outdir, "out", runid)
@@ -207,20 +189,117 @@ model_output <- purrr::map2_dfr(
   },
   .id = "run_id"
 )
-available_vars <- names(model_output)[!names(model_output) %in% c("posix", "time_bounds")]
 
-ggplot(model_output, aes(x = year, y = surface_elevation)) +
-  geom_line(aes(group=run_id))
+## MCMC samples
+library(arrow)
 
-ggplot(model_output, aes(x = year, y = cFlux)) +
-  geom_line(aes(group=run_id))
+target_params <- c("initElv",  "recalcitrantFrac", "omDecayRate", "captureRate",
+                   "suspendedSediment", "bMax", "zVegMin", "zVegMax", 
+                   "zVegPeak", "rootToShoot", "rootDepthMax", "mineralPackingDensity", 
+                   "omPackingDensity", "rootTurnover")
 
-sample_files <- list.files(
-  "demo_run/demo_1",
-  pattern = "^samples\\.Rdata$",
+soil_params <- c("initElv",  "recalcitrantFrac", "omDecayRateFast", "captureRate",
+                 "suspendedSediment", "meanMineralPackingDensity", 
+                 "meanOmPackingDensity")
+
+# Need to update omDecayRate to omDecayRateFast
+# mineralPackingDensity to meanMineralPackingDensity
+# omPackingDensity to meanOmPackingDensity
+
+# Add abovegroundTurnover, rootPackingDensity, omDecayRateSlow
+
+mcmc_long <- read_parquet("inst/demo_inputs/StanHMCoutputs.parquet") %>%
+  filter(Parameter %in% target_params) %>% 
+  mutate(Parameter = recode(Parameter, "omDecayRate"="omDecayRateFast",
+                            "mineralPackingDensity" = "meanMineralPackingDensity",
+                            "omPackingDensity" = "meanOmPackingDensity"
+                            ),
+         pft = ifelse(Parameter %in% soil_params, "soil", "scam"))
+
+hmc_samples <- mcmc_to_pecan_samples.RCMEM(mcmc = mcmc_long,
+                                       ensemble_size = 20
+                                       )
+
+# Run the met2model function to format scenario as a PECAN input
+PEcAn.RCMEM::met2model.RCMEM(scenario_output, 
+                             outfolder = "demo_run/demo_1b/data/met",
+                             overwrite = T)
+
+# Read in the scenario manifest produced by met2model
+scenario_manifest <- read_csv("demo_run/demo_1b/data/met/scenario_manifest.csv")
+
+dir.create(
+  "demo_run/demo_1b/data/defaults",
   recursive = TRUE,
-  full.names = TRUE,
-  ignore.case = TRUE
+  showWarnings = FALSE
 )
 
-sample_files
+saveRDS(
+  study_defaults,
+  "demo_run/demo_1b/data/defaults/study_defaults.rds"
+)
+
+pft_manifest_b <- pft_manifest %>% 
+  select(-posterior_file)
+
+setup_b <- PEcAn.RCMEM::buildSettings.RCMEM(
+  site_info = sites_w_gauges,
+  scenario_manifest = scenario_manifest,
+  site_pfts = site_pfts,
+  pft_manifest = pft_manifest_b,
+  scenario = "ssp245",
+  confidence = "medium",
+  quantiles = 0.5,
+  ensemble_variable = "surface_elevation",
+  ensemble_size = 20,
+  study_defaults =
+    "demo_run/demo_1b/data/defaults/study_defaults.rds",
+  samples = hmc_samples$samples,
+  outdir = "demo_run/demo_1b/"
+)
+
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings = setup_b$settings,
+  input_design = setup_b$input_design
+)
+
+PEcAn.workflow::runModule_start_model_runs(settings)
+
+runid <- read.csv(file.path(settings$outdir, "runs_manifest.csv"))$run_id
+outdirs <- file.path(settings$outdir, "out", runid)
+model_output_b <- purrr::map2_dfr(
+  .x = runid |> setNames(nm = _),
+  .y = outdirs,
+  .f = function(id, dir) {
+    PEcAn.utils::read.output(
+      runid = id, outdir = dir,
+      start.year = NA, end.year = NA,
+      variables = c("surface_elevation","cFlux"),
+      dataframe = TRUE,
+      verbose = FALSE,
+      print_summary = FALSE
+    )
+  },
+  .id = "run_id"
+)
+
+vis_df <- bind_rows(model_output %>% mutate(run_type = "marginal"),
+                    model_output_b %>% mutate(run_type = "HMC chains")
+                    ) %>% 
+  pivot_longer(-c(run_id, posix, year, run_type)) %>% 
+  filter(year >= 1928) 
+
+cis <- vis_df %>% 
+  group_by(year, run_type, name) %>% 
+  summarise(lower_ci = quantile(value, 0.1),
+            upper_ci = quantile(value, 0.9)
+            ) %>% 
+  ungroup()
+
+
+ggplot(vis_df, aes(x = year, color = run_type)) +
+  geom_line(aes(group=paste(name, run_id, run_type),  y = value)) +
+  # geom_point(aes(y = value), col = "grey", alpha=0.1) +
+  geom_ribbon(data = cis, aes(x = year, ymin = lower_ci, ymax = upper_ci, fill = run_type), alpha = 0.5) +
+  facet_wrap(.~name, scale = "free_y")
+  

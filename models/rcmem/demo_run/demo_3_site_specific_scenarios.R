@@ -29,10 +29,10 @@ scenario_output <- PEcAn.data.water::generateFullTidalScenario(
 
 
 PEcAn.RCMEM::met2model.RCMEM(scenario_output, 
-                             outfolder = "demo_run/demo_2/data/met",
+                             outfolder = "demo_run/demo_3/data/met",
                              overwrite = T)
 
-scenario_manifest <- read_csv("demo_run/demo_2/data/met/scenario_manifest.csv")
+scenario_manifest <- read_csv("demo_run/demo_3/data/met/scenario_manifest.csv")
 
 # Vegetation parameters
 salicornia.distns <- data.frame(
@@ -103,7 +103,7 @@ soil.distns <- data.frame(
 
 # Vegetation PFT
 dir.create(
-  "demo_run/demo_2/data/pfts/vegetation/salicornia/",
+  "demo_run/demo_3/data/pfts/vegetation/salicornia/",
   recursive = TRUE,
   showWarnings = FALSE
 )
@@ -111,32 +111,32 @@ dir.create(
 post.distns <- salicornia.distns
 save(
   veg.distns,
-  file = "demo_run/demo_2/data/pfts/vegetation/salicornia/post.distns.RData"
+  file = "demo_run/demo_3/data/pfts/vegetation/salicornia/post.distns.RData"
 )
 
 dir.create(
-  "demo_run/demo_2/data/pfts/vegetation/spartina/",
+  "demo_run/demo_3/data/pfts/vegetation/spartina/",
   recursive = TRUE,
   showWarnings = FALSE
 )
 
-post.distns <- spartima.distns
+post.distns <- spartina.distns
 save(
   veg.distns,
-  file = "demo_run/demo_2/data/pfts/vegetation/spartina/post.distns.RData"
+  file = "demo_run/demo_3/data/pfts/vegetation/spartina/post.distns.RData"
 )
 
 post.distns <- soil.distns
 # Soil PFT
 dir.create(
-  "demo_run/demo_2/data/pfts/soil",
+  "demo_run/demo_3/data/pfts/soil",
   recursive = TRUE,
   showWarnings = FALSE
 )
 
 save(
   post.distns,
-  file = "demo_run/demo_2/data/pfts/soil/soil.RData"
+  file = "demo_run/demo_3/data/pfts/soil/soil.RData"
 )
 
 site_pfts <- data.frame( id = c("Tijuana", "Tijuana", "Tijuana"),
@@ -146,9 +146,9 @@ site_pfts <- data.frame( id = c("Tijuana", "Tijuana", "Tijuana"),
 
 pft_manifest <- data.frame( pft_name = c("soil", "salicornia", "spartina"),
                             pft_type = c("soil", "vegetation", "vegetation"),
-                           posterior_file = c("demo_run/demo_2/data/pfts/soil/soil.RData",
-                                              "demo_run/demo_2/data/pfts/vegetation/salicornia/post.distns.RData",
-                                              "demo_run/demo_2/data/pfts/vegetation/spartina/post.distns.RData")
+                           posterior_file = c("demo_run/demo_3/data/pfts/soil/soil.RData",
+                                              "demo_run/demo_3/data/pfts/vegetation/salicornia/post.distns.RData",
+                                              "demo_run/demo_3/data/pfts/vegetation/spartina/post.distns.RData")
 )
 
 site_met <- list(
@@ -156,7 +156,7 @@ site_met <- list(
   
   suspendedSediment = rep(7e-6, 195),
   
-  species_active = matrix(
+  species_presence = matrix(
     1,
     nrow = 195,
     ncol = 2,
@@ -168,16 +168,16 @@ site_met <- list(
 )
 
 dir.create(
-  "demo_run/demo_2/data/site_met/",
+  "demo_run/demo_3/data/site_met/",
   recursive = TRUE,
   showWarnings = FALSE
 )
 
-saveRDS(site_met, "demo_run/demo_2/data/site_met/tijuana.rds")
+saveRDS(site_met, "demo_run/demo_3/data/site_met/tijuana.rds")
 
 # Add site_met_path to site_inf
 sites_w_gauges2 <- sites_w_gauges %>% 
-  mutate(site_met_path = "demo_run/demo_2/data/site_met/tijuana.rds")
+  mutate(site_met_path = "demo_run/demo_3/data/site_met/tijuana.rds")
 
 PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges2,
                                  scenario_manifest = scenario_manifest,
@@ -187,10 +187,10 @@ PEcAn.RCMEM::buildSettings.RCMEM(site_info = sites_w_gauges2,
                                  confidence = "medium",
                                  quantiles = c(0.5),
                                  ensemble_variable = "surface_elevation",
-                                 outdir = "demo_run/demo_2/"
-)
+                                 outdir = "demo_run/demo_3/",
+                                 ensemble_size = 20)
 
-settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_2/settings_RCMEM_unprepared.xml")
+settings_unprepared <-  PEcAn.settings::read.settings("demo_run/demo_3/settings_RCMEM_unprepared.xml")
 
 settings_prepared <- PEcAn.settings::prepare.settings(settings_unprepared)
 
