@@ -14,7 +14,7 @@ read.output(
   pft.name = NULL,
   ncfiles = NULL,
   verbose = FALSE,
-  print_summary = TRUE
+  print_summary = FALSE
 )
 }
 \arguments{
@@ -52,8 +52,9 @@ variable is read, as well as all NetCDF diagnostics (from
 \code{verbose} argument to, e.g., \code{\link[ncdf4:nc_open]{ncdf4::nc_open()}}) (default =
 \code{FALSE}).}
 
-\item{print_summary}{Logical. If \code{TRUE} (default), calculate and
-print a summary of the means of each variable for each year.}
+\item{print_summary}{Logical. If \code{TRUE}, calculate and
+print a summary of the means of each variable for each year.
+Defaults to \code{FALSE}.}
 }
 \value{
 If \code{dataframe = FALSE}, a vector of output variables. If
