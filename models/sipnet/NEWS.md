@@ -1,5 +1,10 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
+* `write.config.SIPNET` converted `stem_respiration_rate` and
+    `root_respiration_rate` to per day rates, but SIPNET reads `baseVegResp`
+    and `baseFineRootResp` as per year and divides by 365 itself, so both were
+    written 365x too low. They are now converted to per year.
 * `model2netcdf.SIPNET` now also writes `soil_organic_carbon_content`, the
     soil carbon pool alone. `TotSoilCarb` is unchanged and still includes the
     litter pool, so it is not comparable to a measured soil organic carbon

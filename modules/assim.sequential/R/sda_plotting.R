@@ -1,16 +1,16 @@
 # @author Ann Raiho
 # @description This function generates a series of colors. This is mainly used in AssimSequential package.
 generate_colors_sda <-function(){
-  pink        <- col2rgb("deeppink")
-  alphapink   <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
-  green       <- col2rgb("green")
-  alphagreen  <- rgb(green[1], green[2], green[3], 75, max = 255)
-  blue        <- col2rgb("blue")
-  alphablue   <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
-  purple      <- col2rgb("purple")
-  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
-  brown       <- col2rgb("brown")
-  alphabrown  <- rgb(brown[1], brown[2], brown[3], 30, max = 255)
+  pink        <- grDevices::col2rgb("deeppink")
+  alphapink   <- grDevices::rgb(pink[1], pink[2], pink[3], 180, max = 255)
+  green       <- grDevices::col2rgb("green")
+  alphagreen  <- grDevices::rgb(green[1], green[2], green[3], 75, max = 255)
+  blue        <- grDevices::col2rgb("blue")
+  alphablue   <- grDevices::rgb(blue[1], blue[2], blue[3], 75, max = 255)
+  purple      <- grDevices::col2rgb("purple")
+  alphapurple <- grDevices::rgb(purple[1], purple[2], purple[3], 75, max = 255)
+  brown       <- grDevices::col2rgb("brown")
+  alphabrown  <- grDevices::rgb(brown[1], brown[2], brown[3], 30, max = 255)
 
   return(list(
     pink = alphapink,

@@ -21,12 +21,11 @@ EnKF.MultiSite <- function(settings, Forecast, Observed, H, extraArg=NULL, ...){
   scalef <- settings$state.data.assimilation$scalef %>% as.numeric() # scale factor for localization
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   site.ids <- settings %>% purrr::map(~.x[['run']] ) %>% purrr::map('site') %>% purrr::map('id') %>% unlist()
-  #-- reading the dots and exposing them to the inside of the function
-  dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]])})
-  for(i in seq_along(dots)) assign(names(dots)[i],dots[[names(dots)[i]]])
+  #-- reading the dots: the calling workflow passes blocked.dis through `...`
+  dots <- list(...)
+  blocked.dis <- dots$blocked.dis
 
-    #Forcast inputs 
+    #Forcast inputs
   Q <- Forecast$Q # process error
   X <- Forecast$X # states 
   #Observed inputs
@@ -73,9 +72,13 @@ EnKF.MultiSite <- function(settings, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @rdname GEF
 ##' @export
 GEF.MultiSite <- function(settings, Forecast, Observed, H, extraArg,...){
-  #-- reading the dots and exposing them to the inside of the function
-  dots<-list(...)
-  if (length(dots) > 0) lapply(names(dots),function(name){assign(name,dots[[name]], pos = 1 )})
+  #-- reading the dots: the calling workflow (see sda.enkf.multisite) passes
+  #   nt, obs.mean, blocked.dis and distances through `...`
+  dots <- list(...)
+  nt <- dots$nt
+  obs.mean <- dots$obs.mean
+  blocked.dis <- dots$blocked.dis
+  distances <- dots$distances
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   
@@ -146,7 +149,7 @@ GEF.MultiSite <- function(settings, Forecast, Observed, H, extraArg,...){
   # if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
   #--- This is where the localization needs to happen - After imputing Pf
   elements.W.Data <- which(apply(H, 2, sum) == 1)
-  if (exists('blocked.dis') & is.null(extraArg$Pf)){
+  if (!is.null(blocked.dis) & is.null(extraArg$Pf)){
     Pf <- Local.support(Pf, blocked.dis, settings$state.data.assimilation$scalef %>% as.numeric())
   }
 
@@ -202,7 +205,7 @@ GEF.MultiSite <- function(settings, Forecast, Observed, H, extraArg,...){
   interval <- matrix(NA, length(unlist(obs.mean[[t]])), 2)
   
   # if this function is revoked by multisite then the structure of data looks a bit different.
-  if (exists('blocked.dis')){
+  if (!is.null(blocked.dis)){
     rownames(interval) <- obs.mean[[t]] %>% purrr::flatten() %>% names()
     
   }else{

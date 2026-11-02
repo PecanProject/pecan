@@ -54,10 +54,8 @@ function (e.g. \code{write.config.ED2}, \code{write.config.SIPNET}).
 \item{\code{samples.Rdata}}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
 Contains 5 bundled objects: \code{trait.samples},
 \code{sa.samples}, \code{ensemble.samples}, \code{runs.samples}, \code{env.samples}.
-This function loads \code{trait.samples} and \code{sa.samples} to build
-model configuration files. If \code{input_design} contains a \code{param}
-column, \code{ensemble.samples} is rebuilt by subsetting \code{trait.samples}
-according to the design indices.}
+This function loads \code{ensemble.samples} and \code{sa.samples} to build
+model configuration files.}
 }
 
 \strong{File-based side effects (saved to \code{settings$outdir}):}
