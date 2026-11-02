@@ -5,6 +5,7 @@
 * `arrhenius.scaling.traits()`: previously returned `NULL` when no temperature covariates were found, crashing `query.trait.data()` with `argument is of length zero`. The function now drops rows that lack a measurement temperature covariate and emits a `logger.warn()` with the row count. If no observations have any temperature covariate, an empty data frame (zero rows, same columns) is returned. The `missing.temp` argument is retained for backward compatibility but is no longer applied.
 * `filter_sunleaf_traits()`: returned `NULL` instead of `data` unchanged when no `canopy_layer` covariate was found. Now returns the input data frame unmodified in that case, consistent with the more standardised measurement protocol for sun-leaf traits.
 * `query.trait.data()`: the `warning()` call for missing trait data was placed after `return(NA)` and therefore never fired. Moved before the return and changed to `logger.warn()` for consistency with the rest of the codebase.
+* `db.exists()`: the check after the primary key query tested `read.result` (already checked) instead of `get.key`. If the lookup failed, the function continued with a `NULL` key and, when `write = TRUE`, crashed with `argument is of length zero`. It now returns `FALSE`. As a result, a failed primary key lookup also returns `FALSE` when `write = FALSE`, where it previously returned `TRUE`.
 
 * Refactored `convert.input()` internals into smaller, and hopefully more testable, chunks. No user-visible changes expected.
 * Roxygen cleanup.
