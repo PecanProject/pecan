@@ -3,6 +3,7 @@
 ## Fixed
 
 * `mcmc.list2init()` now restores matrix parameters at their monitored row and column indices. Unmonitored entries remain `NA` instead of receiving placeholder values.
+* `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
 
 ## Changed
 

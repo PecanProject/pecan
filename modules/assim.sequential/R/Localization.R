@@ -32,7 +32,7 @@ Local.support <-function(Pf, distance.mat, scalef=1){
 ##' @export
 simple.local <-function(Pf, distance.mat, scalef=2){
   ### Data assimilation for spatio-temporal processes - p250 - Sebastian Reich
-  s <- distance.mat/rloc
+  s <- distance.mat/scalef
   s[s <2] <- 1- ((0.5)*(s[s <2]))
   s[s>2] <- 0
   return(s*Pf)
@@ -53,7 +53,7 @@ simple.local <-function(Pf, distance.mat, scalef=2){
 ##' @export
 piecew.poly.local <-function(Pf, distance.mat, scalef=2){
   ### Data assimilation for spatio-temporal processes - p250 - Sebastian Reich
-  s <- distance.mat/rloc
+  s <- distance.mat/scalef
   
   s[s < 1] <- 1 - ((5/3)*(s[s < 1])^2)+((5/8)*(s[s < 1])^3) + (0.5*(s[s < 1])^4)-(0.25*(s[s < 1])^5)
   
