@@ -10,7 +10,13 @@
 
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
-    return(PEcAn.settings::papply(settings, do_conversions))
+    return(PEcAn.settings::papply(
+      settings,
+      do_conversions,
+      overwrite.met = overwrite.met,
+      overwrite.fia = overwrite.fia,
+      overwrite.ic = overwrite.ic
+    ))
   }
   
   needsave <- FALSE

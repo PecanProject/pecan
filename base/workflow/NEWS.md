@@ -1,5 +1,8 @@
 # PEcAn.workflow 1.10.0.9000
 
+## Fixed
+* `do_conversions()` now passes `overwrite.met`, `overwrite.fia` and `overwrite.ic` on to each site when given a MultiSettings. Previously they were silently reset to `FALSE` for every site (#4175).
+
 ## Changed
 * `run.write.configs()` now requires `samples` to contain an `ensemble.samples` (as
   was already required for `sa.samples`) and no longer re-draws it from
