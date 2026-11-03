@@ -2,7 +2,7 @@
 
 # SA inputs for one pft, with the output of each run from a known model,
 # written where run.sensitivity.analysis looks for them
-write_sa_fixture <- function(dir, trait.samples, model) {
+write_sa_fixture <- function(dir, trait.samples, model, variables = "NPP") {
   q <- stats::pnorm(-3:3)
   sa.samples <- list(pft1 = as.data.frame(lapply(trait.samples, stats::quantile, q),
                                           row.names = as.character(round(q * 100, 3))))
@@ -24,16 +24,21 @@ write_sa_fixture <- function(dir, trait.samples, model) {
     row.names = rownames(sa.samples$pft1)
   ))
 
+  sa_settings <- list(ensemble.id = "1", start.year = 2001, end.year = 2001)
+  for (v in variables) {
+    sa_settings <- c(sa_settings, list(variable = v))
+  }
   settings <- list(
     outdir = dir,
     pfts = list(pft = list(name = "pft1", outdir = dir)),
-    sensitivity.analysis = list(ensemble.id = "1", variable = "NPP",
-                                start.year = 2001, end.year = 2001)
+    sensitivity.analysis = sa_settings
   )
-  save(sensitivity.output, file = sensitivity.filename(
-    settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
-    ensemble.id = "1", variable = "NPP", start.year = 2001, end.year = 2001
-  ))
+  for (v in variables) {
+    save(sensitivity.output, file = sensitivity.filename(
+      settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
+      ensemble.id = "1", variable = v, start.year = 2001, end.year = 2001
+    ))
+  }
   settings
 }
 
@@ -83,4 +88,31 @@ test_that("a trait in Celsius is analysed in the units it was run in", {
                -0.1 * (stats::median(samples$psnTOpt) - 28) * stats::median(t_K) / stats::median(y),
                tolerance = 0.02)
   expect_equal(vd$sensitivities[["SLA"]], 0.2, tolerance = 0.01)
+})
+
+test_that("run.sensitivity.analysis returns NULL when sensitivity.analysis is missing", {
+  expect_null(run.sensitivity.analysis(list()))
+})
+
+test_that("run.sensitivity.analysis calculates results for multiple variables", {
+  dir <- withr::local_tempdir()
+  withr::local_seed(1)
+  samples <- data.frame(SLA = stats::rnorm(5000, 20, 4))
+  settings <- write_sa_fixture(dir, samples, function(x) 0.2 * x$SLA, variables = c("NPP", "GPP"))
+
+  run.sensitivity.analysis(settings, plot = FALSE)
+
+  for (var in c("NPP", "GPP")) {
+    res_env <- new.env()
+    res_file <- sensitivity.filename(
+      settings, "sensitivity.results", "Rdata",
+      all.var.yr = FALSE, pft = NULL,
+      ensemble.id = "1", variable = var,
+      start.year = 2001, end.year = 2001
+    )
+    expect_true(file.exists(res_file))
+    load(res_file, envir = res_env)
+    vd <- res_env$sensitivity.results$pft1$variance.decomposition.output
+    expect_equal(vd$sensitivities[["SLA"]], 0.2, tolerance = 0.01)
+  }
 })

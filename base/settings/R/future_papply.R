@@ -1,11 +1,14 @@
-#' Apply functions to PEcAn MultiSettings (parallel version)
+#' Apply functions to PEcAn MultiSettings (EXPERIMENTAL parallel version)
 #'
 #' Works like lapply(), but for PEcAn Settings and MultiSettings objects.
 #'  The "p" is for "PEcAn".
 #'
-#' \code{papply} is mainly used to call a function on each
-#' \code{\link{Settings}} object in a \code{\link{MultiSettings}} object,
-#' and returning the results in a list.
+#' This is an experimental parallel-enabled version of `papply`, released under a
+#' new name for testing. If it performs well in testing, the functionality in
+#' future_papply() may take over the existing papply() name in a future release.
+#'
+#' \code{papply} calls a function on each \code{\link{Settings}} object in a
+#' \code{\link{MultiSettings}} object, and returns the results in a list.
 #' It has some additional features, however:
 #'
 #' \itemize{
@@ -14,11 +17,6 @@
 #'         \code{MultiSettings}.
 #'   \item If \code{settings} is a \code{Settings} object,
 #'         then \code{papply} knows to call \code{fn} on it directly.
-#'   \item If \code{settings} is a generic \code{list},
-#'         then \code{papply} coerces it to a \code{Settings} object
-#'         and then calls \code{fn} on it directly.
-#'         This is meant for backwards compatibility with old-fashioned PEcAn
-#'         settings lists, but could have unintended consequences
 #'   \item By default, \code{papply} will proceed even if \code{fn} throws an
 #'         error for one or more of the elements in \code{settings}.
 #'         Note that if this option is used, the returned results list will
@@ -38,16 +36,16 @@
 #'
 #' We are especially interested in reports/patches/suggestions/test cases around
 #'
-#' * Identifying any applications of papply that require serial execution
-#'  or where parallel execution may be unwanted
+#' * Identifying applications of papply that require serial execution or where
+#'   parallel execution may be unwanted
 #' * Testing for concurrency issues (esp. in calls that write a lot of files)
 #' * Ensuring that console output (print(), logger.info(), etc) is handled
 #'   correctly and not lost
 #' * Testing against unusually-formatted MultiSettings objects (e.g. anything
 #'   that varies a dimension other than site)
 #'
-#' @param settings A \code{\link{MultiSettings}}, \code{\link{Settings}},
-#'   or \code{\link[base]{list}} to operate on
+#' @param settings A \code{\link{MultiSettings}} or \code{\link{Settings}}
+#'   object to operate on
 #' @param fn The function to apply to \code{settings}
 #' @param stop.on.error Whether to halt execution if a single element in
 #'   \code{settings} results in error. See Details.
@@ -60,7 +58,7 @@
 #' @export
 #'
 #' @example examples/examples.papply.R
-papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
+future_papply <- function(settings, fn, ..., stop.on.error = FALSE) {
   if (is.MultiSettings(settings)) {
     catcher <- function(settings_i,
                         idx,
@@ -70,15 +68,23 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
       # PEcAn.logger writes to stderr() by default, which is hard to redirect
       # and gets lost easily in parallel contexts. Instead switch to stdout()
       # for duration of this call.
-      orig_logger_console <- PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
+      oc <- PEcAn.logger::logger.setUseConsole(TRUE, FALSE)
       on.exit(
-        PEcAn.logger::logger.setUseConsole(orig_logger_console),
+        PEcAn.logger::logger.setUseConsole(oc$console, oc$stderr),
         add = TRUE
       )
       err <- NULL
       wrn <- NULL
       msg <- NULL
-      res <- withCallingHandlers(
+
+      # Call the function with condition handlers. Yes, we need both layers:
+      # * tryCatch is for _exiting_ handlers that stop execution of fun() and
+      # set `res` to the handler's return value.
+      # * withCallingHandlers is for _calling_ handlers that process conditions
+      # and then hand control back to fun() so it can finish and set `res` to
+      # its own return value.
+      res <- tryCatch(
+        withCallingHandlers(
           fun(settings_i, ...),
           message = function(m) {
             msg <<- append(msg, m)
@@ -87,20 +93,22 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
           warning = function(w) {
             wrn <<- append(wrn, w)
             tryInvokeRestart("muffleWarning")
-          },
-          error = function(e) {
-            err <<- append(err, e)
-            NULL
           }
+        ),
+        error = function(e) {
+          err <<- append(err, e)
+          if (stop_err) {
+            PEcAn.logger::logger.error(
+              "papply threw an error for element", idx, "of", len,
+              ", and is aborting since stop.on.error=TRUE. Message was:",
+              sQuote(as.character(err))
+            )
+            stop()
+          }
+          NULL
+        }
       )
-      if (stop_err && !is.null(err)) {
-        PEcAn.logger::logger.error(
-          "papply threw an error for element", idx, "of", len,
-          ", and is aborting since stop.on.error=TRUE. Message was:",
-          sQuote(as.character(err))
-        )
-        stop()
-      }
+
       list(result = res, error = err, warning = wrn, message = msg)
     }
 
@@ -161,6 +169,8 @@ papply2 <- function(settings, fn, ..., stop.on.error = FALSE) {
     return(fn(settings, ...))
   } else {
     PEcAn.logger::logger.severe(
-      "The function", fn, "requires input of type MultiSettings or Settings")
+      "The function", deparse(substitute(fn)),
+      "requires input of type MultiSettings or Settings"
+    )
   }
-} # papply
+}
