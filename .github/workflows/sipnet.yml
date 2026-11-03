@@ -6,6 +6,11 @@ on:
       R-version:
         required: true
         type: string
+      sipnet-version:
+        description: SIPNET release tag to download and test against
+        required: false
+        type: string
+        default: v1.3.0
 
 env:
   R_LIBS_USER: /usr/local/lib/R/site-library
@@ -49,9 +54,22 @@ jobs:
       run: ./scripts/add.models.sh
 
     # install sipnet
+    # v1.x releases ship the bare binary, v2.x ships a tarball containing `sipnet`
     - name: Download SIPNET for Linux
+      env:
+        SIPNET_VERSION: ${{ inputs.sipnet-version }}
       run: |
-        curl -L -o sipnet-linux "https://github.com/PecanProject/sipnet/releases/download/v1.3.0/sipnet-linux-v1.3.0"
+        base="https://github.com/PecanProject/sipnet/releases/download/${SIPNET_VERSION}"
+        case "${SIPNET_VERSION}" in
+          v1.*)
+            curl -fL -o sipnet-linux "${base}/sipnet-linux-${SIPNET_VERSION}"
+            ;;
+          *)
+            curl -fL -o sipnet.tar.gz "${base}/sipnet-linux-x86_64-${SIPNET_VERSION}.tar.gz"
+            tar -xzf sipnet.tar.gz sipnet
+            mv sipnet sipnet-linux
+            ;;
+        esac
         chmod +x sipnet-linux
 
     # compile PEcAn code
