@@ -119,6 +119,9 @@ git push -u origin GH-issuenumber-title-of-issue
   - The license listed at PR opening time for the code you are contributing to,
   - and/or the BSD 3-clause license.
 
+Because every PR requires time from project maintainers as well as from you, we limit new contributors to a maximum of 3 pull requests under review at a time.
+Please prioritize work that gets existing PRs merged (e.g. responding to review comments, fixing text failures) over opening new ones.
+
 ## Repository Labels
 
 PEcAn uses [labels](https://github.com/PecanProject/pecan/labels) to keep issues and pull requests organized. We aim to keep label names simple and have few enough of them for the tag system to be understood by reading the list without consulting external documentation.
