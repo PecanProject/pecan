@@ -1,0 +1,5 @@
+<?xml version="1.0"?> 
+<model> 
+  <name>RCMEM</name> 
+  <exact.dates>TRUE</exact.dates> 
+</model>

@@ -121,7 +121,7 @@ settings <- settings_raw |>
   papply(id2grid) |>
   papply(dates2grid)
 
-settings$info$notes <- paste("Compiled from template.xml at", Sys.time())
+
 ```
 
 - Now, visualize the completed settings object and export

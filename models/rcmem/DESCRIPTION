@@ -1,0 +1,36 @@
+Package: PEcAn.RCMEM
+Type: Package
+Title: PEcAn Package for Integration of the RCMEM Model
+Version: 0.1.0.9000
+Authors@R: c(person("James", "Holmquist", role = c("aut", "cre"), 
+                    email = "HolmquistJ@si.edu"),
+                  person("Abigail", "Lewis", role = c("aut")))
+Author: James Holmquist, Abigail Lewis
+Maintainer: James Holmquist <HolmquistJ@si.edu>
+Description: This module provides functions to link RCMEM to PEcAn.
+URL: https://pecanproject.github.io
+BugReports: https://github.com/PecanProject/pecan/issues
+Imports:
+    dplyr,
+    tidyr,
+    lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15),
+    PEcAn.logger,
+    PEcAn.remote,
+    PEcAn.utils,
+    rCMEM (>= 2.0.0)
+Suggests:
+    dygraphs,
+    imager,
+    rstac,
+    terra,
+    testthat (>= 1.0.2),
+    xts
+Remotes:
+    github::Smithsonian/rCMEM
+License: BSD_3_clause + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+Encoding: UTF-8
+RoxygenNote: 7.3.3
