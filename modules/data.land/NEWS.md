@@ -2,6 +2,12 @@
 
 ## Added
 
+* Added `fraction_urea_n` to `fertilizer_composition_data` and `UREA_N` to all
+  `look_up_fertilizer_components()` results. Urea, 46_00_00, and UAN-32 now
+  distinguish urea-N from ammonium, nitrate, and organic nitrogen (#3963, #4047).
+* Events schema 0.1.2 accepts nonnegative `urea_n_kg_m2`, including urea-only
+  fertilization events (#3963, #4047).
+
 - Added `PEcAn.data.land::event_parquet_to_json` for generating PEcAn `event.json` files from well-formatted event parquet files, with support for ensembles of events.
 
 ## Fixed
