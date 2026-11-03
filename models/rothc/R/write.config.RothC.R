@@ -137,7 +137,7 @@ write.config.RothC <- function(defaults, trait.values, settings, run.id) {
   # Bare SMD: wilting point configuration
   #   1: Standard RothC bareSMD
   #   2: bareSMD is set to wilting point -15bar (could be better for dry soils)
-  smdbare <- settings$model$opt_RMmoist %||% 1
+  smdbare <- settings$model$opt_SMDbare %||% 1
   config.text <- gsub("@OPT_SMDBARE@", smdbare, config.text)
 
   # min_RM_moist: Lowest value taken by the soil moisture rate modifier,
