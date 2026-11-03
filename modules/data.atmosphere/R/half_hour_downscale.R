@@ -343,7 +343,7 @@ downscale_repeat_6hr_to_half_hrly <- function(df, varName, hr = 0.5){
 downscale_solar_geom_halfhour <- function(doy, lon, lat) {
   
   dt <- stats::median(diff(doy)) * 86400 # average number of seconds in time interval
-  hr <- (doy - floor(doy)) * 48 # hour of day for each element of doy
+  hr <- (doy - floor(doy)) * 24 # hour of day for each element of doy
   
   ## calculate potential radiation
   cosz <- cos_solar_zenith_angle(doy, lat, lon, dt, hr)

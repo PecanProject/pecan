@@ -47,7 +47,7 @@ SoilC_export_csv <- TRUE
 
 #Obs Date
 obs_start_date <- "2012-07-15"
-obs_end_date <- "2021-07-15"
+obs_end_date <- "2024-07-15"
 obs_outdir <- "/projectnb/dietzelab/dongchen/anchorSites/Obs"
 timestep <- list(unit="year", num=1)
 
@@ -130,12 +130,15 @@ template <- PEcAn.settings::Settings(list(
     start.date = start_date,
     end.date = end_date,
     
-    Obs_Prep = structure(list(
-      Landtrendr_AGB = structure(list(AGB_indir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
-      MODIS_LAI = structure(list(search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
-                                 sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
-      SMAP_SMP = structure(list(search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
-      Soilgrids_SoilC = structure(list(timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
+    obs_prep = structure(list(
+      variables = structure(list(
+        LandTrendr = structure(list(var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+        GEDI = structure(list(var_name = "AbvGrndWood")),
+        MODIS = structure(list(var_name = "LAI", search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
+                               sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
+        SMAP = structure(list(var_name = "SoilMoistFrac", search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+        SoilGrids = structure(list(var_name = "TotSoilCarb", timestep = SoilC_timestep, export_csv = SoilC_export_csv))
+      )),
       start.date = obs_start_date,
       end.date = obs_end_date,
       outdir = obs_outdir,

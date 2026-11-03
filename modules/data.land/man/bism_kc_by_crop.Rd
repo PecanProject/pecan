@@ -23,6 +23,7 @@ A data frame with one row per crop and the following columns:
   \item{landiq_class}{LandIQ class code matched by BISm crop number.}
   \item{landiq_subclass}{LandIQ subclass code matched by BISm crop number.}
   \item{landiq_subclass_name}{LandIQ subclass name matched by BISm crop number.}
+  \item{landiq_match}{`exact` for a direct BIS LandIQ key; `fallback` maps an unmatched LandIQ class/subclass to an existing BISm crop_name.}
 }
 }
 \source{
@@ -36,7 +37,7 @@ bism_kc_by_crop
 Crop and growth stage specific coefficients (Kc) from the Basic Irrigation Scheduling
 (BIS) Excel workbook (Snyder et. al., 2014).
 The dataset is an export of the BISm.xlsx workbook's `CropRef` worksheet, with columns renamed
-and columns added that map to LandIQ CADWR land use dataset 
+and columns added that map to LandIQ CADWR land use dataset
 (\code{\link{landiq_crop_mapping_codes}}; California Department of Water Resources, 2023).
 This dataset provides the information needed to reconstruct a stage-based daily Kc curve when
 combined with grass-reference evapotranspiration (ETo), such as that provided

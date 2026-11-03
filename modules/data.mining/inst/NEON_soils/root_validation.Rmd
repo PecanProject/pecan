@@ -1,0 +1,661 @@
+---
+title: "Root biomass validation"
+author: "chaney"
+date: "2025-10-06"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load libraries
+library(DBI)
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(sf)
+library(maps)
+library(terra)
+library(knitr)
+library(tidyr)
+library(neonUtilities)
+library(swfscMisc)
+library(maps)
+library(tidyverse)
+library(neonSoilFlux)
+library(parallel)
+library(ncdf4)
+library(data.table)
+library(purrr)
+library(data.table)
+library(parallel)
+library(lubridate)
+library(terra)
+library(httr)
+library(sp)
+library(neonSoilFlux)
+library(stringr)
+library(scales)
+
+
+```
+
+Download Functions from NEON Science
+```{r}
+remotes::install_github("NEONScience/neonPlants")
+```
+
+Get model data
+```{r}
+
+# Get the coordinates of 6400 sites in Dongchen's output
+Neonplots <- read.csv("Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info (site_info has coordinates of each location in df)
+Site_Info <- readRDS("/usr4/ugrad/chaney/R/3_25/site.locs.rds")
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+# Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+# Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+# Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+# Make list to store matched list
+matched <- data.frame(id = numeric(nrow(Neonplots)), # id in forecast
+                      site_id = numeric(nrow(Neonplots))) # NEON id
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+# Initialize the output list
+rcm_list <- list()
+
+# Process Ensemble Function
+
+process_ensemble_rcm <- function(ens) {
+  ens_id <- sprintf("%05d", ens)
+  rcm_ens <- list()
+
+  # Loop over sites
+  for (i in seq_len(nrow(matched))) {
+    site_id <- matched$site_id[i]
+    ID <- matched$id[i]
+    
+    # Loop over years
+    for (year in years) {
+       
+       file_path <- paste0(
+        "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/batch_Nov_24/Job_", ceiling(ID/267),"/out/ENS-",
+        ens_id, "-", ID, "/", year, ".nc"
+      )
+      
+      # Open NetCDF files
+      nc_data <- tryCatch({
+        nc_open(file_path)
+      }, error = function(e) {
+        return(NULL)
+      })
+      
+      # file open
+      if (!is.null(nc_data)) {
+        if ("time" %in% names(nc_data$dim)) {
+          time_values <- ncvar_get(nc_data, "time")
+          time_units <- ncatt_get(nc_data, "time", "units")$value
+          
+          # Analyze the model start date
+          start_datetime <- as.POSIXct(
+            sub("days since ", "", time_units),
+            format = "%Y-%m-%d %H:%M:%S", tz = "UTC"
+          )
+          
+          # Calculate the time series
+          time_datetimes <- as.Date(start_datetime) + (time_values - 1)
+          
+          # Get fine root carbon data
+          frc <- tryCatch({
+            ncvar_get(nc_data, "fine_root_carbon_content")
+          }, error = function(e) {
+            return(NULL)
+          })
+          
+          # Get coarse root carbon data
+          crc <- tryCatch({
+            ncvar_get(nc_data, "coarse_root_carbon_content")
+          }, error = function(e) {
+            return(NULL)
+          })
+          
+          
+          if (!is.null(frc) && !is.null(crc)) {
+            frc[frc == -999] <- NA
+            crc[crc == -999] <- NA
+            
+            # Create dataframe
+            rcm_df <- data.table(
+              Time = time_datetimes,
+              FineRootCarbonMass = frc,
+              CoarseRootCarbonMass = crc,
+              Ensemble = ens,
+              Site_ID = site_id
+            )
+            
+            # Save the results
+            rcm_ens[[length(rcm_ens) + 1]] <- rcm_df
+          } else if (!is.null(frc) && is.null(crc)) {
+            # replace -999 to NA
+            frc[frc == -999] <- NA
+            crc[crc == -999] <- NA
+            
+            # Create dataframe
+            rcm_df <- data.table(
+              Time = time_datetimes,
+              FineRootCarbonMass = frc,
+              CoarseRootCarbonMass = NA,
+              Ensemble = ens,
+              Site_ID = site_id
+            )
+            
+            # Save the results
+            rcm_ens[[length(rcm_ens) + 1]] <- rcm_df
+          } else if (is.null(frc) && !is.null(crc)) {
+            # replace -999 to NA
+            frc[frc == -999] <- NA
+            crc[crc == -999] <- NA
+            
+            # Create dataframe
+            rcm_df <- data.table(
+              Time = time_datetimes,
+              FineRootCarbonMass = NA,
+              CoarseRootCarbonMass = crc,
+              Ensemble = ens,
+              Site_ID = site_id
+            )
+            
+            rcm_ens[[length(rcm_ens) + 1]] <- rcm_df
+          } 
+        } 
+        
+        # Close NetCDF File
+        nc_close(nc_data)
+      }
+    } 
+  }
+  
+  # Combine the results
+  rcm_result <- if (length(rcm_ens) > 0) rbindlist(rcm_ens, use.names = TRUE, fill = TRUE) else data.table()
+  
+  return(list(rcm = rcm_result))
+}
+
+Nensem <- 1:100
+
+# Apply parallel calculation
+num_cores <- detectCores() - 1
+
+rcm_model_results <- mclapply(Nensem, process_ensemble_rcm, mc.cores = num_cores)
+
+# Combine Results from all ensembles
+rcm_output <- rbindlist(lapply(rcm_model_results, '[[', "rcm"))
+
+# Calculate ensemble mean
+rcm_mean <- rcm_output[, .(FineRootCarbonMass = mean(FineRootCarbonMass, na.rm = TRUE), CoarseRootCarbonMass = mean(CoarseRootCarbonMass, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+# Make into data table
+daily_rcm_data <- as.data.table(rcm_mean)
+
+# Format Time to character for processing
+daily_rcm_data[, Time := as.character(Time)]
+
+# Calculate daily SR(time resolution is 1 day)
+final_daily_rcm_data <- daily_rcm_data[, .(FineRootCarbonMass = mean(FineRootCarbonMass, na.rm = TRUE), CoarseRootCarbonMass = mean(CoarseRootCarbonMass, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+```
+
+** ALT
+
+```{r}
+source("neon_model_processing.R")
+
+# Set outdir
+outdir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/NA_SDA_no_Debias";
+
+final_daily_rcm_data <- neon_model_processing(outdir, 2000, 2025, outdir, "fine_root_carbon_content", var2 = "coarse_root_carbon_content")
+
+colnames(final_daily_rcm_data)[colnames(final_daily_rcm_data) == "Output1"] <- "Model_FRC"
+colnames(final_daily_rcm_data)[colnames(final_daily_rcm_data) == "Output1"] <- "Model_CRC"
+
+```
+
+
+Get root carbon mass from NEON
+```{r}
+
+neon_root_data <- list()
+
+for (i in 1:nrow(matched)){
+  # Download NEON data
+  neonstore::neon_download("DP1.10067.001", dir = store_dir, table = NA, site = matched$site_id[i], start_date = NA, end_date = NA, type = "basic",api = "https://data.neonscience.org/api/v0")
+  
+    # Get mass data
+    bbc_rootmass <- neonstore::neon_read(table =  "bbc_rootmass", product = "DP1.10067.001", site = matched$site_id[i], start_date = NA, end_date = NA, dir = store_dir)
+    
+    # Get carbon percent data
+     bbc_rootChemistry <- neonstore::neon_read(table =  "bbc_rootChemistry", product = "DP1.10067.001", site = matched$site_id[i], start_date = NA, end_date = NA, dir = store_dir)
+     
+    # Get chemistry pooling data to connect the two
+    bbc_chemistryPooling <- neonstore::neon_read(table =  "bbc_chemistryPooling", product = "DP1.10067.001", site = matched$site_id[i], start_date = NA, end_date = NA, dir = store_dir)
+    
+  # Merge the chemistry data sets
+    bbc_all_chem <- merge(bbc_rootChemistry, bbc_chemistryPooling, by = c("namedLocation", "domainID", "siteID","plotID","poolSampleID","cnSampleID","cnSampleCode"))
+    
+  # Need to add dry mass data to chem table, but chem table has data pooled
+  # Loop through rows of table
+    for (row in 1:nrow(bbc_all_chem)){
+      
+      # Get the list of pooled sample for each chem value
+      sample_id_list <- bbc_all_chem$subsampleIDList[row]
+      split_list <- strsplit(sample_id_list, split = "\\|")
+      
+      # Loop through pooled samples and find which row in rootmass they match
+      sub_rows <- 0 
+      
+      for (j in 1:length(split_list[[1]])){
+                sub_rows[j] <- which(bbc_rootmass$subsampleID == split_list[[1]][j])
+      }
+      
+      # Add row to bbc_all_chem with ave root biomass across rows
+      bbc_all_chem$dryMass[row] <- mean(bbc_rootmass$dryMass[sub_rows])
+      
+    }
+  
+    # Multiply percent of carbon by mass to get carbon biomass
+  bbc_all_chem$carbonMass <- bbc_all_chem$dryMass*((bbc_all_chem$carbonPercent)/100)
+  
+ # -- Now, need to average over dates and sum into <2 and 2-10 pools (for each date)
+  
+  # Sort data by collect day
+  bbc_all_chem <- bbc_all_chem[order(bbc_all_chem$collectDate.y),]
+  
+  # Find list of unique dates
+  dates <- unique(bbc_all_chem$collectDate.y)
+  row <- 1
+  
+  # Initialize df
+  temp_df <- data.frame(Site_ID  = character(length(dates)),
+                        Time  = character(length(dates)),
+                        rootCarbon_1_2 = numeric(length(dates)),
+                        rootCarbon_2_10 = numeric(length(dates)))
+  
+        
+  # Loop through the unique dates
+  for (m in 1:length(dates)){
+    
+    # Set initial row
+    initial_row <- row # start at the next one
+    
+    # Find the rows of a certain date
+    while(row <= nrow(bbc_all_chem) && bbc_all_chem$collectDate.y[row] == dates[m]){
+      row <- row + 1
+    }
+    
+    # While loop does an extra so
+    row_end <- row - 1
+    
+    # Initilize vector for averages
+    aves <- rep(0,4)
+    counts <- rep(0,4)
+    
+    # Loop through rows of date and average for each class size
+    for (k in initial_row:(row_end)){
+      
+      # Split vector into parts to find class size
+      split_str <- strsplit(bbc_all_chem$poolSampleID[k], split = "\\.")
+      
+       
+      if (split_str[[1]][4] == "0-05"){
+         aves[1] <- aves[1] + bbc_all_chem$carbonMass[k]
+         counts[1] <- counts[1] + 1
+       }else if(split_str[[1]][4] == "05-1"){
+         aves[2] <- aves[2] + bbc_all_chem$carbonMass[k]
+         counts[2] <- counts[2] + 1
+       }else if(split_str[[1]][4] == "1-2"){
+         aves[3] <- aves[3] + bbc_all_chem$carbonMass[k]
+         counts[3] <- counts[3] + 1
+       }else if(split_str[[1]][4] == "2-10"){
+         aves[4] <- aves[4] + bbc_all_chem$carbonMass[k]
+         counts[4] <- counts[4] + 1
+       }
+    }
+    
+    # Divides aves by count to make actual aves
+    aves <- ifelse(counts > 0, aves / counts, NA)
+
+    
+    # Sum class sizes <2
+    temp_df$rootCarbon_1_2[m] <- sum(aves[1:3], na.rm = TRUE)
+    temp_df$rootCarbon_2_10[m] <- aves[4]
+    
+    # Add other info
+    temp_df$Time[m] <- as.character(dates[m])
+    temp_df$Site_ID[m] <- bbc_all_chem$siteID[initial_row]
+    
+  }
+  
+
+  # Put table into list
+  neon_root_data[[i]]<- temp_df
+}
+
+
+
+```
+
+Combine
+```{r}
+# Turn NEON into table 
+neon_root_table <- rbindlist(neon_root_data)
+
+# Unit check!
+# NEON units are in grams averaged over each soil core
+# model is in Mg/ha 
+
+# Need to divide NEON mass by surface area
+# Inside diameter of NEON soil core is 6.65 cm
+soil_core_area <- (6.65/2)^2*pi # cm^2 surface area
+neon_root_table$rootCarbon_2_10_per_area <- neon_root_table$rootCarbon_2_10/soil_core_area
+neon_root_table$rootCarbon_1_2_per_area <- neon_root_table$rootCarbon_1_2/soil_core_area
+# Now NEON is g/cm^3
+
+# Convert g/cm^2 to Mg/ha
+# 10^6 g = 1 Mg, 1 Ha = 10^8 cm^2
+neon_root_table$rootCarbon_2_10_per_area_mg_ha <- neon_root_table$rootCarbon_2_10_per_area * 100
+neon_root_table$rootCarbon_1_2_per_area_mg_ha <- neon_root_table$rootCarbon_1_2_per_area * 100
+
+
+# Make root table
+root_table <- merge(final_daily_rcm_data, neon_root_table, by = c("Site_ID","Time"))
+colnames(root_table)[colnames(root_table) == "CoarseRootCarbonMass"] <- "Model_CRC"
+colnames(root_table)[colnames(root_table) == "FineRootCarbonMass"] <- "Model_FRC"
+colnames(root_table)[colnames(root_table) == "rootCarbon_2_10_per_area_mg_ha"] <- "Neon_CRC"
+colnames(root_table)[colnames(root_table) == "rootCarbon_1_2_per_area_mg_ha"] <- "Neon_FRC"
+
+# Add to soil table
+
+soil_table_root <- merge(soil_table, root_table, by = c("Site_ID", "Time"))
+                    
+```
+
+
+Graph Predicted-Observed Plots for each site
+```{r}
+
+sites <- unique(root_table$Site_ID)
+
+for (i in 1:length(sites)){
+  temp_data <- filter(root_table, Site_ID == sites[i])
+  
+  print(ggplot() + 
+        geom_point(data = temp_data, aes(x = Model_CRC, y = Neon_CRC, color = "Coarse Roots"))+ 
+        geom_point(data = temp_data, aes(x = Model_FRC, y = Neon_FRC, color = "Fine Roots"))+ 
+        geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 2)+
+        scale_color_manual(values = c("Coarse Roots" = "darkblue", "Fine Roots" = "blue")) +
+        labs(title = sites[i], x = "Predicted", y = "Observed", color = "Dataset"))
+
+}
+```
+
+Graph Predicted observed for all
+```{r}
+
+ print(ggplot() + 
+        geom_point(data = root_table, aes(x = Model_CRC, y = Neon_CRC), color = "darkblue")+ 
+        geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 2)+
+        labs(title = "Coarse Roots All Sizes", x = "Predicted", y = "Observed", color = "Dataset"))
+  
+   print(ggplot() + 
+        geom_point(data = root_table, aes(x = Model_FRC, y = Neon_FRC), color = "blue")+ 
+        geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 2)+
+        labs(title = "Fine Roots All Sizes", x = "Predicted", y = "Observed", color = "Dataset"))
+
+```
+
+Graph Soil R as a function of Root carbon (all sites)
+```{r}
+
+print(ggplot() + 
+        geom_point(data = soil_table_root, aes(x = Neon_FRC, y = Marshall_SR), , color = "darkgreen")+ 
+          geom_point(data = soil_table_root, aes(x = Neon_FRC, y = Mill_Quirk_SR), color = "lightgreen")+ 
+        labs(title = "NEON Soil R as a Function of Root Carbon", x = "Fine Root Carbon", y = "Soil Respiration", color = "Dataset"))
+      
+      
+print(ggplot() + 
+        geom_point(data = soil_table_root, aes(x = Neon_CRC, y = Marshall_SR), color = "darkgreen")+ 
+          geom_point(data = soil_table_root, aes(x = Neon_CRC, y = Mill_Quirk_SR), color = "lightgreen")+ 
+       labs(title = "NEON Soil R as a Function of Root Carbon", x = "Coarse Root Carbon", y = "Soil Respiration", color = "Dataset"))
+      
+print(ggplot() + 
+       geom_point(data = soil_table_root, aes(x = Model_FRC, y = Forecast_SR), color = "orange")+ 
+       labs(title = " Model Soil R as a Function of Root Carbon", x = "Fine Root Carbon", y = "Soil Respiration", color = "Dataset"))
+  
+   print(ggplot() + 
+        geom_point(data = soil_table_root, aes(x = Model_CRC, y = Forecast_SR), color = "orange")+ 
+       labs(title = "Model Soil R as a Function of Root Carbon", x = "Coarse Root Carbon", y = "Soil Respiration", color = "Dataset"))
+
+
+```
+
+Graph Soil R as a function of Root carbon each site
+```{r}
+
+for (i in 1:length(sites)){
+  
+  temp_df <- filter(soil_table_root, Site_ID == sites[i])
+  print(ggplot() + 
+          geom_point(data = temp_df, aes(x = Neon_FRC, y = Marshall_SR, color = "Marshall"))+ 
+            geom_point(data = temp_df, aes(x = Neon_FRC, y = Mill_Quirk_SR, color = "Millington Quirk"))+ 
+           geom_point(data = temp_df, aes(x = Model_FRC, y = Forecast_SR, color = "Model"))+ 
+          scale_color_manual(values = c("Marshall" = "darkgreen", "Millington Quirk" = "lightgreen", "Model" = "orange")) +
+          labs(title = paste0("Soil R as a Function of Fine Root Carbon ", sites[i]), x = "Fine Root Carbon", y = "Soil Respiration", color = "Dataset"))
+        
+        
+  print(ggplot() + 
+          geom_point(data = temp_df, aes(x = Neon_CRC, y = Marshall_SR, color = "Marshall"))+ 
+            geom_point(data = temp_df, aes(x = Neon_CRC, y = Mill_Quirk_SR, color = "Millington Quirk")) +
+          geom_point(data = temp_df, aes(x = Model_CRC, y = Forecast_SR, color = "Model")) + 
+           scale_color_manual(values = c("Marshall" = "darkgreen", "Millington Quirk" = "lightgreen", "Model" = "orange")) +
+         labs(title = paste0("Model Soil R as a Function of Coarse Root Carbon ", sites[i]), x = "Coarse Root Carbon", y = "Soil Respiration", color = "Dataset"))
+}
+
+
+```
+
+Find RMS error and correlation coefficient
+```{r}
+
+# Calculate error
+root_table_year$CRC_error <- root_table_year$Model_CRC - root_table_year$Neon_CRC
+root_table_year$FRC_error <- root_table_year$Model_FRC - root_table_year$Neon_FRC
+
+# Make table for summary statistics
+summary_stats_RC <- data.frame(Site_ID = character(length(sites)),
+                           CRC_corr_coef_surface = numeric(length(sites)),
+                           CRC_rms_error_surface = numeric(length(sites)),
+                           FRC_corr_coef_column = numeric(length(sites)),
+                           FRC_rms_error_column = numeric(length(sites)))
+
+for (i in 1:length(sites)){
+  
+  temp_data <- filter(root_table_year, Site_ID == sites[i])
+  
+  # Remove na and inf values
+  temp_data <- temp_data %>%
+    filter(if_all(where(is.numeric), is.finite))
+  
+  
+  # Add site name
+  summary_stats_RC$Site_ID[i] <- sites[i]
+  
+  # Find correlation coeffs
+  summary_stats_RC$CRC_corr_coef[i] <- cor(temp_data$Neon_CRC, temp_data$Model_CRC)
+  summary_stats_RC$FRC_corr_coef[i] <- cor(temp_data$Neon_FRC, temp_data$Model_FRC)
+  
+  # Find RMS errors
+  summary_stats_RC$CRC_rms_error[i] <- sqrt(mean((temp_data$Neon_CRC - temp_data$Model_CRC)^2))
+  summary_stats_RC$FRC_rms_error[i] <- sqrt(mean((temp_data$Neon_FRC - temp_data$Model_FRC)^2))
+}
+
+```
+
+Make maps!
+```{r}
+# Add site coordinates
+summary_stats_RC$Site_Lat <- numeric(length(sites))
+summary_stats_RC$Site_Long <- numeric(length(sites))
+
+for (i in 1:length(summary_stats_RC$Site_ID)){
+  site_num = which(Neonplots$field_site_id == summary_stats_RC$Site_ID[i])
+  summary_stats_RC$Site_Lat[i] <- Neonplots$field_latitude[site_num]
+  summary_stats_RC$Site_Long[i] <- Neonplots$field_longitude[site_num]
+}
+
+
+USA = map_data("world") %>% filter(region == "USA")
+us_map <- st_as_sf(USA, 
+            coords = c("long", "lat"), 
+            crs = 4326)  # CRS 4326 is WGS84 (latitude/longitude)
+
+# Map of correlation coefficient
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+  geom_point(data = summary_stats_RC, aes(x= Site_Long, y = Site_Lat, size = CRC_corr_coef, color = CRC_corr_coef)) +
+  geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Coarse Root Carbon Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+    geom_point(data = summary_stats_RC, aes(x= Site_Long, y = Site_Lat, size = FRC_corr_coef, color = FRC_corr_coef)) +
+    geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Fine Root Carbon Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+
+# Map of RMS error
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+  geom_point(data = summary_stats_RC, aes(x= Site_Long, y = Site_Lat, size = CRC_rms_error, color = CRC_rms_error)) +
+  geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Coarse Root Carbon Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+    geom_point(data = summary_stats_RC, aes(x= Site_Long, y = Site_Lat, size = FRC_rms_error, color = FRC_rms_error)) +
+    geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Fine Root Carbon Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+```
+
+Compare error to 13 other factors 
+```{r, echo = FALSE}
+
+# Get data on US 13 factors
+dat = terra::rast("all_data_layers.tif")
+
+# Add columns to summary_stats_RC
+summary_stats_RC$ysd <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$abg<- numeric(nrow(summary_stats_RC))
+summary_stats_RC$fia <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$gedi<- numeric(nrow(summary_stats_RC))
+summary_stats_RC$twi<- numeric(nrow(summary_stats_RC))
+summary_stats_RC$tavg <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$srad <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$prec <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$vapr <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$ph <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$n <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$soc <- numeric(nrow(summary_stats_RC))
+summary_stats_RC$sand <- numeric(nrow(summary_stats_RC))
+
+pt = numeric(1)
+
+# Extract data for each from each Neon site coordinate
+for (i in (nrow(summary_stats_RC)-13):nrow(summary_stats_RC)){
+  pt = terra::extract(dat,data.frame(lon=summary_stats_RC$Site_Long[i], lat = summary_stats_RC$Site_Lat[i]))
+  summary_stats_RC$ysd[i] = pt$year_since_disturb
+  summary_stats_RC$abg[i] <- pt$agb
+  summary_stats_RC$fia[i] <- pt$fia
+  summary_stats_RC$gedi[i] <- pt$gedi
+  summary_stats_RC$twi[i] <- pt$twi
+  summary_stats_RC$tavg[i] <- pt$tavg
+  summary_stats_RC$srad[i] <- pt$srad
+  summary_stats_RC$prec[i] <- pt$prec
+  summary_stats_RC$vapr[i] <- pt$vapr
+  summary_stats_RC$ph[i] <- pt$PH
+  summary_stats_RC$n[i] <- pt$N
+  summary_stats_RC$soc[i] <- pt$SOC
+  summary_stats_RC$sand[i] <- pt$Sand
+}
+
+
+# Make data frame
+summary_factors <- data.frame(factor_name= character(13),
+                    r_squared = numeric(13),
+                    slope = numeric (13),
+                    p_value = numeric(13))
+
+for (i in (length(summary_stats_RC) - 12):length(summary_stats_RC)){
+  # Fit a line
+  summary_stats_RC$temp = summary_stats_RC[[i]]
+  print(ggplot(summary_stats_RC, aes(x = temp, y = CRC_rms_error)) + geom_point() + geom_smooth(method = "lm", se = FALSE) + xlab(colnames(summary_stats_RC[(i)])))
+
+  
+}
+
+```
+

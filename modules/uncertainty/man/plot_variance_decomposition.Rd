@@ -6,7 +6,8 @@
 \usage{
 plot_variance_decomposition(
   plot.inputs,
-  fontsize = list(title = 18, axis = 14)
+  fontsize = list(title = 18, axis = 14),
+  order_by = c("Variance", "Elasticity", "CV (\%)", "rowname", "none")
 )
 }
 \arguments{
@@ -14,17 +15,23 @@ plot_variance_decomposition(
 given by sensitivity.results$variance.decomposition.output in model output}
 
 \item{fontsize}{list specifying the font size of the titles and axes of the graph}
+
+\item{order_by}{Result column to sort by, or "none" to retain input order}
+}
+\value{
+ggplot object
 }
 \description{
-Plots variance decomposition tryptich
+Plots variance decomposition tryptich: CV, elasticity, variance
 }
 \examples{
 x <- list(trait.labels = c('a', 'b', 'c'),
           coef.vars = c(a=1,b=0.5, c=0.1),
           elasticities = c(a=1,b=2,c=0.5),
           variances    = c(a = 20, b=30, c = 10))
-do.call(gridExtra::grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
+plot_variance_decomposition(x)
+plot_variance_decomposition(x, order_by = "rowname")
 }
 \author{
-David LeBauer, Carl Davidson
+David LeBauer, Carl Davidson, Chris Black
 }

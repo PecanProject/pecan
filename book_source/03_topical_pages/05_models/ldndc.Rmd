@@ -1,12 +1,12 @@
 ## LDNDC {#models-ldndc}
 
-| Model Information |                                                      |
-| --                | --                                                   |
-| Home Page         | https://ldndc.imk-ifu.kit.edu/about/model.php        |
-| Source Code       |                                                      |
-| License           |                                                      |
-| Authors           | Prof. Dr. Klaus Butterbach-Bahl, Dr. Edwin Haas, ... |
-| PEcAn Integration | Henri Kajasilta                                      |
+| Model Information |                                                            |
+| --                | --                                                         |
+| Home Page         | https://ldndc.imk-ifu.kit.edu/about/model.php              |
+| Source Code       | https://codebase.helmholtz.cloud/landscapedndc/ldndc_v1.36 |
+| License           |                                                            |
+| Authors           | Prof. Dr. Klaus Butterbach-Bahl, Dr. Edwin Haas, ...       |
+| PEcAn Integration | Henri Kajasilta                                            |
 
 ### Introduction
 

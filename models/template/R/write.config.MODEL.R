@@ -16,7 +16,7 @@
 write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
   # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
+  # https://pecanproject.github.io/pecan-documentation/develop/coding-practices.html#developer-codestyle
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".
   # Calls to dependent packages should use a double colon, e.g.

@@ -1,0 +1,7 @@
+column_number,column_name,contents,notes
+1,parcel_id,LandIQ consolidated parcel id,matches parcels-consolidated.gpkg
+2,year,calendar year of the CDL raster,
+3,cdl_code,native USDA NASS CDL integer code,see data/cdl_nass_cropland_code_lookup.csv for names
+4,frac,area-weighted fraction of parcel covered by cdl_code,fractions sum to 1 per parcel_id x year
+5,w_total,sum of pixel coverage weights used in the extract,
+6,sum_w2,sum of squared coverage weights,n_eff = w_total^2 / sum_w2

@@ -14,7 +14,8 @@ qsub_sda(
   outdir,
   control,
   block.index = NULL,
-  debias = list(cov.dir = NULL, start.year = NULL),
+  debias = list(cov.dir = NULL, start.year = NULL, t.start = NULL, residual.lag = NULL,
+    fun = NULL),
   prefix = "batch"
 )
 }
@@ -45,9 +46,15 @@ The default is NULL, where we will be using outdir from the settings object.}
 \item{block.index}{list of site ids for each block, default is NULL. This is used when the localization turns on.
 Please keep using the default value because the localization feature is still in development.}
 
-\item{debias}{List: R list containing the covariance directory and the start year.
+\item{debias}{List: R list containing 
+the covariance directory (`cov.dir`), 
+start year (`start.year`), 
+start time point (`t.start`),
+if we want to include the `residual.lag` as additional covariate,
+and the ML function (`fun`).
 covariance directory should include GeoTIFF files named by year.
-start year is numeric input which decide when to start the debiasing feature.}
+start time point is numeric input which decide when to start the debiasing feature.
+`residual.lag` is either TRUE or FALSE.}
 
 \item{prefix}{character: the desired folder name to store the outputs.}
 }

@@ -9,11 +9,11 @@ vignette: |
 ---
 
 # Overview
-This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP), gapfilling the CF driver data, and converting to model-specific drivers for the MAAT model. These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/available-meteorological-drivers.html).
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP), gapfilling the CF driver data, and converting to model-specific drivers for the MAAT model. These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/develop/met-drivers.html).
 
 In this example we will download 6 years of met data from the [Willow Creek Eddy Covariance tower site (US-WCr)](http://ameriflux.lbl.gov/sites/siteinfo/US-WCr). It has an Ameriflux `SITE_ID` of `US-WCr`
 
-The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/pecan//modules/data.atmosphere/inst/web/index.html).
+The PEcAn.data.atmosphere source code is in [`modules/data.atmosphere`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere) and the documentation can be found with either `package?PEcAn.data.atmosphere` or in the [data.atmosphere package documentation](https://pecanproject.github.io/package-documentation/develop/PEcAn.data.atmosphere/).
 
 First make sure you have the nescessary PEcAn package for processing met data
 ```{r install, eval=FALSE}

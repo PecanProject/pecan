@@ -44,10 +44,10 @@ for full list):\tabular{lll}{
    \code{chorizon.om_r} \tab Organic matter (<2 mm soil) \tab \% \cr
    \code{chorizon.hzdept_r} \tab Horizon top depth \tab cm \cr
    \code{chfrags.fragvol_r} \tab Rock fragments \tab \% (by volume) \cr
-   \code{chorizon.dbthirdbar_r} \tab Bulk density at field capacity \tab g/cm³ \cr
+   \code{chorizon.dbthirdbar_r} \tab Bulk density at field capacity \tab g/cm3 \cr
    \code{chorizon.ph1to1h2o_r} \tab Soil pH (1:1 H2O) \tab pH (unitless) \cr
-   \code{chorizon.cokey} \tab Component key (identifier) \tab — \cr
-   \code{chorizon.chkey} \tab Horizon key (identifier) \tab — \cr
+   \code{chorizon.cokey} \tab Component key (identifier) \tab - \cr
+   \code{chorizon.chkey} \tab Horizon key (identifier) \tab - \cr
 }
 
 

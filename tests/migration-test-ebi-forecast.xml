@@ -34,15 +34,6 @@
     </quantiles>
     <variable>NPP</variable>
   </sensitivity.analysis>
-  
-    <sensitivity.analysis>
-    <quantiles>
-      <sigma>-1</sigma>
-      <sigma>1</sigma>
-    </quantiles>
-    <variable>NPP</variable>
-  </sensitivity.analysis>
-
 
   <model>
     <binary>/home/kooper/bin/sipnet.runk</binary>

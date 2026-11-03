@@ -39,7 +39,7 @@ distn.stats <- function(distn, a, b) {
     sd   <- (b - a) / sqrt(12)
   } else if (distn == "weibull") {
     mean <- b * gamma(1 + 1 / a)
-    sd   <- b ^ 2 * (gamma(1 + 2 / a) - (gamma(1 + 1 / a)) ^ 2)
+    sd   <- b * sqrt(gamma(1 + 2 / a) - (gamma(1 + 1 / a)) ^ 2)
   }
   return(c(mean, sd))
 } # distn.stats

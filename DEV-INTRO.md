@@ -53,7 +53,7 @@ sudo adduser ${USER} docker
 
 ### Deploying PEcAn in Docker
 
-To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yaml](docker-compose.dev.yaml) file that adds additional containers, and changes some services to make it easier for development.
+To get started with development in docker we need to bring up the docker stack first. In the main pecan folder you will find the [docker-compose.yml](docker-compose.yml) file that can be used to bring up the pecan stack. There is also the [docker-compose.dev.yml](docker-compose.dev.yml) file that adds additional containers, and changes some services to make it easier for development.
 
 By default Compose will use the files `docker-compose.yml` and `docker-compose.override.yml`. We will use the default `docker-compose.yml` file from PEcAn. The `docker-compose.override.yml` file can be used to configure it for your specific environment, in our case we will use it to setup the docker environment for development. Copy the `docker-compose.dev.yml` file to `docker-compose.override.yml` to start working with your own override file, i.e. :
 
@@ -64,6 +64,13 @@ cp docker-compose.dev.yml docker-compose.override.yml
 ```
 
 You can now use the command `docker compose` to work with the containers setup for development. **The rest of this document assumes you have done this step.**
+
+_Note for Apple Silicon (M1/M2/M3/M4) macOS users:_ The default Traefik image (`traefik:v2.9`) is built only for `linux/amd64` and cannot reliably communicate with the Docker socket when running under emulation on ARM64. This causes all web routes to return 404 errors. To fix this, add the following to your `docker-compose.override.yml` under `services:` and above `pecan:`:
+```sh
+  traefik:
+    image: traefik:v2.11
+    platform: linux/arm64
+```
 
 ### First time setup
 
@@ -246,7 +253,7 @@ A better way of doing this is developed as part of GSOC, in which case you can l
 
 ## PEcAn URLs
 
-You can check the RabbitMQ server used by pecan using <https://rabbitmq.pecan.localhost> on the same server that the docker stack is running on. You can use rstudio either with <http://server/rstudio> or at <http://rstudio.pecan.localhost>. To check the traefik dashboard you can use <http://traefik.pecan.localhost>.
+You can check the RabbitMQ server used by pecan using <https://rabbitmq.pecan.localhost> on the same server that the docker stack is running on. You can use rstudio either with `http://server/rstudio` or at <http://rstudio.pecan.localhost>. To check the traefik dashboard you can use <http://traefik.pecan.localhost>.
 
 If the stack is running on a remote machine, you can use ssh and port forwarding to connect to the server. For example `ssh -L 8000:localhost:80` will allow you to use <http://rabbitmq.pecan.localhost:8000/> in your browser to connect to the remote PEcAn server RabbitMQ.
 

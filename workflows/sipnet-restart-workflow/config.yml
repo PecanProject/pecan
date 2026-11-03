@@ -1,0 +1,25 @@
+default:
+  parcel_id: 39011
+  site_id: "cf1c223d4e408116"
+  outdir_root: "workflows/sipnet-restart-workflow/_test"
+  irrigation_path: "/projectnb/dietzelab/ccmmf/usr/ashiklom/event-outputs/irrigation_10000.parquet"
+  parcel_path: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+  dp_path: "/projectnb/dietzelab/ccmmf/management/irrigation/design_points.csv"
+  sipnet_binary: "/projectnb/dietzelab/ccmmf/usr/ashiklom/pecan/sipnet/sipnet"
+  met_dir: "/projectnb/dietzelab/ccmmf/ensemble/ERA5_SIPNET"
+  ic_dir: "/projectnb/dietzelab/ccmmf/ensemble/IC_files"
+  planting_events_dir: "/projectnb/dietzelab/ccmmf/management/event_files"
+  mslsp_path: "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1"
+  pft_dir: "/projectnb/dietzelab/ccmmf/ensemble/pfts"
+  n_ensemble: 3
+
+ashiklom:
+  irrigation_path: !expr path.expand("~/data/irrigation-events-out/irrigation_10000.parquet")
+  parcel_path: !expr path.expand("~/data/LandIQ-harmonized-v4.1/parcels.gpkg") 
+  dp_path: !expr path.expand("~/data/design_points.csv")
+  sipnet_binary: !expr normalizePath("../_helpers/sipnet/sipnet.master", mustWork = TRUE)
+  met_dir: !expr path.expand("~/data/ERA5-site-processed")
+  ic_dir: !expr path.expand("~/data/IC-site")
+  planting_events_dir: !expr path.expand("~/data/event-files/planting")
+  mslsp_path: !expr path.expand("~/data/matched_landiq_mslsp_v4.1")
+  pft_dir: !expr path.expand("~/data/pfts")

@@ -1,8 +1,16 @@
 # PEcAn.settings 1.9.1.9000
 
+* New function `future_papply()` is an experimental rewrite of `papply()` that runs in parallel when your session configures it
+  (by setting `future::plan()`. If testing goes well, `papply()` may adopt this behavior by default in a future release.
+* `setEnsemblePaths()` now looks up variables in settings$run$site when interpolating path templates (#4100). This allows site-specific path components via e.g.
+    ```
+    createMultiSiteSettings(s, data.frame(id = ..., grid_cell = ...)) |>
+      setEnsemblePaths(..., path_template = "met/{grid_cell}/ERA5.{n}.clim")`
+    ```
 * Breaking: `loadPath.SitePFT(path)` now takes only one argument, removing the previously required but ignored `settings` (@Thomas-Sedhom, #3834).
 * `check.model.settings()` now skips lookup of the model binary path if no DB connection is provided (#3863).
 * When no DB connection is provided to `check.database.settings`, it now skips with an INFO instead of a WARN. Rationale: now that the database is optional, a settings with no DB block is a valid settings.
+* Added regression tests confirming `check.ensemble.settings()` does not add an `ensemble` block to settings that lack one, including sensitivity-analysis-only runs (#3024).
 
 
 # PEcAn.settings 1.9.1

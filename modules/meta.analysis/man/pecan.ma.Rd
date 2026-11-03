@@ -12,7 +12,7 @@ pecan.ma(
   outdir,
   random = FALSE,
   overdispersed = TRUE,
-  logfile = file.path(outdir, "meta-analysis.log)"),
+  logfile = file.path(outdir, "meta-analysis.log"),
   verbose = TRUE
 )
 }

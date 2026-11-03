@@ -1,8 +1,9 @@
 # Tests for run.write.configs manifest handling
 #
 # These tests verify the manifest file behavior that enables multisite workflows.
-# When runModule.run.write.configs processes MultiSettings, it calls run.write.configs
-# with overwrite=TRUE for the first site and overwrite=FALSE for subsequent sites.
+# When runModule.run.write.configs processes MultiSettings with overwrite=TRUE, it
+# clears the manifest once, then runs each site with overwrite=FALSE, so every
+# site's run.write.configs call appends to it.
 
 
 make_test_env <- function() {
@@ -60,7 +61,15 @@ test_that("run.write.configs writes manifest with expected structure", {
 
   env <- make_test_env()
   settings <- make_settings(env, "1001")
-  input_design <- list(sensitivity = data.frame(param = c(1, 1), met = c(1, 1)))
+  # the design says what each run is: the median run, then Vcmax at its 95th
+  input_design <- data.frame(
+    param       = c(1, 2),
+    met         = c(1, 1),
+    sa_pft      = c(NA, "pftA"),
+    sa_trait    = c(NA, "Vcmax"),
+    sa_quantile = c("50", "95"),
+    stringsAsFactors = FALSE
+  )
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg", function(...) invisible(NULL))
@@ -86,6 +95,33 @@ test_that("run.write.configs writes manifest with expected structure", {
 })
 
 
+test_that("rerunning a multisite write with overwrite = TRUE replaces the manifest", {
+  assign("write.config.FAKE", function(...) invisible(NULL), envir = .GlobalEnv)
+  withr::defer(rm("write.config.FAKE", envir = .GlobalEnv), priority = "first")
+
+  env <- make_test_env()
+  settings <- PEcAn.settings::MultiSettings(
+    PEcAn.settings::as.Settings(make_settings(env, "1001")),
+    PEcAn.settings::as.Settings(make_settings(env, "1002"))
+  )
+  input_design <- list(sensitivity = data.frame(
+    param       = c(1, 2),
+    met         = c(1, 1),
+    sa_pft      = c(NA, "pftA"),
+    sa_trait    = c(NA, "Vcmax"),
+    sa_quantile = c("50", "95"),
+    stringsAsFactors = FALSE
+  ))
+
+  # existing run directories and the appended manifest header both warn here
+  suppressWarnings(runModule.run.write.configs(settings, overwrite = TRUE, input_design = input_design))
+  first_count <- nrow(utils::read.csv(env$manifest_file))
+  suppressWarnings(runModule.run.write.configs(settings, overwrite = TRUE, input_design = input_design))
+
+  expect_equal(nrow(utils::read.csv(env$manifest_file)), first_count)
+})
+
+
 test_that("run.write.configs appends to manifest when overwrite = FALSE", {
   # this is the key multisite behavior: papply calls with overwrite=FALSE
   # after the first site, so manifests from all sites accumulate
@@ -94,7 +130,15 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
   withr::defer(rm("write.config.FAKE", envir = .GlobalEnv), priority = "first")
 
   env <- make_test_env()
-  input_design <- list(sensitivity = data.frame(param = c(1, 1), met = c(1, 1)))
+  # the design says what each run is: the median run, then Vcmax at its 95th
+  input_design <- data.frame(
+    param       = c(1, 2),
+    met         = c(1, 1),
+    sa_pft      = c(NA, "pftA"),
+    sa_trait    = c(NA, "Vcmax"),
+    sa_quantile = c("50", "95"),
+    stringsAsFactors = FALSE
+  )
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg", function(...) invisible(NULL))

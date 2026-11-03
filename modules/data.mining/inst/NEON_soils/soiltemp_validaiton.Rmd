@@ -1,0 +1,2052 @@
+---
+title: "soiltemp_validation"
+author: "chaney"
+date: "2025-11-24"
+output: html_document
+---
+
+Validating model soil temperature with NEON data and exploring relationship of Soil T with Soil R
+```{r setup, include=FALSE}
+# Load libraries
+
+library(DBI)
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(sf)
+library(maps)
+library(terra)
+library(knitr)
+library(tidyr)
+library(neonUtilities)
+library(swfscMisc)
+library(maps)
+library(tidyverse)
+library(neonSoilFlux)
+library(parallel)
+library(ncdf4)
+library(data.table)
+library(purrr)
+library(data.table)
+library(parallel)
+library(lubridate)
+library(terra)
+library(httr)
+library(sp)
+library(neonSoilFlux)
+library(stringr)
+library(scales)
+library(stats)
+
+
+```
+
+---- First, get all of the data -----
+
+Get Soil Temp from SDA Model
+```{r}
+
+# Get the coordinates of 6400 sites in Dongchen's output
+Neonplots <- read.csv("/usr4/ugrad/chaney/R/3_25/Neon_sites_terrestrial.csv") 
+
+# Add a column for site numbers in Site_Info (site_info has coordinates of each location in df)
+Site_Info <- readRDS("/usr4/ugrad/chaney/R/3_25/site.locs.rds")
+Site_Info$Site_Number <- seq(1, nrow(Site_Info)) 
+
+# Extract latitude and longitude from Neonplots and Site_Info tables
+neon_coords <- Neonplots[ ,2:3] %>%
+  select(Latitude = field_latitude, Longitude = field_longitude)
+Site_Info_coords <- Site_Info %>%
+  select(Site_Number, lat, lon)
+
+# Put Site_Info latitude/longitude in a matrix
+Site_Coordinates <- as.matrix(Site_Info[, c("lat", "lon")])
+
+# Same for Neonplots
+Neonplots_Coordinates <- as.matrix(Neonplots[, 2:3])
+
+# Make list to store matched list
+matched <- data.frame(id = numeric(nrow(Neonplots)), # id in forecast
+                      site_id = numeric(nrow(Neonplots))) # NEON id
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+# Loop through each row in Neonplots and calculate each plot's closest site number
+for (i in 1:nrow(Neonplots)) {
+  # Extract the coordinates for the current row in Neonplots
+  plot_coords <- Neonplots_Coordinates[i, ]
+  
+  # Compute distances from this plot to all site coordinates (longlat means its in km)
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  
+  # Find the index of the minimum distance for closest site
+  closest_site_index <- which.min(distances)
+  
+  # Assign the corresponding Site_Number from Site_Info to the current row in Neonplots
+  matched$id[i] <- Site_Info$Site_Number[closest_site_index]
+  matched$site_id[i] <- Neonplots$field_site_id[i]
+}
+
+process_ensemble_st <- function(ens) {
+  ens_id <- sprintf("%05d", ens)
+  st_ens <- list()
+  c = 1
+  
+   # Create a data frame
+  st_df <- data.table(
+              Time = character(13*365*nrow(matched)),
+              ST = numeric(13*365*nrow(matched)),
+              Site_ID = character(13*365*nrow(matched))
+            )
+
+  # Go through all the sites
+  for (i in seq_len(nrow(matched))) {
+    
+    
+    site_id <- matched$site_id[i]
+    ID <- matched$id[i]
+            
+    # Get file path 
+ file_path <- paste0(
+        "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/batch_Nov_24/Job_", ceiling(ID/267),"/out/ENS-",
+        ens_id, "-", ID, "/","/README.txt"
+      )
+      
+       if (file.exists(file_path)== TRUE){
+         # Read the text file in 
+          temp <- readLines(file_path)
+          
+         # Get the met data path
+          met_data_path <- substr(temp[11],17,166)
+          
+          # in batch_nogedi not batch
+          met_data_path <- str_replace(met_data_path,"batch","batch_nogedi")
+          
+          # Open the new file
+          if (file.exists(met_data_path)== TRUE){
+            temp_table <- fread(met_data_path)
+            temp_table_yr <- temp_table$V2
+            
+            for (year in 2012:2024){
+              temp_table_yr <- filter(temp_table, V2 == year)
+
+              org_date = paste0(year - 1, "-12-31")
+              for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V3 == day)
+                st_df$Site_ID[c] = site_id
+                st_df$ST[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                
+                temp_table[V2 == year & V3 == day, mean(V7, na.rm = TRUE)]
+                
+                date <- as.Date(day, origin = org_date) 
+                st_df$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+              }
+            }
+          }
+       }
+      }
+  return(list(st = st_df))
+}
+
+Nensem <- 1:100
+num_cores <- detectCores() - 1
+
+results_temp <- mclapply(Nensem, process_ensemble_st, mc.cores = num_cores)
+
+st_output <- rbindlist(lapply(results_temp, `[[`, "st"))
+
+# Calculate ensemble mean
+st_mean <- st_output[, .(st = mean(st, na.rm = TRUE)), by = .(Time, Site_ID)]
+
+# Merge SR mean value with a time resolution of 3h (Not 1 day)
+daily_st_data <- as.data.table(st_mean)
+
+# Format Time to character for processing
+daily_st_data[, Time := as.character(Time)]
+
+
+```
+
+Get NEON Soil Temperature from John's Data in SCC -- Get both column average and surface layer
+```{r}
+
+soil_temp <- function(site_number){
+  
+  years = 2012:2025
+  site = matched$site_id[site_number]
+  
+  # Create list to store data
+  all_days <- list() 
+  count <- 1 
+
+
+  for (year in years){
+    for (i in 01:12){
+      if (i < 10){
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-0",i,".Rda")
+      }else{
+        file_name <- paste0("/projectnb/dietzelab/jzobitz/02-NEON-sites/env-data/env-meas-", site, "-",year,"-",i,".Rda")
+      }
+      if (file.exists(file_name)== TRUE){
+        load(file_name)
+      
+        # Use top layer for surface temp
+        site_data_surface_temp <- filter(site_data[[2]][[3]], verticalPosition == "501") # In C
+        # Use all layers for column temp
+        site_data_column_temp <- filter(site_data[[2]][[3]]) # In C
+       
+        
+        # Sort by date
+        site_data_surface_temp <- site_data_surface_temp[order(site_data_surface_temp$startDateTime),]
+        site_data_column_temp <- site_data_column_temp[order(site_data_column_temp$startDateTime),]
+        
+        
+        # Fine the number of data points per day (48 data points at multiple data sitesand depths for each site)
+        dppd_surface = 48 * length(unique(site_data_surface_temp$horizontalPosition))
+        
+        # Combine positions into one column to find the number of unique ones
+        site_data_column_temp$Position <- paste(site_data_column_temp$horizontalPosition,site_data_column_temp$verticalPosition)
+        dppd_column = 48 * length(unique(site_data_column_temp$Position))
+        
+        # Find the number of days 
+        n_days_s <- nrow(site_data_surface_temp) / (dppd_surface)
+        n_days_c <- nrow(site_data_column_temp) / (dppd_column)
+        
+        # Add day index (ceil groups every dppd rows)
+        site_data_surface_temp$day_idx <- ceiling(seq_len(nrow(site_data_surface_temp)) / dppd_surface)
+        site_data_column_temp$day_idx <- ceiling(seq_len(nrow(site_data_column_temp)) / dppd_column)
+      
+       # Count rows per day
+        day_sizes_s <- table(site_data_surface_temp$day_idx)
+        day_sizes_c <- table(site_data_column_temp$day_idx)
+        
+        # Keep only complete days
+        complete_days_surface <- as.numeric(names(day_sizes_s[day_sizes_s == dppd_surface]))
+        complete_days_column <- as.numeric(names(day_sizes_c[day_sizes_c == dppd_column]))
+        
+        # Find common days
+        common_days <- intersect(complete_days_surface, complete_days_column)
+        
+        # Filter 
+        surface_filt <- site_data_surface_temp %>% filter(day_idx %in% common_days)
+        column_filt  <- site_data_column_temp  %>% filter(day_idx %in% common_days)
+        
+        # Turn into Matrix 
+        sts_mat <- matrix(surface_filt$soilTempMean, nrow = dppd_surface)
+        stc_mat <- matrix(column_filt$soilTempMean,  nrow = dppd_column)
+        
+        # Find Times
+        surface_filt$startDateTime <- as.POSIXct(surface_filt$startDateTime, tz = "UTC")
+        day_times <- tapply(surface_filt$startDateTime, surface_filt$day_idx, min)
+        day_times <- day_times[as.character(common_days)]
+        day_times <- as.POSIXct(day_times, origin = "1970-01-01", tz = "UTC")
+        day_times <- format(as.Date(day_times), "%Y-%m-%d")
+
+        
+        # Find daily means ST
+        daily_means_sts <- colMeans(sts_mat, na.rm = TRUE)
+        daily_means_stc <- colMeans(stc_mat, na.rm = TRUE)
+        
+        # Add to table
+        if (length(day_times) == 0) {
+            warning("No complete days available for site ", site)
+            return(data.frame(Site_ID = site, Time = as.POSIXct(NA),
+                              Neon_ST_column = NA, Neon_ST_surface = NA))
+        }else{        
+        summary_table <- data.frame(
+          Site_ID = site,
+          Time = day_times,
+          Neon_ST_column = daily_means_stc,
+          Neon_ST_surface = daily_means_sts
+        )}
+        
+        # Add table to list
+      all_days[[count]] <- summary_table
+      count <- count + 1
+        
+        
+      }
+    }
+  }
+  # turn list into table
+  summary <- rbindlist(all_days)
+  
+return(list(stm = summary))
+}
+
+
+# Apply parallel calculation for each site
+n = 1:nrow(matched)
+num_cores <- detectCores() - 1
+
+# Soil_temp Results
+results_temp <- mclapply(n, soil_temp, mc.cores = num_cores)
+
+# Combine results from all ensembles
+soil_t <- rbindlist(lapply(results_temp, `[[`, "stm"),fill=TRUE)
+
+
+```
+
+Combine into table
+```{r}
+
+# Combine two soil temperature tables
+soil_t_table <-  merge(daily_st_data, soil_t, by = c("Time","Site_ID"))
+
+# Change some names
+names(soil_t_table)[names(soil_t_table) == "st"] <- "Model_ST"
+
+# Make time a character vector for soil R
+soil_t_table$Time <- as.Date(soil_t_table$Time)
+daily_sr$Time <- format(daily_sr$Time, format = "%Y-%m-%d")
+
+# Merge with soil respiration 
+soil_table <- merge(daily_sr, soil_t_table, by = c("Time","Site_ID"))
+
+```
+
+---- Next, Look at NEON relationship of Soil R as a function of Soil T 
+
+Soil respiration vs soil temperature -- All data together 
+(using NEON column data)
+```{r}
+
+# Sort into x order 
+soil_table <- soil_table[order(soil_table$Neon_ST_column)]
+
+
+# Make new data frame & remove infs
+df_t_ma <- data.frame(x = soil_table$Neon_ST_column,
+                   y = soil_table$Marshall_SR)
+
+df_t_ma <- df_t_ma %>%
+  filter(if_all(where(is.numeric), is.finite))
+
+df_t_mq <- data.frame(x = soil_table$Neon_ST_column,
+                   y = soil_table$Mill_Quirk_SR)
+
+df_t_mq <- df_t_mq %>%
+  filter(if_all(where(is.numeric), is.finite))
+
+# Get rid of rows with NAs
+
+# Loess Regressions
+loess90_t_ma <- loess(y ~ x, data=df_t_ma, span=.9, na.action = na.omit)
+df_t_ma$y_fit <- predict(loess90_t_ma)
+
+loess90_t_mq <- loess(y ~ x, data=df_t_mq, span=.9, na.action = na.omit)
+df_t_mq$y_fit <- predict(loess90_t_mq)
+
+# Scatter Plot with Fitted line
+ggplot()+
+  geom_point(data = df_t_ma, aes(x = x, y = y, color = "Marshall Data"), size = 0.5) +
+  geom_point(data = df_t_mq, aes(x = x, y = y, color = "Millington Quirk Data"), size = 0.5) +
+  geom_line(data = df_t_ma, aes(x = x, y = y_fit, color = "Marshall Loess Regression"), size = 1) +
+  geom_line(data = df_t_mq, aes(x=x, y=y_fit, color ="Millington Quirk Loess Regression"), size = 1)+
+  scale_color_manual(values = c("Marshall Data" = "darkgrey", "Millington Quirk Data" = "lightgrey", "Marshall Loess Regression" = "darkgreen", "Millington Quirk Loess Regression" = "lightgreen")) +
+  labs(title = "Soil Respiration as a function of Soil Temperature", x = "Soil Temperature (C)", y = "Soil Respiration (kg/m^2*s)", color = "Dataset")
+
+```
+
+
+Line fits for each Site NEON Soil Temp
+```{r}
+
+sites <- unique(soil_table$Site_ID)
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Neon_ST_column),]
+  
+  df_ma <- data.frame(x = temp_data$Neon_ST_column,
+                   y = temp_data$Marshall_SR)
+  df_ma <- df_ma %>%
+           filter(if_all(where(is.numeric), is.finite))
+
+  # Scatter Plot with Fitted line
+  print(ggplot(df_ma, aes(x = x, y = y)) + geom_point(size = 0.5) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration (Marshall)"))
+  
+  df_mq <- data.frame(x = temp_data$Neon_ST_column,
+                   y = temp_data$Mill_Quirk_SR)
+  df_mq <- df_mq %>%
+            filter(if_all(where(is.numeric), is.finite))
+
+  # Scatter Plot with Fitted line
+  print(ggplot(df_mq, aes(x = x, y = y)) + geom_point(size = 0.5) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration (Millington-Quirk"))
+
+}
+```
+
+
+Fit Sigmoidal curve to Soil R as a function of Soil T for NEON and model. Just plotting NEON
+```{r}
+# Making graph of NEON Soil Respiration as a function of time with Loess Regression and Sigmoidal Fit
+
+sites <- unique(soil_table$Site_ID)
+
+# Make table for asymptote data
+sig_fit_vals <- data.frame(Site_ID = character(length(sites)),
+                                  Asym_ma = numeric(length(sites)),
+                                  Asym_mq = numeric(length(sites)),
+                                  Asym_model = numeric(length(sites)),
+                                  Xmid_ma = numeric(length(sites)),
+                                  Xmid_mq = numeric(length(sites)),
+                                  Xmid_model = numeric(length(sites)))
+
+# Make a nested data frame for all temp fitting data
+  temp_fits <- list()
+
+# Set to NA (will be changed if not NA)
+  sig_fit_vals$Asym_ma <- NA_real_
+  sig_fit_vals$Asym_mq <- NA_real_
+  sig_fit_vals$Asym_model <- NA_real_
+  sig_fit_vals$Xmid_ma <- NA_real_
+  sig_fit_vals$Xmid_mq <- NA_real_
+  sig_fit_vals$Xmid_model <- NA_real_
+  
+for (i in 1:length(sites)){
+  
+  sig_fit_vals$Site_ID[i] <- sites[i]
+  
+  # Filter for site
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+
+  # Sort by x
+  temp_data <- temp_data[order(temp_data$Neon_ST_column),]
+  
+  # Get 2 data sets for Marshall and MQ
+  temp_data_ma <- data.frame(x = temp_data$Neon_ST_column,
+                     y = temp_data$Marshall_SR,
+                     Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID)
+  temp_data_ma <- temp_data_ma %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  temp_data_mq <- data.frame(x = temp_data$Neon_ST_column,
+                     y = temp_data$Mill_Quirk_SR,
+                     Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID)
+  
+  temp_data_mq <- temp_data_mq %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  # And one for model
+  temp_data_model <- data.frame(x = temp_data$Model_ST,
+                     y = temp_data$Model_SR,
+                     Time = temp_data$Time,
+                     Site_ID = temp_data$Site_ID)
+  
+  temp_data_model <- temp_data_model %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  
+  # Do loess regression of all
+    # NEON
+  loess90_temp_ma <- loess(y ~ x, data=temp_data_ma, span=.9, na.action = na.omit)
+  temp_data_ma$y_fit_loess <- predict(loess90_temp_ma)
+
+  loess90_temp_mq <- loess(y ~ x, data=temp_data_mq, span=.9,na.action = na.omit)
+  temp_data_mq$y_fit_loess <- predict(loess90_temp_mq)
+  
+    # MODEL
+  loess90_temp_model <- loess(y ~ x, data=temp_data_model, span=.9, na.action = na.omit)
+  temp_data_model$y_fit_loess <- predict(loess90_temp_model)
+  
+  # fit a Sigmoidal curve, if it fails then NA will be default value
+  
+  tryCatch({
+  # First, for Marshall SR
+  
+  # Use SSlogis to automatically set the start poitns
+  sig_fit_t_ma <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_ma)
+  
+  temp_data_ma$y_fit_sig <- predict(sig_fit_t_ma)
+  
+  # Put asymptote value in table
+    coefs_ma<- coef(sig_fit_t_ma)
+    sig_fit_vals$Asym_ma[i] <- unname(coefs_ma["Asym"])
+    sig_fit_vals$Xmid_ma[i] <- unname(coefs_ma["xmid"])
+  
+    
+  }, error = function(e){
+     print(paste("NLS fit failed for data set", i, ":", conditionMessage(e)))
+  })
+  
+   # Then, for Mill Quirk
+  tryCatch({
+  sig_fit_t_mq <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_mq)
+  
+  temp_data_mq$y_fit_sig <- predict(sig_fit_t_mq)
+  
+   # Put asymptote value in table
+    coefs_mq<- coef(sig_fit_t_mq)
+    sig_fit_vals$Asym_mq[i] <- unname(coefs_mq["Asym"])
+    sig_fit_vals$Xmid_mq[i] <- unname(coefs_mq["xmid"])
+  
+    
+  }, error = function(e){
+        print(paste("NLS fit failed for data set", i, ":", conditionMessage(e)))
+  })
+  
+  # Last, for model
+  tryCatch({
+    
+  sig_fit_model <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_model)
+  
+  temp_data_model$y_fit_sig <- predict(sig_fit_model)
+  
+    # Put asymptote value in table
+    coefs_model<- coef(sig_fit_model)
+    sig_fit_vals$Asym_model[i] <- unname(coefs_model["Asym"])
+    sig_fit_vals$Xmid_model[i] <- unname(coefs_model["xmid"])
+    
+  }, error = function(e){
+        print(paste("NLS fit failed for data set", i, ":", conditionMessage(e)))
+  })
+  
+  # Graph if the fitting worked
+  
+  if(is.na(sig_fit_vals$Asym_ma[i]) == FALSE && is.na(sig_fit_vals$Asym_mq[i]) == FALSE){
+    
+      print(ggplot()+
+   geom_point(data = temp_data_ma, aes(x = x, y = y, color = "Marshall Data"), size = 0.5) +
+   geom_point(data = temp_data_mq, aes(x = x, y = y, color = "Mill Quirk Data"), size = 0.5) +
+    geom_line(data = temp_data_ma, aes(x = x, y = y_fit_sig, color = "Marshall Sigmoidal Fit"), size = 1)+
+   geom_line(data = temp_data_mq, aes(x = x, y = y_fit_sig, color = "Mill Quirk Sigmoidal Fit"), size = 1)+
+     geom_line(data = temp_data_ma, aes(x = x, y = y_fit_loess, color = "Marshall Loess Fit"), size = 1) +
+    geom_line(data = temp_data_mq, aes(x = x, y = y_fit_loess, color = "Mill Quirk Loess Fit"), size = 1) +
+ scale_color_manual(values = c("Marshall Data" = "darkgrey", "Mill Quirk Data" = "lightgrey", "Marshall Loess Fit" = "darkgreen", "Mill Quirk Loess Fit" = "lightgreen", "Marshall Sigmoidal Fit" = "royalblue", "Mill Quirk Sigmoidal Fit" = "lightblue")) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset"))
+    
+  }else if(is.na(sig_fit_vals$Asym_ma[i]) == FALSE && is.na(sig_fit_vals$Asym_mq[i]) == TRUE){
+    
+      print(ggplot()+
+   geom_point(data = temp_data_ma, aes(x = x, y = y, color = "Marshall Data"), size = 0.5) +
+    geom_line(data = temp_data_ma, aes(x = x, y = y_fit_sig, color = "Marshall Sigmoidal Fit"), size = 1)+
+   geom_line(data = temp_data_ma, aes(x = x, y = y_fit_loess, color = "Marshall Loess Fit"), size = 1) +
+    geom_line(data = temp_data_mq, aes(x = x, y = y_fit_loess, color = "Mill Quirk Loess Fit"), size = 1) +
+   scale_color_manual(values = c("Marshall Data" = "darkgrey", "Mill Quirk Data" = "lightgrey", "Marshall Loess Fit" = "darkgreen", "Mill Quirk Loess Fit" = "lightgreen", "Marshall Sigmoidal Fit" = "royalblue", "Mill Quirk Sigmoidal Fit" = "lightblue")) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset"))
+    
+  }else  if(is.na(sig_fit_vals$Asym_ma[i]) == TRUE && is.na(sig_fit_vals$Asym_mq[i]) == FALSE){
+    
+      print(ggplot()+
+   geom_point(data = temp_data_mq, aes(x = x, y = y, color = "Mill Quirk Data"), size = 0.5) +
+   geom_line(data = temp_data_mq, aes(x = x, y = y_fit_sig, color = "Mill Quirk Sigmoidal Fit"), size = 1)+
+   geom_line(data = temp_data_ma, aes(x = x, y = y_fit_loess, color = "Marshall Loess Fit"), size = 1) +
+    geom_line(data = temp_data_mq, aes(x = x, y = y_fit_loess, color = "Mill Quirk Loess Fit"), size = 1) +
+   scale_color_manual(values = c("Marshall Data" = "darkgrey", "Mill Quirk Data" = "lightgrey", "Marshall Loess Fit" = "darkgreen", "Mill Quirk Loess Fit" = "lightgreen", "Marshall Sigmoidal Fit" = "royalblue", "Mill Quirk Sigmoidal Fit" = "lightblue")) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset"))
+    
+  }
+  
+  # Rename x and y 
+  colnames(temp_data_ma)[colnames(temp_data_ma) == "y"] <- "Marshall_SR"
+  colnames(temp_data_ma)[colnames(temp_data_ma) == "x"] <- "NEON_ST"
+  colnames(temp_data_ma)[colnames(temp_data_ma) == "y_fit_loess"] <- "y_fit_loess_ma"
+  colnames(temp_data_ma)[colnames(temp_data_ma) == "y_fit_sig"] <- "y_fit_sig_ma"
+  
+  colnames(temp_data_mq)[colnames(temp_data_mq) == "y"] <- "Mill_Quirk_SR"
+  colnames(temp_data_mq)[colnames(temp_data_mq) == "x"] <- "NEON_ST"
+  colnames(temp_data_mq)[colnames(temp_data_mq) == "y_fit_loess"] <- "y_fit_loess_mq"
+  colnames(temp_data_mq)[colnames(temp_data_mq) == "y_fit_sig"] <- "y_fit_sig_mq"
+  
+  colnames(temp_data_model)[colnames(temp_data_model) == "y"] <- "Model_SR"
+  colnames(temp_data_model)[colnames(temp_data_model) == "x"] <- "Model_ST"
+  colnames(temp_data_model)[colnames(temp_data_model) == "y_fit_loess"] <- "y_fit_loess_model"
+  colnames(temp_data_model)[colnames(temp_data_model) == "y_fit_sig"] <- "y_fit_sig_model"
+  
+  
+  # Combine ma and mq data frames
+temp_df <- merge(temp_data_ma, temp_data_mq, by = c("Time", "Site_ID", "NEON_ST"))
+  
+  # Combine with model
+  temp_df_final <- merge(temp_df, temp_data_model, by = c("Time", "Site_ID"))
+  
+  temp_fits[[i]] <- temp_df_final
+  
+}
+
+```
+
+Try to find something to correlate to Asymptotes
+```{r}
+
+# Add lat and long site coordinates
+
+sig_fit_vals$Site_Lat <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$Site_Long <- numeric(nrow(sig_fit_vals))
+
+
+for (i in 1:length(sig_fit_vals$Site_ID)){
+  site_num = which(Neonplots$field_site_id == sig_fit_vals$Site_ID[i])
+  if (length(site_num)>0){
+    sig_fit_vals$Site_Lat[i] <- Neonplots$field_latitude[site_num]
+    sig_fit_vals$Site_Long[i] <- Neonplots$field_longitude[site_num]
+  }
+}
+
+dat = terra::rast("all_data_layers.tif")
+
+
+# -- Soil Tavg
+  
+sig_fit_vals$Soil_tavg <- numeric(nrow(sig_fit_vals))
+
+for (i in 1:nrow(sig_fit_vals)){
+  temp_data <-  filter(soil_table, Site_ID == sig_fit_vals$Site_ID[i])
+  sig_fit_vals$Soil_tavg[i] <- mean(temp_data$Neon_ST_column)
+}
+
+ # Graph of Soil Tavg and Asymptote values
+  
+  print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = Soil_tavg, y = Asym_ma, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = Soil_tavg, y = Asym_mq, color = "Mill Quirk Asymptotes"))+
+   #geom_smooth(data = sig_fit_vals, aes(x = Soil_tavg, y = Asym_ma, color = "red"), method = "lm", se = FALSE)+
+   #geom_smooth(data = sig_fit_vals, aes (x = Soil_tavg, y = Asym_mq, color = "orange"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "darkgreen", "Mill Quirk Asymptotes" = "lightgreen")) +
+    labs(title = "Correlation of Average Temperature to Asymptotes of Soil T as a Function of Soil R fits", x = "Soil T Avg", y = "Asymptote of Sigmoidal fit of Soil R as a function of soil T", color = "Dataset"))
+
+# -- 13 factors 
+  
+sig_fit_vals$ysd <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$abg<- numeric(nrow(sig_fit_vals))
+sig_fit_vals$fia <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$gedi<- numeric(nrow(sig_fit_vals))
+sig_fit_vals$twi<-numeric(nrow(sig_fit_vals))
+sig_fit_vals$tavg <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$srad <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$prec <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$vapr <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$ph <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$n <-numeric(nrow(sig_fit_vals))
+sig_fit_vals$soc <- numeric(nrow(sig_fit_vals))
+sig_fit_vals$sand <- numeric(nrow(sig_fit_vals))
+
+pt = numeric(1)
+
+# Extract data for each from each Neon site coordinate
+for (i in 1:nrow(sig_fit_vals)){
+  pt = terra::extract(dat,data.frame(lon=sig_fit_vals$Site_Long[i], lat = sig_fit_vals$Site_Lat[i]))
+  sig_fit_vals$ysd[i] <- pt$year_since_disturb
+  sig_fit_vals$abg[i] <- pt$agb
+  sig_fit_vals$fia[i] <- pt$fia
+  sig_fit_vals$gedi[i] <- pt$gedi
+  sig_fit_vals$twi[i] <- pt$twi
+  sig_fit_vals$tavg[i] <- pt$tavg
+  sig_fit_vals$srad[i] <- pt$srad
+  sig_fit_vals$prec[i] <- pt$prec
+  sig_fit_vals$vapr[i] <- pt$vapr
+  sig_fit_vals$ph[i] <- pt$PH
+  sig_fit_vals$n[i] <- pt$N
+  sig_fit_vals$soc[i] <- pt$SOC
+  sig_fit_vals$sand[i] <- pt$Sand
+}
+
+
+# For correlation Coefficient
+for (i in 6:18){
+  # Fit a line
+  sig_fit_vals$temp = sig_fit_vals[[i]]
+  fit = lm(sig_fit_vals$temp ~ sig_fit_vals$Asym_ma)
+  
+  # Graph
+
+  print(ggplot(sig_fit_vals, aes(x = temp, y = Asym_ma)) + 
+          geom_point() +
+          geom_smooth(method = "lm", se = FALSE) + xlab(colnames(sig_fit_vals[(i)])))
+
+  # Add r squared, slope, p value
+}
+
+# -- SOC
+
+# Need to find average Soil Carbon for each site
+
+# Add a row to asymptote data table
+sig_fit_vals$SOC_neon <- numeric(nrow(sig_fit_vals))
+
+# Add soil carbon average
+for (sitename in sites) {
+  # Filter into just site
+  all_site <- filter(soil_table_years, Site_ID == sitename)
+  
+  
+  # Find row with that sitename
+  row <- which(sig_fit_vals$Site_ID == sitename)
+  
+  # Add average SOC
+  sig_fit_vals$SOC_neon[row]<- mean(all_site$SOC_neon)
+}
+
+ print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = SOC_neon, y = Asym_ma, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = SOC_neon, y = Asym_mq, color = "Mill Quirk Asymptotes"))+
+   geom_smooth(data = sig_fit_vals, aes(x = SOC_neon, y = Asym_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+   geom_smooth(data = sig_fit_vals, aes (x = SOC_neon, y = Asym_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "black", "Mill Quirk Asymptotes" = "grey", "Marshall Line Fit" = "darkgreen", "Mill Quirk Line Fit" = "lightgreen")) +
+    labs(title = "Correlation of Soil Carbon to Asymptotes of Soil T as a Function of Soil R fits", x = "SOC_neon", y = "Asymptote of of Soil R as a function of Soil Temp", color = "Dataset"))
+
+```
+
+Finding if asympotote/[SOC] correlates to any factors
+```{r}
+
+# -- LATITUDE
+
+# Add rows for NEON lat and long
+sig_fit_vals$Neon_lat = numeric(nrow(sig_fit_vals))
+sig_fit_vals$Neon_long = numeric(nrow(sig_fit_vals))
+
+# Add latitude data from Neonplots
+for (i in 1:nrow(sig_fit_vals)) {
+  # Find row with that sitename
+  row <- which(Neonplots$field_site_id == sig_fit_vals$Site_ID[i])
+  
+  # Add lat & long if file exists
+  if (length(row) > 0 ){
+    sig_fit_vals$Neon_lat[i] <- Neonplots$field_latitude[row]
+    sig_fit_vals$Neon_long[i] <- Neonplots$field_longitude[row]
+  }else{
+    sig_fit_vals$Neon_lat[i] <- NA
+    sig_fit_vals$Neon_long[i] <- NA
+  }
+}
+
+# Add a row for asymeptote/SOC
+sig_fit_vals$Asym_ma_div_soc <- sig_fit_vals$Asym_ma/sig_fit_vals$SOC_neon
+sig_fit_vals$Asym_mq_div_soc <- sig_fit_vals$Asym_mq/sig_fit_vals$SOC_neon
+
+print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = Neon_lat, y = Asym_ma_div_soc, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = Neon_lat, y = Asym_mq_div_soc, color = "Mill Quirk Asymptotes"))+
+    geom_smooth(data = sig_fit_vals, aes(x = Neon_lat, y = Asym_ma_div_soc, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+   geom_smooth(data = sig_fit_vals, aes (x = Neon_lat, y = Asym_mq_div_soc, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "black", "Mill Quirk Asymptotes" = "grey", "Marshall Line Fit" = "darkgreen", "Mill Quirk Line Fit" = "lightgreen")) +
+    labs(title = "Correlation of Latitude to Asymptote/SOC", x = "Latitude", y = "Asymptote of Soil R as a function of SOC/ SOC", color = "Dataset"))
+
+# -- LONGITUDE
+
+print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = Neon_long, y = Asym_ma_div_soc, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = Neon_long, y = Asym_mq_div_soc, color = "Mill Quirk Asymptotes"))+
+    geom_smooth(data = sig_fit_vals, aes(x = Neon_long, y = Asym_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+   geom_smooth(data = sig_fit_vals, aes (x = Neon_long, y = Asym_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "black", "Mill Quirk Asymptotes" = "grey", "Marshall Line Fit" = "darkgreen", "Mill Quirk Line Fit" = "lightgreen")) +
+    labs(title = "Correlation of Longitude to Asymptote/SOC", x = "Longitude", y = "Asymptote of Soil R as a function of Soil Temp/ SOC", color = "Dataset"))
+
+
+# -- PRECIPITATION
+
+print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = prec, y = Asym_ma_div_soc, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = prec, y = Asym_mq_div_soc, color = "Mill Quirk Asymptotes"))+
+    geom_smooth(data = sig_fit_vals, aes(x = prec, y = Asym_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+   geom_smooth(data = sig_fit_vals, aes (x = prec, y = Asym_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "black", "Mill Quirk Asymptotes" = "grey", "Marshall Line Fit" = "darkgreen", "Mill Quirk Line Fit" = "lightgreen")) +
+    labs(title = "Correlation of Precipitation to Asymptote/SOC", x = "Precipitation", y = "Asymptote of Soil R as a function of Soil Temp/ SOC", color = "Dataset"))
+
+# -- 13 Factors 
+
+col_names = colnames(sig_fit_vals)[4:20]
+
+for (col in col_names){
+  print(ggplot()+
+    geom_point(data = sig_fit_vals, aes(x = .data[[col]], y = Asym_ma_div_soc, color = "Marshall Asymptotes"))+
+    geom_point(data = sig_fit_vals, aes(x = .data[[col]], y = Asym_mq_div_soc, color = "Mill Quirk Asymptotes"))+
+    geom_smooth(data = sig_fit_vals, aes(x = .data[[col]], y = Asym_ma, color = "Marshall Line Fit"), method = "lm", se = FALSE)+
+   geom_smooth(data = sig_fit_vals, aes (x = .data[[col]], y = Asym_mq, color = "Mill Quirk Line Fit"), method = "lm", se = FALSE)+
+    scale_color_manual(values = c("Marshall Asymptotes" = "black", "Mill Quirk Asymptotes" = "grey", "Marshall Line Fit" = "darkgreen", "Mill Quirk Line Fit" = "lightgreen")) +
+    labs(title = "Correlation of Precipitation to Asymptote/SOC", x = col, y = paste0("Asymptote of Soil R as a function of SOC/", col), color = "Dataset"))
+}
+
+
+```
+
+
+---- Now, Validating Model ---- 
+
+ -- First, basic error validations of just soil T
+ 
+ Graph Predicted-Observed Plots for each site, for column and surface
+```{r}
+sites <- unique(soil_table$Site_ID)
+
+soil_temp_line_fits<- data.frame(Site_ID = character(length(matched$site_id)),
+                                slope_column = numeric(length(matched$site_id)),
+                                intercept_column = numeric(length(matched$site_id)),
+                                slope_surface = numeric(length(matched$site_id)),
+                                intercept_surface = numeric(length(matched$site_id)))
+
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Model_ST)]
+  
+ # Fit line
+  line_fit_column <- lm(Neon_ST_column~Model_ST, data = temp_data, na.action = na.exclude)
+  line_fit_surface <- lm(Neon_ST_surface~Model_ST, data = temp_data, na.action = na.exclude)
+  
+  temp_data$y_fit_surface <- predict(line_fit_surface)
+  temp_data$y_fit_column <- predict(line_fit_column)
+  temp_data <- temp_data %>% arrange(Model_ST)
+  
+  print(ggplot() + 
+        geom_point(data = temp_data, aes(x = Model_ST, y = Neon_ST_surface, color = "Surface"))+ 
+        geom_point(data = temp_data, aes(x = Model_ST, y = Neon_ST_column, color = "Column"))+ 
+        geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_surface, color = "Surface Fit", group = 1), size = 1) +
+       geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_column, color = "Column Fit",group = 1), size = 1) + 
+        geom_abline(slope = 1, intercept = 0, color = "red", size = 2)+
+        scale_color_manual(values = c("Surface" = "lightblue", "Column" = "grey", "Surface Fit" = "blue", "Column Fit" = "black")) +
+        labs(title = paste0("Soil Temperature at ", sites[i]), x = "Predicted (C)", y = "Observed (C)"))
+  
+  
+  coefs_column<- coef(line_fit_column)
+  coefs_surface<- coef(line_fit_surface)
+  
+  # add to table
+  soil_temp_line_fits$Site_ID[i] = sites[i];
+  soil_temp_line_fits$slope_column[i] = unname(coefs_column["(Intercept)"]);
+  soil_temp_line_fits$intercept_column[i] = unname(coefs_column["Model_ST"]);
+  soil_temp_line_fits$slope_surface[i] = unname(coefs_surface["(Intercept)"]);
+  soil_temp_line_fits$intercept_surface[i] = unname(coefs_surface["Model_ST"]);
+
+}
+```
+
+ Finding error
+```{r}
+
+# Calculate error
+soil_table$STemp_error_surface <- soil_table$Model_ST - soil_table$Neon_ST_surface
+soil_table$STemp_error_column <- soil_table$Model_ST - soil_table$Neon_ST_column
+
+# Keep a permanent soil_table
+soil_table_perm <- soil_table
+
+# Make table for summary statistics
+summary_stats_T <- data.frame(Site_ID = character(length(sites)),
+                           STemp_corr_coef_surface = numeric(length(sites)),
+                           STemp_rms_error_surface = numeric(length(sites)),
+                           STemp_corr_coef_column = numeric(length(sites)),
+                           STemp_rms_error_column = numeric(length(sites)))
+
+
+sites <- unique(soil_table$Site_ID)
+
+for (i in 1:length(sites)){
+  
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+ 
+  
+  # Remove inf values
+  temp_data <- temp_data %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  
+  # Add site name
+  summary_stats_T$Site_ID[i] <- sites[i]
+  
+  # Find correlation coeffs
+  summary_stats_T$STemp_corr_coef_surface[i] <- cor(temp_data$Neon_ST_surface, temp_data$Model_ST)
+  summary_stats_T$STemp_corr_coef_column[i] <- cor(temp_data$Neon_ST_column, temp_data$Model_ST)
+  
+  # Find RMS errors
+  summary_stats_T$STemp_rms_error_surface[i] <- sqrt(mean((temp_data$Neon_ST_surface - temp_data$Model_ST)^2))
+  summary_stats_T$STemp_rms_error_column[i] <- sqrt(mean((temp_data$Neon_ST_column - temp_data$Model_ST)^2))
+}
+
+```
+
+Make map of corr coef
+```{r}
+
+# Add site coordinates
+summary_stats_T$Site_Lat <- numeric(length(sites))
+summary_stats_T$Site_Long <- numeric(length(sites))
+
+for (i in 1:length(summary_stats_T$Site_ID)){
+  site_num = which(Neonplots$field_site_id == summary_stats_T$Site_ID[i])
+  summary_stats_T$Site_Lat[i] <- Neonplots$field_latitude[site_num]
+  summary_stats_T$Site_Long[i] <- Neonplots$field_longitude[site_num]
+}
+
+
+USA = map_data("world") %>% filter(region == "USA")
+us_map <- st_as_sf(USA, 
+            coords = c("long", "lat"), 
+            crs = 4326)  # CRS 4326 is WGS84 (latitude/longitude)
+
+# Map of correlation coefficient
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+  geom_point(data = summary_stats_T, aes(x= Site_Long, y = Site_Lat, size = STemp_corr_coef_surface, color = STemp_corr_coef_surface)) +
+  geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Soil Temperature (Surface) Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+print(ggplot()+
+  geom_polygon(data = USA, aes(x= long, y = lat, group = group), fill="forestgreen", alpha = 0.3) + 
+    geom_point(data = summary_stats_T, aes(x= Site_Long, y = Site_Lat, size = STemp_corr_coef_column, color = STemp_corr_coef_column)) +
+    geom_point(alpha = 0.7) + 
+    xlim(-170, -50) + 
+    scale_size_continuous(range = c(1,10)) + 
+    theme_void() + labs(title="Soil Temperature (Column) Correlation Coefficient") + 
+    theme(plot.title = element_text(hjust = 0.5),))
+
+```
+
+Time series
+```{r}
+for (i in 1:nrow(matched)){
+  # Make a graph of a year of one of them
+  temp_data <- filter(soil_table, Site_ID == matched$site_id[i])
+  
+  print(ggplot(temp_data) +  
+    geom_line(aes(x = Time, y = Model_ST,group = 1), linewidth = 1, color = "orange") +
+    geom_line(aes(x = Time, y = Neon_ST_surface, group = 1), linewidth = 1, color = "darkgreen") + 
+    labs(title = matched$site_id[i], x = "date", y = "Soil Temperature"))
+}
+```
+
+
+-- Next, validating Soil R as a function of Soil T relationship 
+ 
+Loess Regressions to compare NEON and model soil temperatures -- for surface and column temps -- SITES TOGETHER
+```{r}
+
+# Loess Regressions for Model 
+
+df_t_model <- data.frame(x = soil_table$Model_ST,
+                   y = soil_table$Model_SR)
+
+loess90_t_model <- loess(y ~ x, data=df_t_model, span=.9)
+df_t_model$y_fit <- predict(loess90_t_model)
+
+ggplot() +
+  geom_line(data = df_t_ma, aes(x = x, y = y_fit, color = "NEON Data: Marshall Method"), size = 1) +
+  geom_line(data = df_t_mq, aes(x = x, y = y_fit, color = "NEON Data: Mill Quirk Method"), size = 1) +
+  geom_line(data = df_t_model, aes(x = x, y = y_fit, color = "Model Output"), size = 1)+
+  scale_color_manual(values = c("Model Output" = "orange", "NEON Data: Mill Quirk Method" = "lightgreen", "NEON Data: Marshall Method" = "darkgreen")) +
+  labs(title = "Regression Model for Soil R as a function of T",
+       x = "Soil Temperature",
+       y = "Soil Respiration",
+       color = "Dataset")
+
+```
+ 
+ Line fits for each Model Temp
+```{r}
+
+for (i in 1:length(sites)){
+  temp_data <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data <- temp_data[order(temp_data$Model_ST)]
+  
+  df <- data.frame(x = temp_data$Model_ST,
+                   y = temp_data$Model_SR)
+
+  # Scatter Plot with Fitted line
+  print(ggplot(df, aes(x = x, y = y)) + geom_point(size = 0.5) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration"))
+}
+
+```
+ 
+
+Perform LOESS Regression for NEON & Model at each site temperature
+```{r}
+for (i in 1:length(sites)){
+  temp_data_ma <- filter(soil_table, Site_ID == sites[i])
+  temp_data_mq <- filter(soil_table, Site_ID == sites[i])
+  temp_data_model <- filter(soil_table, Site_ID == sites[i])
+  
+  temp_data_ma <- temp_data_ma[order(temp_data_ma$Neon_ST_column)]
+  temp_data_mq <- temp_data_mq[order(temp_data_mq$Neon_ST_column)]
+  temp_data_model <- temp_data_model[order(temp_data_model$Neon_ST_column)]
+  
+  df_temp_ma <- data.frame(x = temp_data_ma$Neon_ST_column,
+                   y = temp_data_ma$Marshall_SR)
+   df_temp_ma  <-   df_temp_ma  %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  
+  df_temp_mq <- data.frame(x = temp_data_mq$Neon_ST_column,
+                   y = temp_data_mq$Mill_Quirk_SR)
+    df_temp_mq  <-   df_temp_mq  %>%
+  filter(if_all(where(is.numeric), is.finite))
+  
+  df_temp_model <- data.frame(x = temp_data_model$Model_ST,
+                   y = temp_data_model$Model_SR)
+    df_temp_model  <-   df_temp_model  %>%
+  filter(if_all(where(is.numeric), is.finite))
+
+  # NEON
+  loess90_temp_ma <- loess(y ~ x, data=df_temp_ma, span=.9)
+  df_temp_ma$y_fit <- predict(loess90_temp_ma)
+
+  loess90_temp_mq <- loess(y ~ x, data=df_temp_mq, span=.9)
+  df_temp_mq$y_fit <- predict(loess90_temp_mq)
+  
+  # SDA Model
+  loess90_temp_model <- loess(y ~ x, data=df_temp_model, span=.9)
+  df_temp_model$y_fit <- predict(loess90_temp_model)
+
+  # TEMP
+  
+  print(ggplot() +
+    geom_line(data = df_temp_ma, aes(x = x, y = y_fit, color = "NEON Data: Marshall Method"), size = 1) +
+    geom_line(data = df_temp_mq, aes(x = x, y = y_fit, color = "NEON Data: Mill Quirk Method"), size = 1) +
+    geom_line(data = df_temp_model, aes(x = x, y = y_fit, color = "Model Output"), size = 1)+
+    scale_color_manual(values = c("Model Output" = "orange", "NEON Data: Mill Quirk Method" = "lightgreen", "NEON Data: Marshall Method" = "darkgreen")) +
+    labs(title = sites[i],
+         x = "Soil Temperature",
+         y = "Soil Respiration",
+         color = "Dataset"))
+
+}
+```
+
+Soil respiration vs soil temperature for model & NEON, Each Site with sigmoidal and loess regression fits -- With no reference points
+```{r}
+for (i in 1:length(sites)){
+  
+  # Get data from temperature fits 
+  df <- temp_fits[[i]]
+  
+  # Graph model and NEON loess fits
+  pp <- ggplot() + 
+    geom_line(data = df, aes(x = Model_ST, y = y_fit_loess_model, color = "Model Loess Fit"), size = 1) +
+    geom_line(data = df, aes(x = NEON_ST, y = y_fit_loess_ma, color = "Marshall Loess Fit"), size = 1) +
+    geom_line(data = df, aes(x = NEON_ST, y = y_fit_loess_mq, color = "Millington Quirk Loess Fit"), size = 1) 
+    
+  
+  # If each sigmoidal fit exists, plot it
+  if(is.na(sig_fit_vals$Asym_model[i]) == FALSE){
+    pp <- pp +  geom_line(data = df, aes(x = Model_ST, y = y_fit_sig_model, color = "Model Sigmoidal Fit"), size = 1)
+  }
+  
+  if(is.na(sig_fit_vals$Asym_ma[i]) == FALSE){
+    pp <- pp +  geom_line(data = df, aes(x = NEON_ST, y = y_fit_sig_ma, color = "Marshall Sigmoidal Fit"), size = 1) 
+  }
+  
+  if(is.na(sig_fit_vals$Asym_mq[i]) == FALSE){
+    pp <- pp +  geom_line(data = df, aes(x = NEON_ST, y = y_fit_sig_mq, color = "Millington Quirk Sigmoidal Fit"), size = 1) 
+  }
+  
+  pp <- pp +  scale_color_manual(values = c("Model Loess Fit" = "orange", "Model Sigmoidal Fit" = "orangered", "Marshall Loess Fit" = "darkgreen", "Marshall Sigmoidal Fit" = "darkblue", "Millington Quirk Loess Fit" = "lightgreen", "Millington Quirk Sigmoidal Fit" = "lightblue")) +
+    labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset")
+
+  # Print the plot 
+  print (pp)
+    
+}
+```
+
+Soil respiration vs soil temperature, Normalized sigmoidal fits 
+ Reference points at t = 10
+```{r}
+
+# Make a table to keep track of how far off each is from NEON values on average
+Bias_table <- data.frame(Site_ID = character(length(sites)),
+                              Bias_to_Marshall_loess= numeric(length(sites)),
+                              Bias_to_Mill_Quirk_loess = numeric(length(sites)),
+                              Bias_to_Marshall_sig= numeric(length(sites)),
+                              Bias_to_Mill_Quirk_sig = numeric(length(sites)))
+
+
+for (i in 1:length(sites)){
+
+  temp_data <- temp_fits[[i]]
+  
+  # -- Normalize the curve
+  if ("y_fit_sig_ma" %in% colnames(temp_data) == TRUE){
+    max_val_ma <- max(temp_data$y_fit_sig_ma)
+    temp_data$y_fit_sig_ma_norm <- temp_data$y_fit_sig_ma/max_val_ma}
+  if ("y_fit_sig_mq" %in% colnames(temp_data) == TRUE){
+    max_val_mq <- max(temp_data$y_fit_sig_mq)
+    temp_data$y_fit_sig_mq_norm <- temp_data$y_fit_sig_mq/max_val_mq}
+  if ("y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+    max_val_model <- max(temp_data$y_fit_sig_model)
+    temp_data$y_fit_sig_model_norm <- temp_data$y_fit_sig_model/max_val_model}
+  
+  # Graph
+  pp <- ggplot() 
+   #   geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_loess_model_ref, color = "Model Loess Fit"), size = 1) +
+   #   geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_loess_ma_ref, color = "Marshall Loess Fit"), size = 1) +
+   #   geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_loess_mq_ref, color = "Millington Quirk Loess Fit"), size = 1) 
+      
+    
+    # If each sigmoidal fit exists, plot it
+    if("y_fit_sig_ma" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_sig_ma_norm, color = "Millington Quirk Sigmoidal Fit"), size = 1)
+    }
+    
+    if("y_fit_sig_mq" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_sig_mq_norm, color = "Marshall Sigmoidal Fit"), size = 1) 
+    }
+    
+    if("y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_sig_model_norm, color = "Model Sigmoidal Fit"), size = 1) 
+    }
+    
+    pp <- pp +  scale_color_manual(values = c("Model Loess Fit" = "orange", "Model Sigmoidal Fit" = "orangered", "Marshall Loess Fit" = "darkgreen", "Marshall Sigmoidal Fit" = "darkblue", "Millington Quirk Loess Fit" = "lightgreen", "Millington Quirk Sigmoidal Fit" = "lightblue")) +
+      labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset")
+  
+    # Print the plot 
+    print (pp)
+    
+    # Reassign temp fits so that it has reference data
+    temp_fits[[i]] <- temp_data
+}
+
+
+
+```
+
+
+Soil respiration vs soil temperature, NORMALIZED sigmoidal fits -- With reference points ** NEW METHOD
+ Reference points at t = 10
+```{r}
+# Make a table to keep track of how far off each is from NEON values on average
+Bias_table <- data.frame(Site_ID = character(length(sites)),
+                              Bias_to_Marshall_loess= numeric(length(sites)),
+                              Bias_to_Mill_Quirk_loess = numeric(length(sites)),
+                              Bias_to_Marshall_sig= numeric(length(sites)),
+                              Bias_to_Mill_Quirk_sig = numeric(length(sites)))
+
+
+for (i in 1:length(sites)){
+
+  # Get data from temp fits
+  temp_data <- temp_fits[[i]]
+  
+   # set the number
+  target_value <- 10 # using 10 becuase it seems present in most data sets
+  
+       
+  # -- Nofrmalize the curve and doing reference
+  if ("y_fit_sig_ma" %in% colnames(temp_data) == TRUE){
+    max_val_ma <- max(temp_data$y_fit_sig_ma)
+    temp_data$y_fit_sig_ma_norm <- temp_data$y_fit_sig_ma/max_val_ma
+    
+     temp_data_ma <- data.frame(x = temp_data$NEON_ST,
+                       y = temp_data$Marshall_SR,
+                       Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID)
+      temp_data_ma <- temp_data_ma %>%
+      filter(if_all(where(is.numeric), is.finite))
+    
+    sig_fit_t_ma <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_ma)
+      temp_data_ma$y_fit_sig <- predict(sig_fit_t_ma)
+    
+    y_ma <- predict(sig_fit_t_ma, data.frame(x = target_value))
+    
+    temp_data$y_fit_sig_ma_ref <- temp_data$y_fit_sig_ma_norm - y_ma/max_val_ma
+    
+    }
+  if ("y_fit_sig_mq" %in% colnames(temp_data) == TRUE){
+    max_val_mq <- max(temp_data$y_fit_sig_mq)
+    temp_data$y_fit_sig_mq_norm <- temp_data$y_fit_sig_mq/max_val_mq
+    
+      temp_data_mq <- data.frame(x = temp_data$NEON_ST,
+                         y = temp_data$Mill_Quirk_SR,
+                         Time = temp_data$Time,
+                         Site_ID = temp_data$Site_ID)
+      
+      temp_data_mq <- temp_data_mq %>%
+      filter(if_all(where(is.numeric), is.finite))
+    
+     sig_fit_t_mq <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_mq)
+  temp_data_mq$y_fit_sig <- predict(sig_fit_t_mq)
+   
+  y_mq <- predict(sig_fit_t_mq, data.frame(x = target_value))
+  
+  temp_data$y_fit_sig_mq_ref <- temp_data$y_fit_sig_mq_norm - y_mq/max_val_mq
+    }
+  
+  if ("y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+    max_val_model <- max(temp_data$y_fit_sig_model)
+    temp_data$y_fit_sig_model_norm <- temp_data$y_fit_sig_model/max_val_model
+    
+     # And one for model
+      temp_data_model <- data.frame(x = temp_data$Model_ST,
+                         y = temp_data$Model_SR,
+                         Time = temp_data$Time,
+                         Site_ID = temp_data$Site_ID)
+      
+      temp_data_model <- temp_data_model %>%
+      filter(if_all(where(is.numeric), is.finite))
+    
+    sig_fit_model <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_model)
+  temp_data_model$y_fit_sig <- predict(sig_fit_model)
+  
+   y_model <- predict(sig_fit_model, data.frame(x = target_value))
+   
+   temp_data$y_fit_sig_model_ref <- temp_data$y_fit_sig_model_norm - y_model/max_val_model
+    }
+
+  
+  # Fill in bias table
+  Bias_table$Site_ID[i] <- sites[i]
+ 
+  
+  # Graph
+  pp <- ggplot() 
+   #   geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_loess_model_ref, color = "Model Loess Fit"), size = 1) +
+   #   geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_loess_ma_ref, color = "Marshall Loess Fit"), size = 1) +
+   #   geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_loess_mq_ref, color = "Millington Quirk Loess Fit"), size = 1) 
+      
+    
+    # If each sigmoidal fit exists, plot it
+    if("y_fit_sig_ma" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_sig_ma_ref, color = "Millington Quirk Sigmoidal Fit"), size = 1)
+    }
+    
+    if("y_fit_sig_mq" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = NEON_ST, y = y_fit_sig_mq_ref, color = "Marshall Sigmoidal Fit"), size = 1) 
+    }
+    
+    if("y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+      pp <- pp +  geom_line(data = temp_data, aes(x = Model_ST, y = y_fit_sig_model_ref, color = "Model Sigmoidal Fit"), size = 1) 
+    }
+    
+    pp <- pp +  scale_color_manual(values = c("Model Loess Fit" = "orange", "Model Sigmoidal Fit" = "orangered", "Marshall Loess Fit" = "darkgreen", "Marshall Sigmoidal Fit" = "darkblue", "Millington Quirk Loess Fit" = "lightgreen", "Millington Quirk Sigmoidal Fit" = "lightblue")) +
+      labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset")
+  
+    # Print the plot 
+    print (pp)
+    
+    # Reassign temp fits so that it has reference data
+    temp_fits[[i]] <- temp_data
+}
+
+
+
+```
+
+Scoring using MSD & Correlation Coefficient -- where overlapping when set to reference point at 10
+```{r}
+# Make a table for score
+
+sig_fit_scores <- data.frame(Site_ID = character(length(sites)),
+                              MSD_ma = numeric(length(sites)),
+                              MSD_mq = numeric(length(sites)),
+                              CC_ma = numeric(length(sites)),
+                              CC_mq = numeric(length(sites)),
+                              Bias_ma = numeric (length(sites)),
+                              Bias_mq = numeric (length(sites)),
+                              Input_overlap = numeric (length(sites)))
+
+# Loop through each site
+for (i in 1:length(sites)){
+
+  temp_data <- temp_fits[[i]]
+  sig_fit_scores$Site_ID[i] <- sites[i]
+  
+  # Find where range overlaps if both exist
+  if ("y_fit_sig_ma" %in% colnames(temp_data) == TRUE && "y_fit_sig_mq" %in% colnames(temp_data) == TRUE && "y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+  
+  min_x <- max(min(temp_data$NEON_ST), min(temp_data$Model_ST));
+  max_x <- min(max(temp_data$NEON_ST), max(temp_data$Model_ST));
+  
+    # Find input percent overlap
+  percent_overlap <- ((max_x - min_x)/(max(max(temp_data$NEON_ST), max(temp_data$Model_ST))-min(min(temp_data$NEON_ST), min(temp_data$Model_ST)))) * 100
+  
+  sig_fit_scores$Input_overlap[i] <- round(percent_overlap, digits = 2)
+
+    if ((min_x < max_x) == TRUE){
+      
+        # Choose 50 points distributed across the range
+       overlap <- data.frame(x = seq(from = min_x, to = max_x, length.out = 50))
+       
+       # Find the values at those points
+       # Need to find function of fit again (because these points do not exist in data and don't want to use closest point)
+       
+       # Make dfs
+       temp_data_ma <- data.frame(x = temp_data$NEON_ST,
+                       y = temp_data$Marshall_SR,
+                       Time = temp_data$Time,
+                       Site_ID = temp_data$Site_ID)
+      temp_data_ma <- temp_data_ma %>%
+      filter(if_all(where(is.numeric), is.finite))
+      
+      temp_data_mq <- data.frame(x = temp_data$NEON_ST,
+                         y = temp_data$Mill_Quirk_SR,
+                         Time = temp_data$Time,
+                         Site_ID = temp_data$Site_ID)
+      
+      temp_data_mq <- temp_data_mq %>%
+      filter(if_all(where(is.numeric), is.finite))
+      
+      # And one for model
+      temp_data_model <- data.frame(x = temp_data$Model_ST,
+                         y = temp_data$Model_SR,
+                         Time = temp_data$Time,
+                         Site_ID = temp_data$Site_ID)
+      
+      temp_data_model <- temp_data_model %>%
+      filter(if_all(where(is.numeric), is.finite))
+       
+      # Sig fits
+      sig_fit_t_ma <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_ma)
+      sig_fit_t_mq <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_mq)
+      sig_fit_t_model <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = temp_data_model)
+       
+       # want to do scoring when setting reference point, so find values at reference point
+      
+       target_value <- 10 # using 10 becuase it seems present in most data sets
+  
+       ref_diff_ma <- predict(sig_fit_t_ma, data.frame(x = target_value))[1]
+       ref_diff_mq <- predict(sig_fit_t_mq, data.frame(x = target_value))[1]
+       ref_diff_model <- predict(sig_fit_t_model, data.frame(x = target_value))[1]
+       
+      # Add bias to table
+      sig_fit_scores$Bias_ma[i] <- ref_diff_model - ref_diff_ma
+      sig_fit_scores$Bias_mq[i] <- ref_diff_model - ref_diff_mq
+       
+       # find max values to normalize
+       max_val_ma <- max(temp_data$y_fit_sig_ma)
+       max_val_mq <- max(temp_data$y_fit_sig_mq)
+       max_val_model <- max(temp_data$y_fit_sig_model)
+       
+      # use function to find values at points
+       actual <- (predict(sig_fit_t_model, overlap)[1:50] - ref_diff_model)/max_val_ma
+       predicted_ma <- (predict(sig_fit_t_ma, overlap)[1:50]- ref_diff_ma)/max_val_mq
+       predicted_mq <- (predict(sig_fit_t_mq, overlap)[1:50] - ref_diff_mq)/max_val_model
+       
+      # Find mean((actual-predicted)^2)
+       msd_ma <-  mean((actual-predicted_ma)^2)
+       msd_mq <-  mean((actual-predicted_mq)^2)
+       sig_fit_scores$MSD_ma[i] <- round(msd_ma, digits = 2)
+       sig_fit_scores$MSD_mq[i] <- round(msd_mq, digits = 2)
+      
+      sig_fit_scores$CC_ma[i] <- round(cor(actual, predicted_ma), digits = 2);
+      sig_fit_scores$CC_mq[i] <- round(cor(actual, predicted_mq), digits = 2);
+  
+  # Put into table to compare
+    }else{
+      # If range doesn't over lap, add "NA" to table
+      sig_fit_scores$MSD_ma[i] <- "No overlap"
+      sig_fit_scores$MSD_mq[i] <- "No overlap"
+    }
+
+  }else{ # NA = no sig fit
+      sig_fit_scores$MSD_ma[i] <- NA
+      sig_fit_scores$MSD_mq[i] <- NA
+  }
+  
+}
+
+```
+
+
+Scoring with iterative closest point
+
+
+Soil respiration vs soil temperature, Example sites with sigmoidal and loess regression fits -- With reference points
+ Reference point at sigmoidal inflection points
+```{r}
+
+for (i in 1:length(sites)){
+
+  # Get data for site
+  temp_data <- temp_fits[[i]]
+  
+  # Set up plot
+   pp <- ggplot() 
+
+# Find inflection point of sig curve and set as reference
+
+    # Marshall
+  if("y_fit_sig_ma" %in% colnames(temp_data) == TRUE){
+    
+   # Set the x as the inflection point (xmid)
+    x_inf_point_ma <- sig_fit_vals$Xmid_ma[i]
+    
+    
+    # Calculate absolute differences between target and temp
+    abs_diff_ma <- abs(temp_data$NEON_ST - x_inf_point_ma)
+    
+    # Find the index of the minimum absolute difference
+    closest_row_index_ma <- which.min(abs_diff_ma)
+    
+    y_inf_point_ma <- temp_data$y_fit_sig_ma[closest_row_index_ma]
+    
+    # Find new reference points with inflections
+    temp_data$x_ma_ref <- temp_data$NEON_ST - x_inf_point_ma
+    temp_data$y_fit_sig_ma_ref <- temp_data$y_fit_sig_ma - y_inf_point_ma
+    
+    # add to plot
+     pp <- pp + 
+      geom_line(data = temp_data, aes(x = x_ma_ref, y = y_fit_sig_ma_ref, color = "Marshall Sigmoidal Fit"), size = 1)
+  }
+   
+   # Mill Quirk
+  if("y_fit_sig_mq" %in% colnames(temp_data) == TRUE){
+    
+   # Set the x as the inflection point (xmid)
+    x_inf_point_mq <- sig_fit_vals$Xmid_mq[i]
+    
+    # Calculate absolute differences between target and temp
+    abs_diff_mq <- abs(temp_data$NEON_ST - x_inf_point_mq)
+    
+    # Find the index of the minimum absolute difference
+    closest_row_index_mq <- which.min(abs_diff_mq)
+    
+    y_inf_point_mq <- temp_data$y_fit_sig_mq[closest_row_index_mq]
+    
+    # Find new reference points with inflections
+    temp_data$x_mq_ref <- temp_data$NEON_ST - x_inf_point_mq
+    temp_data$y_fit_sig_mq_ref <- temp_data$y_fit_sig_mq - y_inf_point_mq
+    
+    # Add to plot
+     pp <- pp + 
+      geom_line(data = temp_data, aes(x = x_mq_ref, y = y_fit_sig_mq_ref, color = "Millington Quirk Sigmoidal Fit"), size = 1)
+  }
+   
+    # Model
+  if("y_fit_sig_model" %in% colnames(temp_data) == TRUE){
+    
+   # set the x as the inflection point (xmid)
+    x_inf_point_model <- sig_fit_vals$Xmid_model[i]
+    
+    # Calculate absolute differences between target and temp
+    abs_diff_model <- abs(temp_data$Model_ST - x_inf_point_model)
+    
+    # Find the index of the minimum absolute difference
+    closest_row_index_model <- which.min(abs_diff_model)
+    
+    y_inf_point_model <- temp_data$y_fit_sig_model[closest_row_index_model]
+    
+    # Find new reference points with inflections
+    temp_data$x_model_ref <- temp_data$Model_ST - x_inf_point_model
+    temp_data$y_fit_sig_model_ref <- temp_data$y_fit_sig_model - y_inf_point_model
+    
+    # add to plot
+     pp <- pp + 
+      geom_line(data = temp_data, aes(x = x_model_ref, y = y_fit_sig_model_ref, color = "Model Sigmoidal Fit"), size = 1)
+  }
+  
+  # If any sigs, plot pp
+   
+   if (("y_fit_sig_ma" %in% colnames(temp_data) == TRUE)| ("y_fit_sig_mq" %in% colnames(temp_data) == TRUE) | ("y_fit_sig_model" %in% colnames(temp_data) == TRUE)){
+     
+     pp <- pp +  scale_color_manual(values = c("Model Loess Fit" = "orange", "Model Sigmoidal Fit" = "orangered", "Marshall Loess Fit" = "darkgreen", "Marshall Sigmoidal Fit" = "darkblue", "Millington Quirk Loess Fit" = "lightgreen", "Millington Quirk Sigmoidal Fit" = "lightblue")) +
+          labs(title = sites[i], x = "Soil Temp", y = "Soil Respiration", color = "Dataset")
+    
+    # print the plot
+    print(pp)
+   }
+  
+}
+  
+  
+  
+
+```
+
+
+Chooisng 10 points and finding mean squared distance
+
+Running met2model
+```{r}
+
+met2model.SIPNET("/Users/chane/OneDrive/Documents/ef_lab/R_files", )
+```
+
+
+
+Comparing Neon_ST_column to new calculations from 
+```{r}
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.2012-01-01.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 2
+
+at_df <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_og = numeric(length*366),
+              ST_20 = numeric(length*366),
+              ST_cutoff = numeric(length*366)
+            )
+c = 1
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df$Site_ID[c] = "BART"
+                at_df$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df$ST_og[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df$ST_20[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df$ST_cutoff[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+              
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+
+
+```
+
+
+Graph each new attempt
+```{r}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df$Year <- substr(at_df$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df$Time <- as.Date(at_df$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[1])
+  
+  
+  print(ggplot() +  
+    geom_line(data = at_df, aes(x = Time, y = ST_og ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+    geom_line(data = at_df, aes(x = Time, y = ST_20 ,group = 1, color = "Model ST with 20"), linewidth = 1) +
+    geom_line(data = at_df, aes(x = Time, y = ST_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[i], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2017-01-01", "2018-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with 20" = "pink", "Model ST with Cutoff" = "salmon","NEON ST" = "lightgreen")))
+
+
+```
+
+Graph each new attempt
+```{r}
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.BART.2012-01-01.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_bart_1 <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_og = numeric(length*366),
+              ST_20 = numeric(length*366),
+              ST_25 = numeric(length*366),
+              ST_30 = numeric(length*366),
+              ST_35 = numeric(length*366),
+              ST_40 = numeric(length*366),
+              ST_45 = numeric(length*366),
+              ST_50 = numeric(length*366),
+              ST_55 = numeric(length*366),
+              ST_60 = numeric(length*366),
+              ST_65 = numeric(length*366),
+              ST_70 = numeric(length*366),
+              ST_75 = numeric(length*366),
+              ST_80 = numeric(length*366),
+              ST_85 = numeric(length*366),
+              ST_90 = numeric(length*366),
+              ST_95 = numeric(length*366),
+              ST_100 = numeric(length*366),
+              ST_cutoff = numeric(length*366)
+            )
+c = 1
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_bart_1$Site_ID[c] = "BART"
+                at_df_bart_1$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_bart_1$ST_og[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_bart_1$ST_cutoff[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_bart_1$ST_20[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_bart_1$ST_25[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+                at_df_bart_1$ST_30[c] = mean(temp_table_yr_day$V10, na.rm = TRUE)
+                at_df_bart_1$ST_35[c] = mean(temp_table_yr_day$V11, na.rm = TRUE)
+                at_df_bart_1$ST_40[c] = mean(temp_table_yr_day$V12, na.rm = TRUE)
+                at_df_bart_1$ST_45[c] = mean(temp_table_yr_day$V13, na.rm = TRUE)
+                at_df_bart_1$ST_50[c] = mean(temp_table_yr_day$V14, na.rm = TRUE)
+                at_df_bart_1$ST_55[c] = mean(temp_table_yr_day$V15, na.rm = TRUE)
+                at_df_bart_1$ST_60[c] = mean(temp_table_yr_day$V16, na.rm = TRUE)
+                at_df_bart_1$ST_65[c] = mean(temp_table_yr_day$V17, na.rm = TRUE)
+                at_df_bart_1$ST_70[c] = mean(temp_table_yr_day$V18, na.rm = TRUE)
+                at_df_bart_1$ST_75[c] = mean(temp_table_yr_day$V19, na.rm = TRUE)
+                at_df_bart_1$ST_80[c] = mean(temp_table_yr_day$V20, na.rm = TRUE)
+                at_df_bart_1$ST_85[c] = mean(temp_table_yr_day$V21, na.rm = TRUE)
+                at_df_bart_1$ST_90[c] = mean(temp_table_yr_day$V22, na.rm = TRUE)
+                at_df_bart_1$ST_95[c] = mean(temp_table_yr_day$V23, na.rm = TRUE)
+                at_df_bart_1$ST_100[c] = mean(temp_table_yr_day$V24, na.rm = TRUE)
+              
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_bart_1$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_bart_1$Year <- substr(at_df_bart_1$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_bart_1$Time <- as.Date(at_df_bart_1$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[1])
+  
+  
+  print(ggplot() +  
+    geom_line(data = at_df_bart_1, aes(x = Time, y = ST_og ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+      geom_line(data = at_df_bart_1, aes(x = Time, y = ST_55 ,group = 1, color = "Model ST with 55"), linewidth = 1) +
+    geom_line(data = at_df_bart_1, aes(x = Time, y = ST_100 ,group = 1, color = "Model ST with 100 "), linewidth = 1) +
+    geom_line(data = at_df_bart_1, aes(x = Time, y = ST_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[1], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2017-01-01", "2018-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with 100" = "pink", "Model ST with 55" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+
+```
+Graph each new attempt
+```{r}
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.BART.sweep2.2012-01-01.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_bart <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_1 = numeric(length*366),
+              ST_5 = numeric(length*366),
+              ST_10 = numeric(length*366),
+              ST_og = numeric(length*366),
+              ST_20 = numeric(length*366),
+              ST_cutoff = numeric(length*366)
+            )
+c = 1
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_bart$Site_ID[c] = "BART"
+                at_df_bart$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_bart$ST_1[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_bart$ST_cutoff[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_bart$ST_5[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_bart$ST_10[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+                at_df_bart$ST_og[c] = mean(temp_table_yr_day$V10, na.rm = TRUE)
+                at_df_bart$ST_20[c] = mean(temp_table_yr_day$V11, na.rm = TRUE)
+              
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_bart$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_bart$Year <- substr(at_df_bart$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_bart$Time <- as.Date(at_df_bart$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[1])
+  
+  
+  print(ggplot() +  
+    geom_line(data = at_df_bart, aes(x = Time, y = ST_og ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+      geom_line(data = at_df_bart, aes(x = Time, y = ST_1 ,group = 1, color = "Model ST with 1"), linewidth = 1) +
+  #  geom_line(data = at_df_bart, aes(x = Time, y = ST_10 ,group = 1, color = "Model ST with 10 "), linewidth = 1) +
+    geom_line(data = at_df_bart, aes(x = Time, y = ST_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[1], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2017-01-01", "2018-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with 1" = "pink", "Model ST with 10" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+
+```
+
+
+
+```{r}
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.HARV.2012-01-01.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_harv <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_og = numeric(length*366),
+              ST_20 = numeric(length*366),
+              ST_25 = numeric(length*366),
+              ST_30 = numeric(length*366),
+              ST_35 = numeric(length*366),
+              ST_40 = numeric(length*366),
+              ST_45 = numeric(length*366),
+              ST_50 = numeric(length*366),
+              ST_55 = numeric(length*366),
+              ST_60 = numeric(length*366),
+              ST_65 = numeric(length*366),
+              ST_70 = numeric(length*366),
+              ST_75 = numeric(length*366),
+              ST_80 = numeric(length*366),
+              ST_85 = numeric(length*366),
+              ST_90 = numeric(length*366),
+              ST_95 = numeric(length*366),
+              ST_100 = numeric(length*366),
+              ST_cutoff = numeric(length*366)
+            )
+c = 1
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_bart$Site_ID[c] = "HARV"
+                at_df_harv$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_harv$ST_og[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_harv$ST_cutoff[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_harv$ST_20[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_harv$ST_25[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+                at_df_harv$ST_30[c] = mean(temp_table_yr_day$V10, na.rm = TRUE)
+                at_df_harv$ST_35[c] = mean(temp_table_yr_day$V11, na.rm = TRUE)
+                at_df_harv$ST_40[c] = mean(temp_table_yr_day$V12, na.rm = TRUE)
+                at_df_harv$ST_45[c] = mean(temp_table_yr_day$V13, na.rm = TRUE)
+                at_df_harv$ST_50[c] = mean(temp_table_yr_day$V14, na.rm = TRUE)
+                at_df_harv$ST_55[c] = mean(temp_table_yr_day$V15, na.rm = TRUE)
+                at_df_harv$ST_60[c] = mean(temp_table_yr_day$V16, na.rm = TRUE)
+                at_df_harv$ST_65[c] = mean(temp_table_yr_day$V17, na.rm = TRUE)
+                at_df_harv$ST_70[c] = mean(temp_table_yr_day$V18, na.rm = TRUE)
+                at_df_harv$ST_75[c] = mean(temp_table_yr_day$V19, na.rm = TRUE)
+                at_df_harv$ST_80[c] = mean(temp_table_yr_day$V20, na.rm = TRUE)
+                at_df_harv$ST_85[c] = mean(temp_table_yr_day$V21, na.rm = TRUE)
+                at_df_harv$ST_90[c] = mean(temp_table_yr_day$V22, na.rm = TRUE)
+                at_df_harv$ST_95[c] = mean(temp_table_yr_day$V23, na.rm = TRUE)
+                at_df_harv$ST_100[c] = mean(temp_table_yr_day$V24, na.rm = TRUE)
+              
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_harv$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_harv$Year <- substr(at_df_harv$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_harv$Time <- as.Date(at_df_harv$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[2])
+  
+  
+  print(ggplot() +  
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_og ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+      geom_line(data = at_df_harv, aes(x = Time, y = ST_55 ,group = 1, color = "Model ST with 55"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_100 ,group = 1, color = "Model ST with 100"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[2], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2017-01-01", "2018-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with 100" = "pink", "Model ST with 55" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+
+```
+
+
+MOAB
+```{r}
+# load in soil_t
+load("soil_trm_data_12_8.RData")
+
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.2012-01-01.MOAB.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_harv <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_bp = numeric(length*366),
+              ST_exp = numeric(length*366),
+              ST_bp_cutoff = numeric(length*366),
+              ST_exp_cutoff = numeric(length*366)
+            )
+c = 1
+
+#temp_table %>%
+#  group_by("V2") %>%
+#  summarize(average_value = mean(c = ("V3", "V4", "V5", "V6", "V7","V8", "V9"), na.rm = TRUE)
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_harv$Site_ID[c] = "HARV"
+                at_df_harv$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_harv$ST_bp[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_harv$ST_exp[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_harv$ST_bp_cutoff[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_harv$ST_exp_cutoff[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+          
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_harv$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_harv$Year <- substr(at_df_harv$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_harv$Time <- as.Date(at_df_harv$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[32])
+  
+  
+  print(ggplot() +  
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_bp ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_exp ,group = 1, color = "Model ST with Exp filter"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_exp_cutoff ,group = 1, color = "Model ST with Exp filter & cutoff"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_bp_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[2], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2016-01-01", "2024-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with Exp filter & cutoff" = "pink", "Model ST with Exp filter" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+
+```
+
+HARV
+```{r}
+
+# load in soil_t
+load("soil_trm_data_12_8.RData")
+
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.2012-01-01.HARV.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_harv <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_bp = numeric(length*366),
+              ST_exp = numeric(length*366),
+              ST_bp_cutoff = numeric(length*366),
+              ST_exp_cutoff = numeric(length*366)
+            )
+c = 1
+
+#temp_table %>%
+#  group_by("V2") %>%
+#  summarize(average_value = mean(c = ("V3", "V4", "V5", "V6", "V7","V8", "V9"), na.rm = TRUE)
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_harv$Site_ID[c] = "HARV"
+                at_df_harv$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_harv$ST_bp[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_harv$ST_exp[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_harv$ST_bp_cutoff[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_harv$ST_exp_cutoff[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+          
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_harv$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_harv$Year <- substr(at_df_harv$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_harv$Time <- as.Date(at_df_harv$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[2])
+  
+  
+  print(ggplot() +  
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_bp ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_exp ,group = 1, color = "Model ST with Exp filter"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_exp_cutoff ,group = 1, color = "Model ST with Exp filter & cutoff"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_bp_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[2], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2016-01-01", "2024-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with Exp filter & cutoff" = "pink", "Model ST with Exp filter" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+```
+
+KONZ
+```{r}
+# load in soil_t
+load("soil_trm_data_12_8.RData")
+
+
+# load in .clim file that i made
+
+temp_table <- fread("ERA5.1.2012-01-01.KONZ.2024-01-01.clim")
+years = 2012:2024
+length = years[length(years)]- years[1] + 3
+
+at_df_harv <- data.table(
+              Time = character(length*366),
+              Site_ID = character(length*366),
+              AT = numeric(length*366),
+              ST_bp = numeric(length*366),
+              ST_exp = numeric(length*366),
+              ST_bp_cutoff = numeric(length*366),
+              ST_exp_cutoff = numeric(length*366)
+            )
+c = 1
+
+#temp_table %>%
+#  group_by("V2") %>%
+#  summarize(average_value = mean(c = ("V3", "V4", "V5", "V6", "V7","V8", "V9"), na.rm = TRUE)
+
+for (year in years){
+        temp_table_yr <- filter(temp_table, V1 == year)
+              org_date = paste0(year - 1, "-12-31")
+              
+        for (day in 1:366){
+                temp_table_yr_day <- filter(temp_table, V2 == day)
+                at_df_harv$Site_ID[c] = "HARV"
+                at_df_harv$AT[c] = mean(temp_table_yr_day$V5, na.rm = TRUE)
+                at_df_harv$ST_bp[c] = mean(temp_table_yr_day$V6, na.rm = TRUE)
+                at_df_harv$ST_exp[c] = mean(temp_table_yr_day$V7, na.rm = TRUE)
+                at_df_harv$ST_bp_cutoff[c] = mean(temp_table_yr_day$V8, na.rm = TRUE)
+                at_df_harv$ST_exp_cutoff[c] = mean(temp_table_yr_day$V9, na.rm = TRUE)
+          
+                temp_table[V2 == year & V3 == day, mean(V6, na.rm = TRUE)]
+                
+                # need to convert date into "year-mo-day format"
+                date <- as.Date(day, origin = org_date) 
+                at_df_harv$Time[c] <- format(date, "%Y-%m-%d")
+                c = c+1
+                
+         }
+}
+
+  # give soil T a year
+soil_t$Year <- substr(soil_t$Time,1,4)
+at_df_harv$Year <- substr(at_df_harv$Time,1,4)
+
+# Make into date class
+soil_t$Time <- as.Date(soil_t$Time)
+at_df_harv$Time <- as.Date(at_df_harv$Time)
+
+  # make a graph of a year of one of them
+  temp_data <- filter(soil_t, Site_ID == matched$site_id[15])
+  
+  
+  print(ggplot() +  
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_bp ,group = 1, color = "Original Model ST"), linewidth = 1) +
+    geom_line(data = temp_data, aes(x = Time, y = Neon_ST_column, group = 0.5, color = "NEON ST"), linewidth = 1) + 
+ #   geom_line(data = at_df_harv, aes(x = Time, y = ST_exp ,group = 1, color = "Model ST with Exp filter"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_exp_cutoff ,group = 1, color = "Model ST with Exp filter & cutoff"), linewidth = 1) +
+    geom_line(data = at_df_harv, aes(x = Time, y = ST_bp_cutoff ,group = 1, color = "Model ST with Cutoff"), linewidth = 1) +
+    labs(title = matched$site_id[2], x = "date", y = "Soil Temperature") + 
+    scale_x_date(limits = as.Date(c("2016-01-01", "2024-12-31"))) +
+    scale_color_manual(values = c("Original Model ST" = "orange", "Model ST with Exp filter & cutoff" = "pink", "Model ST with Exp filter" = "red","Model ST with Cutoff" = "grey","NEON ST" = "lightgreen")))
+
+```
+

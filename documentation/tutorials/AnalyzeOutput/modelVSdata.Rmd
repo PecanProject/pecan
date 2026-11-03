@@ -80,7 +80,7 @@ observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_for
 File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge.
 
 File_format queries the database for the format your file is in. The default format ID "5000000002" is for csv files downloaded from the Ameriflux website.
-You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/adding-an-ecosystem-model.html#formats).
+You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/develop/adding-model.html#formats).
 
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in.
 

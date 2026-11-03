@@ -15,7 +15,7 @@ model2netcdf.MODEL <- function(outdir, sitelat, sitelon, start_date, end_date) {
   PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
+  # https://pecanproject.github.io/pecan-documentation/develop/coding-practices.html#developer-codestyle
   
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".

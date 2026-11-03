@@ -20,7 +20,9 @@ write.config.SIPNET(
 structure is \verb{list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))}.
 Only \code{defaults[[1]]$constants} is used; all other elements are silently ignored.}
 
-\item{trait.values}{vector of samples for a given trait}
+\item{trait.values}{named list of trait values for each PFT. SIPNET can
+handle only one vegetation PFT, and an optional "soil" PFT for soil constants.
+\code{trait.values} that do not fit this format will throw a warning.}
 
 \item{settings}{PEcAn settings object}
 
@@ -93,6 +95,11 @@ ANAEROBIC = 1
 ...though not necessarily in this order. If the \code{sipnet.in} template already
 defines an option specified in settings$model$options, its value will be
 updated in place; options not already in the file will be added to the bottom.
+
+For SIPNET v2, plantStorageNInit is set to the additional N needed for one
+carbon-limited leaf flush, computed from the initialized wood pool, so the
+first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
+through the IC argument takes precedence over the computed value.
 }
 
 \author{

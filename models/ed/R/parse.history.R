@@ -4,7 +4,7 @@
 # are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
-# http://opensource.ncsa.illinois.edu/license.html
+# https://opensource.org/licenses/NCSA
 #-------------------------------------------------------------------------------
 
 ##' This will generate the CSV file needed by write configs to write the

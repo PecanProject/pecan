@@ -13,6 +13,7 @@
 #' }
 #' @export mergeNC
 #' @name mergeNC
+#' @importFrom rlang .data
 #' @source https://github.com/RS-eco/processNC/blob/main/R/mergeNC.R
 mergeNC <- function(
     ##title<< Aggregate data in netCDF files
@@ -61,38 +62,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                                 overwrite = FALSE, conflict = FALSE) {
   ### Read in model output in SIPNET format
   sipnet_out_file <- file.path(outdir, prefix)
-  # SIPNET v1 had a "Notes" comment line before the header; v2 removed it.
-  # if the first line starts with "year", there is no Notes line.
-  first_line <- readLines(sipnet_out_file, n = 1)
-  skip_n <- if (grepl("^year", first_line)) 0 else 1
-  # Temporary workaround until
-  # https://github.com/PecanProject/sipnet/issues/304 is resolved.
-  sipnet_output <- tryCatch({
-    utils::read.table(sipnet_out_file, header = TRUE, skip = skip_n, sep = "")
-  }, error = function(err) {
-    PEcAn.logger::logger.warn(
-      "Failed to read using `read.table`. ",
-      "Trying to parse output manually."
-    )
-    raw_lines <- readLines(sipnet_out_file)
-    raw_header <- raw_lines[[1 + skip_n]]
-    raw_body <- utils::tail(raw_lines, -(1 + skip_n))
-    # SIPNET output is right-aligned with the column names in the header.
-    # We use this to figure out where the numbers end if there are no spaces.
-    token_matches <- gregexpr("\\S+", raw_header, perl = TRUE)
-    proc_header <- regmatches(raw_header, token_matches)[[1]]
-    col_ends <- token_matches[[1]] + attr(token_matches[[1]], "match.length") - 1
-    col_starts <- c(1, utils::head(col_ends, -1) + 1)
-    col_widths <- col_ends - col_starts + 1
-    result <- utils::read.fwf(
-      textConnection(raw_body),
-      widths = col_widths,
-      col.names = proc_header,
-      na.strings = c("nan", "-nan")
-    )
-    result[] <- lapply(result, as.numeric)
-    result
-  })
+  sipnet_output <- read_sipnet_out(sipnet_out_file)
   #sipnet_output_dims <- dim(sipnet_output)
   
   ### Determine number of years and output timestep
@@ -110,12 +80,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   # get number of model timesteps per day
   # outday is the number of time steps in a day - for example 6 hours would have out_day of 4
-  
-  out_day <- sum(
-    sipnet_output$year == simulation_years[1] &
-      sipnet_output$day == unique(sipnet_output$day)[1],
-    na.rm = TRUE
-  ) # switched to day 2 in case first day is partial
+  #
+  # Count rows per day in the first simulation year, then take the max.
+  # This correctly handles edge cases where the first or last day of the
+  # simulation is partial (has fewer timesteps than a complete day).
+  steps_per_day <- table(
+    sipnet_output$day[sipnet_output$year == simulation_years[1]]
+  )
+  out_day <- max(steps_per_day)
   
   
   timestep.s <- 86400 / out_day
@@ -158,7 +130,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       # Water pools
       dplyr::across(
         .cols = c(
-          dplyr::all_of(c("soilWater", "soilWetnessFrac", "snow")),
+          dplyr::all_of(c("soilWater", "snow")),
           dplyr::any_of("litterWater") # Only present in V1 output
         ),
         .fns = cm_to_mm
@@ -178,16 +150,21 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     )
 
 
-  # calculate LAI for standard output
-  # LAI = plantLeafC / leafCSpWt
-  # both operands are in carbon units (gC/m2 and gC/m2_leaf),
-  # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
-  param <- utils::read.table(file.path(gsub(pattern = "/out/",
-                                            replacement = "/run/", x = outdir),
-                                       "sipnet.param"), stringsAsFactors = FALSE)
-  leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
-  SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
-
+  if (!("lai" %in% colnames(sipnet_output))) {
+    # When LAI not reported, calculate it from leaf C and leaf specific weight,
+    # with the latter read from the parameter file.
+    # Note the hardcoded + undocumented assumption that ../run/sipnet.param
+    # exists and contains the values that were used to generate this output.
+    # LAI = plantLeafC [gC/m2] / leafCSpWt [gC/m2 leaf] = m2 leaf / m2
+    # both operands are in carbon units (gC/m2 and gC/m2_leaf),
+    # so no carbon fraction conversion (e.g. cFracLeaf) is needed.
+    param <- utils::read.table(file.path(gsub(pattern = "/out/",
+                                              replacement = "/run/", x = outdir),
+                                         "sipnet.param"), stringsAsFactors = FALSE)
+    leafCSpWt <- param[param[, 1] == "leafCSpWt", 2]
+    SLA <- 1000 / leafCSpWt  # m2 leaf / kg C
+    sipnet_output$lai = sipnet_output$plantLeafC * SLA
+  }
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in year_seq) {
@@ -236,10 +213,11 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "litter_carbon_content" = sub.sipnet.output$litter,
       "fine_root_carbon_content" = sub.sipnet.output$fineRootC,
       "coarse_root_carbon_content" = sub.sipnet.output$coarseRootC,
-      "LAI" = sub.sipnet.output$plantLeafC * SLA,
+      "LAI" = sub.sipnet.output$lai,
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
+      "soil_organic_carbon_content" = sub.sipnet.output$soil,
       "AGB" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC,
 
       # Water variables:
@@ -289,7 +267,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       output[["CH4_flux"]] <- sub.sipnet.output$ch4
     }
 
-    output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
+    output[["time_bnds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
@@ -329,6 +307,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "leaf_carbon_content" = PEcAn.utils::to_ncvar("leaf_carbon_content", dims),
       "TotLivBiom" = PEcAn.utils::to_ncvar("TotLivBiom", dims),
       "TotSoilCarb" = PEcAn.utils::to_ncvar("TotSoilCarb", dims),
+      "soil_organic_carbon_content" = PEcAn.utils::to_ncvar("soil_organic_carbon_content", dims),
       "Qle" = PEcAn.utils::to_ncvar("Qle", dims),
       "Transp" = PEcAn.utils::to_ncvar("Transp", dims),
       "SoilMoist" = PEcAn.utils::to_ncvar("SoilMoist", dims),
@@ -340,7 +319,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                longname = "Total aboveground biomass"),
-      "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
+      "time_bnds" = ncdf4::ncvar_def(name="time_bnds", units='',
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
@@ -387,7 +366,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ### Output netCDF data
     if(conflicted & conflict){
       nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
-      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bnds", prec=NA)
       for (key in names(nc_var)) {
         ncdf4::ncvar_put(nc, nc_var[[key]], output[[key]])
       }
@@ -400,16 +379,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         files <- file.path(outdir, "current.nc")
       }
       mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
-      #The command "cdo" in mergeNC will automatically rename "time_bounds" to "time_bnds". However, "time_bounds" is used 
-      #in read_restart codes later. So we need to read the new NetCDF file and convert the variable name back. 
-      nc<- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")),write=TRUE)
-      nc<-ncdf4::ncvar_rename(nc,"time_bnds","time_bounds")
-      ncdf4::ncatt_put(nc, "time", "bounds","time_bounds", prec=NA)
-      ncdf4::nc_close(nc)
       unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bnds", prec=NA)
       for (key in names(nc_var)) {
         ncdf4::ncvar_put(nc, nc_var[[key]], output[[key]])
       }
@@ -422,31 +395,3 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     file.remove(sipnet_out_file)
   }
 } # model2netcdf.SIPNET
-#--------------------------------------------------------------------------------------------------#
-
-# Helper Function 
-
-sipnet2datetime <- function(year, doy, hour){
-  
-  hr <- floor(hour)
-  # minsec <- PEcAn.utils::ud_convert(hour - hr, "hour", "min")
-  minsec <- (hour - hr) * 60
-  minute <- floor(minsec)
-  
-  # sec <- PEcAn.utils::ud_convert(minsec - minute, "minute", "second")
-  sec <- (minsec - minute) * 60
-  
-  minute <- ifelse(sec == 60, minute + 1, minute)
-  sec <- ifelse(sec == 60, 0, sec)
-  
-  hr <- ifelse(minute == 60, hr + 1, hr)
-  minute <- ifelse(minute == 60, 0, minute)
-  
-  datetime <- strptime(
-    paste(year, doy, hr, minute, sec),
-    "%Y %j %H %M %S", 
-    tz = "UTC"
-  )
-  
-  as.POSIXct(datetime)
-}

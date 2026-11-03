@@ -24,11 +24,11 @@
 #' in the meantime, you might encounter several issues saying XXXX dependency is not available.
 #' to solve this issue, you just need to install those dependencies before hand.
 #' 10. Create CDS account.
-#' go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
+#' go to `https://cds.climate.copernicus.eu/how-to-api` website.
 #' create an account.
 #' 11. Create CDS personel token.
 #' run this function.
-#' go to `https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key` website.
+#' go to `https://cds.climate.copernicus.eu/how-to-api` website.
 #' copy and paste url and key to the prompt window.
 #'
 #' @param outfolder physical paths to where the unziped soil moisture files are downloaded.
@@ -62,7 +62,7 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
   } else if (!file.exists(file.path(Sys.getenv("HOME"), ".cdsapirc")) & !auto.create.key) {
     PEcAn.logger::logger.severe(
       "Please create a `${HOME}/.cdsapirc` file as described here:",
-      "https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key ."
+      "https://cds.climate.copernicus.eu/how-to-api ."
     )
   }
   #grab the client object.
@@ -137,11 +137,11 @@ getnetrc <- function(dl_dir) {
     writeLines(c(
       sprintf(
         "url: %s",
-        getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+        getPass::getPass(msg = "Enter URL from the following link \n (https://cds.climate.copernicus.eu/how-to-api):")
       ),
       sprintf(
         "key: %s",
-        getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key):")
+        getPass::getPass(msg = "Enter KEY from the following link \n (https://cds.climate.copernicus.eu/how-to-api):")
       )
     ),
     netrc_conn)

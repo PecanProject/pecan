@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#$ -N {{ job_name }}               # job name
+##$ -q default                      # submit to queue named "default"
+#$ -j y                            # combine stdout/error in one file
+#$ -o {{ log_file | /dev/null }}   # output file
+#$ -cwd                            # use pwd as work dir
+#$ -V                              # use environment variable
+#$ -t 1-{{ n_jobs }}               # submit jobs as array
+#$ -pe smp {{ cores | 1 }}         # number of cores to use per job
+#$ -l h_rt={{ walltime | 01:00:00 }}
+
+# ulimit -v $(( 1024 * {{ memory | 4096 }} ))
+
+CMQ_AUTH={{ auth }} pixi run Rscript -e "clustermq:::worker('{{ master }}')"

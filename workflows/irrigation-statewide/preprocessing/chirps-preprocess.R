@@ -1,0 +1,85 @@
+#!/usr/bin/env Rscript
+
+root_dir <- here::here("workflows/irrigation-statewide")
+cfg <- config::get(
+  file = file.path(root_dir, "config_paths.yml"),
+  config = "default"
+)
+
+chirps_dir <- cfg[["chirps_dir"]]
+chirps_outdir <- cfg[["chirps_preprocess_dir"]]
+parcel_file <- cfg[["landiq_parcels_gpkg"]]
+chirpsfiles <- list.files(
+  chirps_dir,
+  "chirps-v2.0.*.nc",
+  full.names = TRUE
+)
+
+extract_chirps <- function(fname, parcel_file, outdir = "_results_chirps") {
+  # fname <- chirpsfiles[[1]]
+  parcels_sf <- sf::read_sf(parcel_file, use_stream = TRUE)
+  # parcels_sf <- head(parcels_sf_full, 500)
+
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+  year <- basename(fname) |>
+    gsub(
+      pattern = "chirps-v2\\.0\\.(\\d+)\\.days_p05\\.nc",
+      replacement = "\\1"
+    ) |>
+    as.numeric()
+
+  outfile <- file.path(outdir, paste0("chirps-", year, ".parquet"))
+  if (file.exists(outfile)) {
+    message("File exists ", outfile)
+    return(outfile)
+  }
+
+  r <- terra::rast(fname)
+  terra::ext(r) <- c(-180, 180, -50, 50)
+  terra::crs(r) <- "EPSG:4326"
+
+  parcels_proj <- sf::st_transform(parcels_sf, sf::st_crs(r))
+
+  vals <- exactextractr::exact_extract(
+    r,
+    parcels_proj,
+    "mean",
+    append_cols = "parcel_id"
+  )
+
+  date0 <- as.Date(paste0(year, "-01-01"))
+  vals_df <- dplyr::bind_cols(vals) |>
+    tibble::as_tibble() |>
+    tidyr::pivot_longer(
+      -c("parcel_id"),
+      names_to = "yday",
+      names_pattern = ".*_(\\d+)$",
+      names_transform = as.integer,
+      values_to = "precip_mm_day"
+    ) |>
+    dplyr::mutate(
+      date = date0 + .data$yday - 1L,  # precip_1: Jan 1 + 1 = Jan 2 without -1
+      .keep = "unused"
+    ) |>
+    dplyr::relocate("date", .after = "parcel_id") |>
+    dplyr::arrange(.data$parcel_id, .data$date)
+
+  arrow::write_parquet(vals_df, outfile)
+  invisible(outfile)
+}
+
+cmq_scheduler <- Sys.getenv("CLUSTERMQ_SCHEDULER", "sge")
+if (cmq_scheduler == "sge") {
+  options(clustermq.scheduler = "sge", clustermq.template = ".clustermq_sge.tmpl")
+} else {
+  options(clustermq.scheduler = cmq_scheduler)
+}
+
+clustermq::Q(
+  fun = extract_chirps,
+  fname = chirpsfiles,
+  const = list(parcel_file = parcel_file, outdir = chirps_outdir),
+  n_jobs = length(chirpsfiles),
+  template = list(cores = 1, walltime = "06:00:00")
+)

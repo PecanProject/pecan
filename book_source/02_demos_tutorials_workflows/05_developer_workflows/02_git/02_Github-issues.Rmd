@@ -45,7 +45,7 @@ Note:
 
 
 (from The Pragmatic Programmer, available as
-[ebook](http://proquestcombo.safaribooksonline.com/0-201-61622-X/223)
+[ebook](https://github.com/lighthousand/books/blob/master/the-pragmatic-programmer.pdf)
 through UI libraries, hardcopy on David’s bookshelf)\
 
 * focus on “user stories”, e.g. specific use cases

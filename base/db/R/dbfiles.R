@@ -766,7 +766,7 @@ dbfile.move <- function(old.dir, new.dir, file.type, siteid = NULL, register = F
   files.indb <- 0
 
   # check for file type and update to make it *.file type
-  if (file.type != "clim" | file.type != "nc") {
+  if (file.type != "clim" && file.type != "nc") {
     PEcAn.logger::logger.error("File type not supported by move at this time. Currently only supports NC and CLIM files")
     error <- 1
   }

@@ -60,7 +60,11 @@ convert_swat_fert_table_to_pkg_df <- function() {
 custom_fertilizers <- tibble::tribble(
   ~name, ~description, ~fraction_mineral_n, ~fraction_nh3_n, ~fraction_no3_n, ~fraction_organic_n, ~fraction_c, ~cn_ratio,
   "manure", "Generic mixed animal manure", 0.0138, 0.0137, 0.0001, 0.02, 0.24, 12,
-  "ammonium_nitrate", "Ammonium nitrate", 0.33, 0.17, 0.16, 0.0, 0.0, NA
+  "ammonium_nitrate", "Ammonium nitrate", 0.33, 0.17, 0.16, 0.0, 0.0, NA,
+  # UAN-32: 32% total N as 7.75% NH4-N + 7.75% NO3-N + 16.5% urea-N (mass fractions of solution).
+  # fraction_c derived from urea CO(NH2)2 stoichiometry: 12 g C per 28 g N -> 0.165 * (12/28) = 0.0707
+  "uan_32", "UAN solution (32% N): 7.75% NH4-N + 7.75% NO3-N + 16.5% urea-N", 0.155, 0.0775, 0.0775, 0.165, 0.0707, 0.428,
+  "can_17", "Calcium ammonium nitrate (17% N): 5.4% NH4-N + 11.6% NO3-N", 0.170, 0.054, 0.116, 0.0, 0.0, NA
 )
 fertilizer_composition_data <- dplyr::bind_rows(
   convert_swat_fert_table_to_pkg_df(),

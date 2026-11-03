@@ -17,6 +17,7 @@
 * `GEDI_AGB_prep` argument `credential.folder` (with default "~") renamed to `credential_path` (with default "~/.netrc") (#3540).
 * `GEDI_AGB_prep` will use existing local files if present rather than re-download them (#3572).
 * All `*DAAC` functions now take argument `credential_path`, which should be set to the path to a valid `.netrc` file (#3572).
+* Removed unused internal function `grid2netcdf` (#2758, @AMBRA7592).
 
 
 

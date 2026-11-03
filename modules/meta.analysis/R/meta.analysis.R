@@ -58,7 +58,7 @@ pecan.ma <- function(trait.data, prior.distns,
                      j.iter,
                      outdir,
                      random = FALSE, overdispersed = TRUE,
-                     logfile = file.path(outdir, "meta-analysis.log)"),
+                     logfile = file.path(outdir, "meta-analysis.log"),
                      verbose = TRUE) {
 
   mcmc.object <- list()  #  initialize output list of mcmc objects for each trait
@@ -69,7 +69,7 @@ pecan.ma <- function(trait.data, prior.distns,
   j.iter   <- as.numeric(j.iter)  # Added by SPS 08.27.2013. issue #1803
   ## log the mcmc chain parameters
   if (!is.null(logfile)) {
-    sink(file = file.path(outdir, "meta-analysis.log"), split = TRUE)
+    sink(file = logfile, split = TRUE)
     on.exit(sink(NULL), add = TRUE)
   }
   if (verbose) {

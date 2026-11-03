@@ -1,0 +1,12 @@
+main:
+  script: workflows/irrigation-statewide/_targets.R
+  store: workflows/irrigation-statewide/_targets/
+small:
+  inherits: main
+  store: workflows/irrigation-statewide/_targets_small/
+medium:
+  inherits: main
+  store: workflows/irrigation-statewide/_targets_medium/
+all:
+  inherits: main
+  store: workflows/irrigation-statewide/_targets_all/

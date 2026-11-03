@@ -1,3 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^docs$
+# Lookup parquets and county matrices stay in git for the clone workflow;
+# omit them from the install tarball (path length + package size).
+^inst/ccmmf/landiq-gapfill/outputs/
+^inst/ccmmf/landiq-gapfill/data/county_transition_matrices/

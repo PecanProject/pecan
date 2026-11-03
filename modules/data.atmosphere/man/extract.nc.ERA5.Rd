@@ -58,7 +58,7 @@ ERA5_extract
 }
 \details{
 For the list of variables check out the documentation at
- \url{https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation#ERA5datadocumentation-Spatialgrid}
+ \url{https://confluence.ecmwf.int/display/CKB/ERA5\%3A+data+documentation}
 }
 \examples{
 \dontrun{

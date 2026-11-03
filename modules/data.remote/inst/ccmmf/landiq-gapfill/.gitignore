@@ -1,0 +1,8 @@
+/cdl/
+outputs/*
+!outputs/cdl_prob_by_class_*.parquet
+!outputs/cdl_prob_by_subclass_*.parquet
+!outputs/landiq_subclass_frequency_*.parquet
+!outputs/adoy_mean_*.parquet
+!outputs/adoy_observed_history_*.parquet
+README.html

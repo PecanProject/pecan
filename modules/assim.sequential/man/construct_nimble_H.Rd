@@ -4,7 +4,14 @@
 \alias{construct_nimble_H}
 \title{construct_nimble_H}
 \usage{
-construct_nimble_H(site.ids, var.names, obs.t, pft.path = NULL, by = "single")
+construct_nimble_H(
+  site.ids,
+  var.names,
+  obs.t,
+  pft.path = NULL,
+  by = "single",
+  products = NULL
+)
 }
 \arguments{
 \item{site.ids}{a vector name of site ids}
@@ -16,6 +23,8 @@ construct_nimble_H(site.ids, var.names, obs.t, pft.path = NULL, by = "single")
 \item{pft.path}{physical path to the pft.csv file.}
 
 \item{by}{criteria, it supports by variable, site, pft, all, and single Q.}
+
+\item{products}{vector names of products for each observation.}
 }
 \value{
 Returns one vector containing index for which Q to be estimated for which variable, 

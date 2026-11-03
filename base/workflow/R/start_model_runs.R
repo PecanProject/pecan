@@ -1,8 +1,16 @@
 #' Start selected ecosystem model runs within PEcAn workflow
 #'
+#' Note: When using a queue system, PEcAn queries each job individually every
+#' `check_interval` seconds. The default interval of ten seconds was chosen for
+#' small sets of jobs in a fast-moving queue, and if used for large runs it can
+#' create excessive load. If you expect the whole run to take hours,
+#' consider checking much less often (every few minutes?) instead.
+#'
 #' @param settings pecan settings object
 #' @param write (logical) Whether or not to write to the database. Default TRUE.
 #' @param stop.on.error Throw error if _any_ of the runs fails. Default TRUE.
+#' @param check_interval Time in seconds to wait between queries of qsub job
+#'  status.
 #' @export
 #' @examples
 #' \dontrun{
@@ -11,7 +19,8 @@
 #' }
 #' @author Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 #'
-start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
+start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE,
+                             check_interval = 10) {
   
   run_file <- file.path(settings$rundir, "runs.txt")
   # check if runs need to be done
@@ -278,7 +287,7 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
   
   #TODO figure out a way to do this while for unique(jobids) instead of jobids
   while (length(jobids) > 0) {
-    Sys.sleep(10)
+    Sys.sleep(check_interval)
     
     if (!is_local) {
       #Copy over log files to check progress
@@ -369,12 +378,21 @@ start_model_runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 #' A lightweight wrapper around `start_model_runs` that takes `write` from
 #' `settings` instead of as a separate argument.
 #'
+#' @param settings PEcAn settings object
+#' @param stop.on.error logical: Kill entire run if any job throws an error?
+#' @param ... passed on to start_model_runs
+#'
 #' @export
-runModule_start_model_runs <- function(settings, stop.on.error=TRUE) {
+runModule_start_model_runs <- function(settings, stop.on.error=TRUE, ...) {
   if (PEcAn.settings::is.MultiSettings(settings) ||
       PEcAn.settings::is.Settings(settings)) {
     write <- isTRUE(settings$database$bety$write)
-    return(start_model_runs(settings, write, stop.on.error))
+    return(start_model_runs(
+      settings = settings,
+      write = write,
+      stop.on.error = stop.on.error,
+      ...
+    ))
   } else {
     PEcAn.logger::logger.severe(
       "runModule_start_model_runs only works with Settings or MultiSettings")

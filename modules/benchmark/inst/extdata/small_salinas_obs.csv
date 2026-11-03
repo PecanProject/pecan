@@ -1,0 +1,5 @@
+"site_id","year","variable","date","obs_mean","obs_sd","obs_se","in_model_window"
+"socs_sys1",2010,"TotSoilCarb","2010-11-15T00:00:00Z",8.9,0.4,0.2,"True"
+"socs_sys2",2010,"TotSoilCarb","2010-11-15T00:00:00Z",9.1,0.45,0.225,"True"
+"socs_sys1",2011,"TotSoilCarb","2011-11-15T00:00:00Z",8.7,0.38,0.19,"True"
+"socs_sys2",2011,"TotSoilCarb","2011-11-15T00:00:00Z",8.8,0.42,0.21,"True"

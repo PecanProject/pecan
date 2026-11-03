@@ -28,15 +28,15 @@ DayCent model default parameter file: `omad.100` obtained from the Soil Carbon S
 fertilizer_composition_data
 }
 \description{
-A dataset of fertilizer and organic matter addition types 
+A dataset of fertilizer and organic matter addition types
 and their nitrogen and carbon composition, based on the SWAT model's
 `fertilizer.frt` table and DayCent model defaults for organic matter
 C:N ratio parameters.
 }
 \details{
-This table is based on SWAT model's \code{fertilizer.frt} file, and uses 
+This table is based on SWAT model's \code{fertilizer.frt} file, and uses
 C:N ratios (\code{cn_ratio}) from DayCent model default parameter files.
-\code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of 
+\code{fraction_nh3_n} and \code{fraction_no3_n} represent the fraction of
 fertilizer by mass that is ammonium-N and nitrate-N, respectively. This is different from
 the SWAT model's definition of \code{fraction_nh3_n} as a fraction of the total mineral N.
 }

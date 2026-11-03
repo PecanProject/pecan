@@ -15,7 +15,7 @@ sda.enkf.multisite(
   control = list(TimeseriesPlot = FALSE, OutlierDetection = FALSE, send_email = NULL,
     keepNC = TRUE, forceRun = TRUE, run_parallel = TRUE, MCMC.args = NULL, merge_nc =
     TRUE, execution = "local"),
-  debias = list(cov.dir = NULL, start.year = NULL),
+  debias = list(cov.dir = NULL, t.start = NULL, residual.lag = NULL),
   ...
 )
 }
@@ -49,9 +49,11 @@ including `local` ,where we execute the model locally;
 `qsub`, where we use the traditional `start_model_runs` function for submission;
 `qsub_parallel`, where we first combine jobs and submit them into the SCC.}
 
-\item{debias}{List: R list containing the covariance directory and the start year.
+\item{debias}{List: R list containing the covariance directory, the start time point, 
+and if we want to include the `residual.lag` as additional covariate.
 covariance directory should include GeoTIFF files named by year.
-start year is numeric input which decide when to start the debiasing feature.}
+start time point is numeric input which decide when to start the debiasing feature.
+`residual.lag` is either TRUE or FALSE.}
 
 \item{...}{Additional arguments, currently ignored}
 }

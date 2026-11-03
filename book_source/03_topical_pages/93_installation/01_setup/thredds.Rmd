@@ -51,7 +51,7 @@ To customize the thredds server for your installation edit the file in /home/car
 <threddsConfig>
 
   <!-- all options are commented out in standard install - meaning use default values -->
-  <!-- see http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html -->
+  <!-- see https://docs.unidata.ucar.edu/tds/current/userguide/tds_config_ref.html -->
   <serverInformation>
     <name>PEcAn</name>
     <logoUrl>/pecan/images/pecan_small.jpg</logoUrl>
@@ -153,7 +153,7 @@ To customize the thredds server for your installation edit the file in /home/car
 
   <!--
   Configuring the CDM (netcdf-java library)
-  see http://www.unidata.ucar.edu/software/netcdf-java/reference/RuntimeLoading.html
+  see https://docs.unidata.ucar.edu/netcdf-java/current/userguide/runtime_loading.html
 
   <nj22Config>
     <ioServiceProvider class="edu.univ.ny.stuff.FooFiles"/>

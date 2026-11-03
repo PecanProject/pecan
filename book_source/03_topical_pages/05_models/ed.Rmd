@@ -153,11 +153,11 @@ However, if you would like ED2 to run with all 17 PFTs (NOTE: using ED2's intern
 
 [ed2in-table]: https://github.com/EDmodel/ED2/blob/24e6df6a75702337c5f29cbd3f3fad90467c9a51/ED/run/ED2IN#L1320-L1327
 
-[write-config-xml-ed2]: https://pecanproject.github.io/models/ed/docs/reference/write.config.xml.ED2.html
+[write-config-xml-ed2]: https://pecanproject.github.io/package-documentation/develop/PEcAn.ED2/reference/write.config.xml.ED2.html
 
-[write-config-ed2]: https://pecanproject.github.io/models/ed/docs/reference/write.config.ED2.html
+[write-config-ed2]: https://pecanproject.github.io/package-documentation/develop/PEcAn.ED2/reference/write.config.ED2.html
 
-[convert-samples-ed]: https://pecanproject.github.io/models/ed/docs/reference/convert.samples.ED.html 
+[convert-samples-ed]: https://pecanproject.github.io/package-documentation/develop/PEcAn.ED2/reference/convert.samples.ED.html
 
 
 ### Model specific input files
