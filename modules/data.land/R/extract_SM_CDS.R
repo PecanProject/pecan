@@ -25,17 +25,24 @@ extract_SM_CDS <- function(site_info,
       "Please install it with: install.packages('sp')")
   }
   #find downloaded files and the corresponding dates.
-  ncfiles <- base::list.files(in.path, full.names = T)
-  available.dates <- ncfiles %>% purrr::map(function(file){
-    base::strsplit(x = file, split = ".", fixed = T)[[1]][2]
-  }) %>% unlist %>% as.Date
+  ncfiles <- base::list.files(
+    in.path,
+    pattern = "^surface_soil_moisture\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.nc$",
+    full.names = TRUE
+  )
+  available.dates <- base::as.Date(base::sub(
+    pattern = "^surface_soil_moisture\\.([0-9]{4}-[0-9]{2}-[0-9]{2})\\.nc$",
+    replacement = "\\1",
+    x = base::basename(ncfiles)
+  ))
   #loop over time points.
   results <- data.frame()
   for (i in seq_along(time.points)) {
     #generate dates within search window.
     dates <- c(seq(lubridate::date(time.points[i]), by = "1 day", length.out = search_window))
-    dates.ind.download <- which(!dates%in%available.dates)
-    dates.ind.exist <- which(dates%in%available.dates)
+    files.ind.exist <- base::match(dates, available.dates)
+    dates.ind.download <- which(base::is.na(files.ind.exist))
+    files.ind.exist <- files.ind.exist[!base::is.na(files.ind.exist)]
     #if there is no nc file downloaded or within the search window.
     if (length(dates.ind.download) > 0) {
       PEcAn.logger::logger.info(paste("The nc files for the following dates were not found.", 
@@ -43,13 +50,13 @@ extract_SM_CDS <- function(site_info,
       #try download if allowed.
       if (allow.download) {
         PEcAn.logger::logger.info("Try download from cds server.")
-        ncfile <- c(ncfiles[dates.ind.exist], PEcAn.data.land::download.SM_CDS(in.path, dates[dates.ind.download])) %>% sort()
+        ncfile <- c(ncfiles[files.ind.exist], PEcAn.data.land::download.SM_CDS(in.path, dates[dates.ind.download])) %>% sort()
       } else {
         PEcAn.logger::logger.info("The download is not enabled, skip to the next time point.")
         next
       }
     } else {
-      ncfile <- ncfiles[dates.ind.exist] %>% sort()
+      ncfile <- ncfiles[files.ind.exist] %>% sort()
     }
     #read nc files.
     PEcAn.logger::logger.info(paste("Extracting nc files for date", time.points[i]))
