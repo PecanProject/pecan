@@ -11,7 +11,7 @@ download.FluxnetLaThuile.site <- function(site_id) {
 ##' @title download.FluxnetLaThuile
 ##' @export
 ##' @param sitename the FLUXNET ID of the site to be downloaded, used as file name prefix.
-##'   The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
+##'   The 'SITE_ID' field in \href{https://web.archive.org/web/20181016150417/http://www.fluxdata.org/DataInfo/Dataset\%20Doc\%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)

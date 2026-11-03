@@ -25,7 +25,7 @@ AmeriFlux_met_ensemble(
 }
 \arguments{
 \item{site_id}{character. AmeriFlux site identifier (e.g, "US-Ha1")
-The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+The 'SITE_ID' field in \href{https://ameriflux.lbl.gov/sites/site-search/}{list of Ameriflux sites}}
 
 \item{start_date}{character or date. Start date in "YYYY-MM-DD" format}
 

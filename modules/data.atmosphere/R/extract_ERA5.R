@@ -17,7 +17,7 @@
 #' @param verbose Decide if we want to stop printing info.
 #' @param ... other inputs.
 #' @details For the list of variables check out the documentation at
-#'  \url{https://confluence.ecmwf.int/display/CKB/ERA5\%3A+data+documentation}
+#'  \url{https://confluence.ecmwf.int/spaces/CKB/pages/76414402/ERA5+data+documentation}
 #'
 #' @return a list of xts objects with all the variables for the requested years
 #' @export

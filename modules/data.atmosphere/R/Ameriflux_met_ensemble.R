@@ -6,7 +6,7 @@
 #' ensemble meteorological files.
 #'
 #' @param site_id character. AmeriFlux site identifier (e.g, "US-Ha1")
-#' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
+#' The 'SITE_ID' field in \href{https://ameriflux.lbl.gov/sites/site-search/}{list of Ameriflux sites}
 #' @param start_date character or date. Start date in "YYYY-MM-DD" format
 #' @param end_date character or date. End date in "YYYY-MM-DD" format
 #' @param outfolder character. Output directory path for ensemble files
