@@ -5,7 +5,7 @@
 #' https://gdal.org/en/stable/programs/gdalwarp.html
 #' 
 #' @param in.path character: physical path to the folder that contains all the original image tiles.
-#' @param doi character: data identification.
+#' @param doi character: data identification. Default is NULL.
 #' @param out.path  character: physical path to the folder that contains converted and merged images.
 #' @param band.name character: band name of the image. Default is NULL.
 #' @param just.band.name logical: if we just want the band names of the image file. Default is TRUE.
@@ -24,7 +24,7 @@
 #' @author Dongchen Zhang
 #' @importFrom purrr %>%
 merge_image_tiles <- function(in.path, 
-                              doi = doi, 
+                              doi = NULL, 
                               out.path = NULL, 
                               band.name = NULL,
                               just.band.name = TRUE,
@@ -161,7 +161,7 @@ merge_image_tiles <- function(in.path,
 #' 
 #' @title gdal_conversion
 #' @param in_path character: physical path to the image file.
-#' @param doi character: data identification.
+#' @param doi character: data identification. Default is NULL.
 #' @param outfolder character: physical path to the folder where you want to export the converted image. Default is NULL.
 #' @param band_name character: band name of the image. Default is NULL.
 #' @param tile_id character/numeric: id for differentiate different converted image tiles.
@@ -189,7 +189,7 @@ merge_image_tiles <- function(in.path,
 #'     just_band_name = FALSE, 
 #'     target_format = ".tif")
 #' }
-gdal_conversion <- function(in_path, doi, outfolder = NULL, band_name = NULL, tile_id = NULL, just_band_name = TRUE, target_format = ".tif") {
+gdal_conversion <- function(in_path, doi = NULL, outfolder = NULL, band_name = NULL, tile_id = NULL, just_band_name = TRUE, target_format = ".tif") {
   # grab subdataset paths.
   sds <- get_subdatasets(in_path)
   # grab band names.
@@ -225,7 +225,7 @@ gdal_conversion <- function(in_path, doi, outfolder = NULL, band_name = NULL, ti
   out <- gdal_translate(sds[band.ind], file.path(outfolder, target_file_name))
   # if it's the VIIRS LAI image.
   # we need to grab the crs and ext and rewrite the image.
-  if (doi == "10.5067/VIIRS/VJ215A2H.002") {
+  if (doi_to_product_name(doi) == "VIIRS_LAI") {
     target_path <- file.path(outfolder, target_file_name)
     temp_path   <- file.path(outfolder, paste0("temp_", target_file_name))
     

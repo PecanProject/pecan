@@ -6,7 +6,7 @@
 \usage{
 merge_image_tiles(
   in.path,
-  doi = doi,
+  doi = NULL,
   out.path = NULL,
   band.name = NULL,
   just.band.name = TRUE,
@@ -20,7 +20,7 @@ merge_image_tiles(
 \arguments{
 \item{in.path}{character: physical path to the folder that contains all the original image tiles.}
 
-\item{doi}{character: data identification.}
+\item{doi}{character: data identification. Default is NULL.}
 
 \item{out.path}{character: physical path to the folder that contains converted and merged images.}
 
