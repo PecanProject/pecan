@@ -201,6 +201,7 @@ read.output <- function(runid, outdir,
       )
     }
   }
+
   result <- list()
 
   if (nofiles) {
