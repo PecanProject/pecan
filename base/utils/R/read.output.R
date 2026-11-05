@@ -165,6 +165,7 @@ read.output <- function(runid, outdir,
       )
     }
   }
+
   origin_year <- start.year
   if (!is.finite(origin_year)) {
     PEcAn.logger::logger.warn(
