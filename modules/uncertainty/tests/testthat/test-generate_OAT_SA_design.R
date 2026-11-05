@@ -51,6 +51,20 @@ test_that("generate_OAT_SA_design keeps param sequential and non-param constant 
   }
 })
 
+test_that("generate_OAT_SA_design returns one prepared parameter set per OAT run", {
+  settings <- make_test_settings()
+
+  result <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))
+  values <- result$run_samples$pft1
+
+  # Row one is the all-median run; row two moves only trait1 to quantile 25.
+  expect_equal(unlist(values[1, ], use.names = TRUE),
+               c(trait1 = 2, trait2 = 5, trait3 = 8))
+  expect_equal(unlist(values[2, ], use.names = TRUE),
+               c(trait1 = 1, trait2 = 5, trait3 = 8))
+  expect_equal(nrow(values), nrow(result$design_matrix))
+})
+
 
 test_that("supplied samples are returned alongside the design", {
   settings <- make_test_settings()
