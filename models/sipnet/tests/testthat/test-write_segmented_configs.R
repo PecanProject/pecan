@@ -10,7 +10,7 @@ test_that("write_segmented_configs", {
 
   event_lines |>
     writeLines(con = event_src_path)
-  c("date,crop_code", "2025-01-02,D12", "2025-01-05,G6") |>
+  c("date,crop_code", "2025-01-02,D12", "2025-01-04,D13", "2025-01-05,G6") |>
     writeLines(crp_chg_path)
   c("run_id,site_id", "ENS-00001-a,a") |>
     writeLines(file.path(pth, "runs_manifest.csv"))
@@ -268,4 +268,57 @@ test_that("write_segment_configs returns unaltered job.sh when no segments remai
   expect_equal(seg_res, file.path(run_path, "job.sh"))
   expect_false(file.exists(file.path(run_path, "job_segmented.sh")))
   expect_false(dir.exists(file.path(run_path, "segments")))
+})
+
+test_that("drop_same_pft_segments merges consecutive segments with the same PFT", {
+  segments <- data.frame(
+    start_date = as.Date(c(
+      "2025-01-01", "2025-01-02", "2025-01-04", "2025-01-05"
+    )),
+    end_date = as.Date(c(
+      "2025-01-01", "2025-01-03", "2025-01-04", "2025-01-10"
+    )),
+    crop_code = c(NA_character_, "D12", "D13", "G6"),
+    pft = c("pft1", "pft2", "pft2", "pft3")
+  )
+
+  result <- PEcAn.SIPNET:::drop_same_pft_segments(segments)
+
+  expect_equal(nrow(result), 3)
+
+  expect_equal(
+    result$start_date,
+    as.Date(c("2025-01-01", "2025-01-02", "2025-01-05"))
+  )
+
+  expect_equal(
+    result$end_date,
+    as.Date(c("2025-01-01", "2025-01-04", "2025-01-10"))
+  )
+
+  expect_identical(
+    result$crop_code,
+    c("NA", "D12 D13", "G6")
+  )
+  expect_identical(
+    result$pft,
+    c("pft1", "pft2", "pft3")
+  )
+
+  expect_identical(
+    result$segment_id,
+    c("001", "002", "003")
+  )
+
+  # Merging leaves no gaps and does not change the overall date range
+  expect_equal(min(result$start_date), min(segments$start_date))
+  expect_equal(max(result$end_date), max(segments$end_date))
+  expect_equal(result$start_date[-1], result$end_date[-nrow(result)] + 1)
+
+  # First and last segments can be part of a merge: all one PFT -> one row
+  segments$pft <- "pft1"
+  all_one <- PEcAn.SIPNET:::drop_same_pft_segments(segments)
+  expect_equal(nrow(all_one), 1)
+  expect_equal(all_one$start_date, min(segments$start_date))
+  expect_equal(all_one$end_date, max(segments$end_date))
 })
