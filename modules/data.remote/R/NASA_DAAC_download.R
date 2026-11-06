@@ -6,7 +6,7 @@
 doi_to_product_name <- function(doi = NULL) {
   # if we doi is NULL.
   if (is.null(doi)) {
-    return(doi)
+    return("")
   }
   doi_map <- c(
     "10.3334/ORNLDAAC/2183" = "SHIFT_Hyper_Spectral",
