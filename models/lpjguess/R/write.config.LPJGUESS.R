@@ -199,6 +199,8 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
     
+      # trait.values has no entry for PFTs after the last one with traits
+      pft_traits <- if (i <= length(trait.values)) trait.values[[i]] else list()
       write2pftblock[[i]] <- pftblock
       write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
       
@@ -209,9 +211,9 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
       for(t in seq_along(lpjguess_param_list)){
         trait_name <- names(lpjguess_param_list)[t]
         if(trait_name != "pft" & !(trait_name %in% noprior_params)){
-          if(trait_name %in% names(trait.values[[i]])){ # pass sample
+          if(trait_name %in% names(pft_traits)){ # pass sample
             
-            pecan_sample <- trait.values[[i]][[trait_name]]
+            pecan_sample <- pft_traits[[trait_name]]
             
             if(trait_name == "rootdist"){  # convert from ratio to fractions
               lower_layer_fraction = 1/(pecan_sample+1)

@@ -1,3 +1,8 @@
+# PEcAn.LPJGUESS 1.9.0.9000
+
+* `write.config.LPJGUESS()` no longer errors when the last PFT has no sampled traits and `trait.values` has no `env` entry. It writes defaults for that PFT, as it did before (#4225, @aarmens702-hub).
+
+
 # PEcAn.LPJGUESS 1.9.0
 
 * model2netcdf.LPJGUESS no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.
