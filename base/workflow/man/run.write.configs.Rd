@@ -52,8 +52,8 @@ function (e.g. \code{write.config.ED2}, \code{write.config.SIPNET}).
 \strong{Upstream contract (reads from \code{settings$outdir}):}
 \describe{
 \item{\code{samples.Rdata}}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
-Contains 5 bundled objects: \code{trait.samples},
-\code{sa.samples}, \code{ensemble.samples}, \code{runs.samples}, \code{env.samples}.
+Contains 4 bundled objects: \code{trait.samples},
+\code{sa.samples}, \code{ensemble.samples}, \code{runs.samples}.
 This function loads \code{ensemble.samples} and \code{sa.samples} to build
 model configuration files.}
 }

@@ -76,6 +76,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Breaking: Removed argument `env.samples` from `PEcAn.uncertainty::get.ensemble.samples()` and `env` from `PEcAn.utils::get.sa.sample.list()`. Ensemble and sensitivity analysis samples no longer contain an empty `env` pseudo-PFT, which also stops it triggering a false multiple-PFT warning from `write.config.SIPNET()`, and new `samples.Rdata` files no longer contain `env.samples`. Existing sample sets and `samples.Rdata` files that contain them keep working, and still trigger the warning. (#4225, @aarmens702-hub)
+- `PEcAn.SIPNET::write.config.SIPNET()` results change for new sample sets when `leafC` is sampled and no soil PFT comes after the vegetation PFT: values that the extra pass for `env` recalculated with `leafC` fixed at 0.48 now use the sampled `leafC`. This affects `leafCSpWt`, `aMax` and `baseFolRespFrac` when `SLA`, `Amax` or `leaf_respiration_rate_m2` are constants, and `laiInit` and `plantWoodInit` calculated from a `poolinitcond` file. (#4225, @aarmens702-hub)
 - Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
 - Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)

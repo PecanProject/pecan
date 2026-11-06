@@ -142,21 +142,48 @@ test_that("get.ensemble.samples", {
     a = data.frame(aa = c(1, 5, 2, 8, 2)),
     b = data.frame(aa = c(20, 44, 53, 70, 65), bb = c(1, 5, 3, 4, 2))
   )
-  env_samp <- list()
 
-  res <- get.ensemble.samples(2, pft_samp, env_samp)
+  res <- get.ensemble.samples(2, pft_samp)
   res_idx <- attr(res, "sampled.indices")
   expect_type(res, "list")
-  expect_named(res, c("a", "b", "env"))
+  expect_named(res, c("a", "b"))
   expect_true(all(sapply(res, inherits, "data.frame")))
-  expect_equal(lengths(res), c(a = 1, b = 2, env = 0))
-  expect_equal(sapply(res, nrow), c(a = 2, b = 2, env = 2))
+  expect_equal(lengths(res), c(a = 1, b = 2))
+  expect_equal(sapply(res, nrow), c(a = 2, b = 2))
 
   expect_type(res_idx, "list")
-  expect_named(res_idx, c("a", "b", "env"))
+  expect_named(res_idx, c("a", "b"))
   expect_true(all(sapply(res_idx, inherits, "matrix")))
-  expect_equal(sapply(res_idx, ncol), c(a = 1, b = 2, env = 0))
-  expect_equal(sapply(res_idx, nrow), c(a = 2, b = 2, env = 2))
+  expect_equal(sapply(res_idx, ncol), c(a = 1, b = 2))
+  expect_equal(sapply(res_idx, nrow), c(a = 2, b = 2))
   # pft_samp has 5 rows -> all indices <= 5
   expect_true(all(sapply(res_idx, \(mat)all(mat %in% 1:5))))
+
+  # a single run is taken at the median
+  expect_named(get.ensemble.samples(1, pft_samp), c("a", "b"))
+})
+
+
+test_that("runs are still written when no PFT has traits", {
+  mockery::stub(write.ensemble.configs, "write.config.SIPNET", function(...) TRUE)
+  tmp <- withr::local_tempdir()
+  settings <- list(
+    run = list(site = list(id = 1)),
+    rundir = file.path(tmp, "run"),
+    modeloutdir = file.path(tmp, "out"),
+    host = list(rundir = file.path(tmp, "run"), outdir = file.path(tmp, "out")),
+    model = list(id = 1)
+  )
+
+  result <- write.ensemble.configs(
+    defaults = list(),
+    ensemble.size = 2,
+    ensemble.samples = get.ensemble.samples(2, list(), method = "uniform"),
+    settings = settings,
+    model = "SIPNET",
+    write.to.db = FALSE,
+    input_design = data.frame(param = 1:2)
+  )
+
+  expect_equal(nrow(result$runs), 2)
 })

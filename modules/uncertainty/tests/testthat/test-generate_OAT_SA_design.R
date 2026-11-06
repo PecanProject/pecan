@@ -18,8 +18,7 @@ oat_parameter_samples <- function() {
     trait.samples    = list(pft1 = list(trait1 = 1:3)),
     sa.samples       = mock_sa_samples,
     ensemble.samples = list(),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 }
 

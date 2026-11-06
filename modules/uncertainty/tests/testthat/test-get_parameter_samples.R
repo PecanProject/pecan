@@ -55,8 +55,7 @@ test_that("get_parameter_samples returns a non-NULL list with correct names", {
   expect_false(is.null(result))
   expect_named(
     result,
-    c("trait.samples", "sa.samples", "ensemble.samples",
-      "runs.samples", "env.samples")
+    c("trait.samples", "sa.samples", "ensemble.samples", "runs.samples")
   )
 })
 
@@ -217,6 +216,20 @@ test_that("ensemble.size = 1 produces median samples", {
   )
 
   expect_true(!is.null(result$ensemble.samples))
+  expect_named(result$ensemble.samples, "test_pft")
+})
+
+
+test_that("ensemble and SA samples have one entry per PFT and no env", {
+  result <- get_parameter_samples(
+    pft_names         = c("hardwood", "conifer"),
+    prior_distns_list = list(make_mock_priors("SLA"), make_mock_priors("Vcmax")),
+    ensemble.size     = 5,
+    sa_quantiles      = 0.16
+  )
+
+  expect_named(result$ensemble.samples, c("hardwood", "conifer"))
+  expect_named(result$sa.samples, c("hardwood", "conifer"))
 })
 
 

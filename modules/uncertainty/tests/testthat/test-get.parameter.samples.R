@@ -9,7 +9,7 @@
 #   * default (outdir = settings$outdir) -> writes samples.Rdata as before
 #   * explicit outdir                    -> writes there instead
 #   * outdir = NULL                      -> no save
-#   * the saved file keeps the 5-object name contract
+#   * the saved file keeps the 4-object name contract
 #   * the result list is still returned invisibly
 #   * the loaded posteriors are still delegated to the pure function
 #
@@ -47,8 +47,7 @@ fake_samples_result <- function() {
     trait.samples    = list(),
     sa.samples       = list(),
     ensemble.samples = list(),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 }
 
@@ -125,7 +124,7 @@ test_that("outdir = NULL skips the save entirely", {
 
 # Saved file keeps the downstream name contract
 
-test_that("samples.Rdata bundles the 5 expected objects", {
+test_that("samples.Rdata bundles the 4 expected objects", {
   # Downstream consumers (run.write.configs, get.results,
   # run.sensitivity.analysis, read.ensemble.ts) read these exact names,
   # so the save contract must not drift.
@@ -150,8 +149,7 @@ test_that("samples.Rdata bundles the 5 expected objects", {
   load(file.path(tmp, "samples.Rdata"), envir = e)
   expect_setequal(
     ls(e),
-    c("ensemble.samples", "trait.samples", "sa.samples",
-      "runs.samples", "env.samples")
+    c("ensemble.samples", "trait.samples", "sa.samples", "runs.samples")
   )
 })
 

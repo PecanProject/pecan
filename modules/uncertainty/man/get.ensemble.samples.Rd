@@ -7,7 +7,6 @@
 get.ensemble.samples(
   ensemble.size,
   pft.samples,
-  env.samples,
   method = "random",
   param.names = NULL,
   ...
@@ -17,8 +16,6 @@ get.ensemble.samples(
 \item{ensemble.size}{number of runs in model ensemble}
 
 \item{pft.samples}{random samples from parameter distribution, e.g. from a MCMC chain}
-
-\item{env.samples}{env samples}
 
 \item{method}{the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.}
 

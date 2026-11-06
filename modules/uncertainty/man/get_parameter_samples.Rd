@@ -40,7 +40,7 @@ or NULL to skip SA sampling.}
 fitted together (e.g. PDA) and correlations should be preserved.}
 }
 \value{
-named list with five elements:
+named list with four elements:
 \describe{
   \item{trait.samples}{Named list by PFT, then by trait. Each leaf is a
     numeric vector of parameter samples.}
@@ -49,8 +49,6 @@ named list with five elements:
   \item{ensemble.samples}{Ensemble samples (list), or empty list if
     \code{do_ensemble} is FALSE.}
   \item{runs.samples}{Reserved for future use (empty list).}
-  \item{env.samples}{Environmental samples (empty list, populated by
-    downstream code if needed).}
 }
 }
 \description{
