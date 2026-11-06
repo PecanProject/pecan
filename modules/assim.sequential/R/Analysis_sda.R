@@ -112,10 +112,10 @@ EnKF<-function(settings, Forecast, Observed, H, extraArg=NULL, ...){
 ##' @export
 GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=10000, ...){
   #------------------------------Setup
-  #-- reading the dots and exposing them to the inside of the function
-  dots<-list(...)
-  if (length(dots)>0) lapply(names(dots),function(name){assign(name,dots[[name]], pos=1 )})
-  
+  #-- reading the dots: the calling workflow passes obs.mean through `...`
+  dots <- list(...)
+  obs.mean <- dots$obs.mean
+
   #General
   var.names <- sapply(settings$state.data.assimilation$state.variable, '[[', "variable.name")
   input.vars <- sapply(settings$state.data.assimilation$inputs, '[[', "variable.name")
@@ -615,17 +615,17 @@ GEF<-function(settings, Forecast, Observed, H, extraArg, nitr=50000, nburnin=100
   
   for(rr in seq_along(iX)){
     graphics::plot(dat_save[,iX[rr]],typ = 'l',main = paste('X',rr))
-    abline(h=mu.f[rr],col='blue')
+    graphics::abline(h=mu.f[rr],col='blue')
   }
   
   for (rr in seq_along(iystar)) {
     graphics::plot(dat_save[,iystar[rr]], type = 'l', main = paste('iystar',rr))
-    abline(h=(mu.a)[rr],col='red')
+    graphics::abline(h=(mu.a)[rr],col='red')
   }
   
   for (rr in seq_along(iX)) {
     graphics::plot(dat_save[,iX.mod[rr]], type = 'l', main = paste('iX.mod',rr))
-    abline(h=mu.f[rr],col='blue')
+    graphics::abline(h=mu.f[rr],col='blue')
   }
   eigen_save <- matrix(NA,nrow=nrow(dat_save),ncol=ncol(X))
   for(rr in 1:nrow(dat_save)) {
