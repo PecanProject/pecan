@@ -46,6 +46,14 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
     f <- PEcAn.DB::db.query(query = paste("SELECT * from formats where id = ", format.id), con = bety)
   }
 
+  if (nrow(f) == 0) {
+    if (is.na(format.id)) {
+      PEcAn.logger::logger.severe("No format found for input id", input.id)
+    } else {
+      PEcAn.logger::logger.severe("No format found with id", format.id)
+    }
+  }
+
   mimetype <- PEcAn.DB::db.query(query = paste("SELECT * from  mimetypes where id = ", f$mimetype_id), con = bety)[["type_string"]]
   f$mimetype <- utils::tail(unlist(strsplit(mimetype, "/")),1)
 
