@@ -42,8 +42,8 @@ updated start date
 Spin-up meteorology
 }
 \details{
-spin.met works by creating symbolic links to the sampled met file, 
-rather than copying the whole file. Be aware that the internal dates in 
+spin.met works by creating symbolic links to the sampled met file,
+rather than copying the whole file. Be aware that the internal dates in
 those files are not modified. Right now this is designed to be called within
 met2model.[MODEL] before the met is processed (it's designed to work with annual CF
 files not model-specific files) for example with models that process met

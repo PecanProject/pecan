@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{sw2par}
 \alias{sw2par}
-\title{SW to PAR}
+\title{Solar Radiation to PPFD}
 \usage{
 sw2par(sw)
 }
@@ -13,9 +13,6 @@ sw2par(sw)
 PAR W/m2
 }
 \description{
-Solar Radiation to PPFD
-}
-\details{
 Here the input is the total solar radiation
 so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151
 This is based on the approximation that PAR is 0.45-0.50 of the total radiation

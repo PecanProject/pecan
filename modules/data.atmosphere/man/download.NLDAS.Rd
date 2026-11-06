@@ -36,7 +36,8 @@ download.NLDAS(
 \item{...}{Other inputs}
 }
 \description{
-Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
+Download and convert single grid point NLDAS to CF single grid point from
+  hydro1.sci.gsfc.nasa.gov using OPENDAP interface
 }
 \author{
 Christy Rollinson (with help from Ankur Desai)

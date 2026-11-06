@@ -10,7 +10,7 @@
 #'
 #'
 #' @author Alexis Helgeson
-#' 
+#'
 download_NOAA_GEFS_EFI <- function(sitename, outfolder, start_date, site.lat, site.lon){
   #using the stage2 fcn mean that the met as already been downscaled and gapfilled to 1 hr intervals
   met = PEcAn.data.atmosphere::noaa_stage2(cycle = 0, 

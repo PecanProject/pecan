@@ -1,11 +1,11 @@
-##' met.process.stage
-##' @export
-##'
-##' @param input.id bety db for input format
-##' @param raw.id format id for the raw met data
-##' @param con database connection
-##'
-##' @author Elizabeth Cowdery
+#' met.process.stage
+#'
+#' @param input.id bety db for input format
+#' @param raw.id format id for the raw met data
+#' @param con database connection
+#'
+#' @author Elizabeth Cowdery
+#' @export
 met.process.stage <- function(input.id, raw.id, con) {
   
   format.id <- PEcAn.DB::db.query(paste("SELECT format_id from inputs where id =", input.id), con)[[1]]

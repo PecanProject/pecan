@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_save_betas.R
 \name{save.betas}
 \alias{save.betas}
-\title{save.betas}
+\title{TDM Save Betas}
 \usage{
 save.betas(model.out, betas, outfile)
 }
@@ -14,12 +14,8 @@ save.betas(model.out, betas, outfile)
 \item{outfile}{location where output will be stored}
 }
 \description{
-Function to save betas as a .nc file. This is utilized in
-             gen.subdaily.models() when linear regression models are created
-}
-\details{
-TDM Save Betas
-Saves betas that are calculated during gen.subdaily.models()
+Saves betas that are calculated during gen.subdaily.models() as a .nc file.
+This is utilized in gen.subdaily.models() when linear regression models are created
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.ALMA.R
 \name{met2CF.PalEONregional}
 \alias{met2CF.PalEONregional}
-\title{met2CF.PalEONregional}
+\title{Get meteorology variables from PalEON netCDF files and convert to netCDF CF format}
 \usage{
 met2CF.PalEONregional(
   in.path,

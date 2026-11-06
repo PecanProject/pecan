@@ -1,66 +1,54 @@
-##' Debias Meteorology using Multiple Linear Regression
-##' Statistically debias met datasets and generate ensembles based on the observed uncertainty
-# -----------------------------------
-# Description
-# -----------------------------------
-##'
-##' @title debias.met.regression
-##' @family debias - Debias & Align Meteorology Datasets into continuous time series
-##' @author Christy Rollinson
-##' @description This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
-##'              resolution product or empirical observations. It assumes input are in annual CF standard
-##'              files that are generate from the pecan extract or download funcitons.
-# -----------------------------------
-# Parameters
-# -----------------------------------
-##' @param train.data - training data coming out of align.met
-##' @param source.data - data to be bias-corrected aligned with training data (from align.met)
-##' @param n.ens  - number of ensemble members to generate and save for EACH source ensemble member
-##' @param vars.debias - which met variables should be debiased? if NULL, all variables in train.data
-##' @param CRUNCEP - flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for
-##'                  met variables that have been naively gapfilled for certain time periods
-##' @param pair.anoms - logical stating whether anomalies from the same year should be matched or not
-##' @param pair.ens - logical stating whether ensembles from train and source data need to be paired together
-##'                   (for uncertainty propogation)
-##' @param uncert.prop - method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1
-##' @param resids - logical stating whether to pass on residual data or not *Not implemented yet
-##' @param seed - specify seed so that random draws can be reproduced
-##' @param outfolder - directory where the data should go
-##' @param yrs.save - what years from the source data should be saved; if NULL all years of the source data will be saved
-##' @param ens.name - what is the name that should be attached to the debiased ensemble
-##' @param ens.mems - what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles
-##'                   without having to do do giant runs at once; if NULL will be numbered 1:n.ens
-##' @param force.sanity - (logical) do we force the data to meet sanity checks?
-##' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
-##' @param sanity.sd - how many standard deviations from the mean should be used to determine sane outliers (default 8)
-##' @param lat.in - latitude of site
-##' @param lon.in - longitude of site
-##' @param save.diagnostics - logical; save diagnostic plots of output?
-##' @param path.diagnostics - path to where the diagnostic graphs should be saved
-##' @param parallel - (experimental) logical stating whether to run temporal_downscale_functions.R in parallel *Not Implemented yet
-##' @param n.cores - (experimental) how many cores to use in parallelization *Not implemented yet
-##' @param overwrite - overwrite existing files? Currently ignored
-##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
-##'   functions print debugging information as they run?
-##' @export
-# -----------------------------------
-# Workflow
-# -----------------------------------
-# The general workflow is as follows:
-# 1. read in & format data (coerce to daily format)
-# 2. set up the file structures for the output
-# 3. define the training window
-# 4. generate the bias-correction models to adjust the seasonal cycle
-# 5. Model the anomalies
-# 5. apply the climatology & anomaly models with covariance to generate a daily ensemble
-# 6. Save specified years to file
-# -----------------------------------
-
-#----------------------------------------------------------------------
-# Begin Function
-#----------------------------------------------------------------------
-
-
+#' Debias Meteorology using Multiple Linear Regression
+#'
+#' Statistically debias met datasets and generate ensembles based on the observed uncertainty
+#'
+#' This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
+#'   resolution product or empirical observations. It assumes input are in annual CF standard
+#'   files that are generate from the pecan extract or download funcitons.
+#'
+#' The general workflow is as follows:
+#'   1. read in & format data (coerce to daily format)
+#'   2. set up the file structures for the output
+#'   3. define the training window
+#'   4. generate the bias-correction models to adjust the seasonal cycle
+#'   5. Model the anomalies
+#'   5. apply the climatology & anomaly models with covariance to generate a daily ensemble
+#'   6. Save specified years to file
+#'
+#' @family debias - Debias & Align Meteorology Datasets into continuous time series
+#' @author Christy Rollinson
+#'
+#' @param train.data - training data coming out of align.met
+#' @param source.data - data to be bias-corrected aligned with training data (from align.met)
+#' @param n.ens  - number of ensemble members to generate and save for EACH source ensemble member
+#' @param vars.debias - which met variables should be debiased? if NULL, all variables in train.data
+#' @param CRUNCEP - flag for if the dataset being downscaled is CRUNCEP; if TRUE, special cases triggered for
+#'                  met variables that have been naively gapfilled for certain time periods
+#' @param pair.anoms - logical stating whether anomalies from the same year should be matched or not
+#' @param pair.ens - logical stating whether ensembles from train and source data need to be paired together
+#'                   (for uncertainty propogation)
+#' @param uncert.prop - method for error propogation for child ensemble members 1 ensemble member; options=c(random, mean); randomly strongly encouraged if n.ens>1
+#' @param resids - logical stating whether to pass on residual data or not *Not implemented yet
+#' @param seed - specify seed so that random draws can be reproduced
+#' @param outfolder - directory where the data should go
+#' @param yrs.save - what years from the source data should be saved; if NULL all years of the source data will be saved
+#' @param ens.name - what is the name that should be attached to the debiased ensemble
+#' @param ens.mems - what labels/numbers to attach to the ensemble members so we can gradually build bigger ensembles
+#'                   without having to do do giant runs at once; if NULL will be numbered 1:n.ens
+#' @param force.sanity - (logical) do we force the data to meet sanity checks?
+#' @param sanity.tries - how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop
+#' @param sanity.sd - how many standard deviations from the mean should be used to determine sane outliers (default 8)
+#' @param lat.in - latitude of site
+#' @param lon.in - longitude of site
+#' @param save.diagnostics - logical; save diagnostic plots of output?
+#' @param path.diagnostics - path to where the diagnostic graphs should be saved
+#' @param parallel - (experimental) logical stating whether to run temporal_downscale_functions.R in parallel *Not Implemented yet
+#' @param n.cores - (experimental) how many cores to use in parallelization *Not implemented yet
+#' @param overwrite - overwrite existing files? Currently ignored
+#' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
+#'   functions print debugging information as they run?
+#' @export
+#'
 debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NULL, CRUNCEP=FALSE,
                                   pair.anoms = TRUE, pair.ens = FALSE, uncert.prop="mean", resids = FALSE, seed=Sys.Date(),
                                   outfolder, yrs.save=NULL, ens.name, ens.mems=NULL, force.sanity=TRUE, sanity.tries=25, sanity.sd=8, lat.in, lon.in,
