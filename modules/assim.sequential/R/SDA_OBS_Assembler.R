@@ -64,7 +64,7 @@ SDA_OBS_Assembler <- function(settings){
       next
     }else{
       PEcAn.logger::logger.info(paste("Entering", names(Obs_Prep)[i]))
-      fun_name <- names(Obs_Prep)[i]
+      source_tag <- names(Obs_Prep)[i]
       var_ind <- c(var_ind, i)
     }
     
@@ -86,19 +86,19 @@ SDA_OBS_Assembler <- function(settings){
       time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep[[i]])
     }
     #mapping from XML tag names to actual prep function names
-    fun_name_map <- list(
+    name_map <- list(
       LandTrendr = "Landtrendr_AGB_prep",
       MODIS      = "MODIS_LAI_prep",
       SMAP       = "SMAP_SMP_prep",
       SoilGrids  = "Soilgrids_SoilC_prep"
     )
-    actual_fun_name <- if (!is.null(fun_name_map[[fun_name]])) fun_name_map[[fun_name]] else paste0(fun_name, "_prep")
+    actual_source_tag <- if (!is.null(name_map[[source_tag]])) name_map[[source_tag]] else paste0(source_tag, "_prep")
 
     #Search function inside the data.remote package
-    if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", actual_fun_name), silent = T))){
+    if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", actual_source_tag), silent = T))){
       #Search function inside the data.land package, this is explicit for Soilgrids prep function.
-      if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", actual_fun_name), silent = T))){
-        PEcAn.logger::logger.info("Couldn't find the function: ", actual_fun_name, ". Please Check it!")
+      if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", actual_source_tag), silent = T))){
+        PEcAn.logger::logger.info("Couldn't find the function: ", actual_source_tag, ". Please Check it!")
         return(0)
       }
     }
@@ -135,8 +135,8 @@ SDA_OBS_Assembler <- function(settings){
       #with the string pattern of the names of the function argument
       Ind_single_match <- grep(fun_args_temp, obj_exist_temp, ignore.case = T)
       
-      #if we have multiple matches, then search the string pattern by the fun_name.
-      funName_args_temp <- stringr::str_replace_all(paste0(fun_name, fun_args[j]), "[^[:alnum:]]", "")
+      #if we have multiple matches, then search the string pattern by the source_tag.
+      funName_args_temp <- stringr::str_replace_all(paste0(source_tag, fun_args[j]), "[^[:alnum:]]", "")
       if (length(Ind_single_match)>1){
         Ind_single_match <- grep(funName_args_temp, obj_exist_temp, ignore.case = T)
       }
@@ -152,8 +152,8 @@ SDA_OBS_Assembler <- function(settings){
     names(cleaned_args) <- names(args)[seq_along(cleaned_args)]
     #function calls
     Temp <- do.call(obs_prep_fun, cleaned_args)
-    if (fun_name == "LandTrendr") {
-      lt_rf  <- Obs_Prep[[fun_name]]
+    if (source_tag == "LandTrendr") {
+      lt_rf  <- Obs_Prep[[source_tag]]
       end_yr <- lubridate::year(as.Date(if (!is.null(lt_rf$end.date)) lt_rf$end.date else Obs_Prep$end.date))
       lt_extra_years <- (2018:end_yr)[2018:end_yr > max(lubridate::year(Temp[[2]]))]
       if (length(lt_extra_years) > 0 &&
