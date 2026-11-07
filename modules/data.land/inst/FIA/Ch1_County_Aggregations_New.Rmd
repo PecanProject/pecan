@@ -1,0 +1,135 @@
+---
+title: "Chapter 1: County Aggregations"
+author: "Cami Webb, cwebb16@bu.edu"
+output: html_document
+---
+```{r, echo=FALSE}
+library(terra)
+library(fs)
+library(stringr)
+
+main_dir <- "/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/downscale_maps_analysis_lc_ts_noGEDI/"
+nlcd_path <- "/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_NLCD_LC.tif"
+
+years <- 2012:2024
+ensembles <- 1:25
+
+decid.SLA <- 1/15.17639
+con.SLA   <- 1/4.190841
+
+# helpers
+make_masks <- function(nlcd) {
+  list(
+    All = ifel(nlcd %in% c(41, 42), 1, NA),
+    Con = ifel(nlcd == 42, 1, NA),
+    Dec = ifel(nlcd == 41, 1, NA)
+  )
+}
+
+make_SLA <- function(nlcd) {
+  classify(nlcd,
+           matrix(c(42, con.SLA,
+                    41, decid.SLA), ncol = 2, byrow = TRUE),
+           others = NA)
+}
+
+# Return the ensemble files (format /LAI_2012)
+ens_files <- function(var, year) {
+  folder <- file.path(main_dir, paste0(var, "_", year))
+  dir_ls(folder, regexp = "\\.tiff?$", type = "file")
+}
+
+# Update running sum + count
+accum_update <- function(sum_r, n_r, x) {
+  ok <- !is.na(x)
+  sum_r <- sum_r + ifel(ok, x, 0)
+  n_r   <- n_r   + ifel(ok, 1, 0)
+  list(sum = sum_r, n = n_r)
+}
+
+nlcd <- rast(nlcd_path)
+masks <- make_masks(nlcd)
+SLA   <- make_SLA(nlcd)
+
+# store final accumulators per mask and variable
+init_acc <- function(template) list(sum = template*0, n = template*0)
+
+all_years <- list()
+for (nm in names(masks)) {
+  all_years[[nm]] <- list(
+    FC = init_acc(masks[[nm]]),
+    WC = init_acc(masks[[nm]]),
+    TC = init_acc(masks[[nm]])
+  )
+}
+
+for (yr in years) {
+  lai_files  <- ens_files("LAI", yr)
+  wood_files <- ens_files("AbvGrndWood", yr)
+
+  # you need the files to align by ensemble; simplest is sort and assume same ordering
+  lai_files  <- sort(lai_files)
+  wood_files <- sort(wood_files)
+
+  # per-year accumulators (reset each year)
+  per_year <- list()
+  for (nm in names(masks)) {
+    per_year[[nm]] <- list(
+      FC = init_acc(masks[[nm]]),
+      WC = init_acc(masks[[nm]])
+    )
+  }
+
+  for (i in seq_along(ensembles)) {
+    lai  <- rast(lai_files[i])
+    wood <- rast(wood_files[i])
+
+    for (nm in names(masks)) {
+      mk <- masks[[nm]]
+
+      # mask + transform 
+      lai_m  <- mask(lai, mk)
+      wood_m <- mask(wood, mk)
+
+      FC <- lai_m * SLA * 0.5 
+      WC <- wood_m * 0.1          
+
+      per_year[[nm]]$FC <- accum_update(per_year[[nm]]$FC$sum, per_year[[nm]]$FC$n, FC)
+      per_year[[nm]]$WC <- accum_update(per_year[[nm]]$WC$sum, per_year[[nm]]$WC$n, WC)
+
+      rm(lai_m, wood_m, FC, WC); gc()
+    }
+
+    rm(lai, wood); gc()
+  }
+
+  # finalize yearly means, update all-years accumulators
+  for (nm in names(masks)) {
+    FC_mean <- per_year[[nm]]$FC$sum / per_year[[nm]]$FC$n
+    WC_mean <- per_year[[nm]]$WC$sum / per_year[[nm]]$WC$n
+    TC_mean <- FC_mean + WC_mean
+
+    all_years[[nm]]$FC <- accum_update(all_years[[nm]]$FC$sum, all_years[[nm]]$FC$n, FC_mean)
+    all_years[[nm]]$WC <- accum_update(all_years[[nm]]$WC$sum, all_years[[nm]]$WC$n, WC_mean)
+    all_years[[nm]]$TC <- accum_update(all_years[[nm]]$TC$sum, all_years[[nm]]$TC$n, TC_mean)
+
+    rm(FC_mean, WC_mean, TC_mean); gc()
+  }
+
+  message("done year ", yr)
+}
+
+# final all-years mean rasters in memory 
+final_mean <- list()
+for (nm in names(masks)) {
+  final_mean[[nm]] <- list(
+    FC = all_years[[nm]]$FC$sum / all_years[[nm]]$FC$n,
+    WC = all_years[[nm]]$WC$sum / all_years[[nm]]$WC$n,
+    TC = all_years[[nm]]$TC$sum / all_years[[nm]]$TC$n
+  )
+}
+
+# Rrite final means (3 rasters × 3 masks = 9 outputs) 
+writeRaster(final_mean$All$TC, "TC_mean_all_years.tif", overwrite=TRUE)
+
+```
