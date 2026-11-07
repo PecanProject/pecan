@@ -83,8 +83,7 @@ test_modular_chain <- function(pft_name, modeltype, trait_names,
     test_that("get_parameter_samples consumes MA output and returns the samples list", {
       expect_named(
         samples,
-        c("trait.samples", "sa.samples", "ensemble.samples",
-          "runs.samples", "env.samples"),
+        c("trait.samples", "sa.samples", "ensemble.samples", "runs.samples"),
         ignore.order = TRUE
       )
       expect_type(samples$trait.samples, "list")

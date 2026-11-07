@@ -4,12 +4,10 @@
 \alias{get.sa.sample.list}
 \title{get sensitivity samples as a list}
 \usage{
-get.sa.sample.list(pft, env, quantiles)
+get.sa.sample.list(pft, quantiles)
 }
 \arguments{
 \item{pft}{list of samples from Plant Functional Types}
-
-\item{env}{list of samples from environment parameters}
 
 \item{quantiles}{quantiles at which to obtain samples from parameter for
 sensitivity analysis}

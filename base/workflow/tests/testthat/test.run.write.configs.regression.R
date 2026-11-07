@@ -40,7 +40,7 @@ write_samples_file <- function(outdir,
                                ensemble.samples = list(),
                                sa.samples = list()) {
   runs.samples <- list()
-  env.samples  <- list()
+  env.samples  <- list() # no longer saved, but older files have it
   save(trait.samples, ensemble.samples, sa.samples, runs.samples, env.samples,
        file = file.path(outdir, "samples.Rdata"))
 }

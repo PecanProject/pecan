@@ -1,5 +1,6 @@
 # PEcAn.JULES 1.7.5.9000
 
+* `write.config.JULES()` no longer assumes the last element of `trait.values` is `env`. Previously it ignored the traits of the last PFT in any list without `env` (#4225, @aarmens702-hub).
 * Removed `tests/Rcheck_reference.log`, which was used to ignore historic check messages that have now been fixed.
 
 
