@@ -1,9 +1,10 @@
 #' Write model-specific run scripts and configuration files
 #'
-#' Generates run scripts and configuration files for all analyses (ensemble
-#' and/or sensitivity analysis) specified in the provided settings. Delegates
-#' the model-specific config writing to the appropriate `write.config.*`
-#' function (e.g. `write.config.ED2`, `write.config.SIPNET`).
+#' Generates run scripts and configuration files for one ensemble or sensitivity
+#' analysis described by `input_design`. Use `runModule.run.write.configs()` to
+#' write both analyses. Delegates model-specific configuration to the
+#' appropriate `write.config.*` function (e.g. `write.config.ED2`,
+#' `write.config.SIPNET`).
 #'
 #' @details
 #' **Upstream contract (reads from `settings$outdir`):**
@@ -24,8 +25,8 @@
 #'   \item{`ensemble.samples.<ensemble_id>.Rdata`}{Contains `ens.run.ids`
 #'     (vector of run IDs), `ens.ensemble.id`, `ens.samples`, `pft.names`,
 #'     and `trait.names`. Saved when ensemble is configured.}
-#'   \item{`runs_manifest.csv`}{A CSV table tracking all runs created,
-#'     appended across ensemble and SA analyses.}
+#'   \item{`runs_manifest.csv`}{A CSV table tracking runs and their design row
+#'     indices. Sensitivity baseline rows are repeated for each varying trait.}
 #' }
 #'
 #' **Downstream contract:** The `sensitivity.samples.*.Rdata` and
@@ -42,7 +43,8 @@
 #'
 #' @md
 #'
-#' @param settings a PEcAn settings list
+#' @param settings a PEcAn settings list containing either `ensemble` or
+#'   `sensitivity.analysis`.
 #' @param ensemble.size number of ensemble runs
 #' @param input_design Input design data.frame coordinating input files across
 #'   runs. Contains columns for each sampled input (met, param, etc.) with row
@@ -58,9 +60,8 @@
 #'   (default), the function falls back to loading `samples.Rdata` from
 #'   `settings$outdir`.
 #'
-#' @return The `settings` list (invisibly), updated with ensemble IDs for SA
-#'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
-#'   `settings$ensemble$ensemble.id`).
+#' @return The `settings` list (invisibly), updated with the configured
+#'   analysis ID.
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
@@ -68,6 +69,14 @@
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
                               overwrite = TRUE, samples = NULL) {
+
+  if (all(c("ensemble", "sensitivity.analysis") %in% names(settings))) {
+    PEcAn.logger::logger.severe(
+      "run.write.configs() accepts one analysis per call.",
+      "Use runModule.run.write.configs() or call run.write.configs() separately",
+      "for ensemble and sensitivity designs."
+    )
+  }
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -270,8 +279,10 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       median_rows <- median_row[rep(1, nrow(traits)), , drop = FALSE]
       median_rows$pft_name <- traits$pft_name
       median_rows$trait    <- traits$trait
-      median_rows$quantile <- "50"
-      median_rows$type     <- "Sensitivity"
+      if (nrow(traits) == 0) {
+        # segmentation still needs the physical baseline run when no traits vary
+        median_rows <- median_row
+      }
 
       run_manifest_df <- rbind(
         run_manifest_df,
