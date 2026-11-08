@@ -69,6 +69,59 @@ test_that("write.config.SIPNET", {
 })
 
 
+test_that("the config writer accepts NULL defaults and matches named constants", {
+  path <- withr::local_tempdir()
+  settings <- PEcAn.settings::as.Settings(list(
+    outdir = file.path(path, "out"), rundir = file.path(path, "run"),
+    modeloutdir = file.path(path, "out"),
+    pfts = list(cropB = list()),
+    model = list(binary = "", revision = "v2.2.0"),
+    run = list(
+      site = list(name = "site1", lat = 40, lon = -88),
+      inputs = list(met = list(path = "")),
+      start.date = "2025-01-01", end.date = "2025-01-02"
+    ),
+    host = list(name = "localhost", outdir = file.path(path, "out"),
+                rundir = file.path(path, "run"))
+  ))
+  for (id in c("template", "override")) {
+    dir.create(file.path(settings$rundir, id), recursive = TRUE)
+  }
+  traits <- list(cropB = list())
+  template <- utils::read.table(system.file("template.param_v2", package = "PEcAn.SIPNET"))
+  write.config.SIPNET(NULL, traits, settings, "template")
+  result <- utils::read.table(file.path(settings$rundir, "template", "sipnet.param"))
+  expect_equal(result$V2[result$V1 == "aMaxFrac"], template$V2[template$V1 == "aMaxFrac"])
+
+  defaults <- list(
+    list(name = "cropA", constants = list(AmaxFrac = 0.2)),
+    list(name = "cropB", constants = list(AmaxFrac = 0.8))
+  )
+  write.config.SIPNET(defaults, traits, settings, "override")
+  result <- utils::read.table(file.path(settings$rundir, "override", "sipnet.param"))
+  expect_equal(result$V2[result$V1 == "aMaxFrac"], 0.8)
+})
+
+test_that("PFT constants resolve names without positional cross-crop reuse", {
+  defaults <- list(
+    list(name = "cropA", constants = list(AmaxFrac = 0.2)),
+    list(name = "cropB", constants = list(AmaxFrac = 0.8)),
+    list(name = "soil", constants = list(frozenSoilEff = 0.35))
+  )
+  expect_equal(
+    sipnet_pft_constants(defaults, c("cropB", "soil")),
+    list(list(AmaxFrac = 0.8), list(frozenSoilEff = 0.35))
+  )
+  expect_equal(
+    sipnet_pft_constants(list(list(constants = list(AmaxFrac = 0.2))), c("cropA", "soil")),
+    rep(list(list(AmaxFrac = 0.2)), 2)
+  )
+  expect_error(sipnet_pft_constants(list(list(), list()), "cropA"), "unique names")
+  expect_error(sipnet_pft_constants(defaults, "missing"), "unique names")
+  defaults[[2]]$name <- "cropA"
+  expect_error(sipnet_pft_constants(defaults, "cropA"), "unique names")
+})
+
 test_that("update_flag_lines", {
   txt <- c("!comment", "NITROG = 0", "GDD = 1")
 
