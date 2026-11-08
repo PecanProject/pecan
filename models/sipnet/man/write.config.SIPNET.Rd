@@ -16,9 +16,11 @@ write.config.SIPNET(
 )
 }
 \arguments{
-\item{defaults}{nested list of named constant parameter values. The
-structure is \verb{list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))}.
-Only \code{defaults[[1]]$constants} is used; all other elements are silently ignored.}
+\item{defaults}{list of PFT definitions, identified by each element's \code{name}
+or by its list name, with constant parameter values in \code{constants}.
+Constants override sampled values for the matching PFT. A single unnamed
+definition without a \code{name} applies to every PFT for compatibility.
+\code{NULL} leaves all constant parameters at their sampled or template values.}
 
 \item{trait.values}{named list of trait values for each PFT. SIPNET can
 handle only one vegetation PFT, and an optional "soil" PFT for soil constants.
