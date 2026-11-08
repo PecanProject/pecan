@@ -420,6 +420,7 @@
 "PEcAn.SIPNET","*","base/qaqc","Suggests",TRUE
 "PEcAn.uncertainty","*","base/all","Depends",TRUE
 "PEcAn.uncertainty","*","base/workflow","Imports",TRUE
+"PEcAn.uncertainty","*","models/sipnet","Imports",TRUE
 "PEcAn.uncertainty","*","modules/assim.batch","Imports",TRUE
 "PEcAn.uncertainty","*","modules/assim.sequential","Imports",TRUE
 "PEcAn.utils","*","base/all","Depends",TRUE
