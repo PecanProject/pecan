@@ -67,9 +67,11 @@
 #' first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
 #' through the IC argument takes precedence over the computed value.
 #'
-#' @param defaults nested list of named constant parameter values. The
-#' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
-#' Only `defaults[[1]]$constants` is used; all other elements are silently ignored.
+#' @param defaults list of PFT definitions, identified by each element's `name`
+#' or by its list name, with constant parameter values in `constants`.
+#' Constants override sampled values for the matching PFT. A single unnamed
+#' definition without a `name` applies to every PFT for compatibility.
+#' `NULL` leaves all constant parameters at their sampled or template values.
 #' @param trait.values named list of trait values for each PFT. SIPNET can
 #'  handle only one vegetation PFT, and an optional "soil" PFT for soil constants.
 #'  `trait.values` that do not fit this format will throw a warning.
@@ -90,6 +92,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       "`trait.values` must be a list with names corresponding to PFTs."
     )
   }
+
+  pft.constants <- sipnet_pft_constants(defaults, names(trait.values))
 
   if (
     (length(trait.values) > 2) ||
@@ -308,7 +312,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     pft.trait.names <- names(pft.traits)
     
     ## Append/replace params specified as constants
-    constant.traits <- unlist(defaults[[1]]$constants)
+    constant.traits <- unlist(pft.constants[[pft]])
     constant.names <- names(constant.traits)
     
     # Replace matches
@@ -1084,6 +1088,27 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     quote = FALSE
   )
 } # write.config.SIPNET
+
+#' Match constant parameter definitions to their PFTs
+#' @noRd
+sipnet_pft_constants <- function(defaults, pft_names) {
+  if (is.null(defaults)) {
+    return(rep(list(NULL), length(pft_names)))
+  }
+  default_names <- vapply(seq_along(defaults), function(i) {
+    defaults[[i]]$name %||% names(defaults)[i] %||% ""
+  }, character(1))
+  if (length(defaults) == 1 && identical(unname(default_names), "")) {
+    return(rep(list(defaults[[1]]$constants), length(pft_names)))
+  }
+  if (anyNA(default_names) || any(default_names == "") || anyDuplicated(default_names) ||
+      is.null(pft_names) || any(!pft_names %in% default_names)) {
+    PEcAn.logger::logger.severe(
+      "PFT defaults must have unique names matching trait.values."
+    )
+  }
+  lapply(defaults[match(pft_names, default_names)], \(pft) pft$constants)
+}
 
 
 
