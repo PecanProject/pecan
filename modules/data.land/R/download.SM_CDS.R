@@ -97,7 +97,7 @@ download.SM_CDS <- function(outfolder, time.points, overwrite = FALSE, auto.crea
     }
     # Prepare the request with the current CDS dataset vocabulary.
     request <- build_SM_CDS_request(time.points[i])
-    retrieve_SM_CDS(cclient, request, fname.zip)
+    cclient$retrieve('satellite-soil-moisture', request, fname.zip)
     #unzip file.
     unzipPath <- utils::unzip(zipfile = fname.zip, exdir = outfolder)
     #rename unziped file.
@@ -123,39 +123,6 @@ build_SM_CDS_request <- function(time.point) {
     'version'= 'v202212'
   )
 }
-
-# Retry a CDS request a finite number of times. Keeping this separate from the
-# download loop makes permanent CDS errors fail clearly instead of hanging a
-# workflow indefinitely.
-retrieve_SM_CDS <- function(client, request, target, max_attempts = 3,
-                            retry_delay = 10) {
-  for (attempt in seq_len(max_attempts)) {
-    result <- tryCatch(
-      client$retrieve('satellite-soil-moisture', request, target),
-      error = function(error) error
-    )
-    if (!inherits(result, "error")) {
-      return(invisible(result))
-    }
-
-    if (attempt < max_attempts) {
-      PEcAn.logger::logger.warn(
-        "CDS download attempt ", attempt, " of ", max_attempts,
-        " failed: ", conditionMessage(result),
-        ". Retrying in ", retry_delay, " seconds."
-      )
-      Sys.sleep(retry_delay)
-    }
-  }
-
-  PEcAn.logger::logger.severe(paste0(
-    "CDS download failed after ", max_attempts, " attempts: ",
-    conditionMessage(result),
-    ". If CDS reports that required licences have not been accepted, accept ",
-    "the satellite soil-moisture dataset licence on the CDS website and retry."
-  ))
-}
-
 
 # helper function for building credential file.
 getnetrc <- function(dl_dir) {
