@@ -12,10 +12,10 @@ smooth.div(tot, v)
 \item{v}{Numeric vector containing fractional values or proportion targets.}
 }
 \value{
-A numeric vector of the same length as \code{v} containing integer values that sum to \code{tot}.
+A numeric vector of the same length as `v` containing integer values that sum to `tot`.
 }
 \description{
-Distributes an integer total (\code{tot}) across the elements of a numeric vector \code{v} 
+Distributes an integer total (`tot`) across the elements of a numeric vector (`v`). 
 by alternating ceiling and floor operations to prevent rounding bias, while ensuring 
-that the returned vector sums exactly to \code{tot}.
+that the returned vector sums exactly to `tot`.
 }

@@ -1,16 +1,16 @@
 #' Perform Stratified Site Selection
 #'
-#' Selects sampling sites stratified by land cover class (\code{lc}), scaling sample 
+#' Selects sampling sites stratified by land cover class `lc`, scaling sample 
 #' sizes proportionally while guaranteeing a minimum sample size per class. 
 #' Optional normalization is applied prior to clustering.
 #'
-#' @param df Data frame or matrix containing feature columns, a land cover column (\code{"lc"}), 
-#'   and a weight column (\code{"weights"}), where each row is a sample and each column is a feature.
+#' @param df Data frame or matrix containing feature columns, a land cover column `lc`, 
+#'   and a weight column `weights`, where each row is a sample and each column is a feature.
 #' @param tot.sample.size Integer. Total target number of sample points to select across all land cover classes.
-#' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. Default is \code{50}.
-#' @param normalize Logical. Whether to apply min-max scaling to numeric columns in \code{df}. Default is \code{TRUE}.
-#' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. Default is \code{6}.
-#' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. Default is \code{TRUE}.
+#' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. Default is 50.
+#' @param normalize Logical. Whether to apply min-max scaling to numeric columns in `df`. Default is `TRUE`.
+#' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. Default is `6`.
+#' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. Default is `TRUE`.
 #' If FALSE, the `max.cluster.num` will be used directly as the cluster size.
 #'
 #' @return A list of cluster allocations and sample indices grouped by land cover class.
@@ -95,14 +95,14 @@ site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize 
 
 #' Smoothly Distribute a Total Amount Across Vector Elements
 #'
-#' Distributes an integer total (\code{tot}) across the elements of a numeric vector \code{v} 
+#' Distributes an integer total (`tot`) across the elements of a numeric vector (`v`). 
 #' by alternating ceiling and floor operations to prevent rounding bias, while ensuring 
-#' that the returned vector sums exactly to \code{tot}.
+#' that the returned vector sums exactly to `tot`.
 #'
 #' @param tot Numeric/Integer. The target sum total to distribute.
 #' @param v Numeric vector containing fractional values or proportion targets.
 #'
-#' @return A numeric vector of the same length as \code{v} containing integer values that sum to \code{tot}.
+#' @return A numeric vector of the same length as `v` containing integer values that sum to `tot`.
 smooth.div <- function(tot, v) {
   vec <- c()
   ceil <- TRUE
