@@ -47,7 +47,7 @@
 #' @param start.year defaults to what is specified in `settings`
 #' @param end.year defaults to what is specified in `settings`
 #' @param pfts a vector of PFT names found in `settings` to run sensitivity
-#'   analysis on
+#'   analysis on. Defaults to PFTs represented in the saved SA run IDs.
 #' @param ... currently unused
 #'
 #' @md
@@ -95,13 +95,7 @@ run.sensitivity.analysis <- function(settings,
   if (is.null(variable)) {
     PEcAn.logger::logger.severe("No variables for sensitivity analysis!")
   }
-  if (is.null(pfts)) {
-    # extract just pft names
-    pfts <- purrr::map_chr(settings$pfts, "name")
-    if (!is.null(settings$run$site$site.pft)) {
-      pfts <- pfts[pfts %in% settings$run$site$site.pft]
-    }
-  } else {
+  if (!is.null(pfts)) {
     # validate pfts argument
     if (!is.character(pfts)) {
       PEcAn.logger::logger.severe("Please supply a character vector for `pfts`")
@@ -148,6 +142,9 @@ run.sensitivity.analysis <- function(settings,
     samples$sa.run.ids <- samples$runs.samples$sa
   }
 
+  # older result bundles have quantile tables but no saved run IDs
+  analysis_design <- samples$sa.run.ids %||% samples$sa.samples
+  analysis_pfts <- pfts %||% names(analysis_design)
   variables <- variable
   for (variable in variables) {
     PEcAn.logger::logger.warn("Currently performing sensitivity analysis on variable ", variable)
@@ -171,14 +168,15 @@ run.sensitivity.analysis <- function(settings,
     sensitivity.results <- list()
 
     for (pft in settings$pfts) {
-      if (!pft$name %in% pfts) {
+      if (!pft$name %in% analysis_pfts) {
         next
       }
-      traits <- samples$trait.names[[pft$name]]
+      traits <- colnames(analysis_design[[pft$name]])
+      sample_quantiles <- rownames(analysis_design[[pft$name]])
       # a spline can't be fit through one repeated value
       no.spread <- vapply(
         traits,
-        function(trait) length(unique(samples$sa.samples[[pft$name]][[trait]])) < 2,
+        function(trait) length(unique(samples$sa.samples[[pft$name]][sample_quantiles, trait])) < 2,
         logical(1)
       )
       if (any(no.spread)) {
@@ -189,7 +187,7 @@ run.sensitivity.analysis <- function(settings,
         traits <- traits[!no.spread]
       }
       if (length(traits) == 0) next
-      quantiles.str <- rownames(samples$sa.samples[[pft$name]])
+      quantiles.str <- sample_quantiles
       quantiles.str <- quantiles.str[which(quantiles.str != "50")]
       quantiles <- as.numeric(quantiles.str) / 100
 
@@ -216,7 +214,7 @@ run.sensitivity.analysis <- function(settings,
       ### Gather SA results
       sensitivity.results[[pft$name]] <- sensitivity.analysis(
         trait.samples = samples$trait.samples[[pft$name]][traits],
-        sa.samples = samples$sa.samples[[pft$name]][, traits, drop = FALSE],
+        sa.samples = samples$sa.samples[[pft$name]][sample_quantiles, traits, drop = FALSE],
         sa.output = sens_out$sensitivity.output[[pft$name]][, traits, drop = FALSE],
         outdir = pft$outdir
       )
