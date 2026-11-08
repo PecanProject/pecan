@@ -13,6 +13,12 @@
     CF convention, and the name `cdo` already produces when merging
     sub-annual outputs) instead of `time_bounds`. `read_restart.SIPNET`
     reads `time_bnds` and falls back to `time_bounds` for older outputs (#3303).
+* `write_segmented_configs.SIPNET()` accepts OAT sensitivity designs and applies
+  each run's sampled parameters to the crops active in its segments. Shared
+  baseline runs are segmented once, and crop intervals are clipped to the run window.
+* `write.config.SIPNET()` matches constants to PFT names instead of applying the
+  first PFT's constants to every crop and soil. A single unnamed defaults entry
+  retains its shared-constants behavior.
 * Added regression coverage for SIPNET event-JSON segmentation and segmented restart chaining (#4021).
 * `write.config.SIPNET` now maps the `leafNResorptionFrac` trait to its v2
     parameter, so PFT supplied values reach the param file instead of
