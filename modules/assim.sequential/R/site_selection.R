@@ -7,10 +7,10 @@
 #' @param df Data frame or matrix containing feature columns, a land cover column `lc`, 
 #'   and a weight column `weights`, where each row is a sample and each column is a feature.
 #' @param tot.sample.size Integer. Total target number of sample points to select across all land cover classes.
-#' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. Default is 50.
-#' @param normalize Logical. Whether to apply min-max scaling to numeric columns in `df`. Default is `TRUE`.
-#' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. Default is `6`.
-#' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. Default is `TRUE`.
+#' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. (Default = 50).
+#' @param normalize Logical. Whether to apply min-max scaling to numeric columns in `df`. (Default = TRUE).
+#' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. (Default = 6).
+#' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. (Default = TRUE).
 #' If FALSE, the `max.cluster.num` will be used directly as the cluster size.
 #'
 #' @return A list of cluster allocations and sample indices grouped by land cover class.
