@@ -23,7 +23,10 @@ and a weight column (\code{"weights"}), where each row is a sample and each colu
 
 \item{normalize}{Logical. Whether to apply min-max scaling to numeric columns in \code{df}. Default is \code{TRUE}.}
 
-\item{max.cluster.num}{Integer or NULL. Maximum number of clusters to consider if calculating optimal cluster count. Default is \code{6}.}
+\item{max.cluster.num}{Integer. Maximum number of clusters to consider if calculating optimal cluster count. Default is \code{6}.}
+
+\item{elbow.operation}{Logical. Whether to automatically calculate the proper cluster number based on the elbow location. Default is \code{TRUE}.
+If FALSE, the `max.cluster.num` will be used directly as the cluster size.}
 }
 \value{
 A list of cluster allocations and sample indices grouped by land cover class.

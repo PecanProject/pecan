@@ -9,7 +9,9 @@
 #' @param tot.sample.size Integer. Total target number of sample points to select across all land cover classes.
 #' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. Default is \code{50}.
 #' @param normalize Logical. Whether to apply min-max scaling to numeric columns in \code{df}. Default is \code{TRUE}.
-#' @param max.cluster.num Integer or NULL. Maximum number of clusters to consider if calculating optimal cluster count. Default is \code{6}.
+#' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. Default is \code{6}.
+#' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. Default is \code{TRUE}.
+#' If FALSE, the `max.cluster.num` will be used directly as the cluster size.
 #'
 #' @return A list of cluster allocations and sample indices grouped by land cover class.
 #' @export
