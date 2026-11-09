@@ -252,7 +252,7 @@ check.bety.version <- function(dbcon) {
 
   # check if database is newer
   unknown_migrations <- setdiff(versions, .known_bety_migrations)
-  if (any(unknown_migrations)) {
+  if (length(unknown_migrations) > 0) {
     PEcAn.logger::logger.warn(
       "Found database migration(s) not known by this release of PEcAn.settings:",
       unknown_migrations,
