@@ -113,13 +113,84 @@ test_that("PFT constants resolve names without positional cross-crop reuse", {
     list(list(AmaxFrac = 0.8), list(frozenSoilEff = 0.35))
   )
   expect_equal(
+    sipnet_pft_constants(defaults, c("cropB", "soil", "env")),
+    list(list(AmaxFrac = 0.8), list(frozenSoilEff = 0.35), NULL)
+  )
+  expect_equal(
     sipnet_pft_constants(list(list(constants = list(AmaxFrac = 0.2))), c("cropA", "soil")),
     rep(list(list(AmaxFrac = 0.2)), 2)
+  )
+  expect_equal(
+    sipnet_pft_constants(list(list(constants = list(AmaxFrac = 0.2))), c("cropA", "env")),
+    list(list(AmaxFrac = 0.2), NULL)
   )
   expect_error(sipnet_pft_constants(list(list(), list()), "cropA"), "unique names")
   expect_error(sipnet_pft_constants(defaults, "missing"), "unique names")
   defaults[[2]]$name <- "cropA"
   expect_error(sipnet_pft_constants(defaults, "cropA"), "unique names")
+})
+
+test_that("generic ensemble and SA writers accept the auxiliary environment group", {
+  path <- withr::local_tempdir()
+  settings <- PEcAn.settings::as.Settings(list(
+    outdir = file.path(path, "out"), rundir = file.path(path, "run"),
+    modeloutdir = file.path(path, "out"),
+    pfts = list(
+      list(name = "cropA", constants = list(AmaxFrac = 0.2)),
+      list(name = "cropB", constants = list(AmaxFrac = 0.8)),
+      list(name = "soil", constants = list(frozenSoilEff = 0.35))
+    ),
+    ensemble = list(size = 3, samplingspace = list(parameters = list(method = "uniform"))),
+    sensitivity.analysis = list(quantiles = c(0.25, 0.5, 0.75)),
+    model = list(binary = "", revision = "v2.2.0"),
+    run = list(
+      site = list(id = "772", name = "site1", lat = 40, lon = -88),
+      inputs = list(met = list(path = "")),
+      start.date = "2025-01-01", end.date = "2025-01-02"
+    ),
+    host = list(name = "localhost", outdir = file.path(path, "out"),
+                rundir = file.path(path, "run"))
+  ))
+  prior <- tibble::tibble(
+    trait = "AmaxFrac", distn = "norm", parama = 0.5, paramb = 0.05, n = 10
+  ) |> tibble::column_to_rownames("trait")
+  soil_prior <- prior
+  rownames(soil_prior) <- "frozenSoilEff"
+  withr::local_seed(4136)
+  samples <- PEcAn.uncertainty::get_parameter_samples(
+    pft_names = c("cropB", "soil"), prior_distns_list = list(prior, soil_prior),
+    ensemble.size = 3, sa_quantiles = c(0.25, 0.5, 0.75)
+  )
+  expect_null(settings$run$site$site.pft)
+  expect_named(samples$ensemble.samples, c("cropB", "soil", "env"))
+
+  for (analysis in c("ensemble", "sensitivity")) {
+    if (analysis == "ensemble") {
+      design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings, 3, samples)
+      run_samples <- samples$ensemble.samples
+      descriptions <- NULL
+    } else {
+      design <- PEcAn.uncertainty::generate_OAT_SA_design(settings, samples = samples)
+      run_samples <- PEcAn.uncertainty::sa_run_samples(samples$sa.samples, design$design_matrix)
+      descriptions <- PEcAn.uncertainty::sa_run_descriptions(
+        design$design_matrix, "772", c("cropB", "soil")
+      )
+    }
+    # auxiliary samples still reach the model writer without acquiring PFT constants
+    run_samples$env$soilWHC <- rep(7, nrow(design$design_matrix))
+    result <- PEcAn.uncertainty::write.ensemble.configs(
+      input_design = design$design_matrix, ensemble.size = nrow(design$design_matrix),
+      defaults = settings$pfts, ensemble.samples = run_samples, settings = settings,
+      model = "SIPNET", write.to.db = FALSE, run_descriptions = descriptions
+    )
+    expect_equal(nrow(result$runs), nrow(design$design_matrix))
+    for (id in result$runs$id) {
+      param <- utils::read.table(file.path(settings$rundir, id, "sipnet.param"))
+      expect_equal(param$V2[param$V1 == "aMaxFrac"], 0.8)
+      expect_equal(param$V2[param$V1 == "frozenSoilEff"], 0.35)
+      expect_equal(param$V2[param$V1 == "soilWHC"], 7)
+    }
+  }
 })
 
 test_that("update_flag_lines", {
