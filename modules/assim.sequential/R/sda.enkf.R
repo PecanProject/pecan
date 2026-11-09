@@ -144,7 +144,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
   ###-------------------------------------------------------------------### 
   if (write) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-    if (is(con, "try-error")) {
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
       on.exit(PEcAn.DB::db.close(con), add = TRUE)
@@ -211,7 +211,7 @@ sda.enkf.original <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, 
     # 
     # repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
       PEcAn.uncertainty::get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
-      load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+      ensemble.samples <- PEcAn.utils::load_local(file.path(settings$outdir, "samples.Rdata"))$ensemble.samples
     #   cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
     #   tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1
     #   cumulative_ensemble_samples <- cumulative_ensemble_samples[tot_check,]
@@ -882,7 +882,7 @@ for(t in seq_len(nt)) { #
         iq   <- grep("q", colnames(dat))
         iX   <- grep("X[", colnames(dat), fixed = TRUE)
         mu.a <- colMeans(dat[, iX])
-        Pa   <- cov(dat[, iX])
+        Pa   <- stats::cov(dat[, iX])
         Pa[is.na(Pa)] <- 0
         
         CI.X1[, t] <- stats::quantile(dat[, iX[1]], c(0.025, 0.5, 0.975))
@@ -981,8 +981,8 @@ for(t in seq_len(nt)) { #
          || sum(mu.a - colMeans(X_a)) < -1) {
         PEcAn.logger::logger.warn('Problem with ensemble adjustment (1)')
       }
-      if (sum(diag(Pa) - diag(cov(X_a))) > 5
-         || sum(diag(Pa) - diag(cov(X_a))) < -5) {
+      if (sum(diag(Pa) - diag(stats::cov(X_a))) > 5
+         || sum(diag(Pa) - diag(stats::cov(X_a))) < -5) {
         PEcAn.logger::logger.warn('Problem with ensemble adjustment (2)')
       }
       
@@ -1223,7 +1223,7 @@ for(t in seq_len(nt)) { #
         
         mean(x[, i],na.rm = T) })
       XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-        quantile(x[, i], c(0.025, 0.975),na.rm = T )})
+        stats::quantile(x[, i], c(0.025, 0.975),na.rm = T )})
       
       Xa <- Xa
       XaCI <- XaCI

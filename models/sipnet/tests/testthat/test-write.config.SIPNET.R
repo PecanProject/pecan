@@ -134,6 +134,33 @@ test_that("leafNResorptionFrac trait reaches the v2 param file", {
   expect_match(param_result, "leafNResorptionFrac 0.6", fixed = TRUE, all = FALSE)
 })
 
+test_that("stem and root respiration are written as per year rates", {
+  pth <- withr::local_tempdir()
+  dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
+  s <- PEcAn.settings::as.Settings(list(
+    outdir = file.path(pth, "out"), rundir = file.path(pth, "run"),
+    pfts = list(pft1 = list()),
+    model = list(binary = "", revision = "v2.2.0"),
+    run = list(site = list(name = "site1", lat = 40, lon = -88),
+               inputs = list(met = list(path = "")),
+               start.date = "2025-01-01", end.date = "2025-01-02"),
+    host = list(name = "", outdir = file.path(pth, "out"), rundir = file.path(pth, "run"))
+  ))
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list(SLA = 2.0))),
+    trait.values = list(pft1 = list(stem_respiration_rate = 1, root_respiration_rate = 10)),
+    settings = s, run.id = "run1"
+  )
+  p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"), stringsAsFactors = FALSE)
+  param_value <- function(name) p[p[[1]] == name, 2]
+
+  # 1 umol CO2 kg-1 s-1 is 12.01e-9 g C g-1 s-1; sipnet's year is 365 days.
+  # template Q10s (2.0 veg, 2.6 fine root) take the 25 C rates to 0 C
+  g_per_year <- 12.01e-9 * 86400 * 365
+  expect_equal(param_value("baseVegResp"), 1 * g_per_year * 2.0^(-2.5))
+  expect_equal(param_value("baseFineRootResp"), 10 * g_per_year * 2.6^(-2.5))
+})
+
 test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
   # scaffold for a v2 run; the irrig-only event file keeps internal phenology
   make_settings <- function(pth) {

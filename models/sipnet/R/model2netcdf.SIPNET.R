@@ -217,6 +217,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
+      "soil_organic_carbon_content" = sub.sipnet.output$soil,
       "AGB" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC,
 
       # Water variables:
@@ -266,7 +267,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       output[["CH4_flux"]] <- sub.sipnet.output$ch4
     }
 
-    output[["time_bounds"]] <- c(rbind(bounds[,1], bounds[,2]))
+    output[["time_bnds"]] <- c(rbind(bounds[,1], bounds[,2]))
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
@@ -306,6 +307,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "leaf_carbon_content" = PEcAn.utils::to_ncvar("leaf_carbon_content", dims),
       "TotLivBiom" = PEcAn.utils::to_ncvar("TotLivBiom", dims),
       "TotSoilCarb" = PEcAn.utils::to_ncvar("TotSoilCarb", dims),
+      "soil_organic_carbon_content" = PEcAn.utils::to_ncvar("soil_organic_carbon_content", dims),
       "Qle" = PEcAn.utils::to_ncvar("Qle", dims),
       "Transp" = PEcAn.utils::to_ncvar("Transp", dims),
       "SoilMoist" = PEcAn.utils::to_ncvar("SoilMoist", dims),
@@ -317,7 +319,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "coarse_root_carbon_content" = PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims),
       "AGB" = ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
                                longname = "Total aboveground biomass"),
-      "time_bounds" = ncdf4::ncvar_def(name="time_bounds", units='',
+      "time_bnds" = ncdf4::ncvar_def(name="time_bnds", units='',
                                        longname = "history time interval endpoints", dim=list(time_interval,time = t), 
                                        prec = "double")              
     )
@@ -364,7 +366,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ### Output netCDF data
     if(conflicted & conflict){
       nc      <- ncdf4::nc_create(file.path(outdir, paste("current", "nc", sep = ".")), nc_var)
-      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bnds", prec=NA)
       for (key in names(nc_var)) {
         ncdf4::ncvar_put(nc, nc_var[[key]], output[[key]])
       }
@@ -377,16 +379,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
         files <- file.path(outdir, "current.nc")
       }
       mergeNC(files = files, outfile = file.path(outdir, paste(y, "nc", sep = ".")))
-      #The command "cdo" in mergeNC will automatically rename "time_bounds" to "time_bnds". However, "time_bounds" is used 
-      #in read_restart codes later. So we need to read the new NetCDF file and convert the variable name back. 
-      nc<- ncdf4::nc_open(file.path(outdir, paste(y, "nc", sep = ".")),write=TRUE)
-      nc<-ncdf4::ncvar_rename(nc,"time_bnds","time_bounds")
-      ncdf4::ncatt_put(nc, "time", "bounds","time_bounds", prec=NA)
-      ncdf4::nc_close(nc)
       unlink(files, recursive = T)
     }else{
       nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
-      ncdf4::ncatt_put(nc, "time", "bounds", "time_bounds", prec=NA)
+      ncdf4::ncatt_put(nc, "time", "bounds", "time_bnds", prec=NA)
       for (key in names(nc_var)) {
         ncdf4::ncvar_put(nc, nc_var[[key]], output[[key]])
       }

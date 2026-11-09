@@ -84,7 +84,7 @@ Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
 
 * preferred variables indicated in bold
 * wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
-* variable names are from [MsTMIP](https://nacp-prod.ornl.gov/MsTMIP_variables.shtml), but lowercase to be consistent with the MsTMIP drivers.
+* variable names are from [MsTMIP](https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml), but lowercase to be consistent with the MsTMIP drivers.
 * standard_name is CF-convention standard names
 * units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
 * soil moisture for the full column, rather than a layer, is soil_moisture_content

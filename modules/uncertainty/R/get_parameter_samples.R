@@ -220,13 +220,18 @@ get_parameter_samples <- function(pft_names,
     if (ensemble.size == 1) {
       ## Run at median if only one run in ensemble
       ensemble.samples <- PEcAn.utils::get.sa.sample.list(
-        pft = trait.samples, env = env.samples, quantiles = 0.5
+        pft = trait.samples,
+        env = env.samples,
+        quantiles = 0.5
       )
     } else if (ensemble.size > 1) {
       ## Subset trait.samples to ensemble size
       ensemble.samples <- get.ensemble.samples(
-        ensemble.size, trait.samples,
-        env.samples, ens.sample.method, param.names
+        ensemble.size = ensemble.size,
+        pft.samples = trait.samples,
+        env.samples = env.samples,
+        method = ens.sample.method,
+        param.names = param.names
       )
     }
   }
