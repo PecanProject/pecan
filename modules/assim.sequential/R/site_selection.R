@@ -25,8 +25,8 @@ site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize 
   }
   # remove NAs if there is any.
   if (any(!complete.cases(df))) {
-    non.na.inds <- which(complete.cases(df))
-    df <- df[non.na.inds]
+    non.na.inds <- which(stats::complete.cases(df))
+    df <- df[non.na.inds, ]
   } else {
     non.na.inds <- NULL
   }
@@ -50,7 +50,8 @@ site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize 
     })
   proportion <- LC.inds %>% purrr::map(length) %>% unlist
   proportion <- proportion/sum(proportion)
-  tot.points.num <- smooth.div(tot.sample.size, (tot.sample.size - min.sample.size*length(LC.inds)) * proportion + min.sample.size) - pre.selected.LC.num
+  # TODO: account for the pre-selected locations during the site selection.
+  tot.points.num <- smooth.div(tot.sample.size, (tot.sample.size - min.sample.size*length(LC.inds)) * proportion + min.sample.size)
   # loop over land cover classes.
   clusters <- vector("list", length = length(LC.inds))
   for (i in seq_along(clusters)) {
