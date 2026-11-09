@@ -24,7 +24,7 @@ site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize 
     return(0)
   }
   # remove NAs if there is any.
-  if (any(!complete.cases(df))) {
+  if (any(!stats::complete.cases(df))) {
     non.na.inds <- which(stats::complete.cases(df))
     df <- df[non.na.inds, ]
   } else {
