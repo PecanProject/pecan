@@ -1099,14 +1099,17 @@ sipnet_pft_constants <- function(defaults, pft_names) {
     defaults[[i]]$name %||% names(defaults)[i] %||% ""
   }, character(1))
   if (length(defaults) == 1 && identical(unname(default_names), "")) {
-    return(rep(list(defaults[[1]]$constants), length(pft_names)))
+    constants <- rep(list(defaults[[1]]$constants), length(pft_names))
+    constants[which(pft_names == "env")] <- list(NULL)
+    return(constants)
   }
   if (anyNA(default_names) || any(default_names == "") || anyDuplicated(default_names) ||
-      is.null(pft_names) || any(!pft_names %in% default_names)) {
+      is.null(pft_names) || any(!pft_names %in% c(default_names, "env"))) {
     PEcAn.logger::logger.severe(
       "PFT defaults must have unique names matching trait.values."
     )
   }
+  # environmental samples have no corresponding PFT definition
   lapply(defaults[match(pft_names, default_names)], \(pft) pft$constants)
 }
 
