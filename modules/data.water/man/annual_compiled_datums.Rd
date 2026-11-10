@@ -3,30 +3,33 @@
 \docType{data}
 \name{annual_compiled_datums}
 \alias{annual_compiled_datums}
-\title{Tidal datum values for 125 stations}
+\title{Tidal datum values for 125 NOAA stations}
 \format{
 A data frame with 51482 rows and 10 columns:
 \describe{
-\item{Datum}{Datum name, using NOAA standard abbreviations.
-See https://tidesandcurrents.noaa.gov/datum_options.html}
-\item{n_obs}{}
-\item{observed}{Observed water elevation in ?feet?}
-\item{n_pred}{}
-\item{predicted}{}
-\item{risingTime}{}
-\item{fallingTime}{}
-\item{year}{}
-\item{station_id}{}
-\item{station_name}{}
+\item{Datum}{Datum name, HHA=Higher High Annual, HOT=Highest Observed Tide, MSL=Mean Sea Level,
+LLA=Lower Low Annual, LOT=Lowest Observed Tide, HHS=Higher High Spring, HH=Higher High Daily,
+LH=Lower High Daily, HL=Higher Low Daily, LL=Lower Low Daily, LLS=Lower Low Spring}
+\item{n_obs}{Number of observations}
+\item{observed}{Observed water elevation in meters relative to NAVD88}
+\item{n_pred}{Number of predictions}
+\item{predicted}{Predicted water elevation in meters relative to NAVD88}
+\item{risingTime}{Average rising time of the flood stage (hours)}
+\item{fallingTime}{Average falling time of the flood stage (hours)}
+\item{year}{Calendar year (YYYY)}
+\item{station_id}{Unique numeric station identifier}
+\item{station_name}{Unique station name}
 }
 }
 \source{
-from \if{html}{\out{<url>}}, compiled by James Holmquist
+from https://github.com/Smithsonian/Tidal_Scenarios, compiled by James Holmquist
 }
 \usage{
 annual_compiled_datums
 }
 \description{
-...Description TK...
+Average annual datums for different types of water levels,
+recalculated from NOAA tide gauges using the TideHarmonics R package
+at average annual time steps.
 }
 \keyword{datasets}

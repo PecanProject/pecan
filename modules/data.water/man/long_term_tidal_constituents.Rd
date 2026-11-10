@@ -3,36 +3,45 @@
 \docType{data}
 \name{long_term_tidal_constituents}
 \alias{long_term_tidal_constituents}
-\title{Title TK}
+\title{Long term tidal constituents for NOAA tide gauges}
 \format{
 A data frame with 1000 rows and 17 columns:
 \describe{
-\item{station_id}{}
-\item{station_name}{}
-\item{start_date}{}
-\item{end_date}{}
-\item{tide}{}
-\item{mean_amp}{}
-\item{amp18}{}
-\item{phase18}{}
-\item{amp44}{}
-\item{phase44}{}
-\item{rse}{}
-\item{r2}{}
-\item{mean_ampb}{}
-\item{amp18b}{}
-\item{phase18b}{}
-\item{rseb}{}
-\item{r2b}{}
+\item{station_id}{Unique numeric NOAA station identifier}
+\item{station_name}{Unique NOAA station name}
+\item{start_date}{Calendar start date for observation (YYYYMMDD)}
+\item{end_date}{Calendar end date for observation (YYYYMMDD)}
+\item{tide}{Type of tide: HHA=Higher High Annual, HOT=Highest Observed Tide, MSL=Mean Sea Level,
+LLA=Lower Low Annual, LOT=Lowest Observed Tide, HHS=Higher High Spring, HH=Higher High Daily,
+LH=Lower High Daily, HL=Higher Low Daily, LL=Lower Low Daily, LLS=Lower Low Spring}
+\item{mean_amp}{Mean tidal amplitude for model 1 (4.4 and 18.6 year cycles accounted for)}
+\item{amp18}{18.6 year cycle amplitude of amplitude for model 1 (4.4 and 18.6 year cycles accounted for)}
+\item{phase18}{18.6 year cycle phase for model 1 (4.4 and 18.6 year cycles accounted for)}
+\item{amp44}{4.4 year cycle amplitude for model 1}
+\item{phase44}{4.4 year cycle phase for model 1}
+\item{rse}{Residual standard error for model 1 (4.4 and 18.6 year cycles accounted for)}
+\item{r2}{R-squared value for model 1 (4.4 and 18.6 year cycles accounted for)}
+\item{mean_ampb}{Mean tidal amplitude for model 2 (18.6 year cycle accounted for)}
+\item{amp18b}{18.6 year cycle amplitude of amplitude for model 2 (18.6 year cycle accounted for)}
+\item{phase18b}{18.6 year cycle phase for model 2 (18.6 year cycle accounted for)}
+\item{rseb}{Residual standard error for model 2 (18.6 year cycle accounted for)}
+\item{r2b}{R-squared value for model 2 (18.6 year cycle accounted for)}
 }
 }
 \source{
-TK
+Peng, D., Hill, E. M., Meltzner, A. J., & Switzer, A. D. (2019).
+Tide gauge records show that the 18.61‐year nodal tidal cycle can change high water levels by up to 30 cm.
+Journal of Geophysical Research: Oceans, 124(1), 736-749.
+
+Recalculated in https://github.com/Smithsonian/Tidal_Scenarios, by James Holmquist
 }
 \usage{
 long_term_tidal_constituents
 }
 \description{
-...description TK...
+Harmonic constituents of long term tidal amplitude changes for NOAA tide gauges.
+4.4 and 18.6 year cycles in tidal amplitude change are accounted for following formulas
+presented in Peng et al. (2018). Formulas are modified to fit harmonic constituents to
+different tidal flood and ebb types matching \code{annual_compiled_datums}.
 }
 \keyword{datasets}

@@ -3,26 +3,27 @@
 \docType{data}
 \name{noaa_us_gauge_info}
 \alias{noaa_us_gauge_info}
-\title{Locations, IDs, and available date ranges for 126 tidal stations}
+\title{Locations, IDs, and available date ranges for 126 NOAA tidal stations}
 \format{
 A data frame with 126 rows and 7 columns:
 \describe{
-\item{noaa_id}{}
-\item{startDate}{}
-\item{endDate}{}
-\item{noaa_name}{}
-\item{latitude}{}
-\item{longitude}{}
-\item{state}{}
+\item{noaa_id}{Unique numeric NOAA station identifier}
+\item{startDate}{Calendar start date for observation record (YYYYMMDD)}
+\item{endDate}{Calendar end date for observation record (YYYYMMDD)}
+\item{noaa_name}{Unique NOAA station name}
+\item{latitude}{Gauge latitude in decimal degrees WGS84}
+\item{longitude}{Gauge longitude in decimal degrees WGS84}
+\item{state}{State- or territory-level two letter abbreviation}
 }
 }
 \source{
-TK
+Queried from NOAA servers and organized in https://github.com/Smithsonian/Tidal_Scenarios, by James Holmquist
 }
 \usage{
 noaa_us_gauge_info
 }
 \description{
-...description TK...
+Publically available NOAA tide gauge positional and temporal information organized
+into a single table.
 }
 \keyword{datasets}

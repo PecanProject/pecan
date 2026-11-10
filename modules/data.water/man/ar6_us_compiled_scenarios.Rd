@@ -8,25 +8,37 @@ Report 6}
 \format{
 A data frame with 2,278,458 rows and 10 columns:
 \describe{
-\item{psmsl_id}{}
-\item{latitude}{}
-\item{longitude}{}
-\item{year}{}
-\item{quantile}{}
-\item{sea_level_change_mm}{}
-\item{noaa_id}{}
-\item{noaa_name}{}
-\item{scenario_name}{}
-\item{confidence}{}
+\item{psmsl_id}{Unique permanant service for mean sea level identifier}
+\item{latitude}{Gauge latitude in decimal degrees WGS84.}
+\item{longitude}{Gauge longitude in decimal degrees WGS84.}
+\item{year}{Calendar year (YYYY)}
+\item{quantile}{Value between 0 and 1 indicating position of the sea-level rise
+magnitude within the probability space of the scnenario.}
+\item{sea_level_change_mm}{Sea level change relative to the baseline period (1986–2005)}
+\item{noaa_id}{Unique NOOA numeric station identifier}
+\item{noaa_name}{Unique NOAA station name}
+\item{scenario_name}{Unique scenario name indicating a Shared Socioeconomic Pathway (ssp)
+or temperature limitation window (tlim). See source data for additional detail.}
+\item{confidence}{Indicates whether forecats are made propegating uncertainty at
+'medium' or 'low' confidence}
 }
 }
 \source{
-TK
+Kopp, R. E., Garner, G. G., Hermans, T. H., Jha, S., Kumar, P., Reedy, A., ... & Smith, C. (2023).
+The Framework for Assessing Changes To Sea-level (FACTS) v1. 0:
+a platform for characterizing parametric and structural uncertainty
+in future global, relative, and extreme sea-level change.
+Geoscientific Model Development, 16(24), 7461-7489.
+
+Reformatted in https://github.com/Smithsonian/Tidal_Scenarios, by James Holmquist
 }
 \usage{
 ar6_us_compiled_scenarios
 }
 \description{
-...description TK...
+Probabilistic and localized relative sea-level rise scenarios produced for NOAA
+tide gauges for the 6th IPCC Assesment Report by Kopp and Garner (2023).
+Scenarios were reprocessed by James Holmquist into long-form tables that could be
+more readily queried.
 }
 \keyword{datasets}
