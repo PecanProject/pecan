@@ -1,36 +1,49 @@
-A generic template for adding a new model to PEcAn
-==========================================================================
+# PEcAn.LINKAGES
 
-Adding a new model to PEcAn in a few easy steps:
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![PEcAn.LINKAGES status badge](https://pecanproject.r-universe.dev/badges/PEcAn.LINKAGES)](https://pecanproject.r-universe.dev/PEcAn.LINKAGES)
 
-1. add modeltype to BETY
-2. add a model and PFT to BETY for use with modeltype
-3. implement 3 functions as described below
-4. execute pecan with new model
+PEcAn Coupler for the LINKAGES Model
 
-There are 3 functions that will need to be implemented, each of these
-functions will need to have MODEL be replaced with the actual modeltype as
-it is defined in the BETY database.
+## Introduction
 
-* `write.config.MODEL.R`
+LINKAGES is a forest gap model designed to simulate the growth and death of individual trees on a small plot.
 
- This will write the configuratin file as well as the job launcher used by
- PEcAn. There is an example of the job execution script in the template
- folder. The configuration file can also be a template that is found based
- on the revision number of the model. This should use the computed results
- specified in defaults and trait.values to write a configuration file
- based on the PFT and traits found.
+## Installation
 
-* `met2model.MODEL.R`
+### Install PEcAn.LINKAGES Package
 
- This will convert the standard Met CF file to the model specific file
- format. This will allow PEcAn to create metereological files for the
- specific site and model. This will only be called if no meterological
- data is found for that specific site and model combination.
+You can install the development version of `PEcAn.LINKAGES` from r-universe:
 
-* `model2netcdf.MODEL.R`
+``` r
+# Enable repository from pecanproject
+options(repos = c(
+  pecanproject = 'https://pecanproject.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'))
+# Download and install PEcAn.LINKAGES in R
+install.packages('PEcAn.LINKAGES')
+```
 
- This will convert the model specific output to NACP Intercomparison
- format. After this function is finished PEcAn will use the generated
- output and not use the model specific outputs. The outputs should be
- named YYYY.nc
+Or install directly from GitHub:
+
+``` r
+library(remotes)
+install_github('pecanproject/pecan',  subdir = "models/linkages")
+```
+
+### Install LINKAGES Model
+
+The LINKAGES model code is included within the PEcAn package and is compiled during installation.
+
+## Example
+
+``` r
+library(PEcAn.LINKAGES)
+## basic example code
+```
+
+### Model configuration files
+
+- **file1**: template at `models/linkages/inst/file1`
+- **file2**: template at `models/linkages/inst/file2`
+- **file3**: template at `models/linkages/inst/file3`
