@@ -174,7 +174,7 @@ SDA_OBS_Assembler <- function(settings){
           agb_rast   <- terra::rast(agb_file)
           agb_pts    <- terra::extract(agb_rast, terra::project(pts_wgs84, terra::crs(agb_rast)))
           Temp[[1]][, paste0(tp, "_AbvGrndWood")] <- agb_pts[, 2]
-		  Temp[[1]][, paste0(tp, "_SD")]          <- as.numeric(predict(rf_model, cov_pts))
+		  Temp[[1]][, paste0(tp, "_SD")]          <- as.numeric(stats::predict(rf_model, cov_pts))
 		  Temp[[2]] <- sort(c(Temp[[2]], tp))
         }
       }
