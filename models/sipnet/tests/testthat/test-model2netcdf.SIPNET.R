@@ -122,6 +122,23 @@ test_that("model2netcdf.SIPNET omits N2O/CH4 when columns absent", {
 })
 
 
+test_that("model2netcdf.SIPNET writes CF-style time_bnds", {
+  n <- 3L
+  paths <- setup_sipnet_test(make_base_sipnet(n))
+
+  nc <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+
+  expect_true("time_bnds" %in% names(nc$var))
+  expect_false("time_bounds" %in% names(nc$var))
+  expect_equal(ncdf4::ncatt_get(nc, "time", "bounds")$value, "time_bnds")
+
+  bnds <- ncdf4::ncvar_get(nc, "time_bnds")
+  expect_equal(dim(bnds), c(2L, n))
+  expect_true(all(bnds[2, ] >= bnds[1, ]))
+})
+
+
 test_that("delete.raw removes sipnet.out after conversion", {
   paths <- setup_sipnet_test(make_base_sipnet(n = 2L), delete.raw = TRUE)
 
@@ -202,13 +219,16 @@ test_that("pools are converted from gC/m2 to kgC/m2", {
   out_dir <- setup_sipnet_test(sip)$outdir
   pec <- PEcAn.utils::read.output(
     ncfiles = file.path(out_dir, "2002.nc"),
-    variables = c("litter_carbon_content", "SoilMoist", "SoilMoistFrac"),
+    variables = c("litter_carbon_content", "soil_organic_carbon_content", "TotSoilCarb",
+                  "SoilMoist", "SoilMoistFrac"),
     dataframe = TRUE,
     verbose = FALSE,
     print_summary = FALSE
   )
 
   expect_equal(pec$litter_carbon_content, sip$litter / 1000) # g -> kg
+  expect_equal(pec$soil_organic_carbon_content, sip$soil / 1000)
+  expect_equal(pec$TotSoilCarb, (sip$soil + sip$litter) / 1000)
   expect_equal(pec$SoilMoist, sip$soilWater * 10) # cm -> mm AKA kg H2O/m2
   expect_equal(pec$SoilMoistFrac, sip$soilWetnessFrac) # no conversion needed
 })
@@ -290,4 +310,24 @@ test_that("out_day is correct when the first day of output is partial", {
   # the values would be half as large.
   ts_correct <- 86400 / 2
   expect_equal(gpp, rep(base_row$gpp * 1e-3 / ts_correct, 5), tolerance = 1e-10)
+})
+
+test_that("LAI taken from leafCSpWt if not present in output", {
+  dat <- make_v2_sipnet(2)
+  # setup_sipnet_test sets leafCSpWt = 32 => expect LAI of 1 and 10
+  dat$plantLeafC = c(32, 320)
+
+  # First without LAI in dat => looks for sipnet.param in run dir
+  paths <- setup_sipnet_test(dat, notes_line = NULL)
+  nc1 <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc1), add = TRUE)
+  expect_equal(as.vector(ncdf4::ncvar_get(nc1, "LAI")), c(1, 10))
+
+  # Now with LAI specified => uses it as-is
+  # (note the colname is lowercase in Sipnet output)
+  dat$lai = c(2, 3)
+  paths <- setup_sipnet_test(dat, notes_line = NULL)
+  nc2 <- ncdf4::nc_open(file.path(paths$outdir, "2002.nc"))
+  on.exit(ncdf4::nc_close(nc2), add = TRUE)
+  expect_equal(as.vector(ncdf4::ncvar_get(nc2, "LAI")), c(2, 3))
 })

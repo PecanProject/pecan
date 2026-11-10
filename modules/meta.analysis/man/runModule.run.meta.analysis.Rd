@@ -10,8 +10,10 @@ runModule.run.meta.analysis(settings)
 \item{settings}{a PEcAn settings or MultiSettings object}
 }
 \value{
-list of PFTs, invisibly;
-saves MA results to \code{settings$pft$outdir} as a side effect
+Invisibly, the list of PFTs returned by \code{run.meta.analysis},
+each with \code{trait.mcmc}, \code{post.distns}, and \code{jagged.data} attached (or
+\code{NA} for PFTs with no trait data). MA results are also saved to
+\code{settings$pft$outdir} as a side effect.
 }
 \description{
 Run meta-analysis on all PFTs in a (list of) PEcAn settings

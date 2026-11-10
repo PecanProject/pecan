@@ -1,0 +1,251 @@
+---
+title: "DoD_downscale"
+author: "Dongchen Zhang"
+date: '2026-06-03'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(xts)
+library(PEcAn.all)
+library(purrr)
+library(furrr)
+library(lubridate)
+library(nimble)
+library(ncdf4)
+library(PEcAnAssimSequential)
+library(dplyr)
+library(sp)
+library(raster)
+library(zoo)
+library(ggplot2)
+library(mnormt)
+library(sjmisc)
+library(stringr)
+library(doParallel)
+library(doSNOW)
+library(Kendall)
+library(lgarch)
+library(parallel)
+library(foreach)
+library(terra)
+```
+
+# load data.
+
+```{r}
+# training part.
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/SDA_outputs/sda.all.forecast.analysis_dist_DA_V2.Rdata")
+pts <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/shp_all/combined_layers.shp")
+attribute.table <- terra::values(pts)
+attribute.table <- attribute.table[,4:19]
+attribute.table$lc <- as.factor(attribute.table$lc)
+
+# predicting part.
+load("/projectnb/dietzelab/dongchen/SDA_disturbance/site_selection_data/covariates.Rdata")
+dat <- dat[,-19]
+```
+
+# train RF model. 
+
+```{r}
+library(randomForest)
+basedir <- "/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/downscale_dist_DA/"
+rf.train.downscale <- function(dat.train, predictor) {
+  # 1. Ensure the predictor exists in the dataset
+  if (!(predictor %in% colnames(dat.train))) {
+    stop(paste("Predictor", predictor, "not found in the training data."))
+  }
+  
+  # 2. Dynamically create the formula (e.g., agb ~ .)
+  # This uses all other columns in dat.train as independent variables
+  form <- as.formula(paste(predictor, "~ ."))
+  
+  # 3. Train the Random Forest model
+  # na.action = na.fail is standard, but complete.cases are already handled in your prep
+  message(paste("Training Random Forest model for:", predictor))
+  rf.model <- randomForest(
+    formula = form,
+    data = dat.train,
+    ntree = 1000,       # Standard default, adjust based on performance/time
+    importance = TRUE  # Keeps track of variable importance
+  )
+  
+  return(rf.model)
+}
+
+rf.predict.downscale <- function(dat.pred, rf.model, chunk_size = 50000, n_cores = 30) {
+  library(parallel)
+  
+  # 1. Verify the model is valid
+  if (!inherits(rf.model, "randomForest")) {
+    stop("The provided rf.model is not a valid randomForest object.")
+  }
+  
+  # 2. Identify and filter covariates expected by the model
+  model_vars <- rownames(rf.model$importance)
+  if (!all(model_vars %in% colnames(dat.pred))) {
+    missing <- model_vars[!model_vars %in% colnames(dat.pred)]
+    stop(paste("Prediction data is missing required covariates:", paste(missing, collapse = ", ")))
+  }
+  dat.pred_subset <- dat.pred[, model_vars, drop = FALSE]
+  
+  n_rows <- nrow(dat.pred_subset)
+  message(paste("Starting parallel downscale prediction for", n_rows, "rows using", n_cores, "cores..."))
+  
+  # 3. Define the chunk indices
+  start_indices <- seq(1, n_rows, by = chunk_size)
+  
+  # 4. Run predictions in parallel across chunks
+  pred_list <- mclapply(start_indices, function(start_idx) {
+    end_idx <- min(start_idx + chunk_size - 1, n_rows)
+    
+    # Predict for this specific chunk
+    predict(
+      object = rf.model, 
+      newdata = dat.pred_subset[start_idx:end_idx, , drop = FALSE]
+    )
+  }, mc.cores = n_cores)
+  
+  # 5. Combine results back into a single numeric vector
+  pred_results <- unlist(pred_list)
+  
+  message("Parallel prediction complete!")
+  return(pred_results)
+}
+
+pred.2.map <- function(preds, lats, lons, r_template) {
+  library(terra)
+  
+  # 1. Create a data frame from coordinates and predicted values
+  # Assumes preds, lats, and lons are aligned vectors of the same length
+  df <- data.frame(lon = lons, lat = lats, value = preds)
+  
+  # 2. Convert the data frame to a SpatVector object (points)
+  # Crds specifies the column names for longitude and latitude
+  # crs = crs(r_template) ensures the projection matches your target raster
+  pts_spatial <- vect(df, geom = c("lon", "lat"), crs = crs(r_template))
+  
+  # 3. Rasterize the points onto the template raster grid
+  # fun = mean handles cases where multiple points fall into one cell, 
+  # though if they align perfectly, it simply maps the values.
+  r_mapped <- rasterize(pts_spatial, r_template, field = "value", fun = mean)
+  
+  return(r_mapped)
+}
+# take 2024 for example.
+# basic info.
+ref_dem <- terra::rast("/projectnb/dietzelab/dongchen/SDA_disturbance/dem_merged/dem_resample.tif")
+dod.shp <- terra::vect("/projectnb/dietzelab/dongchen/SDA_disturbance/selected_polygons/selected_polygons.shp")
+r_template <- terra::rast(terra::crop(ref_dem, dod.shp[3,]))
+years <- 2001:2024
+t <- 24
+ens <- 1
+# loop over years.
+for (t in 1:24) {
+  dir.create(file.path(basedir, years[t]))
+# loop over variables for each ensemble.
+for (ens in 1:50) {
+  analysis.t.agb <- as.numeric(analysis.all[[t]][ens, seq(1, 4*length(pts), 4)])
+  dat.train <- cbind(analysis.t.agb, attribute.table)
+  model <- rf.train.downscale(dat.train, "analysis.t.agb")
+  pred <- rf.predict.downscale(dat, model)
+  agb.rast <- pred.2.map(pred, dat$lat, dat$lon, r_template)
+  # terra::plot(agb.rast, main = "2024 AGB (Mg/ha)")
+
+  analysis.t.lai <- as.numeric(analysis.all[[t]][ens, seq(2, 4*length(pts), 4)])
+  dat.train <- cbind(analysis.t.lai, attribute.table)
+  model <- rf.train.downscale(dat.train, "analysis.t.lai")
+  pred <- rf.predict.downscale(dat, model)
+  lai.rast <- pred.2.map(pred, dat$lat, dat$lon, r_template)
+  # terra::plot(lai.rast, main = "2024 LAI (m2/m2)")
+  
+  analysis.t.sm <- as.numeric(analysis.all[[t]][ens, seq(3, 4*length(pts), 4)])
+  dat.train <- cbind(analysis.t.sm, attribute.table)
+  model <- rf.train.downscale(dat.train, "analysis.t.sm")
+  pred <- rf.predict.downscale(dat, model)
+  sm.rast <- pred.2.map(pred, dat$lat, dat$lon, r_template)
+  
+  analysis.t.soc <- as.numeric(analysis.all[[t]][ens, seq(4, 4*length(pts), 4)])
+  dat.train <- cbind(analysis.t.soc, attribute.table)
+  model <- rf.train.downscale(dat.train, "analysis.t.soc")
+  pred <- rf.predict.downscale(dat, model)
+  soc.rast <- pred.2.map(pred, dat$lat, dat$lon, r_template)
+  
+  rast.all.ens <- c(agb.rast, lai.rast, sm.rast, soc.rast)
+  names(rast.all.ens) <- c("AGB", "LAI", "SM", "SOC")
+  terra::writeRaster(rast.all.ens, file.path(basedir, years[t], paste0("ens_", ens, ".tif")))
+}
+}
+
+# # 1. List all the ensemble tif files for the target year
+# ens_files <- list.files(file.path(basedir, "2024"), 
+#                         pattern = "ens_.*\\.tif$", 
+#                         full.names = TRUE)
+# 
+# # 2. Load them as a raster collection and subset only the "AGB" layer from each
+# agb_stack <- terra::rast(ens_files, subds = "AGB")
+# 
+# # 3. Calculate the ensemble mean and standard deviation
+# agb_mean <- terra::app(agb_stack, mean)
+# agb_sd   <- terra::app(agb_stack, sd)
+# 
+# # Optional: Plot the results to verify
+# plot(agb_mean, main = "2024 Ensemble Mean AGB")
+# plot(agb_sd, main = "2024 Ensemble SD AGB")
+# 
+# # 2. Load the files and extract ONLY the "LAI" layer from each
+# lai_layers <- lapply(ens_files, function(f) {
+#   r <- terra::rast(f)
+#   return(r[["LAI"]])
+# })
+# lai_stack <- terra::rast(lai_layers)
+# 
+# # 3. Calculate the ensemble mean and standard deviation
+# lai_mean <- terra::app(lai_stack, mean)
+# lai_sd   <- terra::app(lai_stack, sd)
+# 
+# plot(lai_mean, main = "2024 Ensemble Mean LAI")
+# plot(lai_sd, main = "2024 Ensemble SD LAI")
+# 
+# # 2. Load the files and extract ONLY the "SM" layer from each
+# sm_layers <- lapply(ens_files, function(f) {
+#   r <- terra::rast(f)
+#   return(r[["SM"]])
+# })
+# sm_stack <- terra::rast(sm_layers)
+# 
+# # 3. Calculate the ensemble mean and standard deviation
+# sm_mean <- terra::app(sm_stack, mean)
+# sm_sd   <- terra::app(sm_stack, sd)
+# 
+# plot(sm_mean, main = "2024 Ensemble Mean SM")
+# plot(sm_sd, main = "2024 Ensemble SD SM")
+# 
+# # 2. Load the files and extract ONLY the "SOC" layer from each
+# soc_layers <- lapply(ens_files, function(f) {
+#   r <- terra::rast(f)
+#   return(r[["SOC"]])
+# })
+# soc_stack <- terra::rast(soc_layers)
+# 
+# # 3. Calculate the ensemble mean and standard deviation
+# soc_mean <- terra::app(soc_stack, mean)
+# soc_sd   <- terra::app(soc_stack, sd)
+# 
+# plot(soc_mean, main = "2024 Ensemble Mean SOC")
+# plot(soc_sd, main = "2024 Ensemble SD SOC")
+```
+
+# qsub downscale.
+
+```{r}
+source("/projectnb/dietzelab/dongchen/SDA_disturbance/example_polygon/downscale.R")
+for (i in 1:24) {
+  batch.main(i)
+}
+```
+
+

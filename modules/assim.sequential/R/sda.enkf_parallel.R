@@ -367,7 +367,7 @@ sda.enkf_local <- function(settings,
     })
     #replacing crazy outliers before it's too late
     if (control$OutlierDetection){
-      X <- outlier.detector.boxplot(X)
+      X <- outlier_detector_boxplot(X)
       PEcAn.logger::logger.info("Outlier Detection.")
     }
     # convert from forecast list to data frame.

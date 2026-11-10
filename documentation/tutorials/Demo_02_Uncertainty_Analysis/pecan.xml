@@ -14,17 +14,6 @@
    <outdir>pft/temperate.coniferous</outdir>
   </pft>
  </pfts> 
- <ensemble>
-   <size>50</size>
-   <variable>NPP</variable>
-   <samplingspace>
-    <parameters>
-     <method>halton</method>
-    </parameters>
-   </samplingspace>
-   <start.year>2004</start.year>
-   <end.year>2004</end.year>
-  </ensemble>
   <sensitivity.analysis>
    <quantiles>
     <sigma>-1</sigma>

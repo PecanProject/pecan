@@ -1,5 +1,9 @@
 # PEcAn.benchmark 1.7.5.9000
 
+## Added
+
+* Added Python pipeline (`inst/ilamb/`) to convert PEcAn SDA reanalysis GeoTIFFs to ILAMB-compatible CF netCDF (cVeg, cSoil, mrsol, lai) with unit tests (#4019).
+
 ## Fixed
 
 * `metric_PPMC()`: added `use = "pairwise.complete.obs"` to `stats::cor()` so the Pearson correlation is computed on available pairs rather than returning `NA` whenever any observation is missing. This matches the behaviour of `metric_cor()` in the same package.

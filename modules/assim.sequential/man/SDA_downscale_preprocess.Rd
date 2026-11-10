@@ -4,26 +4,28 @@
 \alias{SDA_downscale_preprocess}
 \title{Preprocess Data for Downscaling}
 \usage{
-SDA_downscale_preprocess(data_path, coords_path, date, carbon_pool)
+SDA_downscale_preprocess(ensemble_data, site_coords, date, carbon_pool)
 }
 \arguments{
-\item{data_path}{Character. File path for .rds containing ensemble data.}
+\item{ensemble_data}{List where each element is a data.frame indexed by date.}
 
-\item{coords_path}{Character. File path for .csv file containing the site coordinates, with columns named "lon" and "lat".}
+\item{site_coords}{A data.frame with `lon` and `lat` columns, or an sf object with point geometries.}
 
-\item{date}{Date. If SDA site run, format is yyyy/mm/dd; if NEON, yyyy-mm-dd. Restricted to years within the file supplied to 'data_path'.}
+\item{date}{Date. The date for the run, which must occur within `ensemble_data`.}
 
-\item{carbon_pool}{Character. Carbon pool of interest. Name must match the carbon pool name found within the file supplied to 'data_path'.}
+\item{carbon_pool}{Character. Carbon pool of interest. Name must match a column in `ensemble_data`.}
 }
 \value{
-A list containing The read .rds data , The cleaned site coordinates, and the preprocessed carbon data.
+A list containing the input data, cleaned site coordinates, and preprocessed carbon data.
 }
 \description{
-This function reads and checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
+This function checks the input data, ensuring that the required date and carbon pool exist, and that the site coordinates are valid.
 }
 \details{
-This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and aligns the number of rows between site coordinates and carbon data.
+This function ensures that the specified date and carbon pool are present in the input data. It also checks the validity of the site coordinates and requires site coordinates and carbon data to have the same number of rows.
 }
 \author{
 Sambhav Dixit
+
+David LeBauer
 }

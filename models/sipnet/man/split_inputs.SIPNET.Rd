@@ -9,7 +9,9 @@ split_inputs.SIPNET(
   stop.time,
   inputs,
   overwrite = FALSE,
-  outpath = NULL
+  outpath = NULL,
+  time_resolution = c("row", "day"),
+  allow_varying_timesteps = TRUE
 )
 }
 \arguments{
@@ -24,6 +26,12 @@ structure like:
 \item{overwrite}{if \code{TRUE}, overwrite existing target file (Default \code{FALSE})}
 
 \item{outpath}{if specified, write output to a new directory. Default \code{NULL} writes back to the directory being read}
+
+\item{time_resolution}{One of "row", "day". Should the split happen
+at the closest row to the end time or align with a time unit? See details}
+
+\item{allow_varying_timesteps}{logical: Accept files where not all rows have
+the same duration? Disallowing can be substantially faster.}
 }
 \value{
 Modified \code{inputs} list with all \code{path} entries replaced with new
@@ -37,6 +45,24 @@ NOTE that sipnet met files contain dates \emph{and} times, while sipnet event
 files contain only dates. Comparing a datetime to a date will coerce the
 date to midnight UTC.
 }
+\section{Efficiency}{
+
+
+Splitting met files goes faster by far when all the inputs are known to have
+a uniform timestep, fixed number of characters per line, and all splits are
+at day boundaries. Setting \code{time_resolution = "days"} and
+\code{allow_varying_timesteps = FALSE} opts in to a fast code path that finds the
+wanted lines of the file by computing byte offsets and therefore avoids
+needing to read every row of the input file.
+For small subsets of large files this can be several times faster.
+
+If the input has variable line length but constant timesteps (as determined
+by checking the first 10 lines; see the \code{n_head} argument of
+\code{subset_met_lines()}), the fast path is taken but is not \emph{as} fast: it
+must scan from the beginning to count line separators, but still skips the
+tail of the file after \code{stop.time} is reached.
+}
+
 \author{
 Alexey Shiklomanov
 }

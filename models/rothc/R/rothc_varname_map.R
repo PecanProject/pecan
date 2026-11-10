@@ -21,3 +21,19 @@ rothc_varname_map <- dplyr::tribble(
   "SOC_t_C_ha", "Total soil organic carbon",   "t C ha-1", "TotSoilCarb",
   "CO2_t_C_ha", "Accumulated CO2",             "t C ha-1", NA # needs time dimension to match to "TotalResp" which is kg C m-2 sec-1
 )
+
+
+# Mapping from RothC _input_ parameters to PEcAn standard names.
+# Not used anywhere in the code yet!
+# Just writing them down for reference and this file seemed like a good place
+rothc_param_map <- dplyr::tribble(
+  ~rothc_name, ~rothc_description, ~rothc_unit, ~pecan_name,
+  "clay_pct",   "Clay content of the soil",    "pct",      "fraction_of_clay_in_soil",
+  "depth_cm",   "Depth of soil layer sampled", "cm",       "depth",
+  "iom_tC_ha",  "inert organic matter",        "t C ha-1", NA,
+  # Note: these 4 params only used when opt_rmmoist = 2
+  "silt_pct",       "Silt content of the soil",           "pct",    "fraction_of_silt_in_soil",
+  "bulkdens_g_cm3", "Bulk density of the soil",           "g cm-3", "soil_bulk_density",
+  "org_C_pct",      "Organic carbon content of the soil", "pct",    NA, # need to back-convert from soil_organic_carbon_stock?
+  "min_RM_moist",   "min value for soil moisture rate modifier, reached at -1500 kPa", "1", NA
+)

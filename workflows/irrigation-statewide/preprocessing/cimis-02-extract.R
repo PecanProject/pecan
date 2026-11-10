@@ -1,25 +1,37 @@
 #!/usr/bin/env Rscript
 
-options(
-  clustermq.scheduler = "sge",
-  clustermq.template  = ".clustermq_sge.tmpl"
-)
+cmq_scheduler <- Sys.getenv("CLUSTERMQ_SCHEDULER", "sge")
+if (cmq_scheduler == "sge") {
+  options(clustermq.scheduler = "sge", clustermq.template = ".clustermq_sge.tmpl")
+} else {
+  options(clustermq.scheduler = cmq_scheduler)
+}
 
 library(terra)
 library(progress)
+library(purrr)
 library(arrow)
 library(clustermq)
 
-n_workers <- 20
+root_dir <- here::here("workflows/irrigation-statewide")
+cfg <- config::get(
+  file = file.path(root_dir, "config_paths.yml"),
+  config = "default"
+)
+
+n_workers <- as.integer(Sys.getenv("CLUSTERMQ_N_JOBS", "20"))
 walltime <- "02:00:00"
 
-outdir <- "_results_v2/daily-raw"
+cimis_root <- cfg[["cimis_dir"]]
+preprocess_dir <- cfg[["cimis_preprocess_dir"]]
+outdir <- file.path(preprocess_dir, "daily-raw")
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-W <- readRDS("_results_v2/spatial_weights.rds")
+W <- readRDS(file.path(preprocess_dir, "spatial_weights.rds"))
+weights_alt <- file.path(preprocess_dir, "spatial_weights_alt.rds")
 
 cimis_manifest <- "cimis_files.txt"
-years <- seq(2015, 2024)
+years <- seq(as.integer(cfg[["year1"]]), as.integer(cfg[["year2"]]))
 if (!file.exists(cimis_manifest)) {
   get_cimis_files <- function(year) {
     ydir <- file.path(cimis_root, year)
@@ -39,7 +51,7 @@ if (!file.exists(cimis_manifest)) {
 }
 
 # Extract
-process_file <- function(fname, W, outdir) {
+process_file <- function(fname, W, outdir, weights_alt) {
   day <- basename(dirname(fname))
   month <- basename(dirname(dirname(fname)))
   year <- basename(dirname(dirname(dirname(fname))))
@@ -58,7 +70,7 @@ process_file <- function(fname, W, outdir) {
   rsize <- terra::size(r)
   if (rsize == 285600) {
     # Alternate size files -- use alternate weights
-    W <- readRDS("_results_v2/spatial_weights_alt.rds")
+    W <- readRDS(weights_alt)
   } else if (rsize != 276000) {
     stop("File ", fname, " has unexpected size ", rsize)
   }
@@ -91,7 +103,7 @@ process_file <- function(fname, W, outdir) {
 cimis_long <- Q(
   fun     = process_file,
   fname = cimis_files,
-  const   = list(W = W, outdir = outdir),
+  const   = list(W = W, outdir = outdir, weights_alt = weights_alt),
   n_jobs  = n_workers,         # SGE array size — persistent worker processes
   template = list(cores = 1, walltime = walltime),
   fail_on_error = FALSE

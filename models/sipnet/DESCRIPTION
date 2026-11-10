@@ -22,9 +22,11 @@ Imports:
     PEcAn.data.land,
     PEcAn.logger,
     rlang,
+    stats,
+    stringr,
+    tibble,
     PEcAn.remote,
-    PEcAn.utils,
-    stats
+    PEcAn.utils
 Suggests:
     coda,
     testthat (>= 1.0.2),

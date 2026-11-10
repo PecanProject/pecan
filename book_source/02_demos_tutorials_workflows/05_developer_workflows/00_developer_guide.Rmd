@@ -1,8 +1,9 @@
 # Developer guide {#developer-guide}
 
-Get started with PEcAn development with this guide. You'll learn how to use Git for collaboration, follow PEcAn's coding standards, and update code and databases. Whether you're fixing a bug or adding a new feature, start here.
+Get started with PEcAn development with this guide. You'll learn how to use Git for collaboration, follow PEcAn's coding standards, update code and databases, and work with Docker. Whether you're fixing a bug or adding a new feature, start here.
 
 * [Update BETY](#updatebety)
 * [Update PEcAn Code](#pecan-make)
 * [PEcAn and Git](#pecan-git)
 * [Coding Practices](#coding-practices)
+* [Docker](#docker-index)

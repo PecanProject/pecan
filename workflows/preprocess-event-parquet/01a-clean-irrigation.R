@@ -5,7 +5,7 @@ irr_path <- "/projectnb/dietzelab/ccmmf/usr/ashiklom/event-outputs/irrigation_al
 outdir <- "_output"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-dbdir <- file.path(Sys.getenv("TMPDIR", "/tmp"), "temp.duckdb")
+dbdir <- tempfile("duckdb", fileext = ".duckdb")
 conn <- DBI::dbConnect(duckdb::duckdb(dbdir = dbdir))
 on.exit({
   DBI::dbDisconnect(conn, shutdown = TRUE)

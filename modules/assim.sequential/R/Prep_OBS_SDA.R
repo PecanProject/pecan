@@ -20,11 +20,8 @@ Prep_OBS_SDA <- function(settings, out_dir, AGB_dir, Search_Window=30){
   }
   
   #query site info
-  bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
-                              host     = settings$database$bety$host,
-                              user     = settings$database$bety$user,
-                              password = settings$database$bety$password)
-  con <- bety$con
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con), add = TRUE)
   
   #grab site info
   site_ID <- observations

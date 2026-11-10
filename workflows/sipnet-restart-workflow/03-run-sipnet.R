@@ -17,11 +17,10 @@ write.csv(sens_design$X, file.path(settings_raw$outdir, "input_design.csv"))
 
 settings <- PEcAn.workflow::runModule.run.write.configs(
   settings_raw,
-  input_design = sens_design$X
+  input_design = sens_design
 )
 
-source("workflows/sipnet-restart-workflow/utils.R")
-jobfiles <- write_segmented_configs.SIPNET(settings, sens_design$X)
+jobfiles <- PEcAn.SIPNET::write_segmented_configs.SIPNET(settings, sens_design$X)
 # Note: If running a multi-site workflow, use:
 # jobfiles <- papply(settings, \(s) write_segmented_configs.SIPNET(s, sens_design$X))
 

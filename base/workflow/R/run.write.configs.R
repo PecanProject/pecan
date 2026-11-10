@@ -1,6 +1,5 @@
 #' Write model-specific run scripts and configuration files
 #'
-#' @md
 #' Generates run scripts and configuration files for all analyses (ensemble
 #' and/or sensitivity analysis) specified in the provided settings. Delegates
 #' the model-specific config writing to the appropriate `write.config.*`
@@ -12,10 +11,8 @@
 #'   \item{`samples.Rdata`}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
 #'     Contains 5 bundled objects: `trait.samples`,
 #'     `sa.samples`, `ensemble.samples`, `runs.samples`, `env.samples`.
-#'     This function loads `trait.samples` and `sa.samples` to build
-#'     model configuration files. If `input_design` contains a `param`
-#'     column, `ensemble.samples` is rebuilt by subsetting `trait.samples`
-#'     according to the design indices.}
+#'     This function loads `ensemble.samples` and `sa.samples` to build
+#'     model configuration files.}
 #' }
 #'
 #' **File-based side effects (saved to `settings$outdir`):**
@@ -43,6 +40,8 @@
 #'    appended. This forces use of only files within this workflow, to avoid
 #'    confusion.
 #'
+#' @md
+#'
 #' @param settings a PEcAn settings list
 #' @param ensemble.size number of ensemble runs
 #' @param input_design Input design data.frame coordinating input files across
@@ -53,6 +52,11 @@
 #'   ensemble and sensitivity analysis (e.g. `post.distns.Rdata`, or
 #'   `prior.distns.Rdata`).
 #' @param overwrite logical: Replace output files that already exist?
+#' @param samples Optional pre-computed parameter samples (a list with
+#'   `trait.samples`, `sa.samples`, `ensemble.samples`). When supplied, these
+#'   are used directly and `samples.Rdata` is not read from disk. When `NULL`
+#'   (default), the function falls back to loading `samples.Rdata` from
+#'   `settings$outdir`.
 #'
 #' @return The `settings` list (invisibly), updated with ensemble IDs for SA
 #'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
@@ -63,7 +67,7 @@
 
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
-                              overwrite = TRUE) {
+                              overwrite = TRUE, samples = NULL) {
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -85,7 +89,6 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   # Checking only for Bety parameters prevents the dbfiles entry from causing
   # undesired connection attempts. 
   if (!isTRUE(write) && is.null(settings$database$bety)) {
-    PEcAn.logger::logger.info("Not writing this run to database, so database connection skipped")
     con <- NULL # Set con to NULL to avoid errors in subsequent code
   } else if (is.null(settings$database$bety)) {
     PEcAn.logger::logger.error(
@@ -109,7 +112,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
-    ## if posterior.files is specified us that
+    ## if posterior.files is specified use that
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
@@ -158,37 +161,23 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   scipen <- getOption("scipen")
   options(scipen = 12)
 
-  samples.file <- file.path(settings$outdir, "samples.Rdata")
-  if (file.exists(samples.file)) {
-    existing_data <- new.env()
-    load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
-    trait.samples <- existing_data$trait.samples
-    sa.samples <- existing_data$sa.samples
-    
-    # build ensemble.samples only for ensemble runs
-    # SA runs use sa.samples directly (quantile-based), not ensemble.samples
-    if ("ensemble" %in% names(settings) && 
-        !is.null(input_design) && 
-        "param" %in% colnames(input_design)) {
-      trait_sample_indices <- input_design[["param"]]
-      ensemble.samples <- list()
-      for (pft in names(trait.samples)) {
-        pft_traits <- trait.samples[[pft]]
-        ensemble.samples[[pft]] <- as.data.frame(
-          lapply(
-            names(pft_traits),
-            function(trait) pft_traits[[trait]][trait_sample_indices]
-          )
-        )
-        names(ensemble.samples[[pft]]) <- names(pft_traits)
-      }
-    } else {
-      # use pre-generated samples
-      ensemble.samples <- existing_data$ensemble.samples
-    }
+  ## Resolve parameter samples: use the in-memory bundle when passed,
+  ## otherwise fall back to loading samples.Rdata from disk.
+  if (!is.null(samples)) {
+    existing_data <- samples
   } else {
-    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    samples.file <- file.path(settings$outdir, "samples.Rdata")
+    if (file.exists(samples.file)) {
+      existing_data <- new.env()
+      load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
+    } else {
+      PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    }
   }
+
+  trait.samples <- existing_data$trait.samples
+  sa.samples <- existing_data$sa.samples
+  ensemble.samples <- existing_data$ensemble.samples
 
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
@@ -196,7 +185,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     unlink(file.path(settings$rundir, "runs.txt"))
   }
 
-  PEcAn.utils::load.modelpkg(model)
+  suppressPackageStartupMessages(PEcAn.utils::load.modelpkg(model))
 
   ## Check for model-specific write configs
 
@@ -212,15 +201,27 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   ## Prepare for model output.  Clean up any old config files (if exists)
   # TODO: shouldn't this check if the files exist before removing them?
   my.remove.config <- paste0("remove.config.", model)
-  if (exists(my.remove.config)) {
+  if (overwrite && exists(my.remove.config)) {
     do.call(my.remove.config, args = list(settings$rundir, settings))
   }
 
   # TODO RK : need to write to runs_inputs table
 
-  # Save names
-  pft.names <- names(trait.samples)
-  trait.names <- lapply(trait.samples, names)
+  # Save names, trying ensemble first then sa
+  if (length(ensemble.samples) > 0
+      && length(sa.samples) > 0
+      && any(names(ensemble.samples) != names(sa.samples))
+  ) {
+    PEcAn.logger::logger.error(
+      "Samples provided for both ensemble and sensitivity,",
+      "but PFT names do not match."
+    )
+  }
+  pft.names <- names(ensemble.samples) %||% names(sa.samples)
+  trait.names <- lapply(ensemble.samples, names)
+  if (length(trait.names) == 0) {
+    trait.names <- lapply(sa.samples, names)
+  }
 
   # Initialize the Manifest Dataframe
   run_manifest_df <- data.frame()
@@ -231,22 +232,59 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   if ("sensitivity.analysis" %in% names(settings)) {
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
-    sa.runs <- PEcAn.uncertainty::write.sa.configs(
-      defaults = settings$pfts,
-      quantile.samples = sa.samples,
-      settings = settings,
-      model = model,
-      input_design = input_design,
-      write.to.db = write
+
+    # A sensitivity analysis is an ensemble whose parameter sets move one trait
+    # at a time. The design says which run is which, so the parameter sets and
+    # the run names are built from it here and the same writer writes them.
+    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
+      design_matrix = input_design,
+      site_id       = settings$run$site$id,
+      pft_names     = pft.names
     )
 
-    # collect manifest data
-    if ("manifest" %in% names(sa.runs)) {
+    sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
+      defaults         = settings$pfts,
+      ensemble.size    = nrow(input_design),
+      ensemble.samples = sa.run.samples,
+      settings         = settings,
+      model            = model,
+      input_design     = input_design,
+      write.to.db      = write,
+      run_descriptions = sa.descriptions,
+      ensemble.id      = settings$sensitivity.analysis$ensemble.id
+    )
+
+    # collect manifest data. The median run is the median of every trait, and
+    # the analysis looks runs up by trait, so it needs a row per trait rather
+    # than the single untagged row the writer produced for it.
+    if ("manifest" %in% names(sa.runs) &&
+        all(c("pft_name", "trait") %in% names(sa.runs$manifest))) {
+      sa_manifest <- sa.runs$manifest
+      is_median <- is.na(input_design$sa_pft)
+
+      moved_rows <- sa_manifest[!is_median, , drop = FALSE]
+      median_row <- sa_manifest[is_median, , drop = FALSE][1, , drop = FALSE]
+
+      traits <- unique(moved_rows[, c("pft_name", "trait"), drop = FALSE])
+      median_rows <- median_row[rep(1, nrow(traits)), , drop = FALSE]
+      median_rows$pft_name <- traits$pft_name
+      median_rows$trait    <- traits$trait
+      median_rows$quantile <- "50"
+      median_rows$type     <- "Sensitivity"
+
+      run_manifest_df <- rbind(
+        run_manifest_df,
+        moved_rows,
+        median_rows
+      )
+    } else if ("manifest" %in% names(sa.runs)) {
       run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
     }
 
-    # Store output in settings and output variables
-    sa.run.ids <- sa.runs$runs
+    # Store output in settings and output variables. The post-processing looks
+    # runs up by trait and quantile, which the design and the returned ids give.
+    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(input_design, sa.runs$runs$id)
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
     # Save sensitivity analysis info
@@ -297,7 +335,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
                      sep = ",",
                      row.names = FALSE,
                      col.names = overwrite || !file.exists(manifest.file),
-                     append = !overwrite)
+                     append = !overwrite && file.exists(manifest.file))
   
   PEcAn.logger::logger.info("Run manifest written to ", manifest.file)
 

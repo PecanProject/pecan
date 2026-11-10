@@ -1,8 +1,18 @@
 default:
+  # Preprocess
+  landiq_parcels_gpkg: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/parcels.gpkg"
+  year1: 2023
+  year2: 2024
+  chirps_dir: "/projectnb/dietzelab/ccmmf/management/irrigation/"
+  chirps_preprocess_dir: "_results_chirps"
+  chirps_precip_path: "/projectnb/dietzelab/ccmmf/data/chirps-extracted"
+  cimis_dir: "/projectnb/dietzelab/ccmmf/data_raw/cimis/cimis"
+  cimis_preprocess_dir: "_results_v2"
+  cimis_etref_path: "/projectnb/dietzelab/ccmmf/data/cimis-extracted"
+  ssurgo_gdb_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"
+  ssurgo_preprocess_dir: "_results"
+  ssurgo_weights_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/ssurgo-weights.parquet"
+  # tar_make
   event_output_dir: "/projectnb/dietzelab/ccmmf/usr/ashiklom/event-outputs"
   crops_path: "/projectnb/dietzelab/ccmmf/LandIQ-harmonized-v4.1/crops_all_years.parq"
   mslsp_path: "/projectnb/dietzelab/ccmmf/management/phenology/matched_landiq_mslsp_v4.1"
-  cimis_etref_path: "/projectnb/dietzelab/ccmmf/data/cimis-extracted"
-  chirps_precip_path: "/projectnb/dietzelab/ccmmf/data/chirps-extracted"
-  ssurgo_weights_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/ssurgo-weights.parquet"
-  ssurgo_gdb_path: "/projectnb/dietzelab/ccmmf/data_raw/ssurgo/gSSURGO_CA.gdb"

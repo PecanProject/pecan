@@ -2,8 +2,7 @@
 % Please edit documentation in R/run.meta.analysis.R
 \name{run.meta.analysis.pft}
 \alias{run.meta.analysis.pft}
-\title{"Workflow" version of run.meta.analysis.pft
-#' Run Bayesian meta-analysis for a single PFT (file-based wrapper)}
+\title{Run Bayesian meta-analysis for a single PFT (file-based wrapper)}
 \usage{
 run.meta.analysis.pft(
   pft,
@@ -13,7 +12,10 @@ run.meta.analysis.pft(
   dbfiles,
   dbcon,
   use_ghs = TRUE,
-  update = FALSE
+  update = FALSE,
+  trait_data = NULL,
+  prior_distns = NULL,
+  return_data = FALSE
 )
 }
 \arguments{
@@ -35,10 +37,27 @@ default = 1.2 following Bolker 2008 Ecological Models and Data in R}
 
 \item{update}{(boolean; default = FALSE) If \code{TRUE}, replace existing
 posteriors with new ones}
+
+\item{trait_data}{(named list; default = \code{NULL}) Optional in-memory trait
+data with the same structure as the contents of \code{trait.data.Rdata}. When
+non-\code{NULL}, must be provided alongside \code{prior_distns} and the \code{.Rdata}
+files in \code{pft$outdir} are not read.}
+
+\item{prior_distns}{(data frame; default = \code{NULL}) Optional in-memory prior
+distributions with the same structure as the contents of
+\code{prior.distns.Rdata}. When non-\code{NULL}, must be provided alongside
+\code{trait_data} and the \code{.Rdata} files in \code{pft$outdir} are not read.}
+
+\item{return_data}{(boolean; default = FALSE) If \code{TRUE}, attach \code{trait.mcmc},
+\code{post.distns}, and \code{jagged.data} to the returned \code{pft} for in-memory
+chaining. Defaults to \code{FALSE} to preserve legacy behavior — attaching
+these objects to a \code{pft} that is embedded in a settings object would
+inflate the settings and can break serialization.}
 }
 \value{
-The \code{pft} list (invisibly), or \code{NA} if no trait data are available.
-The returned \code{pft} list is a named list with the following elements:
+The \code{pft} list with three additional elements attached, or \code{NA}
+if no trait data are available for this PFT. The returned \code{pft} list
+contains:
 \describe{
 \item{\code{name}}{(character) PFT name, e.g. \code{"temperate.deciduous"}.}
 \item{\code{outdir}}{(character) Path to directory where output files are
@@ -47,21 +66,36 @@ stored (trait data, priors, posteriors, MCMC samples).}
 BETYdb's \code{posteriors} table.}
 \item{\code{constants}}{(named list, optional) Trait values to treat as
 fixed constants, bypassing the meta-analysis.}
+\item{\code{trait.mcmc}}{(named list) \code{mcmc.list} objects, one per trait.}
+\item{\code{post.distns}}{(data frame) Fitted posterior distributions.}
+\item{\code{jagged.data}}{(named list) JAGS-formatted data frames.}
 }
-The function's primary outputs are communicated through files saved in
-\code{pft$outdir}.
+File-based side effects in \code{pft$outdir} are preserved for backward
+compatibility and scientific provenance.
 }
 \description{
-"Workflow" version of run.meta.analysis.pft
-#' Run Bayesian meta-analysis for a single PFT (file-based wrapper)
+Thin wrapper around \code{\link[PEcAn.MA]{meta_analysis_standalone}} that
+reads trait data and priors either directly from in-memory R objects (when
+\code{trait_data} and \code{prior_distns} are provided) or from \code{.Rdata} files in
+\code{pft$outdir} (the legacy path). Results are always saved back to
+\code{pft$outdir} for scientific provenance and registered in BETYdb.
 }
 \details{
-\strong{Upstream contract (reads from \code{pft$outdir}):}
+\strong{Input contract:} Trait data and priors enter via one of two paths:
 \describe{
-\item{\code{trait.data.Rdata}}{Named list of data frames produced by
-\code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into \code{trait_env$trait.data}.}
-\item{\code{prior.distns.Rdata}}{Data frame of prior distributions produced by
-\code{\link[PEcAn.DB]{get.trait.data.pft}}. Loaded into \code{prior_env$prior.distns}.}
+\item{In-memory (preferred for new code)}{Pass both \code{trait_data} and
+\code{prior_distns} as function arguments. Disk loading is skipped entirely.
+Either both arguments must be provided or both must be \code{NULL} —
+passing only one is an error.}
+\item{Disk-based (legacy)}{When both \code{trait_data} and \code{prior_distns}
+are \code{NULL}, the function reads:
+\itemize{
+\item \code{trait.data.Rdata} — Named list of trait data frames produced
+by \code{\link[PEcAn.DB]{get.trait.data.pft}}.
+\item \code{prior.distns.Rdata} — Data frame of prior distributions
+produced by \code{\link[PEcAn.DB]{get.trait.data.pft}}.
+}
+loaded from \code{pft$outdir}.}
 }
 
 \strong{File-based side effects (saved to \code{pft$outdir}):}
@@ -79,12 +113,19 @@ frames (one per trait) formatted for use in the JAGS meta-analysis
 model (see \code{\link[PEcAn.MA]{jagify}}).}
 }
 
-\strong{Downstream contract:} The files \code{trait.mcmc.Rdata} and
-\code{post.distns.Rdata} are expected by \code{\link[PEcAn.uncertainty]{get.parameter.samples}} (in
-\code{PEcAn.uncertainty}), which loads them to generate ensemble and sensitivity
-analysis samples.
+These saves are unconditional: calling this wrapper is the provenance
+opt-in mechanism. Callers that need a purely in-memory analysis with no
+filesystem side effects should call
+\code{\link[PEcAn.MA]{meta_analysis_standalone}} directly.
 
-\strong{Note:} The core computation is performed by \code{\link[PEcAn.MA]{meta_analysis_standalone}},
-which accepts and returns R objects directly — see its documentation for
-the pure-function interface.
+\strong{Downstream contract:} The files \code{trait.mcmc.Rdata} and
+\code{post.distns.Rdata} are expected by \code{PEcAn.uncertainty::get.parameter.samples()}
+(in \code{PEcAn.uncertainty}), which loads them to generate ensemble and
+sensitivity analysis samples. The same objects are now also attached to
+the returned \code{pft} list (see Value below), so callers wired to the
+modular pipeline can consume them without re-reading the \code{.Rdata} files.
+
+\strong{Note:} The core computation is performed by
+\code{\link[PEcAn.MA]{meta_analysis_standalone}}, which accepts and returns
+R objects directly — see its documentation for the pure-function interface.
 }

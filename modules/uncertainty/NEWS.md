@@ -1,5 +1,13 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
+* `get.ensemble.samples()` now again returns a list of dataframes as it did
+  before v1.9.0. The returned list also now has attribute `sampled.indices`,
+  giving the position of each sampled value in its input set (#4127, @Devansh-56)
+* `read.sa.output()` now reads only the runs in `sa.run.ids`, so each site of a multisite sensitivity analysis gets its own results. Previously every site read the last site's runs from the shared `runs_manifest.csv`.
+* `run.sensitivity.analysis()` skips traits with no spread in their SA samples, with a warning. Previously one such trait stopped the analysis for every PFT.
+* `runs_manifest.csv` now has a column `ens_num` to distinguish ensemble members without reparsing run IDs.
+* `run.sensitivity.analysis()` no longer converts traits in Celsius (e.g. `psnTOpt`) to K before evaluating their splines, which are fit in Celsius. Their sensitivity, elasticity and variance were wrong in earlier versions, and so were the partial variances of the other traits in the PFT. CV and elasticity are still computed in K.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.

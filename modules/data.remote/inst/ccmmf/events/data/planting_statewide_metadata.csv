@@ -1,0 +1,13 @@
+column_number,column_name,contents,notes
+1,event_type,always planting,SIPNET event type
+2,site_id,parcel_id,PEcAn site key
+3,date,planting date,from apply table (mslsp_OGI or gap-filled)
+4,crop_code,LandIQ CLASS+SUBCLASS,PEcAn schema required
+5,leaf_c_kg_m2,leaf C kg/m2,SIPNET plant line
+6,wood_c_kg_m2,stem/wood C kg/m2,PEcAn schema wood_c_kg_m2
+7,fine_root_c_kg_m2,fine root C kg/m2,PEcAn schema
+8,coarse_root_c_kg_m2,coarse root C kg/m2,PEcAn schema
+9,leaf_n_kg_m2,leaf N kg/m2,from planting lookup C:N
+10,wood_n_kg_m2,stem/wood N kg/m2,from planting lookup C:N
+11,fine_root_n_kg_m2,fine root N kg/m2,from planting lookup C:N
+12,coarse_root_n_kg_m2,coarse root N kg/m2,from planting lookup C:N
