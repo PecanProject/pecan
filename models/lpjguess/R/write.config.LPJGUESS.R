@@ -199,8 +199,9 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # write params with values from trait.values
   for (i in seq_along(settings$pfts)) {
     
-      # trait.values has no entry for PFTs after the last one with traits
-      pft_traits <- if (i <= length(trait.values)) trait.values[[i]] else list()
+      # trait.values is named by PFT and has no entry for PFTs without sampled traits
+      pft_traits <- trait.values[[pft_names[i]]]
+      if (is.null(pft_traits)) pft_traits <- list()
       write2pftblock[[i]] <- pftblock
       write2pftblock[[i]] <- gsub(paste0("@pft@"), pft_names[i], write2pftblock[[i]])
       

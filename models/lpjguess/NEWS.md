@@ -1,6 +1,6 @@
 # PEcAn.LPJGUESS 1.9.0.9000
 
-* `write.config.LPJGUESS()` no longer errors when the last PFT has no sampled traits and `trait.values` has no `env` entry. It writes defaults for that PFT, as it did before (#4225, @aarmens702-hub).
+* `write.config.LPJGUESS()` now looks up each PFT's sampled traits in `trait.values` by PFT name instead of by position. A PFT with no sampled traits gets the defaults (with the usual warning) wherever it appears in `settings$pfts`; before, only the last PFT was handled correctly, and one in the middle shifted the traits of every PFT after it (#4225, @aarmens702-hub).
 
 
 # PEcAn.LPJGUESS 1.9.0
