@@ -184,7 +184,8 @@ sda.enkf.multisite <- function(settings,
     dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
   PEcAn.logger::logger.info("Splitting mets!")
-  conf.settings <- as.list(conf.settings) %>%
+  conf.settings <-conf.settings %>%
+    `class<-`(c("list")) %>%
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
       inputs.split <- list()
