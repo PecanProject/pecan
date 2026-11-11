@@ -283,6 +283,23 @@ test_that("non-PDA mcmc is not detected as joint", {
 })
 
 
+test_that("mcmc marked joint is detected as joint", {
+  tmpdir <- withr::local_tempdir()
+
+  trait.mcmc <- make_trait_mcmc(trait_a = rnorm(100), trait_b = rnorm(100))
+  attr(trait.mcmc, "joint") <- TRUE
+  save(trait.mcmc, file = file.path(tmpdir, "trait.mcmc.Rdata"))
+
+  result <- load.posteriors(posterior.file = tmpdir)
+  expect_true(result$is.joint)
+
+  invisible(capture.output(
+    legacy <- load.posteriors(posterior.file = NA, outdir = tmpdir)
+  ))
+  expect_true(legacy$is.joint)
+})
+
+
 test_that("joint detection works via filename heuristic in legacy path", {
   tmpdir <- withr::local_tempdir()
 
@@ -314,4 +331,22 @@ test_that("MCMC detected by coda class, not variable name", {
   # Should be detected by coda class, not by variable name
   expect_is(result$trait.mcmc, "list")
   expect_equal(names(result$trait.mcmc), "SLA")
+})
+
+
+test_that("load_pft_posteriors flags joint posteriors per PFT", {
+  joint_dir <- withr::local_tempdir()
+  ma_dir <- withr::local_tempdir()
+
+  trait.mcmc <- make_trait_mcmc(trait_a = rnorm(100))
+  save(trait.mcmc, file = file.path(ma_dir, "trait.mcmc.Rdata"))
+  attr(trait.mcmc, "joint") <- TRUE
+  save(trait.mcmc, file = file.path(joint_dir, "trait.mcmc.Rdata"))
+
+  settings <- list(pfts = list(list(name = "joint_pft"), list(name = "ma_pft")))
+  invisible(capture.output(
+    loaded <- load_pft_posteriors(settings, c(joint_dir, ma_dir))
+  ))
+
+  expect_identical(loaded$independent, c(FALSE, TRUE))
 })
