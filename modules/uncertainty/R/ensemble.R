@@ -69,7 +69,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 #' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain
 #' @param env.samples env samples
 #' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
-#' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
+#' @param param.names a list, one element per PFT in the order of \code{pft.samples}, naming the traits whose samples are joint draws (one row per draw). Those traits are sampled by whole rows, with one row index shared by all PFTs that have the same number of rows. If NULL, every trait is resampled independently.
 #' @param ... Other arguments passed on to the sampling method
 #'
 #' @return named list of data.frames with sampled indices as an attribute
@@ -137,35 +137,51 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 
     ensemble.samples <- list()
     sampled.indices <- list()
+    joint.rows <- list()
 
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       sampled.indices[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
 
-      # meaning we want to keep MCMC samples together
-      if (length(pft.samples[[pft.i]]) > 0 && !is.null(param.names)) {
-        if (method == "halton") {
-          same.i <- floor(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "sobol") {
-          same.i <- floor(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "torus") {
-          same.i <- floor(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "lhc") {
-          same.i <- floor(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))+1
-        } else if (method == "uniform") {
-          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
-        } else if (method == "random") {
-            PEcAn.logger::logger.info("Using random row sampling for MCMC draws")
-           same.i <- sample(nrow(pft.samples[[pft.i]][[1]]), ensemble.size, replace = TRUE)
-        } else {
-          PEcAn.logger::logger.error("Sampling method %s is not recognized", method)
+      # Traits in param.names are joint draws, so a member takes a whole row.
+      # PFTs with the same number of rows share one row index, so rows drawn
+      # together across PFTs also stay together.
+      joint.traits <- intersect(names(pft.samples[[pft.i]]), unlist(param.names[pft.i]))
+      if (length(joint.traits) > 0) {
+        n.rows <- unique(lengths(pft.samples[[pft.i]][joint.traits]))
+        if (length(n.rows) != 1) {
+          PEcAn.logger::logger.severe(
+            "Joint samples for PFT", names(pft.samples)[pft.i],
+            "need the same number of rows for every trait, got",
+            paste(n.rows, collapse = ", ")
+          )
         }
+        key <- as.character(n.rows)
+        if (is.null(joint.rows[[key]])) {
+          if (method == "halton") {
+            joint.rows[[key]] <- floor(randtoolbox::halton(ensemble.size) * n.rows) + 1
+          } else if (method == "sobol") {
+            joint.rows[[key]] <- floor(randtoolbox::sobol(ensemble.size, scrambling = 3) * n.rows) + 1
+          } else if (method == "torus") {
+            joint.rows[[key]] <- floor(randtoolbox::torus(ensemble.size) * n.rows) + 1
+          } else if (method == "lhc") {
+            joint.rows[[key]] <- floor(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * n.rows)) + 1
+          } else if (method == "uniform") {
+            joint.rows[[key]] <- sample.int(n.rows, ensemble.size)
+          } else if (method == "random") {
+            PEcAn.logger::logger.info("Using random row sampling for MCMC draws")
+            joint.rows[[key]] <- sample.int(n.rows, ensemble.size, replace = TRUE)
+          } else {
+            PEcAn.logger::logger.error("Sampling method %s is not recognized", method)
+          }
+        }
+        same.i <- joint.rows[[key]]
       }
 
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        if (names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]) {
+        if (names(pft.samples[[pft.i]])[trait.i] %in% joint.traits) {
           ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
           sampled.indices[[pft.i]][, trait.i] <- same.i
         } else {
