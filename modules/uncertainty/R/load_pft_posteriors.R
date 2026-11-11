@@ -9,9 +9,9 @@
 #'
 #' Posterior type is detected by content, not filename, via
 #' \code{\link{load.posteriors}}: MCMC chains take precedence over distribution
-#' summaries. When a PFT's posterior is a joint fit (e.g. from PDA), the
-#' returned \code{independent} flag is set to \code{FALSE} so downstream
-#' sampling preserves the parameter correlations.
+#' summaries. When a PFT's posterior is joint (see \code{\link{load.posteriors}}),
+#' its entry in the returned \code{independent} flag is \code{FALSE} so
+#' downstream sampling keeps its MCMC rows together.
 #'
 #' @param settings PEcAn settings object. Uses \code{settings$pfts} (name,
 #'   outdir, posteriorid per PFT), \code{settings$database$bety} for the
@@ -26,8 +26,8 @@
 #'       PFT (\code{NULL} entry where none was found).}
 #'     \item{trait_mcmc_list}{list of trait MCMC results, one per PFT
 #'       (\code{NULL} entry where the PFT has no MCMC chains).}
-#'     \item{independent}{logical, \code{FALSE} if any PFT carries a joint
-#'       posterior, \code{TRUE} otherwise.}
+#'     \item{independent}{logical vector, one per PFT: \code{FALSE} where the
+#'       PFT carries a joint posterior, \code{TRUE} otherwise.}
 #'   }
 #'
 #' @seealso \code{\link{get_parameter_samples}} for the sampling step that
@@ -88,7 +88,7 @@ load_pft_posteriors <- function(settings,
   ## Load priors and posteriors for each PFT
   prior_distns_list <- vector("list", length(pft.names))
   trait_mcmc_list   <- vector("list", length(pft.names))
-  independent       <- TRUE
+  independent       <- rep(TRUE, length(pft.names))
 
   for (i in seq_along(pft.names)) {
     posterior <- load.posteriors(
@@ -105,10 +105,9 @@ load_pft_posteriors <- function(settings,
 
     if (!is.null(posterior$trait.mcmc)) {
       trait_mcmc_list[[i]] <- posterior$trait.mcmc
-      # Joint posteriors (e.g. from PDA) should preserve correlations
-      if (posterior$is.joint) {
-        independent <- FALSE
-      }
+      # Per PFT, so one joint posterior doesn't tie together the rows of
+      # another PFT's meta-analysis chains
+      independent[i] <- !posterior$is.joint
     } # else trait_mcmc_list[[i]] stays NULL
   }
 
