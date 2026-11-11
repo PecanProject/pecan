@@ -452,6 +452,7 @@ sda.enkf.multisite <- function(settings,
         return(run.list)}, .progress = F) %>% unlist
       # create folder paths to each ensemble of each site.
       runs.tmp <- file.path(rundir, ensemble.ids)
+      invisible(sapply(file.path(outdir, ensemble.ids), dir.create, recursive = TRUE, showWarnings = FALSE))
       # start model runs.
       PEcAn.logger::logger.info("Running models!")
       # if we want to submit jobs through the combined job file.
