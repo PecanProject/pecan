@@ -136,8 +136,9 @@ build.block.xy <- function(settings, block.list.all, X, obs.mean, obs.cov, t, di
   #grab basic arguments based on X.
   site.ids <- unique(attributes(X)$Site)
   var.names <- unique(colnames(X))
-  products <- names(settings$state.data.assimilation$Obs_Prep$variables)
-  var.names.products <- settings$state.data.assimilation$Obs_Prep$variables %>% purrr::map(~.x$var_name) %>% unlist
+  skip_keys <- c("timestep", "start.date", "end.date", "outdir")
+  products <- names(settings$state.data.assimilation$Obs_Prep)[!names(settings$state.data.assimilation$Obs_Prep) %in% skip_keys]
+  var.names.products <- settings$state.data.assimilation$Obs_Prep[products] %>% purrr::map(~.x$var_name) %>% unlist
   mu.f <- colMeans(X)
   Pf <- stats::cov(X)
   if (length(diag(Pf)[which(diag(Pf)==0)]) > 0) {
