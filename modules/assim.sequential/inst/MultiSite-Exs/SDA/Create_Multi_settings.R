@@ -131,14 +131,12 @@ template <- PEcAn.settings::Settings(list(
     end.date = end_date,
 
     obs_prep = structure(list(
-      variables = structure(list(
-        LandTrendr = structure(list(var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
-        GEDI = structure(list(var_name = "AbvGrndWood")),
-        MODIS = structure(list(var_name = "LAI", search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
-                               sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
-        SMAP = structure(list(var_name = "SoilMoistFrac", search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
-        SoilGrids = structure(list(var_name = "TotSoilCarb", timestep = SoilC_timestep, export_csv = SoilC_export_csv))
-      )),
+      LandTrendr = structure(list(source_tag = "Landtrendr_AGB", var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+      GEDI = structure(list(source_tag = "GEDI_AGB", var_name = "AbvGrndWood")),
+      MODIS = structure(list(source_tag = "MODIS_LAI", var_name = "LAI", search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
+                             sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
+      SMAP = structure(list(source_tag = "SMAP_SMP", var_name = "SoilMoistFrac", search_window = SMP_search_window, timestep = SMP_timestep, export_csv = SMP_export_csv, update_csv = update_csv)),
+      SoilGrids = structure(list(source_tag = "SoilGrids", var_name = "TotSoilCarb", timestep = SoilC_timestep, export_csv = SoilC_export_csv)),
       start.date = obs_start_date,
       end.date = obs_end_date,
       outdir = obs_outdir,
