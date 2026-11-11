@@ -184,8 +184,7 @@ sda.enkf.multisite <- function(settings,
     dir.create(paste0(settings$outdir, "/Extracted_met/"))
   }
   PEcAn.logger::logger.info("Splitting mets!")
-  conf.settings <-conf.settings %>%
-    `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
+  conf.settings <- as.list(conf.settings) %>%
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
       inputs.split <- list()
