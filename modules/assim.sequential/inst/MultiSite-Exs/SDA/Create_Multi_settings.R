@@ -131,7 +131,7 @@ template <- PEcAn.settings::Settings(list(
     end.date = end_date,
 
     obs_prep = structure(list(
-      LandTrendr = structure(list(source_tag = "Landtrendr_AGB", var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
+      LandTrendr = structure(list(source_tag = "LandTrendr", var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
       GEDI = structure(list(source_tag = "GEDI_AGB", var_name = "AbvGrndWood")),
       MODIS = structure(list(source_tag = "MODIS_LAI", var_name = "LAI", search_window = LAI_search_window, timestep = LAI_timestep, export_csv = LAI_export_csv, run_parallel = run_parallel,
                              sd_threshold = sd_threshold, boundary = structure(list(upper_quantile = upper_quantile, lower_quantile = lower_quantile)))),
