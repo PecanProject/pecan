@@ -288,3 +288,80 @@ test_that("independent = FALSE preserves param.names for correlated sampling", {
   expect_false(is.null(result_ind$ensemble.samples))
   expect_false(is.null(result_dep$ensemble.samples))
 })
+
+
+# TEST 11: Joint MCMC samples keep their rows
+# Two traits that are exact mirror images row by row, so any member that
+# mixes rows breaks b == -a
+make_paired_mcmc <- function(n_samples = 200, shift = 0, seed = 1) {
+  set.seed(seed)
+  a <- rnorm(n_samples)
+  lapply(list(a = a + shift, b = -a - shift), function(x) {
+    coda::mcmc.list(coda::mcmc(matrix(x, ncol = 1, dimnames = list(NULL, "beta.o"))))
+  })
+}
+
+test_that("joint PFT keeps rows together, independent PFT does not", {
+  result <- get_parameter_samples(
+    pft_names         = c("joint_pft", "ma_pft"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list   = list(make_paired_mcmc(), make_paired_mcmc()),
+    ensemble.size     = 50,
+    do_ensemble       = TRUE,
+    independent       = c(FALSE, TRUE)
+  )
+  joint <- result$ensemble.samples$joint_pft
+  ma    <- result$ensemble.samples$ma_pft
+
+  expect_equal(joint$b, -joint$a)
+  expect_true(all(joint$a %in% result$trait.samples$joint_pft$a))
+  expect_false(isTRUE(all.equal(ma$b, -ma$a)))
+})
+
+test_that("joint PFTs with the same number of rows share a row index", {
+  for (method in c("uniform", "random", "halton")) {
+    result <- get_parameter_samples(
+      pft_names         = c("pft1", "pft2"),
+      prior_distns_list = list(NULL, NULL),
+      trait_mcmc_list   = list(make_paired_mcmc(), make_paired_mcmc(shift = 100)),
+      ensemble.size     = 50,
+      ens.sample.method = method,
+      do_ensemble       = TRUE,
+      independent       = FALSE
+    )
+    expect_equal(
+      result$ensemble.samples$pft2$a,
+      result$ensemble.samples$pft1$a + 100,
+      info = method
+    )
+  }
+})
+
+test_that("a PFT with nothing to sample does not shift joint rows", {
+  result <- get_parameter_samples(
+    pft_names         = c("empty_pft", "joint_pft"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list   = list(NULL, make_paired_mcmc()),
+    ensemble.size     = 50,
+    do_ensemble       = TRUE,
+    independent       = FALSE
+  )
+  joint <- result$ensemble.samples$joint_pft
+  expect_equal(joint$b, -joint$a)
+})
+
+test_that("joint traits with different numbers of rows fail", {
+  mcmc <- make_paired_mcmc()
+  mcmc$b <- coda::mcmc.list(coda::mcmc(mcmc$b[[1]][1:150, , drop = FALSE]))
+  expect_error(
+    get_parameter_samples(
+      pft_names         = "joint_pft",
+      prior_distns_list = list(NULL),
+      trait_mcmc_list   = list(mcmc),
+      ensemble.size     = 50,
+      do_ensemble       = TRUE,
+      independent       = FALSE
+    ),
+    "same number of rows"
+  )
+})
