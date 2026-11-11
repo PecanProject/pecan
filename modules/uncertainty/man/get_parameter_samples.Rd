@@ -35,9 +35,11 @@ or NULL to skip SA sampling.}
 
 \item{do_ensemble}{logical. Whether to generate ensemble samples.}
 
-\item{independent}{logical. TRUE means parameters were fitted individually
-(standard MA) and can be resampled independently. FALSE means they were
-fitted together (e.g. PDA) and correlations should be preserved.}
+\item{independent}{logical, one value for all PFTs or one per PFT. TRUE
+means the PFT's MCMC samples are resampled one trait at a time (e.g.
+meta-analysis, where each trait is fit separately). FALSE means each row
+is one joint draw across traits (e.g. PDA), so ensemble members take whole
+rows; PFTs with the same number of rows share one row index.}
 }
 \value{
 named list with five elements:
