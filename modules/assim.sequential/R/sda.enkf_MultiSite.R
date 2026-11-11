@@ -337,12 +337,10 @@ sda.enkf.multisite <- function(settings,
     names.sampler <- names(settings$ensemble$samplingspace)
     # remove parameters field from the list.
     names.sampler <- names.sampler[-which(names.sampler == "parameters")]
-    mis.match.table <- settings %>% purrr::map(function(s){
-      # get the input names for the current site.
+    mis.match.table <- lapply(seq_len(length(settings)), function(i) {
+      s <- settings[[i]]
       names.site.input <- names(s$run$inputs)
-      # check if there is any mismatch.
       inds <- which(!names.sampler %in% names.site.input)
-      # if this site has missing inputs.
       if (length(inds) > 0) {
         return(data.frame(site_id = s$run$site$id, missed.input = names.sampler[inds]))
       }
