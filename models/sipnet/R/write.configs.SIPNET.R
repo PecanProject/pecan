@@ -70,6 +70,9 @@
 #' in `trait.values` override constants and template defaults. Initial condition
 #' values passed via `IC` or `poolinitcond` take highest precedence, including
 #' explicit zero values.
+#' For SIPNET v2, `plantStorageNInit` comes from template value unless the
+#' initial conditions (`IC` argument or the poolinitcond file) supply it, in
+#' which case that value is used, including zero.
 #'
 #' @param defaults nested list of named constant parameter values. The
 #' structure is `list(list(constants = list(trait1 = <value>, trait2 = <value>, ...)))`.
