@@ -22,7 +22,7 @@ get.ensemble.samples(
 
 \item{method}{the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.}
 
-\item{param.names}{a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently}
+\item{param.names}{a list, one element per PFT in the order of \code{pft.samples}, naming the traits whose samples are joint draws (one row per draw). Those traits are sampled by whole rows, with one row index shared by all PFTs that have the same number of rows. If NULL, every trait is resampled independently.}
 
 \item{...}{Other arguments passed on to the sampling method}
 }
