@@ -188,6 +188,9 @@ Landtrendr_AGB_prep <- function(site_info, start_date, end_date, time_points,
       }
     }
   }
+  agb_cols <- grep("_AbvGrndWood$", names(AGB_Output))
+  sd_cols  <- grep("_SD$",          names(AGB_Output))
+  AGB_Output[, agb_cols] <- AGB_Output[, agb_cols] * 0.5
+  AGB_Output[, sd_cols]  <- AGB_Output[, sd_cols]  * 0.5
   PEcAn.logger::logger.info("Landtrendr AGB Prep Completed!")
   list(AGB_Output = AGB_Output, time_points = time_points, var = "AbvGrndWood")
-}
