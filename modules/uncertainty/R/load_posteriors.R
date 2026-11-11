@@ -17,8 +17,12 @@
 #' @param hostname \strong{Deprecated.} Hostname for DB file lookup, used
 #'   only in the legacy fallback path.
 #' @return list with \code{prior.distns}, \code{trait.mcmc}, \code{is.joint}.
-#'   \code{is.joint} is \code{TRUE} when MCMC samples represent a joint
-#'   posterior (e.g. from PDA) and parameter correlations should be preserved.
+#'   \code{is.joint} is \code{TRUE} when each row of the MCMC samples is one
+#'   joint draw across traits, so rows must be kept together: either the
+#'   samples carry \code{attr(trait.mcmc, "joint") <- TRUE}, or they come from
+#'   PDA (a \code{mcmc.pda.*} file next to them, or "pda" in the file name on
+#'   the legacy path). Other MCMC samples, such as meta-analysis output, are
+#'   sampled one trait at a time.
 #' @keywords internal
 #' @author Siddhey Patil
 load.posteriors <- function(posterior.file,
@@ -110,6 +114,7 @@ load.posteriors.from.path <- function(path) {
           "Found Monte Carlo samples (", obj_name, ") in: ", f
         )
         result$trait.mcmc <- obj
+        result$is.joint <- isTRUE(attr(obj, "joint"))
         break
       }
       # Single mcmc.list (not wrapped in a named list)
@@ -252,7 +257,7 @@ load.posteriors.legacy <- function(outdir = NULL,
             # In the legacy DB path, detect joint posterior via filename
             # heuristic (PDA convention: trait.mcmc.pda.*)
             fname_lower <- tolower(files$file_name[idx])
-            if (grepl("pda", fname_lower)) {
+            if (isTRUE(attr(result$trait.mcmc, "joint")) || grepl("pda", fname_lower)) {
               result$is.joint <- TRUE
             }
             break # Use first MCMC found
@@ -283,7 +288,7 @@ load.posteriors.legacy <- function(outdir = NULL,
         # In the legacy outdir-scan path, detect joint posterior via
         # filename heuristic (PDA convention: trait.mcmc.pda.*)
         fname_lower <- tolower(basename(f))
-        if (grepl("pda", fname_lower)) {
+        if (isTRUE(attr(result$trait.mcmc, "joint")) || grepl("pda", fname_lower)) {
           result$is.joint <- TRUE
         }
         break
