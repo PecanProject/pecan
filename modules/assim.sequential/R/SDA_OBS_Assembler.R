@@ -64,7 +64,8 @@ SDA_OBS_Assembler <- function(settings){
       next
     }else{
       PEcAn.logger::logger.info(paste("Entering", names(Obs_Prep)[i]))
-      source_tag <- names(Obs_Prep)[i]
+	  source_tag <- Obs_Prep[[i]]$source_tag
+      fun_name   <- paste0(source_tag, "_prep")
       var_ind <- c(var_ind, i)
     }
     
@@ -85,20 +86,11 @@ SDA_OBS_Assembler <- function(settings){
       timestep[[i]] <- Obs_Prep$timestep
       time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep[[i]])
     }
-    #mapping from XML tag names to actual prep function names
-    name_map <- list(
-      LandTrendr = "Landtrendr_AGB_prep",
-      MODIS      = "MODIS_LAI_prep",
-      SMAP       = "SMAP_SMP_prep",
-      SoilGrids  = "Soilgrids_SoilC_prep"
-    )
-    actual_source_tag <- if (!is.null(name_map[[source_tag]])) name_map[[source_tag]] else paste0(source_tag, "_prep")
-
     #Search function inside the data.remote package
-    if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", actual_source_tag), silent = T))){
-      #Search function inside the data.land package, this is explicit for Soilgrids prep function.
-      if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", actual_source_tag), silent = T))){
-        PEcAn.logger::logger.info("Couldn't find the function: ", actual_source_tag, ". Please Check it!")
+    if (is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", fun_name), silent = TRUE))) {
+      #Search function inside the data.land package
+      if (is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", fun_name), silent = TRUE))) {
+        PEcAn.logger::logger.info("Couldn't find the function: ", fun_name, ". Please Check it!")
         return(0)
       }
     }
@@ -136,8 +128,8 @@ SDA_OBS_Assembler <- function(settings){
       Ind_single_match <- grep(fun_args_temp, obj_exist_temp, ignore.case = T)
       
       #if we have multiple matches, then search the string pattern by the source_tag.
-      funName_args_temp <- stringr::str_replace_all(paste0(source_tag, fun_args[j]), "[^[:alnum:]]", "")
-      if (length(Ind_single_match)>1){
+      funName_args_temp <- stringr::str_replace_all(paste0(fun_name, fun_args[j]), "[^[:alnum:]]", "")
+		if (length(Ind_single_match)>1){
         Ind_single_match <- grep(funName_args_temp, obj_exist_temp, ignore.case = T)
       }
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
@@ -152,41 +144,10 @@ SDA_OBS_Assembler <- function(settings){
     names(cleaned_args) <- names(args)[seq_along(cleaned_args)]
     #function calls
     Temp <- do.call(obs_prep_fun, cleaned_args)
-    if (source_tag == "LandTrendr") {
-      lt_rf  <- Obs_Prep[[source_tag]]
-      end_yr <- lubridate::year(as.Date(if (!is.null(lt_rf$end.date)) lt_rf$end.date else Obs_Prep$end.date))
-      lt_extra_years <- (2018:end_yr)[2018:end_yr > max(lubridate::year(Temp[[2]]))]
-      if (length(lt_extra_years) > 0 &&
-          !is.null(lt_rf$rf_model_path) &&
-          !is.null(lt_rf$lt_cov_dir) &&
-          !is.null(lt_rf$lc_dir)) {
-        rf_model  <- readRDS(lt_rf$rf_model_path)
-        pts_wgs84 <- terra::vect(cbind(site_info$lon, site_info$lat), crs = "EPSG:4326")
-        for (yr in lt_extra_years) {
-          tp      <- as.Date(paste0(yr, "-07-15"))
-          cov     <- terra::rast(file.path(lt_rf$lt_cov_dir, paste0("covariates_", yr, ".tiff")))
-          cov_pts <- terra::extract(cov, terra::project(pts_wgs84, terra::crs(cov)))
-          lc_yr   <- min(yr, 2019)
-          lc      <- terra::rast(file.path(lt_rf$lc_dir, paste0(lc_yr, ".tif")))
-          lc_pts  <- terra::extract(lc, terra::project(pts_wgs84, terra::crs(lc)))
-          cov_pts$LC <- factor(lc_pts[, 2], levels = rf_model$forest$xlevels$LC)
-          agb_file   <- list.files(lt_rf$AGB_indir, pattern = paste0(yr, "_median"), full.names = TRUE)
-          agb_rast   <- terra::rast(agb_file)
-          agb_pts    <- terra::extract(agb_rast, terra::project(pts_wgs84, terra::crs(agb_rast)))
-          Temp[[1]][, paste0(tp, "_AbvGrndWood")] <- agb_pts[, 2]
-		  Temp[[1]][, paste0(tp, "_SD")]          <- as.numeric(stats::predict(rf_model, cov_pts))
-		  Temp[[2]] <- sort(c(Temp[[2]], tp))
-        }
-      }
-      agb_cols <- grep("_AbvGrndWood$", names(Temp[[1]]))
-      sd_cols  <- grep("_SD$",          names(Temp[[1]]))
-      Temp[[1]][, agb_cols] <- Temp[[1]][, agb_cols] * 0.5
-      Temp[[1]][, sd_cols]  <- Temp[[1]][, sd_cols]  * 0.5
-    }
     OBS[[i]] <- Temp[[1]]
     time_points_all[[i]] <- Temp[[2]]
     var <- c(var, Temp[[3]])
-    sources <- c(sources, names(Obs_Prep)[i])
+    sources <- c(sources, source_tag)
   }
   
   #combine different time points from different variables together
