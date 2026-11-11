@@ -15,7 +15,6 @@
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 MODIS_LAI_prep <- function(site_info, time_points, outdir = NULL, search_window = 30, export_csv = FALSE, sd_threshold = 20, skip_download = FALSE, boundary = NULL){
-  # unlist boundary if it's passing from the assembler function.
   if (is.list(boundary)) {
     boundary <- as.numeric(unlist(boundary))
   }
@@ -235,7 +234,7 @@ MODIS_LAI_ts_filter <- function(lai.csv, boundary = c(0.05, 0.95)) {
     inds.rm <- which(temp.lai < minmax[1] | temp.lai > minmax[2])
     rm.inds <- c(rm.inds, inds[inds.rm])
   }
-  lai.csv <- lai.csv[-rm.inds,]
+  if (length(rm.inds) > 0) lai.csv <- lai.csv[-rm.inds, ]
   return(lai.csv)
 }
 #' Prepare MODIS LAI data from the NASA DAAC server for the SDA workflow.

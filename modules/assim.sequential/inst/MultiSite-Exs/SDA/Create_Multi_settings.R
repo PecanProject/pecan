@@ -129,7 +129,7 @@ template <- PEcAn.settings::Settings(list(
     forecast.time.step = "year",
     start.date = start_date,
     end.date = end_date,
-    
+
     obs_prep = structure(list(
       variables = structure(list(
         LandTrendr = structure(list(var_name = "AbvGrndWood", in_dir = AGB_indir, timestep = AGB_timestep, allow_download = allow_download, export_csv = AGB_export_csv)),
@@ -145,7 +145,7 @@ template <- PEcAn.settings::Settings(list(
       timestep = timestep
     ))
   )),
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -157,7 +157,7 @@ template <- PEcAn.settings::Settings(list(
     notes = NULL, userid = "-1", username = "",
     date = "2017/12/06 21:19:33 +0000"
   )),
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -168,7 +168,7 @@ template <- PEcAn.settings::Settings(list(
   outdir = outdir,
   rundir = SDA_run_dir,
   modeloutdir = SDA_out_dir,
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -182,7 +182,7 @@ template <- PEcAn.settings::Settings(list(
            dbname = "bety", driver = "PostgreSQL", write = "FALSE"
       ))
   )),
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -193,17 +193,17 @@ template <- PEcAn.settings::Settings(list(
   pfts = structure(list(
     #you could add more pfts you needed and make sure to modify the outdir of each pft!!!
     pft = structure(
-      list(name = "temperate.deciduous.HPDA", 
-           constants = structure(list(num = "1")), 
-           posteriorid = "1000022311", 
+      list(name = "temperate.deciduous.HPDA",
+           constants = structure(list(num = "1")),
+           posteriorid = "1000022311",
            outdir = "/fs/data2/output//PEcAn_1000010530/pft/temperate.deciduous.HPDA"
       )),
-    
+
     pft = structure(
       list(name = "boreal.coniferous",
            outdir = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/Conifer/boreal.coniferous"
       )),
-    
+
     pft = structure(
       list(name = "semiarid.grassland_HPDA",
            constants = structure(list(num = "1")),
@@ -211,7 +211,7 @@ template <- PEcAn.settings::Settings(list(
            outdir = "/projectnb/dietzelab/hamzed/SDA/ProductionRun/50Sites/SDA_50Sites_1000008768/pft/GrassA/semiarid.grassland"
       ))
   )),
-  
+
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -222,7 +222,7 @@ template <- PEcAn.settings::Settings(list(
   meta.analysis = structure(list(
     iter = "3000", random.effects = FALSE
   )),
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -230,14 +230,14 @@ template <- PEcAn.settings::Settings(list(
   ###                                                                     ###
   ###########################################################################
   ###########################################################################
-  ensemble = structure(list(size = 25, variable = "NPP", 
+  ensemble = structure(list(size = 25, variable = "NPP",
                             samplingspace = structure(list(
                               parameters = structure(list(method = "sampling")),
                               soil_physics = structure(list(method = "sampling")),
                               met = structure(list(method = "sampling"))
                             ))
   )),
-  
+
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -252,7 +252,7 @@ template <- PEcAn.settings::Settings(list(
                          binary = model_binary,
                          jobtemplate = "~/sipnet_geo.job"
   )),
-  
+
   ###########################################################################
   ###########################################################################
   ###                                                                     ###
@@ -262,7 +262,7 @@ template <- PEcAn.settings::Settings(list(
   ###########################################################################
   #be carefull of the host section, you need to specify the host of your own!!!
   host = host,
-  
+
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -275,7 +275,7 @@ template <- PEcAn.settings::Settings(list(
     settings.updated = TRUE,
     checked = TRUE
   )),
-  
+
   ############################################################################
   ############################################################################
   ###                                                                      ###
@@ -286,12 +286,12 @@ template <- PEcAn.settings::Settings(list(
   run = structure(list(
     inputs = structure(list(
       met = structure(list(
-        source = "ERA5", 
+        source = "ERA5",
         output = "SIPNET",
         id = "",
         path = ERA5_dir
       )),
-      
+
       #Saved for latter use of initial condition files.
       # poolinitcond = structure(list(source = "NEON_veg",
       #                               output = "poolinitcond",
@@ -347,7 +347,7 @@ for (i in 1:length(settings)) {
 #open a connection to bety and grab site info based on site IDs
 con <- PEcAn.DB::db.open(settings$database$bety)
 site_info <- db.query(paste("SELECT *, ST_X(ST_CENTROID(geometry)) AS lon,
-                                      ST_Y(ST_CENTROID(geometry)) AS lat 
+                                      ST_Y(ST_CENTROID(geometry)) AS lat
                            FROM sites WHERE id IN (",paste(site_ID,collapse=", "),")"),con = con)
 
 #write Lat and Lon into the settings
@@ -360,9 +360,9 @@ for (i in 1:nSite) {
 }
 
 #remove overlapped sites
-site.locs <- settings$run %>% 
-  purrr::map('site') %>% 
-  purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
+site.locs <- settings$run %>%
+  purrr::map('site') %>%
+  purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>%
   t %>%
   `colnames<-`(c("lon","lat")) %>% data.frame
 del.ind <- c()
