@@ -18,9 +18,11 @@
 #' @param sa_quantiles numeric vector of quantiles for sensitivity analysis,
 #'   or NULL to skip SA sampling.
 #' @param do_ensemble logical. Whether to generate ensemble samples.
-#' @param independent logical. TRUE means parameters were fitted individually
-#'   (standard MA) and can be resampled independently. FALSE means they were
-#'   fitted together (e.g. PDA) and correlations should be preserved.
+#' @param independent logical, one value for all PFTs or one per PFT. TRUE
+#'   means the PFT's MCMC samples are resampled one trait at a time (e.g.
+#'   meta-analysis, where each trait is fit separately). FALSE means each row
+#'   is one joint draw across traits (e.g. PDA), so ensemble members take whole
+#'   rows; PFTs with the same number of rows share one row index.
 #'
 #' @return named list with five elements:
 #' \describe{
@@ -87,6 +89,12 @@ get_parameter_samples <- function(pft_names,
       length(trait_mcmc_list) == length(pft_names)
     )
   }
+  stopifnot(
+    is.logical(independent),
+    !anyNA(independent),
+    length(independent) %in% c(1, length(pft_names))
+  )
+  independent <- rep_len(independent, length(pft_names))
 
   # Force numeric for compatibility with downstream sampling code
   ensemble.size <- as.numeric(ensemble.size)
@@ -189,11 +197,20 @@ get_parameter_samples <- function(pft_names,
   }
 
   # ---- Handle independence flag ----
-  # When samples are independent (fitted individually), set param.names to NULL.
-  # This is important downstream: when param.names is not NULL,
-  # get.ensemble.samples() preserves correlations between MCMC parameters.
-  if (independent) {
-    param.names <- NULL
+  # param.names tells get.ensemble.samples() which traits to keep together by
+  # row, matched to trait.samples by position. Keep it only for PFTs whose rows
+  # are joint draws, and only for PFTs that made it into trait.samples (a PFT
+  # with nothing to sample is skipped above).
+  joint.names <- stats::setNames(
+    lapply(seq_along(pft_names), function(i) {
+      if (independent[i]) character(0) else unlist(param.names[[i]])
+    }),
+    pft_names
+  )
+  param.names <- if (any(lengths(joint.names) > 0)) {
+    joint.names[names(trait.samples)]
+  } else {
+    NULL
   }
 
   # ---- Sensitivity analysis samples ----
