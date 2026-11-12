@@ -4,12 +4,15 @@
 \alias{.prepare_input_designs}
 \title{Prepare input designs for ensemble and sensitivity analysis}
 \usage{
-.prepare_input_designs(settings, input_design)
+.prepare_input_designs(settings, input_design, independent = FALSE)
 }
 \arguments{
 \item{settings}{A single PEcAn settings object}
 
 \item{input_design}{Input design specification (see \code{runModule.run.write.configs})}
+
+\item{independent}{Logical scalar passed to \code{get_parameter_samples}
+when generating new samples. Supplied samples are reused unchanged.}
 }
 \value{
 A list with \code{ensemble} and \code{sensitivity} entries (each a
