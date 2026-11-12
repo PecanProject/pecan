@@ -95,15 +95,7 @@ ANAEROBIC = 1
 ...though not necessarily in this order. If the \code{sipnet.in} template already
 defines an option specified in settings$model$options, its value will be
 updated in place; options not already in the file will be added to the bottom.
-}
 
-\section{Parameter precedence}{
-Parameters are initialized from template parameter files (e.g. \code{inst/template.param_v2}
-for SIPNET v2). Values in
-the template or \code{defaults$constants} are used unless overridden. PFT trait values
-in \code{trait.values} override constants and template defaults. Initial condition
-values passed via \code{IC} or \code{poolinitcond} take highest precedence, including
-explicit zero values.
 For SIPNET v2, \code{plantStorageNInit} comes from template value unless the
 initial conditions (\code{IC} argument or the poolinitcond file) supply it, in
 which case that value is used, including zero.

@@ -62,14 +62,6 @@
 #' defines an option specified in settings$model$options, its value will be
 #' updated in place; options not already in the file will be added to the bottom.
 #'
-#' # Parameter precedence
-#'
-#' Parameters are initialized from template parameter files (e.g. `inst/template.param_v2`
-#' for SIPNET v2). Values in
-#' the template or `defaults$constants` are used unless overridden. PFT trait values
-#' in `trait.values` override constants and template defaults. Initial condition
-#' values passed via `IC` or `poolinitcond` take highest precedence, including
-#' explicit zero values.
 #' For SIPNET v2, `plantStorageNInit` comes from template value unless the
 #' initial conditions (`IC` argument or the poolinitcond file) supply it, in
 #' which case that value is used, including zero.
