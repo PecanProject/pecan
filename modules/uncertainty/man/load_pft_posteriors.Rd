@@ -15,15 +15,13 @@ optional BETY lookup, and \code{settings$host$name}.}
 \code{NA} where none is specified. Length must match \code{settings$pfts}.}
 }
 \value{
-A list with four elements:
+A list with three elements:
   \describe{
     \item{pft_names}{character vector of PFT names ("NULL" where unnamed).}
     \item{prior_distns_list}{list of prior distribution data frames, one per
       PFT (\code{NULL} entry where none was found).}
     \item{trait_mcmc_list}{list of trait MCMC results, one per PFT
       (\code{NULL} entry where the PFT has no MCMC chains).}
-    \item{independent}{logical vector, one per PFT: \code{FALSE} where the
-      PFT carries a joint posterior, \code{TRUE} otherwise.}
   }
 }
 \description{
@@ -37,9 +35,8 @@ their own copy.
 \details{
 Posterior type is detected by content, not filename, via
 \code{\link{load.posteriors}}: MCMC chains take precedence over distribution
-summaries. When a PFT's posterior is joint (see \code{\link{load.posteriors}}),
-its entry in the returned \code{independent} flag is \code{FALSE} so
-downstream sampling keeps its MCMC rows together.
+summaries. Downstream joint sampling preserves parameter correlations
+(for MCMC samples, by keeping complete draws together).
 }
 \seealso{
 \code{\link{get_parameter_samples}} for the sampling step that
