@@ -29,13 +29,7 @@ legacy fallback path.}
 only in the legacy fallback path.}
 }
 \value{
-list with \code{prior.distns}, \code{trait.mcmc}, \code{is.joint}.
-  \code{is.joint} is \code{TRUE} when each row of the MCMC samples is one
-  joint draw across traits, so rows must be kept together: either the
-  samples carry \code{attr(trait.mcmc, "joint") <- TRUE}, or they come from
-  PDA (a \code{mcmc.pda.*} file next to them, or "pda" in the file name on
-  the legacy path). Other MCMC samples, such as meta-analysis output, are
-  sampled one trait at a time.
+list with \code{prior.distns} and \code{trait.mcmc}.
 }
 \description{
 Detects posterior type by file contents, not filenames.
