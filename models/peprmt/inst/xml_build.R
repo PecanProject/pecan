@@ -34,6 +34,12 @@ options <- list(
       "Should contain subdirs named by site id"
     )
   ),
+  optparse::make_option("--evi_dir",
+                        default = "data/evi",
+                        help = paste(
+                          "Directory containing csvs of PEPRMT-formatted evi data."
+                        )
+  ),
   optparse::make_option("--peprmt_input_dir",
     default = "data/PEPRMT_specific_inputs",
     help = paste(
@@ -145,6 +151,12 @@ settings <- settings_init |>
     path = file.path("data", "met"),
     d1 = "DATES-HERE",
     path_template = "{path}/ERA5_{id}/ERA5.{n}.{d1}.dat"
+  ) |>
+  setEnsemblePaths(
+    n_reps = 1,
+    input_type = "evi",
+    path = file.path("data", "evi"),
+    path_template = "{path}/{id}_evi.csv"
   ) |>
   setEnsemblePaths(
     n_reps = 1,
