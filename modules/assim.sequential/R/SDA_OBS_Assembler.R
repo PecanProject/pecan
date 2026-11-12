@@ -129,7 +129,7 @@ SDA_OBS_Assembler <- function(settings){
       
       #if we have multiple matches, then search the string pattern by the source_tag.
       funName_args_temp <- stringr::str_replace_all(paste0(fun_name, fun_args[j]), "[^[:alnum:]]", "")
-		if (length(Ind_single_match)>1){
+	  if (length(Ind_single_match)>1){
         Ind_single_match <- grep(funName_args_temp, obj_exist_temp, ignore.case = T)
       }
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
