@@ -4,7 +4,12 @@
 \alias{runModule.run.write.configs}
 \title{Generate model-specific run configuration files for one or more PEcAn runs}
 \usage{
-runModule.run.write.configs(settings, overwrite = TRUE, input_design = NULL)
+runModule.run.write.configs(
+  settings,
+  overwrite = TRUE,
+  input_design = NULL,
+  independent = FALSE
+)
 }
 \arguments{
 \item{settings}{a PEcAn Settings or MultiSettings object}
@@ -26,6 +31,10 @@ for \code{settings$run$inputs} tags such as \code{met} or \code{soil}) and
 A bare design data.frame is not accepted: its \code{param} indices are only
 meaningful together with the samples they index into, so the design and its
 samples must travel together.}
+
+\item{independent}{Logical scalar: \code{FALSE} preserves supplied MCMC
+dependence; \code{TRUE} discards it and samples parameters separately.
+Only applies to new ensemble samples; supplied bundles are reused unchanged.}
 }
 \value{
 A modified settings object, invisibly
