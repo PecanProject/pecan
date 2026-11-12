@@ -1,6 +1,7 @@
 # PEcAn.workflow 1.10.0.9000
 
 ## Changed
+* `runModule.run.write.configs()` preserves MCMC parameter correlations by default. Set `independent = TRUE` to sample all parameters separately.
 * `run.write.configs()` now requires `samples` to contain an `ensemble.samples` (as
   was already required for `sa.samples`) and no longer re-draws it from
   `trait.samples`. (#4185)
