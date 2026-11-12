@@ -22,8 +22,7 @@ fake_loaded <- function() {
   list(
     pft_names         = list("temperate.deciduous"),
     prior_distns_list = list(NULL),
-    trait_mcmc_list   = list(NULL),
-    independent       = TRUE
+    trait_mcmc_list   = list(NULL)
   )
 }
 
@@ -92,6 +91,56 @@ test_that(".prepare_input_designs hands the sampled bundle to the generator", {
   expect_identical(designs$samples, bundle)
 })
 
+test_that("workflow sampling follows the caller's scalar request", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+  sampler <- mockery::mock(fake_bundle(), cycle = TRUE)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::load_pft_posteriors", function(...) fake_loaded())
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::get_parameter_samples", sampler)
+  mockery::stub(.prepare_input_designs,
+                "PEcAn.uncertainty::generate_joint_ensemble_design",
+                function(...) list(design_matrix = data.frame(param = 1:3)))
+
+  suppressWarnings(.prepare_input_designs(settings, NULL))
+  suppressWarnings(.prepare_input_designs(settings, NULL, independent = TRUE))
+
+  mockery::expect_called(sampler, 2)
+  calls <- mockery::mock_args(sampler)
+  expect_false(calls[[1]]$independent)
+  expect_true(calls[[2]]$independent)
+})
+
+test_that("multisite preparation passes one shared bundle and sampling request", {
+  tmp <- withr::local_tempdir()
+  first <- PEcAn.settings::as.Settings(make_prep_settings(tmp))
+  first$rundir <- tmp
+  second <- first
+  second$run <- list(site = list(id = "second"))
+  settings <- PEcAn.settings::MultiSettings(first, second)
+  shared <- list(
+    ensemble = data.frame(param = 1:3),
+    sensitivity = NULL,
+    samples = fake_bundle()
+  )
+  prepare <- mockery::mock(shared)
+  apply_sites <- mockery::mock(settings)
+  mockery::stub(runModule.run.write.configs, ".prepare_input_designs", prepare)
+  mockery::stub(runModule.run.write.configs, "PEcAn.settings::papply", apply_sites)
+
+  runModule.run.write.configs(settings, overwrite = FALSE, independent = TRUE)
+
+  mockery::expect_called(prepare, 1)
+  prepared <- mockery::mock_args(prepare)[[1]]
+  expect_identical(prepared[[1]], settings[1])
+  expect_true(prepared[[3]])
+  passed <- mockery::mock_args(apply_sites)[[1]]
+  expect_identical(passed$input_design, shared)
+  expect_true(passed$independent)
+  expect_false(passed$overwrite)
+})
+
 
 test_that(".prepare_input_designs returns an input_design list unchanged", {
   gen <- mockery::mock()
@@ -138,7 +187,7 @@ test_that(".prepare_input_designs reuses a supplied list(X, samples) and does no
   mockery::stub(.prepare_input_designs,
                 "PEcAn.uncertainty::generate_joint_ensemble_design", gen)
 
-  designs <- .prepare_input_designs(settings, input_design = supplied)
+  designs <- .prepare_input_designs(settings, input_design = supplied, independent = TRUE)
 
   mockery::expect_called(loader, 0)
   mockery::expect_called(gps, 0)
