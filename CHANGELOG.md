@@ -10,8 +10,6 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
-- `PEcAn.uncertainty`: MCMC samples can be marked as joint draws with `attr(trait.mcmc, "joint") <- TRUE`. Ensemble members then take whole rows of the samples instead of resampling each trait on its own, and PFTs with the same number of rows share one row index. Other MCMC samples, such as meta-analysis output, are still resampled one trait at a time; PDA output is still recognized as joint.
-
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
 - `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
 - Added regression tests to `PEcAn.settings` confirming `check.ensemble.settings()` does not add an `ensemble` block to settings that lack one (#3024).
@@ -51,7 +49,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 
-- `PEcAn.uncertainty`: joint sampling is now decided per PFT. Before, one PDA posterior made every PFT's MCMC samples be resampled by row, and each PFT drew its own rows; a PFT with nothing to sample could also shift which PFT's trait list was used for the next one, and `method = "random"` failed with "invalid first argument" when a joint PFT sat next to one sampled from priors (#3674).
+- `PEcAn.uncertainty`: joint ensembles retain complete supplied draws for one or many members, including ensembles larger than the draw bank. Named trait selectors are matched by PFT name, and an empty PFT no longer shifts subsequent selectors.
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
 - PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
@@ -78,6 +76,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- `PEcAn.uncertainty`: breaking change: MCMC parameters are sampled jointly by default; distribution-only parameters remain independent. Set `independent = TRUE` to sample all parameters separately. Joint rows are selected randomly with replacement, with shared row indices for equal-length PFT tables; corresponding source rows must be aligned. The sampling method controls marginal sampling only.
 - Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
 - Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
