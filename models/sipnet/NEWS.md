@@ -93,7 +93,7 @@
 * Added trait to parameter mappings for nitrogen cycle parameters in `write.config.SIPNET`,
   including tissue C:N ratios, N volatilization/leaching/resorption, fixation, and methane rates.
 * `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
-  
+* `write.config.SIPNET` passed SLA per kg dry leaf to `prepare_pools()`, which expects SLA per kg C, so initial LAI and leaf C from IC files with `leaf_carbon_content` were ~0.48x too low (#4239).
 
 # PEcAn.SIPNET 1.10.0
 
