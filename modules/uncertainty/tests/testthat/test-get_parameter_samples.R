@@ -1,9 +1,7 @@
-# ============================================================
 # Tests for get_parameter_samples()
 #
 # These tests verify the extracted pure function works correctly
 # WITHOUT any database, file I/O, or PEcAn settings object.
-# ============================================================
 
 # Skip entire file if required PEcAn packages are not installed
 skip_if_not_installed("PEcAn.priors")
@@ -35,9 +33,7 @@ make_mock_trait_mcmc <- function(traits = "SLA", n_samples = 100, seed = 42) {
 }
 
 
-# ====================
 # TEST 1: Returns actual data, not NULL
-# ====================
 test_that("get_parameter_samples returns a non-NULL list with correct names", {
   priors <- make_mock_priors(c("SLA"))
 
@@ -61,9 +57,7 @@ test_that("get_parameter_samples returns a non-NULL list with correct names", {
 })
 
 
-# ====================
 # TEST 2: No files written (pure function guarantee)
-# ====================
 test_that("get_parameter_samples writes no files to disk", {
   temp_dir <- tempfile("pure_test_")
   dir.create(temp_dir)
@@ -88,9 +82,7 @@ test_that("get_parameter_samples writes no files to disk", {
 })
 
 
-# ====================
 # TEST 3: Prior-only sampling (no MCMC)
-# ====================
 test_that("prior-only sampling produces correct structure", {
   priors <- make_mock_priors(c("SLA", "Vcmax"))
 
@@ -116,9 +108,7 @@ test_that("prior-only sampling produces correct structure", {
 })
 
 
-# ====================
 # TEST 4: MCMC sampling path
-# ====================
 test_that("MCMC samples are used when available", {
   priors <- make_mock_priors(c("SLA", "Vcmax"))
   mcmc   <- make_mock_trait_mcmc("SLA", n_samples = 200)
@@ -140,9 +130,7 @@ test_that("MCMC samples are used when available", {
 })
 
 
-# ====================
 # TEST 5: Multiple PFTs
-# ====================
 test_that("multiple PFTs are handled correctly", {
   priors1 <- make_mock_priors("SLA")
   priors2 <- make_mock_priors("Vcmax")
@@ -166,9 +154,7 @@ test_that("multiple PFTs are handled correctly", {
 })
 
 
-# ====================
 # TEST 6: Sensitivity analysis samples
-# ====================
 test_that("SA samples are generated when quantiles are provided", {
   priors <- make_mock_priors("SLA")
 
@@ -201,9 +187,7 @@ test_that("SA samples are NOT generated when quantiles is NULL", {
 })
 
 
-# ====================
 # TEST 7: Ensemble size = 1 (median run)
-# ====================
 test_that("ensemble.size = 1 produces median samples", {
   priors <- make_mock_priors("SLA")
 
@@ -220,9 +204,7 @@ test_that("ensemble.size = 1 produces median samples", {
 })
 
 
-# ====================
 # TEST 8: Input validation
-# ====================
 test_that("pure function rejects mismatched inputs", {
   priors <- make_mock_priors("SLA")
 
@@ -236,9 +218,7 @@ test_that("pure function rejects mismatched inputs", {
 })
 
 
-# ====================
 # TEST 9: Sampling methods
-# ====================
 test_that("different sampling methods all produce valid output", {
   priors <- make_mock_priors("SLA")
 
@@ -260,9 +240,7 @@ test_that("different sampling methods all produce valid output", {
 })
 
 
-# ====================
 # TEST 10: Independent flag behavior
-# ====================
 test_that("independent = FALSE preserves param.names for correlated sampling", {
   priors <- make_mock_priors("SLA")
   mcmc   <- make_mock_trait_mcmc("SLA", n_samples = 100)
@@ -290,9 +268,7 @@ test_that("independent = FALSE preserves param.names for correlated sampling", {
 })
 
 
-# TEST 11: Joint MCMC samples keep their rows
-# Two traits that are exact mirror images row by row, so any member that
-# mixes rows breaks b == -a
+# mixing rows breaks b == -a
 make_paired_mcmc <- function(n_samples = 200, shift = 0, seed = 1) {
   set.seed(seed)
   a <- rnorm(n_samples)
@@ -301,21 +277,35 @@ make_paired_mcmc <- function(n_samples = 200, shift = 0, seed = 1) {
   })
 }
 
-test_that("joint PFT keeps rows together, independent PFT does not", {
-  result <- get_parameter_samples(
-    pft_names         = c("joint_pft", "ma_pft"),
+test_that("joint sampling is default and independence is an ensemble request", {
+  withr::local_seed(1)
+  mcmc <- list(make_paired_mcmc(), make_paired_mcmc(shift = 100))
+  joint <- get_parameter_samples(
+    pft_names = c("pft1", "pft2"),
     prior_distns_list = list(NULL, NULL),
-    trait_mcmc_list   = list(make_paired_mcmc(), make_paired_mcmc()),
-    ensemble.size     = 50,
-    do_ensemble       = TRUE,
-    independent       = c(FALSE, TRUE)
+    trait_mcmc_list = mcmc,
+    ensemble.size = 50
   )
-  joint <- result$ensemble.samples$joint_pft
-  ma    <- result$ensemble.samples$ma_pft
-
-  expect_equal(joint$b, -joint$a)
-  expect_true(all(joint$a %in% result$trait.samples$joint_pft$a))
-  expect_false(isTRUE(all.equal(ma$b, -ma$a)))
+  independent <- get_parameter_samples(
+    pft_names = c("pft1", "pft2"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list = mcmc,
+    ensemble.size = 50,
+    independent = TRUE
+  )
+  for (pft in c("pft1", "pft2")) {
+    expect_equal(joint$ensemble.samples[[pft]]$b, -joint$ensemble.samples[[pft]]$a)
+    expect_true(all(joint$ensemble.samples[[pft]]$a %in% joint$trait.samples[[pft]]$a))
+    expect_false(isTRUE(all.equal(
+      independent$ensemble.samples[[pft]]$b, -independent$ensemble.samples[[pft]]$a
+    )))
+  }
+  expect_error(get_parameter_samples(
+    pft_names = c("pft1", "pft2"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list = mcmc,
+    independent = c(FALSE, TRUE)
+  ))
 })
 
 test_that("joint PFTs with the same number of rows share a row index", {
@@ -364,4 +354,87 @@ test_that("joint traits with different numbers of rows fail", {
     ),
     "same number of rows"
   )
+})
+
+test_that("joint singleton and oversized ensembles retain allocation draws", {
+  withr::local_seed(1)
+  allocation <- list(
+    leaf = c(0.45, 0.45, 0.05),
+    wood = c(0.45, 0.05, 0.45),
+    root = c(0.05, 0.45, 0.45)
+  )
+  mcmc <- lapply(allocation, function(x) {
+    coda::mcmc.list(coda::mcmc(matrix(x, ncol = 1, dimnames = list(NULL, "beta.o"))))
+  })
+  for (size in c(1, 50)) {
+    for (method in c("uniform", "halton")) {
+      result <- get_parameter_samples(
+        pft_names = "pft",
+        prior_distns_list = list(NULL),
+        trait_mcmc_list = list(mcmc),
+        ensemble.size = size,
+        ens.sample.method = method
+      )$ensemble.samples$pft
+      expect_equal(rowSums(result), rep(0.95, size), info = method)
+      expect_equal(nrow(result), size)
+    }
+  }
+})
+
+test_that("distribution-only traits remain marginal beside joint draws", {
+  withr::local_seed(1)
+  priors <- data.frame(
+    distn = "norm", parama = c(0, 0, 20), paramb = c(1, 1, 2), n = 50,
+    row.names = c("a", "b", "c")
+  )
+  result <- get_parameter_samples(
+    pft_names = "pft",
+    prior_distns_list = list(priors),
+    trait_mcmc_list = list(make_paired_mcmc()),
+    ensemble.size = 50
+  )
+  sampled <- result$ensemble.samples$pft
+  indices <- attr(result$ensemble.samples, "sampled.indices")$pft
+  expect_equal(sampled$b, -sampled$a)
+  expect_true(stats::sd(sampled$c) > 0)
+  expect_false(identical(indices[, match("a", names(sampled))],
+                         indices[, match("c", names(sampled))]))
+})
+
+test_that("a distribution-only PFT does not become a joint table", {
+  withr::local_seed(1)
+  result <- get_parameter_samples(
+    pft_names = "pft", prior_distns_list = list(make_mock_priors("SLA")),
+    ensemble.size = 20
+  )
+  expect_false(all(result$ensemble.samples$pft$SLA %in% result$trait.samples$pft$SLA))
+})
+
+test_that("the joint selector respects the sampled parameter inventory", {
+  withr::local_seed(1)
+  mcmc <- make_paired_mcmc()
+  priors <- data.frame(distn = "norm", parama = 0, paramb = 1, n = 50,
+                       row.names = "a")
+  result <- get_parameter_samples(
+    pft_names = "pft", prior_distns_list = list(priors),
+    trait_mcmc_list = list(mcmc), ensemble.size = 20
+  )
+  expect_named(result$ensemble.samples$pft, "a")
+  expect_true(all(result$ensemble.samples$pft$a %in% mcmc$a[[1]][, "beta.o"]))
+})
+
+test_that("joint draws do not consume dimensions of a marginal design", {
+  traits <- paste0("trait", seq_len(1112))
+  chain <- coda::mcmc.list(coda::mcmc(matrix(
+    1:3, ncol = 1, dimnames = list(NULL, "beta.o")
+  )))
+  mcmc <- stats::setNames(rep(list(chain), length(traits)), traits)
+  result <- get_parameter_samples(
+    pft_names = "pft", prior_distns_list = list(NULL),
+    trait_mcmc_list = list(mcmc), ensemble.size = 5,
+    ens.sample.method = "sobol"
+  )$ensemble.samples$pft
+  expect_named(result, traits)
+  expect_true(all(vapply(result, identical, logical(1), result[[1]])))
+  expect_true(all(result[[1]] %in% 1:3))
 })
