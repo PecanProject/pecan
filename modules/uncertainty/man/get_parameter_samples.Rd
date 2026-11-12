@@ -12,7 +12,7 @@ get_parameter_samples(
   ens.sample.method = "uniform",
   sa_quantiles = NULL,
   do_ensemble = TRUE,
-  independent = TRUE
+  independent = FALSE
 )
 }
 \arguments{
@@ -27,19 +27,16 @@ or NULL if no MCMC results exist for that PFT.}
 
 \item{ensemble.size}{integer. Number of runs in model ensemble.}
 
-\item{ens.sample.method}{character. One of "halton", "sobol", "torus",
-"lhc", "uniform".}
+\item{ens.sample.method}{character. Marginal sampling method: "halton",
+"sobol", "lhc", "random", or "uniform".}
 
 \item{sa_quantiles}{numeric vector of quantiles for sensitivity analysis,
 or NULL to skip SA sampling.}
 
 \item{do_ensemble}{logical. Whether to generate ensemble samples.}
 
-\item{independent}{logical, one value for all PFTs or one per PFT. TRUE
-means the PFT's MCMC samples are resampled one trait at a time (e.g.
-meta-analysis, where each trait is fit separately). FALSE means each row
-is one joint draw across traits (e.g. PDA), so ensemble members take whole
-rows; PFTs with the same number of rows share one row index.}
+\item{independent}{logical. Sample each parameter separately, discarding
+supplied dependence, instead of preserving parameter correlations.}
 }
 \value{
 named list with five elements:
@@ -62,6 +59,12 @@ directly, with no file I/O and no database calls.
 }
 \details{
 For the original disk-based wrapper, see \code{\link{get.parameter.samples}}.
+
+MCMC samples are sampled jointly by default (by keeping complete
+  draws together). Traits available only as distributions remain marginal.
+  Equal-sized MCMC tables share row indices and must preserve any paired row
+  order. Independent sampling may violate joint constraints such as allocation
+  sums. See \code{\link{get.ensemble.samples}} for the sampling contract.
 }
 \examples{
 \dontrun{
@@ -87,7 +90,7 @@ str(result$ensemble.samples)
 
 }
 \seealso{
-\code{\link{get.parameter.samples}} for the backward-compatible
+\code{\link{get.parameter.samples}} for the disk-based
   wrapper that handles file I/O and database lookups.
 }
 \author{
