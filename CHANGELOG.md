@@ -72,6 +72,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 - `PEcAn.DB::db.exists()` now returns `FALSE` instead of an error when a table's primary key is not readable (#4156, @madhavzanwar).
+- `PEcAn.SIPNET::write.config.SIPNET()` passed SLA per kg dry leaf to `prepare_pools()`, which expects SLA per kg C, so initial LAI and leaf C from IC files with `leaf_carbon_content` were ~0.48x too low. (#4239).
 
 ### Changed
 
