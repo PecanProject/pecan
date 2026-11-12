@@ -9,7 +9,8 @@ get.parameter.samples(
   ensemble.size = 1,
   posterior.files = rep(NA, length(settings$pfts)),
   ens.sample.method = "uniform",
-  outdir = settings$outdir
+  outdir = settings$outdir,
+  independent = FALSE
 )
 }
 \arguments{
@@ -19,14 +20,15 @@ get.parameter.samples(
 
 \item{posterior.files}{list of filenames to read from}
 
-\item{ens.sample.method}{one of \code{"halton"}, \code{"sobol"}, \code{"torus"}, \code{"lhc"},
-\code{"uniform"}}
+\item{ens.sample.method}{marginal sampling method: \code{"halton"}, \code{"sobol"},
+\code{"lhc"}, \code{"random"}, or \code{"uniform"}.}
 
-\item{outdir}{character path; directory to write \code{samples.Rdata} to for
-provenance. Defaults to \code{settings$outdir}, preserving the legacy
-always-save behaviour for existing callers (none of which pass it).
-Pass \code{outdir = NULL} to skip the save entirely; the pure
-\code{get_parameter_samples()} never writes to disk regardless.}
+\item{outdir}{directory for \code{samples.Rdata}, defaulting to \code{settings$outdir}.
+Use \code{NULL} to return samples without saving a file.}
+
+\item{independent}{Logical scalar. If \code{FALSE} (default), preserve
+dependence among supplied MCMC parameters. If \code{TRUE}, sample each
+parameter separately, ignoring supplied dependence.}
 }
 \value{
 Named list with 5 elements: \code{trait.samples}, \code{sa.samples},
@@ -35,7 +37,7 @@ Named list with 5 elements: \code{trait.samples}, \code{sa.samples},
 \description{
 Loads posterior distributions and MCMC chain results from disk, generates
 parameter samples for ensemble and sensitivity analysis runs, and optionally
-saves results to \code{samples.Rdata}. This is the backward-compatible wrapper
+saves results to \code{samples.Rdata}. This is the deprecated wrapper
 that delegates computation to \code{\link[PEcAn.uncertainty]{get_parameter_samples}}.
 }
 \details{
@@ -44,8 +46,8 @@ that delegates computation to \code{\link[PEcAn.uncertainty]{get_parameter_sampl
 \item{\code{post.distns.Rdata} or \code{prior.distns.Rdata}}{Posterior (or prior)
 distribution summaries produced by \code{run.meta.analysis.pft}. A data
 frame with columns \code{distn}, \code{parama}, \code{paramb}, \code{n}.}
-\item{\code{trait.mcmc.Rdata}}{(Optional) MCMC chain samples from the
-meta-analysis. Named list of \code{mcmc.list} objects, one per trait.
+\item{\code{trait.mcmc.Rdata}}{(Optional) posterior MCMC samples.
+Named list of \code{mcmc.list} objects, one per trait.
 If present, samples are drawn from the chains directly; otherwise,
 independent samples are drawn from \code{post.distns}.}
 }
@@ -67,11 +69,11 @@ metadata).
 }}
 }
 
-\strong{Downstream contract:} \code{samples.Rdata} is loaded by \code{run.write.configs}
-(in \code{PEcAn.workflow}) to generate model configuration files. It is also
-loaded by \code{\link[PEcAn.uncertainty]{get.results}} and \code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} to retrieve
-sample metadata for post-processing. This implicit file-based coupling is
-a refactoring target.
+\strong{Downstream contract:} The workflow passes the parameter bundle directly to
+\code{run.write.configs} in memory. That writer can also load \code{samples.Rdata}
+when no bundle is supplied. \code{\link[PEcAn.uncertainty]{get.results}} can
+read the saved file when ensemble-specific samples are unavailable, and
+\code{\link[PEcAn.uncertainty]{run.sensitivity.analysis}} reads it for traits.
 }
 \author{
 David LeBauer, Shawn Serbin, Istem Fer, Om Kapale
