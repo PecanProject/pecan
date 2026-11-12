@@ -1,6 +1,8 @@
 # PEcAn.uncertainty 1.9.0.9000
 
-* MCMC samples marked with `attr(trait.mcmc, "joint") <- TRUE` are treated as joint draws: `get.ensemble.samples()` gives each member a whole row, with one row index shared by PFTs that have the same number of rows. `get_parameter_samples()` argument `independent` and the `independent` returned by `load_pft_posteriors()` are now one value per PFT, so a joint posterior no longer changes how other PFTs are sampled. A joint PFT whose traits have different numbers of rows is now an error.
+* Breaking: ensemble sampling preserves correlations between supplied MCMC parameters by default. Parameters available only as distributions are sampled independently. `independent = TRUE` requests separate sampling of all parameters and can violate joint constraints.
+* Joint draws are sampled by whole rows with replacement, including for a one-member ensemble. Equal-length PFT tables share row indices; corresponding rows must be aligned. Joint traits with unequal sample counts are rejected. `method` controls marginal sampling only.
+* `get.ensemble.samples()` matches named `param.names` entries by PFT name. `param.names = NULL` selects all supplied PFT parameters for joint sampling; an empty entry selects none.
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
