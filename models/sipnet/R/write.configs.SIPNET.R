@@ -904,7 +904,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       )
     }
     
-    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
+    # prepare_pools expects SLA in m2 / kg C; SLA here is m2 / kg leaf
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA / leafC))
     
     if (!is.null(IC.pools)) {
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
