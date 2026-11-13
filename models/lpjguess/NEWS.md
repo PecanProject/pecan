@@ -1,6 +1,6 @@
 # PEcAn.LPJGUESS 1.9.0.9000
 
-* `write.config.LPJGUESS()` now looks up each PFT's sampled traits in `trait.values` by PFT name instead of by position. A PFT with no sampled traits gets the defaults (with the usual warning) wherever it appears in `settings$pfts`; before, only the last PFT was handled correctly, and one in the middle shifted the traits of every PFT after it (#4225, @aarmens702-hub).
+* `write.config.LPJGUESS()` now indexes `trait.values` by PFT name instead of by position, so a PFT with no sampled traits no longer affects alignment of every PFT after it (#4225, @aarmens702-hub).
 
 
 # PEcAn.LPJGUESS 1.9.0

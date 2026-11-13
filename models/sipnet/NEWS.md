@@ -1,6 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
-* `write.config.SIPNET` results change for sample sets without `env` when `leafC` is sampled and no soil PFT comes after the vegetation PFT. The extra pass for `env` recalculated some values with `leafC` fixed at 0.48, and they now use the sampled `leafC`: `leafCSpWt`, `aMax` and `baseFolRespFrac` when `SLA`, `Amax` or `leaf_respiration_rate_m2` are constants, and `laiInit` and `plantWoodInit` when they are calculated from a `poolinitcond` file. A soil PFT listed after the vegetation PFT still triggers the recalculation with 0.48. Older sample sets that contain `env` give the same results as before (#4225, @aarmens702-hub).
+* `write.config.SIPNET` output changes for new sample sets when `leafC` is sampled. The code here is unchanged: sample sets no longer contain an empty `env` entry (see PEcAn.uncertainty), which used to recalculate some leaf parameters with `leafC` fixed at 0.48 (#4225, @aarmens702-hub).
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET` converted `stem_respiration_rate` and
     `root_respiration_rate` to per day rates, but SIPNET reads `baseVegResp`

@@ -1,7 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
-* Breaking: `get.ensemble.samples()` no longer has argument `env.samples`, and its result and `sampled.indices` attribute no longer have an empty `env` entry. Draws for the real PFTs are unchanged for a given seed. An `env.samples` passed by name is ignored, or gives an unused argument error for methods "halton" and "sobol". One passed by position is taken as `method` and gives an error such as "argument is of length zero" (#4225, @aarmens702-hub).
-* Breaking: `get_parameter_samples()` and `get.parameter.samples()` no longer return `env.samples` or save it to `samples.Rdata`, and their `sa.samples` and `ensemble.samples` no longer have an empty `env` entry. Existing sample sets and `samples.Rdata` files that contain them still work (#4225, @aarmens702-hub).
+* Breaking: Parameter sampling no longer treats `env` specially. `get.ensemble.samples()` no longer has argument `env.samples`, and its result and `sampled.indices` attribute no longer have an empty `env` entry. Similarly `get_parameter_samples()` and `get.parameter.samples()` no longer return `env.samples` or save it to `samples.Rdata`, and their `sa.samples` and `ensemble.samples` no longer have an empty `env` entry. Existing sample sets and `samples.Rdata` files that contain `env` still work (#4225, @aarmens702-hub).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
