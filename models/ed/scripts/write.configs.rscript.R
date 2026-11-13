@@ -34,7 +34,6 @@ outdirs <- unlist(xpathApply(settings.xml, '//pfts//pft//outdir', xmlValue))
 trait.samples <- list()
 sa.samples <- list()
 ensemble.samples <- list()
-env.samples <- list()
 
 ## Remove existing config files
 if(FALSE){
@@ -106,7 +105,6 @@ if('sensitivity.analysis' %in% names(settings)) {
     print(paste('sensitivity analysis settings are NULL'))
   } else {
     sa.samples <-  get.sa.sample.list(trait.samples, 
-        env.samples,
         quantiles)
     write.sa.configs(settings$pfts, sa.samples, 
         host, outdir, settings)
@@ -116,7 +114,7 @@ if('sensitivity.analysis' %in% names(settings)) {
 ## Write ENSEMBLE
 if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
   ## subset the trait.samples to ensemble size using Halton sequence 
-  ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, env.samples)
+  ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples)
   write.ensemble.configs(settings$pfts, ensemble.samples, 
       host, outdir, settings)
 }

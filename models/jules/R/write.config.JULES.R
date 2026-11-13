@@ -368,7 +368,9 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   colnames(defaults) <- c("DEC", "EV", "C3", "C4", "SH")[1:ncol(defaults)]
 
   ## match selected PFTs to correct defaults
-  npft <- length(trait.values) - 1
+  ## older sample sets have an env entry, which is not a PFT
+  trait.values <- trait.values[names(trait.values) != "env"]
+  npft <- length(trait.values)
   pft.id <- rep(NA, npft)
   for (i in seq_len(npft)) {
     pft.name <- names(trait.values)[i]

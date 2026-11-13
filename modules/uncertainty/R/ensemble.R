@@ -67,7 +67,6 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 #'
 #' @param ensemble.size number of runs in model ensemble
 #' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain
-#' @param env.samples env samples
 #' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
 #' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
 #' @param ... Other arguments passed on to the sampling method
@@ -75,7 +74,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 #' @return named list of data.frames with sampled indices as an attribute
 #' @export
 #' @author David LeBauer, Istem Fer
-get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
+get.ensemble.samples <- function( ensemble.size, pft.samples,
                                  method = "random", param.names = NULL, ...) {
 
   # Define supported methods
@@ -89,16 +88,14 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
   if (ensemble.size <= 0) {
     ans <- NULL
   } else if (ensemble.size == 1) {
-    ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
+    ans <- PEcAn.utils::get.sa.sample.list(pft.samples, 0.5)
   } else {
-    pft.samples[[length(pft.samples) + 1]] <- env.samples
-    names(pft.samples)[length(pft.samples)] <- "env"
     pft2col <- NULL
     for (i in seq_along(pft.samples)) {
       pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
 
-    total.sample.num <- sum(sapply(pft.samples, length))
+    total.sample.num <- sum(lengths(pft.samples))
     random.samples <- NULL
 
 
@@ -404,7 +401,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
     }
 
     # if no ensemble piece was in the xml I replicate n times the first element in params
-    if ( is.null(samp$parameters) && nrow(ensemble.samples[[1]]) != ensemble.size ) {
+    if ( is.null(samp$parameters) && length(ensemble.samples) > 0 && nrow(ensemble.samples[[1]]) != ensemble.size ) {
       samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, ensemble.size) , ])
     }
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg -

@@ -22,7 +22,7 @@
 #'   (standard MA) and can be resampled independently. FALSE means they were
 #'   fitted together (e.g. PDA) and correlations should be preserved.
 #'
-#' @return named list with five elements:
+#' @return named list with four elements:
 #' \describe{
 #'   \item{trait.samples}{Named list by PFT, then by trait. Each leaf is a
 #'     numeric vector of parameter samples.}
@@ -31,8 +31,6 @@
 #'   \item{ensemble.samples}{Ensemble samples (list), or empty list if
 #'     \code{do_ensemble} is FALSE.}
 #'   \item{runs.samples}{Reserved for future use (empty list).}
-#'   \item{env.samples}{Environmental samples (empty list, populated by
-#'     downstream code if needed).}
 #' }
 #'
 #' @examples
@@ -95,7 +93,6 @@ get_parameter_samples <- function(pft_names,
   trait.samples    <- list()
   sa.samples       <- list()
   ensemble.samples <- list()
-  env.samples      <- list()
   runs.samples     <- list()
   param.names      <- list()
 
@@ -211,7 +208,7 @@ get_parameter_samples <- function(pft_names,
       PEcAn.utils::vecpaste(round(quantiles, 3))
     )
     sa.samples <- PEcAn.utils::get.sa.sample.list(
-      pft = trait.samples, env = env.samples, quantiles = quantiles
+      pft = trait.samples, quantiles = quantiles
     )
   }
 
@@ -221,7 +218,6 @@ get_parameter_samples <- function(pft_names,
       ## Run at median if only one run in ensemble
       ensemble.samples <- PEcAn.utils::get.sa.sample.list(
         pft = trait.samples,
-        env = env.samples,
         quantiles = 0.5
       )
     } else if (ensemble.size > 1) {
@@ -229,7 +225,6 @@ get_parameter_samples <- function(pft_names,
       ensemble.samples <- get.ensemble.samples(
         ensemble.size = ensemble.size,
         pft.samples = trait.samples,
-        env.samples = env.samples,
         method = ens.sample.method,
         param.names = param.names
       )
@@ -240,8 +235,7 @@ get_parameter_samples <- function(pft_names,
     trait.samples    = trait.samples,
     sa.samples       = sa.samples,
     ensemble.samples = ensemble.samples,
-    runs.samples     = runs.samples,
-    env.samples      = env.samples
+    runs.samples     = runs.samples
   ))
 }
 

@@ -1,3 +1,8 @@
+# PEcAn.LPJGUESS 1.9.0.9000
+
+* `write.config.LPJGUESS()` now indexes `trait.values` by PFT name instead of by position, so a PFT with no sampled traits no longer affects alignment of every PFT after it (#4225, @aarmens702-hub).
+
+
 # PEcAn.LPJGUESS 1.9.0
 
 * model2netcdf.LPJGUESS no longer writes separate `<year>.nc.var` files for every year of output. Use `PEcAn.utils::nc_write_varfiles()` to create these as needed.

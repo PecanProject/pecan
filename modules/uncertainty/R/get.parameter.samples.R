@@ -19,7 +19,7 @@
 #'
 #' **File-based side effects (saved to `settings$outdir`):**
 #' \describe{
-#'   \item{`samples.Rdata`}{When `outdir` is non-`NULL` (the default), bundles 5 objects:
+#'   \item{`samples.Rdata`}{When `outdir` is non-`NULL` (the default), bundles 4 objects:
 #'     \itemize{
 #'       \item `trait.samples` - Named list (PFT -> trait -> numeric vector of
 #'         length `iterations`). Raw MCMC or prior-sampled values.
@@ -27,11 +27,11 @@
 #'         n_traits\]). Quantile-based samples for sensitivity analysis.
 #'       \item `ensemble.samples` - Named list (PFT -> data frame\[ensemble.size
 #'         x n_traits\]). Subsampled parameter sets for ensemble runs.
-#'       \item `env.samples` - Currently empty list (reserved for
-#'         environmental samples).
 #'       \item `runs.samples` - Currently empty list (reserved for run
 #'         metadata).
-#'     }}
+#'     }
+#'     Files from older versions also contain `env.samples`, an always-empty
+#'     list that nothing reads.}
 #' }
 #'
 #' **Downstream contract:** `samples.Rdata` is loaded by \code{run.write.configs}
@@ -51,8 +51,8 @@
 #'   Pass `outdir = NULL` to skip the save entirely; the pure
 #'   `get_parameter_samples()` never writes to disk regardless.
 #'
-#' @return Named list with 5 elements: `trait.samples`, `sa.samples`,
-#'   `ensemble.samples`, `runs.samples`, `env.samples`. Returned invisibly.
+#' @return Named list with 4 elements: `trait.samples`, `sa.samples`,
+#'   `ensemble.samples`, `runs.samples`. Returned invisibly.
 #'
 #' @md
 #'
@@ -104,8 +104,7 @@ get.parameter.samples <- function(settings,
     trait.samples    <- result$trait.samples
     sa.samples       <- result$sa.samples
     runs.samples     <- result$runs.samples
-    env.samples      <- result$env.samples
-    save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
+    save(ensemble.samples, trait.samples, sa.samples, runs.samples,
          file = file.path(outdir, "samples.Rdata"))
   }
 

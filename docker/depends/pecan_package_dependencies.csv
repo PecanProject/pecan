@@ -650,7 +650,6 @@
 "testthat",">= 1.0.2","models/ed","Suggests",FALSE
 "testthat",">= 1.0.2","models/fates","Suggests",FALSE
 "testthat",">= 1.0.2","models/gday","Suggests",FALSE
-"testthat",">= 1.0.2","models/jules","Suggests",FALSE
 "testthat",">= 1.0.2","models/ldndc","Suggests",FALSE
 "testthat",">= 1.0.2","models/linkages","Suggests",FALSE
 "testthat",">= 1.0.2","models/lpjguess","Suggests",FALSE
@@ -675,6 +674,7 @@
 "testthat",">= 3.0.0","models/sibcasa","Suggests",FALSE
 "testthat",">= 3.0.4","base/qaqc","Suggests",FALSE
 "testthat",">= 3.1.0","modules/data.land","Suggests",FALSE
+"testthat",">= 3.1.7","models/jules","Suggests",FALSE
 "testthat",">= 3.1.7","modules/data.atmosphere","Suggests",FALSE
 "testthat",">= 3.1.9","modules/assim.sequential","Suggests",FALSE
 "tibble","*","base/db","Imports",FALSE
