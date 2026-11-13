@@ -7,8 +7,7 @@ fake_loaded_posteriors <- function() {
   list(
     pft_names         = list("pft1"),
     prior_distns_list = list(NULL),
-    trait_mcmc_list   = list(NULL),
-    independent       = TRUE
+    trait_mcmc_list   = list(NULL)
   )
 }
 
@@ -59,6 +58,24 @@ test_that("generated samples are returned alongside the design", {
   expect_identical(result$samples, fake_parameter_samples())
 })
 
+test_that("ensemble sampling follows the caller's scalar request", {
+  settings <- make_test_settings()
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
+                function(...) list(ids = rep(1L, 5)))
+  mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
+                function(...) fake_loaded_posteriors())
+  sampler <- mockery::mock(fake_parameter_samples(), cycle = TRUE)
+  mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
+
+  generate_joint_ensemble_design(settings, ensemble_size = 5)
+  generate_joint_ensemble_design(settings, ensemble_size = 5, independent = TRUE)
+
+  mockery::expect_called(sampler, 2)
+  calls <- mockery::mock_args(sampler)
+  expect_false(calls[[1]]$independent)
+  expect_true(calls[[2]]$independent)
+})
+
 
 test_that("passed-in samples skip the loader and sampler", {
   settings <- make_test_settings()
@@ -73,7 +90,7 @@ test_that("passed-in samples skip the loader and sampler", {
 
   established <- fake_parameter_samples()
   result <- generate_joint_ensemble_design(
-    settings, ensemble_size = 5, samples = established
+    settings, ensemble_size = 5, samples = established, independent = TRUE
   )
 
   mockery::expect_called(loader, 0)

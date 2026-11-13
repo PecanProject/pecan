@@ -87,8 +87,7 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
       ensemble.size     = settings$ensemble$size %||% 1,
       ens.sample.method = settings$ensemble$samplingspace$parameters$method %||% "uniform",
       sa_quantiles      = settings$sensitivity.analysis$quantiles,
-      do_ensemble       = FALSE,
-      independent       = loaded$independent
+      do_ensemble       = FALSE
     )
   }
 

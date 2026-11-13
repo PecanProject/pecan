@@ -10,7 +10,7 @@ load.posteriors.from.path(path)
 \item{path}{file path or directory path}
 }
 \value{
-List with \code{prior.distns}, \code{trait.mcmc}, \code{is.joint}
+List with \code{prior.distns} and \code{trait.mcmc}
 }
 \description{
 Scans \code{.Rdata} files at \code{path} and detects MCMC samples

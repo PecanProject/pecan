@@ -32,7 +32,7 @@ test_that("load from single distns file works", {
   )
 
   expect_null(result$trait.mcmc)
-  expect_false(result$is.joint)
+  expect_named(result, c("prior.distns", "trait.mcmc"))
   expect_is(result$prior.distns, "data.frame")
   expect_equal(rownames(result$prior.distns), c("trait_a", "trait_b"))
 })
@@ -52,7 +52,7 @@ test_that("load from single mcmc file works", {
   expect_is(result$trait.mcmc, "list")
   expect_equal(names(result$trait.mcmc), c("trait_a", "trait_b"))
   expect_null(result$prior.distns)
-  expect_false(result$is.joint)
+  expect_named(result, c("prior.distns", "trait.mcmc"))
 })
 
 
@@ -79,7 +79,7 @@ test_that("load from directory with both mcmc and distns prefers mcmc", {
   expect_is(result$trait.mcmc, "list")
   expect_equal(names(result$trait.mcmc), c("trait_a"))
   expect_is(result$prior.distns, "data.frame")
-  expect_false(result$is.joint)
+  expect_named(result, c("prior.distns", "trait.mcmc"))
 })
 
 
@@ -232,7 +232,7 @@ test_that("nonexistent path returns empty result with error", {
 
   expect_null(result$prior.distns)
   expect_null(result$trait.mcmc)
-  expect_false(result$is.joint)
+  expect_named(result, c("prior.distns", "trait.mcmc"))
 })
 
 
@@ -251,7 +251,7 @@ test_that("empty directory returns empty result", {
 })
 
 
-test_that("joint detection works via companion file in from.path", {
+test_that("PDA samples load alongside their companion file", {
   tmpdir <- withr::local_tempdir()
 
   # Create PDA-style MCMC file
@@ -264,29 +264,53 @@ test_that("joint detection works via companion file in from.path", {
 
   result <- load.posteriors(posterior.file = tmpdir)
 
-  expect_true(result$is.joint)
+  expect_equal(result$trait.mcmc, trait.mcmc)
   expect_is(result$trait.mcmc, "list")
 })
 
 
-test_that("non-PDA mcmc is not detected as joint", {
+test_that("MCMC samples load from trait.mcmc.Rdata", {
   tmpdir <- withr::local_tempdir()
 
-  # Create MA-style MCMC file (no companion mcmc.pda.* file)
   trait.mcmc <- make_trait_mcmc(trait_a = rnorm(100))
   save(trait.mcmc, file = file.path(tmpdir, "trait.mcmc.Rdata"))
 
   result <- load.posteriors(posterior.file = tmpdir)
 
-  expect_false(result$is.joint)
+  expect_equal(result$trait.mcmc, trait.mcmc)
   expect_is(result$trait.mcmc, "list")
 })
 
 
-test_that("joint detection works via filename heuristic in legacy path", {
+test_that("both posterior loading paths preserve joint draws", {
   tmpdir <- withr::local_tempdir()
 
-  # Create mcmc file with pda in name (legacy path uses filename heuristic)
+  withr::local_seed(1)
+  a <- rnorm(100)
+  trait.mcmc <- make_trait_mcmc(trait_a = a, trait_b = -a)
+  save(trait.mcmc, file = file.path(tmpdir, "trait.mcmc.Rdata"))
+
+  result <- load.posteriors(posterior.file = tmpdir)
+
+  invisible(capture.output(
+    legacy <- load.posteriors(posterior.file = NA, outdir = tmpdir)
+  ))
+  for (posterior in list(result, legacy)) {
+    samples <- get_parameter_samples(
+      pft_names = "pft",
+      prior_distns_list = list(NULL),
+      trait_mcmc_list = list(posterior$trait.mcmc),
+      ensemble.size = 20
+    )$ensemble.samples$pft
+    expect_equal(samples$trait_b, -samples$trait_a)
+    expect_true(all(samples$trait_a %in% a))
+  }
+})
+
+
+test_that("legacy loading accepts PDA filenames", {
+  tmpdir <- withr::local_tempdir()
+
   trait.mcmc <- make_trait_mcmc(trait_a = rnorm(100))
   save(trait.mcmc, file = file.path(tmpdir, "mcmc.pda.Rdata"))
 
@@ -297,7 +321,7 @@ test_that("joint detection works via filename heuristic in legacy path", {
     )
   ))
 
-  expect_true(result$is.joint)
+  expect_equal(result$trait.mcmc, trait.mcmc)
   expect_is(result$trait.mcmc, "list")
 })
 
@@ -314,4 +338,22 @@ test_that("MCMC detected by coda class, not variable name", {
   # Should be detected by coda class, not by variable name
   expect_is(result$trait.mcmc, "list")
   expect_equal(names(result$trait.mcmc), "SLA")
+})
+
+
+test_that("load_pft_posteriors returns posterior samples for each PFT", {
+  first_dir <- withr::local_tempdir()
+  second_dir <- withr::local_tempdir()
+
+  trait.mcmc <- make_trait_mcmc(trait_a = rnorm(100))
+  save(trait.mcmc, file = file.path(second_dir, "trait.mcmc.Rdata"))
+  save(trait.mcmc, file = file.path(first_dir, "trait.mcmc.Rdata"))
+
+  settings <- list(pfts = list(list(name = "pft1"), list(name = "pft2")))
+  invisible(capture.output(
+    loaded <- load_pft_posteriors(settings, c(first_dir, second_dir))
+  ))
+
+  expect_named(loaded, c("pft_names", "prior_distns_list", "trait_mcmc_list"))
+  expect_equal(loaded$trait_mcmc_list, list(trait.mcmc, trait.mcmc))
 })

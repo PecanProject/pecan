@@ -44,6 +44,9 @@
 #'   \code{load_pft_posteriors} and \code{get_parameter_samples}.
 #' @param sobol Logical. If TRUE, returns a \code{sensitivity::soboljansen}
 #'   object for Sobol sensitivity analysis.
+#' @param independent Logical scalar: \code{FALSE} preserves supplied MCMC
+#'   dependence; \code{TRUE} discards it and samples parameters separately.
+#'   Used only when \code{samples = NULL}; supplied samples are reused unchanged.
 #'
 #' @return If \code{sobol = FALSE}, a list with \code{design_matrix} (the design,
 #'   one row per run, whose \code{param} column indexes the samples), \code{X}
@@ -60,7 +63,9 @@
 generate_joint_ensemble_design <- function(settings,
                                            ensemble_size,
                                            samples = NULL,
-                                           sobol = FALSE) {
+                                           sobol = FALSE,
+                                           independent = FALSE) {
+  stopifnot(is.logical(independent), length(independent) == 1L, !is.na(independent))
   if (sobol) {
     ensemble_size <- as.numeric(ensemble_size) * 2
   }
@@ -110,7 +115,7 @@ generate_joint_ensemble_design <- function(settings,
       ens.sample.method = ens.sample.method,
       sa_quantiles      = settings$sensitivity.analysis$quantiles,
       do_ensemble       = TRUE,
-      independent       = loaded$independent
+      independent       = independent
     )
   }
   # Here we assumed the length of parameters is identical to the ensemble size.

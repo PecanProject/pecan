@@ -10,30 +10,45 @@ get.ensemble.samples(
   env.samples,
   method = "random",
   param.names = NULL,
-  ...
+  ...,
+  independent = FALSE
 )
 }
 \arguments{
 \item{ensemble.size}{number of runs in model ensemble}
 
-\item{pft.samples}{random samples from parameter distribution, e.g. from a MCMC chain}
+\item{pft.samples}{named list of PFTs, each containing named parameter
+samples, e.g. from MCMC chains. The name "env" is reserved.}
 
 \item{env.samples}{env samples}
 
-\item{method}{the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.}
+\item{method}{sampling method for marginal traits: "random", "uniform",
+"halton", "sobol", or "lhc". Joint draws are sampled randomly by row.}
 
-\item{param.names}{a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently}
+\item{param.names}{named list of joint trait names per PFT. NULL selects all
+supplied traits; an empty entry selects none. Unnamed lists match PFT order.}
 
 \item{...}{Other arguments passed on to the sampling method}
+
+\item{independent}{logical. Sample each parameter separately, discarding
+supplied dependence, instead of preserving parameter correlations.}
 }
 \value{
 named list of data.frames with sampled indices as an attribute
 }
 \description{
-Returns a matrix of randomly or quasi-randomly sampled trait values
-to be assigned to traits over several model runs.
-given the number of model runs and a list of sample distributions for traits
-The model run is indexed first by model run, then by trait
+Returns sampled parameter values for model runs, preserving supplied joint
+draws unless independent sampling is requested.
+}
+\details{
+Joint draws preserve parameter correlations (by keeping complete
+  MCMC rows together). Rows are sampled with replacement. PFTs with equal
+  numbers of joint draws share row indices, so paired input tables must have
+  matching row order. Equal row counts do not establish common provenance;
+  unrelated tables must contain genuinely independent draws. Environment
+  samples and traits outside \code{param.names} are sampled marginally.
+  A one-member joint ensemble selects a complete draw; marginal traits use
+  their medians. Independent sampling can violate joint parameter constraints.
 }
 \author{
 David LeBauer, Istem Fer

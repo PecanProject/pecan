@@ -8,8 +8,7 @@ oat_loaded_posteriors <- function() {
   list(
     pft_names         = list("pft1"),
     prior_distns_list = list(NULL),
-    trait_mcmc_list   = list(NULL),
-    independent       = TRUE
+    trait_mcmc_list   = list(NULL)
   )
 }
 
@@ -80,6 +79,7 @@ test_that("parameters are sampled in memory when no samples are supplied", {
   # SA sampling draws quantiles, not an ensemble
   args <- mockery::mock_args(sampler)[[1]]
   expect_false(args$do_ensemble)
+  expect_false("independent" %in% names(args))
   expect_identical(args$sa_quantiles, c(0.25, 0.5, 0.75))
 
   # design is built from the freshly sampled sa.samples, and returned with them

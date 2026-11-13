@@ -8,7 +8,8 @@ generate_joint_ensemble_design(
   settings,
   ensemble_size,
   samples = NULL,
-  sobol = FALSE
+  sobol = FALSE,
+  independent = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,10 @@ are used directly instead of loading posteriors and sampling. When
 
 \item{sobol}{Logical. If TRUE, returns a \code{sensitivity::soboljansen}
 object for Sobol sensitivity analysis.}
+
+\item{independent}{Logical scalar: \code{FALSE} preserves supplied MCMC
+dependence; \code{TRUE} discards it and samples parameters separately.
+Used only when \code{samples = NULL}; supplied samples are reused unchanged.}
 }
 \value{
 If \code{sobol = FALSE}, a list with \code{design_matrix} (the design,
