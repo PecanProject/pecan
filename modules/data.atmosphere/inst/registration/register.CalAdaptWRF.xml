@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<CalAdaptWRF>
+  <scale>site</scale>
+  <standardize>FALSE</standardize>
+  <defaults>
+    <model>CESM2</model>
+    <scenario>ssp370</scenario>
+    <resolution>d03</resolution>
+  </defaults>
+  <prefix>CalAdaptWRF.{model}.{scenario}.{resolution}</prefix>
+  <format>
+    <name>CalAdaptWRF source manifest</name>
+    <mimetype>application/json</mimetype>
+    <inputtype>json</inputtype>
+    <create>TRUE</create>
+  </format>
+</CalAdaptWRF>

@@ -58,6 +58,7 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
+    tools,
     truncnorm,
     units,
     utils,
@@ -65,6 +66,7 @@ Imports:
     xts,
     zoo
 Suggests:
+    caladaptaer,
     doParallel,
     ecmwfr (>= 2.0.0),
     doSNOW,
@@ -83,6 +85,7 @@ Suggests:
     testthat (>= 3.1.7),
     withr
 Remotes:
+    github::lebauerapproach/caladaptaer,
     github::adokter/suntools,
     github::chuhousen/amerifluxr,
     github::ropensci/geonames,
