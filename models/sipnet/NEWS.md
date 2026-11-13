@@ -1,11 +1,7 @@
 # PEcAn.SIPNET 1.10.0.9000
 
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
-* `write.config.SIPNET` used `SLA` per kg leaf mass for `leafCSpWt` but passed
-    the same value to `prepare_pools`, which expects SLA per kg C, so runs
-    initialized from a `poolinitcond` file with `leaf_carbon_content` started
-    with the IC leaf carbon times a leaf carbon fraction (0.48 when the last PFT
-    has no `leafC`). The initial leaf pool now equals the IC leaf carbon (#4205).
+* `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and
     `root_respiration_rate` to per day rates, but SIPNET reads `baseVegResp`
     and `baseFineRootResp` as per year and divides by 365 itself, so both were
