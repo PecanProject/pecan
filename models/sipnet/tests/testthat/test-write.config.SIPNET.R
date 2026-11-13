@@ -241,3 +241,48 @@ test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
   expect_equal(pval(p, "plantWoodInit"), 0)
   expect_equal(pval(p, "plantStorageNInit"), 0)
 })
+
+test_that("leaf carbon from a poolinitcond file sets the initial leaf pool", {
+  pth <- withr::local_tempdir()
+  dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
+
+  ic_path <- file.path(pth, "ic.nc")
+  time_dim <- ncdf4::ncdim_def("time", "days since 2025-01-01", 0)
+  leaf_var <- ncdf4::ncvar_def("leaf_carbon_content", "kg C m-2", time_dim)
+  nc <- ncdf4::nc_create(ic_path, leaf_var)
+  ncdf4::ncvar_put(nc, leaf_var, 0.1)
+  ncdf4::nc_close(nc)
+
+  s <- PEcAn.settings::as.Settings(
+    list(
+      outdir = file.path(pth, "out"),
+      rundir = file.path(pth, "run"),
+      pfts = list(pft1 = list()),
+      model = list(binary = "", revision = "2.0"),
+      run = list(
+        site = list(name = "site1", lat = 40, lon = -88),
+        inputs = list(met = list(path = ""), poolinitcond = list(path = ic_path)),
+        # inside the template leaf on window, so laiInit is not zeroed
+        start.date = "2025-07-01",
+        end.date = "2025-07-02"
+      ),
+      host = list(
+        name = "",
+        outdir = file.path(pth, "out"),
+        rundir = file.path(pth, "run")
+      )
+    )
+  )
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list())),
+    trait.values = list(pft1 = list(SLA = 20, leafC = 45)),
+    settings = s,
+    run.id = "run1"
+  )
+
+  p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"))
+  pval <- function(name) p[p[[1]] == name, 2]
+  # sipnet initializes leaf C as laiInit * leafCSpWt (g C m-2);
+  # tolerance covers the rounding when sipnet.param is written
+  expect_equal(pval("laiInit") * pval("leafCSpWt"), 100, tolerance = 1e-6)
+})
