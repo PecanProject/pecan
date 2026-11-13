@@ -69,11 +69,23 @@ crop2pft_example <- function(crop_code) {
 #'
 #' @param settings a single PEcAn settings object (not MultiSettings)
 #' @param input_design data frame in the format returned by
-#'   `PEcAn.uncertainty::generate_joint_ensemble_design()`,
-#'   reporting which ensemble members to select for each input
+#'   `PEcAn.uncertainty::generate_joint_ensemble_design()` or
+#'   `PEcAn.uncertainty::generate_OAT_SA_design()`, reporting which input
+#'   to select for each run. Manifest `ens_num` values index its rows.
+#'   When supplied, only runs of that design's analysis type are segmented.
 #' @param ... further arguments passed on to `write_segment_configs()`
 #'
 #' @author Alexey Shiklomanov, Chris Black
+#'
+#' @examples
+#' \dontrun{
+#' # settings supplies crop_changes or event_json and the initial site.pft
+#' sa <- PEcAn.uncertainty::generate_OAT_SA_design(settings)
+#' settings <- PEcAn.workflow::runModule.run.write.configs(settings, input_design = sa)
+#' write_segmented_configs.SIPNET(
+#'   settings, input_design = sa$design_matrix, crop2pft = my_crop_to_pft
+#' )
+#' }
 #'
 #' @export
 #'
@@ -84,7 +96,32 @@ write_segmented_configs.SIPNET <- function(settings, input_design = NULL, ...) {
   }
   inputs_runs <- utils::read.csv(manifest_file) |>
     dplyr::filter(.data$site_id == settings$run$site$id)
+  if ("type" %in% names(inputs_runs)) {
+    median <- inputs_runs$type == "Sensitivity" & inputs_runs$quantile == "50"
+    inputs_runs$pft_name[median] <- NA_character_
+    inputs_runs$trait[median] <- NA_character_
+  }
+  # the median has one manifest alias per trait but only one physical run
+  inputs_runs <- dplyr::distinct(inputs_runs)
+  if (anyDuplicated(inputs_runs$run_id)) {
+    PEcAn.logger::logger.severe("Conflicting manifest records for the same run ID.")
+  }
   if (!is.null(input_design)) {
+    analysis_type <- if ("sa_pft" %in% names(input_design)) "Sensitivity" else "Ensemble"
+    inputs_runs <- dplyr::filter(inputs_runs, .data$type == analysis_type)
+    if (!"ens_num" %in% names(inputs_runs) ||
+        anyNA(inputs_runs$ens_num) ||
+        any(!inputs_runs$ens_num %in% seq_len(nrow(input_design)))) {
+      PEcAn.logger::logger.severe("Manifest ens_num must identify a row of input_design.")
+    }
+    if (analysis_type == "Sensitivity") {
+      selected <- input_design[inputs_runs$ens_num, , drop = FALSE]
+      if (!identical(as.character(selected$sa_pft), as.character(inputs_runs$pft_name)) ||
+          !identical(as.character(selected$sa_trait), as.character(inputs_runs$trait)) ||
+          !identical(as.character(selected$sa_quantile), as.character(inputs_runs$quantile))) {
+        PEcAn.logger::logger.severe("Sensitivity design labels do not match the manifest.")
+      }
+    }
     inputs_runs <- inputs_runs |>
       dplyr::left_join(
         input_design |> tibble::rowid_to_column("ens_num"),
@@ -127,9 +164,16 @@ segment_dataframe <- function(run_settings) {
   run_start <- as.Date(run_settings$run$start.date)
   run_end <- as.Date(run_settings$run$end.date)
 
-  # First, build segment data.frame just from the crop cycles. Note that we
-  # already include the run end date (lead(..., default = run_end)).
+  if ("site_id" %in% names(crop_cycles)) {
+    crop_cycles <- dplyr::filter(crop_cycles, .data$site_id == run_settings$run$site$id)
+  }
+  if (anyNA(crop_cycles$date) || anyDuplicated(crop_cycles$date) ||
+      is.na(run_start) || is.na(run_end) || run_start > run_end) {
+    PEcAn.logger::logger.severe("Crop dates must be unique and the run window valid.")
+  }
   segments <- crop_cycles |>
+    dplyr::arrange(.data$date) |>
+    dplyr::filter(.data$date <= .env$run_end) |>
     dplyr::rename(start_date = "date") |>
     dplyr::mutate(
       end_date = dplyr::lead(.data$start_date - 1, default = run_end),
@@ -143,7 +187,7 @@ segment_dataframe <- function(run_settings) {
   # If we start *before* the first planting, add a segment for that.
   if (run_start < min(segments[["start_date"]])) {
     first_segment <- tibble::tibble(
-      site_id = segments[["site_id"]][[1]],
+      site_id = run_settings$run$site$id,
       start_date = run_start,
       end_date = segments[["start_date"]][[1]] - 1,
       crop_code = NA_character_,
@@ -155,24 +199,10 @@ segment_dataframe <- function(run_settings) {
     segments <- dplyr::bind_rows(first_segment, segments)
   }
 
-  # If the run start is *after* the first planting, clip to the start date.
-  if (run_start > min(segments[["start_date"]])) {
-    segments <- segments |>
-      dplyr::filter(
-        .data$start_date >= .env$run_start,
-        # Also clip the end date to avoid edge cases where run_start == end_date
-        .data$end_date > .env$run_start
-      )
-    if (nrow(segments) == 0) {
-    PEcAn.logger::logger.info(
-      "no crop cycle segments fall within the run window; running unsegmented"
-    )
-    return(segments)
-  }
-    segments[1, "start_date"] <- run_start
-  }
-
+  # a crop planted before run_start remains active until the next planting
   segments |>
+    dplyr::filter(.data$end_date >= .env$run_start) |>
+    dplyr::mutate(start_date = pmax(.data$start_date, .env$run_start)) |>
     dplyr::arrange(.data$start_date) |>
     dplyr::mutate(segment_id = sprintf("%03d", dplyr::row_number()))
 }
@@ -194,6 +224,34 @@ drop_same_pft_segments <- function(segments) {
       segment_id = sprintf("%03d", dplyr::row_number())
     )
 }
+
+#' Retrieve all PFT parameters for one physical run
+#' @noRd
+segment_run_traits <- function(settings, run_row) {
+  if (identical(run_row[["type"]], "Sensitivity")) {
+    samples_file <- PEcAn.uncertainty::sensitivity.filename(
+      settings, "sensitivity.samples", "Rdata", all.var.yr = TRUE
+    )
+    stopifnot(file.exists(samples_file))
+    samples <- PEcAn.utils::load_local(samples_file)[["sa.samples"]]
+    is_median <- as.character(run_row[["quantile"]]) == "50"
+    design <- tibble::tibble(
+      sa_pft = if (is_median) NA_character_ else run_row[["pft_name"]],
+      sa_trait = if (is_median) NA_character_ else run_row[["trait"]],
+      sa_quantile = as.character(run_row[["quantile"]])
+    )
+    return(PEcAn.uncertainty::sa_run_samples(samples, design))
+  }
+  samples_file <- file.path(
+    settings$outdir,
+    sprintf("ensemble.samples.%s.Rdata", settings$ensemble$ensemble.id)
+  )
+  stopifnot(file.exists(samples_file))
+  samples <- PEcAn.utils::load_local(samples_file)[["ens.samples"]]
+  i_param <- run_row[["param"]] %||% 1
+  lapply(samples, \(dat) dat[i_param, , drop = FALSE])
+}
+
 write_segment_configs <- function(
   settings,
   run_row,
@@ -206,15 +264,6 @@ write_segment_configs <- function(
   run_modeloutdir <- file.path(settings$modeloutdir, run_id)
   run_settings <- subset_paths(settings, run_row)
   segment_rootdir <- file.path(run_dir, "segments")
-
-  ens_samples_file <- file.path(
-    run_settings$outdir,
-    sprintf("ensemble.samples.%s.Rdata", run_settings$ensemble$ensemble.id)
-  )
-  stopifnot(file.exists(ens_samples_file))
-  ensemble_samples <- PEcAn.utils::load_local(ens_samples_file)[["ens.samples"]]
-  i_param <- run_row[["param"]] %||% 1
-  run_traits <- lapply(ensemble_samples, \(dat) dat[i_param, , drop = FALSE])
 
   segments <- segment_dataframe(run_settings)
 
@@ -236,6 +285,13 @@ write_segment_configs <- function(
         paste0("segment_", .data$segment_id)
       )
     )
+  run_traits <- segment_run_traits(run_settings, run_row)
+  missing_pfts <- setdiff(unique(segments$pft), names(run_traits))
+  if (length(missing_pfts) > 0 || anyNA(segments$pft)) {
+    PEcAn.logger::logger.severe(
+      "Segment PFTs are missing from parameter samples:", paste(missing_pfts, collapse = ", ")
+    )
+  }
   utils::write.csv(
     segments,
     file = file.path(run_dir, "segments.csv"),
@@ -330,7 +386,7 @@ write_segment_configs <- function(
     # PFT as input. However, we can pass soil params through a "soil" PFT.
     # Here, if the segment PFT is soil, that's what we send. If the segment PFT
     # is anything else, we send that *and* the soil params.
-    choose_pft <- unique(c(segment[["pft"]], "soil"))
+    choose_pft <- unique(c(segment[["pft"]], intersect("soil", names(run_traits))))
     segment_traits <- run_traits[choose_pft]
 
     # Write dummy runs file

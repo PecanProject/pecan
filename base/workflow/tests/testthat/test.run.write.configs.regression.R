@@ -57,6 +57,26 @@ local_fake_model_writer <- function(env = parent.frame()) {
 # input_design / ensemble.size guard
 # ------------------------------------
 
+test_that("run.write.configs rejects more than one analysis per call", {
+  tmp <- withr::local_tempdir()
+  settings <- make_rwc_settings(
+    tmp,
+    with_ensemble = TRUE,
+    with_sa = TRUE
+  )
+
+  expect_error(
+    PEcAn.workflow::run.write.configs(
+      settings,
+      ensemble.size = 1,
+      input_design = data.frame(param = 1),
+      write = FALSE
+    ),
+    "one analysis per call"
+  )
+  expect_length(list.files(tmp, all.files = TRUE, no.. = TRUE), 0)
+})
+
 test_that("run.write.configs errors when input_design rows != ensemble.size", {
   tmp <- withr::local_tempdir()
   settings <- make_rwc_settings(tmp, with_ensemble = TRUE)

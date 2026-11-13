@@ -32,7 +32,7 @@ to all specified in \code{settings}}
 \item{end.year}{defaults to what is specified in \code{settings}}
 
 \item{pfts}{a vector of PFT names found in \code{settings} to run sensitivity
-analysis on}
+analysis on. Defaults to PFTs represented in the saved SA run IDs.}
 
 \item{...}{currently unused}
 }

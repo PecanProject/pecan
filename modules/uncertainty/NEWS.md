@@ -8,6 +8,8 @@
 * `run.sensitivity.analysis()` skips traits with no spread in their SA samples, with a warning. Previously one such trait stopped the analysis for every PFT.
 * `runs_manifest.csv` now has a column `ens_num` to distinguish ensemble members without reparsing run IDs.
 * `run.sensitivity.analysis()` no longer converts traits in Celsius (e.g. `psnTOpt`) to K before evaluating their splines, which are fit in Celsius. Their sensitivity, elasticity and variance were wrong in earlier versions, and so were the partial variances of the other traits in the PFT. CV and elasticity are still computed in K.
+* Sensitivity output collection and analysis follow the PFTs and traits in saved
+  run IDs, including crops used after the initial vegetation in a rotation.
 * Multiple bugfixes in `input.ens.gen()` handling of parent ids (#3783):
     - No longer skips inputs that have a parent but no sampling method.
     - Argument `parent_ids` now accepts integer vectors even if not wrapped in a list.

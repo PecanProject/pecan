@@ -10,8 +10,10 @@ write_segmented_configs.SIPNET(settings, input_design = NULL, ...)
 \item{settings}{a single PEcAn settings object (not MultiSettings)}
 
 \item{input_design}{data frame in the format returned by
-\code{PEcAn.uncertainty::generate_joint_ensemble_design()},
-reporting which ensemble members to select for each input}
+\code{PEcAn.uncertainty::generate_joint_ensemble_design()} or
+\code{PEcAn.uncertainty::generate_OAT_SA_design()}, reporting which input
+to select for each run. Manifest \code{ens_num} values index its rows.
+When supplied, only runs of that design's analysis type are segmented.}
 
 \item{...}{further arguments passed on to \code{write_segment_configs()}}
 }
@@ -20,6 +22,17 @@ Each segment will run in its own subdirectory,
 starting from the restart file written at the end of the previous segment.
 Crop parameters can be altered by specifying a different PFT in the segment
 file.
+}
+\examples{
+\dontrun{
+# settings supplies crop_changes or event_json and the initial site.pft
+sa <- PEcAn.uncertainty::generate_OAT_SA_design(settings)
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, input_design = sa)
+write_segmented_configs.SIPNET(
+  settings, input_design = sa$design_matrix, crop2pft = my_crop_to_pft
+)
+}
+
 }
 \author{
 Alexey Shiklomanov, Chris Black
