@@ -110,7 +110,6 @@ If this is the first time pushing to GitHub you will need to extended command, o
 git push -u origin GH-issuenumber-title-of-issue
 ```
 
-
 ### Pull Request
 
  When finished create a pull request from your branch to the main pecan repository.
@@ -121,6 +120,22 @@ git push -u origin GH-issuenumber-title-of-issue
 
 Because every PR requires time from project maintainers as well as from you, we limit new contributors to a maximum of 3 pull requests under review at a time.
 Please prioritize work that gets existing PRs merged (e.g. responding to review comments, fixing text failures) over opening new ones.
+
+### Reviewing and merging PRs
+
+In general, reviewers should favor approving a PR once it improves the overall code health of the system being worked on, even if the PR isn’t perfect.
+
+PRs should be blocked when the change introduces or worsens incorrect logic, a bug, or a risk, or does not meet a documented project requirement[^1]. Requested changes should be identified as optional vs blocking, with an explanation of the consequence or unmet requirement for each blocker.
+
+[^1]: If a blocking requirement or convention is not documented, it may warrant updating the documentation.
+
+Additional improvements that are not required to resolve a blocker are optional, and the author may choose to implement or request that the reviewer propose the change as a suggestion, new PR, or separate issue.
+
+Once blocking concerns are addressed and required checks pass, the PR should be approved. Maintainers may dismiss requested changes once they verify that the blocking concerns are resolved.
+
+If review stalls or disagreement persists, ask a maintainer or bring the discussion to Slack, and record the resolution in the PR.
+
+This guidance draws on [Posit’s Tidyteam code review guidance](https://code-review.tidyverse.org/). Analogous to our use of the Tidyverse style guide, use the Tidyteam guide as a reference for navigating code review, with PEcAn-specific requirements taking precedence.
 
 ## Repository Labels
 
