@@ -96,10 +96,9 @@ ANAEROBIC = 1
 defines an option specified in settings$model$options, its value will be
 updated in place; options not already in the file will be added to the bottom.
 
-For SIPNET v2, plantStorageNInit is set to the additional N needed for one
-carbon-limited leaf flush, computed from the initialized wood pool, so the
-first leaf-on event is not nitrogen suppressed. A plantStorageNInit supplied
-through the IC argument takes precedence over the computed value.
+For SIPNET v2, \code{plantStorageNInit} comes from template value unless the
+initial conditions (\code{IC} argument or the poolinitcond file) supply it, in
+which case that value is used, including zero.
 }
 
 \author{
