@@ -47,8 +47,9 @@
 #'   held at 1, and \code{sa_pft}, \code{sa_trait} and \code{sa_quantile} say what
 #'   each run is. The first row is the median run, with those three \code{NA},
 #'   \code{NA} and \code{"50"}; every row after moves one trait of one PFT to one
-#'   of its quantiles. Also \code{X}, the same matrix under its older name, and
-#'   \code{samples}, the parameter bundle used.
+#'   of its quantiles. Also \code{X}, the same matrix under its older name,
+#'   \code{run_samples}, the corresponding parameter values with one row per
+#'   design row, and \code{samples}, the parameter bundle used.
 #'
 #' @examples
 #' \dontrun{
@@ -170,5 +171,14 @@ generate_OAT_SA_design <- function(settings, samples = NULL) {
   design_matrix$sa_trait    <- sa_trait
   design_matrix$sa_quantile <- sa_quantile
 
-  return(list(design_matrix = design_matrix, X = design_matrix, samples = samples))
+  # Keep the values used by each OAT run with the design that describes them.
+  # Config writing then consumes prepared values (rather than rebuilding them).
+  run_samples <- sa_run_samples(sa_samples, design_matrix)
+
+  return(list(
+    design_matrix = design_matrix,
+    X = design_matrix,
+    run_samples = run_samples,
+    samples = samples
+  ))
 }

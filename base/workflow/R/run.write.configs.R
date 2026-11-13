@@ -57,6 +57,10 @@
 #'   are used directly and `samples.Rdata` is not read from disk. When `NULL`
 #'   (default), the function falls back to loading `samples.Rdata` from
 #'   `settings$outdir`.
+#' @param run_samples Prepared parameter values with one row per
+#'   `input_design` row. Sensitivity-analysis callers must provide these from
+#'   `generate_OAT_SA_design()`; ordinary ensembles use
+#'   `samples$ensemble.samples`.
 #'
 #' @return The `settings` list (invisibly), updated with ensemble IDs for SA
 #'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
@@ -67,7 +71,8 @@
 
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
-                              overwrite = TRUE, samples = NULL) {
+                              overwrite = TRUE, samples = NULL,
+                              run_samples = NULL) {
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -226,6 +231,24 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   # Initialize the Manifest Dataframe
   run_manifest_df <- data.frame()
 
+  # Both ordinary ensembles and OAT sensitivity runs use the same underlying
+  # writer. Their differences are represented by prepared values and optional
+  # run descriptions, not by separate config-writing implementations.
+  write_analysis <- function(analysis_samples, analysis_size,
+                             run_descriptions = NULL, analysis_id = NULL) {
+    PEcAn.uncertainty::write.ensemble.configs(
+      defaults         = settings$pfts,
+      ensemble.size    = analysis_size,
+      ensemble.samples = analysis_samples,
+      settings         = settings,
+      model            = model,
+      input_design     = input_design,
+      write.to.db      = write,
+      run_descriptions = run_descriptions,
+      ensemble.id      = analysis_id
+    )
+  }
+
   ### NEED TO IMPLEMENT: Load Environmental Priors and Posteriors
 
   ### Sensitivity Analysis
@@ -233,26 +256,34 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
 
-    # A sensitivity analysis is an ensemble whose parameter sets move one trait
-    # at a time. The design says which run is which, so the parameter sets and
-    # the run names are built from it here and the same writer writes them.
-    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    # OAT parameter values are prepared together with the OAT design. This
+    # writer consumes them just as it consumes ordinary ensemble samples.
+    if (is.null(run_samples)) {
+      stop(
+        "Sensitivity-analysis runs require prepared run_samples. ",
+        "Pass the full result of generate_OAT_SA_design() through ",
+        "runModule.run.write.configs()."
+      )
+    }
+    run_sample_rows <- vapply(run_samples, NROW, integer(1))
+    if (!is.list(run_samples) || length(run_sample_rows) == 0 ||
+        any(run_sample_rows != nrow(input_design))) {
+      stop(
+        "Prepared run_samples must contain one row per sensitivity ",
+        "input_design row."
+      )
+    }
     sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
       design_matrix = input_design,
       site_id       = settings$run$site$id,
       pft_names     = pft.names
     )
 
-    sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
-      defaults         = settings$pfts,
-      ensemble.size    = nrow(input_design),
-      ensemble.samples = sa.run.samples,
-      settings         = settings,
-      model            = model,
-      input_design     = input_design,
-      write.to.db      = write,
+    sa.runs <- write_analysis(
+      analysis_samples = run_samples,
+      analysis_size = nrow(input_design),
       run_descriptions = sa.descriptions,
-      ensemble.id      = settings$sensitivity.analysis$ensemble.id
+      analysis_id = settings$sensitivity.analysis$ensemble.id
     )
 
     # collect manifest data. The median run is the median of every trait, and
@@ -296,14 +327,9 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
   ### Write ENSEMBLE
   if ("ensemble" %in% names(settings)) {
-    ens.runs <- PEcAn.uncertainty::write.ensemble.configs(
-      defaults = settings$pfts,
-      ensemble.size = ensemble.size,
-      ensemble.samples = ensemble.samples,
-      settings = settings,
-      model = model,
-      input_design = input_design,
-      write.to.db = write
+    ens.runs <- write_analysis(
+      analysis_samples = ensemble.samples,
+      analysis_size = ensemble.size
     )
 
     # collect manifest data

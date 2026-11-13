@@ -11,7 +11,8 @@ run.write.configs(
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
   overwrite = TRUE,
-  samples = NULL
+  samples = NULL,
+  run_samples = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ ensemble and sensitivity analysis (e.g. \code{post.distns.Rdata}, or
 are used directly and \code{samples.Rdata} is not read from disk. When \code{NULL}
 (default), the function falls back to loading \code{samples.Rdata} from
 \code{settings$outdir}.}
+
+\item{run_samples}{Prepared parameter values with one row per
+\code{input_design} row. Sensitivity-analysis callers must provide these from
+\code{generate_OAT_SA_design()}; ordinary ensembles use
+\code{samples$ensemble.samples}.}
 }
 \value{
 The \code{settings} list (invisibly), updated with ensemble IDs for SA

@@ -238,8 +238,8 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg",
                 function(...) invisible(NULL))
-  mockery::stub(run_write_configs, "PEcAn.uncertainty::write.ensemble.configs",
-                function(...) list(
+  wec <- mockery::mock(
+    list(
                   runs        = data.frame(id = c("r1", "r2", "r3"),
                                            stringsAsFactors = FALSE),
                   ensemble.id = "SA7",
@@ -250,12 +250,22 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
                                            quantile = c("50", "2.5", "97.5"),
                                            type = "Sensitivity",
                                            stringsAsFactors = FALSE)
-                ))
+    )
+  )
+  mockery::stub(run_write_configs, "PEcAn.uncertainty::write.ensemble.configs", wec)
   mockery::stub(run_write_configs, "PEcAn.uncertainty::sensitivity.filename",
                 function(...) sa_file)
 
   run_write_configs(settings, ensemble.size = 1,
-                    input_design = input_design, write = FALSE)
+                    input_design = input_design, write = FALSE,
+                    run_samples = list(temperate.deciduous = data.frame(
+                      Vcmax = c(20, 12, 28)
+                    )))
+
+  expect_identical(
+    mockery::mock_args(wec)[[1]]$ensemble.samples,
+    list(temperate.deciduous = data.frame(Vcmax = c(20, 12, 28)))
+  )
 
   expect_true(file.exists(sa_file))
   e <- new.env()
@@ -274,4 +284,31 @@ test_that("sensitivity.samples.<id>.Rdata keeps its 5-object save contract", {
   expect_equal(e$sa.run.ids$temperate.deciduous["50", "Vcmax"], "r1")
   expect_equal(e$sa.run.ids$temperate.deciduous["2.5", "Vcmax"], "r2")
   expect_equal(e$sa.run.ids$temperate.deciduous["97.5", "Vcmax"], "r3")
+})
+
+test_that("sensitivity run_samples must align with the design rows", {
+  tmp <- withr::local_tempdir()
+  local_fake_model_writer()
+  settings <- make_rwc_settings(tmp, with_sa = TRUE)
+  trait.samples <- list(temperate.deciduous = list(Vcmax = c(10, 20, 30)))
+  sa.samples <- list(temperate.deciduous = data.frame(
+    Vcmax = c(12, 20, 28), row.names = c("2.5", "50", "97.5")
+  ))
+  write_samples_file(tmp, trait.samples, sa.samples = sa.samples)
+
+  input_design <- data.frame(
+    param = c(1, 2, 3),
+    sa_pft = c(NA, "temperate.deciduous", "temperate.deciduous"),
+    sa_trait = c(NA, "Vcmax", "Vcmax"),
+    sa_quantile = c("50", "2.5", "97.5"),
+    stringsAsFactors = FALSE
+  )
+
+  expect_error(
+    PEcAn.workflow::run.write.configs(
+      settings, ensemble.size = 1, input_design = input_design, write = FALSE,
+      run_samples = list(temperate.deciduous = data.frame(Vcmax = c(20, 12)))
+    ),
+    "one row per sensitivity input_design row"
+  )
 })

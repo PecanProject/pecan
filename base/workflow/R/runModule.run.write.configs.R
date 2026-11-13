@@ -79,62 +79,63 @@ runModule.run.write.configs <- function(settings,
     # start with original settings for final merge
     settings_final <- settings
 
-    # ---------------- SENSITIVITY ANALYSIS CALL ----------------------
+    # Assemble each analysis as a prepared write job. Both paths now hand the
+    # same writer a design and one parameter set per run; only the OAT job
+    # carries its pre-expanded values.
+    analysis_jobs <- list()
+
     if ("sensitivity.analysis" %in% names(settings) && !is.null(designs$sensitivity)) {
-
-      PEcAn.logger::logger.info("Writing configs for Sensitivity Analysis...")
-
-      # create settings with ONLY sensitivity.analysis (no ensemble)
       settings_sa <- settings
       settings_sa$ensemble <- NULL
-
-      settings_sa_out <- PEcAn.workflow::run.write.configs(
+      analysis_jobs$sensitivity <- list(
         settings = settings_sa,
-        ensemble.size = 1,  # SA doesn't use ensemble.size, but required param
-        write = isTRUE(settings$database$bety$write),
-        posterior.files = posterior.files,
-        overwrite = current_overwrite,
+        ensemble_size = 1, # SA size comes from the prepared design rows.
         input_design = designs$sensitivity,
-        samples = designs$samples
+        run_samples = designs$sensitivity_run_samples
       )
-
-      # capture SA ensemble.id
-      settings_final$sensitivity.analysis <- settings_sa_out$sensitivity.analysis
-      # also capture any pft$outdir modifications
-      settings_final$pfts <- settings_sa_out$pfts
-
-      # subsequent calls should append, not overwrite
-      current_overwrite <- FALSE
     }
 
-    # ------------------- ENSEMBLE CALL ----------------------
     if ("ensemble" %in% names(settings) && !is.null(designs$ensemble)) {
-
-      PEcAn.logger::logger.info("Writing configs for Ensemble...")
-
-      # create settings with ONLY ensemble (no sensitivity.analysis)
       settings_ens <- settings
       settings_ens$sensitivity.analysis <- NULL
-
-      # determine ensemble size from design
-      ensemble_size <- nrow(designs$ensemble)
-
-      settings_ens_out <- PEcAn.workflow::run.write.configs(
+      analysis_jobs$ensemble <- list(
         settings = settings_ens,
-        ensemble.size = ensemble_size,
+        ensemble_size = nrow(designs$ensemble),
+        input_design = designs$ensemble,
+        run_samples = NULL
+      )
+    }
+
+    for (analysis_name in names(analysis_jobs)) {
+      job <- analysis_jobs[[analysis_name]]
+      PEcAn.logger::logger.info(
+        "Writing configs for ",
+        if (analysis_name == "sensitivity") "Sensitivity Analysis..." else "Ensemble..."
+      )
+
+      settings_out <- PEcAn.workflow::run.write.configs(
+        settings = job$settings,
+        ensemble.size = job$ensemble_size,
         write = isTRUE(settings$database$bety$write),
         posterior.files = posterior.files,
         overwrite = current_overwrite,
-        input_design = designs$ensemble,
-        samples = designs$samples
+        input_design = job$input_design,
+        samples = designs$samples,
+        run_samples = job$run_samples
       )
 
-      # capture ensemble.id
-      settings_final$ensemble <- settings_ens_out$ensemble
-      # capture pft$outdir if SA didn't already
-      if (!"sensitivity.analysis" %in% names(settings)) {
-        settings_final$pfts <- settings_ens_out$pfts
+      if (analysis_name == "sensitivity") {
+        settings_final$sensitivity.analysis <- settings_out$sensitivity.analysis
+        settings_final$pfts <- settings_out$pfts
+      } else {
+        settings_final$ensemble <- settings_out$ensemble
+        if (!"sensitivity.analysis" %in% names(settings)) {
+          settings_final$pfts <- settings_out$pfts
+        }
       }
+
+      # Later jobs append to the manifest and preserve earlier config outputs.
+      current_overwrite <- FALSE
     }
 
     return(invisible(settings_final))
@@ -188,10 +189,23 @@ runModule.run.write.configs <- function(settings,
   # call that produced this list, and its samples travel on `$samples`.
   if (is.list(input_design) && !is.data.frame(input_design) &&
       any(c("ensemble", "sensitivity") %in% names(input_design))) {
+    if (!is.null(input_design$sensitivity) &&
+        is.null(input_design$sensitivity_run_samples)) {
+      PEcAn.logger::logger.severe(
+        "Sensitivity input_design is missing prepared run_samples.",
+        "Generate it with generate_OAT_SA_design() so its labeled rows and ",
+        "per-run parameter values stay together."
+      )
+    }
     return(input_design)
   }
 
-  designs <- list(ensemble = NULL, sensitivity = NULL, samples = NULL)
+  designs <- list(
+    ensemble = NULL,
+    sensitivity = NULL,
+    sensitivity_run_samples = NULL,
+    samples = NULL
+  )
   supplied_samples <- NULL
 
   # Interpret a caller-supplied design. A design's `param` column only indexes
@@ -214,7 +228,14 @@ runModule.run.write.configs <- function(settings,
       # labels describes SA runs; anything else is an ensemble. Nothing here
       # reads the settings to work that out.
       if (all(c("sa_pft", "sa_trait", "sa_quantile") %in% names(supplied_design))) {
+        if (is.null(input_design$run_samples)) {
+          PEcAn.logger::logger.severe(
+            "Sensitivity input_design is missing prepared run_samples.",
+            "Pass the complete result of generate_OAT_SA_design()."
+          )
+        }
         designs$sensitivity <- supplied_design
+        designs$sensitivity_run_samples <- input_design$run_samples
       } else {
         designs$ensemble <- supplied_design
       }
@@ -312,6 +333,7 @@ runModule.run.write.configs <- function(settings,
       samples = designs$samples
     )
     designs$sensitivity <- design_result$design_matrix %||% design_result$X
+    designs$sensitivity_run_samples <- design_result$run_samples
   }
 
   return(designs)

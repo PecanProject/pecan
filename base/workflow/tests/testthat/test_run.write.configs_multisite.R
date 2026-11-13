@@ -54,6 +54,10 @@ make_settings <- function(env, site_id) {
   )
 }
 
+oat_run_samples <- function() {
+  list(pftA = data.frame(Vcmax = c(42, 48)))
+}
+
 
 test_that("run.write.configs writes manifest with expected structure", {
   assign("write.config.FAKE", function(...) invisible(NULL), envir = .GlobalEnv)
@@ -79,7 +83,8 @@ test_that("run.write.configs writes manifest with expected structure", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = TRUE
+    overwrite = TRUE,
+    run_samples = oat_run_samples()
   )
 
   expect_true(file.exists(env$manifest_file))
@@ -104,14 +109,17 @@ test_that("rerunning a multisite write with overwrite = TRUE replaces the manife
     PEcAn.settings::as.Settings(make_settings(env, "1001")),
     PEcAn.settings::as.Settings(make_settings(env, "1002"))
   )
-  input_design <- list(sensitivity = data.frame(
-    param       = c(1, 2),
-    met         = c(1, 1),
-    sa_pft      = c(NA, "pftA"),
-    sa_trait    = c(NA, "Vcmax"),
-    sa_quantile = c("50", "95"),
-    stringsAsFactors = FALSE
-  ))
+  input_design <- list(
+    sensitivity = data.frame(
+      param       = c(1, 2),
+      met         = c(1, 1),
+      sa_pft      = c(NA, "pftA"),
+      sa_trait    = c(NA, "Vcmax"),
+      sa_quantile = c("50", "95"),
+      stringsAsFactors = FALSE
+    ),
+    sensitivity_run_samples = oat_run_samples()
+  )
 
   # existing run directories and the appended manifest header both warn here
   suppressWarnings(runModule.run.write.configs(settings, overwrite = TRUE, input_design = input_design))
@@ -149,7 +157,8 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = TRUE
+    overwrite = TRUE,
+    run_samples = oat_run_samples()
   )
 
   first_manifest <- utils::read.csv(env$manifest_file, stringsAsFactors = FALSE)
@@ -162,7 +171,8 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = FALSE
+    overwrite = FALSE,
+    run_samples = oat_run_samples()
   )
 
   merged_manifest <- utils::read.csv(env$manifest_file, stringsAsFactors = FALSE)

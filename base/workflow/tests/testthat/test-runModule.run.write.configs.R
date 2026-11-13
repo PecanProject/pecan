@@ -167,7 +167,10 @@ test_that(".prepare_input_designs threads SA samples into the OAT generator", {
   )
 
   gps <- mockery::mock(sa_bundle)
-  oat <- mockery::mock(list(X = data.frame(param = 1:4)))
+  oat <- mockery::mock(list(
+    X = data.frame(param = 1:4),
+    run_samples = list(temperate.deciduous = data.frame(SLA = 1:4))
+  ))
   mockery::stub(.prepare_input_designs,
                 "PEcAn.uncertainty::load_pft_posteriors",
                 function(...) fake_loaded())
@@ -191,6 +194,8 @@ test_that(".prepare_input_designs threads SA samples into the OAT generator", {
   expect_equal(oat_args$samples, designs$samples)
 
   expect_equal(designs$sensitivity, data.frame(param = 1:4))
+  expect_equal(designs$sensitivity_run_samples,
+               list(temperate.deciduous = data.frame(SLA = 1:4)))
   expect_true(file.exists(file.path(tmp, "samples.Rdata")))
 })
 
@@ -329,6 +334,7 @@ test_that("a design carrying SA labels is taken as the sensitivity design", {
       sa_quantile = c("50", "2.5", "97.5"),
       stringsAsFactors = FALSE
     ),
+    run_samples = list(temperate.deciduous = data.frame(SLA = c(20, 12, 28))),
     samples = fake_bundle()
   )
 
@@ -342,7 +348,30 @@ test_that("a design carrying SA labels is taken as the sensitivity design", {
   designs <- .prepare_input_designs(settings, input_design = supplied)
 
   expect_identical(designs$sensitivity, supplied$design_matrix)
+  expect_identical(designs$sensitivity_run_samples, supplied$run_samples)
   mockery::expect_called(oat, 0)
+})
+
+test_that("a supplied sensitivity design must carry its prepared run samples", {
+  tmp <- withr::local_tempdir()
+  settings <- make_prep_settings(tmp)
+  settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
+
+  supplied <- list(
+    design_matrix = data.frame(
+      param = 1:3,
+      sa_pft = c(NA, "temperate.deciduous", "temperate.deciduous"),
+      sa_trait = c(NA, "SLA", "SLA"),
+      sa_quantile = c("50", "2.5", "97.5"),
+      stringsAsFactors = FALSE
+    ),
+    samples = fake_bundle()
+  )
+
+  expect_error(
+    .prepare_input_designs(settings, input_design = supplied),
+    "missing prepared run_samples"
+  )
 })
 
 
