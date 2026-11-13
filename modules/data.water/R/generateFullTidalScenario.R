@@ -42,17 +42,25 @@ generateFullTidalScenario <- function(
   # 4. Query future SLR
   gauge_tab <- PEcAn.data.water::noaa_us_gauge_info
 
-  # [1] "ssp119"         "ssp126"         "ssp245"         "ssp370"         "ssp585"
-  # [6] "tlim1.5win0.25" "tlim2.0win0.25" "tlim3.0win0.25" "tlim4.0win0.25" "tlim5.0win0.25"
-  if (! any(scenario %in% c("ssp119","ssp126", "ssp245", "ssp370", "ssp585",
-                            "tlim1.5win0.25", "tlim2.0win0.25", "tlim3.0win0.25", "tlim4.0win0.25", "tlim5.0win0.25"))) { stop(paste0("One or more scenarios is not a recognized AR6 scenario. Choose from the following: ",
-                                                                                                                                      paste(c("ssp119","ssp126", "ssp245", "ssp370", "ssp585", "tlim1.5win0.25", "tlim2.0win0.25", "tlim3.0win0.25", "tlim4.0win0.25", "tlim5.0win0.25"), collapse =", "),
-                                                                                                                                      "."))
+  supported_scenarios <- c(
+    "ssp119","ssp126", "ssp245", "ssp370", "ssp585",
+    "tlim1.5win0.25", "tlim2.0win0.25", "tlim3.0win0.25", "tlim4.0win0.25",
+    "tlim5.0win0.25"
+  )
+  if (! any(scenario %in% supported_scenarios)) {
+    stop(
+      "One or more scenarios is not a recognized AR6 scenario. Choose from the following: ",
+      toString(supported_scenarios)
+    )
   }
 
-  if (any(! confidence_level %in% c("low", "medium"))) {stop("Confidence can only be low or medium.")}
+  if (any(! confidence_level %in% c("low", "medium"))) {
+    stop("Confidence can only be low or medium.")
+  }
 
-  if (any(target_quantile<0) | any(target_quantile>1)) {stop("Quantiles are misspeccified. Must be between 0 and 1.")}
+  if (any(target_quantile<0) || any(target_quantile>1)) {
+    stop("Quantiles are misspeccified. Must be between 0 and 1.")
+  }
 
   # or one start date for each gauge
   if (length(hindcast_start) == 1) {

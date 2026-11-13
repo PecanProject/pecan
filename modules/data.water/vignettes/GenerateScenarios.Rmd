@@ -15,12 +15,29 @@ library(tidyverse)
 
 ## Run Some Queries
 
-``` {r run queries}
-# 4. Query future SLR
+First look up basic location info for three tidal stations of interest.
+Here we use San Diego, Los Angeles, and San Francisco.
+
+``` {r gauge lookup}
 gauge_tab <- PEcAn.data.water::noaa_us_gauge_info |>
   filter(noaa_id %in% c(c(9410170, 9410660, 9414290))) |>
   rename(gauge_id = noaa_id)
+```
 
+Create tidal scenarios through year 2100 under SSPs 126, 245, and 370.
+
+Note that `generateFullTidalScenario()` makes internal calls to
+`VulnToolkit::noaa()` that sometimes fail when NOAA's server is overloaded.
+For this vignette we use a cached result to avoid these failures.
+If you see failures during interactive use, wait a few seconds and try again.
+
+```{r load_cached_scenario, eval=TRUE, echo=FALSE, include=FALSE}
+# File was created using
+# saveRDS(scenario_output, file = "vignettes/scenario_output.rds", compress = "xz")
+scenario_output <- readRDS("scenario_output.rds")
+```
+
+```{r generate_scenarios, eval=FALSE, echo=TRUE}
 scenario_output <- PEcAn.data.water::generateFullTidalScenario(
    station_id = c(9410170, 9410660, 9414290),
    run_hindcast = T,
