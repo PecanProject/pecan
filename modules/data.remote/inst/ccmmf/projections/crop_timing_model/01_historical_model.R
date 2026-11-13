@@ -1,11 +1,16 @@
 # =====================================================================================
 # 01_historical_model.R : build, validate and calibrate the model on 2018-2023 data.
 #
-# Model: for each parcel and season, find the anchor date (start of the season) from
-# daily weather, then add up a daily score (heat + dry day + dry soil) after the anchor.
-# The date the running total reaches a threshold Fcrit is the predicted planting date
-# (onset of greenness increase, OGI) or harvest date (onset of greenness minimum, OGMn).
-# Fcrit is calibrated separately for each crop class x anchor x segment.
+# THE MODEL (one parcel, one season)
+#   anchor : the day the season starts, found from daily weather (find_onset in 00_setup.R)
+#   score  : S[t] = heat (degrees above TBASE) for each day t; optional dry day and dry soil flags are off (build_S in 00_setup.R)
+#   total  : C(k) = S[anchor + 1] + ... + S[anchor + k], the running total k days after the anchor
+#   event  : predicted days after the anchor = the first k with C(k) >= Fcrit
+#            predicted date = anchor + k, either the planting date (onset of greenness increase, OGI)
+#            or the harvest date (onset of greenness minimum, OGMn)
+# The only fitted quantity is Fcrit. It is fitted separately for each crop class x anchor x segment
+# (segment = which date is predicted: "planting" or "harvest") by choosing the Fcrit that gives the
+# smallest RMSE between predicted and observed days (calib_F in 00_setup.R).
 #
 # Steps
 #   1 Daymet temperature and precipitation -> cell x day matrices
@@ -13,10 +18,10 @@
 #   3 daily score matrix
 #   4 anchors ("c7" fixed 7 C threshold, "rel" season-relative threshold)
 #   5 tables of observed days from anchor to planting / harvest
-#   6 leave-one-year-out validation vs a climatology baseline
-#   7 final Fcrit calibration on all validation years
+#   6 leave-one-year-out validation vs a climatology baseline (fits Fcrit on the training years of each fold)
+#   7 final Fcrit calibration on all validation years (the values the projections use)
 #   8 forward-in-time validation (train on earlier years only)
-#   9 validated class lists
+#   9 validated class lists (which results are reported; this does not change any prediction)
 #
 # Run time is long (validation is the slow part); run it as a batch job on the SCC.
 # Outputs (rds, in <base_dir>/rebuild_outputs):
@@ -142,7 +147,12 @@ cat("Alignment check passed. Rows:", paste(unlist(lapply(tabs, function(a) lappl
 tbl_idx <- function(tbl) list(cr = parcel_cell_row[tbl$rid], st = match(tbl$onset, dates_all))
 
 # ---------------------------------------------------------------- 6. VALIDATION
-# For each class, calibrate Fcrit on the training years and predict the test year.
+# Validation asks: if Fcrit is fitted without a given year, how well does the model predict that year?
+# So for each class, Fcrit is fitted again on the training years only (calib_F, the same fit as step 7) and
+# used to predict the held out test year. The test year never enters its own fit, which is why the final
+# calibration on all years (step 7) cannot be used here. Each fold's Fcrit is kept in the Fcrit column of
+# validation_by_year.rds (and validation_forward_by_year.rds), together with the fraction of parcels that
+# reach Fcrit (frac_cross) and the model and baseline errors for that fold.
 # Baseline ("climatology") = mean observed days_t of the training years.
 # Parcels whose score never reaches Fcrit fall back to the baseline (they are counted, not dropped).
 # A year is a win when the model's RMSE is below the baseline's.
@@ -193,16 +203,25 @@ saveRDS(val, file.path(out_dir, "validation_by_year.rds"))
 saveRDS(val_summary, file.path(out_dir, "validation_summary.rds"))
 
 # ---------------------------------------------------------------- 7. FINAL CALIBRATION
-# Fcrit per class x anchor x segment, fitted on all validation years. This is what the projections use.
+# The model being fitted: for one crop class, anchor type and segment, find the single number Fcrit such that
+# "the first day the running score total reaches Fcrit" is as close as possible (RMSE, in days) to the observed
+# days from the anchor to planting (or harvest). It is the same fit as inside each validation fold (step 6),
+# but on all validation years, so it gives one Fcrit per class x anchor x segment. These are the values
+# 02_future_projection.R uses, and they are held fixed there.
+# Order note: this step sits after the leave one year out validation only because the random subsample used by
+# calib_F (set.seed(42) above) depends on how many draws came before it. Keeping this order reproduces the
+# Fcrit values reported so far; it does not change how the model works.
 calibrate_all <- function() {
   res <- list()
   for (a in c("c7", "rel")) for (sg in c("planting", "harvest")) {
     tbl <- if (sg == "planting") tabs[[a]]$ogi else tabs[[a]]$ogmn
     wt  <- if (sg == "planting") win_ogi else win_ogmn
     for (key in wt$key) {
-      d <- tbl %>% filter(key == !!key, OGI_year %in% val_years); if (nrow(d) < 50) next
-      ix <- tbl_idx(d); md <- wt$max_days[wt$key == key]
-      cal <- calib_F(S_hist, ix$cr, ix$st, d$days_t, md)
+      d <- tbl %>% filter(key == !!key, OGI_year %in% val_years)   # all parcel seasons of this class
+      if (nrow(d) < 50) next                                        # too few parcels to fit
+      ix <- tbl_idx(d)                                              # climate cell row and anchor column per parcel
+      md <- wt$max_days[wt$key == key]                              # maximum window for this class
+      cal <- calib_F(S_hist, ix$cr, ix$st, d$days_t, md)            # fit Fcrit (days_t = observed days after anchor)
       res[[length(res) + 1]] <- data.frame(anchor = a, segment = sg, key, max_days = md,
         Fcrit = unname(cal["Fcrit"]), rmse_fit = unname(cal["rmse"]), n = nrow(d), mean_days_t = mean(d$days_t))
     }
@@ -224,7 +243,8 @@ saveRDS(fwd_summary, file.path(out_dir, "validation_forward_summary.rds"))
 
 # ---------------------------------------------------------------- 9. VALIDATED CLASSES
 # A class x anchor x segment pair is "validated" if it beats the baseline in enough years in BOTH tests.
-# "strong" is the stricter version used for the poster (see 00_setup.R).
+# "strong" is the stricter version (see 00_setup.R). Neither tier changes any prediction; they only mark which
+# results are reported as validated.
 pairs_tab <- val_summary %>%
   select(anchor, segment, key, loo_wins = wins, loo_error_model = mean_rmse_model,
          loo_error_baseline = mean_rmse_null, loo_skill_pct = skill_pct) %>%
