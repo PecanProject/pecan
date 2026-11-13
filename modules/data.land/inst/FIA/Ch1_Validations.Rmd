@@ -1,0 +1,3893 @@
+---
+title: "Chapter 1: SDA Validation"
+author: "Cami Webb, cwebb16@bu.edu"
+output: html_document
+---
+```{r setup, include=FALSE}
+# NOTE: 
+  # * = included in thesis
+  # * chunks are mostly standalone, others are likely not standalone and require running of previous code to work
+  # PFT = "combined" or "overall" = all forest (con+dec)
+  # County-level data is aggregated in "/projectnb/dietzelab/cwebb16/R_files/Ch1_County_Aggregations.Rmd"
+
+# Setup
+.libPaths("/projectnb/dietzelab/cwebb16/x86_64-pc-linux-gnu-library/4.4")
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+library(DBI)
+library(RSQLite) 
+library(dplyr)
+library(geosphere)
+library(sp)
+library(ggplot2)
+library(rnaturalearth)
+library(sf)
+library(maps)
+library(scoringRules)
+library(ncf)
+library(terra)
+library(gstat)
+library(exactextractr)
+library(ggpmisc)
+
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	comment = NA
+)
+```
+
+# Plot-Level Inventory-SDA Validations (not including maps or pred vs obs plots)
+## 1. Data Preparation 
+
+##### 1a. Filter FIA TREE table data by selected plots
+```{r Filter FIA TREE table data by selected plots, echo=FALSE}
+
+# Upload FIA data and connect to database
+FIA_Data <- dbConnect(
+  RSQLite::SQLite(),
+  "/projectnb/dietzelab/fia/SQLite_FIADB_ENTIRE.db"
+)
+
+# Load list of selected plot CNs (these CNs correspond exactly to SDA sites created by Dongchen Zhang)
+Selected_Plots <- read.table(
+  "/projectnb/dietzelab/cwebb16/inventory_validation/selected_fia_cn.txt",
+  header = FALSE
+)
+
+# Make plot CNs character, make string for query
+Selected_Plots[[1]] <- as.character(Selected_Plots[[1]])
+selplotcn <- Selected_Plots[[1]]
+selplotcnstring <- paste(selplotcn, collapse = ", ")
+
+# Query PLOT table for selected plots and their previous plot CNs if applicable
+filter_query_plot <- paste(
+  "SELECT * FROM PLOT WHERE CN IN (", selplotcnstring,
+  ") OR PREV_PLT_CN IN (", selplotcnstring, ");"
+)
+
+# Pull filtered PLOT table
+FilteredPLOT <- dbGetQuery(FIA_Data, filter_query_plot)
+
+# Find plots whose PREV_PLT_CN matches selected plots
+selprevPLOTquery <- paste(
+  "SELECT CN FROM PLOT WHERE PREV_PLT_CN IN (", selplotcnstring, ");")
+selprevPLOTCN <- dbGetQuery(FIA_Data, selprevPLOTquery)
+
+# CN string for previous plots
+selprevCNstring <- paste(selprevPLOTCN$CN, collapse = ", ")
+
+# Pull TREE records for previous plots
+selprevTREECNquery <- paste(
+  "SELECT * FROM TREE WHERE PLT_CN IN (", selprevCNstring, ");")
+selprevTREE <- dbGetQuery(FIA_Data, selprevTREECNquery)
+
+# Pull TREE records for selected plots
+selTREEquery <- paste(
+  "SELECT * FROM TREE WHERE PLT_CN IN (", selplotcnstring, ");")
+selTREE <- dbGetQuery(FIA_Data, selTREEquery)
+
+# Combine TREE data from current and previous plots
+FilteredTREE <- bind_rows(selTREE, selprevTREE)
+```
+
+##### 1b. Calculate observed FC, WC, TC
+```{r Calculate observed carbon, echo=FALSE}
+## Add C values to PLOT table ##
+
+# Get rid of dead trees (filter out rows where AGENTCD and/or MORTYR has a value
+FilteredTREE <- FilteredTREE %>%
+  filter(is.na(AGENTCD))
+
+FilteredTREE <- FilteredTREE %>%
+  filter(is.na(MORTYR))
+
+# Convert to metric units
+# Conversion factor from pounds/acre to kg/m^2
+conversion_factor_lbacre <- 0.45359237 / 4046.85642
+
+# Calculate C per unit area for wood and foliage
+summarizeTREE <- FilteredTREE %>%
+  group_by(PLT_CN) %>%
+  summarize(
+    WC_Obs = sum(
+      CARBON_AG * TPA_UNADJ * conversion_factor_lbacre,
+      na.rm = TRUE), # Observed woody carbon (kg/m2)
+    
+    WC_SD_Obs = sd(
+      CARBON_AG * TPA_UNADJ * conversion_factor_lbacre,
+      na.rm = TRUE),
+    
+    FC_Obs = sum(
+      DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * conversion_factor_lbacre,
+      na.rm = TRUE), # Observed foliage carbon (kg/m2)
+    
+    FC_SD_Obs = sd(
+      DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * conversion_factor_lbacre,
+      na.rm = TRUE
+    )
+  )
+
+# Calculate total C per unit area for each plot
+FilteredTREE <- summarizeTREE %>%
+  mutate(Tot_C_Obs = WC_Obs + FC_Obs)
+
+# Join modified TREE and PLOT tables matching PLT_CN from TREE with CN from PLOT
+FilteredPLOT <- FilteredPLOT %>%
+  left_join(FilteredTREE, by = c("CN" = "PLT_CN"))
+
+# Keep only relevant columns
+FilteredPLOT <- FilteredPLOT %>%
+  dplyr::select(
+    CN,
+    PREV_PLT_CN,
+    INVYR,
+    LAT,
+    LON,
+    ELEV,
+    WC_Obs,
+    FC_Obs,
+    Tot_C_Obs
+  )
+```
+```{r Load SIPNET, echo=FALSE}
+## Edit SDA data to have Site Number in column names ##
+
+# Load data
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis.Rdata")
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_info.Rdata")
+
+# Rename SIPNET lists to their corresponding year
+names(analysis.all) <- 2012:2024
+year <- 2012:2024
+
+# Define variable names
+variables <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+
+# Loop over years
+for (year in names(analysis.all)) { 
+  year_df <- analysis.all[[year]]
+  new_colnames <- character(ncol(year_df))
+  for (site in 1:8000) { # loop over sites
+    start_col <- (site - 1) * 4 + 1 # starting column for site
+    new_colnames[start_col:(start_col + 3)] <- paste0(variables, "_Site", site)
+  }
+  colnames(year_df) <- new_colnames
+  analysis.all[[year]] <- year_df
+}
+
+```
+
+##### 1c. Assign the closest site number to each plot
+```{r Assign the closest site number, echo=FALSE}
+## Add column with closest site number for each plot in FilteredPLOT ##
+
+# Pull site PFT 
+site_pft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv")
+site_info <- as.data.frame(site_info)
+
+# Keep PFTs used in SDA
+allowed_sites <- site_pft %>%
+  filter(pft %in% c("boreal.coniferous", "temperate.deciduous.HPDA"))
+
+# Site IDs to character
+site_info$site_ids <- as.character(site_info$site_ids)
+allowed_sites$site <- as.character(allowed_sites$site)
+
+# Filter site_info to con/decid sites
+site_info_allowed <- site_info %>%
+  filter(site_ids %in% allowed_sites$site)
+
+# Site coordinates
+Site_Coordinates <- as.matrix(site_info_allowed[, c("lat", "lon")])
+mode(Site_Coordinates) <- "numeric"
+
+# Plot coordinates
+FilteredPLOT_Coordinates <- as.matrix(FilteredPLOT[, c("LAT", "LON")])
+mode(FilteredPLOT_Coordinates) <- "numeric"
+
+# Make closest-site column
+FilteredPLOT$Closest_Site <- NA
+max_dist_km <- 20 # distance cutoff
+
+for (i in 1:nrow(FilteredPLOT)) { # loop over plots
+  plot_coords <- FilteredPLOT_Coordinates[i, ]
+  distances <- spDistsN1(Site_Coordinates, plot_coords, longlat = TRUE)
+  min_idx <- which.min(distances)
+  if (distances[min_idx] <= max_dist_km) FilteredPLOT$Closest_Site[i] <- site_info_allowed$site_ids[min_idx]
+}
+
+# Keep needed columns
+FilteredPLOT <- FilteredPLOT %>%
+  dplyr::select(CN, PREV_PLT_CN, INVYR, LAT, LON, ELEV, WC_Obs, FC_Obs, Tot_C_Obs, Closest_Site)
+
+```
+
+##### 1d. Filter SIPNET data with relevant site/year combinations
+```{r Filter SIPNET data with relevant site/year combinations, echo=FALSE}
+## Filter analysis.all to only include relevant sites ##
+
+# Pull sites used by FIA plots
+sites_to_keep <- FilteredPLOT$Closest_Site
+
+# Filter SIPNET outputs to chosen FIA matched sites
+analysis.fia <- list()
+for (year in names(analysis.all)) { # loop over years
+  df <- analysis.all[[year]]
+  pattern <- paste0("_Site(", paste(sites_to_keep, collapse = "|"), ")$")
+  analysis.fia[[year]] <- df[, grep(pattern, colnames(df))]
+}
+
+## Keep only valid site-year combinations ##
+valid_combinations <- unique(FilteredPLOT[, c("INVYR", "Closest_Site")])
+
+# Filter again by inventory year
+for (year in names(analysis.fia)) { # loop over years
+  year_df <- analysis.fia[[year]]
+  current_year <- as.numeric(substr(year, 1, 4))
+  valid_sites <- valid_combinations$Closest_Site[valid_combinations$INVYR == current_year]
+  matching_columns <- grep(paste0("_Site(", paste(valid_sites, collapse = "|"), ")$"),
+                           colnames(year_df), value = TRUE)
+  analysis.fia[[year]] <- year_df[, matching_columns, drop = FALSE]
+}
+```
+
+##### 1e. Correlate PFT to sites to extract SLA
+```{r Correlate PFT to sites to extract SLA, echo=FALSE}
+## Correlate PFT to sites to get SLA ##
+# Load site/pft files
+sitepft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv", header = TRUE)
+
+samples <- load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata")
+
+# Filter the samples to keep only con and decid 
+filtered_samples <- ensemble.samples[c("temperate.deciduous.HPDA", "boreal.coniferous")]
+```
+
+##### 1f. Calculate modeled FC, WC, and TC
+```{r Calculate modeled carbon pools, echo=FALSE}
+## Create final model data table ##
+
+# List to store yearly summaries
+summary_list <- list()
+
+# Match names to full SDA list
+names(analysis.fia) <- names(analysis.all)
+
+# Loop over years
+for (year in names(analysis.all)) {
+  year_only <- year
+  df <- analysis.fia[[year]]
+  site_numbers <- unique(gsub(".*_Site(\\d+)", "\\1", colnames(df))) # pull site numbers from column names
+
+  # Empty summary table for this year
+  summary_table <- data.frame(Site_Number = numeric(0),
+                              Year = character(0),
+                              FC_Mean_Mod = numeric(0),
+                              FC_SD_Mod = numeric(0),
+                              WC_Mean_Mod = numeric(0),
+                              WC_SD_Mod = numeric(0),
+                              Tot_C_Mean_Mod = numeric(0),
+                              Tot_C_SD_Mod = numeric(0),
+                              stringsAsFactors = FALSE)
+
+  # Loop over sites
+  for (site in site_numbers) {
+    lai_col <- paste0("LAI_Site", site)
+    abv_col <- paste0("AbvGrndWood_Site", site)
+
+    if (lai_col %in% colnames(df) && abv_col %in% colnames(df)) {
+      pft_site <- sitepft$pft[match(as.numeric(site), sitepft$site)]
+      if (is.na(pft_site) || !(pft_site %in% names(filtered_samples))) next
+      sla_vec <- filtered_samples[[pft_site]]$SLA
+
+      leafC <- 0.5 * df[[lai_col]] / sla_vec # transform FC, WC, TC
+      woodC <- 0.1 * df[[abv_col]]
+      AGC <- woodC + leafC
+
+      summary_table <- rbind(summary_table,
+        data.frame(Site_Number = as.numeric(site),
+                   Year = year_only,
+                   FC_Mean_Mod = mean(leafC, na.rm = TRUE),
+                   FC_SD_Mod = sd(leafC, na.rm = TRUE),
+                   WC_Mean_Mod = mean(woodC, na.rm = TRUE),
+                   WC_SD_Mod = sd(woodC, na.rm = TRUE),
+                   Tot_C_Mean_Mod = mean(AGC, na.rm = TRUE),
+                   Tot_C_SD_Mod = sd(AGC, na.rm = TRUE)))
+    }
+  }
+
+  summary_list[[year]] <- summary_table
+}
+
+# Combine all years
+final_summary_table <- do.call(rbind, summary_list)
+```
+
+##### 1g. Assign SLA to each site
+```{r Assign SLA to each site, echo=FALSE}
+## Find SLA for each site in final table ##
+
+# Map PFT to SLA
+pft_to_sla <- data.frame(
+  PFT = c("temperate.deciduous.HPDA", "boreal.coniferous"))
+
+# Merge final_summary_table with sitepft to get PFT for each site
+final_summary_table <- merge(final_summary_table, sitepft, by.x = "Site_Number", by.y = "site", all.x = TRUE)
+
+```
+
+##### 1h. Create comparative table 
+```{r Create comparative table, echo=FALSE}
+## Create comparative table ##
+
+# Combine FilteredPLOT and model_summary by Year and Site Number
+FIA_Model_Combined <- merge(FilteredPLOT, final_summary_table,
+                            by.x = c("INVYR", "Closest_Site"), 
+                            by.y = c("Year", "Site_Number"),
+                            all = FALSE)
+
+# Remove rows with no FIA data
+FIA_Model_Combined <- FIA_Model_Combined[!is.na(FIA_Model_Combined$WC_Obs), ]
+```
+
+##### 1i. Calculate summary statistics
+
+Note: "Overall" = across both **PFT**s
+
+```{r Calculate plot-level summary statistics, echo=FALSE}
+
+## Create overall summary statistic table ##
+
+# Calculate Residuals
+FIA_Model_Combined$FCResidual <- FIA_Model_Combined$FC_Obs - FIA_Model_Combined$FC_Mean_Mod
+FIA_Model_Combined$WCResidual <- FIA_Model_Combined$WC_Obs - FIA_Model_Combined$WC_Mean_Mod
+FIA_Model_Combined$TCResidual <- FIA_Model_Combined$Tot_C_Obs - FIA_Model_Combined$Tot_C_Mean_Mod
+
+# Calculate metrics
+TC_bias <- mean(FIA_Model_Combined$TCResidual, na.rm = TRUE)
+FC_bias <- mean(FIA_Model_Combined$FCResidual, na.rm = TRUE)
+WC_bias <- mean(FIA_Model_Combined$WCResidual, na.rm = TRUE)
+
+TC_MAE <- mean(abs(FIA_Model_Combined$TCResidual), na.rm = TRUE)
+FC_MAE <- mean(abs(FIA_Model_Combined$FCResidual), na.rm = TRUE)
+WC_MAE <- mean(abs(FIA_Model_Combined$WCResidual), na.rm = TRUE)
+
+TC_RMSE <- sqrt(mean(FIA_Model_Combined$TCResidual^2, na.rm = TRUE))
+FC_RMSE <- sqrt(mean(FIA_Model_Combined$FCResidual^2, na.rm = TRUE))
+WC_RMSE <- sqrt(mean(FIA_Model_Combined$WCResidual^2, na.rm = TRUE))
+
+# Create the Summary_Stats_Overall table
+Summary_Stats_Overall <- data.frame(
+  TC_bias = TC_bias,
+  FC_bias = FC_bias,
+  WC_bias = WC_bias,
+  TC_MAE = TC_MAE,
+  FC_MAE = FC_MAE,
+  WC_MAE = WC_MAE,
+  TC_RMSE = TC_RMSE,
+  FC_RMSE = FC_RMSE,
+  WC_RMSE = WC_RMSE
+)
+```
+```{r, echo=FALSE}
+## Coniferous ##
+
+# Filter to coniferous data
+con_data <- FIA_Model_Combined[FIA_Model_Combined$pft == "boreal.coniferous", ]
+
+# Calculate metrics for the filtered data
+TC_bias_c <- mean(con_data$TCResidual, na.rm = TRUE)
+FC_bias_c <- mean(con_data$FCResidual, na.rm = TRUE)
+WC_bias_c <- mean(con_data$WCResidual, na.rm = TRUE)
+
+TC_MAE_c <- mean(abs(con_data$TCResidual), na.rm = TRUE)
+FC_MAE_c <- mean(abs(con_data$FCResidual), na.rm = TRUE)
+WC_MAE_c <- mean(abs(con_data$WCResidual), na.rm = TRUE)
+
+TC_RMSE_c <- sqrt(mean(con_data$TCResidual^2, na.rm = TRUE))
+FC_RMSE_c <- sqrt(mean(con_data$FCResidual^2, na.rm = TRUE))
+WC_RMSE_c <- sqrt(mean(con_data$WCResidual^2, na.rm = TRUE))
+
+# Create table
+Summary_Stats_Coniferous <- data.frame(
+  TC_bias = TC_bias_c,
+  FC_bias = FC_bias_c,
+  WC_bias = WC_bias_c,
+  TC_MAE = TC_MAE_c,
+  FC_MAE = FC_MAE_c,
+  WC_MAE = WC_MAE_c,
+  TC_RMSE = TC_RMSE_c,
+  FC_RMSE = FC_RMSE_c,
+  WC_RMSE = WC_RMSE_c
+)
+
+```
+```{r, echo=FALSE}
+## Deciduous ##
+
+# Filter the dataset 
+decid_data <- FIA_Model_Combined[FIA_Model_Combined$pft == "temperate.deciduous.HPDA", ]
+
+## Calculate metrics for the filtered data
+TC_bias_d <- mean(decid_data$TCResidual, na.rm = TRUE)
+FC_bias_d <- mean(decid_data$FCResidual, na.rm = TRUE)
+WC_bias_d <- mean(decid_data$WCResidual, na.rm = TRUE)
+
+TC_MAE_d <- mean(abs(decid_data$TCResidual), na.rm = TRUE)
+FC_MAE_d <- mean(abs(decid_data$FCResidual), na.rm = TRUE)
+WC_MAE_d <- mean(abs(decid_data$WCResidual), na.rm = TRUE)
+
+TC_RMSE_d <- sqrt(mean(decid_data$TCResidual^2, na.rm = TRUE))
+FC_RMSE_d <- sqrt(mean(decid_data$FCResidual^2, na.rm = TRUE))
+WC_RMSE_d <- sqrt(mean(decid_data$WCResidual^2, na.rm = TRUE))
+
+# Create the table
+Summary_Stats_Deciduous <- data.frame(
+  TC_bias = TC_bias_d,
+  FC_bias = FC_bias_d,
+  WC_bias = WC_bias_d,
+  TC_MAE = TC_MAE_d,
+  FC_MAE = FC_MAE_d,
+  WC_MAE = WC_MAE_d,
+  TC_RMSE = TC_RMSE_d,
+  FC_RMSE = FC_RMSE_d,
+  WC_RMSE = WC_RMSE_d)
+
+
+```
+```{r Plot-level CRPS calculation, echo=FALSE}
+## CRPS Calulation (package = scoringRules)
+
+# Empty df for CRPS results
+CRPS_Values <- data.frame(Site = integer(),
+                          Year = integer(),
+                          FC_CRPS = numeric(),
+                          WC_CRPS = numeric(),
+                          FC_Con_CRPS = numeric(),
+                          WC_Con_CRPS = numeric(),
+                          FC_Decid_CRPS = numeric(),
+                          WC_Decid_CRPS = numeric(),
+                          stringsAsFactors = FALSE)
+
+# Loop years
+for (year in unique(FIA_Model_Combined$INVYR)) {
+  model_data <- analysis.fia[[as.character(year)]]
+  obs_data <- subset(FIA_Model_Combined, INVYR == year)
+
+  # Loop sites in each year
+  for (site in unique(obs_data$Closest_Site)) {
+    fc_obs <- obs_data$FC_Obs[obs_data$Closest_Site == site]
+    wc_obs <- obs_data$WC_Obs[obs_data$Closest_Site == site]
+    pft <- obs_data$pft[obs_data$Closest_Site == site]
+
+    lai_col <- paste0("LAI_Site", site)
+    abv_col <- paste0("AbvGrndWood_Site", site)
+    if (!(lai_col %in% names(model_data)) || !(abv_col %in% names(model_data))) next
+
+    lai_ens <- model_data[[lai_col]]
+    abv_ens <- model_data[[abv_col]]
+
+    pft_site <- sitepft$pft[match(as.numeric(site), sitepft$site)]
+    if (is.na(pft_site) || !(pft_site %in% names(filtered_samples))) next
+    sla_vec <- filtered_samples[[pft_site]]$SLA
+    if (length(sla_vec) != length(lai_ens)) stop("SLA length != ensemble length for site ", site)
+
+    foliage_ens <- 0.5 * lai_ens / sla_vec
+    wood_ens <- 0.1 * abv_ens
+
+    fc_crps <- if (length(foliage_ens) > 0) crps_sample(fc_obs, foliage_ens) else NA
+    wc_crps <- if (length(wood_ens) > 0) crps_sample(wc_obs, wood_ens) else NA
+
+    fc_con_crps <- if (pft == "boreal.coniferous") fc_crps else NA
+    wc_con_crps <- if (pft == "boreal.coniferous") wc_crps else NA
+    fc_decid_crps <- if (pft == "temperate.deciduous.HPDA") fc_crps else NA
+    wc_decid_crps <- if (pft == "temperate.deciduous.HPDA") wc_crps else NA
+
+    CRPS_Values <- rbind(CRPS_Values, data.frame(Site = site,
+                    Year = year,
+                    FC_CRPS = fc_crps,
+                    WC_CRPS = wc_crps,
+                    FC_Con_CRPS = fc_con_crps,
+                    WC_Con_CRPS = wc_con_crps,
+                    FC_Decid_CRPS = fc_decid_crps,
+                    WC_Decid_CRPS = wc_decid_crps))
+  }
+}
+
+# Add CRPS to summary tables
+Summary_Stats_Coniferous$FC_CRPS <- mean(CRPS_Values$FC_Con_CRPS, na.rm = TRUE)
+Summary_Stats_Coniferous$WC_CRPS <- mean(CRPS_Values$WC_Con_CRPS, na.rm = TRUE)
+Summary_Stats_Deciduous$FC_CRPS <- mean(CRPS_Values$FC_Decid_CRPS, na.rm = TRUE)
+Summary_Stats_Deciduous$WC_CRPS <- mean(CRPS_Values$WC_Decid_CRPS, na.rm = TRUE)
+Summary_Stats_Overall$FC_CRPS <- mean(CRPS_Values$FC_CRPS, na.rm = TRUE)
+Summary_Stats_Overall$WC_CRPS <- mean(CRPS_Values$WC_CRPS, na.rm = TRUE)
+
+knitr::kable(Summary_Stats_Overall, caption = "Overall Summary Statistics")
+knitr::kable(Summary_Stats_Coniferous, caption = "Coniferous Summary Statistics")
+knitr::kable(Summary_Stats_Deciduous, caption = "Deciduous Summary Statistics")
+```
+
+##### 1j. Calculate FIA annual growth
+```{r Calculate plot-level FIA annual growth, echo=FALSE}
+# Calculate annual growth rates for observed and modeled variables
+growth_table <- FIA_Model_Combined %>%
+  arrange(Closest_Site, INVYR) %>% # sort by site and year
+  group_by(Closest_Site) %>% # do growth diffs within each site
+  mutate(year_diff = INVYR - lag(INVYR), # years between inventories
+         obs_wc = (WC_Obs - lag(WC_Obs)) / year_diff, # observed WC growth
+         obs_fc = (FC_Obs - lag(FC_Obs)) / year_diff, # observed FC growth
+         obs_tc = (Tot_C_Obs - lag(Tot_C_Obs)) / year_diff, # observed TC growth
+         year = paste0(lag(INVYR), "-", INVYR)) %>% # year span label
+  filter(!is.na(obs_wc) & !is.na(obs_fc) & !is.na(obs_tc)) %>% # drop first inventory per site
+  dplyr::select(site_number = Closest_Site,
+                CN,
+                year,
+                lat = LAT,
+                lon = LON,
+                pft = pft,
+                obs_fc,
+                obs_wc,
+                obs_tc)
+```
+
+##### 1k. Calculate SDA annual growth
+```{r Calculate plot-level SDA annual growth, echo=FALSE}
+# Create empty list for transformed data
+analysis.transformed <- vector("list", length(analysis.all))
+names(analysis.transformed) <- names(analysis.all) # keep year names
+
+# Loop through each year in analysis.all
+for (i in seq_along(analysis.all)) {
+  year_data <- analysis.all[[i]]
+  transformed_data <- list()
+  # Loop through each site
+  for (site in 1:8000) {
+    wood_var <- paste0("AbvGrndWood_Site", site) # wood var name
+    lai_var <- paste0("LAI_Site", site) # LAI var name
+    pft_site <- sitepft$pft[match(as.numeric(site), sitepft$site)] # site PFT
+    if (is.na(pft_site) || !(pft_site %in% names(filtered_samples))) next # skip if no SLA
+    sla_vec <- filtered_samples[[pft_site]]$SLA # SLA by ensemble member
+    if (!(lai_var %in% names(year_data))) next # skip if missing LAI
+    lai_ens <- year_data[[lai_var]] # LAI ensemble
+    transformed_data[[paste0("FoliageC_Site", site)]] <- (lai_ens * 0.5) / sla_vec # LAI -> foliage C
+    if (wood_var %in% names(year_data)) transformed_data[[paste0("WoodC_Site", site)]] <- year_data[[wood_var]] * 0.1 # wood C Mg/ha -> wood C kg/m2
+  }
+  analysis.transformed[[i]] <- transformed_data # store
+}
+
+# Convert each year's transformed data from list to df
+for (i in seq_along(analysis.transformed)) analysis.transformed[[i]] <- as.data.frame(analysis.transformed[[i]])
+
+# Assign names to transformed data
+names(analysis.transformed) <- names(analysis.all)
+
+# Create empty list for annual growth in carbon
+annual_change <- vector("list", length = 12) # one for each year (2012-2024)
+names(annual_change) <- names(analysis.transformed)[1:12]
+
+# Loop through each year in analysis.transformed 
+for (year in 1:12) {
+  current_year_data <- analysis.transformed[[year]] # this year
+  next_year_data <- analysis.transformed[[year + 1]] # next year
+  year_change_data <- list() # change for this year
+  # Loop through each site
+  for (site in 1:8000) {
+    foliage_col_current <- paste0("FoliageC_Site", site) # foliage this year
+    wood_col_current <- paste0("WoodC_Site", site) # wood this year
+    foliage_col_next <- paste0("FoliageC_Site", site) # foliage next year
+    wood_col_next <- paste0("WoodC_Site", site) # wood next year
+    if (foliage_col_current %in% names(current_year_data) && foliage_col_next %in% names(next_year_data) && wood_col_current %in% names(current_year_data) && wood_col_next %in% names(next_year_data)) {
+      foliage_change <- next_year_data[[foliage_col_next]] - current_year_data[[foliage_col_current]] # foliage growth
+      wood_change <- next_year_data[[wood_col_next]] - current_year_data[[wood_col_current]] # wood growth
+      year_change_data[[paste0("FoliageChange_Site", site)]] <- foliage_change
+      year_change_data[[paste0("WoodChange_Site", site)]] <- wood_change
+      year_change_data[[paste0("TotalChange_Site", site)]] <- foliage_change + wood_change # total growth
+    }
+  }
+  annual_change[[year]] <- year_change_data
+}
+
+# Convert each year's data to a data frame
+for (year in 1:12) annual_change[[year]] <- as.data.frame(annual_change[[year]])
+
+# List for mean and standard deviation of growth
+model_growth_stats <- list()
+
+# Loop through each year 
+for (year in 1:12) {
+  year_data <- annual_change[[year]]
+  avg_foliage_growth <- numeric(135) # mean foliage growth
+  avg_wood_growth <- numeric(135) # mean wood growth
+  avg_total_growth <- numeric(135) # mean total growth 
+  sd_foliage_growth <- numeric(135) # sd foliage growth
+  sd_wood_growth <- numeric(135) # sd wood growth
+  sd_total_growth <- numeric(135) # sd total growth
+  for (site in 1:8000) {
+    foliage_change_col <- paste0("FoliageChange_Site", site)
+    wood_change_col <- paste0("WoodChange_Site", site)
+    total_change_col <- paste0("TotalChange_Site", site)
+    if (foliage_change_col %in% names(year_data) && wood_change_col %in% names(year_data) && total_change_col %in% names(year_data)) {
+      avg_foliage_growth[site] <- mean(year_data[[foliage_change_col]], na.rm = TRUE)
+      avg_wood_growth[site] <- mean(year_data[[wood_change_col]], na.rm = TRUE)
+      avg_total_growth[site] <- mean(year_data[[total_change_col]], na.rm = TRUE)
+      sd_foliage_growth[site] <- sd(year_data[[foliage_change_col]], na.rm = TRUE)
+      sd_wood_growth[site] <- sd(year_data[[wood_change_col]], na.rm = TRUE)
+      sd_total_growth[site] <- sd(year_data[[total_change_col]], na.rm = TRUE)
+    }
+  }
+  model_growth_stats[[paste0("Year_", names(analysis.transformed)[year])]] <- data.frame(Site = 1:8000,                                                               AvgFoliageGrowth = avg_foliage_growth,
+          AvgWoodGrowth = avg_wood_growth,
+          AvgTotalGrowth = avg_total_growth,
+          SDFoliageGrowth = sd_foliage_growth,
+          SDWoodGrowth = sd_wood_growth,
+          SDTotalGrowth = sd_total_growth)
+}
+
+# Loop through each site
+for (site in 1:8000) {
+  foliage_growth_values <- numeric(12) # annual foliage growth 
+  wood_growth_values <- numeric(12) # annual wood growth 
+  total_growth_values <- numeric(12) # annual total growth 
+  for (year_index in 1:12) {
+    year_name <- paste0("Year_", names(analysis.transformed)[year_index]) # year label
+    year_data <- model_growth_stats[[year_name]] # stats for this year
+    foliage_growth_values[year_index] <- year_data$AvgFoliageGrowth[site]
+    wood_growth_values[year_index] <- year_data$AvgWoodGrowth[site]
+    total_growth_values[year_index] <- year_data$AvgTotalGrowth[site]
+  }
+  avg_foliage_growth <- mean(foliage_growth_values) # mean across years
+  avg_wood_growth <- mean(wood_growth_values)
+  avg_total_growth <- mean(total_growth_values)
+  site_row <- which(growth_table$site_number == site) # match to obs table
+  if (length(site_row) > 0) {
+    growth_table$mod_fc[site_row] <- avg_foliage_growth
+    growth_table$mod_wc[site_row] <- avg_wood_growth
+    growth_table$mod_tc[site_row] <- avg_total_growth
+  }
+}
+
+```
+##### 1l. Calculate growth summary statistics 
+```{r Calculate plot-level growth summary statistics, echo=FALSE, eval=FALSE}
+# add residuals, bias, rmse, mae
+
+# Calculate residuals
+growth_table$fc_residual <- growth_table$obs_fc - growth_table$mod_fc
+growth_table$wc_residual <- growth_table$obs_wc - growth_table$mod_wc
+growth_table$tc_residual <- growth_table$obs_tc - growth_table$mod_tc
+
+## Coniferous Summary Statistics
+# Filter the dataset
+con_growthdata <- growth_table[growth_table$pft == "boreal.coniferous", ]
+
+# Calculate summary stats for filtered data
+tc_bias_c <- mean(con_growthdata$tc_residual, na.rm = TRUE)
+fc_bias_c <- mean(con_growthdata$fc_residual, na.rm = TRUE)
+wc_bias_c <- mean(con_growthdata$wc_residual, na.rm = TRUE)
+tc_MAE_c <- mean(abs(con_growthdata$tc_residual), na.rm = TRUE)
+fc_MAE_c <- mean(abs(con_growthdata$fc_residual), na.rm = TRUE)
+wc_MAE_c <- mean(abs(con_growthdata$wc_residual), na.rm = TRUE)
+tc_RMSE_c <- sqrt(mean(con_growthdata$tc_residual^2, na.rm = TRUE))
+fc_RMSE_c <- sqrt(mean(con_growthdata$fc_residual^2, na.rm = TRUE))
+wc_RMSE_c <- sqrt(mean(con_growthdata$wc_residual^2, na.rm = TRUE))
+TC_Rel_RMSE_c <- (tc_RMSE_c / (sd(con_growthdata$obs_tc)))
+FC_Rel_RMSE_c <- (fc_RMSE_c / (sd(con_growthdata$obs_fc)))
+WC_Rel_RMSE_c <- (wc_RMSE_c / (sd(con_growthdata$obs_wc)))
+
+# Create table
+Summary_Growth_Con <- data.frame(
+  TC_bias = tc_bias_c,
+  FC_bias = fc_bias_c,
+  WC_bias = wc_bias_c,
+  TC_MAE = tc_MAE_c,
+  FC_MAE = fc_MAE_c,
+  WC_MAE = wc_MAE_c,
+  TC_RMSE = tc_RMSE_c,
+  FC_RMSE = fc_RMSE_c,
+  WC_RMSE = wc_RMSE_c,
+  TC_Rel_RMSE = TC_Rel_RMSE_c,
+  FC_Rel_RMSE = FC_Rel_RMSE_c,
+  WC_Rel_RMSE = WC_Rel_RMSE_c
+)
+
+## Deciduous Summary Statistics
+# Filter the dataset
+decid_growthdata <- growth_table[growth_table$pft == "temperate.deciduous.HPDA", ]
+
+# Calculate summary stats for filtered data
+tc_bias_d <- mean(decid_growthdata$tc_residual, na.rm = TRUE)
+fc_bias_d <- mean(decid_growthdata$fc_residual, na.rm = TRUE)
+wc_bias_d <- mean(decid_growthdata$wc_residual, na.rm = TRUE)
+tc_MAE_d <- mean(abs(decid_growthdata$tc_residual), na.rm = TRUE)
+fc_MAE_d <- mean(abs(decid_growthdata$fc_residual), na.rm = TRUE)
+wc_MAE_d <- mean(abs(decid_growthdata$wc_residual), na.rm = TRUE)
+tc_RMSE_d <- sqrt(mean(decid_growthdata$tc_residual^2, na.rm = TRUE))
+fc_RMSE_d <- sqrt(mean(decid_growthdata$fc_residual^2, na.rm = TRUE))
+wc_RMSE_d <- sqrt(mean(decid_growthdata$wc_residual^2, na.rm = TRUE))
+TC_Rel_RMSE_d <- (tc_RMSE_d / (sd(decid_growthdata$obs_tc)))
+FC_Rel_RMSE_d <- (fc_RMSE_d / (sd(decid_growthdata$obs_fc)))
+WC_Rel_RMSE_d <- (wc_RMSE_d / (sd(decid_growthdata$obs_wc)))
+
+# Create table
+Summary_Growth_Decid <- data.frame(
+  TC_bias = tc_bias_d,
+  FC_bias = fc_bias_d,
+  WC_bias = wc_bias_d,
+  TC_MAE = tc_MAE_d,
+  FC_MAE = fc_MAE_d,
+  WC_MAE = wc_MAE_d,
+  TC_RMSE = tc_RMSE_d,
+  FC_RMSE = fc_RMSE_d,
+  WC_RMSE = wc_RMSE_d,
+  TC_Rel_RMSE = TC_Rel_RMSE_d,
+  FC_Rel_RMSE = FC_Rel_RMSE_d,
+  WC_Rel_RMSE = WC_Rel_RMSE_d
+)
+
+## Overall Summary Statistics
+tc_bias <- mean(growth_table$tc_residual, na.rm = TRUE)
+fc_bias <- mean(growth_table$fc_residual, na.rm = TRUE)
+wc_bias <- mean(growth_table$wc_residual, na.rm = TRUE)
+tc_MAE <- mean(abs(growth_table$tc_residual), na.rm = TRUE)
+fc_MAE <- mean(abs(growth_table$fc_residual), na.rm = TRUE)
+wc_MAE <- mean(abs(growth_table$wc_residual), na.rm = TRUE)
+tc_RMSE <- sqrt(mean(growth_table$tc_residual^2, na.rm = TRUE))
+fc_RMSE <- sqrt(mean(growth_table$fc_residual^2, na.rm = TRUE))
+wc_RMSE <- sqrt(mean(growth_table$wc_residual^2, na.rm = TRUE))
+TC_Rel_RMSE <- (tc_RMSE / (sd(growth_table$obs_tc)))
+FC_Rel_RMSE <- (fc_RMSE / (sd(growth_table$obs_fc)))
+WC_Rel_RMSE <- (wc_RMSE / (sd(growth_table$obs_wc)))
+
+# Create the table
+Summary_Growth <- data.frame(
+  TC_bias = tc_bias,
+  FC_bias = fc_bias,
+  WC_bias = wc_bias,
+  TC_MAE = tc_MAE,
+  FC_MAE = fc_MAE,
+  WC_MAE = wc_MAE,
+  TC_RMSE = tc_RMSE,
+  FC_RMSE = fc_RMSE,
+  WC_RMSE = wc_RMSE,
+  TC_Rel_RMSE = TC_Rel_RMSE,
+  FC_Rel_RMSE = FC_Rel_RMSE,
+  WC_Rel_RMSE = WC_Rel_RMSE
+)
+
+# Combine tables
+Summary_Growth$pft <- "both"
+Summary_Growth_Decid$pft <- "deciduous"
+Summary_Growth_Con$pft <- "coniferous"
+Growth_Stats <- rbind(Summary_Growth, Summary_Growth_Decid, Summary_Growth_Con)
+
+# Keep only these columns
+Growth_Stats <- Growth_Stats[, c("pft", "TC_bias", "FC_bias", "WC_bias",
+                                "TC_MAE", "FC_MAE", "WC_MAE",
+                                "TC_RMSE", "FC_RMSE", "WC_RMSE",
+                                "TC_Rel_RMSE", "FC_Rel_RMSE", "WC_Rel_RMSE")]
+
+knitr::kable(Growth_Stats, caption = "Growth Summary Statistics")
+```
+
+## 2. Validation
+
+##### 2a. Predicted vs Observed FC and WC Histograms 
+```{r Plot-level predicted vs Observed FC and WC Histograms, echo=FALSE}
+# Modeled Values #
+# make empty vectors for model data across all site/year combos
+all_lai_ens <- numeric(0)  # LAI -> foliage C
+all_abv_ens <- numeric(0)  # AbvGrndWood -> woody C
+
+# Get unique site/year combos
+site_year_combinations <- unique(FIA_Model_Combined[, c("Closest_Site", "INVYR")])
+
+# Loop through each site/year combo
+for (i in 1:nrow(site_year_combinations)) {
+  selected_site <- site_year_combinations$Closest_Site[i]  # site
+  selected_year <- site_year_combinations$INVYR[i]  # year
+  year_data <- analysis.fia[[as.character(selected_year)]]  # model df for this year
+  lai_col <- paste0("LAI_Site_", selected_site)
+  abv_col <- paste0("AbvGrndWood_Site_", selected_site)
+  if (lai_col %in% colnames(year_data) && abv_col %in% colnames(year_data)) {
+    pft_site <- sitepft$pft[match(as.numeric(selected_site), sitepft$site)]
+    if (is.na(pft_site) || !(pft_site %in% names(filtered_samples))) {
+      cat("Missing/unknown PFT for site", selected_site, "\n")
+      next
+    }
+    sla_vec <- filtered_samples[[pft_site]]$SLA
+    lai_raw <- year_data[[lai_col]]
+    if (length(sla_vec) != length(lai_raw)) {
+      stop("SLA length != ensemble length for site ", selected_site, " (pft=", pft_site, ")")
+    }
+    lai_ens <- 0.5 * lai_raw / sla_vec
+    abv_ens <- 0.1 * year_data[[abv_col]]
+    all_lai_ens <- c(all_lai_ens, lai_ens)
+    all_abv_ens <- c(all_abv_ens, abv_ens)
+  } else {
+    cat("Missing columns for site", selected_site, "and year", selected_year, "\n")
+  }
+}
+
+# Histograms #
+# Quantiles for model 
+lai_quantiles <- quantile(all_lai_ens, probs = c(0.1, 0.25, 0.5, 0.75, 0.9), na.rm = TRUE)
+abv_quantiles <- quantile(all_abv_ens, probs = c(0.1, 0.25, 0.5, 0.75, 0.9), na.rm = TRUE)
+
+# Foliage Carbon #
+par(family = "Times New Roman")
+hist(all_lai_ens,
+     main = "Histogram of Modeled Foliage Carbon Across All Sites & Years",
+     font.main = 1,
+     xlab = expression(paste("Modeled Foliage Carbon (kg/", m^2, ")")),
+     col = "lightgreen",
+     breaks = 30,
+     xlim = c(min(all_lai_ens, na.rm = TRUE), max(all_lai_ens, na.rm = TRUE)),
+     border = "black",
+     freq = FALSE)
+abline(v = lai_quantiles, col = "red", lty = 2)
+obs_FC_value <- mean(FIA_Model_Combined$FC_Obs)
+abline(v = obs_FC_value, col = "blue2", lwd = 2)
+legend("topright",
+       legend = c("Quantiles (10th, 25th, 50th, 75th, 90th)", "Mean Observed Foliage Carbon = 0.339"),
+       cex = 0.7,
+       col = c("red", "blue2"),
+       lty = c(2, 1),
+       lwd = c(1, 2))
+
+# Woody Carbon #
+par(family = "Times New Roman")
+hist(all_abv_ens,
+     main = "Histogram of Modeled Woody Carbon Across All Sites & Years",
+     font.main = 1,
+     xlab = expression(paste("Modeled Woody Carbon (kg/", m^2, ")")),
+     col = "lightblue",
+     breaks = 30,
+     xlim = c(min(all_abv_ens, na.rm = TRUE), max(all_abv_ens, na.rm = TRUE)),
+     border = "black",
+     freq = FALSE)
+abline(v = abv_quantiles, col = "red", lty = 2)
+obs_WC_value <- mean(FIA_Model_Combined$WC_Obs)
+abline(v = obs_WC_value, col = "blue2", lwd = 2)
+legend("topright",
+       legend = c("Quantiles (10th, 25th, 50th, 75th, 90th)", "Mean Observed Woody Carbon = 6.485"),
+       cex = 0.7,
+       col = c("red", "blue2"),
+       lty = c(2, 1),
+       lwd = c(1, 2))
+
+# Observed Values #
+# Pull observed + modeled means
+observed_fc <- FIA_Model_Combined$FC_Obs
+observed_wc <- FIA_Model_Combined$WC_Obs
+modeled_fc_mean <- FIA_Model_Combined$FC_Mean_Mod
+modeled_wc_mean <- FIA_Model_Combined$WC_Mean_Mod
+
+# Quantiles for observed
+fc_quantiles <- quantile(observed_fc, probs = c(0.1, 0.25, 0.5, 0.75, 0.9), na.rm = TRUE)
+wc_quantiles <- quantile(observed_wc, probs = c(0.1, 0.25, 0.5, 0.75, 0.9), na.rm = TRUE)
+
+# Mean modeled values
+avg_modeled_fc <- mean(modeled_fc_mean, na.rm = TRUE)
+avg_modeled_wc <- mean(modeled_wc_mean, na.rm = TRUE)
+
+# Foliage carbon #
+par(family = "Times New Roman")
+hist(observed_fc,
+     main = "Histogram of Observed Foliage Carbon Across All Sites & Years",
+     font.main = 1,
+     xlab = expression(paste("Observed Foliage Carbon (kg/", m^2, ")")),
+     col = "lightgreen",
+     breaks = 30,
+     xlim = c(min(observed_fc, na.rm = TRUE), max(observed_fc, na.rm = TRUE)),
+     border = "black",
+     freq = FALSE)
+abline(v = fc_quantiles, col = "red", lty = 2)
+abline(v = avg_modeled_fc, col = "blue2", lwd = 2)
+legend("topright",
+       legend = c("Quantiles (10th, 25th, 50th, 75th, 90th)", "Mean Modeled Foliage Carbon = 0.383"),
+       cex = 0.7,
+       col = c("red", "blue2"),
+       lty = c(2, 1),
+       lwd = c(1, 2))
+
+# Woody carbon #
+par(family = "Times New Roman")
+hist(observed_wc,
+     main = "Histogram of Observed Woody Carbon Across All Sites & Years",
+     font.main = 1,
+     xlab = expression(paste("Observed Woody Carbon (kg/", m^2, ")")),
+     col = "lightblue",
+     breaks = 30,
+     xlim = c(min(observed_wc, na.rm = TRUE), max(observed_wc, na.rm = TRUE)),
+     border = "black",
+     freq = FALSE)
+abline(v = wc_quantiles, col = "red", lty = 2)
+abline(v = avg_modeled_wc, col = "blue2", lwd = 2)
+legend("topright",
+       legend = c("Quantiles (10th, 25th, 50th, 75th, 90th)", "Mean Modeled Woody Carbon = 16.954"),
+       cex = 0.7,
+       col = c("red", "blue2"),
+       lty = c(2, 1),
+       lwd = c(1, 2))
+```
+
+##### 2b. Predictive Quantile Histograms 
+```{r Plot-level predictive Quantile Histograms, echo=FALSE}
+### Predictive Quantile Histograms ###
+# make vectors for predictive quantiles
+predictive_quantiles_fc <- numeric(nrow(FIA_Model_Combined))  # foliage C
+predictive_quantiles_wc <- numeric(nrow(FIA_Model_Combined))  # woody C
+
+# Loop through observed data
+for (i in seq_len(nrow(FIA_Model_Combined))) {
+  site <- FIA_Model_Combined$Closest_Site[i]
+  year <- as.character(FIA_Model_Combined$INVYR[i])
+  obs_fc <- FIA_Model_Combined$FC_Obs[i]
+  obs_wc <- FIA_Model_Combined$WC_Obs[i]
+  model_year <- analysis.fia[[year]]  # model data for this year
+  if (!is.null(model_year)) {
+    lai_col <- paste0("LAI_Site", site)
+    abv_col <- paste0("AbvGrndWood_Site", site)
+    if (lai_col %in% colnames(model_year) && abv_col %in% colnames(model_year)) {
+      lai_ens <- model_year[[lai_col]]
+      abv_ens <- model_year[[abv_col]]
+      sla <- filtered_samples[[FIA_Model_Combined$pft[i]]]$SLA  # SLA by PFT
+      fc_model <- 0.5 * lai_ens / sla
+      wc_model <- 0.1 * abv_ens
+      predictive_quantiles_fc[i] <- sum(fc_model <= obs_fc, na.rm = TRUE) / sum(!is.na(fc_model))
+      predictive_quantiles_wc[i] <- sum(wc_model <= obs_wc, na.rm = TRUE) / sum(!is.na(wc_model))
+    } else {
+      warning(paste("Site", site, "not found in model data for year", year))
+    }
+  } else {
+    warning(paste("Year", year, "not found in model data"))
+  }
+}
+
+# Add predictive quantiles to observed table
+FIA_Model_Combined$Predictive_Quantile_FC <- predictive_quantiles_fc
+FIA_Model_Combined$Predictive_Quantile_WC <- predictive_quantiles_wc
+
+# Histograms #
+# Foliage Carbon
+par(family = "Times")
+hist(FIA_Model_Combined$Predictive_Quantile_FC,
+     main = "Foliage Carbon Predictive Quantiles",
+     font.main = 1,
+     xlab = "Predictive Quantile",
+     ylab = "Frequency",
+     col = "skyblue",
+     border = "black",
+     breaks = 15,
+     xlim = c(0, 1),
+     freq = TRUE)
+
+# Woody Carbon
+par(family = "Times")
+hist(FIA_Model_Combined$Predictive_Quantile_WC,
+     main = "Woody Carbon Predictive Quantiles",
+     font.main = 1,
+     xlab = "Predictive Quantile",
+     ylab = "Frequency",
+     col = "lightgreen",
+     border = "black",
+     breaks = 15,
+     xlim = c(0, 1),
+     freq = TRUE)
+```
+
+##### 2c. Spatial Variograms
+```{r Plot-level spatial variograms, echo=FALSE, eval=FALSE}
+# Residuals (abs)
+FIA_Model_Combined$FCResidual <- abs(FIA_Model_Combined$FC_Obs - FIA_Model_Combined$FC_Mean_Mod)
+FIA_Model_Combined$WCResidual <- abs(FIA_Model_Combined$WC_Obs - FIA_Model_Combined$WC_Mean_Mod)
+FIA_Model_Combined$Residual <- abs(FIA_Model_Combined$Tot_C_Obs - FIA_Model_Combined$Tot_C_Mean_Mod)
+
+# Drop NAs and make spatial object
+clean_data <- FIA_Model_Combined[
+  !is.na(FIA_Model_Combined$Residual) &
+    !is.na(FIA_Model_Combined$LON) &
+    !is.na(FIA_Model_Combined$LAT),]
+coordinates(clean_data) <- ~ LON + LAT
+proj4string(clean_data) <- CRS("+proj=longlat +datum=WGS84")
+
+# Total Carbon
+variogram_model_totc <- variogram(Residual ~ 1, data = na.omit(clean_data))
+ggplot(data = variogram_model_totc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Total Carbon",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Foliage Carbon
+variogram_model_fc <- variogram(FCResidual ~ 1, data = na.omit(clean_data))
+ggplot(data = variogram_model_fc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Foliage Carbon",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Woody Carbon
+variogram_model_wc <- variogram(WCResidual ~ 1, data = na.omit(clean_data))
+ggplot(data = variogram_model_wc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Woody Carbon",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+
+## Deciduous ##
+clean_decid_data <- clean_data[clean_data$pft == "temperate.deciduous.HPDA", ]  # decid only
+
+# Total Carbon
+variogram_model_decid_totc <- variogram(Residual ~ 1, data = na.omit(clean_decid_data))
+ggplot(data = variogram_model_decid_totc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Total C in Deciduous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Foliage Carbon
+variogram_model_decid_fc <- variogram(FCResidual ~ 1, data = na.omit(clean_decid_data))
+ggplot(data = variogram_model_decid_fc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Foliage C in Deciduous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Woody Carbon
+variogram_model_decid_wc <- variogram(WCResidual ~ 1, data = na.omit(clean_decid_data))
+ggplot(data = variogram_model_decid_wc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Woody C in Deciduous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+
+## Coniferous ##
+con_clean_data <- clean_data[clean_data$pft == "boreal.coniferous", ]  # con only
+
+# Total Carbon
+variogram_model_con_totc <- variogram(Residual ~ 1, data = na.omit(con_clean_data))
+ggplot(data = variogram_model_con_totc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Total C in Coniferous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Foliage Carbon
+variogram_model_con_fc <- variogram(FCResidual ~ 1, data = na.omit(con_clean_data))
+ggplot(data = variogram_model_con_fc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Foliage C in Coniferous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+
+# Woody Carbon
+variogram_model_con_wc <- variogram(WCResidual ~ 1, data = na.omit(con_clean_data))
+ggplot(data = variogram_model_con_wc, aes(x = dist, y = gamma)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Variogram of Woody C in Coniferous Forests",
+       x = "Distance",
+       y = "Semivariance (y)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    text = element_text(family = "Times New Roman")
+  )
+```
+##### 2d. Spatial Correlograms
+```{r Plot-level spatial correlograms, eval = FALSE, echo=FALSE}
+# TC
+clean_data <- FIA_Model_Combined[
+  !is.na(FIA_Model_Combined$Residual) &
+  !is.na(FIA_Model_Combined$WCResidual) &
+  !is.na(FIA_Model_Combined$FCResidual) &
+  !is.na(FIA_Model_Combined$LON) &
+  !is.na(FIA_Model_Combined$LAT),
+]
+lat <- clean_data$LAT
+lon <- clean_data$LON
+residual <- clean_data$Tot_C_Obs - clean_data$Tot_C_Mean_Mod
+
+suppressMessages({
+  correlogram <- correlog(x = lon, y = lat, z = residual, increment = 5, resamp = 1000)
+})
+
+par(mfrow = c(1, 1),
+    mar = c(4, 4, 2, 2),
+    family = "Times New Roman")
+
+plot(correlogram,
+     main = "Spatial Correlogram of Carbon Residuals",
+     xlab = "Distance (km)",
+     ylab = "Correlation",
+     col = "black",
+     lwd = 2,
+     pch = 16,
+     cex = 1,
+     cex.main = 1,
+     cex.lab = 1,
+     cex.axis = 1.1,
+     font.main = 1,
+     font.lab = 1,
+     col.axis = "black",
+     col.lab = "black",
+     col.main = "black"
+)
+
+# FC
+suppressMessages({
+  correlogramFC <- correlog(x = lon, y = lat, z = clean_data$FCResidual, increment = 5, resamp = 1000)
+})
+
+par(mfrow = c(1, 1),
+    mar = c(4, 4, 2, 2),
+    family = "Times New Roman")
+
+plot(correlogramFC,
+     main = "Spatial Correlogram of Foliage C Residuals",
+     xlab = "Distance (km)",
+     ylab = "Correlation",
+     col = "black",
+     lwd = 2,
+     pch = 16,
+     cex = 1,
+     cex.main = 1,
+     cex.lab = 1,
+     cex.axis = 1.1,
+     font.main = 1,
+     font.lab = 1,
+     col.axis = "black",
+     col.lab = "black",
+     col.main = "black"
+)
+
+# WC
+suppressMessages({
+  correlogramWC <- correlog(x = lon, y = lat, z = clean_data$WCResidual, increment = 5, resamp = 1000)
+})
+
+par(mfrow = c(1, 1),
+    mar = c(4, 4, 2, 2),
+    family = "Times New Roman")
+
+plot(correlogramWC,
+     main = "Spatial Correlogram of Woody C Residuals",
+     xlab = "Distance (km)",
+     ylab = "Correlation",
+     col = "black",
+     lwd = 2,
+     pch = 16,
+     cex = 1,
+     cex.main = 1,
+     cex.lab = 1,
+     cex.axis = 1.1,
+     font.main = 1,
+     font.lab = 1,
+     col.axis = "black",
+     col.lab = "black",
+     col.main = "black"
+)
+```
+
+##### 2e. Maps of Error Relative to Pool Size for Ecoregions
+```{r Plot-level relative error maps, echo=FALSE}
+# Define regions
+assign_region <- function(lat, lon) {
+  if (lon >= -125 & lon < -102) {
+    # West
+    return("West")
+  } else if (lon >= -102 & lon < -89) {
+    # Midwest
+    return("Midwest")
+  } else if (lon >= -89 & lon < -75) {
+    if (lat > 36) {
+      return("Northeast")
+    } else {
+      return("South")
+    }
+  } else if (lon >= -75 & lon <= -66) {
+    # Northeast
+    return("Northeast")
+  } else if (lon >= -102 & lon < -89 & lat < 36) {
+    # South
+    return("South")
+  } else {
+    return("Alaska")
+  }
+}
+
+# Add region column
+FIA_Model_Combined$Region <- mapply(assign_region, FIA_Model_Combined$LAT, FIA_Model_Combined$LON)
+
+# Re-define residuals just in case
+FIA_Model_Combined <- as.data.frame(FIA_Model_Combined)
+FIA_Model_Combined$FCResidual <- FIA_Model_Combined$FC_Obs - FIA_Model_Combined$FC_Mean_Mod
+FIA_Model_Combined$WCResidual <- FIA_Model_Combined$WC_Obs - FIA_Model_Combined$WC_Mean_Mod
+FIA_Model_Combined$TCResidual <- FIA_Model_Combined$Tot_C_Obs - FIA_Model_Combined$Tot_C_Mean_Mod
+
+# Carbon pool size by region (observed)
+carbon_pool <- FIA_Model_Combined %>%
+  group_by(Region) %>%
+  summarize(Total_C_Pool = sum(Tot_C_Obs, na.rm = TRUE))
+
+# Join pool size back onto plot table
+FIA_Model_Combined <- FIA_Model_Combined %>%
+  left_join(carbon_pool, by = "Region")
+
+# Normalize pool sizes for plotting
+FIA_Model_Combined$Scaled_Pool_Size <- scales::rescale(FIA_Model_Combined$Total_C_Pool, to = c(2, 5))
+
+# US map (includes AK/HI)
+us_map <- ne_states(country = "United States of America", returnclass = "sf")
+
+# TC
+ggplot(data = us_map) +
+  geom_sf(fill = "lightgray", color = "black") +
+  geom_point(
+    data = FIA_Model_Combined,
+    aes(x = LON, y = LAT, size = Total_C_Pool, color = TCResidual, shape = factor(pft)),
+    alpha = 1
+  ) +
+  scale_size_continuous(range = c(2, 5), guide = "legend") +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0,
+                        name = "Error (kg/m^2") +
+  scale_shape_manual(values = c("boreal.coniferous" = 17,
+                               "temperate.deciduous.HPDA" = 16)) +
+  coord_sf(xlim = c(-160, -60), expand = FALSE) +
+  theme_minimal() +
+  labs(title = "Total Carbon Error Relative to Pool Size by Region",
+       x = "Longitude",
+       y = "Latitude",
+       size = "Pool Size (kg/m^2)",
+       color = "TCResidual",
+       shape = "PFT") +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5),
+    text = element_text(family = "Times New Roman")
+  )
+
+# FC
+ggplot(data = us_map) +
+  geom_sf(fill = "lightgray", color = "black") +
+  geom_point(
+    data = FIA_Model_Combined,
+    aes(x = LON, y = LAT, size = Total_C_Pool, color = FCResidual, shape = factor(pft)),
+    alpha = 1
+  ) +
+  scale_size_continuous(range = c(2, 5), guide = "legend") +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0,
+                        name = "Error (kg/m^2") +
+  scale_shape_manual(values = c("boreal.coniferous" = 17,
+                               "temperate.deciduous.HPDA" = 16)) +
+  coord_sf(xlim = c(-160, -60), expand = FALSE) +
+  theme_minimal() +
+  labs(title = "Foliage Carbon Error Relative to Pool Size by Region",
+       x = "Longitude",
+       y = "Latitude",
+       size = "Pool Size (kg/m^2)",
+       color = "FCResidual",
+       shape = "PFT") +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5),
+    text = element_text(family = "Times New Roman")
+  )
+
+# WC
+ggplot(data = us_map) +
+  geom_sf(fill = "lightgray", color = "black") +
+  geom_point(
+    data = FIA_Model_Combined,
+    aes(x = LON, y = LAT, size = Total_C_Pool, color = WCResidual, shape = factor(pft)),
+    alpha = 1
+  ) +
+  scale_size_continuous(range = c(2, 5), guide = "legend") +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0,
+                        name = "Error (kg/m^2") +
+  scale_shape_manual(values = c("boreal.coniferous" = 17,
+                               "temperate.deciduous.HPDA" = 16)) +
+  coord_sf(xlim = c(-160, -60), expand = FALSE) +
+  theme_minimal() +
+  labs(title = "Woody Carbon Error Relative to Pool Size by Region",
+       x = "Longitude",
+       y = "Latitude",
+       size = "Pool Size (kg/m^2)",
+       color = "WCResidual",
+       shape = "PFT") +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5),
+    text = element_text(family = "Times New Roman")
+  )
+
+```
+
+##### *2f. Plot-Level Pred vs Obs Plots
+```{r plot-level pred obs, echo=FALSE}
+# NOTE: this is a hex plot and color is log-scaled
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(tibble)
+library(viridis)
+library(stringr)
+library(sp)
+
+# Master table for % off 1:1 slopes (plot-level RMA)
+plot_normal_pct <- tibble(
+  PFT = character(),
+  WC  = numeric(),
+  FC  = numeric(),
+  TC  = numeric()
+)
+
+# FIA
+#FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+FilteredTREECounty$TPM2 <- FilteredTREECounty$TPA_UNADJ / 4046.86
+latest_cycle <- FilteredTREECounty %>%
+  group_by(STATECD, COUNTYCD) %>%
+  filter(INVYR == max(INVYR)) %>%
+  slice(1) %>%
+  ungroup() %>%
+  dplyr::select(STATECD, COUNTYCD, CYCLE)
+FilteredTREECounty <- FilteredTREECounty %>%
+  inner_join(latest_cycle, by = c("STATECD", "COUNTYCD", "CYCLE"))
+
+# Plot-level obs pools
+plot_summary <- FilteredTREECounty %>%
+  group_by(PLT_CN, COUNTYCD, STATECD, STRATUM_CN, INVYR, EXPNS, LAT, LON) %>%
+  summarize(
+    WC_plot = sum(CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    FC_plot = sum(DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(TC_plot = WC_plot + FC_plot) %>%
+  rename(WC_obs = WC_plot, FC_obs = FC_plot, TC_obs = TC_plot)
+
+# Site info + PFTs
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_info.Rdata")
+site_info <- as.data.frame(site_info)
+
+site_pft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv")
+site_info_joined <- site_info %>%
+  left_join(site_pft, by = c("site_ids" = "site"))
+
+pfts_keep <- c("boreal.coniferous", "temperate.deciduous.HPDA")
+site_info_filtered <- site_info_joined %>%
+  filter(pft %in% pfts_keep)
+
+# Closest site per plot (only within its PFT)
+plot_coords <- as.matrix(plot_summary[, c("LAT", "LON")])
+site_coords <- as.matrix(site_info_filtered[, c("lat", "lon")])
+dist_matrix <- spDists(plot_coords, site_coords, longlat = TRUE)
+nearest_site_index <- apply(dist_matrix, 1, which.min)
+plot_summary$Closest_Site <- site_info_filtered$site_ids[nearest_site_index]
+
+plot_summary <- plot_summary %>%
+  left_join(site_info_filtered %>% dplyr::select(site_ids, pft),
+            by = c("Closest_Site" = "site_ids"))
+
+## SDA + SLA
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis.Rdata")
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata")
+
+# Add site numbers to column names 
+vars_per_site <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+n_sites <- 8000
+site_ids <- 1:n_sites
+col_names <- unlist(lapply(site_ids, function(id) paste0(vars_per_site, "_Site_", id)))
+for (t in seq_along(analysis.all)) { colnames(analysis.all[[t]]) <- col_names }
+
+# Keep only AbvGrndWood + LAI
+analysis.filtered <- lapply(analysis.all, function(mat) {
+  cols <- colnames(mat)
+  keep <- grepl("^AbvGrndWood($|_)", cols) | grepl("^LAI($|_)", cols)
+  mat[, keep, drop = FALSE]
+})
+
+# Helper to pull site id from colnames
+extract_site <- function(x, prefix) sub(paste0("^", prefix, "_Site_"), "", x)
+
+# Transform to WC/FC/TC per site-year 
+analysis.transformed <- lapply(seq_along(analysis.filtered), function(i) {
+  mat <- analysis.filtered[[i]]
+  cols <- colnames(mat)
+  agb_cols <- grep("^AbvGrndWood_Site_", cols, value = TRUE)
+  lai_cols <- grep("^LAI_Site_", cols, value = TRUE)
+  agb_sites <- extract_site(agb_cols, "AbvGrndWood")
+  lai_sites <- extract_site(lai_cols, "LAI")
+  common_sites <- intersect(agb_sites, lai_sites)
+  if (length(common_sites) == 0) return(NULL)
+  out_list <- vector("list", length(common_sites) * 3)
+  k <- 1
+  for (site in common_sites) { # Per site, use SLA vector for that site's PFT
+    pft_site <- site_pft$pft[match(as.numeric(site), site_pft$site)]
+    if (is.na(pft_site) || !(pft_site %in% names(ensemble.samples))) next
+    sla_vec <- ensemble.samples[[pft_site]]$SLA
+    lai_ens <- mat[, paste0("LAI_Site_", site), drop = TRUE]
+    agb_ens <- mat[, paste0("AbvGrndWood_Site_", site), drop = TRUE]
+    if (length(sla_vec) != length(lai_ens)) stop("SLA length != ensemble length for site ", site, " (pft=", pft_site, ")")
+    WC_mod <- 0.1 * agb_ens
+    FC_mod <- 0.5 * lai_ens / sla_vec
+    TC_mod <- WC_mod + FC_mod
+    out_list[[k]] <- WC_mod; names(out_list)[k] <- paste0("WC_mod_Site_", site); k <- k + 1
+    out_list[[k]] <- FC_mod; names(out_list)[k] <- paste0("FC_mod_Site_", site); k <- k + 1
+    out_list[[k]] <- TC_mod; names(out_list)[k] <- paste0("TC_mod_Site_", site); k <- k + 1
+  }
+  out_list <- out_list[!vapply(out_list, is.null, logical(1))]
+  if (length(out_list) == 0) return(NULL)
+  as.data.frame(out_list)
+})
+names(analysis.transformed) <- names(analysis.filtered)
+
+# Make model means table 
+mean_df_list <- lapply(names(analysis.transformed), function(yr) {
+  mat <- analysis.transformed[[yr]]
+  if (is.null(mat)) return(NULL)
+  means <- colMeans(mat, na.rm = TRUE)
+  data.frame(Year = yr, Variable = names(means), Mean = as.numeric(means), stringsAsFactors = FALSE)
+})
+plot_summary_mod <- bind_rows(mean_df_list) %>%
+  tidyr::separate(Variable, into = c("Variable", "Site"), sep = "_Site_", remove = FALSE) %>%
+  dplyr::select(Year, Site, Variable, Mean)
+
+# Prep model table for join
+plot_summary_mod_clean <- plot_summary_mod %>%
+  mutate(Year = as.integer(str_sub(Year, 1, 4))) %>%
+  rename(INVYR = Year, Closest_Site = Site) %>%
+  dplyr::select(INVYR, Closest_Site, Variable, Mean)
+plot_summary_mod_wide <- plot_summary_mod_clean %>%
+  pivot_wider(names_from = Variable, values_from = Mean)
+
+# Join modeled means onto plot obs
+plot_summary <- plot_summary %>%
+  mutate(Closest_Site = as.character(Closest_Site)) %>%
+  left_join(plot_summary_mod_wide, by = c("INVYR", "Closest_Site"))
+
+# Average across plots per site
+plot_summary_avg <- plot_summary %>%
+  group_by(Closest_Site, pft) %>%
+  summarize(across(c(WC_obs, FC_obs, TC_obs, WC_mod, FC_mod, TC_mod), mean, na.rm = TRUE), .groups = "drop")
+
+# Helper to build hex plot + RMA + % off 1:1
+make_hex_plot <- function(plot_summary_avg, pft_label, plot_title) {
+  plot_data <- plot_summary_avg %>%
+    dplyr::select(Closest_Site, pft, WC_obs, FC_obs, TC_obs, WC_mod, FC_mod, TC_mod) %>%
+    pivot_longer(cols = -c(Closest_Site, pft),
+                 names_to = c("Variable", "Type"),
+                 names_sep = "_",
+                 values_to = "Value") %>%
+    pivot_wider(names_from = Type, values_from = Value) %>%
+    rename(Obs = obs, Mod = mod) %>%
+    filter(!is.na(Obs), !is.na(Mod))
+  rma_results <- plot_data %>%
+    group_by(Variable) %>%
+    summarise(
+      r  = cor(Obs, Mod, use = "complete.obs"),
+      sx = sd(Obs, na.rm = TRUE),
+      sy = sd(Mod, na.rm = TRUE),
+      slope = sy / sx,
+      intercept = mean(Mod, na.rm = TRUE) - slope * mean(Obs, na.rm = TRUE),
+      R2 = r^2,
+      .groups = "drop"
+    )
+  rma_pct_row <- rma_results %>%
+    mutate(Variable = toupper(Variable), pct_off = (slope - 1) * 100) %>%
+    select(Variable, pct_off) %>%
+    pivot_wider(names_from = Variable, values_from = pct_off) %>%
+    mutate(PFT = pft_label) %>%
+    mutate(
+      WC = ifelse(!"WC" %in% names(.), NA_real_, WC),
+      FC = ifelse(!"FC" %in% names(.), NA_real_, FC),
+      TC = ifelse(!"TC" %in% names(.), NA_real_, TC)
+    ) %>%
+    select(PFT, WC, FC, TC)
+  lims <- quantile(c(plot_data$Obs, plot_data$Mod), probs = c(0.025, 0.975), na.rm = TRUE)
+  plot_data_trim <- plot_data %>%
+    filter(Obs >= lims[1], Obs <= lims[2], Mod >= lims[1], Mod <= lims[2])
+  p <- ggplot(plot_data_trim, aes(x = Obs, y = Mod)) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed", linewidth = 1) +
+    geom_hex(bins = 40) +
+    scale_fill_viridis_c(option = "D", name = "Point density", trans = "log10", direction = -1, limits = c(1, 100)) +
+    geom_abline(data = rma_results, aes(intercept = intercept, slope = slope), color = "black", linewidth = 1.1) +
+    geom_text(data = rma_results, aes(x = Inf, y = Inf, label = paste0("R\u00B2 = ", sprintf("%.2f", R2))),
+              hjust = 1.1, vjust = 25, size = 4, family = "Times New Roman", fontface = "plain") +
+    facet_wrap(~ Variable, scales = "free") +
+    labs(x = "Observed Biomass (kg C/m²)", y = "Predicted Biomass (kg C/m²)", title = plot_title) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 16, face = "plain"),
+      strip.text = element_text(size = 12, face = "plain"),
+      legend.position = "bottom",
+      legend.title = element_text(size = 12, face = "plain"),
+      legend.text  = element_text(size = 10, face = "plain")
+    )
+  list(plot = p, rma = rma_results, pct = rma_pct_row)
+}
+
+# Coniferous plot
+plot_summary_avg_con <- plot_summary_avg %>% filter(pft == "boreal.coniferous")
+res_con <- make_hex_plot(plot_summary_avg_con, "boreal.coniferous", "Observed vs Predicted Plot-Level Biomass (Coniferous)")
+print(res_con$plot)
+plot_normal_pct <- bind_rows(plot_normal_pct, res_con$pct)
+
+# Deciduous plot
+plot_summary_avg_dec <- plot_summary_avg %>% filter(pft == "temperate.deciduous.HPDA")
+res_dec <- make_hex_plot(plot_summary_avg_dec, "temperate.deciduous.HPDA", "Observed vs Predicted Plot-Level Biomass (Deciduous)")
+print(res_dec$plot)
+plot_normal_pct <- bind_rows(plot_normal_pct, res_dec$pct)
+
+# All PFTs plot
+res_all <- make_hex_plot(plot_summary_avg, "both", "Observed vs Predicted Plot-Level Biomass (All PFTs)")
+print(res_all$plot)
+plot_normal_pct <- bind_rows(plot_normal_pct, res_all$pct)
+
+print(plot_normal_pct)
+gc()
+```
+##### *2g. Plot-Level Growth Pred vs Obs Plots 
+```{r Growth plot-level pred obs, echo=FALSE}
+#FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+FilteredTREECounty$TPM2 <- FilteredTREECounty$TPA_UNADJ / 4046.86
+
+latest_cycle <- FilteredTREECounty %>%
+  group_by(STATECD, COUNTYCD) %>%
+  filter(INVYR == max(INVYR)) %>%
+  slice(1) %>%
+  ungroup() %>%
+  dplyr::select(STATECD, COUNTYCD, CYCLE)
+
+FilteredTREECounty <- FilteredTREECounty %>%
+  inner_join(latest_cycle, by = c("STATECD", "COUNTYCD", "CYCLE"))
+
+# Plot-level pools
+plot_summary <- FilteredTREECounty %>%
+  group_by(PLT_CN, COUNTYCD, STATECD, STRATUM_CN, INVYR, EXPNS, LAT, LON) %>%
+  summarize(
+    WC_plot = sum(CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    FC_plot = sum(DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+plot_summary <- plot_summary %>%
+  mutate(TC_plot = WC_plot + FC_plot) %>%
+  rename(WC_obs = WC_plot, FC_obs = FC_plot, TC_obs = TC_plot)
+
+# Site info + PFTs
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_info.Rdata")
+site_info <- as.data.frame(site_info)
+
+site_pft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv")
+
+site_info_joined <- site_info %>%
+  left_join(site_pft, by = c("site_ids" = "site"))
+
+site_info_filtered <- site_info_joined %>%
+  filter(pft %in% c("boreal.coniferous", "temperate.deciduous.HPDA"))
+
+library(sp)
+
+# Closest site per plot
+plot_coords <- as.matrix(plot_summary[, c("LAT", "LON")])
+site_coords <- as.matrix(site_info_filtered[, c("lat", "lon")])
+dist_matrix <- spDists(plot_coords, site_coords, longlat = TRUE)
+nearest_site_index <- apply(dist_matrix, 1, which.min)
+plot_summary$Closest_Site <- site_info_filtered$site_ids[nearest_site_index]
+
+plot_summary <- plot_summary %>%
+  left_join(site_info_filtered %>% dplyr::select(site_ids, pft),
+            by = c("Closest_Site" = "site_ids"))
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata")
+
+library(dplyr)
+
+growth_table <- plot_summary %>%
+  group_by(Closest_Site, INVYR) %>%
+  summarise(
+    WC_obs = mean(WC_obs, na.rm = TRUE),
+    FC_obs = mean(FC_obs, na.rm = TRUE),
+    TC_obs = mean(TC_obs, na.rm = TRUE),
+    LAT    = mean(LAT, na.rm = TRUE),
+    LON    = mean(LON, na.rm = TRUE),
+    pft    = first(pft),
+    .groups = "drop_last"
+  ) %>%
+  arrange(Closest_Site, INVYR) %>%
+  filter(n_distinct(INVYR) > 1) %>%
+  group_by(Closest_Site) %>%
+  mutate(
+    year_diff = INVYR - lag(INVYR),
+    obs_wc = (WC_obs - lag(WC_obs)) / year_diff,
+    obs_fc = (FC_obs - lag(FC_obs)) / year_diff,
+    obs_tc = (TC_obs - lag(TC_obs)) / year_diff,
+    year_range = paste0(lag(INVYR), "-", INVYR)
+  ) %>%
+  filter(!is.na(obs_tc)) %>%
+  ungroup()
+
+# Trim 
+wc_cutoff <- quantile(growth_table$obs_wc, probs = 0.975, na.rm = TRUE)
+tc_cutoff <- quantile(growth_table$obs_tc, probs = 0.975, na.rm = TRUE)
+
+growth_table <- growth_table %>%
+  filter(obs_wc <= wc_cutoff, obs_tc <= tc_cutoff)
+
+# Model transformation
+analysis.transformed <- vector("list", length(analysis.all))
+names(analysis.transformed) <- names(analysis.all)
+
+filtered_samples <- ensemble.samples[c("temperate.deciduous.HPDA", "boreal.coniferous")]
+sitepft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv", header = TRUE)
+
+for (i in seq_along(analysis.all)) {
+  year_data <- analysis.all[[i]]
+  transformed_data <- list()
+  for (site in 1:8000) { 
+    wood_var <- paste0("AbvGrndWood_Site_", site)
+    lai_var <- paste0("LAI_Site_", site)
+    site_pft <- sitepft[as.numeric(site), "pft"]
+    if (!site_pft %in% names(filtered_samples)) next
+    sla_vec <- filtered_samples[[site_pft]]$SLA
+    if (wood_var %in% names(year_data)) {
+      transformed_data[[paste0("WoodC_Site", site)]] <- year_data[[wood_var]] * 0.1
+    }
+    transformed_data[[paste0("FoliageC_Site", site)]] <- (year_data[[lai_var]] * 0.5) / sla_vec
+  }
+  analysis.transformed[[i]] <- transformed_data
+}
+
+for (i in seq_along(analysis.transformed)) {
+  analysis.transformed[[i]] <- as.data.frame(analysis.transformed[[i]])
+}
+
+# Annual change/growth by year 
+annual_change <- vector("list", length = 12)
+names(annual_change) <- names(analysis.transformed)[1:12]
+
+for (year in 1:12) {
+  current_year_data <- analysis.transformed[[year]]
+  next_year_data <- analysis.transformed[[year + 1]]
+  year_change_data <- list()
+  for (site in 1:8000) { # Per site, take ensemble diffs
+    foliage_col_current <- paste0("FoliageC_Site", site)
+    wood_col_current <- paste0("WoodC_Site", site)
+    foliage_col_next <- paste0("FoliageC_Site", site)
+    wood_col_next <- paste0("WoodC_Site", site)
+    if (foliage_col_current %in% names(current_year_data) && foliage_col_next %in% names(next_year_data) &&
+        wood_col_current %in% names(current_year_data) && wood_col_next %in% names(next_year_data)) {
+      foliage_change <- next_year_data[[foliage_col_next]] - current_year_data[[foliage_col_current]]
+      wood_change <- next_year_data[[wood_col_next]] - current_year_data[[wood_col_current]]
+      year_change_data[[paste0("FoliageChange_Site", site)]] <- foliage_change
+      year_change_data[[paste0("WoodChange_Site", site)]] <- wood_change
+      year_change_data[[paste0("TotalChange_Site", site)]] <- foliage_change + wood_change
+    }
+  }
+  annual_change[[year]] <- year_change_data
+}
+
+for (year in 1:12) {
+  annual_change[[year]] <- as.data.frame(annual_change[[year]])
+}
+
+names(annual_change) <- names(analysis.transformed)[1:12]
+
+# Growth stats per year
+model_growth_stats <- list()
+
+for (year in 1:12) {
+  year_data <- annual_change[[year]]
+  avg_foliage_growth <- numeric(8000)
+  avg_wood_growth <- numeric(8000)
+  avg_total_growth <- numeric(8000)
+  sd_foliage_growth <- numeric(8000)
+  sd_wood_growth <- numeric(8000)
+  sd_total_growth <- numeric(8000)
+  for (site in 1:8000) { # Per site, summarize across ensemble
+    foliage_change_col <- paste0("FoliageChange_Site", site)
+    wood_change_col <- paste0("WoodChange_Site", site)
+    total_change_col <- paste0("TotalChange_Site", site)
+    if (foliage_change_col %in% names(year_data) && wood_change_col %in% names(year_data) && total_change_col %in% names(year_data)) {
+      avg_foliage_growth[site] <- mean(year_data[[foliage_change_col]], na.rm = TRUE)
+      avg_wood_growth[site] <- mean(year_data[[wood_change_col]], na.rm = TRUE)
+      avg_total_growth[site] <- mean(year_data[[total_change_col]], na.rm = TRUE)
+      sd_foliage_growth[site] <- sd(year_data[[foliage_change_col]], na.rm = TRUE)
+      sd_wood_growth[site] <- sd(year_data[[wood_change_col]], na.rm = TRUE)
+      sd_total_growth[site] <- sd(year_data[[total_change_col]], na.rm = TRUE)
+    }
+  }
+  model_growth_stats[[paste0("Year_", names(analysis.transformed)[year])]] <- data.frame(
+    Site = 1:8000,
+    AvgFoliageGrowth = avg_foliage_growth,
+    AvgWoodGrowth = avg_wood_growth,
+    AvgTotalGrowth = avg_total_growth,
+    SDFoliageGrowth = sd_foliage_growth,
+    SDWoodGrowth = sd_wood_growth,
+    SDTotalGrowth = sd_total_growth
+  )
+}
+
+growth_table$mod_fc <- NA
+growth_table$mod_wc <- NA
+growth_table$mod_tc <- NA
+
+for (site in 1:8000) {
+  foliage_growth_values <- numeric(12)
+  wood_growth_values <- numeric(12)
+  total_growth_values <- numeric(12)
+  for (year_index in 1:12) {
+    year_name <- paste0("Year_", names(analysis.transformed)[year_index])
+    year_data <- model_growth_stats[[year_name]]
+    foliage_growth_values[year_index] <- year_data$AvgFoliageGrowth[site]
+    wood_growth_values[year_index] <- year_data$AvgWoodGrowth[site]
+    total_growth_values[year_index] <- year_data$AvgTotalGrowth[site]
+  }
+  avg_foliage_growth <- mean(foliage_growth_values)
+  avg_wood_growth <- mean(wood_growth_values)
+  avg_total_growth <- mean(total_growth_values)
+  site_row <- which(growth_table$Closest_Site == site)
+  if (length(site_row) > 0) {
+    growth_table$mod_fc[site_row] <- avg_foliage_growth
+    growth_table$mod_wc[site_row] <- avg_wood_growth
+    growth_table$mod_tc[site_row] <- avg_total_growth
+  }
+}
+
+# Residuals
+growth_table$fc_residual <- growth_table$obs_fc - growth_table$mod_fc
+growth_table$wc_residual <- growth_table$obs_wc - growth_table$mod_wc
+growth_table$tc_residual <- growth_table$obs_tc - growth_table$mod_tc
+
+library(tidyr)
+library(ggplot2)
+library(viridis)
+library(tibble)
+
+# Results table for growth RMA slopes
+plot_growth <- tibble(
+  PFT      = character(),
+  Variable = character(),
+  slope    = double(),
+  R2       = double(),
+  pct_off  = double()
+)
+
+# Hex plot helper 
+make_hex_plot <- function(df, pft_filter = NULL, title_suffix = "Overall") {
+  if (!is.null(pft_filter)) { df_use <- df %>% filter(pft == pft_filter); pft_label <- pft_filter } else { df_use <- df; pft_label <- "Overall" }
+  plot_data <- df_use %>%
+    dplyr::select(Closest_Site, pft, obs_wc, obs_fc, obs_tc, mod_wc, mod_fc, mod_tc) %>%
+    pivot_longer(cols = -c(Closest_Site, pft), names_to = c("Type", "Variable"), names_sep = "_", values_to = "Value") %>%
+    group_by(Closest_Site, pft, Variable, Type) %>%
+    summarise(Value = mean(Value, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = Type, values_from = Value) %>%
+    rename(Obs = obs, Mod = mod) %>%
+    filter(!is.na(Obs), !is.na(Mod)) %>%
+    mutate(Variable = toupper(Variable))
+  rma_results <- plot_data %>%
+    group_by(Variable) %>%
+    summarise(
+      r  = cor(Obs, Mod, use = "complete.obs"),
+      sx = sd(Obs, na.rm = TRUE),
+      sy = sd(Mod, na.rm = TRUE),
+      slope = (sy / sx),
+      intercept = mean(Mod, na.rm = TRUE) - slope * mean(Obs, na.rm = TRUE),
+      R2 = r^2,
+      .groups = "drop"
+    )
+  plot_growth_pct <- rma_results %>%
+    mutate(PFT = pft_label, pct_off = (slope - 1) * 100) %>%
+    dplyr::select(PFT, Variable, slope, R2, pct_off)
+  plot_growth <<- bind_rows(plot_growth, plot_growth_pct)
+  print(plot_growth_pct)
+  ggplot(plot_data, aes(x = Obs, y = Mod)) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed", linewidth = 1) +
+    geom_hex(bins = 40) +
+    scale_fill_viridis_c(option = "D", name = "Point density", trans = "log10", direction = -1, limits = c(1, 100)) +
+    geom_abline(data = rma_results, aes(intercept = intercept, slope = slope), color = "black", linewidth = 1.1) +
+    geom_text(data = rma_results, aes(x = Inf, y = Inf, label = paste0("R\u00B2 = ", sprintf("%.2f", R2))),
+              hjust = 1.1, vjust = 27, size = 4, family = "Times New Roman") +
+    facet_wrap(~ Variable, scales = "free") +
+    labs(x = "Observed Growth (kg C/m²/yr)", y = "Predicted Growth (kg C/m²/yr)",
+         title = paste("Observed vs Predicted Plot-Level Growth -", title_suffix)) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 16, face = "plain"),
+      strip.text = element_text(size = 12, face = "plain"),
+      legend.position = "bottom",
+      legend.title = element_text(size = 12, face = "plain"),
+      legend.text = element_text(size = 10, face = "plain")
+    )
+}
+
+hex_con <- make_hex_plot(growth_table, "boreal.coniferous", "Boreal Coniferous")
+hex_dec <- make_hex_plot(growth_table, "temperate.deciduous.HPDA", "Temperate Deciduous")
+hex_all <- make_hex_plot(growth_table, NULL, "Overall")
+
+hex_con
+hex_dec
+hex_all
+gc()
+```
+
+##### *2h. County-Level Pred vs Obs Plots 
+```{r county-level pred obs, echo=FALSE}
+# Note: This is a hex plot and color is log-scaled
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(viridis)
+library(scales)
+library(lmodel2)
+
+# Helper to build county-level pred obs plot
+make_county_hex_plot <- function(
+  FilteredTREECounty_df,
+  ModSummary,
+  pft_label,
+  mod_cols,
+  plot_title
+) {
+  FilteredTREECounty_df$TPM2 <- FilteredTREECounty_df$TPA_UNADJ / 4046.86
+
+  latest_cycle <- FilteredTREECounty_df %>%
+    group_by(STATECD, COUNTYCD) %>%
+    filter(INVYR == max(INVYR)) %>%
+    slice(1) %>%
+    ungroup() %>%
+    dplyr::select(STATECD, COUNTYCD, CYCLE)
+
+  FilteredTREECounty_df <- FilteredTREECounty_df %>%
+    inner_join(latest_cycle, by = c("STATECD", "COUNTYCD", "CYCLE"))
+
+  # Plot estimates
+  plot_summary <- FilteredTREECounty_df %>%
+    group_by(PLT_CN, COUNTYCD, STATECD, STRATUM_CN, INVYR, EXPNS) %>%
+    summarize(
+      WC_plot = sum(
+        CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+        na.rm = TRUE
+      ),
+      FC_plot = sum(
+        DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+        na.rm = TRUE
+      ),
+      .groups = "drop"
+    )
+
+  # Stratum means and variances 
+  stratum_summary <- plot_summary %>%
+    group_by(STATECD, COUNTYCD, STRATUM_CN, EXPNS) %>%
+    summarize(
+      WC_stratum = mean(WC_plot, na.rm = TRUE),
+      FC_stratum = mean(FC_plot, na.rm = TRUE),
+      WC_var = ifelse(n() > 1, var(WC_plot, na.rm = TRUE) / n(), 0),
+      FC_var = ifelse(n() > 1, var(FC_plot, na.rm = TRUE) / n(), 0),
+      Cov_WC_FC = ifelse(n() > 1, cov(WC_plot, FC_plot, use = "complete.obs") / n(), 0),
+      .groups = "drop"
+    )
+
+  # County weighted means and variances
+  TREECountyObs <- stratum_summary %>%
+    group_by(STATECD, COUNTYCD) %>%
+    summarize(
+      WC_Obs = sum(WC_stratum * EXPNS) / sum(EXPNS),
+      FC_Obs = sum(FC_stratum * EXPNS) / sum(EXPNS),
+      TC_Obs = WC_Obs + FC_Obs,
+      WC_Var = sum((EXPNS^2) * WC_var) / (sum(EXPNS)^2),
+      FC_Var = sum((EXPNS^2) * FC_var) / (sum(EXPNS)^2),
+      Cov_WC_FC = sum((EXPNS^2) * Cov_WC_FC) / (sum(EXPNS)^2),
+      .groups = "drop"
+    ) %>%
+    mutate(TC_Var = WC_Var + FC_Var + 2 * Cov_WC_FC)
+
+  ModSummary <- ModSummary %>%
+    mutate(
+      STATEFP = as.character(STATEFP),
+      COUNTYFP = as.character(COUNTYFP)
+    )
+
+  TREECountyObs <- TREECountyObs %>%
+    mutate(
+      STATEFP = as.character(STATECD),
+      COUNTYFP = as.character(COUNTYCD)
+    )
+
+  County_Biomass_Combined <- TREECountyObs %>%
+    left_join(
+      ModSummary %>%
+        dplyr::select(
+          STATEFP,
+          COUNTYFP,
+          all_of(mod_cols$TC),
+          all_of(mod_cols$WC),
+          all_of(mod_cols$FC)
+        ),
+      by = c("STATEFP", "COUNTYFP")
+    )
+
+  plot_data <- bind_rows(
+    County_Biomass_Combined %>%
+      transmute(
+        STATECD, COUNTYCD,
+        Variable = "TC",
+        Obs = TC_Obs,
+        Mod = .data[[mod_cols$TC]],
+        Var = TC_Var
+      ),
+    County_Biomass_Combined %>%
+      transmute(
+        STATECD, COUNTYCD,
+        Variable = "WC",
+        Obs = WC_Obs,
+        Mod = .data[[mod_cols$WC]],
+        Var = WC_Var
+      ),
+    County_Biomass_Combined %>%
+      transmute(
+        STATECD, COUNTYCD,
+        Variable = "FC",
+        Obs = FC_Obs,
+        Mod = .data[[mod_cols$FC]],
+        Var = FC_Var
+      )
+  ) %>%
+    mutate(Precision = 1 / Var)
+
+  mod_cutoff <- quantile(plot_data$Obs, probs = 0.975, na.rm = TRUE)
+
+  plot_data_trimmed <- plot_data %>%
+    filter(Obs <= mod_cutoff, is.finite(Precision), Precision > 0) %>%
+    mutate(
+      Precision_capped = pmin(Precision, quantile(Precision, 0.9, na.rm = TRUE)),
+      Precision_scaled = scales::rescale(Precision_capped, to = c(2, 10)),
+      Precision_scaled_weight = scales::rescale(Precision_capped, to = c(0.1, 1)),
+      label_y = case_when(
+        Variable == "TC" ~ 0.95,
+        Variable == "WC" ~ 0.85,
+        Variable == "FC" ~ 0.75,
+        TRUE ~ 0.5
+      )
+    )
+
+  # RMA regression for each variable
+  rma_results <- plot_data_trimmed %>%
+    group_by(Variable) %>%
+    summarise(
+      r = cor(Obs, Mod, use = "complete.obs"),
+      sx = sd(Obs, na.rm = TRUE),
+      sy = sd(Mod, na.rm = TRUE),
+      slope = sign(r) * (sy / sx),
+      intercept = mean(Mod, na.rm = TRUE) - slope * mean(Obs, na.rm = TRUE),
+      R2 = r^2,
+      .groups = "drop"
+    )
+
+  # Summary table for each variable
+  county_normal <- rma_results %>%
+    mutate(
+      PFT = pft_label,
+      slope_percent_off = (slope - 1) * 100
+    ) %>%
+    dplyr::select(PFT, Variable, slope, slope_percent_off, R2)
+
+  p <- ggplot(plot_data_trimmed, aes(x = Obs, y = Mod)) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed", linewidth = 1) +
+    geom_hex(bins = 40) +
+    scale_fill_viridis_c(
+      option = "D",
+      name = "Point density",
+      trans = "log10",
+      direction = -1,
+      limits = c(1, 100)
+    ) +
+    geom_abline(
+      data = rma_results,
+      aes(intercept = intercept, slope = slope),
+      color = "black", linewidth = 1.1
+    ) +
+    geom_text(
+      data = rma_results,
+      aes(x = Inf, y = Inf, label = paste0("R² = ", sprintf("%.2f", R2))),
+      hjust = 1.1, vjust = 25, size = 4, family = "Times New Roman"
+    ) +
+    facet_wrap(~ Variable, scales = "free") +
+    labs(
+      x = "Observed Biomass (kg C/m²)",
+      y = "Predicted Biomass (kg C/m²)",
+      title = plot_title
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 16),
+      strip.text = element_text(size = 12),
+      legend.position = "bottom",
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)
+    )
+
+  list(plot = p, table = county_normal, data = plot_data_trimmed, rma = rma_results)
+}
+
+# Modeled county summary
+ModSummary <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/county_summary_mod.csv")
+
+# Coniferous
+res_con <- make_county_hex_plot(
+  FilteredTREECounty_df = FilteredTREECountyCon,
+  ModSummary = ModSummary,
+  pft_label = "boreal.coniferous",
+  mod_cols = list(TC = "TC_Mod_avg_con", WC = "WC_Mod_avg_con", FC = "FC_Mod_avg_con"),
+  plot_title = "Observed vs Predicted Biomass Density by Pool (Coniferous)"
+)
+print(res_con$plot)
+print(res_con$table)
+
+# Deciduous
+res_dec <- make_county_hex_plot(
+  FilteredTREECounty_df = FilteredTREECountyDec,
+  ModSummary = ModSummary,
+  pft_label = "temperate.deciduous.HPDA",
+  mod_cols = list(TC = "TC_Mod_avg_dec", WC = "WC_Mod_avg_dec", FC = "FC_Mod_avg_dec"),
+  plot_title = "Observed vs Predicted Biomass Density by Pool (Deciduous)"
+)
+print(res_dec$plot)
+print(res_dec$table)
+
+# Overall
+res_all <- make_county_hex_plot(
+  FilteredTREECounty_df = FilteredTREECounty,
+  ModSummary = ModSummary,
+  pft_label = "both",
+  mod_cols = list(TC = "TC_Mod_avg", WC = "WC_Mod_avg", FC = "FC_Mod_avg"),
+  plot_title = "Observed vs Predicted Biomass Density by Pool (Overall)"
+)
+print(res_all$plot)
+print(res_all$table)
+
+gc()
+```
+
+##### *2i. County-Level Growth Pred vs Obs Plots 
+```{r county-level pred obs, echo=FALSE}
+# Note: This is a hex plot and color is log-scaled
+
+library(dplyr)
+library(sf)
+library(tidyr)
+library(stringr)
+library(purrr)
+library(terra)
+library(ggplot2)
+library(viridis)
+
+FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+# Add PFT
+FilteredTREECounty <- (function(df) {
+  cols <- names(df)
+  src <- intersect(c("pft", "ClassCode", "ClassCode.x", "ClassCode.y"), cols)
+  if (length(src) == 0) stop("No ClassCode/pft column found in FilteredTREECounty.")
+  src <- src[1]
+
+  df %>%
+    mutate(
+      pft = case_when(
+        .data[[src]] %in% c("Con", 1, "1")   ~ "boreal.coniferous",
+        .data[[src]] %in% c("Decid", 4, "4") ~ "temperate.deciduous.HPDA",
+        TRUE ~ as.character(.data[[src]])
+      )
+    ) %>%
+    dplyr::select(-any_of(c("ClassCode", "ClassCode.x", "ClassCode.y")))
+})(FilteredTREECounty)
+
+# County biomass by year and PFT
+county_biomass_pft <- FilteredTREECounty %>%
+  filter(!is.na(pft)) %>%
+  group_by(STATECD, COUNTYCD, INVYR, STRATUM_CN, EXPNS, pft) %>%
+  summarise(
+    WC_stratum = sum(
+      0.1 * CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+      na.rm = TRUE
+    ),
+    FC_stratum = sum(
+      0.1 * DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  group_by(STATECD, COUNTYCD, INVYR, pft) %>%
+  summarise(
+    WC_Obs = sum(WC_stratum * EXPNS) / sum(EXPNS),
+    FC_Obs = sum(FC_stratum * EXPNS) / sum(EXPNS),
+    TC_Obs = WC_Obs + FC_Obs,
+    .groups = "drop"
+  )
+
+# Annual growth at county and PFT levels
+county_growth_pft <- county_biomass_pft %>%
+  arrange(STATECD, COUNTYCD, pft, INVYR) %>%
+  group_by(STATECD, COUNTYCD, pft) %>%
+  mutate(
+    year_diff = INVYR - lag(INVYR),
+    growth_wc = (WC_Obs - lag(WC_Obs)),
+    growth_fc = (FC_Obs - lag(FC_Obs)),
+    growth_tc = (TC_Obs - lag(TC_Obs)),
+    year_range = paste0(lag(INVYR), "-", INVYR)
+  ) %>%
+  filter(!is.na(growth_tc)) %>%
+  ungroup()
+
+# Annualized intervals
+county_growth_expanded_pft <- county_growth_pft %>%
+  mutate(year_range = str_trim(year_range)) %>%
+  tidyr::separate_wider_regex(
+    year_range,
+    patterns = c(start = "\\d{4}", "-", end = "\\d{4}")
+  ) %>%
+  mutate(
+    start = as.integer(start),
+    end   = as.integer(end),
+    n_intervals = pmax(end - start, 0L)
+  ) %>%
+  filter(n_intervals > 0) %>%
+  mutate(year_end_vec = map2(start, end, ~ seq(.x + 1L, .y, by = 1L))) %>%
+  unnest(year_end_vec) %>%
+  mutate(
+    annual_growth_tc = growth_tc / n_intervals,
+    annual_growth_wc = growth_wc / n_intervals,
+    annual_growth_fc = growth_fc / n_intervals,
+    year_end = year_end_vec
+  ) %>%
+  dplyr::select(STATECD, COUNTYCD, pft, year_end, annual_growth_tc, annual_growth_wc, annual_growth_fc)
+
+# County mean annual growth by PFT
+county_annual_mean_obs <- county_growth_expanded_pft %>%
+  group_by(STATECD, COUNTYCD, pft) %>%
+  summarise(
+    mean_tc_growth = mean(annual_growth_tc, na.rm = TRUE),
+    mean_wc_growth = mean(annual_growth_wc, na.rm = TRUE),
+    mean_fc_growth = mean(annual_growth_fc, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+compute_model_county_mean <- function(tif_dir, counties_sf, band = 2) {
+
+  pools <- c("WC", "FC", "TC")
+  results <- list()
+
+  for (pool in pools) {
+    message("Processing ", pool, " rasters...")
+
+    tif_files <- list.files(
+      tif_dir,
+      pattern = paste0("^", pool, "_\\d{4}\\.(tif|tiff)$"),
+      full.names = TRUE
+    )
+    if (length(tif_files) <= 1) next
+
+    years <- as.integer(sub(
+      paste0("^", pool, "_(\\d{4})\\.(tif|tiff)$"),
+      "\\1",
+      basename(tif_files)
+    ))
+    ord <- order(years)
+    tif_files <- tif_files[ord]
+    years <- years[ord]
+
+    r_list <- lapply(tif_files, function(f) rast(f)[[band]])
+    r_stack <- rast(r_list)
+    names(r_stack) <- paste0(pool, "_", years)
+
+    r_growth <- r_stack[[2:nlyr(r_stack)]] - r_stack[[1:(nlyr(r_stack) - 1)]]
+    names(r_growth) <- paste0("g_", pool, "_", years[-1], "_minus_", years[-length(years)])
+
+    counties_use <- st_transform(counties_sf, crs(r_stack))
+    ez <- terra::extract(r_growth, vect(counties_use), fun = mean, na.rm = TRUE)
+
+    mod_long <- counties_use %>%
+      st_drop_geometry() %>%
+      mutate(ID = row_number()) %>%
+      dplyr::select(STATEFP, COUNTYFP, ID) %>%
+      inner_join(ez, by = "ID") %>%
+      dplyr::select(-ID) %>%
+      pivot_longer(starts_with("g_"), names_to = "layer", values_to = "mod_growth") %>%
+      mutate(year = as.integer(str_match(layer, paste0("_(\\d{4})_minus_"))[, 2])) %>%
+      dplyr::select(STATEFP, COUNTYFP, year, mod_growth)
+
+    mod_mean <- mod_long %>%
+      group_by(STATEFP, COUNTYFP) %>%
+      summarise(mean_growth = mean(mod_growth, na.rm = TRUE), .groups = "drop") %>%
+      mutate(
+        STATECD = as.character(as.integer(STATEFP)),
+        COUNTYCD = as.character(as.integer(COUNTYFP))
+      ) %>%
+      dplyr::select(STATECD, COUNTYCD, mean_growth)
+
+    results[[pool]] <- mod_mean %>%
+      rename(!!paste0("mod_", tolower(pool), "_annual_mean") := mean_growth)
+  }
+
+  mod_county_mean <- reduce(results, full_join, by = c("STATECD", "COUNTYCD"))
+  list(mod_county_mean = mod_county_mean)
+}
+
+dir_con <- "/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/averaged_tifs_con"
+dir_dec <- "/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/averaged_tifs_dec"
+
+counties <- st_read("/projectnb/dietzelab/cwebb16/county_validation/shp_NLCD/cb_2024_us_county_500k.shp")
+
+mod_con_all <- compute_model_county_mean(dir_con, counties)
+mod_dec_all <- compute_model_county_mean(dir_dec, counties)
+
+# Join modeled WC/FC/TC means w/ observed
+county_annual_mean_obs <- county_annual_mean_obs %>%
+  mutate(across(c(STATECD, COUNTYCD), as.character)) %>%
+  left_join(
+    mod_con_all$mod_county_mean %>%
+      rename_with(~ paste0(., "_con"), starts_with("mod_")),
+    by = c("STATECD", "COUNTYCD")
+  ) %>%
+  left_join(
+    mod_dec_all$mod_county_mean %>%
+      rename_with(~ paste0(., "_dec"), starts_with("mod_")),
+    by = c("STATECD", "COUNTYCD")
+  )
+
+make_county_hex_plot <- function(df, pft_filter = NULL, title_suffix = "All PFTs") {
+  if (!is.null(pft_filter)) {
+    df <- df %>% filter(pft == pft_filter)
+  }
+  plot_data <- df %>%
+    mutate(
+      obs_wc = mean_wc_growth,
+      obs_fc = mean_fc_growth,
+      obs_tc = mean_tc_growth,
+      mod_wc = case_when(
+        pft == "boreal.coniferous"         ~ mod_wc_annual_mean_con,
+        pft == "temperate.deciduous.HPDA"  ~ mod_wc_annual_mean_dec
+      ),
+      mod_fc = case_when(
+        pft == "boreal.coniferous"         ~ mod_fc_annual_mean_con,
+        pft == "temperate.deciduous.HPDA"  ~ mod_fc_annual_mean_dec
+      ),
+      mod_tc = case_when(
+        pft == "boreal.coniferous"         ~ mod_tc_annual_mean_con,
+        pft == "temperate.deciduous.HPDA"  ~ mod_tc_annual_mean_dec
+      )
+    ) %>%
+    dplyr::select(
+      STATECD, COUNTYCD, pft,
+      obs_wc, obs_fc, obs_tc,
+      mod_wc, mod_fc, mod_tc
+    ) %>%
+    filter(is.finite(obs_tc), is.finite(mod_tc))
+
+  plot_data_long <- plot_data %>%
+    pivot_longer(
+      cols = -c(STATECD, COUNTYCD, pft),
+      names_to = c("Type", "Variable"),
+      names_sep = "_",
+      values_to = "Value"
+    ) %>%
+    pivot_wider(names_from = Type, values_from = Value) %>%
+    rename(Obs = obs, Mod = mod) %>%
+    mutate(Variable = toupper(Variable)) %>%
+    filter(!is.na(Obs), !is.na(Mod))
+
+  lims <- stats::quantile(
+    c(plot_data_long$Obs, plot_data_long$Mod),
+    probs = c(0.025, 0.975),
+    na.rm = TRUE
+  )
+
+  plot_data_long <- plot_data_long %>%
+    filter(
+      Obs >= lims[1], Obs <= lims[2],
+      Mod >= lims[1], Mod <= lims[2]
+    )
+
+  rma_results <- plot_data_long %>%
+    group_by(Variable) %>%
+    summarise(
+      r = stats::cor(Obs, Mod, use = "complete.obs"),
+      sx = stats::sd(Obs, na.rm = TRUE),
+      sy = stats::sd(Mod, na.rm = TRUE),
+      slope = sy / sx,
+      intercept = mean(Mod, na.rm = TRUE) - slope * mean(Obs, na.rm = TRUE),
+      R2 = r^2,
+      .groups = "drop"
+    ) %>%
+    mutate(percent_off = (slope - 1) * 100)
+
+  rma_summary_table <- rma_results %>%
+    dplyr::select(Variable, percent_off) %>%
+    mutate(Variable = factor(Variable, levels = c("FC", "WC", "TC"))) %>%
+    arrange(Variable) %>%
+    mutate(Variable = as.character(Variable)) %>%
+    pivot_wider(names_from = Variable, values_from = percent_off) %>%
+    mutate(PFT = if (is.null(pft_filter)) "All PFTs" else pft_filter) %>%
+    dplyr::select(PFT, FC, WC, TC)
+
+  cat("\nRMA slope % deviation from 1:1 (slope = 1) for ", title_suffix, ":\n", sep = "")
+  print(rma_summary_table)
+
+  ggplot(plot_data_long, aes(x = Obs, y = Mod)) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed", linewidth = 1) +
+    geom_hex(bins = 40) +
+    scale_fill_viridis_c(
+      option = "D",
+      name = "Point density",
+      trans = "log10",
+      direction = -1,
+      limits = c(1, 100)
+    ) +
+    geom_abline(
+      data = rma_results,
+      aes(intercept = intercept, slope = slope),
+      color = "black",
+      linewidth = 1.1
+    ) +
+    geom_text(
+      data = rma_results,
+      aes(x = Inf, y = Inf, label = paste0("R\u00B2 = ", sprintf("%.2f", R2))),
+      hjust = 1.1,
+      vjust = 27,
+      size = 4,
+      family = "Times New Roman"
+    ) +
+    facet_wrap(~ Variable, scales = "free") +
+    labs(
+      x = "Observed Growth (kg C/m²/yr)",
+      y = "Predicted Growth (kg C/m²/yr)",
+      title = paste("Observed vs Predicted County-Level Growth —", title_suffix)
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 16, face = "plain"),
+      strip.text = element_text(size = 12, face = "plain"),
+      legend.position = "bottom",
+      legend.title = element_text(size = 12, face = "plain"),
+      legend.text = element_text(size = 10, face = "plain")
+    )
+}
+
+hex_con_county <- make_county_hex_plot(
+  county_annual_mean_obs,
+  "boreal.coniferous",
+  "Boreal Coniferous"
+)
+print(hex_con_county)
+
+hex_dec_county <- make_county_hex_plot(
+  county_annual_mean_obs,
+  "temperate.deciduous.HPDA",
+  "Temperate Deciduous"
+)
+print(hex_dec_county)
+
+hex_all_county <- make_county_hex_plot(
+  county_annual_mean_obs,
+  NULL,
+  "All PFTs Combined"
+)
+print(hex_all_county)
+```
+
+##### *2j. Plot-Level Residual Maps
+```{r Plot-level residual maps, echo=FALSE}
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggpmisc)
+library(scales)
+library(tibble)
+library(lmodel2)
+library(viridis)
+library(sf)
+library(sp)
+library(stringr)
+
+## FIA
+
+# FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+FilteredTREECounty$TPM2 <- FilteredTREECounty$TPA_UNADJ / 4046.86
+
+latest_cycle <- FilteredTREECounty %>%
+  group_by(STATECD, COUNTYCD) %>%
+  filter(INVYR == max(INVYR)) %>%
+  slice(1) %>%
+  ungroup() %>%
+  dplyr::select(STATECD, COUNTYCD, CYCLE)
+
+FilteredTREECounty <- FilteredTREECounty %>%
+  inner_join(latest_cycle, by = c("STATECD", "COUNTYCD", "CYCLE"))
+
+# Plot estimates
+plot_summary <- FilteredTREECounty %>%
+  group_by(PLT_CN, COUNTYCD, STATECD, STRATUM_CN, INVYR, EXPNS, LAT, LON) %>%
+  summarize(
+    WC_plot = sum(
+      CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+      na.rm = TRUE
+    ),
+    FC_plot = sum(
+      DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(TC_plot = WC_plot + FC_plot) %>%
+  rename(
+    WC_obs = WC_plot,
+    FC_obs = FC_plot,
+    TC_obs = TC_plot
+  )
+
+# Site info
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_info.Rdata")
+site_info <- as.data.frame(site_info)
+
+# Site PFT table
+site_pft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv")
+
+# Join pft column to site_info by matching site_ids (site_info) and site (site_pft)
+site_info_joined <- site_info %>%
+  left_join(site_pft, by = c("site_ids" = "site"))
+
+site_info_filtered <- site_info_joined %>%
+  filter(pft %in% c("boreal.coniferous", "temperate.deciduous.HPDA"))
+
+# Nearest site per plot
+plot_coords <- as.matrix(plot_summary[, c("LAT", "LON")])
+site_coords <- as.matrix(site_info_filtered[, c("lat", "lon")])
+
+dist_matrix <- spDists(plot_coords, site_coords, longlat = TRUE)
+nearest_site_index <- apply(dist_matrix, 1, which.min)
+
+plot_summary$Closest_Site <- site_info_filtered$site_ids[nearest_site_index]
+
+plot_summary <- plot_summary %>%
+  left_join(
+    site_info_filtered %>% dplyr::select(site_ids, pft),
+    by = c("Closest_Site" = "site_ids")
+  )
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata")
+
+## SDA
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis.Rdata")
+
+sites_to_keep <- plot_summary$Closest_Site
+
+# Column names for sites
+vars_per_site <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+n_sites <- 8000
+site_ids <- 1:n_sites
+col_names <- unlist(lapply(site_ids, function(id) paste0(vars_per_site, "_Site_", id)))
+
+for (t in seq_along(analysis.all)) {
+  colnames(analysis.all[[t]]) <- col_names
+}
+
+# Keep only AbvGrndWood and LAI
+analysis.filtered <- lapply(analysis.all, function(mat) {
+  cols <- colnames(mat)
+  keep <- grepl("^AbvGrndWood($|_)", cols) | grepl("^LAI($|_)", cols)
+  mat[, keep, drop = FALSE]
+})
+
+# Helper to pull site ID from variable names
+extract_site <- function(x, prefix) {
+  sub(paste0("^", prefix, "_Site_"), "", x)
+}
+
+# PFT lookup by site id 
+site_to_pft <- setNames(site_pft$pft, as.character(site_pft$site))
+
+# Model ransformations
+analysis.transformed <- lapply(seq_along(analysis.filtered), function(i) {
+  mat <- analysis.filtered[[i]]
+  cols <- colnames(mat)
+  agb_cols <- grep("^AbvGrndWood_Site_", cols, value = TRUE)
+  lai_cols <- grep("^LAI_Site_", cols, value = TRUE)
+  agb_sites <- extract_site(agb_cols, "AbvGrndWood")
+  lai_sites <- extract_site(lai_cols, "LAI")
+  common_sites <- intersect(agb_sites, lai_sites)
+
+  if (length(common_sites) == 0) return(NULL)
+
+  out_list <- vector("list", length(common_sites) * 3)
+  k <- 1
+
+  for (site in common_sites) {
+    pft_site <- site_to_pft[[as.character(site)]]
+    if (is.null(pft_site) || is.na(pft_site)) next
+    if (!(pft_site %in% names(ensemble.samples))) next
+
+    sla_vec <- ensemble.samples[[pft_site]]$SLA
+
+    lai_ens <- mat[, paste0("LAI_Site_", site), drop = TRUE]
+    agb_ens <- mat[, paste0("AbvGrndWood_Site_", site), drop = TRUE]
+
+    if (length(sla_vec) != length(lai_ens)) {
+      stop(
+        "SLA length does not match ensemble length for site ",
+        site,
+        " (pft = ",
+        pft_site,
+        ")."
+      )
+    }
+
+    WC_mod <- 0.1 * agb_ens
+    FC_mod <- 0.5 * lai_ens / sla_vec
+    TC_mod <- WC_mod + FC_mod
+
+    out_list[[k]] <- WC_mod
+    names(out_list)[k] <- paste0("WC_mod_Site_", site)
+    k <- k + 1
+
+    out_list[[k]] <- FC_mod
+    names(out_list)[k] <- paste0("FC_mod_Site_", site)
+    k <- k + 1
+
+    out_list[[k]] <- TC_mod
+    names(out_list)[k] <- paste0("TC_mod_Site_", site)
+    k <- k + 1
+  }
+
+  out_list <- out_list[!vapply(out_list, is.null, logical(1))]
+  if (length(out_list) == 0) return(NULL)
+
+  as.data.frame(out_list)
+})
+
+names(analysis.transformed) <- names(analysis.filtered)
+
+# Ensemble means for each site-year-variable combo
+mean_df_list <- lapply(names(analysis.transformed), function(yr) {
+  mat <- analysis.transformed[[yr]]
+  if (is.null(mat)) return(NULL)
+
+  means <- colMeans(mat, na.rm = TRUE)
+
+  data.frame(
+    Year = yr,
+    Variable = names(means),
+    Mean = as.numeric(means),
+    stringsAsFactors = FALSE
+  )
+})
+
+plot_summary_mod <- bind_rows(mean_df_list) %>%
+  tidyr::separate(Variable, into = c("Variable", "Site"), sep = "_Site_", remove = FALSE) %>%
+  dplyr::select(Year, Site, Variable, Mean)
+
+# Prep model table for join
+plot_summary_mod_clean <- plot_summary_mod %>%
+  mutate(Year = as.integer(str_sub(Year, 1, 4))) %>%
+  rename(
+    INVYR = Year,
+    Closest_Site = Site
+  ) %>%
+  dplyr::select(INVYR, Closest_Site, Variable, Mean)
+
+plot_summary_mod_wide <- plot_summary_mod_clean %>%
+  pivot_wider(names_from = Variable, values_from = Mean)
+
+plot_summary <- plot_summary %>%
+  mutate(Closest_Site = as.character(Closest_Site)) %>%
+  left_join(plot_summary_mod_wide, by = c("INVYR", "Closest_Site")) %>%
+  mutate(
+    WC_res = WC_obs - WC_mod,
+    FC_res = FC_obs - FC_mod,
+    TC_res = TC_obs - TC_mod
+  )
+
+plot_summary_avg <- plot_summary %>%
+  group_by(Closest_Site, pft) %>%
+  summarize(
+    across(
+      c(
+        WC_obs, FC_obs, TC_obs,
+        WC_mod, FC_mod, TC_mod,
+        WC_res, FC_res, TC_res
+      ),
+      mean,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(Closest_Site = as.integer(Closest_Site)) %>%
+  left_join(
+    site_info %>% dplyr::select(site_ids, lat, lon),
+    by = c("Closest_Site" = "site_ids")
+  )
+
+## Plot
+
+us_map <- ne_states(country = "United States of America", returnclass = "sf")
+us_union <- st_union(us_map)
+
+global_lims <- stats::quantile(abs(plot_summary_avg$TC_res), probs = 0.975, na.rm = TRUE)
+size_cap <- 40
+
+prep_residual_df <- function(data, pft_name = NULL, lim_upper = global_lims, size_cap = 40) {
+  dat <- data
+  if (!is.null(pft_name)) dat <- dat %>% filter(pft == pft_name)
+
+  dat %>%
+    filter(!is.na(TC_res), !is.na(lon), !is.na(lat)) %>%
+    st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE) %>%
+    st_filter(us_union, .predicate = st_within) %>%
+    st_drop_geometry() %>%
+    mutate(
+      abs_res = abs(TC_res),
+      keep = abs_res <= lim_upper,
+      ResidualSign = case_when(
+        TC_res > 0 ~ "Positive",
+        TC_res < 0 ~ "Negative",
+        TRUE ~ NA_character_
+      ),
+      Col = case_when(
+        ResidualSign == "Positive" ~ "royalblue",
+        ResidualSign == "Negative" ~ "orangered1",
+        TRUE ~ NA_character_
+      ),
+      TC_res_clipped = pmin(abs_res, size_cap)
+    ) %>%
+    filter(keep, !is.na(ResidualSign), !is.na(Col))
+}
+
+plot_pft_map <- function(
+  data,
+  pft_name,
+  title_suffix = NULL,
+  lim_upper = global_lims,
+  size_cap = 40
+) {
+  df_plot <- prep_residual_df(data, pft_name, lim_upper, size_cap)
+
+  ggplot(data = us_map) +
+    geom_sf(fill = "lightgrey", color = "black", size = 0.1) +
+    geom_point(
+      data = df_plot,
+      aes(x = lon, y = lat, color = Col, size = TC_res_clipped),
+      alpha = 0.7
+    ) +
+    scale_color_identity(
+      name = "Residual sign",
+      breaks = c("royalblue", "orangered1"),
+      labels = c("Positive", "Negative"),
+      guide = "legend"
+    ) +
+    scale_size(
+      range = c(0.005, 1.7),
+      limits = c(0, size_cap),
+      name = "Residual Magnitude (kg C/m²)"
+    ) +
+    coord_sf(xlim = c(-170, -60), ylim = c(20, 72)) +
+    labs(
+      title = ifelse(is.null(title_suffix), pft_name, title_suffix),
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    guides(
+      color = guide_legend(
+        order = 1,
+        title.position = "top",
+        title.hjust = 0.5,
+        direction = "horizontal"
+      ),
+      size = guide_legend(
+        order = 2,
+        title.position = "top",
+        title.hjust = 0.5,
+        direction = "horizontal"
+      )
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+      legend.position = "bottom",
+      legend.box = "horizontal",
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)
+    )
+}
+
+plot_all_residuals <- function(
+  data,
+  title = "All Sites",
+  lim_upper = global_lims,
+  size_cap = 40
+) {
+  df_plot <- prep_residual_df(data, pft_name = NULL, lim_upper, size_cap)
+
+  ggplot(data = us_map) +
+    geom_sf(fill = "lightgrey", color = "black", size = 0.1) +
+    geom_point(
+      data = df_plot,
+      aes(x = lon, y = lat, color = Col, size = TC_res_clipped),
+      alpha = 0.7
+    ) +
+    scale_color_identity(
+      name = "Residual sign",
+      breaks = c("royalblue", "orangered1"),
+      labels = c("Positive", "Negative"),
+      guide = "legend"
+    ) +
+    scale_size(
+      range = c(0.005, 1.7),
+      limits = c(0, size_cap),
+      name = "Residual Magnitude (kg C/m²)"
+    ) +
+    coord_sf(xlim = c(-170, -60), ylim = c(20, 72)) +
+    labs(
+      title = title,
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+      legend.position = "bottom",
+      legend.box = "horizontal",
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)
+    )
+}
+
+plot_pft_map(plot_summary_avg, "boreal.coniferous", "Boreal Coniferous")
+plot_pft_map(plot_summary_avg, "temperate.deciduous.HPDA", "Temperate Deciduous")
+plot_all_residuals(plot_summary_avg, "All Sites — Total Carbon Residuals")
+```
+
+##### *2k. Plot-Level Growth Residual Maps
+```{r plot-level growth residual maps}
+library(rnaturalearth)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggpmisc)
+library(scales)
+library(tibble)
+library(lmodel2)
+library(viridis)
+library(sf)
+library(sp)
+library(stringr)
+
+# FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+us_map <- ne_states(country = "United States of America", returnclass = "sf")
+
+FilteredTREECounty$TPM2 <- FilteredTREECounty$TPA_UNADJ / 4046.86
+
+latest_cycle <- FilteredTREECounty %>%
+  group_by(STATECD, COUNTYCD) %>%
+  filter(INVYR == max(INVYR)) %>%
+  slice(1) %>%
+  ungroup() %>%
+  dplyr::select(STATECD, COUNTYCD, CYCLE)
+
+FilteredTREECounty <- FilteredTREECounty %>%
+  inner_join(latest_cycle, by = c("STATECD", "COUNTYCD", "CYCLE"))
+
+# Plot estimates
+plot_summary <- FilteredTREECounty %>%
+  group_by(PLT_CN, COUNTYCD, STATECD, STRATUM_CN, INVYR, EXPNS, LAT, LON) %>%
+  summarize(
+    WC_plot = sum(0.1 * CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    FC_plot = sum(0.1 * DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(TC_plot = WC_plot + FC_plot) %>%
+  rename(
+    WC_obs = WC_plot,
+    FC_obs = FC_plot,
+    TC_obs = TC_plot
+  )
+
+# Load site_info
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_info.Rdata")
+site_info <- as.data.frame(site_info)
+
+# And site_pft
+site_pft <- read.csv("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/site_pft.csv")
+
+# Join PFT column to site_info by matching site_ids (site_info) and site (site_pft)
+site_info_joined <- site_info %>%
+  left_join(site_pft, by = c("site_ids" = "site"))
+
+site_info_filtered <- site_info_joined %>%
+  filter(pft %in% c("boreal.coniferous", "temperate.deciduous.HPDA"))
+
+# Nearest site per plot
+plot_coords <- as.matrix(plot_summary[, c("LAT", "LON")])
+site_coords <- as.matrix(site_info_filtered[, c("lat", "lon")])
+
+dist_matrix <- spDists(plot_coords, site_coords, longlat = TRUE)
+nearest_site_index <- apply(dist_matrix, 1, which.min)
+
+plot_summary$Closest_Site <- site_info_filtered$site_ids[nearest_site_index]
+
+plot_summary <- plot_summary %>%
+  left_join(
+    site_info_filtered %>% dplyr::select(site_ids, pft),
+    by = c("Closest_Site" = "site_ids")
+  )
+
+# Annual growth rates for observed variables
+growth_table <- plot_summary %>%
+  group_by(Closest_Site, INVYR) %>%
+  summarise(
+    WC_obs = mean(WC_obs, na.rm = TRUE),
+    FC_obs = mean(FC_obs, na.rm = TRUE),
+    TC_obs = mean(TC_obs, na.rm = TRUE),
+    LAT = mean(LAT, na.rm = TRUE),
+    LON = mean(LON, na.rm = TRUE),
+    pft = first(pft),
+    .groups = "drop_last"
+  ) %>%
+  arrange(Closest_Site, INVYR) %>%
+  filter(n_distinct(INVYR) > 1) %>%
+  mutate(
+    year_diff = INVYR - lag(INVYR),
+    obs_wc_growth = (WC_obs - lag(WC_obs)) / year_diff,
+    obs_fc_growth = (FC_obs - lag(FC_obs)) / year_diff,
+    obs_tc_growth = (TC_obs - lag(TC_obs)) / year_diff,
+    year = paste0(lag(INVYR), "-", INVYR)
+  ) %>%
+  filter(
+    !is.na(obs_wc_growth), !is.na(obs_fc_growth), !is.na(obs_tc_growth),
+    is.finite(obs_wc_growth), is.finite(obs_fc_growth), is.finite(obs_tc_growth)
+  ) %>%
+  dplyr::select(
+    site_number = Closest_Site,
+    year,
+    lat = LAT,
+    lon = LON,
+    pft,
+    obs_fc_growth,
+    obs_wc_growth,
+    obs_tc_growth
+  )
+
+# Trim
+wc_cutoff <- quantile(abs(growth_table$obs_wc_growth), probs = 0.975, na.rm = TRUE)
+
+growth_table <- growth_table %>%
+  filter(abs(obs_wc_growth) <= wc_cutoff)
+
+tc_cutoff <- quantile(abs(growth_table$obs_tc_growth), probs = 0.975, na.rm = TRUE)
+
+growth_table <- growth_table %>%
+  filter(abs(obs_tc_growth) <= tc_cutoff)
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/samples.Rdata")
+
+## SDA
+
+load("/projectnb/dietzelab/dongchen/anchorSites/NA_runs/SDA_8k_site/sda.all.forecast.analysis.Rdata")
+
+# Add site numbers to columns
+vars_per_site <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb")
+n_sites <- 8000
+site_ids <- 1:n_sites
+col_names <- unlist(lapply(site_ids, function(id) paste0(vars_per_site, "_Site_", id)))
+
+for (t in seq_along(analysis.all)) {
+  colnames(analysis.all[[t]]) <- col_names
+}
+
+# Keep only AbvGrndWood and LAI
+analysis.filtered <- lapply(analysis.all, function(mat) {
+  if (is.null(colnames(mat))) {
+    stop("analysis.all element has no column names; cannot filter by variable name.")
+  }
+
+  cols <- colnames(mat)
+  keep <- grepl("^AbvGrndWood($|_)", cols) | grepl("^LAI($|_)", cols)
+
+  if (!any(keep)) {
+    stop(
+      "No columns matching AbvGrndWood/LAI were found. Sample names: ",
+      paste(utils::head(cols, 10), collapse = ", ")
+    )
+  }
+
+  mat[, keep, drop = FALSE]
+})
+
+# Helper to pull site ID from variable names
+extract_site <- function(x, prefix) {
+  sub(paste0("^", prefix, "_Site_"), "", x)
+}
+
+# PFT lookup by site id
+site_pft_lookup <- setNames(site_pft$pft, as.character(site_pft$site))
+
+# Mod transformations
+analysis.transformed <- lapply(seq_along(analysis.filtered), function(i) {
+  mat <- analysis.filtered[[i]]
+  cols <- colnames(mat)
+  agb_cols <- grep("^AbvGrndWood_Site_", cols, value = TRUE)
+  lai_cols <- grep("^LAI_Site_", cols, value = TRUE)
+  agb_sites <- extract_site(agb_cols, "AbvGrndWood")
+  lai_sites <- extract_site(lai_cols, "LAI")
+  common_sites <- intersect(agb_sites, lai_sites)
+
+  if (length(common_sites) == 0) return(NULL)
+
+  out_list <- vector("list", length(common_sites) * 3)
+  k <- 1
+
+  for (site in common_sites) {
+    pft_site <- site_pft_lookup[[as.character(site)]]
+    if (is.null(pft_site) || is.na(pft_site)) next
+    if (!(pft_site %in% names(ensemble.samples))) next
+
+    sla_vec <- ensemble.samples[[pft_site]]$SLA
+
+    lai_ens <- mat[, paste0("LAI_Site_", site), drop = TRUE]
+    agb_ens <- mat[, paste0("AbvGrndWood_Site_", site), drop = TRUE]
+
+    if (length(sla_vec) != length(lai_ens)) {
+      stop(
+        "SLA length does not match ensemble length for site ",
+        site,
+        " (pft = ",
+        pft_site,
+        ")."
+      )
+    }
+
+    WC_mod <- 0.1 * agb_ens
+    FC_mod <- 0.5 * lai_ens / sla_vec
+    TC_mod <- WC_mod + FC_mod
+
+    out_list[[k]] <- WC_mod
+    names(out_list)[k] <- paste0("WC_mod_Site_", site)
+    k <- k + 1
+
+    out_list[[k]] <- FC_mod
+    names(out_list)[k] <- paste0("FC_mod_Site_", site)
+    k <- k + 1
+
+    out_list[[k]] <- TC_mod
+    names(out_list)[k] <- paste0("TC_mod_Site_", site)
+    k <- k + 1
+  }
+
+  out_list <- out_list[!vapply(out_list, is.null, logical(1))]
+  if (length(out_list) == 0) return(NULL)
+
+  as.data.frame(out_list)
+})
+
+names(analysis.transformed) <- names(analysis.filtered)
+
+# Annual change in modeled carbon ensembles
+annual_change <- vector("list", length = 12)
+names(annual_change) <- names(analysis.transformed)[1:12]
+
+for (year in 1:12) {
+  current_year_data <- analysis.transformed[[year]]
+  next_year_data <- analysis.transformed[[year + 1]]
+
+  year_change_data <- list()
+
+  for (site in 1:8000) {
+    fc_col_current <- paste0("FC_mod_Site_", site)
+    wc_col_current <- paste0("WC_mod_Site_", site)
+    tc_col_current <- paste0("TC_mod_Site_", site)
+
+    fc_col_next <- paste0("FC_mod_Site_", site)
+    wc_col_next <- paste0("WC_mod_Site_", site)
+    tc_col_next <- paste0("TC_mod_Site_", site)
+
+    if (fc_col_current %in% names(current_year_data) && fc_col_next %in% names(next_year_data) &&
+        wc_col_current %in% names(current_year_data) && wc_col_next %in% names(next_year_data) &&
+        tc_col_current %in% names(current_year_data) && tc_col_next %in% names(next_year_data)) {
+
+      fc_change <- next_year_data[[fc_col_next]] - current_year_data[[fc_col_current]]
+      wc_change <- next_year_data[[wc_col_next]] - current_year_data[[wc_col_current]]
+      tc_change <- next_year_data[[tc_col_next]] - current_year_data[[tc_col_current]]
+
+      year_change_data[[paste0("FoliageChange_Site", site)]] <- fc_change
+      year_change_data[[paste0("WoodChange_Site", site)]] <- wc_change
+      year_change_data[[paste0("TotalChange_Site", site)]] <- tc_change
+    }
+  }
+
+  annual_change[[year]] <- as.data.frame(year_change_data)
+}
+
+# Mean and SD of modeled growth per site-year across ensemble members
+model_growth_stats <- list()
+
+for (year in 1:12) {
+  year_data <- annual_change[[year]]
+
+  avg_foliage_growth <- numeric(8000)
+  avg_wood_growth <- numeric(8000)
+  avg_total_growth <- numeric(8000)
+
+  sd_foliage_growth <- numeric(8000)
+  sd_wood_growth <- numeric(8000)
+  sd_total_growth <- numeric(8000)
+
+  for (site in 1:8000) {
+    foliage_change_col <- paste0("FoliageChange_Site", site)
+    wood_change_col <- paste0("WoodChange_Site", site)
+    total_change_col <- paste0("TotalChange_Site", site)
+
+    if (foliage_change_col %in% names(year_data) &&
+        wood_change_col %in% names(year_data) &&
+        total_change_col %in% names(year_data)) {
+
+      avg_foliage_growth[site] <- mean(year_data[[foliage_change_col]], na.rm = TRUE)
+      avg_wood_growth[site] <- mean(year_data[[wood_change_col]], na.rm = TRUE)
+      avg_total_growth[site] <- mean(year_data[[total_change_col]], na.rm = TRUE)
+
+      sd_foliage_growth[site] <- sd(year_data[[foliage_change_col]], na.rm = TRUE)
+      sd_wood_growth[site] <- sd(year_data[[wood_change_col]], na.rm = TRUE)
+      sd_total_growth[site] <- sd(year_data[[total_change_col]], na.rm = TRUE)
+    }
+  }
+
+  model_growth_stats[[paste0("Year_", names(analysis.transformed)[year])]] <- data.frame(
+    Site = 1:8000,
+    AvgFoliageGrowth = avg_foliage_growth,
+    AvgWoodGrowth = avg_wood_growth,
+    AvgTotalGrowth = avg_total_growth,
+    SDFoliageGrowth = sd_foliage_growth,
+    SDWoodGrowth = sd_wood_growth,
+    SDTotalGrowth = sd_total_growth
+  )
+}
+
+growth_table$mod_fc <- NA
+growth_table$mod_wc <- NA
+growth_table$mod_tc <- NA
+
+# Site-level average modeled growth across years, mapped onto FIA site rows
+for (site in 1:8000) {
+  foliage_growth_values <- numeric(12)
+  wood_growth_values <- numeric(12)
+  total_growth_values <- numeric(12)
+
+  for (year_index in 1:12) {
+    year_name <- paste0("Year_", names(analysis.transformed)[year_index])
+    year_data <- model_growth_stats[[year_name]]
+
+    foliage_growth_values[year_index] <- year_data$AvgFoliageGrowth[site]
+    wood_growth_values[year_index] <- year_data$AvgWoodGrowth[site]
+    total_growth_values[year_index] <- year_data$AvgTotalGrowth[site]
+  }
+
+  avg_foliage_growth <- mean(foliage_growth_values)
+  avg_wood_growth <- mean(wood_growth_values)
+  avg_total_growth <- mean(total_growth_values)
+
+  site_row <- which(growth_table$site_number == site)
+
+  if (length(site_row) > 0) {
+    growth_table$mod_fc[site_row] <- avg_foliage_growth
+    growth_table$mod_wc[site_row] <- avg_wood_growth
+    growth_table$mod_tc[site_row] <- avg_total_growth
+  }
+}
+
+# Residuals
+growth_table$fc_residual <- growth_table$obs_fc_growth - growth_table$mod_fc
+growth_table$wc_residual <- growth_table$obs_wc_growth - growth_table$mod_wc
+growth_table$tc_residual <- growth_table$obs_tc_growth - growth_table$mod_tc
+
+# Residual sign and colors
+prep_residual_points <- function(data, pft_name = NULL) {
+  df <- data %>%
+    filter(!is.na(tc_residual), !is.na(lon), !is.na(lat))
+
+  if (!is.null(pft_name)) {
+    df <- df %>% filter(pft == pft_name)
+  }
+
+  df %>%
+    mutate(
+      ResidualSign = case_when(
+        tc_residual > 0 ~ "Positive",
+        tc_residual < 0 ~ "Negative",
+        TRUE ~ NA_character_
+      ),
+      Col = case_when(
+        ResidualSign == "Positive" ~ "royalblue",
+        ResidualSign == "Negative" ~ "orangered1",
+        TRUE ~ NA_character_
+      )
+    ) %>%
+    filter(!is.na(ResidualSign), !is.na(Col))
+}
+
+plot_residual_map <- function(data, df_points, title_suffix) {
+  ggplot(data = data) +
+    geom_sf(fill = "lightgrey", color = "black", size = 0.01) +
+    geom_point(
+      data = df_points,
+      aes(x = lon, y = lat, color = Col, size = abs(tc_residual)),
+      alpha = 0.7
+    ) +
+    scale_color_identity(
+      name = "Residual sign",
+      breaks = c("royalblue", "orangered1"),
+      labels = c("Positive", "Negative"),
+      guide = "legend"
+    ) +
+    scale_size(range = c(0.008, 1.2), name = "Residual Size (kg C/m²/yr)") +
+    coord_sf(xlim = c(-160, -60), ylim = c(25, 70)) +
+    labs(
+      title = paste0(" ", title_suffix),
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      text = element_text(family = "Times New Roman"),
+      legend.position = "bottom",
+      legend.box = "horizontal"
+    )
+}
+
+# Maps by PFT
+df_con <- prep_residual_points(growth_table, "boreal.coniferous")
+df_dec <- prep_residual_points(growth_table, "temperate.deciduous.HPDA")
+df_all <- prep_residual_points(growth_table, NULL)
+
+plot_residual_map(us_map, df_con, "Boreal Coniferous")
+plot_residual_map(us_map, df_dec, "Temperate Deciduous")
+plot_residual_map(us_map, df_all, "Combined Residuals — All PFTs")
+```
+
+##### *2l. County-Level Residual Maps
+```{r Combined county-level residual maps, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(terra)
+library(exactextractr)
+library(scales)
+
+# FIA county-level means
+
+# Stratum-level means across plots
+stratum_summary <- plot_summary %>%
+  group_by(STATECD, COUNTYCD, STRATUM_CN, EXPNS, pft) %>%
+  summarize(
+    WC_stratum = mean(WC_obs, na.rm = TRUE),
+    FC_stratum = mean(FC_obs, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# County-level weighted means by PFT
+county_summary_pft <- stratum_summary %>%
+  group_by(STATECD, COUNTYCD, pft) %>%
+  summarize(
+    WC_Obs = sum(WC_stratum * EXPNS) / sum(EXPNS),
+    FC_Obs = sum(FC_stratum * EXPNS) / sum(EXPNS),
+    TC_Obs = WC_Obs + FC_Obs,
+    .groups = "drop"
+  )
+
+# County-level weighted means across both PFTs (combined)
+county_summary_all <- stratum_summary %>%
+  group_by(STATECD, COUNTYCD) %>%
+  summarize(
+    WC_Obs = sum(WC_stratum * EXPNS) / sum(EXPNS),
+    FC_Obs = sum(FC_stratum * EXPNS) / sum(EXPNS),
+    TC_Obs = WC_Obs + FC_Obs,
+    .groups = "drop"
+  ) %>%
+  mutate(pft = "All PFTs")
+
+county_summary <- bind_rows(county_summary_all, county_summary_pft) %>%
+  mutate(
+    COUNTYCD = as.character(COUNTYCD),
+    STATECD = as.character(STATECD)
+  )
+
+# Model county means with forest weighting
+counties <- st_read("/projectnb/dietzelab/cwebb16/county_validation/shp_NLCD/cb_2024_us_county_500k.shp")
+
+NLCD1km <- rast("/projectnb/dietzelab/dongchen/anchorSites/downscale/MODIS_NLCD_LC.tif")
+
+TC_model <- rast("/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/final_model_tifs/TC_county_avg.tiff")
+
+counties <- st_transform(counties, crs(NLCD1km))
+TC_model <- project(TC_model, NLCD1km)
+
+pixel_area <- prod(res(NLCD1km))
+
+# Percent cover helper (mask is logical)
+get_cover_percent <- function(mask, counties_sf, ref_rast) {
+  covered_area <- exact_extract(mask, counties_sf, "sum") * pixel_area
+  total_area <- exact_extract(!is.na(ref_rast), counties_sf, "count") * pixel_area
+  covered_area / total_area
+}
+
+# Forest masks from NLCD codes
+forest_mask_all <- (NLCD1km == 1) | (NLCD1km == 4)
+forest_mask_con <- (NLCD1km == 1)
+forest_mask_dec <- (NLCD1km == 4)
+
+# Forest fraction per county 
+counties$forest_frac_all <- get_cover_percent(forest_mask_all, counties, NLCD1km)
+counties$forest_frac_con <- get_cover_percent(forest_mask_con, counties, NLCD1km)
+counties$forest_frac_dec <- get_cover_percent(forest_mask_dec, counties, NLCD1km)
+
+# Unweighted model mean over forest pixels
+counties$mod_TC_unw <- exact_extract(TC_model, counties, "mean")
+
+# Forest-weighted model county mean for each mask
+counties$mod_TC_all <- counties$mod_TC_unw * counties$forest_frac_all
+counties$mod_TC_con <- counties$mod_TC_unw * counties$forest_frac_con
+counties$mod_TC_dec <- counties$mod_TC_unw * counties$forest_frac_dec
+
+# Join FIA county obs with model
+
+counties <- counties %>%
+  mutate(
+    COUNTYFP = as.character(COUNTYFP),
+    STATEFP = as.character(STATEFP)
+  )
+
+counties$COUNTYFP <- sub("^0+", "", counties$COUNTYFP)
+counties$STATEFP <- sub("^0+", "", counties$STATEFP)
+
+counties_obs <- left_join(
+  counties,
+  county_summary,
+  by = c("STATEFP" = "STATECD", "COUNTYFP" = "COUNTYCD")
+)
+
+# Attach the matching forest-weighted model value by PFT label
+residuals_df <- counties_obs %>%
+  mutate(
+    mod_TC = case_when(
+      pft == "boreal.coniferous" ~ mod_TC_con,
+      pft == "temperate.deciduous.HPDA" ~ mod_TC_dec,
+      pft == "All PFTs" ~ mod_TC_all,
+      TRUE ~ NA_real_
+    ),
+    TC_res = TC_Obs - mod_TC
+  ) %>%
+  dplyr::select(
+    STATEFP, COUNTYFP, pft, geometry,
+    WC_Obs, FC_Obs, TC_Obs,
+    mod_TC, TC_res
+  )
+
+# County residual plotting
+
+us_map <- ne_states(country = "United States of America", returnclass = "sf")
+residuals_df <- st_transform(residuals_df, st_crs(us_map))
+
+plot_county_residuals <- function(df, pft_filter = NULL, title_suffix = "All PFTs") {
+  df_plot <- df
+  if (!is.null(pft_filter)) df_plot <- df_plot %>% filter(pft == pft_filter)
+
+  df_plot <- df_plot %>% filter(!is.na(TC_res))
+
+  ggplot() +
+    geom_sf(data = us_map, fill = "lightgrey", color = NA) +
+    geom_sf(
+      data = df_plot,
+      aes(fill = TC_res),
+      color = NA
+    ) +
+    geom_sf(data = us_map, fill = NA, color = "black", size = 0.01) +
+    scale_fill_gradient2(
+      low = "darkred",
+      mid = "white",
+      high = "blue",
+      midpoint = 0,
+      limits = c(-15, 25),
+      oob = scales::squish,
+      na.value = NA,
+      name = "Residual (kg C/m²)"
+    ) +
+    coord_sf(
+      xlim = c(-160, -60),
+      ylim = c(25, 70),
+      expand = TRUE
+    ) +
+    labs(
+      title = paste0("County-level Total Carbon Residuals (Obs – Forest-weighted Model) — ", title_suffix),
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      legend.position = "bottom",
+      legend.box = "horizontal"
+    )
+}
+
+plot_county_residuals(residuals_df, "All PFTs", "Combined")
+plot_county_residuals(residuals_df, "boreal.coniferous", "Boreal Coniferous")
+plot_county_residuals(residuals_df, "temperate.deciduous.HPDA", "Temperate Deciduous")
+
+mean_all <- residuals_df %>% filter(pft == "All PFTs") %>% summarize(mean_res = mean(TC_res, na.rm = TRUE))
+mean_con <- residuals_df %>% filter(pft == "boreal.coniferous") %>% summarize(mean_res = mean(TC_res, na.rm = TRUE))
+mean_dec <- residuals_df %>% filter(pft == "temperate.deciduous.HPDA") %>% summarize(mean_res = mean(TC_res, na.rm = TRUE))
+
+mean_all
+mean_con
+mean_dec
+```
+
+##### *2m. County-Level Growth Residual Maps
+```{r county-level growth residual maps}
+library(dplyr)
+library(sf)
+library(tidyr)
+library(stringr)
+library(purrr)
+library(terra)
+library(ggplot2)
+library(rnaturalearth)
+library(scales)
+
+#FilteredTREECounty <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/FilteredTREECounty.csv.gz")
+
+# Recode to PFT using whichever source column exists (sometimes it duplicates if you run things multiple times)
+FilteredTREECounty <- (function(df) {
+  cols <- names(df)
+  src <- intersect(c("pft", "ClassCode", "ClassCode.x", "ClassCode.y"), cols)
+  if (length(src) == 0) stop("No ClassCode/pft column found in FilteredTREECounty.")
+  src <- src[1]
+
+  df %>%
+    mutate(
+      pft = case_when(
+        .data[[src]] %in% c("Con", 1, "1") ~ "boreal.coniferous",
+        .data[[src]] %in% c("Decid", 4, "4") ~ "temperate.deciduous.HPDA",
+        TRUE ~ as.character(.data[[src]])
+      )
+    ) %>%
+    dplyr::select(-any_of(c("ClassCode", "ClassCode.x", "ClassCode.y")))
+})(FilteredTREECounty)
+
+# County-level biomass by year and PFT 
+county_biomass_pft <- FilteredTREECounty %>%
+  filter(!is.na(pft)) %>%
+  group_by(STATECD, COUNTYCD, INVYR, STRATUM_CN, EXPNS, pft) %>%
+  summarise(
+    WC_stratum = sum(CARBON_AG * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    FC_stratum = sum(DRYBIO_FOLIAGE * 0.5 * TPA_UNADJ * 0.45359237 * 0.0002471 * ADJ_FACTOR_SUBP, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(STATECD, COUNTYCD, INVYR, pft) %>%
+  summarise(
+    WC_Obs = sum(WC_stratum * EXPNS) / sum(EXPNS),
+    FC_Obs = sum(FC_stratum * EXPNS) / sum(EXPNS),
+    TC_Obs = WC_Obs + FC_Obs,
+    .groups = "drop"
+  )
+
+# Year-to-year annualized growth at county + PFT level
+county_growth_pft <- county_biomass_pft %>%
+  arrange(STATECD, COUNTYCD, pft, INVYR) %>%
+  group_by(STATECD, COUNTYCD, pft) %>%
+  mutate(
+    year_diff = INVYR - lag(INVYR),
+    growth_wc = (WC_Obs - lag(WC_Obs)) / year_diff,
+    growth_fc = (FC_Obs - lag(FC_Obs)) / year_diff,
+    growth_tc = (TC_Obs - lag(TC_Obs)) / year_diff,
+    year_range = paste0(lag(INVYR), "-", INVYR)
+  ) %>%
+  filter(!is.na(growth_tc), is.finite(growth_tc)) %>%
+  ungroup()
+
+# Annual growth per county
+county_growth_expanded_pft <- county_growth_pft %>%
+  mutate(year_range = str_trim(year_range)) %>%
+  tidyr::separate_wider_regex(
+    year_range,
+    patterns = c(start = "\\d{4}", "-", end = "\\d{4}")
+  ) %>%
+  mutate(
+    start = as.integer(start),
+    end = as.integer(end),
+    n_intervals = pmax(end - start, 0L)
+  ) %>%
+  filter(n_intervals > 0) %>%
+  mutate(year_end_vec = map2(start, end, ~ seq(.x + 1L, .y, by = 1L))) %>%
+  unnest(year_end_vec) %>%
+  mutate(
+    annual_growth_tc = growth_tc,
+    annual_growth_wc = growth_wc,
+    annual_growth_fc = growth_fc,
+    year_end = year_end_vec
+  ) %>%
+  dplyr::select(STATECD, COUNTYCD, pft, year_end, annual_growth_tc, annual_growth_wc, annual_growth_fc)
+
+county_annual_mean_obs_pft <- county_growth_expanded_pft %>%
+  group_by(STATECD, COUNTYCD, pft) %>%
+  summarise(
+    obs_tc_annual_mean = mean(annual_growth_tc, na.rm = TRUE),
+    obs_wc_annual_mean = mean(annual_growth_wc, na.rm = TRUE),
+    obs_fc_annual_mean = mean(annual_growth_fc, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Observed county mean annual growth across both PFTs 
+county_annual_mean_obs_all <- county_growth_expanded_pft %>%
+  group_by(STATECD, COUNTYCD) %>%
+  summarise(
+    obs_tc_annual_mean = mean(annual_growth_tc, na.rm = TRUE),
+    obs_wc_annual_mean = mean(annual_growth_wc, na.rm = TRUE),
+    obs_fc_annual_mean = mean(annual_growth_fc, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(pft = "All PFTs")
+
+county_annual_mean_obs <- bind_rows(county_annual_mean_obs_all, county_annual_mean_obs_pft) %>%
+  mutate(
+    STATECD = as.character(STATECD),
+    COUNTYCD = as.character(COUNTYCD)
+  )
+
+# Model county mean annual growth from TIFFs
+compute_model_county_mean <- function(tif_dir, counties_sf, band = 2) {
+  tif_files <- list.files(tif_dir, pattern = "^TC_\\d{4}\\.(tif|tiff)$", full.names = TRUE)
+  stopifnot(length(tif_files) > 1)
+
+  years <- as.integer(sub("^TC_(\\d{4})\\.(tif|tiff)$", "\\1", basename(tif_files)))
+  ord <- order(years)
+  tif_files <- tif_files[ord]
+  years <- years[ord]
+
+  r_list <- lapply(tif_files, function(f) rast(f)[[band]])
+  r_stack <- rast(r_list)
+  names(r_stack) <- paste0("TC_", years)
+
+  r_growth <- r_stack[[2:nlyr(r_stack)]] - r_stack[[1:(nlyr(r_stack) - 1)]]
+  names(r_growth) <- paste0("g_", years[-1], "_minus_", years[-length(years)])
+
+  counties_use <- st_transform(counties_sf, crs(r_stack))
+  ez <- terra::extract(r_growth, vect(counties_use), fun = mean, na.rm = TRUE)
+
+  mod_long <- counties_use %>%
+    st_drop_geometry() %>%
+    dplyr::select(STATEFP, COUNTYFP) %>%
+    mutate(ID = row_number()) %>%
+    inner_join(ez, by = "ID") %>%
+    dplyr::select(-ID) %>%
+    pivot_longer(starts_with("g_"), names_to = "layer", values_to = "mod_growth") %>%
+    mutate(year = as.integer(str_match(layer, "^g_(\\d{4})_minus_\\d{4}$")[, 2])) %>%
+    dplyr::select(STATEFP, COUNTYFP, year, mod_growth)
+
+  mod_county_mean <- mod_long %>%
+    group_by(STATEFP, COUNTYFP) %>%
+    summarise(mod_tc_annual_mean = mean(mod_growth, na.rm = TRUE), .groups = "drop") %>%
+    mutate(
+      STATECD = as.character(as.integer(STATEFP)),
+      COUNTYCD = as.character(as.integer(COUNTYFP))
+    ) %>%
+    dplyr::select(STATECD, COUNTYCD, mod_tc_annual_mean)
+
+  list(mod_long = mod_long, mod_county_mean = mod_county_mean)
+}
+
+# County geometries for joins and plotting
+counties <- st_read("/projectnb/dietzelab/cwebb16/county_validation/shp_NLCD/cb_2024_us_county_500k.shp")
+
+dir_con <- "/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/averaged_tifs_con"
+dir_dec <- "/projectnb/dietzelab/cwebb16/county_validation/GEDI_SDA/averaged_tifs_dec"
+
+mod_con <- compute_model_county_mean(dir_con, counties)
+mod_dec <- compute_model_county_mean(dir_dec, counties)
+
+# Join model means onto observed
+county_annual_mean_obs <- county_annual_mean_obs %>%
+  left_join(
+    mod_con$mod_county_mean %>% rename(mod_tc_annual_mean_con = mod_tc_annual_mean),
+    by = c("STATECD", "COUNTYCD")
+  ) %>%
+  left_join(
+    mod_dec$mod_county_mean %>% rename(mod_tc_annual_mean_dec = mod_tc_annual_mean),
+    by = c("STATECD", "COUNTYCD")
+  ) %>%
+  mutate(
+    mod_tc_annual_mean = case_when(
+      pft == "boreal.coniferous" ~ mod_tc_annual_mean_con,
+      pft == "temperate.deciduous.HPDA" ~ mod_tc_annual_mean_dec,
+      pft == "All PFTs" ~ rowMeans(cbind(mod_tc_annual_mean_con, mod_tc_annual_mean_dec), na.rm = TRUE),
+      TRUE ~ NA_real_
+    ),
+    residual = obs_tc_annual_mean - mod_tc_annual_mean
+  )
+
+# Join residuals onto county geometries
+residuals_sf <- counties %>%
+  mutate(
+    STATECD = as.character(as.integer(STATEFP)),
+    COUNTYCD = as.character(as.integer(COUNTYFP))
+  ) %>%
+  left_join(county_annual_mean_obs, by = c("STATECD", "COUNTYCD")) %>%
+  st_as_sf()
+
+# County residual maps
+
+us_map <- ne_states(country = "United States of America", returnclass = "sf")
+
+plot_residuals_by_pft <- function(dat, pft_name, title_suffix) {
+  df <- dat %>% filter(pft == pft_name, !is.na(residual))
+  if (nrow(df) == 0) stop("No data for PFT: ", pft_name)
+
+  ggplot() +
+    geom_sf(data = us_map, fill = "lightgrey", color = NA) +
+    geom_sf(data = df, aes(fill = residual), color = NA) +
+    geom_sf(data = us_map, fill = NA, color = "black", size = 0.01) +
+    scale_fill_gradient2(
+      low = "darkred",
+      mid = "white",
+      high = "blue",
+      midpoint = 0,
+      limits = range(df$residual, na.rm = TRUE),
+      na.value = NA,
+      name = "Residual (kg C/m²/yr)"
+    ) +
+    coord_sf(xlim = c(-160, -60), ylim = c(25, 70), expand = TRUE) +
+    labs(
+      title = paste("County-level", title_suffix, "Growth Residuals"),
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    theme_minimal(base_family = "Times New Roman") +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      legend.position = "bottom",
+      legend.box = "horizontal"
+    )
+}
+
+plot_residuals_by_pft(residuals_sf, "All PFTs", "All PFTs Combined")
+plot_residuals_by_pft(residuals_sf, "boreal.coniferous", "Boreal Coniferous")
+plot_residuals_by_pft(residuals_sf, "temperate.deciduous.HPDA", "Temperate Deciduous")
+```
+
+##### *2n. County-Level Observed Maps
+```{r county-level observed maps}
+
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+# County shapefile and NLCD
+counties <- st_read("/projectnb/dietzelab/cwebb16/county_validation/shp_NLCD/cb_2024_us_county_500k.shp")
+county_obs <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/county_summary_obs.csv")
+
+# Make sure COUNTYCD and STATECD are characters for join
+county_obs <- county_obs %>%
+  mutate(
+    COUNTYCD = as.character(COUNTYCD),
+    STATECD = as.character(STATECD)
+  )
+
+counties <- counties %>%
+  mutate(
+    COUNTYFP = as.character(COUNTYFP),
+    STATEFP = as.character(STATEFP)
+  )
+counties$COUNTYFP <- sub("^0+", "", counties$COUNTYFP)
+counties$STATEFP <- sub("^0+", "", counties$STATEFP)
+
+
+# Join observed data with county geometries and forest fractions
+counties_obs <- left_join(counties, county_obs, by = c("STATEFP" = "STATECD", "COUNTYFP" = "COUNTYCD"))
+
+# Project to WGS84 for proper plotting layout
+counties_obs_plot <- st_transform(counties_obs, 4326)
+
+
+# Plot!!
+
+# Both PFTs
+
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m2)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  labs(title = "Combined")
+
+# coniferous
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs_con), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m2)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  labs(title = "Con")
+
+
+# dec
+
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs_dec), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m²)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom",         
+    legend.box = "horizontal", 
+  ) +
+  labs(title = "Dec")
+
+```
+
+##### *2o. County-Level Model Maps
+```{r county-level model maps}
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+# County shapefile and NLCD
+counties <- st_read("/projectnb/dietzelab/cwebb16/county_validation/shp_NLCD/cb_2024_us_county_500k.shp")
+county_obs <- read.csv("/projectnb/dietzelab/cwebb16/county_validation/FIA/county_summary_obs.csv")
+
+# Make sure COUNTYCD and STATECD are characters for join
+county_obs <- county_obs %>%
+  mutate(
+    COUNTYCD = as.character(COUNTYCD),
+    STATECD = as.character(STATECD)
+  )
+
+counties <- counties %>%
+  mutate(
+    COUNTYFP = as.character(COUNTYFP),
+    STATEFP = as.character(STATEFP)
+  )
+counties$COUNTYFP <- sub("^0+", "", counties$COUNTYFP)
+counties$STATEFP <- sub("^0+", "", counties$STATEFP)
+
+
+# Join observed data with county geometries and forest fractions
+counties_obs <- left_join(counties, county_obs, by = c("STATEFP" = "STATECD", "COUNTYFP" = "COUNTYCD"))
+
+# Project to WGS84 for proper plotting layout
+counties_obs_plot <- st_transform(counties_obs, 4326)
+
+
+# Plot!!
+
+# Both PFTs
+
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m2)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  labs(title = "Combined")
+
+# coniferous
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs_con), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m2)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  labs(title = "Con")
+
+
+# dec
+
+ggplot(data = counties_obs_plot) +
+  geom_sf(aes(fill = TC_Obs_dec), color = NA) +
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Total Biomass (kg C/m²)",
+    limits = c(0,20),
+    oob = scales::squish
+  ) +
+  coord_sf(
+    crs = st_crs(4326),
+    xlim = c(-180, -50),
+    ylim = c(15, 75)
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = 14),
+    plot.title.position = "plot",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom",     
+    legend.box = "horizontal", 
+  ) +
+  labs(title = "Dec")
+```

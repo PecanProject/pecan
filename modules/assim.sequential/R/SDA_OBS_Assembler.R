@@ -56,7 +56,7 @@ SDA_OBS_Assembler <- function(settings){
   
   #The order of obs.mean and obs.cov objects are relying on the order of how you organize the Obs_Prep section.
   OBS <- timestep <- time_points_all <- list()
-  var_ind <- var <- c()
+  var_ind <- var <- sources <- c()
   #test for loop
   for (i in seq_along(Obs_Prep)) {
     #detect if current section is for different variable preparation function or not.
@@ -64,7 +64,8 @@ SDA_OBS_Assembler <- function(settings){
       next
     }else{
       PEcAn.logger::logger.info(paste("Entering", names(Obs_Prep)[i]))
-      fun_name <- names(Obs_Prep)[i]
+	  source_tag <- Obs_Prep[[i]]$source_tag
+      fun_name   <- paste0(source_tag, "_prep")
       var_ind <- c(var_ind, i)
     }
     
@@ -86,10 +87,10 @@ SDA_OBS_Assembler <- function(settings){
       time_points <- obs_timestep2timepoint(Obs_Prep$start.date, Obs_Prep$end.date, timestep[[i]])
     }
     #Search function inside the data.remote package
-    if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", paste0(fun_name, "_prep")), silent = T))){
-      #Search function inside the data.land package, this is explicit for Soilgrids prep function.
-      if(is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", paste0(fun_name, "_prep")), silent = T))){
-        PEcAn.logger::logger.info("Couldn't find the function: ", paste0(fun_name, "_prep"), ". Please Check it!")
+    if (is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.remote", fun_name), silent = TRUE))) {
+      #Search function inside the data.land package
+      if (is.character(try(obs_prep_fun <- getExportedValue("PEcAn.data.land", fun_name), silent = TRUE))) {
+        PEcAn.logger::logger.info("Couldn't find the function: ", fun_name, ". Please Check it!")
         return(0)
       }
     }
@@ -126,9 +127,9 @@ SDA_OBS_Assembler <- function(settings){
       #with the string pattern of the names of the function argument
       Ind_single_match <- grep(fun_args_temp, obj_exist_temp, ignore.case = T)
       
-      #if we have multiple matches, then search the string pattern by the fun_name.
+      #if we have multiple matches, then search the string pattern by the source_tag.
       funName_args_temp <- stringr::str_replace_all(paste0(fun_name, fun_args[j]), "[^[:alnum:]]", "")
-      if (length(Ind_single_match)>1){
+	  if (length(Ind_single_match)>1){
         Ind_single_match <- grep(funName_args_temp, obj_exist_temp, ignore.case = T)
       }
       args[[fun_args[j]]] <- as.character(Temp_unlist[Ind_single_match])
@@ -146,6 +147,7 @@ SDA_OBS_Assembler <- function(settings){
     OBS[[i]] <- Temp[[1]]
     time_points_all[[i]] <- Temp[[2]]
     var <- c(var, Temp[[3]])
+    sources <- c(sources, source_tag)
   }
   
   #combine different time points from different variables together
@@ -179,6 +181,9 @@ SDA_OBS_Assembler <- function(settings){
     site_dat_var <- site_sd_var <- list()
     for (j in 1:dim(dat_all_var)[1]) {
       site_dat_var[[j]] <- dat_all_var[j,] %>% matrix(1,length(var)) %>% data.frame %>% `colnames<-`(var)
+      for (k in seq_along(var)) {
+        attr(site_dat_var[[j]][[k]], "source") <- sources[k]
+      }
       site_sd_var[[j]] <- new_diag(sd_all_var[j,])
     }
     obs.mean[[i]] <- site_dat_var %>% purrr::set_names(site_info$site_id)

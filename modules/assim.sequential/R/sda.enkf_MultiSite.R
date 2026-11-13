@@ -113,12 +113,13 @@ sda.enkf.multisite <- function(settings,
   #Here I'm trying to make a temp config list name and put it into map to iterate
   if(multi.site.flag){
     conf.settings<-settings
-    site.ids <- conf.settings$run %>% purrr::map('site') %>% purrr::map('id') %>% base::unlist() %>% base::as.character()
+    site.ids <- sapply(as.list(conf.settings), function(s) s$run$site$id) %>% as.character()
     # a matrix ready to be sent to spDistsN1 in sp package - first col is the long second is the lat and row names are the site ids
-    site.locs <- conf.settings$run %>% purrr::map('site') %>% purrr::map_dfr(~c(.x[['lon']],.x[['lat']]) %>% as.numeric)%>% 
-      t %>%
-      `colnames<-`(c("Lon","Lat")) %>%
-      `rownames<-`(site.ids)
+    site.locs <- do.call(rbind, lapply(as.list(conf.settings), function(s) {
+      c(Lon = as.numeric(s$run$site$lon), Lat = as.numeric(s$run$site$lat))
+    }))
+    rownames(site.locs) <- site.ids
+
     #Finding the distance between the sites
     distances <- sp::spDists(site.locs, longlat = TRUE)
     #turn that into a blocked matrix format
@@ -185,7 +186,7 @@ sda.enkf.multisite <- function(settings,
   }
   PEcAn.logger::logger.info("Splitting mets!")
   conf.settings <-conf.settings %>%
-    `class<-`(c("list")) %>% #until here, it separates all the settings for all sites that listed in the xml file
+    `class<-`(c("list")) %>%
     furrr::future_map(function(settings) {
       library(paste0("PEcAn.",settings$model$type), character.only = TRUE)#solved by including the model in the settings
       inputs.split <- list()
@@ -337,12 +338,10 @@ sda.enkf.multisite <- function(settings,
     names.sampler <- names(settings$ensemble$samplingspace)
     # remove parameters field from the list.
     names.sampler <- names.sampler[-which(names.sampler == "parameters")]
-    mis.match.table <- settings %>% purrr::map(function(s){
-      # get the input names for the current site.
+    mis.match.table <- lapply(seq_len(length(settings)), function(i) {
+      s <- settings[[i]]
       names.site.input <- names(s$run$inputs)
-      # check if there is any mismatch.
       inds <- which(!names.sampler %in% names.site.input)
-      # if this site has missing inputs.
       if (length(inds) > 0) {
         return(data.frame(site_id = s$run$site$id, missed.input = names.sampler[inds]))
       }
@@ -454,6 +453,7 @@ sda.enkf.multisite <- function(settings,
         return(run.list)}, .progress = F) %>% unlist
       # create folder paths to each ensemble of each site.
       runs.tmp <- file.path(rundir, ensemble.ids)
+      invisible(sapply(file.path(outdir, ensemble.ids), dir.create, recursive = TRUE, showWarnings = FALSE))
       # start model runs.
       PEcAn.logger::logger.info("Running models!")
       # if we want to submit jobs through the combined job file.
