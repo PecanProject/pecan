@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+<pecan>
+
+  <info>
+    <notes>
+      Template for RCMEM runs using PEcAn. This file is not by itself
+      a usable PEcAn settings object and will be further processed by
+      the workflow.
+    </notes>
+    <userid>-1</userid>
+    <username></username>
+  </info>
+
+  <outdir>output</outdir>
+  <modeloutdir>output/out</modeloutdir>
+  <rundir>output/run</rundir>
+
+  <pfts>
+    <pft>
+      <name>default</name>
+      <posterior.files>data/pfts/default/post.distns.RData</posterior.files>
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <size><!-- inserted at config time --></size>
+
+    <variable><!-- TODO: RCMEM output variable --></variable>
+
+    <samplingspace>
+      <parameters>
+        <method>uniform</method>
+      </parameters>
+      <met>
+        <method>sampling</method>
+      </met>
+    </samplingspace>
+
+    <start.year><!-- inserted at config time --></start.year>
+    <end.year><!-- inserted at config time --></end.year>
+  </ensemble>
+
+  <model>
+    <id>rcmem_200</id>
+    <type>RCMEM</type>
+    <revision>2.0.0</revision>
+    <delete.raw>FALSE</delete.raw>
+    <binary>/usr/local/bin/rCMEM_v2.0.0</binary>
+  </model>
+
+  <run>
+
+    <site>
+      <!-- inserted at config time -->
+    </site>
+
+    <inputs>
+      <met>
+        <id></id>
+        <path><!-- scenario RDS inserted at config time --></path>
+      </met>
+    </inputs>
+
+    <start.date><!-- inserted at config time --></start.date>
+    <end.date><!-- inserted at config time --></end.date>
+
+  </run>
+
+  <host>
+    <name>localhost</name>
+    <outdir>output/out</outdir>
+    <rundir>output/run</rundir>
+  </host>
+
+</pecan>

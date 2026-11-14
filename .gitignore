@@ -119,3 +119,4 @@ dbfiles/
 **/temperate.coniferous/
 *.sensitivity.analysis.*.pdf
 *.variance.decomposition.*.pdf
+models/rcmem/R/water_level_functions/data/Kopp_2014_projections_long.csv
