@@ -1,16 +1,19 @@
 # PEcAn.PRELES
 
-<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![PEcAn.PRELES status badge](https://pecanproject.r-universe.dev/badges/PEcAn.PRELES)](https://pecanproject.r-universe.dev/PEcAn.PRELES)
 
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) [![PEcAn.PRELES status badge](https://pecanproject.r-universe.dev/badges/PEcAn.PRELES)](https://pecanproject.r-universe.dev/PEcAn.PRELES)
+PEcAn Coupler for the PRELES Model
 
-<!-- badges: end -->
+## Introduction
 
-PEcAn Package for Integration of the PRELES Model
+PRELES (PREdicting Light-use efficiency, Evapotranspiration and Soil water) is a model for simulating forest carbon and water cycles.
 
 ## Installation
 
-You can install the development version of `PEcAn.PRELES` from r-universe like so:
+### Install PEcAn.PRELES Package
+
+You can install the development version of `PEcAn.PRELES` from r-universe:
 
 ``` r
 # Enable repository from pecanproject
@@ -21,16 +24,22 @@ options(repos = c(
 install.packages('PEcAn.PRELES')
 ```
 
-Or you can install directly from GitHub with the remotes package like so:
+Or install directly from GitHub:
 
 ``` r
 library(remotes)
 install_github('pecanproject/pecan',  subdir = "models/preles")
 ```
 
-## Example
+### Install PRELES Model
 
-This is a basic example which shows you how to solve a common problem:
+PRELES is available as an R package. You can install it from GitHub:
+
+``` r
+remotes::install_github("mikapreles/Rpreles")
+```
+
+## Example
 
 ``` r
 library(PEcAn.PRELES)
