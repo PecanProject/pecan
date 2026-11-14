@@ -27,7 +27,7 @@ test_that("generate_joint_ensemble_design returns correct structure", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -46,7 +46,7 @@ test_that("generated samples are returned alongside the design", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -66,7 +66,7 @@ test_that("passed-in samples skip the loader and sampler", {
 
   loader <- mockery::mock(fake_loaded_posteriors())
   sampler <- mockery::mock(fake_parameter_samples())
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors", loader)
   mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
@@ -88,7 +88,7 @@ test_that("ensemble design allows variation in non-param columns unlike OAT", {
   sa_result <- generate_OAT_SA_design(settings, samples = list(sa.samples = mock_sa_samples))
 
   settings$run <- list(inputs = list(met = list(path = c("m1.nc", "m2.nc", "m3.nc"))))
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = c(1, 2, 3, 1, 2)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -98,7 +98,7 @@ test_that("ensemble design allows variation in non-param columns unlike OAT", {
   ens_result <- generate_joint_ensemble_design(settings, ensemble_size = 5)
 
   expect_equal(length(unique(sa_result$X$met)), 1)
-  expect_true(length(unique(ens_result$X$met)) > 1)
+  expect_equal(ens_result$X$met, c(1, 2, 3, 1, 2))
 })
 
 # ------ sobol designs ---------
@@ -109,7 +109,7 @@ test_that("a sobol design carries its samples", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 10, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -132,7 +132,7 @@ test_that("sobol samples cover the doubled ensemble", {
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
   sampler <- mockery::mock(fake_parameter_samples())
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 10, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -158,7 +158,7 @@ test_that("passed-in samples are reused for a sobol design", {
 
   loader  <- mockery::mock()
   sampler <- mockery::mock()
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 10, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors", loader)
   mockery::stub(generate_joint_ensemble_design, "get_parameter_samples", sampler)
@@ -178,7 +178,7 @@ test_that("attaching samples leaves the sobol object usable by tell()", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 10, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -201,7 +201,7 @@ test_that("the design comes back as design_matrix, with X kept as its older name
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -218,7 +218,7 @@ test_that("a sobol design also carries design_matrix", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 10, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -237,7 +237,7 @@ test_that("the design stays the first element of the return", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
 
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())
@@ -257,7 +257,7 @@ test_that("the bundle carries SA samples when the settings ask for a sensitivity
   settings$sensitivity.analysis <- list(quantiles = c(0.025, 0.5, 0.975))
 
   sampler <- mockery::mock(fake_parameter_samples())
-  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
+  mockery::stub(generate_joint_ensemble_design, "PEcAn.uncertainty::input.ens.gen",
                 function(...) list(ids = sample(1:2, 5, replace = TRUE)))
   mockery::stub(generate_joint_ensemble_design, "load_pft_posteriors",
                 function(...) fake_loaded_posteriors())

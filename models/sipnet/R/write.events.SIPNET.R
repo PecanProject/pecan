@@ -15,6 +15,9 @@
 #'   `irrigation`, `harvest`.
 #' - Units translated from PEcAn standard_vars to SIPNET events.in specification:
 #'   `kg/m^2` to `g/m^2`; irrigation `amount_mm` to `cm`.
+#' - Fertilization adds ammonium, nitrate, and optional `urea_n_kg_m2` to
+#'   SIPNET mineral N. Urea is treated as immediately available mineral nitrogen;
+#'   omitted urea defaults to zero and does not contribute to organic N or C.
 #' - Planting allocation uses fixed internal parameters. Future work should use the same values
 #'   that are written to `sipnet.parms` (e.g. after integrating this into `write.configs.SIPNET`)
 #'
@@ -105,7 +108,8 @@ write.events.SIPNET <- function(events_json, outdir) {
                 orgC_g <- as.numeric(if (is.null(e$org_c_kg_m2)) 0 else e$org_c_kg_m2) * kg2g
                 nh4_g <- as.numeric(if (is.null(e$nh4_n_kg_m2)) 0 else e$nh4_n_kg_m2) * kg2g
                 no3_g <- as.numeric(if (is.null(e$no3_n_kg_m2)) 0 else e$no3_n_kg_m2) * kg2g
-                minN_g <- nh4_g + no3_g
+                urea_g <- as.numeric(if (is.null(e$urea_n_kg_m2)) 0 else e$urea_n_kg_m2) * kg2g
+                minN_g <- nh4_g + no3_g + urea_g
                 lines[i] <- sprintf("%d  %d  fert   %s %s %s", year, day, orgN_g, orgC_g, minN_g)
             } else if (type == "irrigation") {
                 amt_cm <- as.numeric(if (is.null(e$amount_mm)) 0 else e$amount_mm) * mm2cm
