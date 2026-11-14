@@ -2,7 +2,7 @@
 % Please edit documentation in R/debias_met_regression.R
 \name{debias.met.regression}
 \alias{debias.met.regression}
-\title{debias.met.regression}
+\title{Debias Meteorology using Multiple Linear Regression}
 \usage{
 debias.met.regression(
   train.data,
@@ -88,13 +88,21 @@ without having to do do giant runs at once; if NULL will be numbered 1:n.ens}
 functions print debugging information as they run?}
 }
 \description{
-This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
-             resolution product or empirical observations. It assumes input are in annual CF standard
-             files that are generate from the pecan extract or download funcitons.
+Statistically debias met datasets and generate ensembles based on the observed uncertainty
 }
 \details{
-Debias Meteorology using Multiple Linear Regression
-Statistically debias met datasets and generate ensembles based on the observed uncertainty
+This script debiases one dataset (e.g. GCM, re-analysis product) given another higher
+  resolution product or empirical observations. It assumes input are in annual CF standard
+  files that are generate from the pecan extract or download funcitons.
+
+The general workflow is as follows:
+  1. read in & format data (coerce to daily format)
+  2. set up the file structures for the output
+  3. define the training window
+  4. generate the bias-correction models to adjust the seasonal cycle
+  5. Model the anomalies
+  5. apply the climatology & anomaly models with covariance to generate a daily ensemble
+  6. Save specified years to file
 }
 \seealso{
 Other debias - Debias & Align Meteorology Datasets into continuous time series: 

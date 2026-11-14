@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.nc.R
 \name{extract.nc}
 \alias{extract.nc}
-\title{extract.nc}
+\title{Given latitude and longitude coordinates, extract site data from NARR file}
 \usage{
 extract.nc(
   in.path,

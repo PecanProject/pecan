@@ -61,6 +61,7 @@ t2es(283.15, temp_units = "K", method = "GoffGratch")
 
 # Different output units
 t2es(20, out_units = "hPa")
+
 }
 \references{
 Alduchov, O. A., & Eskridge, R. E. (1996). Improved Magnus Form Approximation of Saturation Vapor Pressure. J. Appl. Meteor.*, 35(4), 601–609. <doi:10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2>

@@ -36,7 +36,7 @@ extract.nc.ERA5(
 \item{in.prefix}{character: initial portion of the filename that does not vary by date.
 Does not include directory; specify that as part of in.path.}
 
-\item{newsite}{character: vector of site names. 
+\item{newsite}{character: vector of site names.
 The length should match with that of slat and slon.}
 
 \item{ncores}{numeric: the number of CPUs for the parallel compute. Default is 1.}

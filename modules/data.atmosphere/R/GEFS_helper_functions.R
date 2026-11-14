@@ -12,7 +12,6 @@
 #'
 #' @return NA
 #'
-
 noaa_grid_download <- function(lat_list, lon_list, forecast_time, forecast_date, model_name_raw, output_directory, end_hr) {
   model_dir <- file.path(output_directory, model_name_raw)
   
@@ -158,16 +157,15 @@ download_grid <- function(ens_index, location, directory, hours_char, cycle,
 #' @param downscale Logical. Default is TRUE. Downscales from 6hr to hourly
 #' @param overwrite Logical. Default is FALSE. Should exisiting files be overwritten
 #' @param forecast_date Date for download
-#' @param forecast_time Time (0,6,12,18) for start of download 
+#' @param forecast_time Time (0,6,12,18) for start of download
 #' @param model_name Name of model for file name
 #' @param model_name_ds Name of downscale file name
 #' @param model_name_raw Name of raw file name
-#' @param output_directory Output directory 
-#' @importFrom rlang .data 
-#' 
+#' @param output_directory Output directory
+#' @importFrom rlang .data
+#'
 #' @export
 #' @return List
-#'
 #'
 process_gridded_noaa_download <- function(lat_list,
                                           lon_list,
@@ -501,19 +499,19 @@ process_gridded_noaa_download <- function(lat_list,
 
 
 
-#' @title Downscale NOAA GEFS from 6hr to 1hr
-#' @return None
+#' Downscale NOAA GEFS from 6hr to 1hr
 #'
 #' @param input_file, full path to 6hr file
 #' @param output_file, full path to 1hr file that will be generated
 #' @param overwrite, logical stating to overwrite any existing output_file
 #' @param hr time step in hours of temporal downscaling (default = 1)
-#' @importFrom rlang .data 
-#' 
+#'
+#' @return None
+#'
+#' @importFrom rlang .data
+#'
 #' @author Quinn Thomas
 #'
-#'
-
 temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1){
   
   # open netcdf
@@ -629,24 +627,22 @@ temporal_downscale <- function(input_file, output_file, overwrite = TRUE, hr = 1
 
 
 
-##' @title Write NOAA GEFS netCDF
-##' @name write_noaa_gefs_netcdf
-##' @param df data frame of meterological variables to be written to netcdf.  Columns
-##' must start with time with the following columns in the order of `cf_units`
-##' @param ens ensemble index used for subsetting df
-##' @param lat latitude in degree north
-##' @param lon longitude in degree east
-##' @param cf_units vector of variable names in order they appear in df
-##' @param output_file name, with full path, of the netcdf file that is generated
-##' @param overwrite logical to overwrite existing netcdf file
-##' 
-##' @return NA
-##' @export
-##' 
-##' @author Quinn Thomas
-##'
-##'
-
+#' Write NOAA GEFS netCDF
+#'
+#' @param df data frame of meterological variables to be written to netcdf.
+#'  Columns must start with time with the following columns in the order of `cf_units`
+#' @param ens ensemble index used for subsetting df
+#' @param lat latitude in degree north
+#' @param lon longitude in degree east
+#' @param cf_units vector of variable names in order they appear in df
+#' @param output_file name, with full path, of the netcdf file that is generated
+#' @param overwrite logical to overwrite existing netcdf file
+#'
+#' @return NA
+#' @export
+#'
+#' @author Quinn Thomas
+#'
 write_noaa_gefs_netcdf <- function(df, ens = NA, lat, lon, cf_units, output_file, overwrite){
   
   if(!is.na(ens)){

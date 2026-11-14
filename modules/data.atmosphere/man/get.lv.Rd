@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{get.lv}
 \alias{get.lv}
-\title{Latent heat of vaporization}
+\title{Calculate latent heat of vaporization for water}
 \usage{
 get.lv(airtemp = 268.6465)
 }
@@ -13,7 +13,7 @@ get.lv(airtemp = 268.6465)
 lV   latent heat of vaporization (J kg-1)
 }
 \description{
-calculate latent heat of vaporization for water
+Calculate latent heat of vaporization for water
 }
 \author{
 Istem Fer

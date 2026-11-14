@@ -1,4 +1,4 @@
-#' Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF 
+#' Download GFDL CMIP5 outputs for a single grid point using OPeNDAP and convert to CF
 #'
 #' @export
 #' @param outfolder Directory for storing output
