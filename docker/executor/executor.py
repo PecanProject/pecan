@@ -24,6 +24,13 @@ class Worker:
         self.finished = False
 
     def runfunc(self):
+        try:
+            self._run_job()
+        finally:
+            # Always release the delivery, even if parsing or setup fails.
+            self.finished = True
+
+    def _run_job(self):
         logging.debug(self.body)
         jbody = json.loads(self.body.decode('UTF-8'))
 
@@ -90,9 +97,6 @@ class Worker:
                 out.write(status + "\n")
         except Exception:
             logging.exception("Error writing status.")
-
-        # done processing, set finished to true
-        self.finished = True
 
 
 # called for every message, this will start the program and ack message if all is ok.
