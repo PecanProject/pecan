@@ -32,8 +32,8 @@ If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pec
 }
 \value{
 a list of ensemble model output, one value per member.
-A member with no output file, or whose file lacks a requested variable,
-is \code{NA_real_} rather than another member's value.
+  A member with no output file, or whose file lacks a requested variable,
+  is \code{NA_real_} rather than another member's value.
 }
 \description{
 Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year}
