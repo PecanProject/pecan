@@ -1,5 +1,8 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* Segmented configs select run-aligned saved parameters by their `run_ids`
+  attribute, avoiding a second Sobol parameter-index lookup. Unmarked older
+  files retain source-row indexing by `param` (#4221).
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and

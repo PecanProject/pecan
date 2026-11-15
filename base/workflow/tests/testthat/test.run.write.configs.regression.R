@@ -161,33 +161,33 @@ test_that("without a param column ensemble.samples come straight from samples.Rd
 # on-disk save contracts
 # ------------------------
 
+
 test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
   tmp <- withr::local_tempdir()
   local_fake_model_writer()
   settings <- make_rwc_settings(tmp, with_ensemble = TRUE)
 
   trait.samples <- list(temperate.deciduous = list(Vcmax = c(10, 20, 30)))
-  ensemble.samples = list(temperate.deciduous = list(Vcmax = c(20, 20 ,10)))
+  ensemble.samples <- list(temperate.deciduous = data.frame(Vcmax = c(20, 20, 10)))
   write_samples_file(tmp, trait.samples, ensemble.samples = ensemble.samples)
 
-  input_design <- data.frame(param = c(1, 2, 3))
+  input_design <- data.frame(param = c(3, 1, 3))
   ens_file <- file.path(tmp, "ensemble.samples.ENS9.Rdata")
+  run_ids <- data.frame(id = c("r1", "r2", "r3"))
+  resolved <- list(temperate.deciduous = data.frame(Vcmax = c(10, 20, 10)))
+  attr(resolved, "run_ids") <- run_ids$id
 
   run_write_configs <- PEcAn.workflow::run.write.configs
   mockery::stub(run_write_configs, "PEcAn.utils::load.modelpkg",
                 function(...) invisible(NULL))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::write.ensemble.configs",
                 function(...) list(
-                  runs        = c("r1", "r2", "r3"),
+                  runs = run_ids,
                   ensemble.id = "ENS9",
-                  manifest    = data.frame(
-                    run_id   = c("r1", "r2", "r3"),
-                    site_id  = "772",
-                    pft_name = "NA",
-                    trait    = "NA",
-                    quantile = "NA",
-                    type     = "Ensemble",
-                    stringsAsFactors = FALSE
+                  samples = list(parameters = list(samples = resolved)),
+                  manifest = data.frame(
+                    run_id = run_ids$id, site_id = "772", pft_name = "NA",
+                    trait = "NA", quantile = "NA", type = "Ensemble"
                   )
                 ))
   mockery::stub(run_write_configs, "PEcAn.uncertainty::ensemble.filename",
@@ -203,9 +203,10 @@ test_that("ensemble.samples.<id>.Rdata keeps its 5-object save contract", {
     ls(e),
     c("ens.run.ids", "ens.ensemble.id", "ens.samples", "pft.names", "trait.names")
   )
-  expect_equal(e$ens.run.ids, c("r1", "r2", "r3"))
+  expect_equal(e$ens.run.ids, run_ids)
   expect_equal(e$ens.ensemble.id, "ENS9")
-  expect_equal(e$ens.samples$temperate.deciduous$Vcmax, c(20, 20, 10))
+  expect_equal(e$ens.samples$temperate.deciduous$Vcmax, c(10, 20, 10))
+  expect_identical(attr(e$ens.samples, "run_ids"), run_ids$id)
   expect_equal(e$pft.names, "temperate.deciduous")
   expect_equal(e$trait.names, list(temperate.deciduous = "Vcmax"))
 })
