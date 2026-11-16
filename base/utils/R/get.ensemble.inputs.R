@@ -14,6 +14,10 @@
 
 get.ensemble.inputs <- function(settings, ens = 1){
   
+  if (is.null(settings$run$inputs) || length(settings$run$inputs) == 0) {
+    return(list())
+  }
+
   ##grab all inputs for this ensemble member
   inputs <- list()
   input.list <- names(settings$run$inputs)
@@ -22,7 +26,7 @@ get.ensemble.inputs <- function(settings, ens = 1){
   ##loop over inputs to get the correct inputs for each type
   for(i in seq_along(input.table)){
     sel <- which(input.list == names(input.table)[i])
-    inputs[[i]] <- settings$run$inputs[[(ens-1) %% input.table[i] + 1]]
+    inputs[[i]] <- settings$run$inputs[[sel[(ens - 1) %% length(sel) + 1]]]
     names(inputs)[i] <- names(input.table)[i]
   }
   

@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `get.ensemble.inputs()` now indexes through matched input positions `sel` instead of the start of the list, correctly returning each input type rather than duplicating the first input type (#4248).
 * `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
 
 ## Changed
