@@ -22,15 +22,33 @@ class WorkerCompletionTests(unittest.TestCase):
 
     def test_malformed_json_releases_worker(self):
         worker = self.make_worker(b"{broken")
-        with self.assertRaises(json.JSONDecodeError):
+        with self.assertLogs(level="ERROR") as logs:
             worker.runfunc()
         self.assertTrue(worker.finished)
+        self.assertIn("JSONDecodeError", "\n".join(logs.output))
 
     def test_non_object_json_releases_worker(self):
         worker = self.make_worker(b"[]")
-        with self.assertRaises(AttributeError):
+        with self.assertLogs(level="ERROR") as logs:
             worker.runfunc()
         self.assertTrue(worker.finished)
+        self.assertIn("AttributeError", "\n".join(logs.output))
+
+    def test_setup_error_writes_error_status(self):
+        with tempfile.TemporaryDirectory() as folder:
+            job_folder = pathlib.Path(folder) / "job"
+            worker = self.make_worker(json.dumps({
+                "folder": str(job_folder), "pecan_xml": "<pecan/>"
+            }).encode())
+            with mock.patch.object(executor.shutil, "copyfile", side_effect=OSError("missing workflow")):
+                with self.assertLogs(level="ERROR") as logs:
+                    worker.runfunc()
+            self.assertTrue(worker.finished)
+            self.assertIn("missing workflow", "\n".join(logs.output))
+            self.assertEqual(
+                (job_folder / "rabbitmq.out").read_text(),
+                "OSError: missing workflow\nERROR\n",
+            )
 
     def test_valid_job_still_completes_and_writes_status(self):
         with tempfile.TemporaryDirectory() as folder:
