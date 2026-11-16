@@ -35,7 +35,7 @@ addSecrets <- function(settings, force = FALSE) {
   # always copy following sections
   for (key in c("database")) {
     for (section in names(pecan[[key]])) {
-      if (section %in% names(settings[section])) {
+      if (section %in% names(settings[[key]])) {
         PEcAn.logger::logger.info("Already have a section for", section)
       } else {
         PEcAn.logger::logger.info("Imported section for", section)
@@ -44,6 +44,7 @@ addSecrets <- function(settings, force = FALSE) {
     }
   }
 
+  settings$settings.info$secrets.added <- TRUE
 
   return(invisible(settings))
 }
