@@ -73,6 +73,16 @@ generateFullTidalScenario <- function(
     )
   }
 
+  if (length(forecast_start) == 1) {
+    forecast_start <- rep(forecast_start, length(station_id))
+  }
+
+  if (length(forecast_start) != length(station_id)) {
+    stop(
+      "`forecast_start` must have length 1 or the same length as `station_id`."
+    )
+  }
+
   .generateFullTidalScenario_one_gauge <- function(station_id=9410660,
                                                   run_hindcast = T,
                                                   run_forecast = T,
@@ -379,31 +389,33 @@ generateFullTidalScenario <- function(
 
 
   # Ensure station IDs are unique
-  station_id <- unique(station_id)
+  # station_id <- unique(station_id)
 
   gauge_runs <- tibble::tibble(
     station_id = station_id,
-    hindcast_start = hindcast_start
+    hindcast_start = hindcast_start,
+    forecast_start = forecast_start
   )
 
-  results <- purrr::map2(
-    gauge_runs$station_id,
-    gauge_runs$hindcast_start,
-    function(gauge, gauge_hindcast_start) {
+  results <- purrr::pmap(
+    gauge_runs,
+    function(station_id, hindcast_start, forecast_start) {
 
       message(
         "Generating tidal scenarios for gauge: ",
-        gauge,
+        station_id,
         " (hindcast start: ",
-        gauge_hindcast_start,
+        hindcast_start,
+        ", forecast start: ",
+        forecast_start,
         ")"
       )
 
       .generateFullTidalScenario_one_gauge(
-        station_id = gauge,
+        station_id = station_id,
         run_hindcast = run_hindcast,
         run_forecast = run_forecast,
-        hindcast_start = gauge_hindcast_start,
+        hindcast_start = hindcast_start,
         forecast_start = forecast_start,
         forecast_end = forecast_end,
         scenario = scenario,
