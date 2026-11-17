@@ -27,9 +27,6 @@
 #'   A bare design data.frame is not accepted: its \code{param} indices are only
 #'   meaningful together with the samples they index into, so the design and its
 #'   samples must travel together.
-#' @param independent Logical scalar: \code{FALSE} preserves supplied MCMC
-#'   dependence; \code{TRUE} discards it and samples parameters separately.
-#'   Only applies to new ensemble samples; supplied bundles are reused unchanged.
 #' @return A modified settings object, invisibly
 #'
 #'
@@ -40,9 +37,7 @@
 
 runModule.run.write.configs <- function(settings,
                                         overwrite = TRUE,
-                                        input_design = NULL,
-                                        independent = FALSE) {
-  stopifnot(is.logical(independent), length(independent) == 1L, !is.na(independent))
+                                        input_design = NULL) {
 
   if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
@@ -55,13 +50,12 @@ runModule.run.write.configs <- function(settings,
     }
 
     # prepare designs once for all sites (consistent sampling)
-    designs <- .prepare_input_designs(settings[1], input_design, independent)
+    designs <- .prepare_input_designs(settings[1], input_design)
 
     return(PEcAn.settings::papply(settings,
                                   runModule.run.write.configs,
                                   overwrite = FALSE,
-                                  input_design = designs,
-                                  independent = independent))
+                                  input_design = designs))
 
   } else if (PEcAn.settings::is.Settings(settings)) {
     # only default the sampling method for a run that actually has an ensemble,
@@ -73,7 +67,7 @@ runModule.run.write.configs <- function(settings,
     }
 
     # prepare designs (may already be normalized from MultiSettings)
-    designs <- .prepare_input_designs(settings, input_design, independent)
+    designs <- .prepare_input_designs(settings, input_design)
 
     # check to see if there are posterior.files tags under pft
     posterior.files <- settings$pfts %>%
@@ -159,8 +153,6 @@ runModule.run.write.configs <- function(settings,
 #'
 #' @param settings A single PEcAn settings object
 #' @param input_design Input design specification (see \code{runModule.run.write.configs})
-#' @param independent Logical scalar passed to \code{get_parameter_samples}
-#'   when generating new samples. Supplied samples are reused unchanged.
 #' @return A list with \code{ensemble} and \code{sensitivity} entries (each a
 #'   data.frame or NULL) and a \code{samples} entry holding the parameter bundle
 #'   used for the run. When the run has an ensemble or sensitivity analysis the
@@ -189,8 +181,7 @@ runModule.run.write.configs <- function(settings,
 #'
 #' @keywords internal
 
-.prepare_input_designs <- function(settings, input_design, independent = FALSE) {
-  stopifnot(is.logical(independent), length(independent) == 1L, !is.na(independent))
+.prepare_input_designs <- function(settings, input_design) {
 
   # Already-normalized designs (e.g. threaded from a MultiSettings parent):
   # pass straight through. samples.Rdata was already written by the top-level
@@ -265,7 +256,7 @@ runModule.run.write.configs <- function(settings,
         ens.sample.method = settings$ensemble$samplingspace$parameters$method %||% "uniform",
         sa_quantiles      = settings$sensitivity.analysis$quantiles,
         do_ensemble       = need_ensemble,
-        independent       = independent
+        independent       = loaded$independent
       )
     }
 
