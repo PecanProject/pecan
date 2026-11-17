@@ -104,7 +104,7 @@
 #'  into a single table.
 #'
 #' @format
-#' A data frame with 126 rows and 7 columns:
+#' A data frame with 89 rows and 8 columns:
 #' \describe{
 #'   \item{noaa_id}{Unique numeric NOAA station identifier}
 #'   \item{startDate}{Calendar start date for observation record (YYYYMMDD)}
@@ -113,6 +113,7 @@
 #'   \item{latitude}{Gauge latitude in decimal degrees WGS84}
 #'   \item{longitude}{Gauge longitude in decimal degrees WGS84}
 #'   \item{state}{State- or territory-level two letter abbreviation}
+#'   \item{has_NAVD88}{Specifies whether NAVD88 datum is present.}
 #' }
 #'
 #' @source Queried from NOAA servers and organized in https://github.com/Smithsonian/Tidal_Scenarios, by James Holmquist
