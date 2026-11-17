@@ -60,106 +60,50 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 
 #' Get parameter values used in ensemble
 #'
-#' Returns sampled parameter values for model runs, preserving supplied joint
-#' draws unless independent sampling is requested.
+#' Returns a matrix of randomly or quasi-randomly sampled trait values
+#' to be assigned to traits over several model runs.
+#' given the number of model runs and a list of sample distributions for traits
+#' The model run is indexed first by model run, then by trait
 #'
 #' @param ensemble.size number of runs in model ensemble
-#' @param pft.samples named list of PFTs, each containing named parameter
-#'   samples, e.g. from MCMC chains. The name "env" is reserved.
+#' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain
 #' @param env.samples env samples
-#' @param method sampling method for marginal traits: "random", "uniform",
-#'   "halton", "sobol", or "lhc". Joint draws are sampled randomly by row.
-#' @param param.names named list of joint trait names per PFT. NULL selects all
-#'   supplied traits; an empty entry selects none. Unnamed lists match PFT order.
+#' @param method the method used to generate the ensemble samples for traits sampled independently. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
+#'   When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{method}: each member takes one complete MCMC row, drawn at random with replacement.
+#' @param param.names list named by PFT, each element the traits whose MCMC samples are drawn together by row. Joint traits of a PFT must have equal length. NULL samples every trait independently.
 #' @param ... Other arguments passed on to the sampling method
-#' @param independent logical. Sample each parameter separately, discarding
-#'   supplied dependence, instead of preserving parameter correlations.
-#'
-#' @details Joint draws preserve parameter correlations (by keeping complete
-#'   MCMC rows together). Rows are sampled with replacement. PFTs with equal
-#'   numbers of joint draws share row indices, so paired input tables must have
-#'   matching row order. Equal row counts do not establish common provenance;
-#'   unrelated tables must contain genuinely independent draws. Environment
-#'   samples and traits outside \code{param.names} are sampled marginally.
-#'   A one-member joint ensemble selects a complete draw; marginal traits use
-#'   their medians. Independent sampling can violate joint parameter constraints.
 #'
 #' @return named list of data.frames with sampled indices as an attribute
 #' @export
 #' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
-                                 method = "random", param.names = NULL, ...,
-                                 independent = FALSE) {
-
-  stopifnot(
-    is.logical(independent), length(independent) == 1L, !is.na(independent),
-    is.list(pft.samples),
-    is.numeric(ensemble.size), length(ensemble.size) == 1L,
-    is.finite(ensemble.size), ensemble.size == floor(ensemble.size)
-  )
-  pft.names <- names(pft.samples)
-  if (length(pft.samples) > 0) {
-    stopifnot(!is.null(pft.names), !anyNA(pft.names),
-              all(nzchar(pft.names)), !anyDuplicated(pft.names),
-              !"env" %in% pft.names)
-  }
-  if (independent) {
-    param.names <- lapply(pft.samples, function(x) character(0))
-  } else if (is.null(param.names)) {
-    param.names <- lapply(pft.samples, names)
-  } else {
-    stopifnot(is.list(param.names), length(param.names) == length(pft.samples))
-    if (is.null(names(param.names))) {
-      names(param.names) <- pft.names
-    } else {
-      stopifnot(!anyNA(names(param.names)), all(nzchar(names(param.names))),
-                !anyDuplicated(names(param.names)),
-                setequal(names(param.names), pft.names))
-      param.names <- param.names[pft.names]
-    }
-  }
-  for (pft.name in pft.names) {
-    trait.names <- names(pft.samples[[pft.name]])
-    if (length(pft.samples[[pft.name]]) > 0) {
-      stopifnot(!is.null(trait.names), !anyNA(trait.names),
-                all(nzchar(trait.names)), !anyDuplicated(trait.names))
-    }
-    traits <- param.names[[pft.name]]
-    stopifnot(is.null(traits) || is.character(traits), !anyNA(traits),
-              !anyDuplicated(traits), all(traits %in% names(pft.samples[[pft.name]])))
-    if (length(traits) > 0) {
-      n.rows <- unique(lengths(pft.samples[[pft.name]][traits]))
-      if (length(n.rows) != 1L || n.rows == 0L) {
-        PEcAn.logger::logger.severe(
-          "Joint samples for PFT", pft.name,
-          "need the same number of rows, greater than zero, for every trait; got",
-          paste(n.rows, collapse = ", ")
-        )
-      }
-    }
-  }
+                                 method = "random", param.names = NULL, ...) {
 
   # Define supported methods
   supported_methods <- c("random", "uniform", "halton", "sobol", "lhc")
   if (!method %in% supported_methods) {
-    PEcAn.logger::logger.severe("Invalid sampling method:", method)
+    stop("Invalid sampling method")
   }
 
   ## force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   if (ensemble.size <= 0) {
     ans <- NULL
-  } else if (ensemble.size == 1 && !any(lengths(param.names) > 0)) {
+  } else if (ensemble.size == 1) {
     ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
   } else {
-    pft.samples <- c(pft.samples, list(env = env.samples))
-    total.sample.num <- sum(lengths(pft.samples)) - sum(lengths(param.names))
+    pft.samples[[length(pft.samples) + 1]] <- env.samples
+    names(pft.samples)[length(pft.samples)] <- "env"
+    pft2col <- NULL
+    for (i in seq_along(pft.samples)) {
+      pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
+    }
+
+    total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
 
 
-    if (ensemble.size == 1 || total.sample.num == 0) {
-      random.samples <- matrix(0.5, ensemble.size, total.sample.num)
-    } else if (method == "halton") {
+    if (method == "halton") {
       PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- randtoolbox::halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples) = 1
@@ -184,7 +128,7 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
                                ensemble.size,
                                total.sample.num)
     } else {
-      PEcAn.logger::logger.info("Using random sampling")
+      PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
       # uniform random
       random.samples <- matrix(stats::runif(ensemble.size * total.sample.num),
                                ensemble.size,
@@ -194,30 +138,29 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 
     ensemble.samples <- list()
     sampled.indices <- list()
-    joint.rows <- list()
 
     col.i <- 0
     for (pft.i in seq(pft.samples)) {
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       sampled.indices[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
 
-      joint.traits <- param.names[[names(pft.samples)[pft.i]]]
-      if (length(joint.traits) > 0) {
-        n.rows <- length(pft.samples[[pft.i]][[joint.traits[1]]])
-        key <- as.character(n.rows)
-        if (is.null(joint.rows[[key]])) {
-          # shared indices retain the caller's pairing between equal-sized banks
-          joint.rows[[key]] <- sample.int(n.rows, ensemble.size, replace = TRUE)
+      # meaning we want to keep MCMC samples together
+      joint <- names(pft.samples[[pft.i]]) %in% param.names[[names(pft.samples)[pft.i]]]
+      if (any(joint)) {
+        n.rows <- unique(lengths(pft.samples[[pft.i]][joint]))
+        if (length(n.rows) > 1) {
+          PEcAn.logger::logger.severe("PFT", names(pft.samples)[pft.i], "joint traits differ in length:", paste(n.rows, collapse = ", "))
         }
-        same.i <- joint.rows[[key]]
+        # draws whole MCMC rows, so a space-filling design over [0, 1] does not apply
+        same.i <- sample.int(n.rows, ensemble.size, replace = TRUE)
       }
 
       for (trait.i in seq(pft.samples[[pft.i]])) {
-        if (names(pft.samples[[pft.i]])[trait.i] %in% joint.traits) {
+        col.i <- col.i + 1
+        if (joint[trait.i]) {
           ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
           sampled.indices[[pft.i]][, trait.i] <- same.i
         } else {
-          col.i <- col.i + 1
           # Extract original trait values
           trait.values <- pft.samples[[pft.i]][[trait.i]]
           sampled.values <- stats::quantile(trait.values, random.samples[, col.i])
