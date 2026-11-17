@@ -1,8 +1,9 @@
 # PEcAn.uncertainty 1.9.0.9000
 
-* Breaking: ensemble sampling preserves correlations between supplied MCMC parameters by default. Parameters available only as distributions are sampled independently. `independent = TRUE` requests separate sampling of all parameters and can violate joint constraints.
-* Joint draws are sampled by whole rows with replacement, including for a one-member ensemble. Equal-length PFT tables share row indices; corresponding rows must be aligned. Joint traits with unequal sample counts are rejected. `method` controls marginal sampling only.
-* `get.ensemble.samples()` matches named `param.names` entries by PFT name. `param.names = NULL` selects all supplied PFT parameters for joint sampling; an empty entry selects none.
+* Breaking: `get_parameter_samples()` now defaults to `independent = FALSE`, drawing MCMC parameters by whole row so their correlations are kept. `independent = TRUE` samples each parameter on its own. The workflow still sets the flag from `load_pft_posteriors()`.
+* Breaking: `get.ensemble.samples()` stops with an error when the joint traits of a PFT differ in length, instead of indexing all of them by the first trait's length, which silently cut longer chains short or gave `NA`.
+* `get.ensemble.samples()` draws joint traits by whole MCMC row at random with replacement, whatever `method` is.
+* `get.ensemble.samples()` looks up `param.names` by PFT name instead of position, so a PFT with nothing to sample no longer shifts joint traits onto the next PFT. An unnamed `param.names` list now selects no joint traits.
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
