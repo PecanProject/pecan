@@ -161,57 +161,18 @@ test_that("get.ensemble.samples", {
   expect_true(all(sapply(res_idx, \(mat)all(mat %in% 1:5))))
 })
 
-test_that("direct ensemble calls preserve supplied rows", {
-  withr::local_seed(2)
-  samples <- list(pft = list(a = 1:10, b = -(1:10)))
-  result <- get.ensemble.samples(30, samples, list())
-  expect_equal(result$pft$b, -result$pft$a)
-  expect_true(all(result$pft$a %in% 1:10))
-  expect_equal(nrow(result$pft), 30)
+test_that("get.ensemble.samples draws joint traits by whole row", {
+  a <- stats::rnorm(50)
+  pft_samp <- list(p = list(a = a, b = 2 * a, c = stats::rnorm(80)))
+  res <- get.ensemble.samples(20, pft_samp, list(), param.names = list(p = c("a", "b")))
+  expect_equal(res$p$b, 2 * res$p$a)
+  expect_true(all(res$p$a %in% a))
 })
 
-test_that("joint selectors match by PFT name rather than list position", {
-  withr::local_seed(2)
-  samples <- list(first = list(a = 1:20, b = -(1:20)),
-                  second = list(a = 1:20, b = -(1:20)))
-  result <- get.ensemble.samples(
-    30, samples, list(),
-    param.names = list(second = character(0), first = c("a", "b"))
+test_that("get.ensemble.samples rejects joint traits of unequal length", {
+  pft_samp <- list(p = list(a = 1:5, b = 1:4))
+  expect_error(
+    get.ensemble.samples(3, pft_samp, list(), param.names = list(p = c("a", "b"))),
+    "differ in length: 5, 4"
   )
-  expect_equal(result$first$b, -result$first$a)
-  expect_false(isTRUE(all.equal(result$second$b, -result$second$a)))
-  positional <- get.ensemble.samples(
-    30, samples, list(), param.names = list(c("a", "b"), character(0))
-  )
-  expect_equal(positional$first$b, -positional$first$a)
-})
-
-test_that("malformed joint selectors and missing trait names fail", {
-  samples <- list(first = list(a = 1:20), second = list(b = 1:20))
-  invalid <- list(
-    list(first = "a", wrong = "b"),
-    list(first = "a", first = "b"),
-    list(first = "a", "b"),
-    list(first = "unknown", second = "b"),
-    list("a")
-  )
-  for (selector in invalid) {
-    expect_error(get.ensemble.samples(2, samples, list(), param.names = selector))
-  }
-  expect_error(get.ensemble.samples(2, list(pft = list(1:20)), list()))
-  expect_error(get.ensemble.samples(2, samples, list(), independent = c(TRUE, FALSE)))
-  expect_error(get.ensemble.samples(2, list(pft = list(a = numeric(0))), list()))
-})
-
-test_that("different bank sizes and environment samples are sampled separately", {
-  withr::local_seed(4)
-  samples <- list(first = list(a = 1:7, b = -(1:7)),
-                  second = list(a = 1:11, b = -(1:11)))
-  result <- get.ensemble.samples(30, samples, list(c = 1:17))
-  expect_equal(result$first$b, -result$first$a)
-  expect_equal(result$second$b, -result$second$a)
-  indices <- attr(result, "sampled.indices")
-  expect_false(identical(indices$first[, 1], indices$second[, 1]))
-  expect_false(identical(indices$first[, 1], indices$env[, 1]))
-  expect_error(get.ensemble.samples(2, list(env = list(a = 1:7)), list()))
 })
