@@ -116,8 +116,7 @@ if('sensitivity.analysis' %in% names(settings)) {
 ## Write ENSEMBLE
 if('ensemble' %in% names(settings) && settings$ensemble$size > 0) {
   ## subset the trait.samples to ensemble size using Halton sequence 
-  ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, env.samples,
-                                           independent = TRUE)
+  ensemble.samples <- get.ensemble.samples(settings$ensemble$size, trait.samples, env.samples)
   write.ensemble.configs(settings$pfts, ensemble.samples, 
       host, outdir, settings)
 }
