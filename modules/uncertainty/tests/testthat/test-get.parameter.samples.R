@@ -1,3 +1,4 @@
+# ============================================================
 # Tests for the get.parameter.samples() wrapper (Layer 2)
 #
 # These exercise the WRAPPER's behaviour, not the pure
@@ -14,6 +15,7 @@
 #
 # load.posteriors() and get_parameter_samples() are stubbed with
 # mockery so these run with no database and no real MCMC objects.
+# ============================================================
 
 skip_if_not_installed("mockery")
 skip_if_not_installed("PEcAn.logger")
@@ -34,7 +36,8 @@ fake_posterior <- function() {
       distn = "norm", parama = 20, paramb = 5, n = 50,
       row.names = "SLA", stringsAsFactors = FALSE
     ),
-    trait.mcmc = NULL
+    trait.mcmc = NULL,
+    is.joint = FALSE
   )
 }
 
@@ -62,7 +65,8 @@ test_that("samples.Rdata is written to settings$outdir by default", {
     list(
       pft_names         = list("temperate.deciduous"),
       prior_distns_list = list(fake_posterior()$prior.distns),
-      trait_mcmc_list   = list(fake_posterior()$trait.mcmc)
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
     )
   )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
@@ -84,7 +88,8 @@ test_that("explicit outdir overrides settings$outdir for the save", {
     list(
       pft_names         = list("temperate.deciduous"),
       prior_distns_list = list(fake_posterior()$prior.distns),
-      trait_mcmc_list   = list(fake_posterior()$trait.mcmc)
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
     )
   )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
@@ -106,7 +111,8 @@ test_that("outdir = NULL skips the save entirely", {
     list(
       pft_names         = list("temperate.deciduous"),
       prior_distns_list = list(fake_posterior()$prior.distns),
-      trait_mcmc_list   = list(fake_posterior()$trait.mcmc)
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
     )
   )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
@@ -132,7 +138,8 @@ test_that("samples.Rdata bundles the 5 expected objects", {
     list(
       pft_names         = list("temperate.deciduous"),
       prior_distns_list = list(fake_posterior()$prior.distns),
-      trait_mcmc_list   = list(fake_posterior()$trait.mcmc)
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
     )
   )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake_samples_result())
@@ -161,7 +168,8 @@ test_that("returns the get_parameter_samples result invisibly", {
     list(
       pft_names         = list("temperate.deciduous"),
       prior_distns_list = list(fake_posterior()$prior.distns),
-      trait_mcmc_list   = list(fake_posterior()$trait.mcmc)
+      trait_mcmc_list   = list(fake_posterior()$trait.mcmc),
+      independent       = TRUE
     )
   )
   mockery::stub(get.parameter.samples, "get_parameter_samples", fake)
@@ -185,7 +193,8 @@ test_that("loaded posteriors are delegated to get_parameter_samples", {
   loaded <- list(
     pft_names         = list("temperate.deciduous"),
     prior_distns_list = list(post$prior.distns),
-    trait_mcmc_list   = list(post$trait.mcmc)
+    trait_mcmc_list   = list(post$trait.mcmc),
+    independent       = TRUE
   )
   mockery::stub(get.parameter.samples, "load_pft_posteriors", loaded)
   mock_gps <- mockery::mock(fake_samples_result())
@@ -196,21 +205,5 @@ test_that("loaded posteriors are delegated to get_parameter_samples", {
   mockery::expect_called(mock_gps, 1)
   args <- mockery::mock_args(mock_gps)[[1]]
   expect_identical(args$prior_distns_list[[1]], post$prior.distns)
-  expect_false(args$independent)
-})
-
-test_that("the wrapper forwards an explicit independent request", {
-  settings <- make_test_settings(NULL)
-  loaded <- list(
-    pft_names = list("temperate.deciduous"),
-    prior_distns_list = list(NULL),
-    trait_mcmc_list = list(NULL)
-  )
-  sampler <- mockery::mock(fake_samples_result())
-  mockery::stub(get.parameter.samples, "load_pft_posteriors", loaded)
-  mockery::stub(get.parameter.samples, "get_parameter_samples", sampler)
-
-  suppressWarnings(get.parameter.samples(settings, outdir = NULL, independent = TRUE))
-
-  expect_true(mockery::mock_args(sampler)[[1]]$independent)
+  expect_true(args$independent)
 })
