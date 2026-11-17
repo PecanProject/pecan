@@ -29,7 +29,9 @@ legacy fallback path.}
 only in the legacy fallback path.}
 }
 \value{
-list with \code{prior.distns} and \code{trait.mcmc}.
+list with \code{prior.distns}, \code{trait.mcmc}, \code{is.joint}.
+  \code{is.joint} is \code{TRUE} when MCMC samples represent a joint
+  posterior (e.g. from PDA) and parameter correlations should be preserved.
 }
 \description{
 Detects posterior type by file contents, not filenames.
