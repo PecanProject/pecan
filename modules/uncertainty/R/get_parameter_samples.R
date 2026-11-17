@@ -13,19 +13,14 @@
 #'   Each element should be a named list of \code{coda::mcmc.list} objects,
 #'   or NULL if no MCMC results exist for that PFT.
 #' @param ensemble.size integer. Number of runs in model ensemble.
-#' @param ens.sample.method character. Marginal sampling method: "halton",
-#'   "sobol", "lhc", "random", or "uniform".
+#' @param ens.sample.method character. One of "halton", "sobol", "torus",
+#'   "lhc", "uniform".
 #' @param sa_quantiles numeric vector of quantiles for sensitivity analysis,
 #'   or NULL to skip SA sampling.
 #' @param do_ensemble logical. Whether to generate ensemble samples.
-#' @param independent logical. Sample each parameter separately, discarding
-#'   supplied dependence, instead of preserving parameter correlations.
-#'
-#' @details MCMC samples are sampled jointly by default (by keeping complete
-#'   draws together). Traits available only as distributions remain marginal.
-#'   Equal-sized MCMC tables share row indices and must preserve any paired row
-#'   order. Independent sampling may violate joint constraints such as allocation
-#'   sums. See \code{\link{get.ensemble.samples}} for the sampling contract.
+#' @param independent logical. FALSE (default) keeps complete MCMC draws
+#'   together, so correlations between parameters are kept. TRUE samples each
+#'   parameter independently, ignoring any joint structure.
 #'
 #' @return named list with five elements:
 #' \describe{
@@ -62,7 +57,7 @@
 #' str(result$ensemble.samples)
 #' }
 #'
-#' @seealso \code{\link{get.parameter.samples}} for the disk-based
+#' @seealso \code{\link{get.parameter.samples}} for the backward-compatible
 #'   wrapper that handles file I/O and database lookups.
 #'
 #' @author David LeBauer, Shawn Serbin, Istem Fer, Om Kapale
@@ -92,11 +87,6 @@ get_parameter_samples <- function(pft_names,
       length(trait_mcmc_list) == length(pft_names)
     )
   }
-  stopifnot(
-    is.logical(independent),
-    !anyNA(independent),
-    length(independent) == 1L
-  )
 
   # Force numeric for compatibility with downstream sampling code
   ensemble.size <- as.numeric(ensemble.size)
@@ -167,10 +157,10 @@ get_parameter_samples <- function(pft_names,
       next
     }
 
-    marginal.priors <- setdiff(priors, param.names[[i]])
+    # Generate quantile matrix for prior-based sampling
     q_samples <- .generate_quantile_samples(
       n      = samples.num,
-      dim    = length(marginal.priors),
+      dim    = n_priors,
       method = ens.sample.method
     )
     # Ensure q_samples is always a matrix (some methods return vector when dim=1)
@@ -191,18 +181,20 @@ get_parameter_samples <- function(pft_names,
         samples <- PEcAn.priors::get.sample(
           prior.distns[prior, ],
           samples.num,
-          q_samples[, match(prior, marginal.priors)]
+          q_samples[, priors == prior]
         )
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
   }
 
-  # an explicit selector keeps distribution-only traits marginal
-  names(param.names) <- pft_names
-  param.names <- Map(function(traits, samples) {
-    intersect(as.character(traits), names(samples))
-  }, param.names[names(trait.samples)], trait.samples)
+  # ---- Handle independence flag ----
+  # independent = TRUE asks for each parameter to be sampled on its own, so drop param.names.
+  # This is important downstream: when param.names is not NULL,
+  # get.ensemble.samples() preserves correlations between MCMC parameters.
+  if (independent) {
+    param.names <- NULL
+  }
 
   # ---- Sensitivity analysis samples ----
   if (!is.null(sa_quantiles)) {
@@ -225,15 +217,21 @@ get_parameter_samples <- function(pft_names,
 
   # ---- Ensemble samples ----
   if (do_ensemble) {
-    if (ensemble.size > 0) {
+    if (ensemble.size == 1) {
+      ## Run at median if only one run in ensemble
+      ensemble.samples <- PEcAn.utils::get.sa.sample.list(
+        pft = trait.samples,
+        env = env.samples,
+        quantiles = 0.5
+      )
+    } else if (ensemble.size > 1) {
       ## Subset trait.samples to ensemble size
       ensemble.samples <- get.ensemble.samples(
         ensemble.size = ensemble.size,
         pft.samples = trait.samples,
         env.samples = env.samples,
         method = ens.sample.method,
-        param.names = param.names,
-        independent = independent
+        param.names = param.names
       )
     }
   }
@@ -266,8 +264,13 @@ get_parameter_samples <- function(pft_names,
     "sobol"   = randtoolbox::sobol(n = n, dim = dim, scrambling = 3),
     "torus"   = randtoolbox::torus(n = n, dim = dim),
     "lhc"     = PEcAn.emulator::lhc(t(matrix(0:1, ncol = dim, nrow = 2)), n),
-    "uniform" =,
-    "random" = matrix(stats::runif(n * dim), n, dim),
-    PEcAn.logger::logger.severe("Invalid sampling method:", method)
+    "uniform" = matrix(stats::runif(n * dim), n, dim),
+    {
+      PEcAn.logger::logger.info(
+        "Method ", method,
+        " has not been implemented yet, using uniform random sampling"
+      )
+      matrix(stats::runif(n * dim), n, dim)
+    }
   )
 }
