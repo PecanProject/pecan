@@ -9,8 +9,9 @@
 #'
 #' Posterior type is detected by content, not filename, via
 #' \code{\link{load.posteriors}}: MCMC chains take precedence over distribution
-#' summaries. Downstream joint sampling preserves parameter correlations
-#' (for MCMC samples, by keeping complete draws together).
+#' summaries. When a PFT's posterior is a joint fit (e.g. from PDA), the
+#' returned \code{independent} flag is set to \code{FALSE} so downstream
+#' sampling preserves the parameter correlations.
 #'
 #' @param settings PEcAn settings object. Uses \code{settings$pfts} (name,
 #'   outdir, posteriorid per PFT), \code{settings$database$bety} for the
@@ -18,13 +19,15 @@
 #' @param posterior.files character vector of posterior filenames, one per PFT,
 #'   \code{NA} where none is specified. Length must match \code{settings$pfts}.
 #'
-#' @return A list with three elements:
+#' @return A list with four elements:
 #'   \describe{
 #'     \item{pft_names}{character vector of PFT names ("NULL" where unnamed).}
 #'     \item{prior_distns_list}{list of prior distribution data frames, one per
 #'       PFT (\code{NULL} entry where none was found).}
 #'     \item{trait_mcmc_list}{list of trait MCMC results, one per PFT
 #'       (\code{NULL} entry where the PFT has no MCMC chains).}
+#'     \item{independent}{logical, \code{FALSE} if any PFT carries a joint
+#'       posterior, \code{TRUE} otherwise.}
 #'   }
 #'
 #' @seealso \code{\link{get_parameter_samples}} for the sampling step that
@@ -85,6 +88,7 @@ load_pft_posteriors <- function(settings,
   ## Load priors and posteriors for each PFT
   prior_distns_list <- vector("list", length(pft.names))
   trait_mcmc_list   <- vector("list", length(pft.names))
+  independent       <- TRUE
 
   for (i in seq_along(pft.names)) {
     posterior <- load.posteriors(
@@ -101,13 +105,18 @@ load_pft_posteriors <- function(settings,
 
     if (!is.null(posterior$trait.mcmc)) {
       trait_mcmc_list[[i]] <- posterior$trait.mcmc
+      # Joint posteriors (e.g. from PDA) should preserve correlations
+      if (posterior$is.joint) {
+        independent <- FALSE
+      }
     } # else trait_mcmc_list[[i]] stays NULL
   }
 
   list(
     pft_names         = pft.names,
     prior_distns_list = prior_distns_list,
-    trait_mcmc_list   = trait_mcmc_list
+    trait_mcmc_list   = trait_mcmc_list,
+    independent       = independent
   )
 }
 
