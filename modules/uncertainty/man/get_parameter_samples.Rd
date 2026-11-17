@@ -27,16 +27,17 @@ or NULL if no MCMC results exist for that PFT.}
 
 \item{ensemble.size}{integer. Number of runs in model ensemble.}
 
-\item{ens.sample.method}{character. Marginal sampling method: "halton",
-"sobol", "lhc", "random", or "uniform".}
+\item{ens.sample.method}{character. One of "halton", "sobol", "torus",
+"lhc", "uniform".}
 
 \item{sa_quantiles}{numeric vector of quantiles for sensitivity analysis,
 or NULL to skip SA sampling.}
 
 \item{do_ensemble}{logical. Whether to generate ensemble samples.}
 
-\item{independent}{logical. Sample each parameter separately, discarding
-supplied dependence, instead of preserving parameter correlations.}
+\item{independent}{logical. FALSE (default) keeps complete MCMC draws
+together, so correlations between parameters are kept. TRUE samples each
+parameter independently, ignoring any joint structure.}
 }
 \value{
 named list with five elements:
@@ -59,12 +60,6 @@ directly, with no file I/O and no database calls.
 }
 \details{
 For the original disk-based wrapper, see \code{\link{get.parameter.samples}}.
-
-MCMC samples are sampled jointly by default (by keeping complete
-  draws together). Traits available only as distributions remain marginal.
-  Equal-sized MCMC tables share row indices and must preserve any paired row
-  order. Independent sampling may violate joint constraints such as allocation
-  sums. See \code{\link{get.ensemble.samples}} for the sampling contract.
 }
 \examples{
 \dontrun{
@@ -90,7 +85,7 @@ str(result$ensemble.samples)
 
 }
 \seealso{
-\code{\link{get.parameter.samples}} for the disk-based
+\code{\link{get.parameter.samples}} for the backward-compatible
   wrapper that handles file I/O and database lookups.
 }
 \author{
