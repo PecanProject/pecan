@@ -21,7 +21,7 @@ load.posteriors.legacy(
 \item{hostname}{host name for dbfile lookup}
 }
 \value{
-List with \code{prior.distns} and \code{trait.mcmc}
+List with \code{prior.distns}, \code{trait.mcmc}, \code{is.joint}
 }
 \description{
 \strong{Deprecated.} This path is used only when
