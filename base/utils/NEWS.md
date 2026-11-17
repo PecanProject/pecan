@@ -2,6 +2,8 @@
 
 ## Fixed
 
+* `nc_merge_all_sites_by_year()` now preserves ensemble member and timestep assignments when merging multiple members (#4251). Previously merged annual files must be regenerated from the original model outputs.
+
 * `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
 
 ## Changed
