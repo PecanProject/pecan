@@ -33,7 +33,7 @@ If you see failures during interactive use, wait a few seconds and try again.
 
 ```{r load_cached_scenario, eval=TRUE, echo=FALSE, include=FALSE}
 # File was created using
-# saveRDS(scenario_output, file = "vignettes/scenario_output.rds", compress = "xz")
+# saveRDS(scenario_output, file = "scenario_output.rds", compress = "xz")
 scenario_output <- readRDS("scenario_output.rds")
 ```
 
