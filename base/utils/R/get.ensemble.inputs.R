@@ -4,6 +4,9 @@
 #'
 #' Splits climate met for SIPNET
 #'
+#' Deprecated in PEcAn 1.11 and unused internally for many years before that:
+#' Choosing inputs is now part of the ensemble design creation step.
+#'
 #' @author Mike Dietze and Ann Raiho
 #'
 #' @param settings PEcAn settings list
@@ -13,6 +16,10 @@
 #' @export
 
 get.ensemble.inputs <- function(settings, ens = 1){
+  .Deprecated(
+    new = "generate_joint_ensemble_design",
+    package = "PEcAn.uncertainty"
+  )
   
   ##grab all inputs for this ensemble member
   inputs <- list()
