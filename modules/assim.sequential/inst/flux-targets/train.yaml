@@ -1,0 +1,10 @@
+# The station configuration and target directory used by prepare_flux_targets().
+stations: stations.yaml
+targets: yang-output
+folds: site-folds.csv
+annual_covariates: annual-proxy-stacks
+# Same UTC predictor calendar as predict_flux_maps(), including four prior periods.
+calendar: map-periods.csv
+resources:
+  device: cpu
+  cpu_threads: 1

@@ -12,7 +12,7 @@ from pecan_downscaling.train.prepare import target_frames
 
 def test_join_across_years_and_member_support(tmp_path):
     clock = pd.date_range("2012-12-31 21:00", periods=3, freq="3h", tz="UTC")
-    sites = pd.DataFrame({"index": [8, 3]})
+    sites = pd.DataFrame({"index": [8, 3], "lat": [1.0, 2.0], "lon": [3.0, 4.0]})
     periods = pd.DataFrame(
         [
             dict(
@@ -40,6 +40,7 @@ def test_join_across_years_and_member_support(tmp_path):
         frame = pd.MultiIndex.from_product(
             [sites["index"], clock[clock.year == yr]], names=["index", "utc"]
         ).to_frame(index=False)
+        frame = frame.merge(sites, on="index")
         for key in ["t2m", "d2m", "ssrd", "tp", "u10", "v10", *SOIL]:
             frame[key] = 1.0
         frame.iloc[::-1].to_parquet(

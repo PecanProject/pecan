@@ -27,13 +27,17 @@ class TargetInputs:
             "era",
             "gldas",
             "aqua_points",
-            "native_covariates",
-            "native_lc",
-            "kgc",
             "kgc_legend",
         )
         if need_fluxes:
-            keys += ("matched_towers", "tower", "site_means")
+            keys += (
+                "native_covariates",
+                "native_lc",
+                "kgc",
+                "matched_towers",
+                "tower",
+                "site_means",
+            )
         self.paths = {
             k: (config.parent / sources[k]).resolve(strict=True) for k in keys
         }

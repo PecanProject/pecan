@@ -159,3 +159,52 @@ finite steps for that member and flux. A tie for the most frequent source
 favors the lower nonzero code. A period with zero support has a missing mean
 and route 0. `expected_available_steps` and `full_window_fraction` describe
 the calendar window independently of observed support.
+
+## Train and export period flux models
+
+`train_flux_models()` trains three outer site folds from a completed
+`prepare_flux_targets()` run and returns the absolute model bundle directory.
+Use the Linux Python 3.12 environment for map prediction with the matching
+PyTorch build and CPU or CUDA requirements described above. Also install the
+station requirements, including h5py, in that same environment.
+
+```r
+library(PEcAnAssimSequential)
+example <- system.file("flux-targets", "train.yaml", package = "PEcAnAssimSequential")
+file.copy(example, "train.yaml")
+# Set the five input paths in train.yaml to your station products and covariates.
+bundle <- train_flux_models("train.yaml", "training-run", python = "/path/to/env/bin/python")
+# Set model_bundle in your map-request.yaml to the returned directory.
+maps <- predict_flux_maps("map-request.yaml", python = "/path/to/env/bin/python")
+```
+
+Relative paths resolve beside the training YAML. The inputs are:
+
+| Key | Expected input |
+| --- | --- |
+| `stations` | YAML used for the station run. Training reads the site inventory, timezones, site periods, Aqua point exports, climate legend and historical ERA5/GLDAS inputs. |
+| `targets` | Completed Part 2 directory with `features/`, `members/` and the two period HDF5 files. |
+| `folds` | Fixed full-inventory CSV with unique `index` and `site_position`, `LC` (1–8), boolean `is_tower`, `fold`, and `inner_1` through `inner_3`. Generate the nested memberships on the full table before selecting the stations in this run. Existing nested columns are checked. |
+| `annual_covariates` | Proxy stacks named `covariates_YYYY.tiff` by hydrological year, using the map prediction band order. |
+| `calendar` | The predictor calendar used by the map models, with each target period and its four preceding period IDs. Target boundaries and keys must agree with the station calendar. History uses the nominal windows in this file, including those before a shortened initial target. |
+
+The proxy learns the raw model period means from the Part 2 `raw` columns
+in Yang flux units. Native training targets average all 25 members at each
+three-hour step. An incomplete member ensemble for either flux excludes
+the step. Residual training requires every step of the actual site-period
+and learns the Yang mean minus its cross-fitted proxy. Spatial calibration
+uses only inner-held predictions at outer training sites. Held-out MAE and
+RMSE in `validation/period_scores.json` summarize agreement with the prepared
+Yang targets. The target preparation can itself use towers across these folds.
+
+The output contains the verified `prepared_data/` arrays, fit checkpoints,
+held-out predictions, and `model_bundle/` for deployment. Use a separate
+output directory for each request. After interruption, repeat the R call
+with `resume = TRUE`. Completed stages are checked against the recorded
+inputs, code and resources. CPU with one thread is the default. To use CUDA,
+set `resources.device` to `cuda` with one visible allocated GPU. For a newly
+trained bundle, omit any spatial cache made from a different bundle.
+
+From the package source directory, exercise the exported proxy, residual
+and spatial predictions against held-out records with
+`python tests/integration/check_flux_training.py /path/to/training-run`.

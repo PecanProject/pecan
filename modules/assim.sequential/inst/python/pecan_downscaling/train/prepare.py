@@ -39,6 +39,7 @@ class Inputs:
             raise ValueError(
                 f"Specify training inputs {sorted(keys)} and optional resources"
             )
+        self.resources = cfg.get("resources", {})
         for key in keys:
             setattr(self, key, (self.config.parent / cfg[key]).resolve(strict=True))
         self.station = TargetInputs(self.stations, need_fluxes=False)
@@ -46,18 +47,22 @@ class Inputs:
         self.needed, wanted = selection(
             read_periods(self.calendar), self.periods.period_id
         )
-        if (
-            not wanted[["period_id", "period_key", "start", "stop"]]
-            .reset_index(drop=True)
-            .equals(
-                self.periods[["period_id", "period_key", "start", "stop"]].reset_index(
-                    drop=True
-                )
-            )
+        fields = ("period_id", "period_key", "start", "stop")
+        if len(wanted) != len(self.periods) or any(
+            not (wanted[k].reset_index(drop=True) == self.periods[k]).all()
+            for k in fields
         ):
             raise ValueError(
                 "Station and predictor calendars disagree on target windows"
             )
+        if "hydrological_year" in self.periods:
+            for station, predictor in zip(
+                self.periods.itertuples(), wanted.itertuples()
+            ):
+                if proxy_year(station) != proxy_year(predictor):
+                    raise ValueError(
+                        f"Hydrological year mismatch at period {station.period_id}"
+                    )
         if (self.periods.expected_3hour_steps > 128).any():
             raise ValueError(
                 "Residual model supports up to 128 three-hour steps per period"
@@ -220,6 +225,14 @@ def target_frames(inputs, points, chunk, p, times, files):
             )
     keys = pd.MultiIndex.from_product([ids, times], names=["index", "utc"])
     grid = pd.concat(grids).loc[keys]
+    for coord in ("lat", "lon"):
+        match = grid[coord].to_numpy() == np.repeat(
+            points[coord].to_numpy(), len(times)
+        )
+        if not match.all():
+            raise ValueError(
+                f"Station {coord} mismatch at {grid.index[np.flatnonzero(~match)[0]]}"
+            )
     by_site = pd.DataFrame(environment(grid, grid[SOIL]), index=keys).groupby(
         level="index", sort=False
     )
@@ -235,7 +248,14 @@ def target_frames(inputs, points, chunk, p, times, files):
         target, fractions = step_targets(f)
         y.append(target)
         route.append(fractions)
-        reduced = reduce_members(inputs.targets / "members", parts, t, ids, times)
+        reduced = reduce_members(
+            inputs.targets / "members",
+            parts,
+            t,
+            ids,
+            times,
+            loaded=dict(zip(times.year.unique(), tables)),
+        )
         for key, expected in zip(("values", "support_counts", "route_codes"), reduced):
             got = files[t][key][pos, :, cols]
             if not np.array_equal(got, expected.astype(got.dtype), equal_nan=True):
@@ -318,7 +338,7 @@ def build_site_group(inputs, root, chunk, points, files, src, dates, vi, arrays)
         numeric, lc, eligible = predictors(panel)
         if not np.isfinite(raw[eligible]).all():
             raise ValueError(
-                f"Incomplete raw flux for eligible site at period {p.period_id}, group {chunk}"
+                f"Incomplete raw flux at period {p.period_id}, sites {points.loc[eligible & ~np.isfinite(raw).all(axis=(1,2)), 'index'].tolist()}"
             )
         finite = np.isfinite(raw)
         count = finite.sum(axis=1)

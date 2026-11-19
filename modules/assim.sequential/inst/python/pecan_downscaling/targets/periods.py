@@ -8,7 +8,7 @@ MEMBERS = [f"ens{i:02d}" for i in range(1, 26)]
 ROUTES = [f"route{i:02d}" for i in range(1, 26)]
 
 
-def reduce_members(root, parts, target, ids, times):
+def reduce_members(root, parts, target, ids, times, *, loaded=None):
     sums = np.zeros((len(ids), len(MEMBERS)))
     counts = np.zeros((*sums.shape, 3), dtype=np.uint16)
     if sorted(part["year"] for part in parts) != sorted(times.year.unique()):
@@ -16,9 +16,12 @@ def reduce_members(root, parts, target, ids, times):
     for part in parts:
         path = root / part["name"] / f"{target}.parquet"
         # Reindex both axes explicitly, including requested sites with no finite member.
-        frame = pd.read_parquet(
-            path, columns=["index", "utc", *MEMBERS, *ROUTES]
-        ).set_index(["index", "utc"])
+        if loaded is None:
+            frame = pd.read_parquet(
+                path, columns=["index", "utc", *MEMBERS, *ROUTES]
+            ).set_index(["index", "utc"])
+        else:
+            frame = loaded[part["year"]]
         clock = times[times.year == part["year"]]
         keys = pd.MultiIndex.from_product([ids, clock], names=["index", "utc"])
         if (
