@@ -81,3 +81,10 @@ missing inputs (1 for proxy/context, 2 for native category, 4 for timezone).
 Water is NoData. LE uses W/m² and NEE follows the Yang training convention.
 Use `resume = TRUE` after an interruption with the same configuration, model,
 sources and backend version. Start a fresh run when migrating from another backend.
+
+From the package source directory, run the R tests with `devtools::test()`.
+In the prediction environment with pytest installed, run
+`python -m pytest -q tests/python` for the fixture-based backend checks.
+To compare a migrated model against reference products, use the same model,
+inputs, grid window and device for both runs, then execute
+`python tests/integration/compare_flux_maps.py reference/products/period candidate/products/period`.
