@@ -1,3 +1,36 @@
+#' Map DOI to Product Name
+#'
+#' @param doi Character string representing the dataset DOI. Default it NULL.
+#' @return Character string of the corresponding product name.
+#' @export
+doi_to_product_name <- function(doi = NULL) {
+  # if we doi is NULL.
+  if (is.null(doi)) {
+    return("")
+  }
+  doi_map <- c(
+    "10.3334/ORNLDAAC/2183" = "SHIFT_Hyper_Spectral",
+    "10.3334/ORNLDAAC/2056" = "GEDI_L4A",
+    "10.5067/MODIS/MCD15A3H.061" = "MODIS_LAI",
+    "10.5067/02LGW4DGJYRX" = "SMAP_SM",
+    "10.5067/MEaSUREs/GLanCE/GLanCE30.001" = "GLANCE_LC",
+    "10.5067/HLS/HLSS30.002" = "HLS_Img",
+    "10.5067/Community/MuSLI/MSLSP30NA.011" = "HLS_Phenology",
+    "10.5067/VIIRS/VJ215A2H.002"            = "VIIRS_LAI"
+  )
+  
+  # Retrieve value using DOI
+  product_name <- doi_map[[doi]]
+  
+  # Fallback for unknown DOIs
+  if (is.null(product_name)) {
+    PEcAn.logger::logger.info("Unknown DOI: ", doi)
+    return(0)
+  }
+  
+  return(product_name)
+}
+
 #' Parallel download data from the NASA ORNL DAAC server given period, spatial bounding box, and data DOI.
 #'
 #' @param ul_lat Numeric: upper left latitude.
@@ -121,14 +154,31 @@
 #'                             to = to, 
 #'                             doi = doi,
 #'                             just_path = T)
-#'                             ul_lat <- 35
-#' # HLS Phenology data.
+#'                             
+#' # HLS Phenology data.                           
+#' ul_lat <- 35
 #' ul_lon <- -121
 #' lr_lat <- 33
 #' lr_lon <- -117
 #' from <- "2019-01-01"
 #' to <- "2019-12-31"
 #' doi <- "10.5067/Community/MuSLI/MSLSP30NA.011"
+#' paths <- NASA_DAAC_download(ul_lat = ul_lat,
+#'                             ul_lon = ul_lon,
+#'                             lr_lat = lr_lat,
+#'                             lr_lon = lr_lon,
+#'                             from = from,
+#'                             to = to,
+#'                             doi = doi,
+#'                             just_path = T)
+#' 
+#' 
+#' # VIIRS LAI.
+#' ul_lat <- 85
+#' ul_lon <- -179
+#' lr_lat <- 7
+#' lr_lon <- -20
+#' doi <- "10.5067/VIIRS/VJ215A2H.002"
 #' paths <- NASA_DAAC_download(ul_lat = ul_lat,
 #'                             ul_lon = ul_lon,
 #'                             lr_lat = lr_lat,
@@ -226,9 +276,13 @@ NASA_DAAC_download <- function(ul_lat,
                   stringr::str_ends(basename(granules_href), ".nc"))
   granules_href <- granules_href[inds]
   # remove URLs that have more than one dots in the basename.
-  inds <- which(nchar(gsub("[^.]", "", basename(granules_href))) > 1)
-  if (length(inds) > 0) {
-    granules_href <- granules_href[-inds]
+  # This filter will only apply to the GEDI L4A product.
+  # Please let the author know if you find any exceptions.
+  if (doi_to_product_name(doi) == "GEDI_L4A") {
+    inds <- which(nchar(gsub("[^.]", "", basename(granules_href))) > 1)
+    if (length(inds) > 0) {
+      granules_href <- granules_href[-inds]
+    }
   }
   # detect existing files if we want to download the files.
   if (!just_path) {

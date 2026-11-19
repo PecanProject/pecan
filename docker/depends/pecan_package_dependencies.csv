@@ -281,6 +281,7 @@
 "parallel","*","modules/assim.batch","Imports",FALSE
 "parallel","*","modules/data.atmosphere","Suggests",FALSE
 "parallel","*","modules/data.remote","Imports",FALSE
+"pathviewr","*","modules/assim.sequential","Suggests",FALSE
 "PEcAn.allometry","*","base/all","Suggests",TRUE
 "PEcAn.assim.batch","*","base/all","Depends",TRUE
 "PEcAn.assim.batch","*","modules/rtm","Imports",TRUE
