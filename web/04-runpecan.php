@@ -487,7 +487,7 @@ fwrite($fh, "</pecan>" . PHP_EOL);
 fclose($fh);
 
 # copy workflow
-copy("workflow.R", "{$folder}/workflow.R");
+copy(__DIR__ . "/../scripts/workflow.R", "{$folder}/workflow.R");
 
 # create the tunnel
 if ($hostname != $fqdn) {

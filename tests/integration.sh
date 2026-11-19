@@ -7,7 +7,7 @@ set -o pipefail
 cd $( dirname $0 )
 for f in ${NAME}.*.xml; do
     rm -rf pecan output.log
-    Rscript --vanilla ../web/workflow.R --settings $f 2>&1 | tee output.log
+    Rscript --vanilla ../scripts/workflow.R --settings $f 2>&1 | tee output.log
     if [ $? -ne 0 ]; then
         echo "----------------------------------------------------------------------"
         echo "TEST $f FAILED (RETURN CODE != 0)"

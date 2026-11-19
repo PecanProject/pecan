@@ -76,6 +76,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Relocated the standard PEcAn workflow from `web/` to `scripts/workflow.R`, updating Docker, integration scripts, and documentation to use its new location (#4202).
+
 - Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
 - Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)

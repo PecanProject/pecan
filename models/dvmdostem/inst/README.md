@@ -21,7 +21,7 @@ on/off via the PEcAn web interface...
 For testing and debugging work, here is one reccomended
 setup that has been used successfully on the VM:
   - Make a `~/scratch` directory.
-  - Copy the `pecan/web/workflow.R` file into the `~/scratch`.
+  - Copy the `pecan/scripts/workflow.R` file into the `~/scratch`.
     Alternatively you can symlink the file so that as you
     pull in updates to the pecan repo, your file in 
     `~/scratch` stays up to date.
