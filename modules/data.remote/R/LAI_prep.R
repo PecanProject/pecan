@@ -17,10 +17,6 @@
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor = "MODIS", search_window = 30, export_csv = FALSE, sd_threshold = 20, skip_download = FALSE, boundary = NULL){
-  # unlist boundary if it's passing from the assembler function.
-  if (is.list(boundary)) {
-    boundary <- as.numeric(unlist(boundary))
-  }
   #convert time points into paired start and end dates.
   start.end.dates <- data.frame()
   for (i in seq_along(time_points)) {
@@ -42,10 +38,6 @@ LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor
       if (length(ind.rm) > 0) {
         Previous_CSV <- Previous_CSV[-ind.rm,]
       }
-    }
-    # filter out noisy lai records from time series.
-    if (!is.null(boundary)) {
-      Previous_CSV <- MODIS_LAI_ts_filter(Previous_CSV, boundary = boundary)
     }
     LAI_Output <- matrix(NA, length(site_info$site_id), 2*length(time_points)+1) %>%
       `colnames<-`(c("site_id", paste0(time_points, "_LAI"), paste0(time_points, "_SD"))) %>%
@@ -102,18 +94,23 @@ LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor
                  credential_path = credential_path)
     }
     #Compare with existing CSV file. (We name the CSV file as LAI.csv)
-    if(as.logical(export_csv)){
-      if(exists("Previous_CSV")){#we already read the csv file previously.
-        Current_CSV <- rbind(Previous_CSV, LAI)
-        Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date)),]#using site_id and date to remove duplicated records.
-        utils::write.csv(Current_CSV, file = file.path(csv.outdir, "LAI.csv"), row.names = FALSE)
-      }else{
-        Current_CSV <- LAI
-        utils::write.csv(Current_CSV, file = file.path(csv.outdir, "LAI.csv"), row.names = FALSE)
-      }
+    if(exists("Previous_CSV")){#we already read the csv file previously.
+      Current_CSV <- rbind(Previous_CSV, LAI)
+      #using site_id, date, and sensor to remove duplicated records.
+      Current_CSV <- Current_CSV[!duplicated(paste0(Current_CSV$site_id, Current_CSV$date, Current_CSV$sensor)),]
     } else {
       Current_CSV <- LAI
     }
+    # filter out noisy lai records from time series.
+    if (!is.null(boundary)) {
+      # unlist boundary if it's passing from the assembler function.
+      if (is.list(boundary)) {
+        boundary <- as.numeric(unlist(boundary))
+      }
+      Current_CSV <- LAI_ts_filter(Current_CSV, boundary = boundary)
+    }
+    # only grab LAI values from the target sensor type.
+    Current_CSV <- Current_CSV[which(Current_CSV$sensor == sensor),]
     #Calculate LAI for each time step and site.
     #loop over time and site
     for (i in seq_along(time_points)) {
@@ -141,7 +138,7 @@ LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor
 #' @export
 #' 
 #' @author Dongchen Zhang
-MODIS_LAI_ts_filter <- function(lai.csv, boundary = c(0.05, 0.95)) {
+LAI_ts_filter <- function(lai.csv, boundary = c(0.05, 0.95)) {
   # get unique site ids.
   site.ids <- sort(unique(lai.csv$site_id))
   # loop over sites.
