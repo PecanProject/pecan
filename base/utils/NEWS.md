@@ -12,6 +12,12 @@
 
 * New function `netcdf2df()` reads a netCDF as a dataframe, with units attached as an attribute. It is intended so far for files that are already "basically a rectangle" (dense grids where all variables have the same dimensions and all dimensions are scalars or fully-crossed vectors), but if you try it on files with more complex dimensions please report how it goes.
 
+## Removed
+
+* `get.ensemble.inputs` is deprecated and will be deleted in a future release.
+  It has not been used internally for
+  many years, and is not compatible with current workflows.
+
 # PEcAn.utils 1.8.2
 
 ## Fixed
