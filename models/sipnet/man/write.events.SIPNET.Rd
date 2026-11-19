@@ -27,6 +27,9 @@ The writer expects inputs to already match the PEcAn MVP schema v0.1.0 naming an
 \code{irrigation}, \code{harvest}.
 \item Units translated from PEcAn standard_vars to SIPNET events.in specification:
 \code{kg/m^2} to \code{g/m^2}; irrigation \code{amount_mm} to \code{cm}.
+\item Fertilization adds ammonium, nitrate, and optional \code{urea_n_kg_m2} to
+SIPNET mineral N. Urea is treated as immediately available mineral nitrogen;
+omitted urea defaults to zero and does not contribute to organic N or C.
 \item Planting allocation uses fixed internal parameters. Future work should use the same values
 that are written to \code{sipnet.parms} (e.g. after integrating this into \code{write.configs.SIPNET})
 }
