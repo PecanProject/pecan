@@ -17,16 +17,13 @@ from pecan_downscaling.predict.inputs import SpatialSources, nearest, short_gaps
 
 
 class TargetInputs:
-    def __init__(self, config):
+    def __init__(self, config, *, need_fluxes=True):
         config = Path(config).resolve()
         sources = yaml.safe_load(config.read_text())["sources"]
         keys = (
             "sites",
             "timezones",
             "periods",
-            "matched_towers",
-            "tower",
-            "site_means",
             "era",
             "gldas",
             "aqua_points",
@@ -35,6 +32,8 @@ class TargetInputs:
             "kgc",
             "kgc_legend",
         )
+        if need_fluxes:
+            keys += ("matched_towers", "tower", "site_means")
         self.paths = {
             k: (config.parent / sources[k]).resolve(strict=True) for k in keys
         }

@@ -99,3 +99,10 @@ def run_case(tmp_path, monkeypatch):
     monkeypatch.setattr(state, "validate", lambda root: dict(id="model"))
     contract, needed, wanted = state.plan(config)
     return config, contract, needed, wanted
+
+
+@pytest.fixture
+def training_data(tmp_path):
+    from test_training_data import make_dataset
+
+    return make_dataset(tmp_path / "data")
