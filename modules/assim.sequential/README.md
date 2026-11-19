@@ -88,3 +88,74 @@ In the prediction environment with pytest installed, run
 To compare a migrated model against reference products, use the same model,
 inputs, grid window and device for both runs, then execute
 `python tests/integration/compare_flux_maps.py reference/products/period candidate/products/period`.
+
+## Prepare Yang station targets
+
+Two R functions connect a PEcAn ensemble to the Yang station targets. Each
+has its own entry point. If annual site means already exist, start with
+`prepare_flux_targets()`. Both run locally on the CPU.
+
+```r
+library(PEcAnAssimSequential)
+site_map <- read.csv("pecan-to-station.csv", colClasses = c(site_id = "character"))
+write_site_flux_means(settings, years = 2012:2013, site_map = site_map, outdir = "annual-means")
+
+template <- system.file("flux-targets", "prepare.yaml", package = "PEcAnAssimSequential")
+file.copy(template, "stations.yaml")
+# Set sources.site_means to annual-means and fill in the other source paths.
+targets <- prepare_flux_targets("stations.yaml", "yang-output", models = "residual-models",
+                                python = "/path/to/env/bin/python")
+```
+
+The first function reads Ensemble records from `settings$outdir/runs_manifest.csv`
+and fluxes from `settings$modeloutdir/<run_id>/<year>.nc`. Pair each PEcAn
+`site_id` with its Yang station `index`. All sites must have the same set of
+ensemble members and a common three-hour UTC clock for the requested year.
+CF time bounds identify interval starts. Without bounds, the labels must be
+three-hour UTC starts. For SIPNET output with drifting labels, pass a named
+vector of `sipnet.clim` paths in `forcing`, keyed by run ID. Each must describe
+the same UTC year, day of year, fractional hour and three-hour duration as the
+model output. The writer checks the run-specific forcing before assigning a slot.
+
+Each `year=YYYY.rds` contains station indices, POSIXct interval starts, and
+site-by-time means for NEE (kg C m⁻² s⁻¹, positive to atmosphere) and LE
+(W m⁻², positive to atmosphere). Each flux averages its finite model members.
+Each year is published separately. If a later year fails, retry the missing years.
+The number of model runs used here is independent of the 25 Yang members.
+
+For the second function install the packages in
+`inst/python/pecan_downscaling/requirements-targets.txt` in a Python 3.12
+environment. Its R process uses arrow, data.table, dplyr, jsonlite and
+**R xgboost 1.7.8.1**. Fitting also uses caret. Supply the following inputs
+through the YAML. Relative paths resolve beside the YAML.
+
+| Source | Station input |
+| --- | --- |
+| Station inventory and timezones | CSVs with unique `index,site_col,lat,lon` and `index,tz` (IANA timezone). Ascending `site_col` determines the HDF5 site axis. |
+| Period calendar | Yang site-period CSV with `period_id,period_key,start_date,end_date,expected_3hour_steps,full_window_expected_steps,full_window_fraction`. Start and end dates are inclusive UTC dates. Short initial and terminal periods retain their actual length. |
+| Towers | Match CSV with `index,Site_ID,min_dist_m`. Each gap-filled `target=NEE/site=<Site_ID>.parquet` or `target=LE/site=<Site_ID>.parquet` contains `Site_ID`, timezone-aware UTC `utc` and numeric `ens01` through `ens25` in the corresponding target units. |
+| Weather and soil | ERA5 ensemble files `ERA5_YYYY.nc` with temperature and dew point in K, surface pressure in Pa, precipitation in m, accumulated radiation in J/m² and wind in m/s. The final interval needs the next three-hour accumulation boundary. Raw GLDAS three-hour files provide four instantaneous soil layers in kg/m². An optional repair registry maps UTC steps to SHA-256-verified replacements. |
+| Vegetation and land | AppEEARS `*MYD13Q1*results.csv` point exports with Latitude, Longitude, Date and decoded 250 m EVI/NDVI. Native `covariates_YYYY.tiff` bands are disturbance age=2, biomass=3, wetness=4, pH=9, N=10, SOC=11 and sand=12. Supply the native land-cover and climate rasters and `code,KGC` legend. |
+
+Omit `models` to fit and save one residual bundle per target and tower member
+in `models/`. Training uses matched stations within 1,000 m and the periods in
+the YAML. Supply existing bundles (`NEE_ens01.rds` through `LE_ens25.rds`, each
+with groups 1–8 and EC) to apply fixed models. Residuals use **model mean minus
+tower member**. When reading annual means, NEE is scaled once by
+`1e8 / 1.157407`, and LE retains W/m². The raw-value magnitude cutoff is
+1e6 in target units.
+
+The output directory appears when both fluxes finish. `features/` contains
+three-hour station predictors and `members/` contains each flux's raw mean,
+25 target values and 25 source codes, keyed by `index,utc`. Files are split by
+calendar year, station group and period. Each finite matched tower value takes
+precedence (route 1). Otherwise a fitted residual corrects the raw mean
+(route 2), using EC at matched sites and land cover elsewhere. A finite raw
+mean supplies route 3, and a missing target has route 0.
+
+`targets/nee.h5` and `targets/le.h5` store `values`, `support_counts` and
+`route_codes` on the labelled period × member × station axes. Values average
+finite steps for that member and flux. A tie for the most frequent source
+favors the lower nonzero code. A period with zero support has a missing mean
+and route 0. `expected_available_steps` and `full_window_fraction` describe
+the calendar window independently of observed support.

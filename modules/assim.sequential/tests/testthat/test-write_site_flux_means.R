@@ -40,7 +40,13 @@ test_that("annual means pair manifest records and align interval bounds", {
   expect_error(run("duplicate"), "run1")
   write_manifest(runs[-2, ])
   expect_error(run("missing-member"), "member 1 for site south")
+  absent <- runs
+  absent$run_id[1] <- "no-output"
+  write_manifest(absent)
+  expect_error(run("missing-file"), "no-output")
   write_manifest(runs)
+  write_nc(2, c(2.5, 5.5))
+  expect_error(run("unverified-drift"), "forcing")
   write_nc(2, c(1.5, 1.5))
   expect_error(run("bad-time"), "three-hour slot")
 })

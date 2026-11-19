@@ -13,7 +13,7 @@ test_that("Yang routes each flux and member independently", {
   panel$KGC <- rep("Dfb", 5)
   levels <- list(KGC = c("Dfb", "Dfc"), is_day = c("0", "1"), LC = c("1", "2"))
   model <- function(ec, constant) {
-    x <- yang$yang_matrix(panel[1:2], levels, ec)
+    x <- yang$yang_matrix(panel[1:2, , drop = FALSE], levels, ec)
     fit <- xgboost::xgb.train(list(base_score = constant, nthread = 1L),
                               xgboost::xgb.DMatrix(x, label = c(constant, constant)), nrounds = 1)
     list(model = fit, levels = levels, features = colnames(x))
