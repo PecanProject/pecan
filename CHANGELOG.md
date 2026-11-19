@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 
+- `PEcAnAssimSequential::predict_flux_maps()` generates period NEE and LE GeoTIFFs from a trained model bundle for a requested grid window (#4259).
 - `PEcAn.settings::setEnsemblePaths()` can now include site-specific components in the paths it generates (#4100).
 - `PEcAn.SIPNET::model2netcdf.SIPNET()` now also writes `soil_organic_carbon_content` (soil pool only, excluding litter) alongside `TotSoilCarb` (soil + litter) (#4160).
 - Added regression tests to `PEcAn.settings` confirming `check.ensemble.settings()` does not add an `ensemble` block to settings that lack one (#3024).
