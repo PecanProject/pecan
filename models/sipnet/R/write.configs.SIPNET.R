@@ -904,7 +904,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       )
     }
     
-    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
+    # prepare_pools wants SLA per kg C. Take it from the leafCSpWt written
+    # above, so laiInit * leafCSpWt gives back the IC leaf carbon
+    sla_c <- PEcAn.utils::ud_convert(
+      1 / param[param[, 1] == "leafCSpWt", 2], "m2 g-1", "m2 kg-1"
+    )
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = sla_c))
     
     if (!is.null(IC.pools)) {
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
