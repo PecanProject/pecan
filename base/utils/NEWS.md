@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `convert.expr()` now splits expressions that contain `^`, `-` inside parentheses, or `[ ]` into the right variable names. Previously `b^2+c` returned `"+"`, `x^2` raised an error and `(b-c)*d` returned `"b-c"` as one variable (#4216).
 * `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).
 
 ## Changed
