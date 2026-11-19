@@ -12,7 +12,9 @@
 #' @param ens.run.ids dataframe. Must contain a column named "id" giving the run IDs to be read.
 #'   If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pecandir}
 #'
-#' @return a list of ensemble model output
+#' @return a list of ensemble model output, one value per member.
+#'   A member with no output file, or whose file lacks a requested variable,
+#'   is \code{NA_real_} rather than another member's value.
 #' @export
 #' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
@@ -44,13 +46,23 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
       variables = variables
     )
 
-    # Assign loaded variables to local environment for evaluation
-    for (var in names(out.tmp)) {
-      assign(var, out.tmp[[var]])
+    # An unnamed list(NA), or a file missing one requested name, must not
+    # leave this member to be evaluated against another member's bindings.
+    missing_vars <- setdiff(variables, names(out.tmp))
+    if (length(missing_vars) > 0) {
+      PEcAn.logger::logger.warn(paste0(
+        "Ensemble run ", run.id,
+        " has no output for ", paste(missing_vars, collapse = ", "),
+        ". Returning NA."
+      ))
+      ensemble.output[[as.character(i)]] <- NA_real_
+      next
     }
 
-    # derivation & aggregation
-    out <- eval(parse(text = expr))
+    # baseenv() supplies arithmetic and cannot see this function's frame.
+    member_env <- new.env(parent = baseenv())
+    list2env(out.tmp, envir = member_env)
+    out <- eval(parse(text = expr), envir = member_env)
     ensemble.output[[as.character(i)]] <- mean(out, na.rm = TRUE)
   }
 
