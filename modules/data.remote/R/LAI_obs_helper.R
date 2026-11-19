@@ -4,7 +4,7 @@
 #' @param time_points character: a vector contains each time point within the start and end date.
 #' @param csv.outdir character: where the final CSV file will be stored.
 #' @param download.outdir character: where the LAI image files will be stored.
-#' @param sensor character: the LAI product name (either `MODIS` or `VIIRS`). Default is `MODIS`.
+#' @param sensor character: the LAI product name (either `MODIS` or `VIIRS`).
 #' @param search_window numeric: search window for locate available LAI values.
 #' @param export_csv boolean: decide if we want to export the CSV file.
 #' @param sd_threshold numeric or character: for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.
@@ -12,11 +12,12 @@
 #' @param boundary numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., c(0.05, 0.95) or list(0.05, 0.95)). The default is NULL.
 #'
 #' @return A data frame containing LAI and sd for each site and each time step.
-#' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
-LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor = "MODIS", search_window = 30, export_csv = FALSE, sd_threshold = 20, skip_download = FALSE, boundary = NULL){
+LAI_prep_helper <- function(site_info, time_points, csv.outdir, download.outdir, sensor, search_window = 30, export_csv = FALSE, sd_threshold = 20, skip_download = FALSE, boundary = NULL){
+  #get the csv file path.
+  csv_file <- file.path(csv.outdir, paste0(sensor, "_LAI.csv"))
   #convert time points into paired start and end dates.
   start.end.dates <- data.frame()
   for (i in seq_along(time_points)) {
@@ -29,8 +30,7 @@ LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor
   #if we have previous downloaded CSV file
   if(file.exists(file.path(csv.outdir, "LAI.csv"))){
     PEcAn.logger::logger.info("Extracting previous LAI file!")
-    Previous_CSV <- utils::read.csv(file.path(csv.outdir, "LAI.csv"), 
-                                    colClasses = c(rep("character", 2), rep("numeric", 4), "character"))
+    Previous_CSV <- utils::read.csv(csv_file, colClasses = c("character", rep("numeric", 5), rep("character", 2)))
     # filter out high uncertain LAI records.
     if (!is.null(sd_threshold)) {
       PEcAn.logger::logger.info("filtering out records with high standard errors!")
@@ -135,7 +135,6 @@ LAI_prep <- function(site_info, time_points, csv.outdir, download.outdir, sensor
 #' @param boundary numeric: A vector contains the upper and lower quantiles for filtering lai records. The default is c(0.05, 0.95).
 #' 
 #' @return A data frame containing date, site id, lat, lon, lai, sd, and qc columns.
-#' @export
 #' 
 #' @author Dongchen Zhang
 LAI_ts_filter <- function(lai.csv, boundary = c(0.05, 0.95)) {
@@ -167,15 +166,15 @@ LAI_ts_filter <- function(lai.csv, boundary = c(0.05, 0.95)) {
 #' @param credential_path Character: physical path to the credential file (.netrc file).
 #' 
 #' @return A data frame containing LAI and sd for each site and each time step.
-#' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 Prep.MODIS.LAI.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir, credential_path) {
+  #get the csv file path.
+  csv_file <- file.path(csv.outdir, "MODIS_LAI.csv")
   # load previous CSV file.
   if (file.exists(file.path(csv.outdir, "LAI.csv"))) {
-    previous.csv <- utils::read.csv(file.path(csv.outdir, "LAI.csv"), 
-                                    colClasses = c("character", rep("numeric", 5), rep("character", 2)))
+    previous.csv <- utils::read.csv(csv_file, colClasses = c("character", rep("numeric", 5), rep("character", 2)))
   } else {
     previous.csv <- NULL
   }
@@ -294,7 +293,7 @@ Prep.MODIS.LAI.from.DAAC <- function(site_info, extent, from, to, download.outdi
   # filter by QC band.
   outputs <- outputs[which(outputs$qc %in% c("000", "001")),]
   # write into CSV file.
-  utils::write.csv(outputs, file = file.path(csv.outdir, "LAI.csv"), row.names = F)
+  utils::write.csv(outputs, file = csv_file, row.names = F)
   # delete downloaded files.
   unlink(list.files(download.outdir, full.names = T), recursive = T)
   return(outputs)
@@ -311,15 +310,15 @@ Prep.MODIS.LAI.from.DAAC <- function(site_info, extent, from, to, download.outdi
 #' @param credential_path Character: physical path to the credential file (.netrc file).
 #' 
 #' @return A data frame containing LAI and sd for each site and each time step.
-#' @export
 #' 
 #' @author Dongchen Zhang
 #' @importFrom magrittr %>%
 Prep.VIIRS.LAI.from.DAAC <- function(site_info, extent, from, to, download.outdir, csv.outdir, credential_path) {
+  #get the csv file path.
+  csv_file <- file.path(csv.outdir, "VIIRS_LAI.csv")
   # load previous CSV file.
   if (file.exists(file.path(csv.outdir, "LAI.csv"))) {
-    previous.csv <- utils::read.csv(file.path(csv.outdir, "LAI.csv"), 
-                                    colClasses = c("character", rep("numeric", 5), rep("character", 2)))
+    previous.csv <- utils::read.csv(csv_file, colClasses = c("character", rep("numeric", 5), rep("character", 2)))
   } else {
     previous.csv <- NULL
   }
@@ -462,7 +461,7 @@ Prep.VIIRS.LAI.from.DAAC <- function(site_info, extent, from, to, download.outdi
   # filter by QC band.
   outputs <- outputs[which(outputs$qc %in% c("000", "001")),]
   # write into CSV file.
-  utils::write.csv(outputs, file = file.path(csv.outdir, "LAI.csv"), row.names = F)
+  utils::write.csv(outputs, file = csv_file, row.names = F)
   # delete downloaded files.
   unlink(list.files(download.outdir, full.names = T), recursive = T)
   return(outputs)
