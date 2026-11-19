@@ -15,8 +15,7 @@ run.write.configs(
 )
 }
 \arguments{
-\item{settings}{a PEcAn settings list containing either \code{ensemble} or
-\code{sensitivity.analysis}.}
+\item{settings}{a PEcAn settings list}
 
 \item{ensemble.size}{number of ensemble runs}
 
@@ -39,15 +38,15 @@ are used directly and \code{samples.Rdata} is not read from disk. When \code{NUL
 \code{settings$outdir}.}
 }
 \value{
-The \code{settings} list (invisibly), updated with the configured
-analysis ID.
+The \code{settings} list (invisibly), updated with ensemble IDs for SA
+and ensemble analysis (e.g. \code{settings$sensitivity.analysis$ensemble.id},
+\code{settings$ensemble$ensemble.id}).
 }
 \description{
-Generates run scripts and configuration files for one ensemble or sensitivity
-analysis described by \code{input_design}. Use \code{runModule.run.write.configs()} to
-write both analyses. Delegates model-specific configuration to the
-appropriate \verb{write.config.*} function (e.g. \code{write.config.ED2},
-\code{write.config.SIPNET}).
+Generates run scripts and configuration files for all analyses (ensemble
+and/or sensitivity analysis) specified in the provided settings. Delegates
+the model-specific config writing to the appropriate \verb{write.config.*}
+function (e.g. \code{write.config.ED2}, \code{write.config.SIPNET}).
 }
 \details{
 \strong{Upstream contract (reads from \code{settings$outdir}):}
@@ -68,8 +67,8 @@ analysis is configured.}
 \item{\verb{ensemble.samples.<ensemble_id>.Rdata}}{Contains \code{ens.run.ids}
 (vector of run IDs), \code{ens.ensemble.id}, \code{ens.samples}, \code{pft.names},
 and \code{trait.names}. Saved when ensemble is configured.}
-\item{\code{runs_manifest.csv}}{A CSV table tracking runs and their design row
-indices. Sensitivity baseline rows are repeated for each varying trait.}
+\item{\code{runs_manifest.csv}}{A CSV table tracking all runs created,
+appended across ensemble and SA analyses.}
 }
 
 \strong{Downstream contract:} The \code{sensitivity.samples.*.Rdata} and
