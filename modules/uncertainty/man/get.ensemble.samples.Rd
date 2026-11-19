@@ -20,9 +20,10 @@ get.ensemble.samples(
 
 \item{env.samples}{env samples}
 
-\item{method}{the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.}
+\item{method}{the method used to generate the ensemble samples for traits sampled independently. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
+When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{method}: each member takes one complete MCMC row, drawn at random with replacement.}
 
-\item{param.names}{a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently}
+\item{param.names}{list named by PFT, each element the traits whose MCMC samples are drawn together by row. Joint traits of a PFT must have equal length. NULL samples every trait independently.}
 
 \item{...}{Other arguments passed on to the sampling method}
 }

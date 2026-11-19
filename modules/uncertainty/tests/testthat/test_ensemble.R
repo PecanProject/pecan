@@ -160,3 +160,19 @@ test_that("get.ensemble.samples", {
   # pft_samp has 5 rows -> all indices <= 5
   expect_true(all(sapply(res_idx, \(mat)all(mat %in% 1:5))))
 })
+
+test_that("get.ensemble.samples draws joint traits by whole row", {
+  a <- stats::rnorm(50)
+  pft_samp <- list(p = list(a = a, b = 2 * a, c = stats::rnorm(80)))
+  res <- get.ensemble.samples(20, pft_samp, list(), param.names = list(p = c("a", "b")))
+  expect_equal(res$p$b, 2 * res$p$a)
+  expect_true(all(res$p$a %in% a))
+})
+
+test_that("get.ensemble.samples rejects joint traits of unequal length", {
+  pft_samp <- list(p = list(a = 1:5, b = 1:4))
+  expect_error(
+    get.ensemble.samples(3, pft_samp, list(), param.names = list(p = c("a", "b"))),
+    "differ in length: 5, 4"
+  )
+})

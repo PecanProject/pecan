@@ -12,7 +12,7 @@ get_parameter_samples(
   ens.sample.method = "uniform",
   sa_quantiles = NULL,
   do_ensemble = TRUE,
-  independent = TRUE
+  independent = FALSE
 )
 }
 \arguments{
@@ -35,9 +35,9 @@ or NULL to skip SA sampling.}
 
 \item{do_ensemble}{logical. Whether to generate ensemble samples.}
 
-\item{independent}{logical. TRUE means parameters were fitted individually
-(standard MA) and can be resampled independently. FALSE means they were
-fitted together (e.g. PDA) and correlations should be preserved.}
+\item{independent}{logical. FALSE (default) keeps complete MCMC draws
+together, so correlations between parameters are kept. TRUE samples each
+parameter independently, ignoring any joint structure.}
 }
 \value{
 named list with five elements:

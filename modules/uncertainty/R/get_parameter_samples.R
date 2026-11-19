@@ -18,9 +18,9 @@
 #' @param sa_quantiles numeric vector of quantiles for sensitivity analysis,
 #'   or NULL to skip SA sampling.
 #' @param do_ensemble logical. Whether to generate ensemble samples.
-#' @param independent logical. TRUE means parameters were fitted individually
-#'   (standard MA) and can be resampled independently. FALSE means they were
-#'   fitted together (e.g. PDA) and correlations should be preserved.
+#' @param independent logical. FALSE (default) keeps complete MCMC draws
+#'   together, so correlations between parameters are kept. TRUE samples each
+#'   parameter independently, ignoring any joint structure.
 #'
 #' @return named list with five elements:
 #' \describe{
@@ -69,7 +69,7 @@ get_parameter_samples <- function(pft_names,
                                        ens.sample.method = "uniform",
                                        sa_quantiles = NULL,
                                        do_ensemble = TRUE,
-                                       independent = TRUE) {
+                                       independent = FALSE) {
 
   # ---- Input validation ----
   if (is.list(pft_names)) {
@@ -189,7 +189,7 @@ get_parameter_samples <- function(pft_names,
   }
 
   # ---- Handle independence flag ----
-  # When samples are independent (fitted individually), set param.names to NULL.
+  # independent = TRUE asks for each parameter to be sampled on its own, so drop param.names.
   # This is important downstream: when param.names is not NULL,
   # get.ensemble.samples() preserves correlations between MCMC parameters.
   if (independent) {

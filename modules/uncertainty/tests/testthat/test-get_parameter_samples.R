@@ -288,3 +288,21 @@ test_that("independent = FALSE preserves param.names for correlated sampling", {
   expect_false(is.null(result_ind$ensemble.samples))
   expect_false(is.null(result_dep$ensemble.samples))
 })
+
+# b is exactly 2 * a in every row, so a member drawn by whole row keeps b == 2 * a
+make_joint_mcmc <- function(n = 100) {
+  a <- stats::rnorm(n)
+  chain <- function(x) coda::mcmc.list(coda::mcmc(matrix(x, dimnames = list(NULL, "beta.o"))))
+  list(a = chain(a), b = chain(2 * a))
+}
+
+test_that("by default MCMC rows stay together, even after an empty PFT", {
+  result <- get_parameter_samples(
+    pft_names         = c("empty", "joint"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list   = list(NULL, make_joint_mcmc()),
+    ensemble.size     = 20
+  )
+  x <- result$ensemble.samples$joint
+  expect_equal(x$b, 2 * x$a)
+})

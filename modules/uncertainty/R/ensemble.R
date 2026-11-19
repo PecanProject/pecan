@@ -68,8 +68,9 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 #' @param ensemble.size number of runs in model ensemble
 #' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain
 #' @param env.samples env samples
-#' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
-#' @param param.names a list of parameter names that were fitted either by MA or PDA, important argument, if NULL parameters will be resampled independently
+#' @param method the method used to generate the ensemble samples for traits sampled independently. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
+#'   When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{method}: each member takes one complete MCMC row, drawn at random with replacement.
+#' @param param.names list named by PFT, each element the traits whose MCMC samples are drawn together by row. Joint traits of a PFT must have equal length. NULL samples every trait independently.
 #' @param ... Other arguments passed on to the sampling method
 #'
 #' @return named list of data.frames with sampled indices as an attribute
@@ -144,28 +145,19 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
       sampled.indices[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
 
       # meaning we want to keep MCMC samples together
-      if (length(pft.samples[[pft.i]]) > 0 && !is.null(param.names)) {
-        if (method == "halton") {
-          same.i <- floor(randtoolbox::halton(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "sobol") {
-          same.i <- floor(randtoolbox::sobol(ensemble.size, scrambling = 3) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "torus") {
-          same.i <- floor(randtoolbox::torus(ensemble.size) * length(pft.samples[[pft.i]][[1]]))+1
-        } else if (method == "lhc") {
-          same.i <- floor(c(PEcAn.emulator::lhc(t(matrix(0:1, ncol = 1, nrow = 2)), ensemble.size) * length(pft.samples[[pft.i]][[1]])))+1
-        } else if (method == "uniform") {
-          same.i <- sample.int(length(pft.samples[[pft.i]][[1]]), ensemble.size)
-        } else if (method == "random") {
-            PEcAn.logger::logger.info("Using random row sampling for MCMC draws")
-           same.i <- sample(nrow(pft.samples[[pft.i]][[1]]), ensemble.size, replace = TRUE)
-        } else {
-          PEcAn.logger::logger.error("Sampling method %s is not recognized", method)
+      joint <- names(pft.samples[[pft.i]]) %in% param.names[[names(pft.samples)[pft.i]]]
+      if (any(joint)) {
+        n.rows <- unique(lengths(pft.samples[[pft.i]][joint]))
+        if (length(n.rows) > 1) {
+          PEcAn.logger::logger.severe("PFT", names(pft.samples)[pft.i], "joint traits differ in length:", paste(n.rows, collapse = ", "))
         }
+        # draws whole MCMC rows, so a space-filling design over [0, 1] does not apply
+        same.i <- sample.int(n.rows, ensemble.size, replace = TRUE)
       }
 
       for (trait.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        if (names(pft.samples[[pft.i]])[trait.i] %in% param.names[[pft.i]]) {
+        if (joint[trait.i]) {
           ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
           sampled.indices[[pft.i]][, trait.i] <- same.i
         } else {
