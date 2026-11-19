@@ -1,10 +1,9 @@
 #' Write model-specific run scripts and configuration files
 #'
-#' Generates run scripts and configuration files for one ensemble or sensitivity
-#' analysis described by `input_design`. Use `runModule.run.write.configs()` to
-#' write both analyses. Delegates model-specific configuration to the
-#' appropriate `write.config.*` function (e.g. `write.config.ED2`,
-#' `write.config.SIPNET`).
+#' Generates run scripts and configuration files for all analyses (ensemble
+#' and/or sensitivity analysis) specified in the provided settings. Delegates
+#' the model-specific config writing to the appropriate `write.config.*`
+#' function (e.g. `write.config.ED2`, `write.config.SIPNET`).
 #'
 #' @details
 #' **Upstream contract (reads from `settings$outdir`):**
@@ -25,8 +24,8 @@
 #'   \item{`ensemble.samples.<ensemble_id>.Rdata`}{Contains `ens.run.ids`
 #'     (vector of run IDs), `ens.ensemble.id`, `ens.samples`, `pft.names`,
 #'     and `trait.names`. Saved when ensemble is configured.}
-#'   \item{`runs_manifest.csv`}{A CSV table tracking runs and their design row
-#'     indices. Sensitivity baseline rows are repeated for each varying trait.}
+#'   \item{`runs_manifest.csv`}{A CSV table tracking all runs created,
+#'     appended across ensemble and SA analyses.}
 #' }
 #'
 #' **Downstream contract:** The `sensitivity.samples.*.Rdata` and
@@ -43,8 +42,7 @@
 #'
 #' @md
 #'
-#' @param settings a PEcAn settings list containing either `ensemble` or
-#'   `sensitivity.analysis`.
+#' @param settings a PEcAn settings list
 #' @param ensemble.size number of ensemble runs
 #' @param input_design Input design data.frame coordinating input files across
 #'   runs. Contains columns for each sampled input (met, param, etc.) with row
@@ -60,8 +58,9 @@
 #'   (default), the function falls back to loading `samples.Rdata` from
 #'   `settings$outdir`.
 #'
-#' @return The `settings` list (invisibly), updated with the configured
-#'   analysis ID.
+#' @return The `settings` list (invisibly), updated with ensemble IDs for SA
+#'   and ensemble analysis (e.g. `settings$sensitivity.analysis$ensemble.id`,
+#'   `settings$ensemble$ensemble.id`).
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
@@ -69,14 +68,6 @@
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
                               overwrite = TRUE, samples = NULL) {
-
-  if (all(c("ensemble", "sensitivity.analysis") %in% names(settings))) {
-    PEcAn.logger::logger.severe(
-      "run.write.configs() accepts one analysis per call.",
-      "Use runModule.run.write.configs() or call run.write.configs() separately",
-      "for ensemble and sensitivity designs."
-    )
-  }
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -242,23 +233,36 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
 
+    # a site's configs only get its own PFTs parameters (see
+    # write.ensemble.configs), so a run moving another PFT's trait would just
+    # repeat the median run
+    sa_design <- input_design
+    site_pfts <- intersect(
+      as.character(unlist(settings$run$site$site.pft)),
+      purrr::map_chr(settings$pfts, "name")
+    )
+    if (length(site_pfts) > 0) {
+      keep <- is.na(sa_design$sa_pft) | sa_design$sa_pft %in% site_pfts
+      sa_design <- sa_design[keep, , drop = FALSE]
+    }
+
     # A sensitivity analysis is an ensemble whose parameter sets move one trait
     # at a time. The design says which run is which, so the parameter sets and
     # the run names are built from it here and the same writer writes them.
-    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, sa_design)
     sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
-      design_matrix = input_design,
+      design_matrix = sa_design,
       site_id       = settings$run$site$id,
       pft_names     = pft.names
     )
 
     sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
       defaults         = settings$pfts,
-      ensemble.size    = nrow(input_design),
+      ensemble.size    = nrow(sa_design),
       ensemble.samples = sa.run.samples,
       settings         = settings,
       model            = model,
-      input_design     = input_design,
+      input_design     = sa_design,
       write.to.db      = write,
       run_descriptions = sa.descriptions,
       ensemble.id      = settings$sensitivity.analysis$ensemble.id
@@ -270,7 +274,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     if ("manifest" %in% names(sa.runs) &&
         all(c("pft_name", "trait") %in% names(sa.runs$manifest))) {
       sa_manifest <- sa.runs$manifest
-      is_median <- is.na(input_design$sa_pft)
+      is_median <- is.na(sa_design$sa_pft)
 
       moved_rows <- sa_manifest[!is_median, , drop = FALSE]
       median_row <- sa_manifest[is_median, , drop = FALSE][1, , drop = FALSE]
@@ -279,10 +283,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       median_rows <- median_row[rep(1, nrow(traits)), , drop = FALSE]
       median_rows$pft_name <- traits$pft_name
       median_rows$trait    <- traits$trait
-      if (nrow(traits) == 0) {
-        # segmentation still needs the physical baseline run when no traits vary
-        median_rows <- median_row
-      }
+      median_rows$quantile <- "50"
+      median_rows$type     <- "Sensitivity"
 
       run_manifest_df <- rbind(
         run_manifest_df,
@@ -295,7 +297,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
     # Store output in settings and output variables. The post-processing looks
     # runs up by trait and quantile, which the design and the returned ids give.
-    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(input_design, sa.runs$runs$id)
+    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(sa_design, sa.runs$runs$id)
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
     # Save sensitivity analysis info
