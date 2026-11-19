@@ -15,7 +15,7 @@
 ## Removed
 
 * `get.ensemble.inputs` is deprecated and will be deleted in a future release.
-  It predates the `PEcAn.uncertainty` package, has not been used internally for
+  It has not been used internally for
   many years, and is not compatible with current workflows.
 
 # PEcAn.utils 1.8.2
