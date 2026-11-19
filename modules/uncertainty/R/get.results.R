@@ -134,11 +134,9 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
         variable.sa <- variables$variable.eqn
         variable.fn <- variables$variable.drv
         
-        # older result bundles have quantile tables but no saved run IDs
-        analysis_design <- samples$sa.run.ids %||% samples$sa.samples
-        for(pft.name in names(analysis_design)){
-          quantiles <- rownames(analysis_design[[pft.name]])
-          traits <- colnames(analysis_design[[pft.name]])
+        for(pft.name in names(samples$sa.run.ids) %||% samples$pft.names){
+          quantiles <- rownames(samples$sa.samples[[pft.name]])
+          traits <- samples$trait.names[[pft.name]]
           
           # when there is variable-per pft in the outputs, check for the tag for deciding SA per pft
           per.pft <- ifelse(!is.null(settings$sensitivity.analysis$perpft), 
