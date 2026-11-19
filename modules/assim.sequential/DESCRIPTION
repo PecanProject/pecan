@@ -35,7 +35,10 @@ Imports:
     stringr
 Suggests:
     abind,
+    arrow,
+    caret,
     corrplot,
+    data.table,
     doSNOW,
     exactextractr,
     mvtnorm,
@@ -45,6 +48,7 @@ Suggests:
     gridExtra,
     keras3 (>= 1.0.0),
     itertools,
+    jsonlite,
     magic (>= 1.5.0),
     methods,
     Metrics,

@@ -32,7 +32,7 @@ def point_signature(points):
     ).hexdigest()
 
 
-class Sources:
+class SpatialSources:
     def __init__(self, paths):
         self.paths = paths
         self.handles, self.geometry, self.windows, self.coarse = (
@@ -43,14 +43,6 @@ class Sources:
         self.stats = dict(raster_reads=0, raster_hits=0, era_reads=0, era_hits=0)
         legend = pd.read_csv(paths["kgc_legend"])
         self.legend = dict(zip(legend.code, legend.KGC))
-        ledger = read(paths["aqua_ledger"])
-        excluded = read(Path(__file__).with_name("point_export_gaps.json"))
-        self.dates = pd.to_datetime(ledger["dates"], format="A%Y%j", utc=True)
-        self.layers = {
-            (pd.Timestamp(r["date"]), r["tile"]): r["layers"]
-            for r in ledger["sources"]
-            if r["tile"] not in excluded.get(r["date"][:10], [])
-        }
 
     def checked(self, path):
         path = str(path)
@@ -262,6 +254,19 @@ class Sources:
         self.era_files.clear()
         self.windows.clear()
         self.coarse.clear()
+
+
+class Sources(SpatialSources):
+    def __init__(self, paths):
+        super().__init__(paths)
+        ledger = read(paths["aqua_ledger"])
+        excluded = read(Path(__file__).with_name("point_export_gaps.json"))
+        self.dates = pd.to_datetime(ledger["dates"], format="A%Y%j", utc=True)
+        self.layers = {
+            (pd.Timestamp(r["date"]), r["tile"]): r["layers"]
+            for r in ledger["sources"]
+            if r["tile"] not in excluded.get(r["date"][:10], [])
+        }
 
     def vegetation(self, p, needed):
         x, y = transform(
