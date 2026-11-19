@@ -66,6 +66,21 @@ test_that("write.config.SIPNET", {
     all = FALSE
   )
 
+  # constants still apply if no traits were sampled, as for older sets with env
+  dir.create(file.path(pth, "run", "run2"))
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list(AmaxFrac = 0.5))),
+    trait.values = list(),
+    settings = s,
+    run.id = "run2"
+  )
+  expect_match(
+    readLines(file.path(pth, "run", "run2", "sipnet.param")),
+    "aMaxFrac 0.5", # raw template had 0.76
+    fixed = TRUE,
+    all = FALSE
+  )
+
 })
 
 

@@ -6,6 +6,7 @@
 
 ## Changed
 
+* Breaking: `get.sa.sample.list()` no longer has argument `env`, and its result no longer has an empty `env` entry (#4225, @aarmens702-hub).
 * `standard_vars`: `time_bnds` (the CF convention) is now the preferred name for time bounds, and `time_bounds` is marked deprecated (#3303).
 
 ## Added

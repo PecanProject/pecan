@@ -48,6 +48,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- `PEcAn.LPJGUESS::write.config.LPJGUESS()` no longer errors with `subscript out of bounds` when the last PFT has no sampled traits and `trait.values` has no `env` entry. (#4225, @aarmens702-hub)
+- `PEcAn.JULES::write.config.JULES()` no longer assumes the last element of `trait.values` is `env`. Previously it ignored the traits of the last PFT in any list without `env`. (#4225, @aarmens702-hub)
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
 - PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
@@ -75,6 +77,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
+- Breaking: Removed argument `env.samples` from `PEcAn.uncertainty::get.ensemble.samples()` and `env` from `PEcAn.utils::get.sa.sample.list()`. Ensemble and sensitivity analysis samples no longer contain an empty `env` pseudo-PFT, which also stops it triggering a false multiple-PFT warning from `write.config.SIPNET()`, and new `samples.Rdata` files no longer contain `env.samples`. Existing sample sets and `samples.Rdata` files that contain them keep working, and still trigger the warning. (#4225, @aarmens702-hub)
+- `PEcAn.SIPNET::write.config.SIPNET()` results change for new sample sets when `leafC` is sampled and no soil PFT comes after the vegetation PFT: values that the extra pass for `env` recalculated with `leafC` fixed at 0.48 now use the sampled `leafC`. This affects `leafCSpWt`, `aMax` and `baseFolRespFrac` when `SLA`, `Amax` or `leaf_respiration_rate_m2` are constants, and `laiInit` and `plantWoodInit` calculated from a `poolinitcond` file. (#4225, @aarmens702-hub)
 - Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
 - Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)

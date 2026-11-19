@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.config.SIPNET` output changes for new sample sets when `leafC` is sampled. The code here is unchanged: sample sets no longer contain an empty `env` entry (see PEcAn.uncertainty), which used to recalculate some leaf parameters with `leafC` fixed at 0.48 (#4225, @aarmens702-hub).
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and

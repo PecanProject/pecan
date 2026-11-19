@@ -32,13 +32,12 @@ fake_bundle <- function() {
     trait.samples    = list(temperate.deciduous = list(SLA = 1:3)),
     sa.samples       = list(),
     ensemble.samples = list(temperate.deciduous = data.frame(SLA = 1:3)),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 }
 
 
-test_that(".prepare_input_designs writes samples.Rdata with the 5-object contract", {
+test_that(".prepare_input_designs writes samples.Rdata with the 4-object contract", {
   tmp <- withr::local_tempdir()
   settings <- make_prep_settings(tmp)
 
@@ -61,8 +60,7 @@ test_that(".prepare_input_designs writes samples.Rdata with the 5-object contrac
   load(samples_file, envir = e)
   expect_setequal(
     ls(e),
-    c("ensemble.samples", "trait.samples", "sa.samples",
-      "runs.samples", "env.samples")
+    c("ensemble.samples", "trait.samples", "sa.samples", "runs.samples")
   )
 })
 
@@ -162,8 +160,7 @@ test_that(".prepare_input_designs threads SA samples into the OAT generator", {
     trait.samples    = list(temperate.deciduous = list(SLA = 1:3)),
     sa.samples       = list(temperate.deciduous = matrix(1:6, 3, 2)),
     ensemble.samples = list(),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 
   gps <- mockery::mock(sa_bundle)

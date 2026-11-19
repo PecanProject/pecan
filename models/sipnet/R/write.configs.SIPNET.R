@@ -303,6 +303,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       "write.config.SIPNET will use the value it sees last."
     )
   }
+  # Constants and derived parameters are set inside this loop, so it needs to run
+  # once even if no traits were sampled for any PFT.
+  if (length(trait.values) == 0) {
+    trait.values <- list(list())
+    PEcAn.logger::logger.warn(
+      "No trait values provided. Parameters not set as constants will come from template file",
+      sQuote(template.param)
+    )
+  }
   for (pft in seq_along(trait.values)) {
     pft.traits <- unlist(trait.values[[pft]])
     pft.trait.names <- names(pft.traits)
