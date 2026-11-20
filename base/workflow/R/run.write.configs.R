@@ -233,23 +233,36 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     ### Write out SA config files
     PEcAn.logger::logger.info("\n ----- Writing model config files for sensitivity run ----")
 
+    # a site's configs only get its own PFTs parameters (see
+    # write.ensemble.configs), so a run moving another PFT's trait would just
+    # repeat the median run
+    sa_design <- input_design
+    site_pfts <- intersect(
+      as.character(unlist(settings$run$site$site.pft)),
+      purrr::map_chr(settings$pfts, "name")
+    )
+    if (length(site_pfts) > 0) {
+      keep <- is.na(sa_design$sa_pft) | sa_design$sa_pft %in% site_pfts
+      sa_design <- sa_design[keep, , drop = FALSE]
+    }
+
     # A sensitivity analysis is an ensemble whose parameter sets move one trait
     # at a time. The design says which run is which, so the parameter sets and
     # the run names are built from it here and the same writer writes them.
-    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, input_design)
+    sa.run.samples <- PEcAn.uncertainty::sa_run_samples(sa.samples, sa_design)
     sa.descriptions <- PEcAn.uncertainty::sa_run_descriptions(
-      design_matrix = input_design,
+      design_matrix = sa_design,
       site_id       = settings$run$site$id,
       pft_names     = pft.names
     )
 
     sa.runs <- PEcAn.uncertainty::write.ensemble.configs(
       defaults         = settings$pfts,
-      ensemble.size    = nrow(input_design),
+      ensemble.size    = nrow(sa_design),
       ensemble.samples = sa.run.samples,
       settings         = settings,
       model            = model,
-      input_design     = input_design,
+      input_design     = sa_design,
       write.to.db      = write,
       run_descriptions = sa.descriptions,
       ensemble.id      = settings$sensitivity.analysis$ensemble.id
@@ -261,7 +274,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     if ("manifest" %in% names(sa.runs) &&
         all(c("pft_name", "trait") %in% names(sa.runs$manifest))) {
       sa_manifest <- sa.runs$manifest
-      is_median <- is.na(input_design$sa_pft)
+      is_median <- is.na(sa_design$sa_pft)
 
       moved_rows <- sa_manifest[!is_median, , drop = FALSE]
       median_row <- sa_manifest[is_median, , drop = FALSE][1, , drop = FALSE]
@@ -284,7 +297,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
     # Store output in settings and output variables. The post-processing looks
     # runs up by trait and quantile, which the design and the returned ids give.
-    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(input_design, sa.runs$runs$id)
+    sa.run.ids <- PEcAn.uncertainty::sa_run_id_table(sa_design, sa.runs$runs$id)
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
 
     # Save sensitivity analysis info

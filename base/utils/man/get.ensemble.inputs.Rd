@@ -17,6 +17,10 @@ find correct ensemble inputs
 \description{
 Splits climate met for SIPNET
 }
+\details{
+Deprecated in PEcAn 1.11 and unused internally for many years before that:
+Choosing inputs is now part of the ensemble design creation step.
+}
 \author{
 Mike Dietze and Ann Raiho
 }
