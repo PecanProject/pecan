@@ -1,3 +1,5 @@
+modules/osse/inst/workflow/create_osse_xml.R
+
 # MAC specific files
 .DS_Store
 ._.DS_Store
