@@ -1,10 +1,15 @@
 
 context("align_pft")
 
-con <- PEcAn.DB::db.open(PEcAn.DB::get_postgres_envvars(
+con <- tryCatch(
+  PEcAn.DB::db.open(PEcAn.DB::get_postgres_envvars(
     host = "localhost",
     user = "bety",
-    password = "bety"))
+    password = "bety")),
+  error = function(e) NULL)
+if (is.null(con)) {
+  skip("Can't connect to a BETY database. Skipping test.")
+}
 teardown(PEcAn.DB::db.close(con))
 
 observation_one <- c("AMCA3", "AMCA3", "AMCA3", "AMCA3")
