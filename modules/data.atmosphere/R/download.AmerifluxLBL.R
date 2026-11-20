@@ -158,23 +158,18 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
 
   dbfilename <- paste0(substr(outfname, 1, 15), "_", file_timestep, "_", endname)
 
-  # get start and end year of data from file
-  firstline <- system(paste0("head -4 ", output_csv_file), intern = TRUE)
-  firstline <- firstline[4]
-  lastline <- system(paste0("tail -1 ", output_csv_file), intern = TRUE)
+  # Read only the first and last observations; tower CSVs can span many years.
+  csv_path <- shQuote(output_csv_file)
+  firstline <- system2("head", c("-n", "4", csv_path), stdout = TRUE)[4L]
+  lastline <- system2("tail", c("-n", "1", csv_path), stdout = TRUE)
 
-  firstdate_st <- paste0(substr(firstline, 1, 4), "-",
-                         substr(firstline, 5, 6), "-",
-                         substr(firstline, 7, 8), " ",
-                         substr(firstline, 9, 10), ":",
-                         substr(firstline, 11, 12))
-  firstdate <- as.POSIXlt(firstdate_st)
-  lastdate_st <- paste0(substr(lastline, 1, 4), "-",
-                        substr(lastline, 5, 6), "-",
-                        substr(lastline, 7, 8), " ",
-                        substr(lastline, 9, 10), ":",
-                        substr(lastline, 11, 12))
-  lastdate <- as.POSIXlt(lastdate_st)
+  bounds <- substr(c(firstline, lastline), 1L, 12L)
+  dates <- as.POSIXct(bounds, format = "%Y%m%d%H%M", tz = "UTC")
+
+  firstdate <- dates[1L]
+  lastdate <- dates[2L]
+  firstdate_st <- format(firstdate, "%Y-%m-%d %H:%M", tz = "UTC")
+  lastdate_st <- format(lastdate, "%Y-%m-%d %H:%M", tz = "UTC")
 
   syear <- lubridate::year(firstdate)
   eyear <- lubridate::year(lastdate)
