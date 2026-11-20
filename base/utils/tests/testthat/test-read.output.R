@@ -114,11 +114,32 @@ test_that("Correctly read all variables, from custom ncfiles", {
   out_log <- capture.output(type = "message", {
     out <- read.output(ncfiles = ncfiles, variables = NULL)
   })
-  expect_match(out_log, "No start or end year provided", all = FALSE)
+  expect_false(any(grepl("No start or end year provided", out_log)))
   expect_match(out_log, "Invalid \\(or missing\\) origin year", all = FALSE)
-  expect_match(out_log, "Reading output for all variables", all = FALSE)
-  expect_match(out_log, "Result summary:", all = FALSE)
-  expect_match(out_log, " +Mean +Median", all = FALSE)
+  expect_false(any(grepl("Reading output for all variables", out_log)))
+  expect_false(any(grepl("Result summary:", out_log)))
   expect_named(out, c("x", "y", "z"))
   for (v in c("x", "y", "z")) expect_length(out[[!!v]], 365 * 3)
+
+  verbose_log <- capture.output(type = "message", {
+    verbose_out <- read.output(
+      ncfiles = ncfiles,
+      variables = NULL,
+      verbose = TRUE
+    )
+  })
+  expect_match(verbose_log, "No start or end year provided", all = FALSE)
+  expect_match(verbose_log, "Reading the following files", all = FALSE)
+  expect_match(verbose_log, "Variables not specified", all = FALSE)
+  expect_named(verbose_out, c("x", "y", "z"))
+
+  summary_log <- capture.output(type = "message", {
+    summary_out <- read.output(
+      ncfiles = ncfiles,
+      variables = NULL,
+      print_summary = TRUE
+    )
+  })
+  expect_true(any(grepl("Result summary:", summary_log)))
+  expect_named(summary_out, c("x", "y", "z"))
 })
