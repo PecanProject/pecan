@@ -1,5 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* Breaking: `compute_sobol_indices()` now takes the `ensemble.output` file that `get.results()` saves and the Sobol design, in place of `outdir`, `sobol_obj`, `var` and `stat_fun`. Previously it looked for `runs.txt` where PEcAn does not write it and read only GPP. It gains `nboot` for bootstrap intervals on the indices (#4133).
+* `inst/sobol/sobol_analysis.R` takes the settings file (`-s`), runs the workflow through `get.results()` and writes `sobol_indices.csv` (#4133).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,

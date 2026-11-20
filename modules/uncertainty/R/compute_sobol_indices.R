@@ -1,45 +1,26 @@
 #' Compute Sobol indices from a finished PEcAn run
 #'
-#' Loads model outputs from a Sobol ensemble, calculates summary
-#' statistics for a chosen variable, feeds them to \code{sensitivity::tell()},
-#' and returns the updated Sobol object.
+#' @param ensemble_output_file the \code{ensemble.output} Rdata file that
+#'   \code{\link{get.results}} saves for one site and variable, named by
+#'   \code{\link{ensemble.filename}}. It holds one value per run, in run
+#'   order, which is the order of the design rows.
+#' @param sobol_design design returned by
+#'   \code{generate_joint_ensemble_design(..., sobol = TRUE)} and used to
+#'   write the configs for this run.
+#' @param nboot number of bootstrap replicates for confidence intervals on the
+#'   indices. Defaults to what \code{sobol_design} was built with, which is 0
+#'   (no intervals) for a design from \code{generate_joint_ensemble_design()}.
 #'
-#' @param outdir     PEcAn run output directory that contains runs.txt
-#' @param sobol_obj  object produced by PEcAn.uncertainty::generate_joint_ensemble_design()
-#' @param var        Variable name to summarise (default "GPP").
-#' @param stat_fun   Summary statistic applied to var default mean .
-#'
-#' @return           sobol_obj 
-#' .
+#' @return \code{sobol_design} with first and total order indices filled in
+#'   by \code{sensitivity::tell()}, with their confidence intervals when
+#'   \code{nboot} is above 0.
 #' @export
-compute_sobol_indices <- function(outdir,
-                                  sobol_obj,
-                                  var = "GPP",
-                                  stat_fun = mean) {
- 
- 
- 
-  runs_file <- file.path(outdir, "runs.txt")
-  if (!file.exists(runs_file)) {
-    PEcAn.logger::logger.error("runs.txt not found in ", outdir)
-   }
-  run_ids <- readLines(runs_file) 
-  
-
-  
-  # Load outputs and compute response vector y
-  y <- vapply(run_ids, function(rid) {
-    fpath <- file.path(outdir, rid)
-    out   <- PEcAn.utils::read.output(runid = rid, outdir = fpath)
-    if (!is.list(out) || !var %in% names(out)) {
-      PEcAn.logger::logger.error("Variable '", var, "' missing in output for run ", rid)
-    }
-    stat_fun(out[[var]], na.rm = TRUE)
-  }, numeric(1))
-  
-  # Compute Sobol indices
-  sobol_obj <-sensitivity::tell(sobol_obj, y)
-  
-  # Return the updated object
-  return(invisible(sobol_obj))
+compute_sobol_indices <- function(ensemble_output_file, sobol_design,
+                                  nboot = sobol_design$nboot) {
+  y <- unlist(PEcAn.utils::load_local(ensemble_output_file)$ensemble.output,
+              use.names = FALSE)
+  # file and design from different runs: tell() only warns, or says nothing
+  stopifnot(length(y) == nrow(sobol_design$X))
+  sobol_design$nboot <- nboot
+  sensitivity::tell(sobol_design, y)
 }

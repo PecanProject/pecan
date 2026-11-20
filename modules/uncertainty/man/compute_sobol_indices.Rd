@@ -4,23 +4,31 @@
 \alias{compute_sobol_indices}
 \title{Compute Sobol indices from a finished PEcAn run}
 \usage{
-compute_sobol_indices(outdir, sobol_obj, var = "GPP", stat_fun = mean)
+compute_sobol_indices(
+  ensemble_output_file,
+  sobol_design,
+  nboot = sobol_design$nboot
+)
 }
 \arguments{
-\item{outdir}{PEcAn run output directory that contains runs.txt}
+\item{ensemble_output_file}{the \code{ensemble.output} Rdata file that
+\code{\link{get.results}} saves for one site and variable, named by
+\code{\link{ensemble.filename}}. It holds one value per run, in run
+order, which is the order of the design rows.}
 
-\item{sobol_obj}{object produced by PEcAn.uncertainty::generate_joint_ensemble_design()}
+\item{sobol_design}{design returned by
+\code{generate_joint_ensemble_design(..., sobol = TRUE)} and used to
+write the configs for this run.}
 
-\item{var}{Variable name to summarise (default "GPP").}
-
-\item{stat_fun}{Summary statistic applied to var default mean .}
+\item{nboot}{number of bootstrap replicates for confidence intervals on the
+indices. Defaults to what \code{sobol_design} was built with, which is 0
+(no intervals) for a design from \code{generate_joint_ensemble_design()}.}
 }
 \value{
-sobol_obj 
-.
+\code{sobol_design} with first and total order indices filled in
+  by \code{sensitivity::tell()}, with their confidence intervals when
+  \code{nboot} is above 0.
 }
 \description{
-Loads model outputs from a Sobol ensemble, calculates summary
-statistics for a chosen variable, feeds them to \code{sensitivity::tell()},
-and returns the updated Sobol object.
+Compute Sobol indices from a finished PEcAn run
 }
