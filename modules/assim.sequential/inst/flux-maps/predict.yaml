@@ -1,0 +1,24 @@
+# Relative paths resolve from this configuration file.
+model_bundle: /path/to/model_bundle
+output: /path/to/new_run
+sources:
+  grid: /path/to/reference_grid.tif
+  periods: /path/to/period_calendar.csv
+  era: /path/to/era
+  soil_cache: /path/to/three_hour_soil_cache
+  annual_covariates: /path/to/annual_covariates
+  native_covariates: /path/to/native_covariates
+  native_lc: /path/to/native_land_cover.tif
+  kgc: /path/to/climate_classes.tif
+  kgc_legend: /path/to/climate_legend.csv
+  aqua_ledger: /path/to/aqua_source_ledger.json
+  # Optional precomputed index/lat/lon/tz table; otherwise requires R package lutz.
+  timezones: /path/to/timezones.parquet
+request:
+  window: {row: 4864, col: 8704, height: 16, width: 16}
+  period_ids: [139]
+resources:
+  device: cpu
+  workers: 3
+  cpu_threads: 1
+  max_output_bytes: 53687091200
