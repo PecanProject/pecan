@@ -242,6 +242,62 @@ test_that("plantStorageNInit is sized to the carbon-limited leaf flush", {
   expect_equal(pval(p, "plantStorageNInit"), 0)
 })
 
+# helper: run write.config.SIPNET with optional event/soil files,
+# return the lines of the resulting sipnet.param
+write_param_with_inputs <- function(events = NULL, soil_physics = NULL,
+                                    poolinitcond = NULL, revision = "2.2.0") {
+  pth <- withr::local_tempdir(.local_envir = parent.frame())
+  dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
+  inputs <- list(met = list(path = ""))
+  if (!is.null(events)) {
+    inputs$events <- list(path = file.path(pth, "events.in"))
+    writeLines(events, inputs$events$path)
+  }
+  inputs$soil_physics <- soil_physics
+  inputs$poolinitcond <- poolinitcond
+  s <- PEcAn.settings::as.Settings(list(
+    outdir = file.path(pth, "out"),
+    rundir = file.path(pth, "run"),
+    pfts = list(pft1 = list()),
+    model = list(binary = "", revision = revision),
+    run = list(
+      site = list(name = "site1", lat = 40, lon = -88),
+      inputs = inputs,
+      start.date = "2025-01-01",
+      end.date = "2025-12-31"
+    ),
+    host = list(
+      name = "", outdir = file.path(pth, "out"), rundir = file.path(pth, "run")
+    )
+  ))
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list(SLA = 20, fracLeafFall = 1))),
+    trait.values = list(pft1 = list(Amax = 5)),
+    settings = s,
+    run.id = "run1"
+  )
+  readLines(file.path(pth, "run", "run1", "sipnet.param"))
+}
+
+test_that("soil_physics file without depth dimension sets soilWHC", {
+  pth <- withr::local_tempdir()
+  lat <- ncdf4::ncdim_def("lat", "degrees_north", 40)
+  lon <- ncdf4::ncdim_def("lon", "degrees_east", -88)
+  v <- ncdf4::ncvar_def(
+    "volume_fraction_of_water_in_soil_at_saturation", "1", list(lon, lat), -999
+  )
+  sf <- file.path(pth, "soil.nc")
+  nc <- ncdf4::nc_create(sf, list(v))
+  ncdf4::ncvar_put(nc, v, 0.4)
+  ncdf4::nc_close(nc)
+
+  param <- suppressWarnings(
+    write_param_with_inputs(soil_physics = list(path = sf))
+  )
+  whc <- as.numeric(sub("^soilWHC\\s+", "", grep("^soilWHC ", param, value = TRUE)))
+  expect_equal(whc, 0.4 * 100, tolerance = 1e-4) # 100 cm default depth
+})
+
 test_that("leaf carbon from a poolinitcond file sets the initial leaf pool", {
   pth <- withr::local_tempdir()
   dir.create(file.path(pth, "run", "run1"), recursive = TRUE)

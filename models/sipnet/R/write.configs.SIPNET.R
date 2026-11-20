@@ -815,7 +815,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
           #if no depth/thickness is provided
           PEcAn.logger::logger.warn("No depth info was found in the soil file. Will use the default or user-specified soil depth")
           thickness <- 100 #assume the default soil depth is the plant rooting depth of 100 cm, or use the user-specified value
-          soilWHC_total <- soil_IC_list$vals["volume_fraction_of_water_in_soil_at_saturation"]*thickness
+          soilWHC_total <- soil_IC_list$vals[["volume_fraction_of_water_in_soil_at_saturation"]] * thickness
         }
         param[which(param[, 1] == "soilWHC"), 2] <- soilWHC_total
       }

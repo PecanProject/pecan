@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.config.SIPNET()` no longer fails with "non-numeric argument to binary operator" when the `soil_physics` file has no depth dimension; `soilWHC` is now computed from the default 100 cm depth, as the accompanying warning says (#4218).
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and
