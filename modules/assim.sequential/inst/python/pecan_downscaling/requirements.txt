@@ -1,0 +1,9 @@
+numpy==2.4.4
+pandas==3.0.3
+scipy==1.18.1
+pyarrow==23.0.1
+rasterio==1.5.0
+scikit-learn==1.9.1
+xgboost==3.2.0
+PyYAML==6.0.3
+# Install the torch 2.12.1 distribution appropriate to the device separately.

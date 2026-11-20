@@ -1,5 +1,10 @@
 # PEcAnAssimSequential 1.10.0.9000
 
+## Added
+
+* `predict_flux_maps()` generates period NEE and LE GeoTIFFs from a trained model bundle for a requested grid window (#4259).
+* `write_site_flux_means()` exports three-hour station means from ensemble runs. `prepare_flux_targets()` combines these means with tower data to produce station flux targets and record their sources (#4260).
+
 ## Fixed
 
 * `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument; they previously referenced an undefined variable `rloc` and would fail when called (#2758).
