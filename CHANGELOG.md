@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- `PEcAn.utils::nc_merge_all_sites_by_year()` preserves values at their original ensemble members and timesteps (#4251). Existing affected annual files must be regenerated from model outputs.
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
 - PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
@@ -59,6 +60,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Fixed dead MsTMIP variable-standard and PEcAn workflow diagram links in the PEcAn book, tutorial and package documentation (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
+- Sensitivity analyses with `<site.pft>` wrote runs moving the traits of every PFT, including PFTs not at that site. Those runs only repeated the median run and are no longer written.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
@@ -72,6 +74,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - `PEcAn.utils::transformstats()`: corrected the LSD-to-SE conversion. The previous implementation included an extra `sqrt(n)` factor, causing SE estimates derived from LSD to appear `sqrt(n)` times smaller than they should be, non-conservatively over-weighting those observations in meta-analysis. (#3998)
 - `segment_dataframe()` now returns an empty dataframe when date filtering removes all crop-cycle segments, instead of a single row with NA columns that caused downstream segment config errors (#4007).
 - `PEcAn.settings::check.bety.version()` now warns about database migrations unknown to this release; previously `any()` was applied to a character vector, which raised a coercion warning followed by a "missing value where TRUE/FALSE needed" error.
+- `PEcAn.DB::db.exists()` now returns `FALSE` instead of an error when a table's primary key is not readable (#4156, @madhavzanwar).
 
 ### Changed
 
