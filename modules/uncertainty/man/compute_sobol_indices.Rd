@@ -5,42 +5,30 @@
 \title{Compute Sobol indices from a finished PEcAn run}
 \usage{
 compute_sobol_indices(
-  settings,
-  sobol_obj,
-  variable,
-  start.year = settings$ensemble$start.year \%||\% NA,
-  end.year = settings$ensemble$end.year \%||\% NA,
-  nboot = sobol_obj$nboot
+  ensemble_output_file,
+  sobol_design,
+  nboot = sobol_design$nboot
 )
 }
 \arguments{
-\item{settings}{single-site PEcAn settings, as returned by
-\code{runModule.run.write.configs()} so that
-\code{settings$ensemble$ensemble.id} is set. For a multi-site run call
-this once per site.}
+\item{ensemble_output_file}{the \code{ensemble.output} Rdata file that
+\code{\link{get.results}} saves for one site and variable, named by
+\code{\link{ensemble.filename}}. It holds one value per run, in run
+order, which is the order of the design rows.}
 
-\item{sobol_obj}{design returned by
+\item{sobol_design}{design returned by
 \code{generate_joint_ensemble_design(..., sobol = TRUE)} and used to
 write the configs for this run.}
 
-\item{variable}{output variable to compute indices for, as given in a
-\code{<variable>} entry of \code{settings$ensemble}.}
-
-\item{start.year, end.year}{years the output was averaged over. Default to
-the ensemble years in \code{settings}, or NA as in \code{get.results()}.}
-
 \item{nboot}{number of bootstrap replicates for confidence intervals on the
-indices. Defaults to what \code{sobol_obj} was built with, which is 0 (no
-intervals) for a design from \code{generate_joint_ensemble_design()}.}
+indices. Defaults to what \code{sobol_design} was built with, which is 0
+(no intervals) for a design from \code{generate_joint_ensemble_design()}.}
 }
 \value{
-\code{sobol_obj} with first and total order indices filled in by
-  \code{sensitivity::tell()}, with their confidence intervals when
+\code{sobol_design} with first and total order indices filled in
+  by \code{sensitivity::tell()}, with their confidence intervals when
   \code{nboot} is above 0.
 }
 \description{
-Reads the ensemble output that \code{\link{get.results}} saved for one site
-and variable, and feeds it to \code{sensitivity::tell()}. Each value is the
-run's mean from \code{start.year} to \code{end.year}, in run order, which is
-the order of the design rows.
+Compute Sobol indices from a finished PEcAn run
 }
