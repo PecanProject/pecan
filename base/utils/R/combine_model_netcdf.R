@@ -159,6 +159,9 @@ nc_merge_single_site <- function (model.outdir, nc.outdir, ens.num, site.id, tim
       var.mat[,ens] <- ncdf4::ncvar_get(nc, var = var)
       ncdf4::nc_close(nc)
     }
+    # Match site x ensemble x time storage: the singleton site dimension
+    # leaves ensemble varying fastest, followed by time.
+    var.mat <- t(var.mat)
     # define the current model variable.
     temp_var <- ncdf4::ncvar_def(nc.vars[[i]]$name, 
                                  units = nc.vars[[i]]$units, 

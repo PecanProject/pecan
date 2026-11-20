@@ -49,6 +49,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - `PEcAn.PEPRMT::write.config.PEPRMT()` failed with a date conversion error when the event file had no supported events for the site (an empty `events` list, or only unsupported event types); such events are now simply skipped (#4255).
+- `PEcAn.DB::query.format.vars()` with an invalid format or input id now stops with "No format found" instead of with a PostgreSQL syntax error (#2078).
+- `PEcAn.utils::nc_merge_all_sites_by_year()` preserves values at their original ensemble members and timesteps (#4251). Existing affected annual files must be regenerated from model outputs.
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
 - PEcAnAssimSequential: `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument instead of the undefined `rloc`; `GEF()`, `GEF.MultiSite()` and `EnKF.MultiSite()` read their extra arguments from `...` explicitly instead of assigning them into the global environment; `SDA_remote_launcher()` no longer references an undefined `stop.on.error`. Together these clear most of the package's "no visible binding for global variable" check notes (#2758).
 - `PEcAn.SIPNET::write.config.SIPNET()` wrote `stem_respiration_rate` and `root_respiration_rate` as per day rates into SIPNET's per year `baseVegResp` and `baseFineRootResp`, 365x too low.
@@ -60,6 +62,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed broken and outdated documentation links in web and demo workflows (#4071).
 - Fixed dead MsTMIP variable-standard and PEcAn workflow diagram links in the PEcAn book, tutorial and package documentation (#4071).
 - Sensitivity analysis evaluated the splines of traits in Celsius at samples converted to K, about 273 units from where the splines were fit, giving wrong sensitivity, elasticity and variance for those traits. Only CV and elasticity are now computed in K.
+- Sensitivity analyses with `<site.pft>` wrote runs moving the traits of every PFT, including PFTs not at that site. Those runs only repeated the median run and are no longer written.
 - Fixed date-based planting and harvest resolution in `PEcAn.data.land::eto_to_etc_bism()` for cross-calendar-year overwinter crops (#4125).
 - Fixed broken and outdated links across developer workflows in the PEcAn book and DEV-INTRO.md (#4071).
 - Building package documentation sites via `scripts/build_pkgdown.R` no longer exits early when any package gives a build warning (#4034).
