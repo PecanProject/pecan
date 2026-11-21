@@ -157,14 +157,31 @@ paths <- NASA_DAAC_download(ul_lat = ul_lat,
                             to = to, 
                             doi = doi,
                             just_path = T)
-                            ul_lat <- 35
-# HLS Phenology data.
+                            
+# HLS Phenology data.                           
+ul_lat <- 35
 ul_lon <- -121
 lr_lat <- 33
 lr_lon <- -117
 from <- "2019-01-01"
 to <- "2019-12-31"
 doi <- "10.5067/Community/MuSLI/MSLSP30NA.011"
+paths <- NASA_DAAC_download(ul_lat = ul_lat,
+                            ul_lon = ul_lon,
+                            lr_lat = lr_lat,
+                            lr_lon = lr_lon,
+                            from = from,
+                            to = to,
+                            doi = doi,
+                            just_path = T)
+
+
+# VIIRS LAI.
+ul_lat <- 85
+ul_lon <- -179
+lr_lat <- 7
+lr_lon <- -20
+doi <- "10.5067/VIIRS/VJ215A2H.002"
 paths <- NASA_DAAC_download(ul_lat = ul_lat,
                             ul_lon = ul_lon,
                             lr_lat = lr_lat,
