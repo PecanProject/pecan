@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- `PEcAn.uncertainty::generate_joint_ensemble_design(sobol = TRUE)` now errors on looped inputs and quasi-random parameter methods, which split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 - `PEcAn.DB::query.format.vars()` with an invalid format or input id now stops with "No format found" instead of with a PostgreSQL syntax error (#2078).
 - `PEcAn.utils::nc_merge_all_sites_by_year()` preserves values at their original ensemble members and timesteps (#4251). Existing affected annual files must be regenerated from model outputs.
 - `PEcAn.utils::match_file()` anchors file prefixes to the beginning of the filename, so a request for `foo/site1` no longer matches `foo/old-site1` (but still finds `foo/site1-old` as previously) (#4196, @Shubham-Padkonde).
