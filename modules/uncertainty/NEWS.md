@@ -1,10 +1,12 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * Breaking: Parameter sampling no longer treats `env` specially. `get.ensemble.samples()` no longer has argument `env.samples`, and its result and `sampled.indices` attribute no longer have an empty `env` entry. Similarly `get_parameter_samples()` and `get.parameter.samples()` no longer return `env.samples` or save it to `samples.Rdata`, and their `sa.samples` and `ensemble.samples` no longer have an empty `env` entry. Existing sample sets and `samples.Rdata` files that contain `env` still work (#4225, @aarmens702-hub).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
   giving the position of each sampled value in its input set (#4127, @Devansh-56)
+* `get.results()` reads sensitivity output only for the PFTs that have runs in `sa.run.ids`, so PFTs not at a site no longer give a warning per trait and quantile.
 * `read.sa.output()` now reads only the runs in `sa.run.ids`, so each site of a multisite sensitivity analysis gets its own results. Previously every site read the last site's runs from the shared `runs_manifest.csv`.
 * `run.sensitivity.analysis()` skips traits with no spread in their SA samples, with a warning. Previously one such trait stopped the analysis for every PFT.
 * `runs_manifest.csv` now has a column `ens_num` to distinguish ensemble members without reparsing run IDs.
