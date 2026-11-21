@@ -8,7 +8,7 @@ vignette: >
 
 To get a better understanding on what files are created where, Rob created a workflow as an SVG diagram. You can find the diagram at
 
-http://isda.ncsa.illinois.edu/~kooper/EBI/workflow.svg
+https://web.archive.org/web/20240706221650/https://isda.ncsa.illinois.edu/~kooper/EBI/workflow.svg
 
 In this graph the square boxes represent processes running, the rhomboids
 are inputs and outputs.

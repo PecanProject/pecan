@@ -8,7 +8,7 @@ MODELS := basgra biocro clm45 dalec dvmdostem ed fates gday jules linkages \
 				template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
-				 data.atmosphere data.land data.remote \
+				 data.atmosphere data.land data.remote data.water \
 				 emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 

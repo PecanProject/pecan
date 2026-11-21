@@ -24,7 +24,7 @@ standard_vars
 }
 \description{
 A lookup table giving standard names, units and descriptions for variables in PEcAn input/output files.
-Originally based on the \href{https://nacp-prod.ornl.gov/MsTMIP_variables.shtml}{MsTMIP} standards,
+Originally based on the \href{https://web.archive.org/web/20260106081010/https://nacp-prod.ornl.gov/MsTMIP_variables.shtml}{MsTMIP} standards,
 with additions to accomodate a wider range of model inputs and outputs.
 The standard_vars table replaces both \code{mstmip_vars} and \code{mstmip_local},
 both of which are now deprecated.
