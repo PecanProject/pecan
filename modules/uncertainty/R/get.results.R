@@ -134,7 +134,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
         variable.sa <- variables$variable.eqn
         variable.fn <- variables$variable.drv
         
-        for(pft.name in samples$pft.names){
+        for(pft.name in names(samples$sa.run.ids) %||% samples$pft.names){
           quantiles <- rownames(samples$sa.samples[[pft.name]])
           traits <- samples$trait.names[[pft.name]]
           
