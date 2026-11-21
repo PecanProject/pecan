@@ -22,12 +22,28 @@ class Worker:
         self.properties = properties
         self.body = body
         self.finished = False
+        self.folder = None
 
     def runfunc(self):
+        try:
+            self._run_job()
+        except Exception as e:
+            logging.exception("Error processing job.")
+            if self.folder:
+                try:
+                    with open(os.path.join(self.folder, 'rabbitmq.out'), 'w') as out:
+                        out.write(f"{type(e).__name__}: {e}\n")
+                        out.write("ERROR\n")
+                except Exception:
+                    logging.exception("Error writing status.")
+        self.finished = True
+
+    def _run_job(self):
         logging.debug(self.body)
         jbody = json.loads(self.body.decode('UTF-8'))
 
         folder = jbody.get('folder')
+        self.folder = folder
         rebuild = jbody.get('rebuild')
         pecan_xml = jbody.get('pecan_xml')
         custom_application = jbody.get('custom_application')
@@ -36,6 +52,7 @@ class Worker:
             logging.info("Rebuilding PEcAn with make")
             application = 'make'
             folder = '/pecan'
+            self.folder = folder
         elif pecan_xml is not None:
             # Passed entire pecan XML as a string
             logging.info("Running XML passed directly")
@@ -90,9 +107,6 @@ class Worker:
                 out.write(status + "\n")
         except Exception:
             logging.exception("Error writing status.")
-
-        # done processing, set finished to true
-        self.finished = True
 
 
 # called for every message, this will start the program and ack message if all is ok.
