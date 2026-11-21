@@ -48,7 +48,12 @@
            dbparms,
            Ens.Flag=FALSE) {
     
-  outfolder <- file.path(dir,paste0(met, "_site_", str_ns))
+  if (missing(input_met)) input_met <- list()
+  input_met <- Filter(Negate(is.null), rlang::`%||%`(input_met, list()))
+  input_met <- utils::modifyList(rlang::`%||%`(register$defaults, list()), input_met)
+  prefix <- if (is.null(register$prefix)) met else as.character(glue::glue_data(input_met, register$prefix))
+  pattern <- if (is.null(register$prefix)) met else paste0("^", gsub(".", "[.]", prefix, fixed = TRUE), "($|[.])")
+  outfolder <- file.path(dir, paste0(prefix, "_site_", str_ns))
   
   pkg <- "PEcAn.data.atmosphere"
   fcn <- paste0("download.", met)
@@ -86,9 +91,11 @@
       lon.in = lon.in,
       model = input_met$model,
       scenario = input_met$scenario,
+      resolution = input_met$resolution,
+      cache_dir = input_met$cache_dir,
       ensemble_member = input_met$ensemble_member,
       method = input_met$method,
-      pattern = met,
+      pattern = pattern,
       dbparms=dbparms,
       ensemble = ensemble
     )
@@ -115,8 +122,12 @@
       username = username,
       lat.in = lat.in,
       lon.in = lon.in,
-      pattern = met, 
+      pattern = pattern,
       site_id = site.id,
+      model = input_met$model,
+      scenario = input_met$scenario,
+      resolution = input_met$resolution,
+      cache_dir = input_met$cache_dir,
       product = input_met$product
     )
     
