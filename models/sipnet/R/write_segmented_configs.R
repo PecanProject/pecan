@@ -213,8 +213,33 @@ write_segment_configs <- function(
   )
   stopifnot(file.exists(ens_samples_file))
   ensemble_samples <- PEcAn.utils::load_local(ens_samples_file)[["ens.samples"]]
-  i_param <- run_row[["param"]] %||% 1
-  run_traits <- lapply(ensemble_samples, \(dat) dat[i_param, , drop = FALSE])
+  sample_run_ids <- attr(ensemble_samples, "run_ids", exact = TRUE)
+  if (is.null(sample_run_ids)) {
+    # Older files hold source rows, indexed by the supplied design.
+    i_param <- run_row[["param"]] %||% 1
+  } else {
+    # New files already hold one parameter row per run. Do not apply param twice.
+    if (!is.character(sample_run_ids) || anyNA(sample_run_ids) ||
+        anyDuplicated(sample_run_ids)) {
+      stop("Invalid run_ids attribute in ensemble samples.", call. = FALSE)
+    }
+    i_param <- match(run_id, sample_run_ids)
+    if (is.na(i_param)) {
+      stop("Run ", sQuote(run_id), " is missing from ensemble samples.",
+           call. = FALSE)
+    }
+  }
+  if (length(i_param) != 1L || !is.numeric(i_param) || !is.finite(i_param) ||
+      i_param < 1 || i_param != floor(i_param)) {
+    stop("Invalid parameter row for run ", sQuote(run_id), ".", call. = FALSE)
+  }
+  run_traits <- lapply(ensemble_samples, function(dat) {
+    if ((!is.null(sample_run_ids) && nrow(dat) != length(sample_run_ids)) ||
+        i_param > nrow(dat)) {
+      stop("Parameter rows do not match run ", sQuote(run_id), ".", call. = FALSE)
+    }
+    dat[i_param, , drop = FALSE]
+  })
 
   segments <- segment_dataframe(run_settings)
 

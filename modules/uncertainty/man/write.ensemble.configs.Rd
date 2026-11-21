@@ -23,6 +23,8 @@ write.ensemble.configs(
 \item{input_design}{design matrix describing sampled inputs (see
 `run.write.configs()`). Columns named after `settings$run$inputs` tags give
 1-based indices into each input's `path` list and rows follow run order.
+`param`, when present, must give a finite positive integer source-sample
+index valid for every PFT. It may repeat or reorder source rows.
 Requires `nrow(input_design) >= ensemble.size`;
 extra rows are ignored.}
 
@@ -61,6 +63,10 @@ list, containing
  $runs = data frame of runids,
  $ensemble.id = the ensemble ID for these runs,
  and $samples with ids and samples used for each tag.
+ For fresh runs, $samples$parameters$samples has one row per run and a
+`run_ids` attribute identifying the row order.
+ Every resolved PFT table must have exactly `ensemble.size` rows; a mismatch
+raises an error before configs are written or `run_ids` is attached.
  Also writes sensitivity analysis configuration files as a side effect
 }
 \description{

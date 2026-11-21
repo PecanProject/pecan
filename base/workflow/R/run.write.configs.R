@@ -23,7 +23,10 @@
 #'     analysis is configured.}
 #'   \item{`ensemble.samples.<ensemble_id>.Rdata`}{Contains `ens.run.ids`
 #'     (vector of run IDs), `ens.ensemble.id`, `ens.samples`, `pft.names`,
-#'     and `trait.names`. Saved when ensemble is configured.}
+#'     and `trait.names`. Saved when ensemble is configured. `ens.samples`
+#'     contains one row per run, with a `run_ids` attribute giving that row
+#'     order. Older files without this attribute contain source sample rows
+#'     indexed by the design's `param` column.}
 #'   \item{`runs_manifest.csv`}{A CSV table tracking all runs created,
 #'     appended across ensemble and SA analyses.}
 #' }
@@ -327,7 +330,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     # Store output in settings and output variables
     ens.run.ids <- ens.runs$runs
     settings$ensemble$ensemble.id <- ens.ensemble.id <- ens.runs$ensemble.id
-    ens.samples <- ensemble.samples # rename just for consistency
+    ens.samples <- ens.runs$samples$parameters$samples
 
     # Save ensemble analysis info
     fname <- PEcAn.uncertainty::ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
