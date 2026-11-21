@@ -149,7 +149,7 @@ $fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] :
 </ul>
 
 <br>
-<p>For more information see <a href="http://ameriflux.lbl.gov/data/data-policy/" target="_blank">http://ameriflux.lbl.gov/data/data-policy/</a>.</p>
+<p>For more information see <a href="https://ameriflux.lbl.gov/data/data-policy/" target="_blank">https://ameriflux.lbl.gov/data/data-policy/</a>.</p>
 
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
