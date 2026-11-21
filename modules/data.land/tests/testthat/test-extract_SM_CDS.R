@@ -83,6 +83,29 @@ test_that("extract_SM_CDS ignores duplicate-looking dates in other files", {
   expect_equal(result$sm.mean, 0.20)
 })
 
+test_that("extract_SM_CDS ignores canonical-looking files with invalid dates", {
+  skip_if_not_installed("raster")
+  skip_if_not_installed("sp")
+  directory <- withr::local_tempdir()
+  # These match the filename pattern and sort before the valid files, which is
+  # the order in which as.Date() without an explicit format errors out.
+  make_sm_cds_file(directory, "1999-02-30", 0.98)
+  make_sm_cds_file(directory, "1999-13-45", 0.99)
+  make_sm_cds_file(directory, "2000-01-01", 0.20)
+  make_sm_cds_file(directory, "2000-01-02", 0.21)
+
+  result <- extract_SM_CDS(
+    site_info = list(site_id = "synthetic", lon = 0, lat = 0),
+    time.points = as.Date("2000-01-01"),
+    in.path = directory,
+    allow.download = FALSE,
+    search_window = 2
+  )
+
+  expect_equal(result$sm.mean, 0.20)
+  expect_equal(result$sm.uncertainty, 0.02)
+})
+
 test_that("extract_SM_CDS combines matching existing and downloaded dates", {
   skip_if_not_installed("raster")
   skip_if_not_installed("sp")
