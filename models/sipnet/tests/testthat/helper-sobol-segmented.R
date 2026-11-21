@@ -17,7 +17,7 @@ make_segmented_sobol_case <- function(directory) {
     model = list(type = "SIPNET", binary = "", revision = "2.1.0"),
     pfts = list(list(name = "pft1"), list(name = "soil")),
     ensemble = list(size = 2, samplingspace = list(
-      parameters = list(method = "uniform"), met = list(method = "looping"))),
+      parameters = list(method = "uniform"), met = list(method = "sampling"))),
     run = list(site = list(id = "a", lat = 40, lon = -88,
                           site.pft = list(veg = "pft1", soil = "soil")),
       start.date = "2025-01-01", end.date = "2025-01-10",

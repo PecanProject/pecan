@@ -33,7 +33,7 @@ test_that("ensemble designs select both written and saved parameter values", {
       host = list(name = "localhost"), model = list(type = model),
       run = list(site = list(id = 1), inputs = list(met = list(path = c("m1", "m2")))),
       ensemble = list(size = size, samplingspace = list(
-        parameters = list(method = "uniform"), met = list(method = "looping"))),
+        parameters = list(method = "uniform"), met = list(method = "sampling"))),
       pfts = list(list(name = "pft1"))
     ))
     design <- PEcAn.uncertainty::generate_joint_ensemble_design(
