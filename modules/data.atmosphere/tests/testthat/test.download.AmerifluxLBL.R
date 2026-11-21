@@ -1,6 +1,7 @@
 
 test_that("download respects overwrite argument", {
-	outdir <- withr::local_tempdir()
+	outdir <- file.path(withr::local_tempdir(), "AmeriFlux data")
+	dir.create(outdir)
 	zippath <- file.path(outdir, "AMF_US-Akn_BASE-BADM_6-5.zip")
 	csvpath <- sub("-BADM(.*).zip", "_HH\\1.csv", zippath)
 	
@@ -36,7 +37,9 @@ test_that("download respects overwrite argument", {
 	# Case 0: new download
 	expect_false(file.exists(zippath))
 	expect_false(file.exists(csvpath))
-	dl_akn()
+	result <- dl_akn()
+	expect_equal(result$startdate, "2011-01-01 00:00")
+	expect_equal(result$enddate, "2011-12-31 00:00")
 	expect_true(file.exists(zippath))
 	expect_true(file.exists(csvpath))
 	
