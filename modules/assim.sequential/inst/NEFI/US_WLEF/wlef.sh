@@ -5,10 +5,10 @@
 # REPLACE < username > WITH YOUR USERNAME
 # If running from a CRON job, these paths MUST be absolute paths.  This is because CRON assumes that the directory it is in is the working directory.
 xmlfile="/fs/data3/kzarada/NEFI/US_WLEF/wlef.xml" #Path to, and name of, the base xml file.
-workflow_path="/fs/data3/kzarada/pecan/web/"                     #Path to workflow.R (in pecan/web for the standard version or pecan/scripts for the custom version).
+workflow_path="/fs/data3/kzarada/pecan/scripts/"                     #Path to workflow.R (in pecan/scripts for both the standard and custom versions).
 output_path="/fs/data3/kzarada/NEFI/US_WLEF/output"               #Path to the directory where all PEcAn output is put.
 xmlscript="/fs/data3/kzarada/NEFI/NEFI_tools/pecan_scripts/generate.gefs.xml.R"                          #Path to, and name of, the script that modifies the xml.
-# Could also be just workflow.R in pecan/web
+# Could also be just workflow.R in pecan/scripts
 workflow_name="workflow.R"      #"workflow.wcr.assim.R"                       #Name of the workflow.R version
 
 # Generates the xml file based on a given input file.  Overwrites the
