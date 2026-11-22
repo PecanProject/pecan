@@ -6,7 +6,6 @@
 #' Linear regression models are created in gen.subdaily.models()
 #'
 #' @family tdm - Temporally Downscale Meteorology
-#' @author Christy Rollinson, James Simkins
 #'
 #' @param newdata dataframe with data to be downscaled
 #' @param model.predict saved linear regression model
@@ -15,6 +14,8 @@
 #' @param model.resid data.frame of model residuals
 #' @param Rbeta.resid data.frame of Rbeta residuals
 #' @param n.ens number of ensembles to create
+#'
+#' @author Christy Rollinson, James Simkins
 #'
 #' @export
 subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, model.resid = NULL, 
