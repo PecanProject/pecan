@@ -7,7 +7,6 @@
 #' It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
 #'
 #' @family tdm - Temporally Downscale Meteorology
-#' @author James Simkins, Christy Rollinson
 #'
 #' @param outfolder - directory where output will be stored
 #' @param in.path - path of coarse model (e.g. GCM output)
@@ -21,6 +20,8 @@
 #' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 #'   functions print debugging information as they run?
 #' @param ... further arguments, currently ignored
+#'
+#' @author James Simkins, Christy Rollinson
 #'
 #' @export
 nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date, 
