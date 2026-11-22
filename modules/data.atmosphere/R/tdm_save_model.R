@@ -4,11 +4,12 @@
 #' This is utilized in gen.subdaily.models() when linear regression models are created
 #'
 #' @family tdm - Temporally Downscale Meteorology
-#' @author Christy Rollinson, James Simkins
 #'
 #' @param model.out list linear regression model output
 #' @param model name of the layer of model to save (e.g. 'model' or 'model.resid')
 #' @param outfile location where output will be stored
+#'
+#' @author Christy Rollinson, James Simkins
 #'
 #' @export
 save.model <- function(model.out, model, outfile) {

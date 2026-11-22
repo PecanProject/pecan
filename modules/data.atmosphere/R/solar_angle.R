@@ -5,7 +5,6 @@
 #'
 #' For explanations of formulae, see https://web.archive.org/web/20180307133425/http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
-#' @author Alexey Shiklomanov
 #'
 #' @param doy Day of year. Integer representing the day of the year (1-365).
 #' @param lat Latitude in degrees. Positive for the Northern Hemisphere and negative for the Southern Hemisphere.
@@ -20,6 +19,8 @@
 #'
 #' @examples
 #' cos_solar_zenith_angle(doy = 150, lat = 45, lon = -93, dt = 3600, hr = 12)
+#'
+#' @author Alexey Shiklomanov
 #'
 #' @export
 cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
@@ -41,11 +42,13 @@ cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
 #'
 #' For description of calculations, see https://en.wikipedia.org/wiki/Equation_of_time#Calculating_the_equation_of_time
 #'
-#' @author Alexey Shiklomanov
 #'
 #' @param doy Day of year
 #'
 #' @return `numeric(1)` length of the solar day, in hours.
+#'
+#' @author Alexey Shiklomanov
+#'
 #' @export
 equation_of_time <- function(doy) {
   stopifnot(doy <= 367) #changed from 366 to 367 to account for leap years

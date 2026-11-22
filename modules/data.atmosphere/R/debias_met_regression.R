@@ -16,7 +16,6 @@
 #'   6. Save specified years to file
 #'
 #' @family debias - Debias & Align Meteorology Datasets into continuous time series
-#' @author Christy Rollinson
 #'
 #' @param train.data - training data coming out of align.met
 #' @param source.data - data to be bias-corrected aligned with training data (from align.met)
@@ -47,6 +46,9 @@
 #' @param overwrite - overwrite existing files? Currently ignored
 #' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}}
 #'   functions print debugging information as they run?
+#'
+#' @author Christy Rollinson
+#'
 #' @export
 #'
 debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NULL, CRUNCEP=FALSE,

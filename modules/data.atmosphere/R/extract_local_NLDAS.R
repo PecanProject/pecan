@@ -8,8 +8,6 @@
 #'   These files are ready to be used in the general PEcAn workflow or fed into the downscaling
 #'   workflow.
 #'
-#' @author Christy Rollinson
-#'
 #' @param outfolder - directory where output files will be stored
 #' @param in.path - path to the raw full grids
 #' @param start_date - first day for which you want to extract met (yyyy-mm-dd)
@@ -20,6 +18,9 @@
 #' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 #'   to control printing of debug info
 #' @param ... Other arguments, currently ignored
+#'
+#' @author Christy Rollinson
+#'
 #' @export
 #'
 extract.local.NLDAS <- function(outfolder, in.path, start_date, end_date, lat.in, lon.in, 

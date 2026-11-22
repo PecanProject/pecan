@@ -8,7 +8,6 @@
 #' later in lm_ensemble_sims().
 #'
 #' @family tdm - Temporally Downscale Meteorology
-#' @author Christy Rollinson, James Simkins
 #'
 #' @param dat.subset data.frame containing lags, next, and downscale period data
 #' @param v variable name, as character
@@ -17,6 +16,8 @@
 #' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
 #'                  distinction between day and night (no shortwave without sunlight)
 #' @param ... further arguments, currently ignored
+#'
+#' @author Christy Rollinson, James Simkins
 #'
 #' @export
 #'

@@ -10,7 +10,6 @@
 #' with in the downscaling workflow).
 #' These files are ready to be used in the general PEcAn workflow or fed into the downscaling workflow.
 #'
-#' @author Christy Rollinson
 #'
 #' @param outfolder directory where output files will be stored
 #' @param in.path path to the raw full grids
@@ -29,6 +28,8 @@
 #' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 #' @param verbose logical. to control printing of debug info
 #' @param ... Other arguments, currently ignored
+#'
+#' @author Christy Rollinson
 #'
 #' @export
 #'

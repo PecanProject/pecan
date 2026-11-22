@@ -31,12 +31,6 @@
 #'   3. export data (stored in memory) for input into the debiasing or temporal downscaling workflow
 #'
 #' @family debias - Debias & Align Meteorology Datasets into continuous time series
-#' @author Christy Rollinson
-#' @return 2-layered list (stored in memory) containing the training and source data that are now matched
-#'         in temporal resolution have the specified number of ensemble members
-#'          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
-#'            are both lists that contain separate data frames for time indices and all available met
-#'            variables with ensemble members in columns
 #'
 #' @param train.path - path to the dataset to be used to downscale the data
 #' @param source.path - data to be bias-corrected aligned with training data (from align.met)
@@ -59,9 +53,12 @@
 #' @param seed - specify seed so that random draws can be reproduced
 #' @param print.progress - if TRUE, prints progress bar
 #'
-#' @return a list called met.out with 2 levels that are matched in temporal resolution & number of ensembles.
-#'   List Layers: dat.train, dat.source
-#'   Sublist Layers: time, met variables
+#' @return a list with 2 elements named `dat.train` and `dat.source`
+#'    that are matched in temporal resolution & number of ensembles.
+#'   both are lists that contain separate data frames for time indices
+#'    and all available met variables with ensemble members in columns
+#'
+#' @author Christy Rollinson
 #'
 #' @export
 #'

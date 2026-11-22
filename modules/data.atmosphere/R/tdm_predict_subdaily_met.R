@@ -13,7 +13,6 @@
 #' in CF conventions and these files are ready to be used in the general PEcAn workflow.
 #'
 #' @family tdm - Temporally Downscale Meteorology
-#' @author Christy Rollinson, James Simkins
 #'
 #' @param outfolder directory where output file will be stored
 #' @param in.path base path to dataset you wish to temporally downscale.
@@ -41,6 +40,8 @@
 #' @param print.progress print the progress bar?
 #' @param seed manually set seed for results to be reproducible
 #' @param ... further arguments, currently ignored
+#'
+#' @author Christy Rollinson, James Simkins
 #'
 #' @export
 #' @examples
