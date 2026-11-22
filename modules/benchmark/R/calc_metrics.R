@@ -37,7 +37,7 @@ calc_metrics <- function(model.calc, obvs.calc, var, metrics, ensemble.id, bm_di
     if (utils::tail(unlist(strsplit(fcn, "_")), 1) == "plot") {
       filename <- file.path(bm_dir, 
                             paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
-      do.call(fcn, args <- list(metric_dat, var, filename))
+      do.call(fcn, list(metric_dat = metric_dat, var = var, filename = filename))
       results[m,"score"] <- filename
     } else {
       results[m,"score"] <- as.character(do.call(fcn, args <- list(metric_dat, var)))
