@@ -47,15 +47,10 @@ ensure ensemble members are properly identified and combined.}
 \item{print.progress}{- if TRUE, prints progress bar}
 }
 \value{
-2-layered list (stored in memory) containing the training and source data that are now matched
-        in temporal resolution have the specified number of ensemble members
-         - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
-           are both lists that contain separate data frames for time indices and all available met
-           variables with ensemble members in columns
-
-a list called met.out with 2 levels that are matched in temporal resolution & number of ensembles.
-  List Layers: dat.train, dat.source
-  Sublist Layers: time, met variables
+a list with 2 elements named `dat.train` and `dat.source`
+   that are matched in temporal resolution & number of ensembles.
+  both are lists that contain separate data frames for time indices
+   and all available met variables with ensemble members in columns
 }
 \description{
 This script aligns meteorology datasets in at temporal resolution for debiasing &
