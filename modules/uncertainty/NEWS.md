@@ -1,6 +1,6 @@
 # PEcAn.uncertainty 1.9.0.9000
 
-* `read.ensemble.output()` returns `NA` for a member with no output or a missing variable, instead of reusing the previous member's value (#4204).
+* `read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did

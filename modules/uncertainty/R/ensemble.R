@@ -9,14 +9,16 @@
 #' @param start.year first year to include in ensemble analysis
 #' @param end.year last year to include in ensemble analysis
 #' @param variable target variables for ensemble analysis
-#' @param ens.run.ids dataframe. Must contain a column named "id" giving the run IDs to be read.
-#'   If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pecandir}
+#' @param ens.run.ids Data frame with a \code{run_id} or legacy \code{id}
+#'   column. If NULL, read IDs from \code{runs_manifest.csv} in
+#'   \code{pecandir}.
 #'
 #' @return a list of ensemble model output, one value per member.
-#'   A member with no output file, or whose file lacks a requested variable,
-#'   is \code{NA_real_} rather than another member's value.
+#'   A member with no requested output returns \code{NA_real_}. If some
+#'   variables are available, the expression uses \code{NA_real_} for each
+#'   missing variable.
 #' @export
-#' @author Ryan Kelly, David LeBauer, Rob Kooper
+#' @author Ryan Kelly, David LeBauer, Rob Kooper, Gaurav Chaudhary
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year,
                                  variable, ens.run.ids = NULL) {
@@ -27,46 +29,49 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
     ens.run.ids <- manifest[manifest$type == "Ensemble", ]
   }
 
-  expr <- variable$expression
-  variables <- variable$variables
-
-  ensemble.output <- list()
-
-  # handles both (manifest has 'run_id', legacy 'ens.run.ids' might have 'id')
   run_ids <- ens.run.ids$run_id %||% ens.run.ids$id
-  for (i in seq_along(run_ids)) {
-    run.id <- run_ids[i]
+  if (!length(run_ids)) {
+    return(list())
+  }
 
-    # We pass the whole 'variables' vector once, avoiding repeated file open/close.
-    out.tmp <- PEcAn.utils::read.output(
-      runid = run.id,
-      outdir = file.path(outdir, run.id),
+  expr <- parse(text = variable$expression)
+  variables <- unname(variable$variables)
+  inputs <- variables %||% all.vars(expr)
+  member <- new.env(parent = environment(read.ensemble.output))
+  results <- rep(list(NA_real_), length(run_ids))
+
+  for (i in seq_along(run_ids)) {
+    run_id <- run_ids[i]
+
+    output <- PEcAn.utils::read.output(
+      runid = run_id,
+      outdir = file.path(outdir, run_id),
       start.year = start.year,
       end.year = end.year,
       variables = variables
     )
 
-    # An unnamed list(NA), or a file missing one requested name, must not
-    # leave this member to be evaluated against another member's bindings.
-    missing_vars <- setdiff(variables, names(out.tmp))
-    if (length(missing_vars) > 0) {
-      PEcAn.logger::logger.warn(paste0(
-        "Ensemble run ", run.id,
-        " has no output for ", paste(missing_vars, collapse = ", "),
-        ". Returning NA."
-      ))
-      ensemble.output[[as.character(i)]] <- NA_real_
+    # read.output returns unnamed NAs when the run has no output files.
+    if (is.null(names(output))) {
       next
     }
-
-    # baseenv() supplies arithmetic and cannot see this function's frame.
-    member_env <- new.env(parent = baseenv())
-    list2env(out.tmp, envir = member_env)
-    out <- eval(parse(text = expr), envir = member_env)
-    ensemble.output[[as.character(i)]] <- mean(out, na.rm = TRUE)
+    # With no variable list, expose only the names discovered in this file.
+    if (is.null(variables)) {
+      rm(list = names(member), envir = member)
+      list2env(output, envir = member)
+    }
+    for (var in inputs) {
+      member[[var]] <- output[[var]] %||% NA_real_
+    }
+    value <- mean(eval(expr, envir = member), na.rm = TRUE)
+    if (is.nan(value) && !all(inputs %in% names(output))) {
+      value <- NA_real_
+    }
+    results[[i]] <- value
   }
 
-  return(ensemble.output)
+  names(results) <- seq_along(run_ids)
+  results
 } # read.ensemble.output
 
 
