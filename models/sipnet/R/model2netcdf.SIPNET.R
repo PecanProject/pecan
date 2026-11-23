@@ -217,6 +217,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "TotLivBiom" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC +
                        sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC,
       "TotSoilCarb" = sub.sipnet.output$soil + sub.sipnet.output$litter,
+      "soil_organic_carbon_content" = sub.sipnet.output$soil,
       "AGB" = sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC,
 
       # Water variables:
@@ -306,6 +307,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       "leaf_carbon_content" = PEcAn.utils::to_ncvar("leaf_carbon_content", dims),
       "TotLivBiom" = PEcAn.utils::to_ncvar("TotLivBiom", dims),
       "TotSoilCarb" = PEcAn.utils::to_ncvar("TotSoilCarb", dims),
+      "soil_organic_carbon_content" = PEcAn.utils::to_ncvar("soil_organic_carbon_content", dims),
       "Qle" = PEcAn.utils::to_ncvar("Qle", dims),
       "Transp" = PEcAn.utils::to_ncvar("Transp", dims),
       "SoilMoist" = PEcAn.utils::to_ncvar("SoilMoist", dims),

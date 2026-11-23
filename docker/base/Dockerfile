@@ -25,7 +25,9 @@ COPY models   /pecan/models/
 # install all PEcAn packages
 # `make clean` is to remove artifacts copied in from host system
 #   (e.g. basgra.so)
-RUN cd /pecan \
+RUN --mount=type=secret,id=GITHUB_PAT \
+    export GITHUB_PAT=$(cat /run/secrets/GITHUB_PAT 2>/dev/null || true) \
+    && cd /pecan \
     && make clean \
     && make \
     && rm -rf /tmp/downloaded_packages
