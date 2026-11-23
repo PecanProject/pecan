@@ -69,8 +69,8 @@ split_wind <- function(in.path, in.prefix, start_date, end_date,
     wind_speed.attr <- ncdf4::ncatt_get(nc, "wind_speed")
     WD <- "wind_direction" %in% names(nc$var)
     if(WD){
-      wind_dir <- pi/2 - PEcAn.utils::ud_convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
       wind_dir.attr <- ncdf4::ncatt_get(nc, "wind_direction")
+      wind_dir <- pi/2 - PEcAn.utils::ud_convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir.attr$units, "radians")
       east <- wind_speed*cos(wind_dir)
       north <- wind_speed*sin(wind_dir)
     } else {
