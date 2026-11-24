@@ -8,7 +8,7 @@
 #' @param outfolder character: Path to directory where nc files need to be saved.
 #' @param in.prefix character: initial portion of the filename that does not vary by date.
 #'  Does not include directory; specify that as part of in.path.
-#' @param newsite character: vector of site names. 
+#' @param newsite character: vector of site names.
 #'  The length should match with that of slat and slon.
 #' @param ncores numeric: the number of CPUs for the parallel compute. Default is 1.
 #' @param vars character: names of variables to be extracted. If NULL all the variables will be
@@ -17,7 +17,7 @@
 #' @param verbose Decide if we want to stop printing info.
 #' @param ... other inputs.
 #' @details For the list of variables check out the documentation at
-#'  \url{https://confluence.ecmwf.int/display/CKB/ERA5\%3A+data+documentation}
+#'  \url{https://confluence.ecmwf.int/spaces/CKB/pages/76414402/ERA5+data+documentation}
 #'
 #' @return a list of xts objects with all the variables for the requested years
 #' @export
@@ -41,7 +41,6 @@
 #' @author Dongchen Zhang, Akash
 #' @importFrom dplyr %>%
 #' @importFrom foreach %dopar%
-
 extract.nc.ERA5 <-
   function(slat,
            slon,

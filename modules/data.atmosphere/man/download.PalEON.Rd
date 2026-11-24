@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.PalEON.R
 \name{download.PalEON}
 \alias{download.PalEON}
-\title{download.PalEON}
+\title{Download PalEON files}
 \usage{
 download.PalEON(
   sitename,
