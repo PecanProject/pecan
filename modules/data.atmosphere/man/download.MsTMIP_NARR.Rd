@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.MsTMIP_NARR.R
 \name{download.MsTMIP_NARR}
 \alias{download.MsTMIP_NARR}
-\title{download.MsTMIP_NARR}
+\title{Download and conver to CF NARR single grid point from MSTIMIP server using OPENDAP interface}
 \usage{
 download.MsTMIP_NARR(
   outfolder,

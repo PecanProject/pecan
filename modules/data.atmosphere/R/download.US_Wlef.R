@@ -1,18 +1,17 @@
-##' @title download.US_Wlef
-##' 
-##' @section General Description:
-##' Obtains data from Ankur Desai's WLEF/ Parks Fall flux tower, and selects certain variables (NEE and LE) to return
-##' Data is returned at the given timestep in the given range.
-##' 
-##' This data includes information on a number of flux variables.
-##' 
-##' 
-##' @param start_date Start date/time data should be downloaded for
-##' @param end_date End date/time data should be downloaded for
-##' @param timestep How often to take data points from the file.  Must be integer
-##' @export
-##' 
-##' @author Luke Dramko and K Zarada
+#' download.US_Wlef
+#'
+#' @section General Description:
+#' Obtains data from Ankur Desai's WLEF/ Parks Fall flux tower, and selects certain variables (NEE and LE) to return
+#' Data is returned at the given timestep in the given range.
+#'
+#' This data includes information on a number of flux variables.
+#'
+#' @param start_date Start date/time data should be downloaded for
+#' @param end_date End date/time data should be downloaded for
+#' @param timestep How often to take data points from the file.  Must be integer
+#' @export
+#'
+#' @author Luke Dramko and K Zarada
 download.US_Wlef <- function(start_date, end_date, timestep = 1) {
 
   if (timestep != as.integer(timestep)) {

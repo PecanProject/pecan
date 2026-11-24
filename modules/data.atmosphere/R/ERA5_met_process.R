@@ -9,7 +9,7 @@
 #'
 #' @return if write.db is True then return input IDs with physical paths; if write.db is False then return just physical paths of extracted ERA5 clim files.
 #' @export
-#' 
+#'
 #' @author Dongchen Zhang
 #' @importFrom dplyr %>%
 #' @importFrom foreach %dopar%
