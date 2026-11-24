@@ -57,6 +57,9 @@ create an account.
 run this function.
 go to `https://cds.climate.copernicus.eu/how-to-api` website.
 copy and paste url and key to the prompt window.
+
+Before downloading, accept the licence for the satellite soil-moisture
+dataset in CDS. CDS returns a 403 error until that licence is accepted.
 }
 \author{
 Dongchen Zhang
