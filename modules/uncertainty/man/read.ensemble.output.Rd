@@ -27,16 +27,20 @@ read.ensemble.output(
 
 \item{variable}{target variables for ensemble analysis}
 
-\item{ens.run.ids}{dataframe. Must contain a column named "id" giving the run IDs to be read.
-If NULL, will attempt to read IDs from a file named "samples.Rdata" in \code{pecandir}}
+\item{ens.run.ids}{Data frame with a \code{run_id} or legacy \code{id}
+column. If NULL, read IDs from \code{runs_manifest.csv} in
+\code{pecandir}.}
 }
 \value{
-a list of ensemble model output
+a list of ensemble model output, one value per member.
+  A member with no requested output returns \code{NA_real_}. If some
+  variables are available, the expression uses \code{NA_real_} for each
+  missing variable.
 }
 \description{
 Reads output for an ensemble of length specified by \code{ensemble.size} and bounded by \code{start.year}
 and \code{end.year}
 }
 \author{
-Ryan Kelly, David LeBauer, Rob Kooper
+Ryan Kelly, David LeBauer, Rob Kooper, Gaurav Chaudhary
 }
