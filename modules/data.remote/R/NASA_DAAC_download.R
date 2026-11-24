@@ -178,6 +178,8 @@ doi_to_product_name <- function(doi = NULL) {
 #' ul_lon <- -179
 #' lr_lat <- 7
 #' lr_lon <- -20
+#' from <- "2024-07-10"
+#' to <- "2024-07-20"
 #' doi <- "10.5067/VIIRS/VJ215A2H.002"
 #' paths <- NASA_DAAC_download(ul_lat = ul_lat,
 #'                             ul_lon = ul_lon,
@@ -306,7 +308,8 @@ NASA_DAAC_download <- function(ul_lat,
     message("start downloading ", length(granules_href), " files.")
     # download
     # if we have (or assign) more than one core to be allocated.
-    if (ncore > 1) {
+    # and more than one files to be downloaded.
+    if (ncore > 1 & length(granules_href) > 1) {
       # setup the foreach parallel computation.
       cl <- parallel::makeCluster(ncore)
       doParallel::registerDoParallel(cl)

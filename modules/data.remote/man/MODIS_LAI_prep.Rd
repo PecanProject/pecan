@@ -7,7 +7,8 @@
 MODIS_LAI_prep(
   site_info,
   time_points,
-  outdir = NULL,
+  csv.outdir,
+  download.outdir,
   search_window = 30,
   export_csv = FALSE,
   sd_threshold = 20,
@@ -18,22 +19,24 @@ MODIS_LAI_prep(
 \arguments{
 \item{site_info}{list: Bety list of site info including site_id, lon, and lat.}
 
-\item{time_points}{character: a vector contains each time point within the start and end date.}
+\item{time_points}{character: a vector containing each time point within the start and end date.}
 
-\item{outdir}{character: where the final CSV file will be stored.}
+\item{csv.outdir}{character: where the final CSV file (`MODIS_LAI.csv`) will be stored.}
 
-\item{search_window}{numeric: search window for locate available LAI values.}
+\item{download.outdir}{character: where the MODIS LAI image files will be stored.}
 
-\item{export_csv}{boolean: decide if we want to export the CSV file.}
+\item{search_window}{numeric: search window to locate available LAI values. Default is 30.}
 
-\item{sd_threshold}{numeric or character: for filtering out any estimations with unrealistic high standard error, default is 20. The QC check will be skipped if it's set as NULL.}
+\item{export_csv}{logical: decide if we want to export the CSV file. Default is FALSE.}
 
-\item{skip_download}{boolean: determine if we want to use existing LAI.csv file and skip the MODIS LAI download part.}
+\item{sd_threshold}{numeric or character: for filtering out estimations with unrealistically high standard error. Default is 20. Set to NULL to skip QC check.}
 
-\item{boundary}{numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., c(0.05, 0.95) or list(0.05, 0.95)). The default is NULL.}
+\item{skip_download}{logical: determine if we want to use an existing `MODIS_LAI.csv` file and skip the download step. Default is FALSE.}
+
+\item{boundary}{numeric vector or list: the upper and lower quantiles for filtering out noisy LAI values (e.g., `c(0.05, 0.95)` or `list(0.05, 0.95)`). Default is NULL.}
 }
 \value{
-A data frame containing LAI and sd for each site and each time step.
+A data frame containing MODIS LAI and sd for each site and each time step.
 }
 \description{
 Prepare MODIS LAI data for the SDA workflow.
