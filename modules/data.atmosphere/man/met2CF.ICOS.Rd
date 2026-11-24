@@ -26,7 +26,7 @@ met2CF.ICOS(
 
 \item{end_date}{end date of the input file}
 
-\item{format}{format is data frame or list with elements as described in details. See details.}
+\item{format}{data frame or list with elements as described in details}
 
 \item{overwrite}{overwrite should existing files be overwritten. Default False.}
 
@@ -45,22 +45,28 @@ surface_downwelling_photosynthetic_photon_flux_in_air, precipitation_flux,
 eastward_wind, northward_wind
 }
 \details{
-The `format` argument is a dataframe or list with the following elements:
+The \code{format} argument is a dataframe or list with the following elements:
 
 REQUIRED:
-  * header: number of lines of header
-  * vars: a data.frame with lists of information for each variable to read.
-    At least `airT` is required
-    - vars$input_name: Name in CSV file
-    - vars$input_units: Units in CSV file
-    - vars$bety_name: Name in BETY
+\itemize{
+\item header: number of lines of header
+\item vars: a data.frame with lists of information for each variable to read.
+At least \code{airT} is required
+\itemize{
+\item vars$input_name: Name in CSV file
+\item vars$input_units: Units in CSV file
+\item vars$bety_name: Name in BETY
+}
+}
 
 OPTIONAL:
-  * lat: latitude of site
-  * lon: longitude of site
-  * format$na.strings: list of missing values to convert to NA, such as -9999
-  * format$skip: lines to skip excluding header
-  * vars$column_number: Column number in CSV file (optional, will use header name first)
+\itemize{
+\item lat: latitude of site
+\item lon: longitude of site
+\item format$na.strings: list of missing values to convert to NA, such as -9999
+\item format$skip: lines to skip excluding header
+\item vars$column_number: Column number in CSV file (optional, will use header name first)
+}
 
 Columns with NA for bety variable name are dropped.
 }

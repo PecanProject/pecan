@@ -38,6 +38,8 @@ met2CF.AmerifluxLBL(
 \description{
 The AmerifluxLBL format is Bety record 5000000002
 which could be returned from PEcAn.DB::query.format.vars(format.id=5000000002)
+}
+\details{
 Format is output from db/R/query.format.vars, and should have:
   REQUIRED:
   format$lat = latitude of site

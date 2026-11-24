@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{sw2par}
 \alias{sw2par}
-\title{Solar Radiation to PPFD}
+\title{Shortwave radiation to PAR}
 \usage{
 sw2par(sw)
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/tdm_temporal_downscale_functions.R
 \name{temporal.downscale.functions}
 \alias{temporal.downscale.functions}
-\title{Temporal Downscale Functions
- Met variable functions that are called in gen.subdaily.models and predict.subdaily.workflow}
+\title{Temporal Downscale Functions}
 \usage{
 temporal.downscale.functions(
   dat.train,
@@ -42,6 +41,9 @@ still being worked on, set to FALSE}
 \item{...}{further arguments, currently ignored}
 }
 \description{
+Met variable functions that are called in gen.subdaily.models and predict.subdaily.workflow
+}
+\details{
 This function contains the functions that do the heavy lifting in gen.subdaily.models()
 and predict.subdaily.workflow(). Individual variable functions actually generate the models
 and betas from the dat.train_file and save them in the output file. save.model() and

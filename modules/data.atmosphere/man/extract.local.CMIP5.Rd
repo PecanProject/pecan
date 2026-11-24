@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract_local_CMIP5.R
 \name{extract.local.CMIP5}
 \alias{extract.local.CMIP5}
-\title{Extract NLDAS from local download}
+\title{Extract CMIP5 from local download}
 \usage{
 extract.local.CMIP5(
   outfolder,
@@ -54,7 +54,7 @@ Format: YYYY-MM-DD}
 \item{...}{Other arguments, currently ignored}
 }
 \description{
-Extract NLDAS meteorology for a point from a local download of the full grid
+Extract CMIP5 meteorology for a point from a local download of the full grid
 }
 \details{
 This function extracts CMIP5 data from grids that have been downloaded and stored locally.
