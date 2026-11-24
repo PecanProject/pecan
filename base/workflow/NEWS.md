@@ -5,6 +5,7 @@
   was already required for `sa.samples`) and no longer re-draws it from
   `trait.samples`. (#4185)
 * `runModule.run.write.configs()` with `overwrite = TRUE` now replaces `runs_manifest.csv` for multisite settings, as it does `runs.txt`. Previously every rerun appended a second copy of each row.
+* `run.write.configs()` writes sensitivity analysis runs only for the site's own PFTs (`<site.pft>`). Runs moving another PFT's trait were exact copies of the median run.
 * `start_model_runs()` gains argument `check_interval`, setting the time in seconds to wait between queries of job status on queued systems.
 * Sensitivity analysis and ensemble runs now generate separate input design matrices with appropriate dimensions, fixing dimension mismatch errors in multisite workflows. (#3708)
 * Generated runs are now stored in a `runs_manifest.csv` file in the output directory instead of modifying `samples.Rdata` (#3708)

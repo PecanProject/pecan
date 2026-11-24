@@ -1,10 +1,8 @@
 #' Download ERA5 Climate Data from the Copernicus CDS API
 #'
-#' @description
 #' Download ERA5 climate data from the Copernicus Climate Data Store (CDS) API as NetCDF files, year by year, according to user-specified parameters.
 #' The function saves one NetCDF file per year in the specified output directory.
 #'
-#' @details
 #' This function requires a valid CDS API key and the \code{ecmwfr} package for accessing the Copernicus Climate Data Store.
 #' To get a Copernicus CDS API key, register at \url{https://cds.climate.copernicus.eu/profile}.
 #' You must provide both \code{user} (UID) and \code{key} parameters from your CDS profile.
@@ -16,6 +14,7 @@
 #' key in an environment variable for the session instead.
 #'
 #' You can check the "CC-BY" license under the \href{https://cds.climate.copernicus.eu/profile?tab=licences}{'licences' tab of your profile page}.
+#'
 #' @param outfolder Character. Directory where downloaded NetCDF files will be saved.
 #' @param start_date character: the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 #' @param end_date character: the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -51,7 +50,7 @@
 #'   key = "your_cds_api_key",
 #'   product_type = "reanalysis"
 #' )
-#' 
+#'
 #' # Download ensemble data for specificed hours only
 #' era5_files <- download.ERA5_cds(
 #'   outfolder = output_dir,
@@ -65,9 +64,9 @@
 #' )
 #' }
 #' @export
-#' 
+#'
 #' @author Dongchen Zhang, Akash
-
+#'
 download.ERA5_cds <- function(outfolder, start_date, end_date,
                               extent, variables, user, key, time = NULL,
                               dataset = "reanalysis-era5-single-levels",

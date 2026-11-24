@@ -62,6 +62,16 @@ generate_joint_ensemble_design <- function(settings,
                                            samples = NULL,
                                            sobol = FALSE) {
   if (sobol) {
+    # X1 and X2 below are the first and second half of the draws, so they are
+    # only independent when every input and parameter is drawn at random
+    methods <- tolower(unlist(lapply(settings$ensemble$samplingspace, "[[", "method")))
+    nonrandom <- methods[!methods %in% c("sampling", "uniform", "lhc", "random")]
+    if (length(nonrandom) > 0) {
+      PEcAn.logger::logger.severe(
+        "sobol = TRUE needs random sampling, got",
+        paste(names(nonrandom), nonrandom, sep = ": ", collapse = ", ")
+      )
+    }
     ensemble_size <- as.numeric(ensemble_size) * 2
   }
   ens.sample.method <- settings$ensemble$samplingspace$parameters$method

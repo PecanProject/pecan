@@ -2,7 +2,7 @@
 % Please edit documentation in R/met2CF.ICOS.R
 \name{met2CF.ICOS}
 \alias{met2CF.ICOS}
-\title{Convert variables ICOS variables to CF format.}
+\title{Convert variables ICOS variables to CF format}
 \usage{
 met2CF.ICOS(
   in.path,
@@ -26,20 +26,7 @@ met2CF.ICOS(
 
 \item{end_date}{end date of the input file}
 
-\item{format}{format is data frame or list with elements as described below
-  REQUIRED:
-  format$header = number of lines of header
-  format$vars is a data.frame with lists of information for each variable to read, at least airT is required
-    format$vars$input_name = Name in CSV file
-    format$vars$input_units = Units in CSV file
-    format$vars$bety_name = Name in BETY
-  OPTIONAL:
-  format$lat = latitude of site
-  format$lon = longitude of site
-  format$na.strings = list of missing values to convert to NA, such as -9999
-  format$skip = lines to skip excluding header
-  format$vars$column_number = Column number in CSV file (optional, will use header name first)
-Columns with NA for bety variable name are dropped.}
+\item{format}{data frame or list with elements as described in details}
 
 \item{overwrite}{overwrite should existing files be overwritten. Default False.}
 
@@ -56,4 +43,30 @@ surface_downwelling_longwave_flux_in_air,
 surface_downwelling_shortwave_flux_in_air,
 surface_downwelling_photosynthetic_photon_flux_in_air, precipitation_flux,
 eastward_wind, northward_wind
+}
+\details{
+The \code{format} argument is a dataframe or list with the following elements:
+
+REQUIRED:
+\itemize{
+\item header: number of lines of header
+\item vars: a data.frame with lists of information for each variable to read.
+At least \code{airT} is required
+\itemize{
+\item vars$input_name: Name in CSV file
+\item vars$input_units: Units in CSV file
+\item vars$bety_name: Name in BETY
+}
+}
+
+OPTIONAL:
+\itemize{
+\item lat: latitude of site
+\item lon: longitude of site
+\item format$na.strings: list of missing values to convert to NA, such as -9999
+\item format$skip: lines to skip excluding header
+\item vars$column_number: Column number in CSV file (optional, will use header name first)
+}
+
+Columns with NA for bety variable name are dropped.
 }
