@@ -4,10 +4,12 @@
 * Breaking: `get.ensemble.samples()` stops with an error when the joint traits of a PFT differ in length, instead of indexing all of them by the first trait's length, which silently cut longer chains short or gave `NA`.
 * `get.ensemble.samples()` draws joint traits by whole MCMC row at random with replacement, whatever `method` is.
 * `get.ensemble.samples()` looks up `param.names` by PFT name instead of position, so a PFT with nothing to sample no longer shifts joint traits onto the next PFT. An unnamed `param.names` list now selects no joint traits.
+* `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,
   giving the position of each sampled value in its input set (#4127, @Devansh-56)
+* `get.results()` reads sensitivity output only for the PFTs that have runs in `sa.run.ids`, so PFTs not at a site no longer give a warning per trait and quantile.
 * `read.sa.output()` now reads only the runs in `sa.run.ids`, so each site of a multisite sensitivity analysis gets its own results. Previously every site read the last site's runs from the shared `runs_manifest.csv`.
 * `run.sensitivity.analysis()` skips traits with no spread in their SA samples, with a warning. Previously one such trait stopped the analysis for every PFT.
 * `runs_manifest.csv` now has a column `ens_num` to distinguish ensemble members without reparsing run IDs.

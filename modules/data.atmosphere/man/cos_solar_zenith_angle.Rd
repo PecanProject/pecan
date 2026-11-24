@@ -21,7 +21,7 @@ cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 Numeric value representing the cosine of the solar zenith angle.
 }
 \description{
-Calculates the cosine of the solar zenith angle based on the given parameters. 
+Calculates the cosine of the solar zenith angle based on the given parameters.
 This angle is crucial in determining the amount of solar radiation reaching a point on Earth.
 }
 \details{

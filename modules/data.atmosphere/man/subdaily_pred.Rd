@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_subdaily_pred.R
 \name{subdaily_pred}
 \alias{subdaily_pred}
-\title{subdaily_pred}
+\title{Pulls information from linear regression models to predict subdaily meteorology}
 \usage{
 subdaily_pred(
   newdata,
@@ -30,14 +30,10 @@ subdaily_pred(
 \item{n.ens}{number of ensembles to create}
 }
 \description{
-Function to pull objects created in linear regression models
-             and are used to predict subdaily meteorology. This function is called in
-             lm_ensemble_sims() to downscale a meteorology product.
-             Linear regression models are created in gen.subdaily.models()
-}
-\details{
-Subdaily Prediction
-Pulls information from linear regression models to predict subdaily meteorology
+Function to pull objects created in linear regression models and are used
+to predict subdaily meteorology.
+This function is called in lm_ensemble_sims() to downscale a meteorology product.
+Linear regression models are created in gen.subdaily.models()
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

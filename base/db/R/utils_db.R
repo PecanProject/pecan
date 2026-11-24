@@ -372,7 +372,7 @@ db.exists <- function(params, write = TRUE, table = NA) {
     db.close(con)
     invisible(NULL)
   })
-  if (is.null(read.result)) return(invisible(FALSE))
+  if (is.null(get.key)) return(invisible(FALSE))
 
   # If write permission not requested, we're done!
   if (!write) return(invisible(TRUE))
