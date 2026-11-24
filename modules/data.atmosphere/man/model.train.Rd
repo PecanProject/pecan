@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_model_train.R
 \name{model.train}
 \alias{model.train}
-\title{model.train}
+\title{TDM Model Train}
 \usage{
 model.train(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...)
 }
@@ -21,14 +21,13 @@ distinction between day and night (no shortwave without sunlight)}
 \item{...}{further arguments, currently ignored}
 }
 \description{
-Function to create linear regression models for specific met
-             variables. This is used in conjunction with temporal.downscale.functions()
-             to generate linear regression statistics and save their output to be called
-             later in lm_ensemble_sims().
+Linear regression calculations for specific met variables
 }
 \details{
-TDM Model Train
-Linear regression calculations for specific met variables
+Function to create linear regression models for specific met variables.
+This is used in conjunction with temporal.downscale.functions()
+to generate linear regression statistics and save their output to be called
+later in lm_ensemble_sims().
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: 

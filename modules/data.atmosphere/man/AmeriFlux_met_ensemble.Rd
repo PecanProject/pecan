@@ -71,12 +71,12 @@ ensemble meteorological files.
 \examples{
 \dontrun{
 result <- AmeriFlux_met_process(
-  site_id = "US-Ha1", 
+  site_id = "US-Ha1",
   start_date = "2010-01-01",
   end_date = "2010-12-31",
   outfolder = "/path/to/output",
   ameriflux_username = "your_username",
-  ameriflux_useremail = "your.email@domain.com", 
+  ameriflux_useremail = "your.email@domain.com",
   format = format,
   era5_user = "your_cds_user",
   era5_key = "your_cds_api_key",

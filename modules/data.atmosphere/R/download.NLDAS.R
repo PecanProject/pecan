@@ -1,20 +1,21 @@
-##' Download NLDAS met data
-##'
-##' Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
-##'
-##' @param outfolder location of output
-##' @param start_date desired start date YYYY-MM-DD
-##' @param end_date desired end date YYYY-MM-DD
-##' @param lat.in latitude of site
-##' @param lon.in longitude of site
-##' @param overwrite overwrite existing files? Default is FALSE
-##' @param verbose Turn on verbose output? Default=FALSE
-##' @param ... Other inputs
-##' @param site_id site id (BETY)
-##'
-##' @export
-##'
-##' @author Christy Rollinson (with help from Ankur Desai)
+#' Download NLDAS met data
+#'
+#' Download and convert single grid point NLDAS to CF single grid point from
+#'   hydro1.sci.gsfc.nasa.gov using OPENDAP interface
+#'
+#' @param outfolder location of output
+#' @param start_date desired start date YYYY-MM-DD
+#' @param end_date desired end date YYYY-MM-DD
+#' @param lat.in latitude of site
+#' @param lon.in longitude of site
+#' @param overwrite overwrite existing files? Default is FALSE
+#' @param verbose Turn on verbose output? Default=FALSE
+#' @param ... Other inputs
+#' @param site_id site id (BETY)
+#'
+#' @export
+#'
+#' @author Christy Rollinson (with help from Ankur Desai)
 download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                            overwrite = FALSE, verbose = FALSE, ...) {
 

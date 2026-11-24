@@ -26,7 +26,7 @@ met2CF.Geostreams(
 
 \item{overwrite}{logical: Regenerate existing files of the same name?}
 
-\item{verbose}{logical, passed on to \code{\link[ncdf4]{nc_create}} 
+\item{verbose}{logical, passed on to \code{\link[ncdf4]{nc_create}}
 to control how chatty it should be during netCDF creation}
 
 \item{...}{other arguments, currently ignored}
