@@ -32,7 +32,8 @@
 #' @param outfolder path to the directory where the output file is stored. If specified directory does not exists, it is created.
 #' @param start_date start date of the input file
 #' @param end_date end date of the input file
-#' @param format format is data frame or list with elements as described in details. See details.
+#' @param format data frame or list with elements as described in details
+#' @md
 #' @param overwrite overwrite should existing files be overwritten. Default False.
 #' @param ... used when extra arguments are present.
 #' @return information about the output file

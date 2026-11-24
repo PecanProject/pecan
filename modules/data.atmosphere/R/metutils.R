@@ -265,7 +265,7 @@ par2ppfd <- function(watts) {
 
 
 
-#' Solar Radiation to PPFD
+#' Shortwave radiation to PAR
 #'
 #' Here the input is the total solar radiation
 #' so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151

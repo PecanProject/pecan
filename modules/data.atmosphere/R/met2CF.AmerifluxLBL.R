@@ -2,7 +2,7 @@
 #'
 #' The AmerifluxLBL format is Bety record 5000000002
 #' which could be returned from PEcAn.DB::query.format.vars(format.id=5000000002)
-#
+#'
 #' Format is output from db/R/query.format.vars, and should have:
 #'   REQUIRED:
 #'   format$lat = latitude of site
