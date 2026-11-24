@@ -1,6 +1,9 @@
 # PEcAn.workflow 1.10.0.9000
 
 ## Changed
+* `run.write.configs()` consumes prepared OAT parameter values from
+  `generate_OAT_SA_design()` and shares its call to `write.ensemble.configs()`
+  with ordinary ensemble runs (#4215).
 * `run.write.configs()` now requires `samples` to contain an `ensemble.samples` (as
   was already required for `sa.samples`) and no longer re-draws it from
   `trait.samples`. (#4185)

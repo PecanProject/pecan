@@ -20,8 +20,9 @@ A list with \code{design_matrix}, a data.frame with one row per SA run:
   held at 1, and \code{sa_pft}, \code{sa_trait} and \code{sa_quantile} say what
   each run is. The first row is the median run, with those three \code{NA},
   \code{NA} and \code{"50"}; every row after moves one trait of one PFT to one
-  of its quantiles. Also \code{X}, the same matrix under its older name, and
-  \code{samples}, the parameter bundle used.
+  of its quantiles. Also \code{X}, the same matrix under its older name,
+  \code{run_samples}, the corresponding parameter values with one row per
+  design row, and \code{samples}, the parameter bundle used.
 }
 \description{
 Creates an input design matrix for sensitivity analysis where non-parameter
