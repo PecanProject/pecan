@@ -1,0 +1,1019 @@
+---
+title: "SDA Validations"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+.libPaths(c("/projectnb/dietzelab/cwebb16/x86_64-pc-linux-gnu-library/4.4", .libPaths()))
+```
+
+```{r load_precomputed}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+library(maps)
+
+# Load all pre-extracted data (run extract_timeseries.R first)
+data_file <- "/projectnb/dietzelab/cwebb16/SDA/Validations/timeseries_data.Rdata"
+if (!file.exists(data_file)) stop("Run extract_timeseries.R first to generate ", data_file)
+load(data_file)
+
+# Load flux CV if available (run extract_flux_cv.R to generate)
+flux_file <- "/projectnb/dietzelab/cwebb16/SDA/Validations/flux_cv_data.Rdata"
+if (file.exists(flux_file)) load(flux_file)
+# Provides: model_df, forecast_df, obs_df, site_info_df, focus_sites, abg_delta,
+#           fia_resid_delta, site_unc, gwbi_scatter,
+#           compromise_df, compromise_site,
+#           runs, years, state_vars
+
+# Convert SoilMoistFrac from decimal (0-1) to percent (0-100) for model and obs
+model_df <- model_df %>%
+  mutate(Mean         = ifelse(variable == "SoilMoistFrac", Mean         * 100, Mean),
+         SD           = ifelse(variable == "SoilMoistFrac", SD           * 100, SD),
+         Mean_shifted = ifelse(variable == "SoilMoistFrac", Mean_shifted * 100, Mean_shifted))
+
+
+obs_df <- obs_df %>%
+  mutate(Obs = ifelse(variable == "SoilMoistFrac", Obs * 100, Obs))
+
+
+run_colors_all <- c(
+  "base"         = "grey50",
+  "+GWBI"        = "gold3",
+  "+LT"          = "darkorange",
+  "+LT_GWBI"     = "red3",
+  "+FIA"         = "dodgerblue",
+  "+FIA_GWBI"    = "navy",
+  "+LT_FIA"      = "orchid4",
+  "+LT_FIA_GWBI" = "forestgreen"
+)
+
+var_labels_ts <- c(
+  AbvGrndWood   = "Aboveground Wood (Mg C/ha)",
+  LAI           = "LAI (m²/m²)",
+  SoilMoistFrac = "Soil Moisture (%)",
+  TotSoilCarb   = "Total Soil Carbon (Mg C/ha)",
+  GWBI          = "GWBI (Mg C/ha/yr)"
+)
+```
+
+---
+
+## Site Locations
+
+```{r site_elevation_map, fig.width=9, fig.height=7, cache=TRUE}
+library(elevatr)
+library(terra)
+library(sf)
+
+# AZ state extent
+az_xlim <- c(-115.0, -108.8)
+az_ylim <- c(31.2,   37.1)
+
+# AZ polygon as sf for masking
+az_sf <- st_as_sf(map("state", regions = "arizona", plot = FALSE, fill = TRUE))
+
+# Download DEM covering full AZ extent (z=7 ~1km resolution)
+az_bbox <- data.frame(x = az_xlim, y = az_ylim)
+elev_rast <- get_elev_raster(az_bbox, prj = "EPSG:4326", z = 7, src = "aws",
+                              clip = "bbox", expand = 0)
+
+# Mask DEM to AZ border
+elev_terra <- rast(elev_rast)
+az_vect    <- vect(az_sf)
+elev_masked <- mask(elev_terra, az_vect)
+
+elev_df <- as.data.frame(elev_masked, xy = TRUE)
+names(elev_df)[3] <- "elevation"
+elev_df <- elev_df %>% filter(!is.na(elevation))
+
+az_map <- map_data("state", region = "arizona")
+
+site_map <- ggplot() +
+  geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
+  scale_fill_gradient(low = "#4a7c3f", high = "#f5f0e8",
+                      name = "Elevation (m)", na.value = NA) +
+  geom_polygon(data = az_map, aes(x = long, y = lat, group = group),
+               fill = NA, color = "black", linewidth = 0.6) +
+  geom_point(data = site_info_df %>% filter(lon >= az_xlim[1], lon <= az_xlim[2],
+                                             lat >= az_ylim[1], lat <= az_ylim[2]),
+             aes(x = lon, y = lat),
+             shape = 21, fill = "darkorange", color = "black",
+             size = 3, stroke = 0.6) +
+  coord_fixed(1.3, xlim = az_xlim, ylim = az_ylim) +
+  labs(x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+site_map
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/az_site_map.png",
+       site_map, width = 9, height = 7, dpi = 300, bg = "white")
+```
+
+---
+
+## Analysis Timeseries
+
+```{r focus_site_table}
+site_summary <- site_info_df %>%
+  filter(site_idx %in% focus_sites) %>%
+  left_join(
+    abg_delta %>% filter(run == "+FIA") %>%
+      select(site_idx, base_sd, mean_sd, delta_pct),
+    by = "site_idx"
+  ) %>%
+  mutate(
+    role      = ifelse(delta_pct == max(delta_pct), "Max reduction", "Max increase"),
+    base_sd   = round(base_sd, 3),
+    mean_sd   = round(mean_sd, 3),
+    delta_pct = round(delta_pct, 1)
+  ) %>%
+  select(role, site_idx, lat, lon, base_sd, mean_sd, delta_pct)
+
+kable(site_summary, format = "html",
+      col.names = c("Role", "Site Index", "Lat", "Lon",
+                    "Base AGB SD", "+FIA AGB SD", "% Change")) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed"), full_width = FALSE)
+```
+
+```{r ts_plot_fn}
+plot_ts <- function(var, site_id, y_max = NULL, y_min = NULL, data = model_df, type_label = NULL) {
+  df <- data %>%
+    filter(variable == var, site_idx == site_id) %>%
+    left_join(obs_df %>% filter(variable == var, site_idx == site_id),
+              by = c("year", "site_idx", "variable")) %>%
+    mutate(run  = factor(run, levels = c("base", "+LT", "+LT_GWBI", "+FIA", "+FIA_GWBI", "+LT_FIA", "+LT_FIA_GWBI", "+GWBI")),
+           Date = as.Date(ISOdate(year, 7, 15)))
+
+  # Clamp mean line and ribbon to y_max / y_min
+  if (!is.null(y_max)) df <- df %>% mutate(Mean_shifted = pmin(Mean_shifted, y_max))
+  if (!is.null(y_min)) df <- df %>% mutate(Mean_shifted = pmax(Mean_shifted, y_min))
+
+  y_hi <- if (!is.null(y_max)) y_max else NULL
+  y_lo <- if (!is.null(y_min)) y_min else NULL
+
+  ggplot(df, aes(x = Date)) +
+    geom_ribbon(aes(ymin = if (!is.null(y_min)) pmax(Mean_shifted - SD, y_min) else Mean_shifted - SD,
+                    ymax = if (!is.null(y_max)) pmin(Mean_shifted + SD, y_max) else Mean_shifted + SD,
+                    fill = run),
+                alpha = 0.18, color = NA, show.legend = FALSE) +
+    geom_line(aes(y = Mean_shifted, color = run), linewidth = 0.9) +
+    geom_line(aes(y = Obs), linetype = "dashed", linewidth = 0.9,
+              color = "black", na.rm = TRUE) +
+    { if (var == "AbvGrndWood") {
+        lt  <- lt_obs_df  %>% filter(site_idx == site_id) %>%
+                 mutate(Date = as.Date(ISOdate(year, 7, 15)))
+        fia <- fia_obs_df %>% filter(site_idx == site_id) %>%
+                 mutate(Date = as.Date(ISOdate(year, 7, 15)))
+        list(
+          geom_line(data = lt,  aes(x = Date, y = LT_obs),
+                    linetype = "dashed", linewidth = 0.9, color = "darkorange", inherit.aes = FALSE, na.rm = TRUE),
+          geom_line(data = fia, aes(x = Date, y = FIA_obs),
+                    linetype = "dashed", linewidth = 0.9, color = "dodgerblue", inherit.aes = FALSE, na.rm = TRUE)
+        )
+    }} +
+    { if (var == "GWBI") {
+        gw <- gwbi_obs_df %>% filter(site_idx == site_id) %>%
+                mutate(Date = as.Date(ISOdate(year, 7, 15)))
+        geom_line(data = gw, aes(x = Date, y = GWBI_obs),
+                  linetype = "dashed", linewidth = 0.9, color = "black", inherit.aes = FALSE, na.rm = TRUE)
+    }} +
+    scale_color_manual(values = run_colors_all, name = "Run",
+                       breaks = names(run_colors_all)) +
+    scale_fill_manual(values  = run_colors_all, guide = "none") +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    { if (!is.null(y_hi) || !is.null(y_lo)) coord_cartesian(ylim = c(y_lo, y_hi)) } +
+    labs(title   = paste0(if (!is.null(type_label)) paste0("[", type_label, "]  ") else "",
+                          var_labels_ts[var], "  -  Site ", site_id),
+         x = "Year", y = var_labels_ts[var],
+         caption = "Solid = ensemble mean +/- 1 SD; Dashed = observations") +
+    theme_minimal() +
+    theme(plot.title      = element_text(face = "bold", size = 13),
+          legend.position = "bottom",
+          legend.text     = element_text(size = 9),
+          axis.text       = element_text(size = 10))
+}
+```
+
+```{r median_ts_fn_early, include=FALSE}
+plot_ts_median <- function(var, ribbon_max = NULL, data = model_df, type_label = NULL) {
+  med_df <- data %>%
+    filter(variable == var) %>%
+    group_by(run, year) %>%
+    summarise(
+      med   = median(Mean, na.rm = TRUE),
+      q25   = quantile(Mean, 0.25, na.rm = TRUE),
+      q75   = quantile(Mean, 0.75, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(q75 = if (!is.null(ribbon_max)) pmin(q75, ribbon_max) else q75) %>%
+    mutate(run  = factor(run, levels = c("base", "+LT", "+LT_GWBI", "+FIA", "+FIA_GWBI", "+LT_FIA", "+LT_FIA_GWBI", "+GWBI")),
+           Date = as.Date(ISOdate(year, 7, 15)))
+
+  obs_med <- obs_df %>%
+    filter(variable == var) %>%
+    group_by(year) %>%
+    summarise(med_obs = median(Obs, na.rm = TRUE), .groups = "drop") %>%
+    mutate(Date = as.Date(ISOdate(year, 7, 15)))
+
+  p <- ggplot(med_df, aes(x = Date)) +
+    geom_ribbon(aes(ymin = q25, ymax = q75, fill = run),
+                alpha = 0.15, color = NA, show.legend = FALSE) +
+    geom_line(aes(y = med, color = run), linewidth = 0.9) +
+    geom_line(data = obs_med, aes(x = Date, y = med_obs),
+              linetype = "dashed", linewidth = 0.9, color = "black", na.rm = TRUE)
+
+  if (var == "AbvGrndWood") {
+    lt_med  <- lt_obs_df  %>% group_by(year) %>%
+      summarise(v = median(LT_obs,  na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    fia_med <- fia_obs_df %>% group_by(year) %>%
+      summarise(v = median(FIA_obs, na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    p <- p +
+      geom_line(data = lt_med,  aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "darkorange", inherit.aes = FALSE, na.rm = TRUE) +
+      geom_line(data = fia_med, aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "dodgerblue", inherit.aes = FALSE, na.rm = TRUE)
+  }
+
+  if (var == "GWBI") {
+    gw_med <- gwbi_obs_df %>% group_by(year) %>%
+      summarise(v = median(GWBI_obs, na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    p <- p +
+      geom_line(data = gw_med, aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "black", inherit.aes = FALSE, na.rm = TRUE)
+  }
+
+  p +
+    scale_color_manual(values = run_colors_all, name = "Run", breaks = names(run_colors_all)) +
+    scale_fill_manual(values  = run_colors_all, guide = "none") +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    labs(title   = paste0(if (!is.null(type_label)) paste0("[", type_label, "]  ") else "",
+                          var_labels_ts[var], "  -  Median Across All Sites"),
+         x = "Year", y = var_labels_ts[var],
+         caption = "Solid = site median  |  Ribbon = IQR  |  Dashed = median observation") +
+    theme_minimal() +
+    theme(plot.title      = element_text(face = "bold", size = 13),
+          legend.position = "bottom",
+          legend.text     = element_text(size = 9),
+          axis.text       = element_text(size = 10))
+}
+```
+
+```{r ts_agb_gwbi_panel, fig.width=12, fig.height=9}
+library(patchwork)
+
+# Helper: clean median panel
+med_panel <- function(var, df, ylims = NULL, show_x = FALSE) {
+  p <- plot_ts_median(var, data = df) +
+    labs(title = NULL, caption = NULL) +
+    theme(plot.margin = margin(4, 8, 4, 8))
+  if (!show_x) p <- p + labs(x = NULL) + theme(axis.title.x = element_blank())
+  if (!is.null(ylims)) p <- p + coord_cartesian(ylim = ylims)
+  p
+}
+
+p_agb_fc <- med_panel("AbvGrndWood", forecast_df, ylims = c(0, 70))
+p_agb_an <- med_panel("AbvGrndWood", model_df,    ylims = c(0, 70))
+p_gwb_fc <- med_panel("GWBI", forecast_df, ylims = c(0, 4), show_x = TRUE)
+p_gwb_an <- med_panel("GWBI", model_df,    ylims = c(0, 4), show_x = TRUE)
+
+# Add column titles to top row
+p_agb_fc <- p_agb_fc + ggtitle("Forecast") +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 12))
+p_agb_an <- p_agb_an + ggtitle("Analysis") +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5, size = 12))
+
+# Assemble with patchwork - collects legend automatically
+ts_panel_plot <- (p_agb_fc + p_agb_an + p_gwb_fc + p_gwb_an) +
+  plot_layout(ncol = 2, guides = "collect") +
+  plot_annotation(tag_levels = "a") &
+  theme(legend.position  = "bottom",
+        legend.text      = element_text(size = 9),
+        legend.title     = element_text(size = 10),
+        plot.tag         = element_text(face = "bold", size = 12))
+
+ts_panel_plot
+
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/agb_gwbi_timeseries_panel.png",
+       ts_panel_plot, width = 12, height = 9, dpi = 300, bg = "white")
+```
+
+### LAI
+
+```{r ts_lai, fig.width=18, fig.height=10}
+(plot_ts("LAI", focus_sites[1], type_label="Analysis") |
+ plot_ts("LAI", focus_sites[1], data=forecast_df, type_label="Forecast")) /
+(plot_ts("LAI", focus_sites[2], type_label="Analysis") |
+ plot_ts("LAI", focus_sites[2], data=forecast_df, type_label="Forecast"))
+```
+
+### Soil Moisture
+
+```{r ts_smp, fig.width=18, fig.height=10}
+(plot_ts("SoilMoistFrac", focus_sites[1], type_label="Analysis") |
+ plot_ts("SoilMoistFrac", focus_sites[1], data=forecast_df, type_label="Forecast")) /
+(plot_ts("SoilMoistFrac", focus_sites[2], type_label="Analysis") |
+ plot_ts("SoilMoistFrac", focus_sites[2], data=forecast_df, type_label="Forecast"))
+```
+
+### Total Soil Carbon
+
+```{r ts_soc, fig.width=18, fig.height=10}
+(plot_ts("TotSoilCarb", focus_sites[1], type_label="Analysis") |
+ plot_ts("TotSoilCarb", focus_sites[1], data=forecast_df, type_label="Forecast")) /
+(plot_ts("TotSoilCarb", focus_sites[2], type_label="Analysis") |
+ plot_ts("TotSoilCarb", focus_sites[2], data=forecast_df, type_label="Forecast"))
+```
+
+---
+
+## Median Timeseries Across All Sites
+
+```{r median_ts_fn}
+plot_ts_median <- function(var, ribbon_max = NULL, data = model_df, type_label = NULL) {
+  # Median + IQR across sites per run x year
+  med_df <- data %>%
+    filter(variable == var) %>%
+    group_by(run, year) %>%
+    summarise(
+      med   = median(Mean, na.rm = TRUE),
+      q25   = quantile(Mean, 0.25, na.rm = TRUE),
+      q75   = quantile(Mean, 0.75, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(q75 = if (!is.null(ribbon_max)) pmin(q75, ribbon_max) else q75) %>%
+    mutate(run  = factor(run, levels = c("base", "+LT", "+LT_GWBI", "+FIA", "+FIA_GWBI", "+LT_FIA", "+LT_FIA_GWBI", "+GWBI")),
+           Date = as.Date(ISOdate(year, 7, 15)))
+
+  # Median obs across sites per year
+  obs_med <- obs_df %>%
+    filter(variable == var) %>%
+    group_by(year) %>%
+    summarise(med_obs = median(Obs, na.rm = TRUE), .groups = "drop") %>%
+    mutate(Date = as.Date(ISOdate(year, 7, 15)))
+
+  p <- ggplot(med_df, aes(x = Date)) +
+    geom_ribbon(aes(ymin = q25, ymax = q75, fill = run),
+                alpha = 0.15, color = NA, show.legend = FALSE) +
+    geom_line(aes(y = med, color = run), linewidth = 0.9) +
+    geom_line(data = obs_med, aes(x = Date, y = med_obs),
+              linetype = "dashed", linewidth = 0.9, color = "black", na.rm = TRUE)
+
+  # Variable-specific obs overlays
+  if (var == "AbvGrndWood") {
+    lt_med  <- lt_obs_df  %>% group_by(year) %>%
+      summarise(v = median(LT_obs,  na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    fia_med <- fia_obs_df %>% group_by(year) %>%
+      summarise(v = median(FIA_obs, na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    p <- p +
+      geom_line(data = lt_med,  aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "darkorange", inherit.aes = FALSE, na.rm = TRUE) +
+      geom_line(data = fia_med, aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "dodgerblue", inherit.aes = FALSE, na.rm = TRUE)
+  }
+
+  if (var == "GWBI") {
+    gw_med <- gwbi_obs_df %>% group_by(year) %>%
+      summarise(v = median(GWBI_obs, na.rm = TRUE), .groups = "drop") %>%
+      mutate(Date = as.Date(ISOdate(year, 7, 15)))
+    p <- p +
+      geom_line(data = gw_med, aes(x = Date, y = v),
+                linetype = "dashed", linewidth = 0.9, color = "black", inherit.aes = FALSE, na.rm = TRUE)
+  }
+
+  p +
+    scale_color_manual(values = run_colors_all, name = "Run", breaks = names(run_colors_all)) +
+    scale_fill_manual(values  = run_colors_all, guide = "none") +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    labs(title   = paste0(if (!is.null(type_label)) paste0("[", type_label, "]  ") else "",
+                          var_labels_ts[var], "  -  Median Across All Sites"),
+         x = "Year", y = var_labels_ts[var],
+         caption = "Solid = site median  |  Ribbon = IQR  |  Dashed = median observation") +
+    theme_minimal() +
+    theme(plot.title      = element_text(face = "bold", size = 13),
+          legend.position = "bottom",
+          legend.text     = element_text(size = 9),
+          axis.text       = element_text(size = 10))
+}
+```
+
+### Aboveground Wood
+
+```{r med_agb, fig.width=18, fig.height=6}
+plot_ts_median("AbvGrndWood", ribbon_max=200, type_label="Analysis") |
+plot_ts_median("AbvGrndWood", ribbon_max=200, data=forecast_df, type_label="Forecast")
+```
+
+### LAI
+
+```{r med_lai, fig.width=18, fig.height=6}
+plot_ts_median("LAI", type_label="Analysis") |
+plot_ts_median("LAI", data=forecast_df, type_label="Forecast")
+```
+
+### Soil Moisture
+
+```{r med_smp, fig.width=18, fig.height=6}
+plot_ts_median("SoilMoistFrac", type_label="Analysis") |
+plot_ts_median("SoilMoistFrac", data=forecast_df, type_label="Forecast")
+```
+
+### Total Soil Carbon
+
+```{r med_soc, fig.width=18, fig.height=6}
+plot_ts_median("TotSoilCarb", type_label="Analysis") |
+plot_ts_median("TotSoilCarb", data=forecast_df, type_label="Forecast")
+```
+
+### GWBI
+
+```{r med_gwbi, fig.width=18, fig.height=6}
+plot_ts_median("GWBI", type_label="Analysis") |
+plot_ts_median("GWBI", data=forecast_df, type_label="Forecast")
+```
+
+---
+
+## State Variable Uncertainty
+
+```{r load_and_compute}
+library(purrr)
+library(PEcAn.settings)
+
+runs_unc  <- c("base", "+GWBI", "+LT", "+LT_GWBI", "+FIA", "+FIA_GWBI", "+LT_FIA", "+LT_FIA_GWBI")
+base_dir  <- "/projectnb/dietzelab/cwebb16/SDA_runs"
+sda_files <- file.path(base_dir, runs_unc, "sda.all.forecast.analysis.Rdata")
+
+state_vars_u <- c("AbvGrndWood", "LAI", "SoilMoistFrac", "TotSoilCarb", "GWBI")
+n_state_u    <- length(state_vars_u)
+
+var_labels_u <- c(
+  "AbvGrndWood"   = "Wood",
+  "LAI"           = "LAI",
+  "SoilMoistFrac" = "Soil Moist",
+  "TotSoilCarb"   = "Soil C",
+  "GWBI"          = "GWBI"
+)
+
+analysis_list <- setNames(vector("list", length(runs_unc)), runs_unc)
+for (i in seq_along(runs_unc)) {
+  e <- new.env()
+  load(sda_files[i], envir = e)
+  analysis_list[[runs_unc[i]]] <- e$analysis.all
+  rm(e)
+}
+
+get_var_cols_u <- function(var, mat) {
+  uniq <- unique(colnames(mat))
+  v    <- which(uniq == var)
+  if (!length(v)) return(integer(0))
+  v + (0:(ncol(mat) / n_state_u - 1)) * n_state_u
+}
+
+compute_site_year_stats <- function(al, var) {
+  stats <- lapply(al, function(mat) {
+    cols <- get_var_cols_u(var, mat)
+    if (!length(cols)) return(NULL)
+    t(apply(as.matrix(mat)[, cols, drop = FALSE], 2, function(ens) {
+      ens <- ens[is.finite(ens)]
+      if (length(ens) < 5) return(c(cv = NA_real_, abs_sd = NA_real_))
+      m <- mean(ens); s <- sd(ens)
+      cv <- if (abs(m) < 1e-6 || !is.finite(s/abs(m)) || s/abs(m) > 5) NA_real_ else s/abs(m)
+      c(cv = cv, abs_sd = if (is.finite(s)) s else NA_real_)
+    }))
+  })
+  df <- do.call(rbind, stats)
+  list(cv = mean(df[, "cv"], na.rm = TRUE),
+       abs_sd = mean(df[, "abs_sd"], na.rm = TRUE))
+}
+
+results <- data.frame()
+for (var in state_vars_u) {
+  base_stats <- compute_site_year_stats(analysis_list[["base"]], var)
+  for (r in runs_unc) {
+    rs <- compute_site_year_stats(analysis_list[[r]], var)
+    results <- rbind(results, data.frame(
+      run        = r,
+      variable   = var,
+      cv         = rs$cv,
+      abs_sd     = rs$abs_sd,
+      pct_inc_cv = 100 * (rs$cv     - base_stats$cv)     / base_stats$cv,
+      pct_inc_sd = 100 * (rs$abs_sd - base_stats$abs_sd) / base_stats$abs_sd,
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+# Merge flux delta CV into results if available
+results_full <- if (exists("flux_delta_cv")) {
+  bind_rows(results, flux_delta_cv %>% select(run, variable, pct_inc_cv))
+} else {
+  results
+}
+```
+
+### Baseline CV
+
+```{r base_cv_table}
+base_cv <- results %>%
+  filter(run == "base") %>%
+  select(variable, cv, abs_sd) %>%
+  mutate(variable = var_labels_u[variable],
+         cv       = round(cv, 3),
+         abs_sd   = round(abs_sd, 4))
+
+kable(base_cv, format = "html", escape = FALSE,
+      col.names = c("Variable", "CV", "Abs SD")) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed", "bordered"),
+                  full_width = TRUE, position = "left") %>%
+  column_spec(1, bold = TRUE, background = "#f5f5f5")
+
+
+```
+
+### % Reduction in CV Relative to Base
+
+**Green** = uncertainty decreased; **Red** = uncertainty increased
+
+```{r pct_cv_table}
+run_order <- c("+LT", "+FIA", "+LT_GWBI", "+FIA_GWBI", "+GWBI", "+LT_FIA", "+LT_FIA_GWBI")
+
+all_labels <- c(
+  "AbvGrndWood"   = "AGB",
+  "LAI"           = "LAI",
+  "SoilMoistFrac" = "Soil Moisture",
+  "TotSoilCarb"   = "Soil C",
+  "GWBI"          = "GWBI",
+  "GPP"           = "GPP",
+  "AutoResp"      = "Auto",
+  "HeteroResp"    = "Hetero",
+  "Transp"        = "Transp"
+)
+
+tbl_wide <- results_full %>%
+  filter(run != "base") %>%
+  select(run, variable, pct_inc_cv) %>%
+  mutate(pct_inc_cv = round(pct_inc_cv, 1),
+         run = factor(run, levels = run_order)) %>%
+  arrange(run) %>%
+  pivot_wider(names_from = variable, values_from = pct_inc_cv)
+
+col_order <- intersect(names(all_labels), colnames(tbl_wide))
+
+color_cell <- function(x) {
+  cell_spec(
+    ifelse(is.na(x), "-", paste0(x, "%")),
+    format     = "html",
+    background = ifelse(is.na(x), "white",
+                        ifelse(x < 0, "#c8f7c5", "thistle")),
+    color = "black", bold = FALSE
+  )
+}
+
+tbl_colored <- tbl_wide %>%
+  select(run, all_of(col_order)) %>%
+  mutate(across(-run, color_cell))
+
+kable(tbl_colored, format = "html", escape = FALSE,
+      col.names = c("Run", all_labels[col_order])) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed", "bordered"),
+                full_width = TRUE, position = "left") %>%
+  column_spec(1, bold = TRUE, background = "#f5f5f5")
+```
+
+---
+
+## Uncertainty Bubble Plot
+
+Bubble size = magnitude of % CV change. **Green** = reduction; **Purple** = increase
+
+```{r bubble_plot, fig.width=20, fig.height=8, dpi=150}
+library(forcats)
+
+run_order <- c("+LT", "+FIA", "+LT_GWBI", "+FIA_GWBI", "+GWBI", "+LT_FIA", "+LT_FIA_GWBI")
+
+row_colors <- c(
+  "+LT_FIA"      = "pink",
+  "+GWBI"        = "yellow",
+  "+FIA_GWBI"    = "blue",
+  "+LT_GWBI"     = "green",
+  "+FIA"         = "purple",
+  "+LT"          = "orange",
+  "+LT_FIA_GWBI" = "lightblue"
+)
+
+all_var_labels <- c(
+  "AbvGrndWood"   = "AGB",
+  "LAI"           = "LAI",
+  "SoilMoistFrac" = "Soil Moisture",
+  "TotSoilCarb"   = "Soil C",
+  "GWBI"          = "GWBI",
+  "GPP"           = "GPP",
+  "AutoResp"      = "Auto",
+  "HeteroResp"    = "Hetero",
+  "Transp"        = "Transp"
+)
+
+make_bubble_plot <- function(df, inc_col) {
+  df <- df %>%
+    filter(run != "base") %>%
+    filter(is.finite(.data[[inc_col]])) %>%
+    mutate(color    = ifelse(.data[[inc_col]] < 0, "Decrease", "Increase"),
+           size_val = abs(.data[[inc_col]]))
+
+  df$run      <- factor(df$run, levels = run_order)
+  df$variable <- factor(df$variable,
+                        levels = intersect(names(all_var_labels), unique(df$variable)))
+  levels(df$variable) <- all_var_labels[levels(df$variable)]
+
+  n_runs <- length(levels(df$run))
+  n_vars <- length(levels(df$variable))
+  run_levels_rev <- rev(levels(df$run))
+
+  # Alternating light/dark grey rows
+  rect_df <- data.frame(
+    ymin = seq(0.5, n_runs - 0.5, 1),
+    ymax = seq(1.5, n_runs + 0.5, 1),
+    fill = rep(c("grey88", "grey76"), length.out = n_runs)
+  )
+
+  ggplot(df, aes(x = variable, y = fct_rev(run), fill = color, size = size_val)) +
+    mapply(function(ymin, ymax, fill)
+      annotate("rect", xmin = 0.4, xmax = n_vars + 0.6,
+               ymin = ymin, ymax = ymax, alpha = 1, fill = fill),
+      ymin = rect_df$ymin, ymax = rect_df$ymax,
+      fill = rect_df$fill, SIMPLIFY = FALSE) +
+    geom_point(shape = 21, stroke = 0.5) +
+    geom_hline(yintercept = seq(0.5, n_runs + 0.5, 1),
+               linewidth = 0.25, colour = "grey60") +
+    scale_x_discrete(position = "top") +
+    scale_fill_manual(values = c("Decrease" = "#2ecc71", "Increase" = "#e67e22"),
+                      name = "Direction",
+                      guide = guide_legend(override.aes = list(size = 10))) +
+    scale_size_continuous(range = c(4, 30), name = expression(Delta*"CV from Base (%)")) +
+    theme_minimal() +
+    theme(
+      panel.grid       = element_blank(),
+      panel.background = element_rect(fill = "grey88", color = NA),
+      legend.position  = "right",
+      axis.text.x      = element_text(size = 22),
+      axis.text.y      = element_text(size = 22, margin = margin(r = 10)),
+      axis.title.y     = element_text(size = 24, face = "bold"),
+      legend.title     = element_text(size = 20, face = "bold"),
+      legend.text      = element_text(size = 21),
+      plot.title       = element_blank()
+    ) +
+    labs(x = NULL, y = "SDA Configuration")
+}
+
+bubble_p <- make_bubble_plot(results_full, "pct_inc_cv")
+bubble_p
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/bubble_plot.png",
+       bubble_p, width = 20, height = 8, dpi = 150, bg = "white")
+```
+
+---
+
+## Residual RMSE by Run and Observation Type
+
+RMSE of analysis posteriors vs LandTrendr AGB, FIA AGB, and FIA GWBI observations
+
+```{r rmse_compute}
+rmse_runs <- c("base", "+LT", "+FIA", "+GWBI", "+LT_FIA", "+LT_GWBI",
+               "+FIA_GWBI", "+LT_FIA_GWBI")
+
+agb_analysis  <- model_df %>% filter(variable == "AbvGrndWood")
+gwbi_analysis <- model_df %>% filter(variable == "GWBI")
+
+rmse_lt <- agb_analysis %>%
+  filter(run %in% rmse_runs) %>%
+  inner_join(lt_obs_df, by = c("year", "site_idx")) %>%
+  group_by(run) %>%
+  summarise(rmse = sqrt(mean((Mean - LT_obs)^2, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(obs_type = "LT AGB")
+
+rmse_fia <- agb_analysis %>%
+  filter(run %in% rmse_runs) %>%
+  inner_join(fia_obs_df, by = c("year", "site_idx")) %>%
+  group_by(run) %>%
+  summarise(rmse = sqrt(mean((Mean - FIA_obs)^2, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(obs_type = "FIA AGB")
+
+rmse_gwbi <- gwbi_analysis %>%
+  filter(run %in% rmse_runs) %>%
+  inner_join(gwbi_obs_df, by = c("year", "site_idx")) %>%
+  group_by(run) %>%
+  summarise(rmse = sqrt(mean((Mean - GWBI_obs)^2, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(obs_type = "FIA GWBI")
+
+rmse_df <- bind_rows(rmse_lt, rmse_fia, rmse_gwbi) %>%
+  mutate(obs_type = factor(obs_type, levels = c("LT AGB", "FIA AGB", "FIA GWBI")),
+         run      = factor(run, levels = rmse_runs))
+
+base_rmse <- rmse_df %>% filter(run == "base") %>%
+  select(obs_type, base_rmse = rmse)
+
+rmse_delta <- rmse_df %>%
+  filter(run != "base") %>%
+  left_join(base_rmse, by = "obs_type") %>%
+  mutate(delta_rmse = rmse - base_rmse,
+         pct_change = 100 * delta_rmse / base_rmse,
+         color      = ifelse(delta_rmse < 0, "Decrease", "Increase"),
+         size_val   = abs(pct_change),
+         run        = factor(run, levels = run_order))
+```
+
+### % Change in RMSE vs Base
+
+**Green** = RMSE decreased; **Purple** = RMSE increased
+
+```{r rmse_pct_table}
+color_cell_rmse <- function(x) {
+  cell_spec(
+    ifelse(is.na(x), "-", paste0(round(x, 1), "%")),
+    format     = "html",
+    background = ifelse(is.na(x), "white",
+                        ifelse(x < 0, "#c8f7c5", "thistle")),
+    color = "black", bold = FALSE
+  )
+}
+
+rmse_pct_wide <- rmse_delta %>%
+  select(run, obs_type, pct_change) %>%
+  mutate(run = as.character(run)) %>%
+  pivot_wider(names_from = obs_type, values_from = pct_change) %>%
+  mutate(across(-run, color_cell_rmse))
+
+kable(rmse_pct_wide, format = "html", escape = FALSE,
+      col.names = c("Run", "LT AGB", "FIA AGB", "FIA GWBI")) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed", "bordered"),
+                full_width = TRUE, position = "left") %>%
+  column_spec(1, bold = TRUE, background = "#f5f5f5")
+```
+
+### % Change in RMSE vs Base Bubble Plot
+
+Bubble size = magnitude of % RMSE change. **Green** = improvement; **Purple** = increase
+Large bubbles for cross-product comparisons show disagreement between data products
+
+```{r rmse_bubble, fig.width=20, fig.height=8, dpi=150}
+n_runs_rmse         <- length(run_order)
+run_levels_rev_rmse <- rev(run_order)
+
+rect_df_rmse <- data.frame(
+  ymin = seq(0.5, n_runs_rmse - 0.5, 1),
+  ymax = seq(1.5, n_runs_rmse + 0.5, 1),
+  fill = row_colors[run_levels_rev_rmse]
+)
+
+ggplot(rmse_delta,
+       aes(x = obs_type, y = fct_rev(run), fill = color, size = size_val)) +
+  mapply(function(ymin, ymax, fill)
+    annotate("rect", xmin = 0.4, xmax = 3.6,
+             ymin = ymin, ymax = ymax, alpha = 0.12, fill = fill),
+    ymin = rect_df_rmse$ymin, ymax = rect_df_rmse$ymax,
+    fill = rect_df_rmse$fill, SIMPLIFY = FALSE) +
+  geom_point(shape = 21, stroke = 0.5) +
+  geom_hline(yintercept = seq(0.5, n_runs_rmse + 0.5, 1),
+             linewidth = 0.25, colour = "grey60") +
+  scale_x_discrete(position = "top") +
+  scale_fill_manual(values = c("Decrease" = "#2ecc71", "Increase" = "#9b59b6"),
+                    name = "Direction") +
+  scale_size_continuous(range = c(4, 30), name = "% RMSE change") +
+  theme_minimal() +
+  theme(
+    panel.grid.major = element_blank(),
+    legend.position  = "right",
+    axis.text.x      = element_text(size = 22, face = "bold"),
+    axis.text.y      = element_text(size = 22, face = "bold"),
+    axis.title.y     = element_text(size = 24, face = "bold"),
+    legend.title     = element_text(size = 20, face = "bold"),
+    legend.text      = element_text(size = 18),
+    plot.title       = element_text(size = 24, face = "bold")
+  ) +
+  labs(x = NULL, y = "SDA Run",
+       title = "% Change in RMSE vs Base")
+```
+
+---
+
+## ΔAGB Residual Map (Base vs +FIA)
+
+Change in mean AGB residual per site after assimilating FIA obs
+**Blue** = +FIA reduced bias; **Red** = +FIA increased bias
+
+```{r fia_residual_map, fig.width=10, fig.height=8}
+az_map  <- map_data("state", region = "arizona")
+az_xlim <- c(-115.0, -108.8)
+az_ylim <- c(31.2, 37.1)
+lim <- max(abs(fia_resid_delta$delta_abs_residual), na.rm = TRUE)
+
+resid_map <- ggplot() +
+  geom_polygon(data = az_map, aes(x = long, y = lat, group = group),
+               fill = "grey92", color = "grey50", linewidth = 0.4) +
+  geom_point(data = fia_resid_delta %>%
+               filter(!is.na(delta_abs_residual),
+                      lon >= az_xlim[1], lon <= az_xlim[2],
+                      lat >= az_ylim[1], lat <= az_ylim[2]),
+             aes(x = lon, y = lat, fill = delta_abs_residual),
+             shape = 21, size = 3.5, stroke = 0.3, color = "grey30") +
+  scale_fill_gradient2(low = "#1b9e77", mid = "white", high = "#d95f02",
+                       midpoint = 0, limits = c(-lim, lim),
+                       name  = "Δ Bias\n(Mg C/ha)",
+                       guide = guide_colorbar(barwidth = 1.2, barheight = 8)) +
+  coord_fixed(ratio = 1.3, xlim = az_xlim, ylim = az_ylim) +
+  labs(title = NULL, x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 11, face = "bold"),
+        axis.text    = element_text(size = 10))
+
+resid_map
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/residual_map.png",
+       resid_map, width = 10, height = 8, dpi = 300, bg = "white")
+
+resid_az <- fia_resid_delta %>%
+  filter(!is.na(delta_abs_residual),
+         lon >= az_xlim[1], lon <= az_xlim[2],
+         lat >= az_ylim[1], lat <= az_ylim[2])
+cat(sprintf("N AZ sites: %d\n", nrow(resid_az)))
+cat(sprintf("Mean |bias| base:  %.2f Mg C/ha\n", mean(resid_az$mean_abs_resid_base,     na.rm=TRUE)))
+cat(sprintf("Mean |bias| +FIA:  %.2f Mg C/ha\n", mean(resid_az$mean_abs_resid_plus_FIA, na.rm=TRUE)))
+cat(sprintf("Mean delta bias:   %.2f Mg C/ha\n", mean(resid_az$delta_abs_residual,       na.rm=TRUE)))
+```
+
+---
+
+## Per-Site AGB Uncertainty Reduction (LT vs FIA)
+
+### Scatterplot
+
+Each point is one site. Points **above** the 1:1 line = FIA reduces more uncertainty;
+**below** = LandTrendr reduces more
+
+```{r unc_reduction_scatter, fig.width=7, fig.height=6}
+ax_max <- max(c(site_unc$red_lt, site_unc$red_fia), na.rm = TRUE) * 1.05
+ax_min <- min(c(site_unc$red_lt, site_unc$red_fia), na.rm = TRUE) * 1.05
+
+ggplot(site_unc, aes(x = red_lt, y = red_fia)) +
+  geom_hline(yintercept = 0, color = "grey70", linewidth = 0.4) +
+  geom_vline(xintercept = 0, color = "grey70", linewidth = 0.4) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed",
+              color = "black", linewidth = 0.5) +
+  geom_point(alpha = 0.8, size = 2, aes(color = delta)) +
+  scale_color_distiller(
+    palette   = "RdBu",
+    limits    = c(-1, 1) * quantile(abs(site_unc$delta), 0.85, na.rm = TRUE),
+    oob       = scales::squish,
+    direction = 1,
+    name      = "FIA − LT\nreduction (%)"
+  ) +
+  annotate("text", x = ax_max * 0.05, y = ax_max * 0.92,
+           label = "FIA reduces\nmore uncertainty", hjust = 0,
+           size = 3.5, color = "grey40") +
+  annotate("text", x = ax_max * 0.55, y = ax_max * 0.05,
+           label = "LT reduces\nmore uncertainty", hjust = 0,
+           size = 3.5, color = "grey40") +
+  coord_equal(xlim = c(ax_min, ax_max), ylim = c(ax_min, ax_max)) +
+  labs(title = "FIA vs LandTrendr Per-Site AGB Uncertainty Reduction",
+       x     = "+LT vs base % CV reduction",
+       y     = "+FIA vs base % CV reduction") +
+  theme_minimal() +
+  theme(plot.title   = element_text(face = "bold", size = 13),
+        legend.title = element_text(size = 10, face = "bold"),
+        axis.text    = element_text(size = 10))
+```
+
+### Spatial Map
+
+**Blue** = FIA reduced more uncertainty; **Red** = LandTrendr reduced more
+
+```{r lt_vs_fia_map, fig.width=10, fig.height=8}
+az_map2 <- map_data("state", region = "arizona")
+clim    <- quantile(abs(site_unc$delta), 0.9, na.rm = TRUE)
+
+ggplot() +
+  geom_polygon(data = az_map2, aes(x = long, y = lat, group = group),
+               fill = "grey92", color = "grey50", linewidth = 0.4) +
+  geom_point(data = site_unc %>% filter(!is.na(lat), !is.na(lon)),
+             aes(x = lon, y = lat, fill = delta),
+             shape = 21, size = 3.5, stroke = 0.3, color = "grey30") +
+  scale_fill_distiller(palette = "RdBu", limits = c(-clim, clim),
+                       oob = scales::squish, direction = 1,
+                       name  = "FIA − LT\n% CV reduction",
+                       guide = guide_colorbar(barwidth = 1.2, barheight = 8)) +
+  coord_fixed(ratio = 1.3,
+              xlim = range(site_unc$lon, na.rm = TRUE) + c(-0.5, 0.5),
+              ylim = range(site_unc$lat, na.rm = TRUE) + c(-0.5, 0.5)) +
+  labs(title = "FIA vs LandTrendr Per-Site AGB Uncertainty Reduction",
+       x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  theme(plot.title   = element_text(face = "bold", size = 14),
+        legend.title = element_text(size = 11, face = "bold"),
+        axis.text    = element_text(size = 10))
+```
+
+---
+
+## LT-FIA Compromise
+
+For each site-year where both LandTrendr and FIA observations exist and differ by more than 1 Mg C/ha, this shows how far the +LT_FIA analysis moved from LT toward FIA:
+
+<p style="text-align:center; font-size:1.05em;">
+position = (analysis &minus; FIA obs) / (LT obs &minus; FIA obs)
+</p>
+
+**1 = stayed at LT, 0 = moved fully to FIA, 0.5 = equal compromise**
+
+```{r compromise_hist, fig.width=8, fig.height=7}
+med_pos  <- median(compromise_df$position, na.rm = TRUE)
+mean_pos <- mean(compromise_df$position,   na.rm = TRUE)
+
+view_lo <- -0.3
+view_hi <-  1.5
+
+p_hist <- ggplot(compromise_df, aes(x = position)) +
+  annotate("rect", xmin = view_lo, xmax = 0, ymin = -Inf, ymax = Inf,
+           fill = "tomato", alpha = 0.12) +
+  annotate("rect", xmin = 1, xmax = view_hi, ymin = -Inf, ymax = Inf,
+           fill = "tomato", alpha = 0.12) +
+  geom_histogram(bins = 50, fill = "#1b9e77", color = "white", alpha = 0.85) +
+  geom_vline(xintercept = 0,       linetype = "solid",  color = "grey40",    linewidth = 0.5) +
+  geom_vline(xintercept = 1,       linetype = "solid",  color = "grey40",    linewidth = 0.5) +
+  geom_vline(xintercept = 0.5,     linetype = "dashed", color = "black",     linewidth = 0.7) +
+  geom_vline(xintercept = med_pos, linetype = "solid",  color = "darkorange", linewidth = 0.9) +
+  annotate("text", x = view_hi, y = Inf, vjust = 1.5, hjust = 1,
+           label = paste0("median = ", round(med_pos, 2)), color = "darkorange", size = 3.5) +
+  annotate("text", x = 0.53, y = Inf, vjust = 3, hjust = 0,
+           label = "equal split", color = "black", size = 3.2) +
+  scale_x_continuous(
+    breaks = c(0, 0.25, 0.5, 0.75, 1),
+    labels = c("FIA", "0.25", "Equal\n(0.5)", "0.75", "LT")
+  ) +
+  coord_cartesian(xlim = c(view_lo, view_hi)) +
+  labs(x = "Position between FIA and LT", y = "Count (site/years)", title = NULL) +
+  theme_bw(base_size = 12)
+
+p_scatter <- ggplot(compromise_site, aes(x = mean_obs_range, y = mean_position)) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "grey60") +
+  geom_point(alpha = 0.7, size = 2, color = "#1b9e77") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkorange", linewidth = 0.8) +
+  labs(x = "Mean LT − FIA (Mg C/ha)", y = "Mean position", title = NULL) +
+  theme_bw(base_size = 12)
+
+compromise_plot <- p_hist / p_scatter +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(face = "bold", size = 12))
+compromise_plot
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/compromise_plot.png",
+       compromise_plot, width = 8, height = 7, dpi = 300, bg = "white")
+```
+
+---
+
+## GWBI Predicted vs Observed (Base vs +GWBI)
+
+```{r gwbi_scatter, fig.width=8, fig.height=6}
+rmse_two <- gwbi_scatter %>%
+  group_by(run) %>%
+  summarise(rmse  = round(sqrt(mean(residual^2, na.rm = TRUE)), 3), .groups = "drop") %>%
+  mutate(label = paste0(run, "  RMSE=", rmse))
+
+ax_max_g <- max(c(gwbi_scatter$post_mean, gwbi_scatter$obs), na.rm = TRUE) * 1.05
+
+gwbi_scatter_plot <- ggplot(gwbi_scatter, aes(x = obs, y = post_mean, color = run)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", linewidth = 0.5) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_manual(values = c("base" = "darkorange", "+GWBI" = "#1b9e77"),
+                     name   = "Run") +
+  coord_equal(xlim = c(0, ax_max_g), ylim = c(0, ax_max_g)) +
+  labs(title   = NULL,
+       x       = "Observed (Mg C/ha/yr)",
+       y       = "Predicted (Mg C/ha/yr)",
+       caption = NULL) +
+  theme_minimal() +
+  theme(legend.title    = element_text(size = 10, face = "bold"),
+        legend.text     = element_text(size = 9),
+        axis.text       = element_text(size = 10))
+
+gwbi_scatter_plot
+for (i in seq_len(nrow(rmse_two))) {
+  cat(rmse_two$run[i], ": RMSE =", rmse_two$rmse[i], "Mg C/ha/yr\n")
+}
+ggsave("/projectnb/dietzelab/cwebb16/SDA/Validations/figures/gwbi_pred_obs.png",
+       gwbi_scatter_plot, width = 8, height = 6, dpi = 300, bg = "white")
+```
+
+---
