@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{get.vpd}
 \alias{get.vpd}
-\title{VPD}
+\title{Calculate VPD}
 \usage{
 get.vpd(rh, temp)
 }
@@ -15,9 +15,6 @@ get.vpd(rh, temp)
 vpd: vapor pressure deficit, in mb
 }
 \description{
-Calculate VPD
-}
-\details{
 Calculate vapor pressure deficit from relative humidity and temperature.
 }
 \examples{

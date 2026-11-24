@@ -2,11 +2,7 @@
 % Please edit documentation in R/metgapfill.R
 \name{metgapfill}
 \alias{metgapfill}
-\title{Take an Ameriflux NetCDF file
-Fill missing met values using MDS approach using MPI-BGC REddyProc library
-Currently
-Future version: Choose which variables to gap fill
-Future version will first downscale and fill with NARR, then REddyProc}
+\title{Take an Ameriflux NetCDF file, Fill missing met values using MDS approach using MPI-BGC REddyProc library}
 \usage{
 metgapfill(
   in.path,
@@ -40,8 +36,6 @@ metgapfill(
 \item{...}{further arguments, currently ignored}
 }
 \description{
-Take an Ameriflux NetCDF file
-Fill missing met values using MDS approach using MPI-BGC REddyProc library
 Currently
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc

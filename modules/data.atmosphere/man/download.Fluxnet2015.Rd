@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.Fluxnet2015.R
 \name{download.Fluxnet2015}
 \alias{download.Fluxnet2015}
-\title{download.Fluxnet2015}
+\title{Download Fluxnet 2015 CSV files}
 \usage{
 download.Fluxnet2015(
   sitename,
@@ -16,7 +16,7 @@ download.Fluxnet2015(
 )
 }
 \arguments{
-\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+\item{sitename}{the FLUXNET ID of the site to be downloaded, used as file name prefix.
 The 'SITE_ID' field in \href{https://fluxnet.org/sites/site-list-and-pages/}{list of Ameriflux sites}}
 
 \item{outfolder}{location on disk where outputs will be stored}
