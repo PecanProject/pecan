@@ -77,9 +77,7 @@ test_modular_chain <- function(pft_name, modeltype, trait_names,
       trait_mcmc_list   = list(ma$trait.mcmc),
       ensemble.size     = ensemble.size,
       sa_quantiles      = c(0.025, 0.25, 0.5, 0.75, 0.975),
-      do_ensemble       = TRUE,
-      # meta-analysis fits each trait on its own, so its rows are not joint draws
-      independent       = TRUE
+      do_ensemble       = TRUE
     )
 
     test_that("get_parameter_samples consumes MA output and returns the samples list", {
