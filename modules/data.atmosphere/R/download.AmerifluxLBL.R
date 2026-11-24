@@ -165,6 +165,9 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
 
   bounds <- substr(c(firstline, lastline), 1L, 12L)
   dates <- as.POSIXct(bounds, format = "%Y%m%d%H%M", tz = "UTC")
+  if (anyNA(dates)) {
+    PEcAn.logger::logger.severe("Could not parse first and last timestamps in", output_csv_file)
+  }
 
   firstdate <- dates[1L]
   lastdate <- dates[2L]
