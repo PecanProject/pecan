@@ -2,6 +2,7 @@
 
 * `get.ensemble.samples()` matches `param.names` to PFTs by name instead of position, and errors when a PFT's joint traits differ in length instead of returning truncated or `NA` draws.
 * `get.ensemble.samples()` draws joint MCMC rows at random with replacement, whatever `method` is.
+* `read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
