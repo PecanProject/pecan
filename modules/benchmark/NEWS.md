@@ -6,6 +6,8 @@
 
 ## Fixed
 
+* `calc_metrics()`: passes named arguments to benchmark plot metrics, and restored `filename = NA` before `unit = NULL` in `metric_scatter_plot()`, `metric_timeseries_plot()`, and `metric_residual_plot()`. This ensures plot PDFs are saved to disk rather than having the file path passed into `unit` (#4269).
+
 * `metric_PPMC()`: added `use = "pairwise.complete.obs"` to `stats::cor()` so the Pearson correlation is computed on available pairs rather than returning `NA` whenever any observation is missing. This matches the behaviour of `metric_cor()` in the same package.
 
 * Improved clarity of code examples that are not run at check time.

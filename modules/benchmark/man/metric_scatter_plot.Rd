@@ -7,8 +7,8 @@
 metric_scatter_plot(
   metric_dat,
   var,
-  unit = NULL,
   filename = NA,
+  unit = NULL,
   draw.plot = is.na(filename)
 )
 }
@@ -17,9 +17,9 @@ metric_scatter_plot(
 
 \item{var}{title for the plot}
 
-\item{unit}{measurement unit for the variable, added to the axis labels; NULL to omit}
-
 \item{filename}{path to save plot, or NA to not save}
+
+\item{unit}{measurement unit for the variable, added to the axis labels; NULL to omit}
 
 \item{draw.plot}{logical: Return the plot object?}
 }

@@ -2,13 +2,13 @@
 ##'
 ##' @param metric_dat dataframe to plot, with at least columns `model` and `obvs`
 ##' @param var title for the plot
-##' @param unit measurement unit for the variable, added to the axis labels; NULL to omit
 ##' @param filename path to save plot, or NA to not save
+##' @param unit measurement unit for the variable, added to the axis labels; NULL to omit
 ##' @param draw.plot logical: Return the plot object?
 ##' 
 ##' @author Betsy Cowdery
 ##' @export
-metric_scatter_plot <- function(metric_dat, var, unit = NULL, filename = NA, draw.plot = is.na(filename)) {
+metric_scatter_plot <- function(metric_dat, var, filename = NA, unit = NULL, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Scatter Plot")
   
   metric_dat <- as.data.frame(metric_dat)

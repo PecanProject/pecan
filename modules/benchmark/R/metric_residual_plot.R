@@ -2,13 +2,13 @@
 ##'
 ##' @param metric_dat dataframe to plot, with at least columns `time`, `model`, `obvs`
 ##' @param var variable name, used as plot title
-##' @param unit measurement unit for the variable, added to the y-axis label; NULL to omit
 ##' @param filename path to save plot, or NA to not save
+##' @param unit measurement unit for the variable, added to the y-axis label; NULL to omit
 ##' @param draw.plot logical: Return the plot object?
 ##' 
 ##' @author Betsy Cowdery
 ##' @export
-metric_residual_plot <- function(metric_dat, var, unit = NULL, filename = NA, draw.plot = is.na(filename)) {
+metric_residual_plot <- function(metric_dat, var, filename = NA, unit = NULL, draw.plot = is.na(filename)) {
   PEcAn.logger::logger.info("Metric: Residual Plot")
   
   metric_dat <- as.data.frame(metric_dat)
