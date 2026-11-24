@@ -197,6 +197,22 @@ test_that("attaching samples leaves the sobol object usable by tell()", {
   expect_identical(told$samples, fake_parameter_samples())
 })
 
+test_that("sobol designs reject looped inputs and quasi-random parameters", {
+  settings <- make_test_settings()
+  settings$ensemble$samplingspace$met$method <- "looping"
+  expect_error(
+    generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE),
+    "met: looping"
+  )
+
+  settings <- make_test_settings()
+  settings$ensemble$samplingspace$parameters$method <- "halton"
+  expect_error(
+    generate_joint_ensemble_design(settings, ensemble_size = 5, sobol = TRUE),
+    "halton"
+  )
+})
+
 test_that("the design comes back as design_matrix, with X kept as its older name", {
   settings <- make_test_settings()
   settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))

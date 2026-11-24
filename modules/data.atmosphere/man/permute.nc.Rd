@@ -2,7 +2,7 @@
 % Please edit documentation in R/permute.nc.R
 \name{permute.nc}
 \alias{permute.nc}
-\title{permute.nc}
+\title{Permute netCDF files}
 \usage{
 permute.nc(
   in.path,

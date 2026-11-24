@@ -6,7 +6,7 @@
 #' ensemble meteorological files.
 #'
 #' @param site_id character. AmeriFlux site identifier (e.g, "US-Ha1")
-#' The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
+#' The 'SITE_ID' field in \href{https://ameriflux.lbl.gov/sites/site-search/}{list of Ameriflux sites}
 #' @param start_date character or date. Start date in "YYYY-MM-DD" format
 #' @param end_date character or date. End date in "YYYY-MM-DD" format
 #' @param outfolder character. Output directory path for ensemble files
@@ -28,12 +28,12 @@
 #' @examples
 #' \dontrun{
 #' result <- AmeriFlux_met_process(
-#'   site_id = "US-Ha1", 
+#'   site_id = "US-Ha1",
 #'   start_date = "2010-01-01",
 #'   end_date = "2010-12-31",
 #'   outfolder = "/path/to/output",
 #'   ameriflux_username = "your_username",
-#'   ameriflux_useremail = "your.email@domain.com", 
+#'   ameriflux_useremail = "your.email@domain.com",
 #'   format = format,
 #'   era5_user = "your_cds_user",
 #'   era5_key = "your_cds_api_key",
@@ -44,7 +44,6 @@
 #'
 #' @author Akash
 #' @export
-
 AmeriFlux_met_ensemble <- function(site_id,
                                    start_date,
                                    end_date, 

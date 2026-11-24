@@ -1,11 +1,5 @@
 #' Download Geostreams data from Clowder API
 #'
-#' @param outfolder directory in which to save json result. Will be created if necessary
-#' @param sitename character. Must match a Geostreams sensor_name
-#' @param start_date,end_date datetime
-#' @param url base url for Clowder host
-#' @param key,user,pass authentication info for Clowder host.
-#' @param ... other arguments passed as query parameters
 #' @details Depending on the setup of your Clowder host, authentication may be by
 #'   username/password, by API key, or skipped entirely. \code{download.Geostreams}
 #'   looks first in its call arguments for an API key, then a username and password,
@@ -27,6 +21,13 @@
 #'     </clowder>
 #'   </pecan>
 #' }
+#'
+#' @param outfolder directory in which to save json result. Will be created if necessary
+#' @param sitename character. Must match a Geostreams sensor_name
+#' @param start_date,end_date datetime
+#' @param url base url for Clowder host
+#' @param key,user,pass authentication info for Clowder host.
+#' @param ... other arguments passed as query parameters
 #'
 #' @export
 #' @author Harsh Agrawal, Chris Black
@@ -111,7 +112,7 @@ download.Geostreams <- function(outfolder, sitename,
 }
 
 #' Authentication lookup helper
-#' 
+#'
 #' @param key,user,pass passed unchanged from \code{\link{download.Geostreams}} call, possibly null
 #' @param url matched against \code{<hostname>} in authfile, ignored if authfile contains no hostname.
 #' @param authfile path to a PEcAn-formatted XML settings file; must contain a \code{<clowder>} key

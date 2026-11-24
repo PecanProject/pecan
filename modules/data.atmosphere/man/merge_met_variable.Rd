@@ -35,9 +35,9 @@ print debugging information as they run?}
 Currently nothing. TODO: Return a data frame summarizing the merged files.
 }
 \description{
-Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
-Currently unit and name checking only implemented for CO2. 
-Currently does not yet support merge data that has lat/lon
+Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record.
+Currently unit and name checking only implemented for CO2.
+Currently does not yet support merge data that has lat/lon.
 New variable only has time dimension and thus MIGHT break downstream code....
 }
 \examples{

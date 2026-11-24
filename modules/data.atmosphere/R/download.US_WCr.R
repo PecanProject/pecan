@@ -1,20 +1,20 @@
-##' @title download.US-WCr
-##' 
-##' @section General Description:
-##' Obtains data from Ankur Desai's Willow Creek flux tower, and selects certain variables (NEE and LE) to return
-##' Data is returned at the given timestep in the given range.
-##' 
-##' This data includes information on a number of flux variables.
-##' 
-##' The timestep parameter is measured in hours, but is then converted to half hours because the data's timestep
-##' is every half hour.
-##' 
-##' @param start_date Start date/time data should be downloaded for
-##' @param end_date End date/time data should be downloaded for
-##' @param timestep How often to take data points from the file.  Must be a multiple of 0.5
-##' @export
-##' 
-##' @author Luke Dramko
+#' download.US-WCr
+#'
+#' @section General Description:
+#' Obtains data from Ankur Desai's Willow Creek flux tower, and selects certain variables (NEE and LE) to return
+#' Data is returned at the given timestep in the given range.
+#'
+#' This data includes information on a number of flux variables.
+#'
+#' The timestep parameter is measured in hours, but is then converted to half hours because the data's timestep
+#' is every half hour.
+#'
+#' @param start_date Start date/time data should be downloaded for
+#' @param end_date End date/time data should be downloaded for
+#' @param timestep How often to take data points from the file.  Must be a multiple of 0.5
+#' @export
+#'
+#' @author Luke Dramko
 download.US_WCr <- function(start_date, end_date, timestep = 1) {
   timestep = 2 * timestep #data is actually every half hour
   
