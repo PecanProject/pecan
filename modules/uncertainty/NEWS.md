@@ -1,5 +1,10 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `write.ensemble.configs()` resolves repeated and reordered `param` indices
+  and rejects invalid indices before writing configs. Returned parameter rows
+  carry their run IDs; the original source samples remain unchanged (#4221).
+  Resolved PFT tables with a row count different from `ensemble.size` are
+  rejected before config writing, including designs without `param`.
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did

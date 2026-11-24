@@ -212,6 +212,8 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #' @param input_design design matrix describing sampled inputs (see
 #'   `run.write.configs()`). Columns named after `settings$run$inputs` tags give
 #'   1-based indices into each input's `path` list and rows follow run order.
+#'   `param`, when present, must give a finite positive integer source-sample
+#'   index valid for every PFT. It may repeat or reorder source rows.
 #'   Requires `nrow(input_design) >= ensemble.size`;
 #'   extra rows are ignored.
 #' @param ensemble.size size of ensemble
@@ -237,6 +239,10 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
 #'  $runs = data frame of runids,
 #'  $ensemble.id = the ensemble ID for these runs,
 #'  and $samples with ids and samples used for each tag.
+#'  For fresh runs, $samples$parameters$samples has one row per run and a
+#'  `run_ids` attribute identifying the row order.
+#'  Every resolved PFT table must have exactly `ensemble.size` rows; a mismatch
+#'  raises an error before configs are written or `run_ids` is attached.
 #'  Also writes sensitivity analysis configuration files as a side effect
 #'
 #' @importFrom dplyr %>%
@@ -276,6 +282,22 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
   if (is.null(ensemble.samples)) {
     return(list(runs = NULL, ensemble.id = NULL))
+  }
+
+  if (is.null(restart) && !missing(input_design) && !is.null(input_design$param)) {
+    parameter_rows <- input_design$param[seq_len(ensemble.size)]
+    if (!is.numeric(parameter_rows) || !is.null(dim(parameter_rows)) ||
+        any(!is.finite(parameter_rows) | parameter_rows < 1 |
+            parameter_rows != floor(parameter_rows))) {
+      stop("input_design$param must contain one finite positive integer per run.",
+           call. = FALSE)
+    }
+    for (pft in names(ensemble.samples)) {
+      if (any(parameter_rows > nrow(ensemble.samples[[pft]]))) {
+        stop("input_design$param exceeds the available sample rows for PFT ",
+             sQuote(pft), ".", call. = FALSE)
+      }
+    }
   }
 
   # See if we need to write to DB
@@ -403,13 +425,28 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       }
     }
 
-    # if no ensemble piece was in the xml I replicate n times the first element in params
-    if ( is.null(samp$parameters) && nrow(ensemble.samples[[1]]) != ensemble.size ) {
+    # Design rows select source samples; Sobol crossovers may reuse a row.
+    if (!missing(input_design) && !is.null(input_design$param)) {
+      samples$parameters$samples <- lapply(
+        ensemble.samples,
+        function(x) x[parameter_rows, , drop = FALSE]
+      )
+    } else if (is.null(samp$parameters) && nrow(ensemble.samples[[1]]) != ensemble.size) {
       samples$parameters$samples <- ensemble.samples %>% purrr::map(~.x[rep(1, ensemble.size) , ])
     }
     # This where we handle the parameters - ensemble.samples is already generated in run.write.config and it's sent to this function as arg -
     if ( is.null(samples$parameters$samples) ) {
       samples$parameters$samples <- ensemble.samples
+    }
+    for (pft in seq_along(samples$parameters$samples)) {
+      n_rows <- nrow(samples$parameters$samples[[pft]])
+      if (is.null(n_rows) || n_rows != ensemble.size) {
+        pft_name <- names(samples$parameters$samples)[pft] %||% as.character(pft)
+        stop("Parameter table for PFT ", sQuote(pft_name),
+             " must have exactly ", ensemble.size, " rows; got ",
+             if (is.null(n_rows)) "a non-tabular value" else n_rows, ".",
+             call. = FALSE)
+      }
     }
     #------------------------End of generating ensembles-----------------------------------
     # find all inputs that have an id
@@ -544,6 +581,8 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
       cat(format(run.id, scientific = FALSE), file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
 
     }
+    # Persist this alignment without changing the five-object Rdata contract.
+    attr(samples$parameters$samples, "run_ids") <- as.character(runs$id)
     return(invisible(list(runs = runs, ensemble.id = ensemble.id, samples = samples, manifest = manifest_df)))
     #------------------------------------------------- if we already have everything ------------------
   } else {

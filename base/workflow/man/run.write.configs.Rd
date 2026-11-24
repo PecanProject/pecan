@@ -66,7 +66,10 @@ model configuration files.}
 analysis is configured.}
 \item{\verb{ensemble.samples.<ensemble_id>.Rdata}}{Contains \code{ens.run.ids}
 (vector of run IDs), \code{ens.ensemble.id}, \code{ens.samples}, \code{pft.names},
-and \code{trait.names}. Saved when ensemble is configured.}
+and \code{trait.names}. Saved when ensemble is configured. \code{ens.samples}
+contains one row per run, with a \code{run_ids} attribute giving that row
+order. Older files without this attribute contain source sample rows
+indexed by the design's \code{param} column.}
 \item{\code{runs_manifest.csv}}{A CSV table tracking all runs created,
 appended across ensemble and SA analyses.}
 }
