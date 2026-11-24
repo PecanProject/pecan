@@ -6,6 +6,12 @@
 
 ## Fixed
 
+* `extract_SM_CDS()` read soil moisture from the wrong days when `in.path` also
+  held files for other dates (it used the first files in the folder instead of
+  the ones for the requested days). Users who extracted data from a shared
+  folder should rerun the extraction. It now picks files by the date in their
+  name, ignores unrelated files, and no longer breaks on dots in directory
+  names. (#4220)
 * `eto_to_etc_bism()` correctly anchors planting and harvest dates across the new year for overwinter crops in date mode. (#4125)
 * `soil2netcdf()` no longer drops depth information for soils with only one layer. (#3785)
 * `soil_params()` where bulk density is not specified by the user now look up `soil_bulk_density` from the soil type (as always intended) instead of always reporting 1350 kg/m3 because of a flow control typo. (#3776)
