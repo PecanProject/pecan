@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `download.ICOS()` now returns correct start and end timestamps when its output directory contains spaces (#4273).
 * `align.met()` now correctly calculates output timesteps in cases where the source data is at a coarser time step than the training data and `align == "repeat"` (#4012, @anshul23102).
 
 # PEcAn.data.atmosphere 1.9.1
