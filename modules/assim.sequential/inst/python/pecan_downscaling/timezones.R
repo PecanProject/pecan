@@ -1,0 +1,7 @@
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+points <- read.csv(args[1])
+points$tz <- lutz::tz_lookup_coords(points$lat, points$lon, method='accurate', warn=FALSE)
+partial <- paste0(args[2], '.partial')
+write.csv(points, partial, row.names=FALSE)
+stopifnot(file.rename(partial, args[2]))
