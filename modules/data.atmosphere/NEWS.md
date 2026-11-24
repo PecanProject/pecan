@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `split_wind()` now reads wind direction units from the NetCDF file so it can write eastward and northward wind components for directions in degrees or radians (#4265).
 * `align.met()` now correctly calculates output timesteps in cases where the source data is at a coarser time step than the training data and `align == "repeat"` (#4012, @anshul23102).
 
 # PEcAn.data.atmosphere 1.9.1
