@@ -164,8 +164,19 @@ test_that("get.ensemble.samples", {
 })
 
 
-test_that("runs are still written when no PFT has traits", {
-  mockery::stub(write.ensemble.configs, "write.config.SIPNET", function(...) TRUE)
+test_that("write.ensemble.configs accepts samples with no PFTs", {
+  # With no sampled traits, ensemble.samples is an empty list. It used to always
+  # hold an empty `env` entry, so the `nrow(ensemble.samples[[1]])` check could
+  # not fail; now it has to be guarded. write.config.SIPNET is stubbed here
+  # because its handling of empty trait values is tested in PEcAn.SIPNET.
+  passed <- list()
+  mockery::stub(
+    write.ensemble.configs, "write.config.SIPNET",
+    function(trait.values, ...) {
+      passed[[length(passed) + 1]] <<- trait.values
+      TRUE
+    }
+  )
   tmp <- withr::local_tempdir()
   settings <- list(
     run = list(site = list(id = 1)),
@@ -186,4 +197,6 @@ test_that("runs are still written when no PFT has traits", {
   )
 
   expect_equal(nrow(result$runs), 2)
+  # each run hands the model an empty trait list instead of failing
+  expect_equal(passed, list(list(), list()))
 })
