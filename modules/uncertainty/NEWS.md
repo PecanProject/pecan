@@ -1,9 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
-* Breaking: `get_parameter_samples()` now defaults to `independent = FALSE`, drawing MCMC parameters by whole row so their correlations are kept. `independent = TRUE` samples each parameter on its own. The workflow still sets the flag from `load_pft_posteriors()`.
-* Breaking: `get.ensemble.samples()` stops with an error when the joint traits of a PFT differ in length, instead of indexing all of them by the first trait's length, which silently cut longer chains short or gave `NA`.
-* `get.ensemble.samples()` draws joint traits by whole MCMC row at random with replacement, whatever `method` is.
-* `get.ensemble.samples()` looks up `param.names` by PFT name instead of position, so a PFT with nothing to sample no longer shifts joint traits onto the next PFT. An unnamed `param.names` list now selects no joint traits.
+* `get.ensemble.samples()` matches `param.names` to PFTs by name instead of position, and errors when a PFT's joint traits differ in length instead of returning truncated or `NA` draws.
+* `get.ensemble.samples()` draws joint MCMC rows at random with replacement, whatever `method` is.
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
