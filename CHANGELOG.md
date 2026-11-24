@@ -48,8 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
-- `PEcAn.uncertainty::get.ensemble.samples()` looks up `param.names` by PFT name, so a PFT with nothing to sample no longer shifts joint traits onto the next PFT (#4238).
-- `PEcAn.uncertainty::get.ensemble.samples()` stops with an error when the joint traits of a PFT differ in length, instead of indexing all of them by the first trait's length, which silently cut longer chains or gave `NA` (#4238).
+- `PEcAn.uncertainty::get.ensemble.samples()` matches `param.names` to PFTs by name instead of position, and errors when a PFT's joint traits differ in length instead of returning truncated or `NA` draws (#4238).
 - Fixed broken meteorological data, flux network, and API documentation links in the PEcAn book and data.atmosphere package (#4071).
 - `PEcAn.uncertainty::generate_joint_ensemble_design(sobol = TRUE)` now errors on looped inputs and quasi-random parameter methods, which split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 - `PEcAn.DB::query.format.vars()` with an invalid format or input id now stops with "No format found" instead of with a PostgreSQL syntax error (#2078).
@@ -82,8 +81,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
-- `PEcAn.uncertainty::get_parameter_samples()` now defaults to `independent = FALSE`, drawing MCMC parameters by whole row; the workflow still takes the flag from `load_pft_posteriors()` (#4238).
-- `PEcAn.uncertainty::get.ensemble.samples()` draws joint rows at random with replacement for every `method` (#4238).
+- `PEcAn.uncertainty::get.ensemble.samples()` draws joint MCMC rows at random with replacement, whatever `method` is (#4238).
 - Sensitivity analysis runs are now written by `write.ensemble.configs`; `write.sa.configs` has been removed. The run design carries labels saying which parameter and quantile each run is, and the run ids, database entries and manifest rows are built from those.
 - Added `ensemble_downscale()`, a refactored version of `SDA_downscale()`.
 - `PEcAn.uncertainty::get.parameter.samples()`: replaced the `save_to_disk` flag (from #3860) with an `outdir` argument (default `settings$outdir`) controlling whether `samples.Rdata` is written; `outdir = NULL` skips the save. Existing callers are unaffected (@omkarrr2533, #4016)
