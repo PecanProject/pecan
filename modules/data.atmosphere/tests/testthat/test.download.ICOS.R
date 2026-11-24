@@ -1,6 +1,6 @@
 context("Download ICOS data products")
 
-outfolder <- tempdir()
+outfolder <- file.path(tempdir(), "ICOS data")
 setup(dir.create(outfolder, showWarnings = FALSE, recursive = TRUE))
 teardown(unlink(outfolder, recursive = TRUE))
 
@@ -15,6 +15,8 @@ test_that("ICOS Drought 2018 download works", {
   expect_equal(200, res$status_code)
   dat <- download.ICOS(sitename, outfolder, start_date, end_date, "Drought2018", overwrite = TRUE)
   expect_true(file.exists(dat$file))
+  expect_match(dat$startdate, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")
+  expect_match(dat$enddate, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")
 })
 
 test_that("ICOS ETC download works", {
@@ -28,4 +30,6 @@ test_that("ICOS ETC download works", {
   expect_equal(200, res$status_code)
   dat <- download.ICOS(sitename, outfolder, start_date, end_date, "ETC", overwrite = TRUE)
   expect_true(file.exists(dat$file))
+  expect_match(dat$startdate, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")
+  expect_match(dat$enddate, "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")
 })

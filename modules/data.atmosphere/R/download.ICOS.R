@@ -194,11 +194,12 @@ download.ICOS <-
     
     
     # get start and end year of data from file
+    output_file_path <- shQuote(file.path(outfolder, output_file_name))
     firstline <-
-      system(paste0("head -2 ", file.path(outfolder, output_file_name)), intern = TRUE)
+      system2("head", c("-n", "2", output_file_path), stdout = TRUE)
     firstline <- firstline[2]
     lastline <-
-      system(paste0("tail -1 ", file.path(outfolder, output_file_name)), intern = TRUE)
+      system2("tail", c("-n", "1", output_file_path), stdout = TRUE)
     
     firstdate_st <- paste0(
       substr(firstline, 1, 4),
