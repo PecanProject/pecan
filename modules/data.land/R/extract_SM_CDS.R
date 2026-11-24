@@ -30,15 +30,14 @@ extract_SM_CDS <- function(site_info,
     pattern = "^surface_soil_moisture\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.nc$",
     full.names = TRUE
   )
-  # An explicit format makes impossible dates (e.g. 2000-13-45) NA instead of
-  # an error; such files are not usable data, so drop them.
+  # An explicit format turns an impossible date (e.g. 2000-13-45) into NA
+  # instead of an error. NA never matches a requested date, so such a file is
+  # simply never selected.
   available.dates <- base::as.Date(base::sub(
     pattern = "^surface_soil_moisture\\.([0-9]{4}-[0-9]{2}-[0-9]{2})\\.nc$",
     replacement = "\\1",
     x = base::basename(ncfiles)
   ), format = "%Y-%m-%d")
-  ncfiles <- ncfiles[!base::is.na(available.dates)]
-  available.dates <- available.dates[!base::is.na(available.dates)]
   #loop over time points.
   results <- data.frame()
   for (i in seq_along(time.points)) {

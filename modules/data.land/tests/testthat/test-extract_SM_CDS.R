@@ -25,8 +25,6 @@ make_sm_cds_file <- function(
 }
 
 test_that("extract_SM_CDS selects files by date in a dotted directory", {
-  skip_if_not_installed("raster")
-  skip_if_not_installed("sp")
   directory <- file.path(withr::local_tempdir(), "cds.cache")
   make_sm_cds_file(directory, "1992-01-01", 0.92)
   make_sm_cds_file(directory, "1992-01-02", 0.93)
@@ -46,8 +44,6 @@ test_that("extract_SM_CDS selects files by date in a dotted directory", {
 })
 
 test_that("extract_SM_CDS ignores unrelated files", {
-  skip_if_not_installed("raster")
-  skip_if_not_installed("sp")
   directory <- withr::local_tempdir()
   make_sm_cds_file(directory, "2000-01-01", 0.20)
   make_sm_cds_file(directory, "2000-01-02", 0.21)
@@ -65,8 +61,6 @@ test_that("extract_SM_CDS ignores unrelated files", {
 })
 
 test_that("extract_SM_CDS ignores duplicate-looking dates in other files", {
-  skip_if_not_installed("raster")
-  skip_if_not_installed("sp")
   directory <- withr::local_tempdir()
   make_sm_cds_file(directory, "2000-01-01", 0.99, prefix = "aaa")
   make_sm_cds_file(directory, "2000-01-01", 0.20)
@@ -84,8 +78,6 @@ test_that("extract_SM_CDS ignores duplicate-looking dates in other files", {
 })
 
 test_that("extract_SM_CDS ignores canonical-looking files with invalid dates", {
-  skip_if_not_installed("raster")
-  skip_if_not_installed("sp")
   directory <- withr::local_tempdir()
   # These match the filename pattern and sort before the valid files, which is
   # the order in which as.Date() without an explicit format errors out.
@@ -107,8 +99,6 @@ test_that("extract_SM_CDS ignores canonical-looking files with invalid dates", {
 })
 
 test_that("extract_SM_CDS combines matching existing and downloaded dates", {
-  skip_if_not_installed("raster")
-  skip_if_not_installed("sp")
   directory <- withr::local_tempdir()
   make_sm_cds_file(directory, "1992-01-01", 0.92)
   make_sm_cds_file(directory, "2000-01-01", 0.20)
