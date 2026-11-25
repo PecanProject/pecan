@@ -749,6 +749,7 @@ robustly <- function(.f, n = 10, timeout = 0.2, silent = TRUE) {
       if (!inherits(result, "try-error")) return(result)
       attempt <- attempt + 1
       if (!silent) PEcAn.logger::logger.info("Trying attempt ", attempt, " of ", n)
+      if (attempt <= n && timeout > 0) Sys.sleep(timeout)
     }
     PEcAn.logger::logger.severe("Failed after", n, "attempts.")
   }
