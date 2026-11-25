@@ -49,6 +49,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - `PEcAn.data.remote::doi_to_product_name()` failed with "subscript out of bounds" for a DOI it does not know, instead of returning 0 as intended (#4254).
+- `PEcAn.uncertainty::read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 - Fixed broken meteorological data, flux network, and API documentation links in the PEcAn book and data.atmosphere package (#4071).
 - `PEcAn.uncertainty::generate_joint_ensemble_design(sobol = TRUE)` now errors on looped inputs and quasi-random parameter methods, which split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 - `PEcAn.DB::query.format.vars()` with an invalid format or input id now stops with "No format found" instead of with a PostgreSQL syntax error (#2078).
