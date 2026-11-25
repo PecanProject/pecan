@@ -34,7 +34,7 @@ RUN --mount=type=secret,id=GITHUB_PAT \
 
 # COPY WORKFLOW
 WORKDIR /work
-COPY web/workflow.R docker/base/rstudio.sh /work/
+COPY scripts/workflow.R docker/base/rstudio.sh /work/
 
 # COMMAND TO RUN
 CMD ["bash", "-c", "Rscript --vanilla workflow.R | tee workflow.Rout"]

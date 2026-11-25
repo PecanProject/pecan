@@ -1,19 +1,19 @@
 ## Tests:
 
-This folder provides some simple tests for each model, using the `web/workflow.R` script. They can be run with the following syntax:
+This folder provides some simple tests for each model, using the `scripts/workflow.R` script. They can be run with the following syntax:
 
 ```
-../web/workflow.R --settings <pecanfile>
+../scripts/workflow.R --settings <pecanfile>
 
 # for example to run the ed workflow:
-../web/workflow.R --settings pecan.ed.xml
+../scripts/workflow.R --settings pecan.ed.xml
 ```
 
 Since workflow.R is a simple rscript you can pass in standard R flags, such as --vanilla, etc.
 
 ## Files:
 
-* workflow.R       : Generic workflow to run PEcAn; it will skip previously completed steps.
+* ../scripts/workflow.R : Generic workflow to run PEcAn; it will skip previously completed steps.
 
 ## Settings Files 
 
@@ -34,5 +34,5 @@ R --vanilla --settings <pecanfile>
 ```
 ```{r}
 debugonce(run.meta.analysis)
-source "workflow.R"
+source("../scripts/workflow.R")
 ```

@@ -19,6 +19,7 @@ RUN apt-get update \
 # ----------------------------------------------------------------------
 COPY documentation/index_vm.html /var/www/html/index.html
 COPY web /var/www/html/pecan/
+COPY scripts/workflow.R /var/www/html/pecan/workflow.R
 COPY docker/web/config.docker.php /var/www/html/pecan/config.php
 
 # ----------------------------------------------------------------------

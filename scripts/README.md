@@ -25,6 +25,7 @@ This folder contains helper scripts used for building, testing, running, and man
 
 ##  Workflow and Test Scripts
 
+- `workflow.R` – Standard PEcAn workflow; run with `Rscript [/path/to/]scripts/workflow.R --settings <pecanfile>` from the workflow’s working directory
 - `workflow.bm.R` – Benchmark workflow
 - `workflow.pda.R` – Parameter data assimilation workflow
 - `workflow.pda.recover.r` – Recovery workflow for PDA

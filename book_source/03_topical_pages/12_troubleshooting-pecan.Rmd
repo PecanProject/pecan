@@ -57,9 +57,9 @@ You just need to edit this file (in a text editor, no Excel) and add your PFT na
 How to identify the source of a problem.
 
 
-### Using `tests/workflow.R`
+### Using `scripts/workflow.R`
 
-This script, along with model-specific settings files in the `tests` folder, provide a working example. From inside the tests folder, `R CMD --vanilla -- --settings pecan.<model>.xml < workflow.R` should work.
+This script, along with model-specific settings files in the `tests` folder, provide a working example. From inside the tests folder, `Rscript --vanilla ../scripts/workflow.R --settings pecan.<model>.xml` should work.
 
 The next step is to add `debugonce(<broken.function.name>)` before running the test workflow.
 
