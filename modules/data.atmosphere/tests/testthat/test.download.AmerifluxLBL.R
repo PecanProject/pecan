@@ -1,6 +1,7 @@
 
 test_that("download respects overwrite argument", {
-	outdir <- withr::local_tempdir()
+	outdir <- file.path(withr::local_tempdir(), "AmeriFlux data")
+	dir.create(outdir)
 	zippath <- file.path(outdir, "AMF_US-Akn_BASE-BADM_6-5.zip")
 	csvpath <- sub("-BADM(.*).zip", "_HH\\1.csv", zippath)
 	
@@ -36,7 +37,9 @@ test_that("download respects overwrite argument", {
 	# Case 0: new download
 	expect_false(file.exists(zippath))
 	expect_false(file.exists(csvpath))
-	dl_akn()
+	result <- dl_akn()
+	expect_equal(result$startdate, "2011-01-01 00:00")
+	expect_equal(result$enddate, "2011-12-31 00:00")
 	expect_true(file.exists(zippath))
 	expect_true(file.exists(csvpath))
 	
@@ -73,4 +76,35 @@ test_that("download respects overwrite argument", {
 		"skipping extraction")
 	expect_true(file.exists(zippath))
 	expect_equal(file.mtime(csvpath), csvtime)
+})
+test_that("download stops when timestamps cannot be parsed", {
+        outdir <- file.path(withr::local_tempdir(), "AmeriFlux data")
+        dir.create(outdir)
+        zippath <- file.path(outdir, "AMF_US-Akn_BASE-BADM_6-5.zip")
+
+        # Mock the download so the CSV's first data row has an invalid timestamp
+        local_mocked_bindings(
+                amf_download_base = \(...) {
+                        withr::with_tempdir({
+                                writeLines(
+                                        c("# fake file",
+                                          "#",
+                                          "TIMESTAMP_START,TIMESTAMP_END",
+                                          "not-a-timestamp,x",
+                                          "201112310000,201112310030"),
+                                        "AMF_US-Akn_BASE_HH_6-5.csv")
+                                zip(zippath, "AMF_US-Akn_BASE_HH_6-5.csv", flags = "-qr0X")
+                        })
+                        zippath
+                },
+                amf_var_info = \(...) data.frame(
+                        Site_ID = "US-Akn",
+                        BASE_Version = "6-5"),
+                .package = "amerifluxr"
+        )
+
+        expect_error(
+                download.AmerifluxLBL("US-Akn", outdir, "2011-01-01", "2011-10-01"),
+                "Could not parse"
+        )
 })
