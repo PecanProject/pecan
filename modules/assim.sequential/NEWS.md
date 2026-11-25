@@ -1,5 +1,9 @@
 # PEcAnAssimSequential 1.10.0.9000
 
+## Added
+
+* `predict_flux_maps()` generates period NEE and LE GeoTIFFs from a trained model bundle for a requested grid window (#4259).
+
 ## Fixed
 
 * `simple.local()` and `piecew.poly.local()` now scale distances by their `scalef` argument; they previously referenced an undefined variable `rloc` and would fail when called (#2758).
