@@ -2,6 +2,7 @@
 
 ## Fixed
 
+* `convert.expr()` now splits expressions that contain `^`, `-` inside parentheses, or `[ ]` into the right variable names. Previously `b^2+c` returned `"+"`, `x^2` raised an error and `(b-c)*d` returned `"b-c"` as one variable (#4216).
 * `nc_merge_all_sites_by_year()` now preserves ensemble member and timestep assignments when merging multiple members (#4251). Previously merged annual files must be regenerated from the original model outputs.
 
 * `match_file()` now matches prefixes only at the beginning of filenames (#496, @Shubham-Padkonde).

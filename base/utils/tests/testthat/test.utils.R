@@ -234,6 +234,16 @@ test_that("`convert.expr()` able to convert expression to variable names", {
   expect_equal(res$variable.eqn$expression, "c+d")
 })
 
+test_that("`convert.expr()` splits expressions containing ^, -, and [ ]", {
+  # these characters are special inside a regex character class
+  expect_equal(convert.expr("a=b^2+c")$variable.eqn$variables, c("b", "2", "c"))
+  expect_equal(convert.expr("a=x^2")$variable.eqn$variables, c("x", "2"))
+  expect_equal(convert.expr("a=(b-c)*d")$variable.eqn$variables, c("b", "c", "d"))
+  expect_equal(convert.expr("a=b[1]+c")$variable.eqn$variables, c("b", "1", "c"))
+  # a plain variable name is returned unchanged
+  expect_equal(convert.expr("NPP")$variable.eqn$variables, "NPP")
+})
+
 test_that("`paste.stats()` able to print inputs to specific format(for building a Latex Table)", {
   expect_equal(paste.stats(3.333333, 5.00001, 6.88888, n = 3), "$3.33(5,6.89)$")
 })
