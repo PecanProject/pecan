@@ -1,0 +1,17 @@
+# Paths below are relative to this file.
+sources:
+  sites: stations.csv
+  timezones: station-timezones.csv
+  periods: site-periods.csv
+  site_means: annual-means
+  matched_towers: matched-towers.csv
+  tower: gapfilled
+  era: era5
+  gldas: gldas
+  # Optional, for replaced GLDAS time steps:
+  # gldas_registry: repairs/registry.json
+  aqua_points: aqua-point-exports
+  native_covariates: native-stacks
+  native_lc: land-cover.tif
+  kgc: koppen-geiger.tif
+  kgc_legend: climate-legend.csv
