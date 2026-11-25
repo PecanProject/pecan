@@ -41,7 +41,7 @@ cull_database_entries <- function(table = NULL, outdir, file_name = NULL, con, m
 
   if ("dbfile" %in% table$table_name) {
     if (!is.null(machine_id) && "machine_id" %in% colnames(table)) {
-      table <- table[table$machine_id == machine_id] # prevents deletion of files from other databases
+      table <- table[table$machine_id == machine_id, ] # prevents deletion of files from other databases
     } else {
       PEcAn.logger::logger.info("Either machine_id is set to NULL or machine_id isn't a column name in table. No subssetting by machine will occur. ")
     }
