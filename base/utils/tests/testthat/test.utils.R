@@ -285,3 +285,15 @@ test_that("`retry.func()` able to retry a function before returning an error", {
   expect_equal(retry.func(1+1, maxErrors = 2, sleep = 2), 2)
 })
 
+test_that("robustly waits `timeout` between attempts but not after the last", {
+  calls <- 0
+  failer <- function() {
+    calls <<- calls + 1
+    stop("fail")
+  }
+  slept <- numeric(0)
+  mockery::stub(robustly, "Sys.sleep", function(x) slept <<- c(slept, x), depth = 2)
+  expect_error(suppressMessages(robustly(failer, n = 3, timeout = 7)()))
+  expect_equal(calls, 3)
+  expect_equal(slept, c(7, 7))
+})
