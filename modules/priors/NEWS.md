@@ -1,3 +1,9 @@
+# PEcAn.priors 1.7.5.9000
+
+## Fixed
+
+* `create.density.df()` now returns `n` density points as documented; it previously always used 1000, ignoring its `n` argument (#4279).
+
 # PEcAn.priors 1.7.5
 
 * Added bug reporting URL and keywords to DESCRIPTION.

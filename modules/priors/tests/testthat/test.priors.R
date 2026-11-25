@@ -29,6 +29,13 @@ test_that("create.density.df works on both stated distribution and samples", {
   expect_equal(nrow(prior.df), 1000)
 })
 
+test_that("create.density.df respects n", {
+  s <- stats::qnorm(1:100 / 101)
+  expect_equal(nrow(create.density.df(samps = s, n = 50)), 50)
+  expect_equal(nrow(create.density.df(samps = exp(s), zero.bounded = TRUE, n = 50)), 51)
+  expect_equal(nrow(create.density.df(distribution = list("norm", 0, 1), n = 50)), 50)
+})
+
 test_that("get.quantiles.from.density works", {
   samp.df <- create.density.df(samps = stats::qnorm(1:100 / 101), n = 1000)
   test.q <- get.quantiles.from.density(samp.df, quantiles = c(0.25, 0.5, 0.75))
