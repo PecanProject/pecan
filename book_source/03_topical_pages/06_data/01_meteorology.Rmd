@@ -175,3 +175,51 @@ Resolution: 30 min
 Availability: Varies by [site](https://meta.icos-cp.eu/collections/q4V7P1VLZevIrnlsW6SJO1Rz)
 
 Notes: To use this option, set `source` as `ICOS` and a `product` tag containing `etc` in `pecan.xml`
+
+## Cal-Adapt WRF {#caladaptwrf}
+
+Cal-Adapt WRF provides hourly dynamically downscaled climate data on native
+45 km (`d01`), 9 km (`d02`), and 3 km (`d03`) grids. Available variables and
+years depend on the model, experiment, and grid; check
+`caladaptaer::cae_check_variables()` before requesting a product.
+
+Install `caladaptaer` with its source-staging and bulk-export APIs (the changes
+in [caladaptaer PRs #25–28](https://github.com/lebauerapproach/caladaptaer/pull/28)).
+Remote Zarr reads require R-linked GDAL >= 3.9; inspect
+`sf::sf_extSoftVersion()["GDAL"]` to check the version R actually uses.
+
+```xml
+<met>
+  <source>CalAdaptWRF</source>
+  <model>CESM2</model>
+  <scenario>ssp370</scenario>
+  <resolution>d03</resolution>
+  <cache_dir>/path/to/persistent/wrf-cache</cache_dir>
+</met>
+```
+
+The defaults are CESM2, ssp370, and d03. `cache_dir` is optional; otherwise each
+site's download directory contains its source cache. A shared persistent cache
+can reuse chunks across sites. Concurrent writers to the same cache are not
+coordinated; stage shared inputs serially before parallel conversion.
+
+`download.CalAdaptWRF()` stages native source chunks and returns annual JSON
+manifests. `met2CF.CalAdaptWRF()` reads those manifests and delegates CF conversion
+to `caladaptaer::cae_build_met_drivers()`. Keep the manifests and source cache
+until conversion finishes. Both functions also work directly, outside
+`met.process()`. Model, experiment, and resolution are retained in PEcAn file
+prefixes so different products can coexist.
+
+The site-level registration uses the normal `met2CF` dispatcher and avoids
+regional permutation/extraction. Its `standardize = FALSE` setting preserves
+source calendars and missing values rather than running statistical gap filling.
+The registration creates the named JSON source format on first use, requiring
+a writable BETY connection. Existing formats are reused. Registration defaults
+and the product-prefix template supply download arguments and database matching.
+
+Missing leap days remain absent. This CF ingestion does not establish that a
+model's downstream converter supports that calendar. In particular, SIPNET's
+current converter assumes complete Gregorian years; a leap year without
+February 29 needs a separate calendar-handling change before use with SIPNET.
+No model simulation or calendar harmonization is performed here. The direct-file
+UCLA ERA5-driven WRF reanalysis APIs are not connected by this source adapter.
