@@ -1,0 +1,5 @@
+name: PEcAn Workflow
+description: >
+  A template for running a modular PEcAn (Predictive Ecosystem Analyzer)
+  workflow. This provides a step-by-step guide to loading settings,
+  preparing inputs, running a model, and visualizing the output.
