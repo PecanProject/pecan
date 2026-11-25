@@ -280,15 +280,15 @@ create.density.df <- function(samps = NULL, zero.bounded = FALSE, distribution =
   }
   if (samp.exists) {
     if (zero.bounded) {
-      new.density <- PEcAn.utils::zero.bounded.density(samps, n = 1000, ...)
+      new.density <- PEcAn.utils::zero.bounded.density(samps, n = n, ...)
     } else {
-      new.density <- stats::density(samps, n = 1000, ...)
+      new.density <- stats::density(samps, n = n, ...)
     }
     density.df <- with(new.density, data.frame(x = x, y = y))
   }
   
   if (dist.exists) {
-    density.df <- do.call(pr.dens, c(distribution[1:3]))
+    density.df <- do.call(pr.dens, c(distribution[1:3], n = n))
   }
   return(density.df)
 } # create.density.df

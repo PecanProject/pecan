@@ -48,6 +48,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added statewide synthetic fertilization and compost amendment event workflows for CA ag parcels. Outputs share an ensemble naming so a downstream cleaner unions them into one fertilization event type for SIPNET.
 
 ### Fixed
+- `PEcAn.priors::create.density.df()` now honors its `n` argument instead of always returning 1000 density points (#4279).
 - `PEcAn.uncertainty::read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 - Fixed broken meteorological data, flux network, and API documentation links in the PEcAn book and data.atmosphere package (#4071).
 - `PEcAn.uncertainty::generate_joint_ensemble_design(sobol = TRUE)` now errors on looped inputs and quasi-random parameter methods, which split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
