@@ -23,3 +23,20 @@ test_that("`cull_database_entries()` able to correctly add logs to the output fi
     expect_equal(grepl("test_log", file_data), c(TRUE, TRUE))
   })
 })
+
+test_that("`cull_database_entries()` with machine_id only deletes rows from that machine", {
+  queries <- character()
+  mockery::stub(cull_database_entries, "PEcAn.DB::db.query", function(query, con) {
+    queries <<- c(queries, query)
+    "test_log"
+  })
+  tab <- data.frame(id = c(1, 2), machine_id = c(10, 99))
+  cull_database_entries(
+    table = tab,
+    table_name = "dbfile",
+    con = 1,
+    outdir = withr::local_tempdir(),
+    machine_id = 10
+  )
+  expect_equal(grep("^DELETE", queries, value = TRUE), "DELETE from dbfile where id = 1;")
+})

@@ -1,3 +1,9 @@
+# PEcAn.qaqc 1.7.5.9000
+
+## Fixed
+
+* `cull_database_entries()` now deletes only the rows belonging to `machine_id` when one is given. A missing comma in the row subset meant the machine filter had no effect, so rows from other machines were deleted too (#4281).
+
 # PEcAn.qaqc 1.7.5
 
 * Added keywords and bug reporting URL to DESCRIPTION. No code changes in this release.
