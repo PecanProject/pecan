@@ -64,13 +64,12 @@ ameriflux <- c("TA(C)","" ,"" , "PRESS (KPa)","CO2","","TS1(NOT DONE)",
 in_tab <- cbind(names, units, bety, isimip, cruncep, narr, ameriflux)
 colnames(in_tab)<- c("CF standard-name","units","BETY","Isimip","CRUNCEP","NARR", "Ameriflux")
 if (require("DT")){
-datatable(in_tab, extensions = c('FixedColumns',"Buttons"),
+datatable(in_tab, escape = FALSE, extensions = c('FixedColumns',"Buttons"),
             options = list(
             dom = 'Bfrtip',
             scrollX = TRUE,
             fixedColumns = TRUE,
-            buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-            escape = FALSE
+            buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
           )
      )
 }
