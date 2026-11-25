@@ -157,10 +157,12 @@ write.config.PEPRMT <- function(defaults, trait.values, settings, run.id) {
       )
       evts <- evts[use_evt]
     }
-    evt_order <- sapply(evts, \(x) x$date) |>
-      as.Date() |>
-      order()
-    evts <- evts[evt_order]
+    if (length(evts) > 0) {
+      evt_order <- sapply(evts, \(x) x$date) |>
+        as.Date() |>
+        order()
+      evts <- evts[evt_order]
+    }
 
     # need to handle events sequentially so effects can stack
     # TODO think about efficiency, like, at all
