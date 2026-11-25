@@ -1,3 +1,9 @@
+# PEcAn.data.remote 1.9.1.9000
+
+## Fixed
+
+* `doi_to_product_name()` now returns 0 with an informational message for an unknown DOI instead of failing with "subscript out of bounds" (#4254, @madhavzanwar).
+
 # PEcAn.data.remote 1.9.1
 
 ## Added

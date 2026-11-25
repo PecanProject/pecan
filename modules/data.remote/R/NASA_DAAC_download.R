@@ -20,10 +20,11 @@ doi_to_product_name <- function(doi = NULL) {
   )
   
   # Retrieve value using DOI
-  product_name <- doi_map[[doi]]
+  # (`[[` on a named vector errors for a missing name; `[` returns NA)
+  product_name <- unname(doi_map[doi])
   
   # Fallback for unknown DOIs
-  if (is.null(product_name)) {
+  if (is.na(product_name)) {
     PEcAn.logger::logger.info("Unknown DOI: ", doi)
     return(0)
   }
