@@ -49,6 +49,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixed
 - `PEcAn.utils::convert.expr()` mis-split expressions containing `^`, `-` in parentheses, or `[ ]` (e.g. `b^2+c`, `x^2`, `(b-c)*d`), giving wrong variable names or an error (#4216).
+- `PEcAn.uncertainty::read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 - Fixed broken meteorological data, flux network, and API documentation links in the PEcAn book and data.atmosphere package (#4071).
 - `PEcAn.uncertainty::generate_joint_ensemble_design(sobol = TRUE)` now errors on looped inputs and quasi-random parameter methods, which split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 - `PEcAn.DB::query.format.vars()` with an invalid format or input id now stops with "No format found" instead of with a PostgreSQL syntax error (#2078).
