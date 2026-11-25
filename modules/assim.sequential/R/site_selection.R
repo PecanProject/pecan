@@ -8,40 +8,55 @@
 #'   and a weight column `weights`, where each row is a sample and each column is a feature.
 #' @param tot.sample.size Integer. Total target number of sample points to select across all land cover classes.
 #' @param min.sample.size Integer. Minimum number of sample points allocated to each land cover class. (Default = 50).
-#' @param normalize Logical. Whether to apply min-max scaling to numeric columns in `df`. (Default = TRUE).
+#' @param normalize Logical. Whether to apply min-max scaling to numeric feature columns in `df`. (Default = TRUE).
 #' @param max.cluster.num Integer. Maximum number of clusters to consider if calculating optimal cluster count. (Default = 6).
 #' @param elbow.operation Logical. Whether to automatically calculate the proper cluster number based on the elbow location. (Default = TRUE).
 #' If FALSE, the `max.cluster.num` will be used directly as the cluster size.
 #'
 #' @return A list of cluster allocations and sample indices grouped by land cover class.
 #' @export
-site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize = TRUE, max.cluster.num = 6, elbow.operation = TRUE) {
+site_selection <- function(df, tot.sample.size, min.sample.size = 50, normalize = TRUE, max.cluster.num = 6, elbow.operation = TRUE) {
+  # ensure df is a data.frame
+  df <- as.data.frame(df)
   # grab column names from df.
   col.names <- colnames(df)
-  # make sure we have both land cover (lc) and weights (weight) layer in the df object.
-  if (!grepl("lc", col.names) & !grepl("weights", col.names)) {
-    PEcAn.logger::logger.info("Please add land cover (lc) and weights (weight) columns to the df!")
+  # make sure we have both land cover (lc) and weights (weights) layer in the df object.
+  if (!all(c("lc", "weights") %in% col.names)) {
+    PEcAn.logger::logger.info("Please add land cover (lc) and weights (weights) columns to the df!")
     return(0)
   }
   # remove NAs if there is any.
   if (any(!stats::complete.cases(df))) {
     non.na.inds <- which(stats::complete.cases(df))
-    df <- df[non.na.inds, ]
+    df <- df[non.na.inds, , drop = FALSE]
   } else {
     non.na.inds <- NULL
   }
-  # normalize df.
+
+  # identify feature columns excluding metadata columns (lc and weights)
+  feature.cols <- setdiff(col.names, c("lc", "weights"))
+  if (length(feature.cols) == 0) {
+    PEcAn.logger::logger.info("No feature columns found in df for clustering!")
+    return(0)
+  }
+
+  # normalize df feature columns only.
   if (normalize) {
     # Define min-max scaling function
     min_max_scale <- function(x) {
-      (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+      rng <- max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
+      if (rng == 0) return(rep(0, length(x)))
+      (x - min(x, na.rm = TRUE)) / rng
     }
     
-    # Apply to all numeric columns in df
-    df <- as.data.frame(lapply(df, function(col) {
-      if (is.numeric(col)) min_max_scale(col) else col
-    }))
+    # Apply to all numeric feature columns in df
+    for (col in feature.cols) {
+      if (is.numeric(df[[col]])) {
+        df[[col]] <- min_max_scale(df[[col]])
+      }
+    }
   }
+
   # calculate sample size per each land cover class.
   # land cover operation.
   LC.inds <- sort(unique(df$lc)) %>% 
@@ -49,37 +64,47 @@ site_selction <- function (df, tot.sample.size, min.sample.size = 50, normalize 
       which(df$lc == (i))
     })
   proportion <- LC.inds %>% purrr::map(length) %>% unlist
-  proportion <- proportion/sum(proportion)
+  proportion <- proportion / sum(proportion)
   # TODO: account for the pre-selected locations during the site selection.
-  tot.points.num <- smooth.div(tot.sample.size, (tot.sample.size - min.sample.size*length(LC.inds)) * proportion + min.sample.size)
+  target_alloc <- (tot.sample.size - min.sample.size * length(LC.inds)) * proportion + min.sample.size
+  tot.points.num <- smooth.div(tot.sample.size, target_alloc)
+
   # loop over land cover classes.
   clusters <- vector("list", length = length(LC.inds))
   for (i in seq_along(clusters)) {
     # prepare datasets for the clustering of the current land cover class.
-    temp.df <- df[LC.inds[[i]], ]
+    temp.df <- df[LC.inds[[i]], , drop = FALSE]
+    feature.mat <- as.matrix(temp.df[, feature.cols, drop = FALSE])
     temp.weights <- temp.df$weights
+
     # if we want to calculate the proper cluster size based on the elbow location of total_within_ss.
     if (elbow.operation) {
+      if (!requireNamespace("pathviewr", quietly = TRUE)) {
+        PEcAn.logger::logger.severe("Package 'pathviewr' is required when elbow.operation = TRUE. Please install it or set elbow.operation = FALSE.")
+      }
       total_within_ss <- c()
       for (j in seq_len(max.cluster.num)) {
-        temp.kmeans <- faiss_kmeans(data_matrix = temp.df, k = j)
+        temp.kmeans <- faiss_kmeans(data_matrix = feature.mat, k = j)
         total_within_ss <- c(total_within_ss, temp.kmeans$total_within_ss)
       }
-      size <- pathviewr::find_curve_elbow(df)
+      elbow_curve <- data.frame(x = seq_len(max.cluster.num), y = total_within_ss)
+      size <- pathviewr::find_curve_elbow(elbow_curve)
     } else {
       size <- max.cluster.num # default cluster size.
     }
+
     # calculate sample size for each cluster.
-    clust.sample.size <- smooth.div(tot.points.num[i],  rep(tot.points.num[i]/size, size))
+    clust.sample.size <- smooth.div(tot.points.num[i], rep(tot.points.num[i] / size, size))
     # conduct kmeans clustering with the selected cluster size.
-    temp.kmeans <- faiss_kmeans(data_matrix = temp.df, k = size)
+    temp.kmeans <- faiss_kmeans(data_matrix = feature.mat, k = size)
+
     # loop over clusters.
     temp.cluster.inds <- vector("list", length = size)
     for (j in seq_len(size)) {
       temp.inds <- which(temp.kmeans$cluster_ids == j)
       # weighted sampling.
       samples <- sample(x = temp.inds, size = clust.sample.size[j], 
-                        replace = F, prob = temp.weights[temp.inds])
+                        replace = FALSE, prob = temp.weights[temp.inds])
       # below we need to convert to the actual index.
       # if we observe NAs in the original data frame.
       if (!is.null(non.na.inds)) {
