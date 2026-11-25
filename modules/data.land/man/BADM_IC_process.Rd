@@ -7,9 +7,9 @@
 BADM_IC_process(settings, dir, overwrite = TRUE)
 }
 \arguments{
-\item{settings}{pecan xml settings}
+\item{settings}{Single PEcAn Settings object (list with 'run' element)}
 
-\item{dir}{output dir which you want to store the IC netcdf file}
+\item{dir}{Output directory for storing IC netcdf file}
 
 \item{overwrite}{Flag for overwriting the IC file.}
 }
@@ -17,7 +17,9 @@ BADM_IC_process(settings, dir, overwrite = TRUE)
 a list of paths to generated and stored IC files.
 }
 \description{
-BADM_IC_process
+Process initial conditions for a single site using BADM data.
+This function accepts only single Settings objects.
+For processing multiple sites, use a higher-level function.
 }
 \examples{
 \dontrun{
