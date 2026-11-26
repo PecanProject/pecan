@@ -11,25 +11,25 @@ skip_if_not_installed("PEcAn.utils")
 skip_if_not_installed("PEcAn.logger")
 
 # ---- Helper: create mock prior distributions ----
-make_mock_priors <- function(traits = c("SLA", "Vcmax")) {
+make_mock_priors <- function(params = c("SLA", "Vcmax")) {
   data.frame(
-    distn  = rep("norm", length(traits)),
-    parama = c(20, 40)[seq_along(traits)],
-    paramb = c(5, 10)[seq_along(traits)],
-    n      = c(50, 30)[seq_along(traits)],
-    row.names = traits,
+    distn  = rep("norm", length(params)),
+    parama = c(20, 40)[seq_along(params)],
+    paramb = c(5, 10)[seq_along(params)],
+    n      = c(50, 30)[seq_along(params)],
+    row.names = params,
     stringsAsFactors = FALSE
   )
 }
 
 # ---- Helper: create mock MCMC results ----
-make_mock_trait_mcmc <- function(traits = "SLA", n_samples = 100, seed = 42) {
+make_mock_mcmc <- function(params = "SLA", n_samples = 100, seed = 42) {
   set.seed(seed)
   result <- list()
-  for (trait in traits) {
+  for (param in params) {
     chain <- matrix(rnorm(n_samples, mean = 20, sd = 2), ncol = 1)
     colnames(chain) <- "beta.o"
-    result[[trait]] <- coda::mcmc.list(coda::mcmc(chain))
+    result[[param]] <- coda::mcmc.list(coda::mcmc(chain))
   }
   result
 }
@@ -121,7 +121,7 @@ test_that("prior-only sampling produces correct structure", {
 # ====================
 test_that("MCMC samples are used when available", {
   priors <- make_mock_priors(c("SLA", "Vcmax"))
-  mcmc   <- make_mock_trait_mcmc("SLA", n_samples = 200)
+  mcmc   <- make_mock_mcmc("SLA", n_samples = 200)
 
   result <- get_parameter_samples(
     pft_names         = "test_pft",
@@ -263,28 +263,32 @@ test_that("different sampling methods all produce valid output", {
 # ====================
 # TEST 10: Independent flag behavior
 # ====================
-test_that("independent = FALSE preserves param.names for correlated sampling", {
-  priors <- make_mock_priors("SLA")
-  mcmc   <- make_mock_trait_mcmc("SLA", n_samples = 100)
+# b is exactly 2 * a in every row, so a member drawn by whole row keeps b == 2 * a
+make_joint_mcmc <- function(n = 100) {
+  a <- stats::rnorm(n)
+  chain <- function(x) coda::mcmc.list(coda::mcmc(matrix(x, dimnames = list(NULL, "beta.o"))))
+  list(a = chain(a), b = chain(2 * a))
+}
 
-  result_ind <- get_parameter_samples(
-    pft_names         = "test_pft",
-    prior_distns_list = list(priors),
-    trait_mcmc_list   = list(mcmc),
-    ensemble.size     = 10,
-    do_ensemble       = TRUE,
+test_that("by default MCMC rows stay together, even after an empty PFT", {
+  result <- get_parameter_samples(
+    pft_names         = c("empty", "joint"),
+    prior_distns_list = list(NULL, NULL),
+    trait_mcmc_list   = list(NULL, make_joint_mcmc()),
+    ensemble.size     = 20
+  )
+  x <- result$ensemble.samples$joint
+  expect_equal(x$b, 2 * x$a)
+})
+
+test_that("independent = TRUE does not keep MCMC rows together", {
+  result <- get_parameter_samples(
+    pft_names         = "joint",
+    prior_distns_list = list(NULL),
+    trait_mcmc_list   = list(make_joint_mcmc()),
+    ensemble.size     = 20,
     independent       = TRUE
   )
-
-  result_dep <- get_parameter_samples(
-    pft_names         = "test_pft",
-    prior_distns_list = list(priors),
-    trait_mcmc_list   = list(mcmc),
-    ensemble.size     = 10,
-    do_ensemble       = TRUE,
-    independent       = FALSE
-  )
-
-  expect_false(is.null(result_ind$ensemble.samples))
-  expect_false(is.null(result_dep$ensemble.samples))
+  apart <- result$ensemble.samples$joint
+  expect_false(isTRUE(all.equal(apart$b, 2 * apart$a)))
 })

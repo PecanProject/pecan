@@ -8,23 +8,25 @@
 #'
 #' @param pft_names character vector of PFT names
 #' @param prior_distns_list list of data frames (one per PFT), each with
-#'   columns: distn, parama, paramb, n. Row names are trait names.
-#' @param trait_mcmc_list list of trait MCMC results (one per PFT).
+#'   columns: distn, parama, paramb, n. Row names are parameter names.
+#' @param trait_mcmc_list list of parameter MCMC results (one per PFT).
 #'   Each element should be a named list of \code{coda::mcmc.list} objects,
 #'   or NULL if no MCMC results exist for that PFT.
 #' @param ensemble.size integer. Number of runs in model ensemble.
-#' @param ens.sample.method character. One of "halton", "sobol", "torus",
-#'   "lhc", "uniform".
+#' @param ens.sample.method character. One of "random", "uniform", "lhc",
+#'   "halton", "sobol".
 #' @param sa_quantiles numeric vector of quantiles for sensitivity analysis,
 #'   or NULL to skip SA sampling.
 #' @param do_ensemble logical. Whether to generate ensemble samples.
-#' @param independent logical. TRUE means parameters were fitted individually
-#'   (standard MA) and can be resampled independently. FALSE means they were
-#'   fitted together (e.g. PDA) and correlations should be preserved.
+#' @param independent logical. If FALSE (default), parameters with MCMC samples
+#'   are sampled jointly within each PFT, preserving their correlations (each
+#'   ensemble member takes one complete MCMC draw of a PFT). If TRUE, every
+#'   parameter is sampled independently using \code{ens.sample.method},
+#'   ignoring any joint structure.
 #'
 #' @return named list with five elements:
 #' \describe{
-#'   \item{trait.samples}{Named list by PFT, then by trait. Each leaf is a
+#'   \item{trait.samples}{Named list by PFT, then by parameter. Each leaf is a
 #'     numeric vector of parameter samples.}
 #'   \item{sa.samples}{Sensitivity analysis samples (list), or empty list
 #'     if \code{sa_quantiles} is NULL.}
@@ -69,7 +71,7 @@ get_parameter_samples <- function(pft_names,
                                        ens.sample.method = "uniform",
                                        sa_quantiles = NULL,
                                        do_ensemble = TRUE,
-                                       independent = TRUE) {
+                                       independent = FALSE) {
 
   # ---- Input validation ----
   if (is.list(pft_names)) {
@@ -103,9 +105,9 @@ get_parameter_samples <- function(pft_names,
   for (i in seq_along(pft_names)) {
     pft.name     <- pft_names[i]
     prior.distns <- prior_distns_list[[i]]
-    trait.mcmc   <- if (!is.null(trait_mcmc_list)) trait_mcmc_list[[i]] else NULL
+    param.mcmc   <- if (!is.null(trait_mcmc_list)) trait_mcmc_list[[i]] else NULL
 
-    # Determine which traits have priors defined
+    # Determine which parameters have priors defined
     if (!is.null(prior.distns)) {
       priors <- rownames(prior.distns)
     } else {
@@ -113,15 +115,15 @@ get_parameter_samples <- function(pft_names,
     }
 
     # Determine sample count: use MCMC chain length if available, else 20000
-    if (!is.null(trait.mcmc) && length(trait.mcmc) > 0) {
-      param.names[[i]] <- names(trait.mcmc)
+    if (!is.null(param.mcmc) && length(param.mcmc) > 0) {
+      param.names[[i]] <- names(param.mcmc)
       names(param.names)[i] <- pft.name
 
       samples.num <- min(
-        sapply(trait.mcmc, function(x) nrow(as.matrix(x)))
+        sapply(param.mcmc, function(x) nrow(as.matrix(x)))
       )
 
-      ## Report which traits use MA results vs priors
+      ## Report which parameters use MA results vs priors
       if (length(param.names[[i]]) > 0) {
         PEcAn.logger::logger.info(
           "PFT", pft.name, "has MCMC samples for:\n",
@@ -149,11 +151,11 @@ get_parameter_samples <- function(pft_names,
     # If no priors defined, fall back to MCMC param names
     if (is.null(priors)) priors <- param.names[[i]]
 
-    PEcAn.logger::logger.info("using ", samples.num, " samples per trait")
+    PEcAn.logger::logger.info("using ", samples.num, " samples per parameter")
 
     n_priors <- length(priors)
     if (n_priors == 0) {
-      PEcAn.logger::logger.info("No traits to sample for PFT", pft.name)
+      PEcAn.logger::logger.info("No parameters to sample for PFT", pft.name)
       next
     }
 
@@ -168,11 +170,11 @@ get_parameter_samples <- function(pft_names,
       q_samples <- matrix(q_samples, ncol = 1)
     }
 
-    # Sample each trait: from MCMC if available, otherwise from prior
+    # Sample each parameter: from MCMC if available, otherwise from prior
     for (prior in priors) {
       if (prior %in% param.names[[i]]) {
         # Extract MCMC samples across all chains
-        samples <- trait.mcmc[[prior]] |>
+        samples <- param.mcmc[[prior]] |>
           purrr::map(\(x) x[, "beta.o"]) |>
           unlist() |>
           as.matrix()
@@ -186,14 +188,6 @@ get_parameter_samples <- function(pft_names,
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
-  }
-
-  # ---- Handle independence flag ----
-  # When samples are independent (fitted individually), set param.names to NULL.
-  # This is important downstream: when param.names is not NULL,
-  # get.ensemble.samples() preserves correlations between MCMC parameters.
-  if (independent) {
-    param.names <- NULL
   }
 
   # ---- Sensitivity analysis samples ----
@@ -231,7 +225,8 @@ get_parameter_samples <- function(pft_names,
         pft.samples = trait.samples,
         env.samples = env.samples,
         method = ens.sample.method,
-        param.names = param.names
+        param.names = param.names,
+        independent = independent
       )
     }
   }
@@ -252,7 +247,7 @@ get_parameter_samples <- function(pft_names,
 #' using the specified sampling method.
 #'
 #' @param n integer, number of samples
-#' @param dim integer, number of dimensions (traits)
+#' @param dim integer, number of dimensions (parameters)
 #' @param method character, sampling method
 #' @return matrix of dimension n x dim with values in [0, 1]
 #' @noRd

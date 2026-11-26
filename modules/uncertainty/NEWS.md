@@ -1,5 +1,7 @@
 # PEcAn.uncertainty 1.9.0.9000
 
+* `get.ensemble.samples()` now samples parameters jointly by default: each ensemble member takes all parameters of a PFT from one randomly drawn row of that PFT's samples. Set the new argument `independent = TRUE` to sample every parameter independently with `method`, the old default (#4238).
+* `get.ensemble.samples()` matches `param.names` to PFTs by name, not position, and errors when parameters sampled jointly differ in length instead of returning truncated or `NA` draws (#4238).
 * `read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).

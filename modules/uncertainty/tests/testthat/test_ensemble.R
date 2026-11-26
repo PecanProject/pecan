@@ -160,3 +160,33 @@ test_that("get.ensemble.samples", {
   # pft_samp has 5 rows -> all indices <= 5
   expect_true(all(sapply(res_idx, \(mat)all(mat %in% 1:5))))
 })
+
+test_that("get.ensemble.samples by default draws every parameter of a PFT from one row", {
+  # 20 members from 10 rows, so rows are drawn with replacement
+  a <- stats::rnorm(10)
+  pft_samp <- list(p = list(a = a, b = 2 * a, c = -a))
+  res <- get.ensemble.samples(20, pft_samp, list(x = a, y = 2 * a))
+  expect_equal(res$p$b, 2 * res$p$a)
+  expect_equal(res$p$c, -res$p$a)
+  expect_true(all(res$p$a %in% a))
+  # env.samples belong to no PFT, so they are still sampled independently
+  expect_false(isTRUE(all.equal(res$env$y, 2 * res$env$x)))
+})
+
+test_that("get.ensemble.samples draws the parameters in param.names by whole row", {
+  a <- stats::rnorm(50)
+  pft_samp <- list(p = list(a = a, b = 2 * a, c = -a))
+  res <- get.ensemble.samples(20, pft_samp, list(), param.names = list(p = c("a", "b")))
+  expect_equal(res$p$b, 2 * res$p$a)
+  expect_true(all(res$p$a %in% a))
+  # c is not listed, so it does not follow the row of a and b
+  expect_false(isTRUE(all.equal(res$p$c, -res$p$a)))
+})
+
+test_that("get.ensemble.samples rejects parameters sampled jointly that differ in length", {
+  pft_samp <- list(p = list(a = 1:5, b = 1:4))
+  expect_error(
+    get.ensemble.samples(3, pft_samp, list(), param.names = list(p = c("a", "b"))),
+    "differ in length: 5, 4"
+  )
+})
