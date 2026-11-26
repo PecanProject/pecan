@@ -10,20 +10,22 @@ get.ensemble.samples(
   env.samples,
   method = "random",
   param.names = NULL,
+  independent = FALSE,
   ...
 )
 }
 \arguments{
 \item{ensemble.size}{number of runs in model ensemble}
 
-\item{pft.samples}{random samples from parameter distribution, e.g. from a MCMC chain}
+\item{pft.samples}{list named by PFT of random samples from parameter distribution, e.g. from a MCMC chain}
 
 \item{env.samples}{env samples}
 
-\item{method}{the method used to generate the ensemble samples for traits sampled independently. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
-When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{method}: each member takes one complete MCMC row, drawn at random with replacement.}
+\item{method}{the method used to generate the ensemble samples for parameters sampled independently. Random generators: random and uniform (the same uniform random draw), lhc (latin hypercube permutation). Quasi-random generators: halton, sobol. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is random. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of parameters > 5) use methods other than halton.}
 
-\item{param.names}{list named by PFT, each element the traits whose MCMC samples are drawn together by row. Joint traits of a PFT must have equal length. NULL samples every trait independently.}
+\item{param.names}{list named by PFT of the parameters that have joint samples, e.g. MCMC draws. If NULL (default), every parameter of each PFT. Used only when \code{independent = FALSE}, where these are drawn by row together and any others with \code{method}.}
+
+\item{independent}{logical. If FALSE (default), parameters are sampled jointly within each PFT, preserving their correlations: each ensemble member takes all of them (or only those in \code{param.names}) from one row, drawn at random with replacement. If TRUE, every parameter is sampled independently using \code{method}, ignoring any joint structure.}
 
 \item{...}{Other arguments passed on to the sampling method}
 }
@@ -31,10 +33,10 @@ When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{
 named list of data.frames with sampled indices as an attribute
 }
 \description{
-Returns a matrix of randomly or quasi-randomly sampled trait values
-to be assigned to traits over several model runs.
-given the number of model runs and a list of sample distributions for traits
-The model run is indexed first by model run, then by trait
+Returns a matrix of randomly or quasi-randomly sampled parameter values
+to be assigned to parameters over several model runs.
+given the number of model runs and a list of sample distributions for parameters
+The model run is indexed first by model run, then by parameter.
 }
 \author{
 David LeBauer, Istem Fer
