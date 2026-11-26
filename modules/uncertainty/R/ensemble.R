@@ -77,24 +77,24 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
 
 #' Get parameter values used in ensemble
 #'
-#' Returns a matrix of randomly or quasi-randomly sampled trait values
-#' to be assigned to traits over several model runs.
-#' given the number of model runs and a list of sample distributions for traits
-#' The model run is indexed first by model run, then by trait
+#' Returns a matrix of randomly or quasi-randomly sampled parameter values
+#' to be assigned to parameters over several model runs.
+#' given the number of model runs and a list of sample distributions for parameters
+#' The model run is indexed first by model run, then by parameter.
 #'
 #' @param ensemble.size number of runs in model ensemble
-#' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain
+#' @param pft.samples list named by PFT of random samples from parameter distribution, e.g. from a MCMC chain
 #' @param env.samples env samples
-#' @param method the method used to generate the ensemble samples for traits sampled independently. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton.
-#'   When \code{ensemble.size > 1}, traits listed in \code{param.names} ignore \code{method}: each member takes one complete MCMC row, drawn at random with replacement.
-#' @param param.names list named by PFT, each element the traits whose MCMC samples are drawn together by row. Joint traits of a PFT must have equal length. NULL samples every trait independently.
+#' @param method the method used to generate the ensemble samples for parameters sampled independently. Random generators: random and uniform (the same uniform random draw), lhc (latin hypercube permutation). Quasi-random generators: halton, sobol. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is random. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of parameters > 5) use methods other than halton.
+#' @param param.names list named by PFT of the parameters that have joint samples, e.g. MCMC draws. If NULL (default), every parameter of each PFT. Used only when \code{independent = FALSE}, where these are drawn by row together and any others with \code{method}.
+#' @param independent logical. If FALSE (default), parameters are sampled jointly within each PFT, preserving their correlations: each ensemble member takes all of them (or only those in \code{param.names}) from one row, drawn at random with replacement. If TRUE, every parameter is sampled independently using \code{method}, ignoring any joint structure.
 #' @param ... Other arguments passed on to the sampling method
 #'
 #' @return named list of data.frames with sampled indices as an attribute
 #' @export
 #' @author David LeBauer, Istem Fer
 get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
-                                 method = "random", param.names = NULL, ...) {
+                                 method = "random", param.names = NULL, independent = FALSE, ...) {
 
   # Define supported methods
   supported_methods <- c("random", "uniform", "halton", "sobol", "lhc")
@@ -109,6 +109,8 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
   } else if (ensemble.size == 1) {
     ans <- PEcAn.utils::get.sa.sample.list(pft.samples, env.samples, 0.5)
   } else {
+    # resolved before `env` joins pft.samples, so env.samples are never drawn by row
+    if (is.null(param.names)) param.names <- lapply(pft.samples, names)
     pft.samples[[length(pft.samples) + 1]] <- env.samples
     names(pft.samples)[length(pft.samples)] <- "env"
     pft2col <- NULL
@@ -161,31 +163,34 @@ get.ensemble.samples <- function( ensemble.size, pft.samples, env.samples,
       ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
       sampled.indices[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
 
-      # meaning we want to keep MCMC samples together
-      joint <- names(pft.samples[[pft.i]]) %in% param.names[[names(pft.samples)[pft.i]]]
-      if (any(joint)) {
-        n.rows <- unique(lengths(pft.samples[[pft.i]][joint]))
+      # TRUE for parameters sampled jointly: a member takes all of them from one row
+      by.row <- !independent & names(pft.samples[[pft.i]]) %in% param.names[[names(pft.samples)[pft.i]]]
+      if (any(by.row)) {
+        n.rows <- unique(lengths(pft.samples[[pft.i]][by.row]))
         if (length(n.rows) > 1) {
-          PEcAn.logger::logger.severe("PFT", names(pft.samples)[pft.i], "joint traits differ in length:", paste(n.rows, collapse = ", "))
+          PEcAn.logger::logger.severe(
+            "Parameters to sample jointly for PFT", names(pft.samples)[pft.i],
+            "differ in length:", toString(n.rows)
+          )
         }
-        # draws whole MCMC rows, so a space-filling design over [0, 1] does not apply
+        # draws whole rows, so a space-filling design over [0, 1] does not apply
         same.i <- sample.int(n.rows, ensemble.size, replace = TRUE)
       }
 
-      for (trait.i in seq(pft.samples[[pft.i]])) {
+      for (param.i in seq(pft.samples[[pft.i]])) {
         col.i <- col.i + 1
-        if (joint[trait.i]) {
-          ensemble.samples[[pft.i]][, trait.i] <- pft.samples[[pft.i]][[trait.i]][same.i]
-          sampled.indices[[pft.i]][, trait.i] <- same.i
+        if (by.row[param.i]) {
+          ensemble.samples[[pft.i]][, param.i] <- pft.samples[[pft.i]][[param.i]][same.i]
+          sampled.indices[[pft.i]][, param.i] <- same.i
         } else {
-          # Extract original trait values
-          trait.values <- pft.samples[[pft.i]][[trait.i]]
-          sampled.values <- stats::quantile(trait.values, random.samples[, col.i])
+          # Extract original parameter values
+          param.values <- pft.samples[[pft.i]][[param.i]]
+          sampled.values <- stats::quantile(param.values, random.samples[, col.i])
 
-          ensemble.samples[[pft.i]][, trait.i] <- stats::quantile(pft.samples[[pft.i]][[trait.i]],
+          ensemble.samples[[pft.i]][, param.i] <- stats::quantile(pft.samples[[pft.i]][[param.i]],
                                                                   random.samples[, col.i])
-          sampled.indices[[pft.i]][, trait.i] <- sapply(sampled.values,
-                                                        function(val) {which.min(abs(trait.values - val)) })
+          sampled.indices[[pft.i]][, param.i] <- sapply(sampled.values,
+                                                        function(val) {which.min(abs(param.values - val)) })
         }
       }
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
