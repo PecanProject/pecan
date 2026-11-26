@@ -19,30 +19,32 @@ get_parameter_samples(
 \item{pft_names}{character vector of PFT names}
 
 \item{prior_distns_list}{list of data frames (one per PFT), each with
-columns: distn, parama, paramb, n. Row names are trait names.}
+columns: distn, parama, paramb, n. Row names are parameter names.}
 
-\item{trait_mcmc_list}{list of trait MCMC results (one per PFT).
+\item{trait_mcmc_list}{list of parameter MCMC results (one per PFT).
 Each element should be a named list of \code{coda::mcmc.list} objects,
 or NULL if no MCMC results exist for that PFT.}
 
 \item{ensemble.size}{integer. Number of runs in model ensemble.}
 
-\item{ens.sample.method}{character. One of "halton", "sobol", "torus",
-"lhc", "uniform".}
+\item{ens.sample.method}{character. One of "random", "uniform", "lhc",
+"halton", "sobol".}
 
 \item{sa_quantiles}{numeric vector of quantiles for sensitivity analysis,
 or NULL to skip SA sampling.}
 
 \item{do_ensemble}{logical. Whether to generate ensemble samples.}
 
-\item{independent}{logical. FALSE (default) keeps complete MCMC draws
-together, so correlations between parameters are kept. TRUE samples each
-parameter independently, ignoring any joint structure.}
+\item{independent}{logical. If FALSE (default), parameters with MCMC samples
+are sampled jointly within each PFT, preserving their correlations (each
+ensemble member takes one complete MCMC draw of a PFT). If TRUE, every
+parameter is sampled independently using \code{ens.sample.method},
+ignoring any joint structure.}
 }
 \value{
 named list with five elements:
 \describe{
-  \item{trait.samples}{Named list by PFT, then by trait. Each leaf is a
+  \item{trait.samples}{Named list by PFT, then by parameter. Each leaf is a
     numeric vector of parameter samples.}
   \item{sa.samples}{Sensitivity analysis samples (list), or empty list
     if \code{sa_quantiles} is NULL.}
