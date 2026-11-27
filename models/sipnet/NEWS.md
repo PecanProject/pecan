@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write.config.SIPNET` writes `sipnet.param` values at 17 significant digits instead of 15, so allocations that sum to 1 no longer sum past 1 in the file. Param files change in the last digits.
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and
