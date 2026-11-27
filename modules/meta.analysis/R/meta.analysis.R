@@ -146,9 +146,7 @@ pecan.ma <- function(trait.data, prior.distns,
       print(summary(jags.out))
     }
     
-    jags.out.trunc <- stats::window(jags.out, start = j.iter / 2)
-
-    mcmc.object[[trait.name]] <- jags.out.trunc
+    mcmc.object[[trait.name]] <- jags.out
   }
 
   return(mcmc.object)
