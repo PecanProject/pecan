@@ -1,3 +1,9 @@
+# PEcAn.logger 1.8.4.9000
+
+## Fixed
+
+* `logger.severe()` now forwards its `wrap` argument to `logger.message()`, so `wrap = FALSE` preserves pre-formatted multi-line messages instead of wrapping them (#4286).
+
 # PEcAn.logger 1.8.4
 
 - All `logger.set*` functions now invisibly return the previously set value. This can be handy for restoring settings after a temporary change.

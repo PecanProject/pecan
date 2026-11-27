@@ -119,3 +119,40 @@ test_that("`logger.message` able to redirect logging information to file set by 
   })
   expect_true(grepl(".*WARN   \\[.*\\] : message", f))
 })
+
+test_that("`logger.severe` forwards `wrap` to `logger.message`", {
+  old_console <- logger.setUseConsole(FALSE)
+  on.exit(logger.setUseConsole(old_console$console, old_console$stderr), add = TRUE)
+  old_level <- logger.setLevel("ALL")
+  on.exit(logger.setLevel(old_level), add = TRUE)
+  old_quit <- logger.setQuitOnSevere(FALSE)
+  on.exit(logger.setQuitOnSevere(old_quit), add = TRUE)
+  old_width <- logger.setWidth(20)
+  on.exit(logger.setWidth(old_width), add = TRUE)
+  old_file <- logger.setOutputFile(NA)
+  on.exit(logger.setOutputFile(old_file), add = TRUE)
+
+  unwrapped <- withr::with_tempfile("tf", {
+    logger.setOutputFile(tf)
+    err <- tryCatch(
+      logger.severe("Row1   Col2\nRow2   Col3", "extra text exceeding twenty chars", wrap = FALSE),
+      error = identity
+    )
+    expect_s3_class(err, "error")
+    expect_false(grepl("FALSE", conditionMessage(err), fixed = TRUE))
+    readLines(tf)
+  })
+  expect_length(unwrapped, 2)
+  expect_true(grepl("SEVERE \\[.*\\] : Row1   Col2$", unwrapped[1]))
+  expect_identical(unwrapped[2], "Row2   Col3 extra text exceeding twenty chars ")
+
+  wrapped <- withr::with_tempfile("tf", {
+    logger.setOutputFile(tf)
+    expect_error(
+      logger.severe("Row1   Col2\nRow2   Col3", "extra text exceeding twenty chars"),
+      "Row1"
+    )
+    readLines(tf)
+  })
+  expect_gt(length(wrapped), 2)
+})

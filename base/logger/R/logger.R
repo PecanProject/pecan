@@ -94,7 +94,7 @@ logger.error <- function(msg, ...) {
 ##' logger.severe('missing parameters')
 ##' }
 logger.severe <- function(msg, ..., wrap = TRUE) {
-  logger.message("SEVERE", msg, ...)
+  logger.message("SEVERE", msg, ..., wrap = wrap)
 
   # run option
   error <- getOption("error")
