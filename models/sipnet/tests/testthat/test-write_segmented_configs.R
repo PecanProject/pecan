@@ -79,17 +79,15 @@ test_that("write_segmented_configs", {
 
   # (at least one) parameter updated
   for (seg in 1:3) {
-    param_result <- readLines(
+    param_result <- utils::read.table(
       file.path(run_path, "segments", paste0("segment_00", seg),
                 "run", "1", "sipnet.param")
     )
     seg_samp <- ens.samples[[paste0("pft", seg)]][c("Amax", "SLA")]
     expected_amax <- seg_samp$Amax * seg_samp$SLA
-    expect_match(
-      param_result,
-      paste0("aMax ", expected_amax),
-      fixed = TRUE,
-      all = FALSE
+    expect_equal(
+      param_result[param_result[[1]] == "aMax", 2],
+      expected_amax
     )
   }
 
