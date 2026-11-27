@@ -24,7 +24,6 @@ test_that("run.write.configs correctly skips database connection when bety is mi
   trait.samples <- list()
   sa.samples <- list()
   runs.samples <- list()
-  env.samples <- list()
   ensemble.samples <- list()
   
   save(
@@ -32,7 +31,6 @@ test_that("run.write.configs correctly skips database connection when bety is mi
     ensemble.samples,
     sa.samples, 
     runs.samples, 
-    env.samples, 
     file = samples.file
   )
   
@@ -71,8 +69,7 @@ test_that("run.write.configs uses the in-memory samples= bundle and skips the di
     trait.samples    = list(),
     sa.samples       = list(),
     ensemble.samples = list(),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 
   expect_false(file.exists(file.path(empty_outdir, "samples.Rdata")))

@@ -9,8 +9,8 @@
 #' **Upstream contract (reads from `settings$outdir`):**
 #' \describe{
 #'   \item{`samples.Rdata`}{Produced by \code{\link[PEcAn.uncertainty]{get.parameter.samples}}.
-#'     Contains 5 bundled objects: `trait.samples`,
-#'     `sa.samples`, `ensemble.samples`, `runs.samples`, `env.samples`.
+#'     Contains 4 bundled objects: `trait.samples`,
+#'     `sa.samples`, `ensemble.samples`, `runs.samples`.
 #'     This function loads `ensemble.samples` and `sa.samples` to build
 #'     model configuration files.}
 #' }
@@ -169,7 +169,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     samples.file <- file.path(settings$outdir, "samples.Rdata")
     if (file.exists(samples.file)) {
       existing_data <- new.env()
-      load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
+      load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples
     } else {
       PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
     }

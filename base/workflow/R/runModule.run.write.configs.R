@@ -267,8 +267,7 @@ runModule.run.write.configs <- function(settings,
     trait.samples    <- samples$trait.samples
     sa.samples       <- samples$sa.samples
     runs.samples     <- samples$runs.samples
-    env.samples      <- samples$env.samples
-    save(ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples,
+    save(ensemble.samples, trait.samples, sa.samples, runs.samples,
          file = file.path(settings$outdir, "samples.Rdata"))
 
     designs$samples <- samples

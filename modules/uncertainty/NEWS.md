@@ -2,6 +2,7 @@
 
 * `read.ensemble.output()` uses `NA` for missing variables, so each member’s result uses only its own output (#4204).
 * `generate_joint_ensemble_design(sobol = TRUE)` now errors when an input is sampled by `"looping"` or parameters by `"halton"` or `"sobol"`. These split into dependent `X1` and `X2` halves and gave wrong Sobol indices (#4134).
+* Breaking: Parameter sampling no longer treats `env` specially. `get.ensemble.samples()` no longer has argument `env.samples`, and its result and `sampled.indices` attribute no longer have an empty `env` entry. Similarly `get_parameter_samples()` and `get.parameter.samples()` no longer return `env.samples` or save it to `samples.Rdata`, and their `sa.samples` and `ensemble.samples` no longer have an empty `env` entry. Existing sample sets and `samples.Rdata` files that contain `env` still work (#4225, @aarmens702-hub).
 * In `run.sensitivity.analysis()`, load `samples` once before the variables loop, avoiding repeated disk reads (#3859).
 * `get.ensemble.samples()` now again returns a list of dataframes as it did
   before v1.9.0. The returned list also now has attribute `sampled.indices`,

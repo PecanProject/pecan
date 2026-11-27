@@ -17,8 +17,7 @@ fake_parameter_samples <- function() {
     trait.samples    = list(pft1 = list(trait1 = 1:5)),
     sa.samples       = list(),
     ensemble.samples = list(pft1 = data.frame(trait1 = 1:5)),
-    runs.samples     = list(),
-    env.samples      = list()
+    runs.samples     = list()
   )
 }
 
