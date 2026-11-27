@@ -2,7 +2,7 @@
 % Please edit documentation in R/metutils.R
 \name{wide2long}
 \alias{wide2long}
-\title{Wide to Long}
+\title{Convert raster to lat, lon, var}
 \usage{
 wide2long(data.wide, lat, lon, var)
 }

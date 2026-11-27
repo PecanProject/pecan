@@ -24,31 +24,35 @@ met_temporal_downscale.Gaussian_ensemble(
 
 \item{in.prefix}{ignored}
 
-\item{outfolder}{path to directory in which to store output. Will be created if it does not exist}
+\item{outfolder}{path to directory in which to store output.
+Will be created if it does not exist}
 
-\item{input_met}{- the source dataset that will temporally downscaled by the train_met dataset}
+\item{input_met}{the source dataset that will temporally downscaled by the train_met dataset}
 
-\item{train_met}{- the observed dataset that will be used to train the modeled dataset in NC format. i.e. Flux Tower dataset 
-(see download.Fluxnet2015 or download.Ameriflux)}
+\item{train_met}{the observed dataset that will be used to train the modeled dataset in NC format.
+i.e. Flux Tower dataset (see download.Fluxnet2015 or download.Ameriflux)}
 
 \item{overwrite}{logical: replace output file if it already exists?}
 
 \item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions
 print debugging information as they run?}
 
-\item{swdn_method}{- Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")}
+\item{swdn_method}{Downwelling shortwave flux in air downscaling method.
+Options are "sine", "spline", and "Waichler"}
 
-\item{n_ens}{- numeric value with the number of ensembles to run}
+\item{n_ens}{numeric value with the number of ensembles to run}
 
-\item{w_len}{- numeric value that is the window length in days}
+\item{w_len}{numeric value that is the window length in days}
 
-\item{utc_diff}{- numeric value in HOURS that is local standard time difference from UTC time. CST is -6}
+\item{utc_diff}{numeric value in HOURS that is local standard time difference from UTC time.
+CST is -6}
 
 \item{...}{further arguments, currently ignored}
 }
 \description{
-takes source data and a training dataset from the same site and temporally
-   downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
+Takes source data and a training dataset from the same site and temporally
+downscales the source dataset to the resolution of the training dataset
+based on statistics of the training dataset.
 }
 \author{
 James Simkins, Akash
