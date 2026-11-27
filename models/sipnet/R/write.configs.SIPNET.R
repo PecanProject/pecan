@@ -308,7 +308,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     pft.trait.names <- names(pft.traits)
     
     ## Append/replace params specified as constants
-    constant.traits <- unlist(defaults[[1]]$constants)
+    # xml constants are strings, and c() below would make every value 15 digit
+    # text. convert one at a time, since type.convert() rounds numbers too
+    constant.traits <- unlist(lapply(defaults[[1]]$constants, function(x) {
+      if (is.character(x)) utils::type.convert(x, as.is = TRUE) else x
+    }))
     constant.names <- names(constant.traits)
     
     # Replace matches
@@ -1080,6 +1084,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     )
   }
 
+  # write.table keeps 15 significant digits, which can push allocations that
+  # sum to exactly 1 past sipnet's check. 17 digits always read back exactly
+  param[[2]] <- sprintf("%.17g", param[[2]])
 
   utils::write.table(
     param,
