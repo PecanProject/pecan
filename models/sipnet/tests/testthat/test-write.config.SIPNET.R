@@ -45,26 +45,11 @@ test_that("write.config.SIPNET", {
   )
 
   # (at least some) parameters updated
-  param_result <- readLines(file.path(pth, "run", "run1", "sipnet.param"))
-  expect_match(
-    param_result,
-    "aMax 10", # this is Amax * SLA,
-    fixed = TRUE,
-    all = FALSE
-  )
-  expect_match(
-    param_result,
-    "aMaxFrac 0.99", # raw template had 0.76
-    fixed = TRUE,
-    all = FALSE
-  )
+  p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"))
+  expect_equal(p[p[[1]] == "aMax", 2], 10) # this is Amax * SLA
+  expect_equal(p[p[[1]] == "aMaxFrac", 2], 0.99) # raw template had 0.76
   # leaf C specific weight is leafC / SLA, with units converted to g C/m2 leaf
-  expect_match(
-    param_result,
-    "leafCSpWt 235 ", # space at end to catch unit errors (eg fail on 23500)
-    fixed = TRUE,
-    all = FALSE
-  )
+  expect_equal(p[p[[1]] == "leafCSpWt", 2], 235)
 
 })
 
@@ -130,8 +115,8 @@ test_that("leafNResorptionFrac trait reaches the v2 param file", {
     run.id = "run1"
   )
 
-  param_result <- readLines(file.path(pth, "run", "run1", "sipnet.param"))
-  expect_match(param_result, "leafNResorptionFrac 0.6", fixed = TRUE, all = FALSE)
+  p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"))
+  expect_equal(p[p[[1]] == "leafNResorptionFrac", 2], 0.6)
 })
 
 test_that("stem and root respiration are written as per year rates", {
@@ -285,4 +270,37 @@ test_that("leaf carbon from a poolinitcond file sets the initial leaf pool", {
   # sipnet initializes leaf C as laiInit * leafCSpWt (g C m-2);
   # tolerance covers the rounding when sipnet.param is written
   expect_equal(pval("laiInit") * pval("leafCSpWt"), 100, tolerance = 1e-6)
+})
+
+test_that("allocations that sum to 1 reach sipnet.param exactly", {
+  # these sum to exactly 1 in double, but at 15 digits they sum past 1
+  # and sipnet exits
+  leaf <- 0.25758166726134457
+  wood <- 0.4742485584847288
+  root <- 0.26816977425392663
+  pth <- withr::local_tempdir()
+  dir.create(file.path(pth, "run", "run1"), recursive = TRUE)
+  s <- PEcAn.settings::as.Settings(list(
+    outdir = file.path(pth, "out"), rundir = file.path(pth, "run"),
+    pfts = list(pft1 = list()),
+    model = list(binary = "", revision = "v2.2.0"),
+    run = list(site = list(name = "site1", lat = 40, lon = -88),
+               inputs = list(met = list(path = "")),
+               start.date = "2025-01-01", end.date = "2025-01-02"),
+    host = list(name = "", outdir = file.path(pth, "out"), rundir = file.path(pth, "run"))
+  ))
+  # one value each way it can arrive: a trait, an xml constant (a string),
+  # and a constant set from R
+  write.config.SIPNET(
+    defaults = list(pft1 = list(constants = list(
+      root_allocation_fraction = "0.26816977425392663",
+      leaf_allocation_fraction = leaf
+    ))),
+    trait.values = list(pft1 = list(wood_allocation_fraction = wood)),
+    settings = s, run.id = "run1"
+  )
+  p <- utils::read.table(file.path(pth, "run", "run1", "sipnet.param"))
+  alloc <- p[match(c("leafAllocation", "woodAllocation", "fineRootAllocation"), p[[1]]), 2]
+  # not expect_equal, whose tolerance would pass the 15 digit values
+  expect_identical(alloc, c(leaf, wood, root))
 })
