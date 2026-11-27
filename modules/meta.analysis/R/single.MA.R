@@ -105,23 +105,29 @@ single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior, jag.model.file,
     inits = j.inits,
     n.chains = j.chains
   )
+  # Set thinning interval for the normal sampling run
+  thin <- max(c(2, j.iter / (5000 * 2)))
+  # Remove burn-in before collecting posterior samples
+  stats::update(j.model, n.iter = j.iter / 2)
 
   jags.out <- rjags::coda.samples(
     model = j.model,
     variable.names = vars,
     n.iter = j.iter,
-    thin = max(c(2, j.iter / (5000 * 2)))
+    thin = thin
   )
 
   ## I would have done a while loop, but it could take forever
   ## So just give one chance to try again
   if (coda::gelman.diag(jags.out)$mpsrf > 1.2) {
     PEcAn.logger::logger.warn("model did not converge; re-running with j.iter * 10")
+    # Burn in the extended run before collecting samples
+    stats::update(j.model, n.iter = j.iter * 5)
     jags.out <- rjags::coda.samples(
       model = j.model,
       variable.names = vars,
       n.iter = j.iter * 10,
-      thin = max(c(2, j.iter / (500 * 2)))
+      thin = thin * 10
     )
   }
   return(jags.out)
