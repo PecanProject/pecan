@@ -1,18 +1,16 @@
-##' Permute netCDF files
-##'
-##' @name permute.nc
-##' @title permute.nc
-##' @export
-##' @param in.path location on disk where inputs are stored
-##' @param in.prefix prefix of input and output files
-##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be permuted (will only use the year part of the date)
-##' @param end_date the end date of the data to be permuted (will only use the year part of the date)
-##' @param overwrite should existing files be overwritten
-##' @param verbose should ouput of function be extra verbose
-##' @param ... further arguments, currently ignored
-##'
-##' @author Elizabeth Cowdery, Rob Kooper
+#' Permute netCDF files
+#'
+#' @export
+#' @param in.path location on disk where inputs are stored
+#' @param in.prefix prefix of input and output files
+#' @param outfolder location on disk where outputs will be stored
+#' @param start_date the start date of the data to be permuted (will only use the year part of the date)
+#' @param end_date the end date of the data to be permuted (will only use the year part of the date)
+#' @param overwrite should existing files be overwritten
+#' @param verbose should ouput of function be extra verbose
+#' @param ... further arguments, currently ignored
+#'
+#' @author Elizabeth Cowdery, Rob Kooper
 permute.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                        overwrite = FALSE, verbose = FALSE, ...) {
   # get start/end year code works on whole years only

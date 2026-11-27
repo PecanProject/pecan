@@ -1,18 +1,17 @@
-
-##' Load met data from PEcAn formatted met driver
-##'
-##' subsets a PEcAn formatted met driver file and converts to a data.frame object
-##'
-##' @param met.nc object of class ncdf4 representing an open CF compliant, PEcAn standard netcdf file with met data
-##' @param lat numeric value of latitude
-##' @param lon numeric value of longitude
-##' @param start.date format is 'YYYY-MM-DD'
-##' @param end.date format is 'YYYY-MM-DD'
-##' @return data frame of met data
-##' @importFrom rlang .data
-##' @importFrom dplyr %>%
-##' @export
-##' @author David LeBauer
+#' Load met data from PEcAn formatted met driver
+#'
+#' subsets a PEcAn formatted met driver file and converts to a data.frame object
+#'
+#' @param met.nc object of class ncdf4 representing an open CF compliant, PEcAn standard netcdf file with met data
+#' @param lat numeric value of latitude
+#' @param lon numeric value of longitude
+#' @param start.date format is 'YYYY-MM-DD'
+#' @param end.date format is 'YYYY-MM-DD'
+#' @return data frame of met data
+#' @importFrom rlang .data
+#' @importFrom dplyr %>%
+#' @export
+#' @author David LeBauer
 load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   ## Lat and Lon
