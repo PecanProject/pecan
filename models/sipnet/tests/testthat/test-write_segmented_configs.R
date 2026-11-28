@@ -10,7 +10,10 @@ test_that("write_segmented_configs", {
 
   event_lines |>
     writeLines(con = event_src_path)
-  c("date,crop_code", "2025-01-02,D12", "2025-01-04,D13", "2025-01-05,G6") |>
+  c(
+    "date,crop_code", "2025-01-02,D12", "2025-01-04,D13", "2025-01-05,G6",
+    "2025-01-07,NA"
+  ) |>
     writeLines(crp_chg_path)
   c("run_id,site_id", "ENS-00001-a,a") |>
     writeLines(file.path(pth, "runs_manifest.csv"))
@@ -29,7 +32,8 @@ test_that("write_segmented_configs", {
     pft1 = data.frame(Amax = 1, SLA = 2),
     pft2 = data.frame(Amax = 2, SLA = 4),
     pft3 = data.frame(Amax = 3, SLA = 6),
-    soil = data.frame(Rd = 0)
+    soil = data.frame(Rd = 0, soilWHC = 1, soil_respiration_Q10 = 1.5),
+    soil_b = data.frame(soilWHC = 2)
   )
   save(ens.samples, file = file.path(pth, "ensemble.samples.testid.Rdata"))
 
@@ -39,12 +43,12 @@ test_that("write_segmented_configs", {
       rundir = file.path(pth, "run"),
       modeloutdir = file.path(pth, "out"),
       pfts = list(pft0 = list(), pft1 = list(), pft2 = list(), pft3 = list(),
-                  soil = list()),
+                  soil = list(), soil_b = list()),
       ensemble = list(ensemble.id = "testid"),
       model = list(binary = "", revision = "2.1.0"),
       run = list(
         site = list(id = "a", name = "site1", lat = 40, lon = -88,
-                    site.pft = list(veg="pft1", soil="soil")),
+                    site.pft = list(veg="pft1", soil="soil_b")),
         inputs = list(
           met = list(path = met_path),
           events = list(path = event_src_path),
@@ -71,7 +75,11 @@ test_that("write_segmented_configs", {
 
   seg_res <- write_segmented_configs.SIPNET(
     settings = s,
-    crop2pft = \(code) ifelse(startsWith(code, "D"), "pft2", "pft3")
+    crop2pft = \(code) dplyr::case_when(
+      is.na(code) ~ "soil",
+      startsWith(code, "D") ~ "pft2",
+      TRUE ~ "pft3"
+    )
   )
 
   expect_equal(seg_res,
@@ -91,6 +99,25 @@ test_that("write_segmented_configs", {
       fixed = TRUE,
       all = FALSE
     )
+  }
+
+  # soil params come from site.pft$soil in every segment, including fallow
+  # (soil_b sets no Q10, so soilRespQ10 stays at template value)
+  soil_rows <- c("soilWHC", "soilRespQ10")
+  template_params <- utils::read.table(
+    file.path(run_path, "sipnet.param"), row.names = 1
+  )
+  expected_soil <- c(
+    ens.samples$soil_b$soilWHC,
+    template_params["soilRespQ10", 1]
+  )
+  for (seg in 1:4) {
+    params <- utils::read.table(
+      file.path(run_path, "segments", sprintf("segment_%03d", seg),
+                "run", "1", "sipnet.param"),
+      row.names = 1
+    )
+    expect_equal(params[soil_rows, 1], expected_soil)
   }
 
   # Each segment writes its own restart and later segments read the previous one.
