@@ -242,6 +242,7 @@ write_segment_configs <- function(
     row.names = FALSE
   )
 
+  soil_pft <- run_settings$run$site$site.pft$soil %||% "soil"
   jobsh_files <- character()
   job_logfiles <- character()
 
@@ -330,7 +331,8 @@ write_segment_configs <- function(
     # PFT as input. However, we can pass soil params through a "soil" PFT.
     # Here, if the segment PFT is soil, that's what we send. If the segment PFT
     # is anything else, we send that *and* the soil params.
-    choose_pft <- unique(c(segment[["pft"]], "soil"))
+    # NB soil params come from site.pft$soil, which need not be named "soil".
+    choose_pft <- unique(c(setdiff(segment[["pft"]], "soil"), soil_pft))
     segment_traits <- run_traits[choose_pft]
 
     # Write dummy runs file
