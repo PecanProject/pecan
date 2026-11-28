@@ -1,5 +1,6 @@
 # PEcAn.SIPNET 1.10.0.9000
 
+* `write_segmented_configs.SIPNET` now uses the soil PFT named in `site.pft$soil` for every segment, instead of always using the one named `soil`.
 * `write_segmented_configs.SIPNET` now merges consecutive segments with the same PFT to avoid unnecessary SIPNET restarts (#4129).
 * `write.config.SIPNET`: Fixed initial LAI being too low when `leaf_carbon_content` is read from an initial condition file (#4205).
 * `write.config.SIPNET` converted `stem_respiration_rate` and
